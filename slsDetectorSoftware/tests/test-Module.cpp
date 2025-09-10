@@ -9,6 +9,7 @@ namespace sls {
 
 using dt = slsDetectorDefs::detectorType;
 TEST_CASE("Construction with a defined detector type") {
+    freeSharedMemory(0, 0); // clean up to start test
     Module m(dt::EIGER);
     REQUIRE(m.getDetectorType() == dt::EIGER);
     freeSharedMemory(0, 0); // clean up

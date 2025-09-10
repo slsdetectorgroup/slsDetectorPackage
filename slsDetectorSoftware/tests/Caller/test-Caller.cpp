@@ -10,6 +10,7 @@
 #include <chrono>
 #include <sstream>
 #include <thread>
+#include <variant>
 
 #include "tests/globals.h"
 #include <filesystem>
@@ -819,7 +820,7 @@ TEST_CASE("exptime", "[.cmdcall][.time]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    std::chrono::nanoseconds prev_val;
+    ns prev_val;
     if (det_type != defs::MYTHEN3) {
         prev_val = det.getExptime().tsquash("inconsistent exptime to test");
     } else {
@@ -1358,6 +1359,22 @@ TEST_CASE("clkdiv", "[.cmdcall]") {
         REQUIRE_THROWS(caller.call("clkdiv", {"7", "4"}, -1, PUT));
         REQUIRE_THROWS(caller.call("clkdiv", {"0", "1"}, -1, PUT));
         auto prev_val = det.getClockDivider(0);
+        auto prev_period = det.getPeriod().tsquash("Inconsistent period");
+        auto prev_delay =
+            det.getDelayAfterTrigger().tsquash("Inconsistent delay");
+        std::variant<ns, std::array<ns, 3>> prev_exptime{};
+        std::array<ns, 3> prev_gate_delay{};
+        ns prev_burst_period{};
+        if (det_type == defs::MYTHEN3) {
+            prev_exptime =
+                det.getExptimeForAllGates().tsquash("Inconsistent exptime");
+            prev_gate_delay = det.getGateDelayForAllGates().tsquash(
+                "Inconsistent gate delay");
+        } else {
+            prev_exptime = det.getExptime().tsquash("Inconsistent exptime");
+            prev_burst_period =
+                det.getBurstPeriod().tsquash("Inconsistent burst period");
+        }
         {
             std::ostringstream oss1, oss2;
             caller.call("clkdiv", {"0", "3"}, -1, PUT, oss1);
@@ -1367,6 +1384,19 @@ TEST_CASE("clkdiv", "[.cmdcall]") {
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setClockDivider(0, prev_val[i], {i});
+        }
+        det.setPeriod(prev_period);
+        det.setDelayAfterTrigger(prev_delay);
+        if (det_type == defs::MYTHEN3) {
+            auto exptimes = std::get<std::array<ns, 3>>(prev_exptime);
+            for (int iCounter = 0; iCounter != 3; ++iCounter) {
+                det.setExptime(iCounter, exptimes[iCounter]);
+                det.setGateDelay(iCounter, prev_gate_delay[iCounter]);
+            }
+        } else {
+            auto exptime = std::get<ns>(prev_exptime);
+            det.setExptime(exptime);
+            det.setBurstPeriod(prev_burst_period);
         }
         // other clocks removed for m3 (setting not supported)
         if (det_type == defs::MYTHEN3) {
@@ -2199,7 +2229,7 @@ TEST_CASE("start", "[.cmdcall]") {
     // PUT only command
     REQUIRE_THROWS(caller.call("start", {}, -1, GET));
     auto det_type = det.getDetectorType().squash();
-    std::chrono::nanoseconds prev_val;
+    ns prev_val;
     if (det_type != defs::MYTHEN3) {
         prev_val = det.getExptime().tsquash("inconsistent exptime to test");
     } else {
@@ -2238,7 +2268,7 @@ TEST_CASE("stop", "[.cmdcall]") {
     // PUT only command
     REQUIRE_THROWS(caller.call("stop", {}, -1, GET));
     auto det_type = det.getDetectorType().squash();
-    std::chrono::nanoseconds prev_val;
+    ns prev_val;
     if (det_type != defs::MYTHEN3) {
         prev_val = det.getExptime().tsquash("inconsistent exptime to test");
     } else {
@@ -2281,7 +2311,7 @@ TEST_CASE("status", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    std::chrono::nanoseconds prev_val;
+    ns prev_val;
     if (det_type != defs::MYTHEN3) {
         prev_val = det.getExptime().tsquash("inconsistent exptime to test");
     } else {
@@ -2565,6 +2595,12 @@ TEST_CASE("numinterfaces", "[.cmdcall]") {
     if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
         auto prev_val = det.getNumberofUDPInterfaces().tsquash(
             "inconsistent numinterfaces to test");
+        UdpDestination prev_udp_dest{};
+        IpAddr prev_src_ip2{};
+        if (prev_val == 2 && det_type != defs::EIGER) {
+            prev_udp_dest = det.getDestinationUDPList(0)[0];
+            prev_src_ip2 = det.getSourceUDPIP2()[0];
+        }
         {
             std::ostringstream oss;
             caller.call("numinterfaces", {"2"}, -1, PUT, oss);
@@ -2579,6 +2615,10 @@ TEST_CASE("numinterfaces", "[.cmdcall]") {
             std::ostringstream oss;
             caller.call("numinterfaces", {}, -1, GET, oss);
             REQUIRE(oss.str() == "numinterfaces 1\n");
+        }
+        if (prev_val == 2 && det_type != defs::EIGER) {
+            det.setDestinationUDPList({prev_udp_dest}, 0);
+            det.setSourceUDPIP2({prev_src_ip2}, {0});
         }
         det.setNumberofUDPInterfaces(prev_val);
     } else if (det_type == defs::EIGER) {
@@ -3272,9 +3312,12 @@ TEST_CASE("adcreg", "[.cmdcall]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
         det_type == defs::CHIPTESTBOARD) {
-        std::ostringstream oss;
-        caller.call("adcreg", {"0x8", "0x3"}, -1, PUT, oss);
-        REQUIRE(oss.str() == "adcreg [0x8, 0x3]\n");
+        if (det.isVirtualDetectorServer().tsquash(
+                "Inconsistent virtual detector server to test adcreg")) {
+            std::ostringstream oss;
+            caller.call("adcreg", {"0x8", "0x3"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "adcreg [0x8, 0x3]\n");
+        }
         // This is a put only command
         REQUIRE_THROWS(caller.call("adcreg", {}, -1, GET));
     } else {
@@ -3592,11 +3635,8 @@ TEST_CASE("frametime", "[.cmdcall]") {
 TEST_CASE("user", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
-    caller.call("user", {}, -1, GET);
-
-    // This is a get only command
-    REQUIRE_THROWS(caller.call("user", {}, -1, PUT));
-    REQUIRE_NOTHROW(caller.call("user", {}, -1, GET));
+    // caller only has help. cmdApp takes care of put and get
+    REQUIRE_NOTHROW(caller.call("user", {}, -1, defs::HELP_ACTION));
 }
 
 TEST_CASE("sleep", "[.cmdcall]") {

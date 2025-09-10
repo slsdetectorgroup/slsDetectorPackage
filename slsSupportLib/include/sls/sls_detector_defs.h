@@ -126,6 +126,9 @@ class slsDetectorDefs {
         int y{0};
         xy() = default;
         xy(int x, int y) : x(x), y(y){};
+        constexpr bool operator==(const xy &other) const {
+            return ((x == other.x) && (y == other.y));
+        }
     } __attribute__((packed));
 #endif
 
@@ -230,6 +233,8 @@ class slsDetectorDefs {
         ROI(int xmin, int xmax) : xmin(xmin), xmax(xmax){};
         ROI(int xmin, int xmax, int ymin, int ymax)
             : xmin(xmin), xmax(xmax), ymin(ymin), ymax(ymax){};
+        constexpr int width() const { return (xmax - xmin + 1); }
+        constexpr int height() const { return (ymax - ymin + 1); }
         constexpr std::array<int, 4> getIntArray() const {
             return std::array<int, 4>({xmin, xmax, ymin, ymax});
         }
@@ -237,13 +242,18 @@ class slsDetectorDefs {
             return (xmin == -1 && xmax == -1 && ymin == -1 && ymax == -1);
         }
         constexpr bool noRoi() const {
-            return (xmin == 0 && xmax == 0 && ymin == 0 && ymax == 0);
+            return ((xmin == 0 && xmax == 0) &&
+                    ((ymin == 0 && ymax == 0) || (ymin == -1 && ymax == -1)));
         }
         void setNoRoi() {
             xmin = 0;
             xmax = 0;
             ymin = 0;
             ymax = 0;
+        }
+        constexpr bool overlap(const ROI &other) const {
+            return ((xmin <= other.xmax && xmax >= other.xmin) &&
+                    (ymin <= other.ymax && ymax >= other.ymin));
         }
         constexpr bool operator==(const ROI &other) const {
             return ((xmin == other.xmin) && (xmax == other.xmax) &&
@@ -541,7 +551,7 @@ enum streamingInterface {
               stepSize(step) {
             dacSettleTime_ns = t.count();
         }
-        bool operator==(const scanParameters &other) const {
+        constexpr bool operator==(const scanParameters &other) const {
             return ((enable == other.enable) && (dacInd == other.dacInd) &&
                     (startOffset == other.startOffset) &&
                     (stopOffset == other.stopOffset) &&
@@ -656,6 +666,7 @@ enum streamingInterface {
         scanParameters scanParams{};
         int transceiverSamples{0};
         uint32_t transceiverMask{0};
+        speedLevel readoutSpeed{FULL_SPEED};
     } __attribute__((packed));
 #endif
 

@@ -46,13 +46,72 @@ void freeSharedMemory(const int detectorIndex, const int moduleIndex) {
 
     for (int i = 0; i < numDetectors; ++i) {
         SharedMemory<sharedModule> moduleShm(detectorIndex, i);
-        moduleShm.removeSharedMemory();
+        if (moduleShm.exists()) {
+            moduleShm.removeSharedMemory();
+        }
     }
 
     // Ctb configuration
     SharedMemory<CtbConfig> ctbShm(detectorIndex, -1, CtbConfig::shm_tag());
-    if (ctbShm.exists())
+    if (ctbShm.exists()) {
         ctbShm.removeSharedMemory();
+    }
+}
+
+std::string getUserDetails(const int detectorIndex) {
+
+    int numModules = 0;
+    defs::detectorType type = defs::GENERIC;
+    pid_t pid = -1;
+    std::string hostname = "Unknown";
+    std::string user = "Unknown";
+    std::string date = "Unknown";
+
+    {
+        SharedMemory<sharedDetector> detectorShm(detectorIndex, -1);
+        if (!detectorShm.exists()) {
+            throw SharedMemoryError("No detector with index " +
+                                    std::to_string(detectorIndex) +
+                                    " in shared memory!");
+        }
+        detectorShm.openSharedMemory(false);
+        if (detectorShm()->shmversion < DETECTOR_SHMAPIVERSION) {
+            detectorShm.unmapSharedMemory();
+            throw SharedMemoryError(
+                "Detector Shared memory version too old to get user details!");
+        }
+        numModules = detectorShm()->totalNumberOfModules;
+        type = detectorShm()->detType;
+        pid = detectorShm()->lastPID;
+        user = detectorShm()->lastUser;
+        date = detectorShm()->lastDate;
+
+        detectorShm.unmapSharedMemory();
+    }
+
+    for (int imod = 0; imod != numModules; ++imod) {
+        SharedMemory<sharedModule> moduleShm(detectorIndex, imod);
+        if (moduleShm.exists()) {
+            moduleShm.openSharedMemory(false);
+            if (moduleShm()->shmversion < MODULE_SHMAPIVERSION) {
+                LOG(logWARNING)
+                    << "Module Shared Memory too old to get hostname";
+            } else {
+                hostname = moduleShm()->hostname;
+            }
+            moduleShm.unmapSharedMemory();
+        }
+    }
+
+    std::ostringstream userDetails;
+    userDetails << "Detector Index: " << detectorIndex << "\n"
+                << "Number of Modules: " << numModules << "\n"
+                << "Type: " << type << "\n"
+                << "PID: " << pid << "\n"
+                << "User: " << user << "\n"
+                << "Date: " << date << "\n"
+                << "Hostname: " << hostname << "\n";
+    return userDetails.str();
 }
 
 using defs = slsDetectorDefs;
@@ -199,6 +258,26 @@ defs::xy Detector::getModuleGeometry() const {
 
 Result<defs::xy> Detector::getModuleSize(Positions pos) const {
     return pimpl->Parallel(&Module::getNumberOfChannels, pos);
+}
+
+defs::xy Detector::getPortPerModuleGeometry() const {
+    return pimpl->getPortGeometry();
+}
+
+Result<defs::xy> Detector::getPortSize(Positions pos) const {
+    Result<defs::xy> res = pimpl->Parallel(&Module::getNumberOfChannels, pos);
+    defs::xy portGeometry = getPortPerModuleGeometry();
+    if ((portGeometry.x != 1 && portGeometry.x != 2) ||
+        (portGeometry.y != 1 && portGeometry.y != 2)) {
+        throw RuntimeError(
+            "Port size is not 1 or 2 in either dimension. Port geometry:" +
+            ToString(portGeometry));
+    }
+    for (auto &it : res) {
+        it.x /= portGeometry.x;
+        it.y /= portGeometry.y;
+    }
+    return res;
 }
 
 defs::xy Detector::getDetectorSize() const {
@@ -1279,7 +1358,7 @@ Result<uint16_t> Detector::getRxPort(Positions pos) const {
 
 void Detector::setRxPort(uint16_t port, int module_id) {
     if (module_id == -1) {
-        validatePortRange(port, size() - 1);
+        validatePortRange(port, size());
 
         std::vector<uint16_t> port_list(size());
         std::iota(std::begin(port_list), std::end(port_list), port);
@@ -1367,13 +1446,13 @@ void Detector::setRxArping(bool value, Positions pos) {
     pimpl->Parallel(&Module::setRxArping, pos, value);
 }
 
-Result<defs::ROI> Detector::getIndividualRxROIs(Positions pos) const {
-    return pimpl->Parallel(&Module::getRxROI, pos);
+std::vector<defs::ROI> Detector::getRxROI(int module_id) const {
+    return pimpl->getRxROI(module_id);
 }
 
-defs::ROI Detector::getRxROI() const { return pimpl->getRxROI(); }
-
-void Detector::setRxROI(const defs::ROI value) { pimpl->setRxROI(value); }
+void Detector::setRxROI(const std::vector<defs::ROI> &args) {
+    pimpl->setRxROI(args);
+}
 
 void Detector::clearRxROI() { pimpl->clearRxROI(); }
 
@@ -1863,7 +1942,7 @@ void Detector::setVetoFile(const int chipIndex, const std::string &fname,
     pimpl->Parallel(&Module::setVetoFile, pos, chipIndex, fname);
 }
 
-Result<defs::burstMode> Detector::getBurstMode(Positions pos) {
+Result<defs::burstMode> Detector::getBurstMode(Positions pos) const {
     return pimpl->Parallel(&Module::getBurstMode, pos);
 }
 
@@ -2802,13 +2881,11 @@ Result<ns> Detector::getMeasurementTime(Positions pos) const {
     return pimpl->Parallel(&Module::getMeasurementTime, pos);
 }
 
-std::string Detector::getUserDetails() const { return pimpl->getUserDetails(); }
-
 std::vector<uint16_t> Detector::getValidPortNumbers(uint16_t start_port) {
     int num_sockets_per_detector = getNumberofUDPInterfaces({}).tsquash(
         "Number of UDP Interfaces is not consistent among modules");
 
-    validatePortRange(start_port, (size() - 1) * num_sockets_per_detector);
+    validatePortRange(start_port, size() * num_sockets_per_detector);
 
     std::vector<uint16_t> res;
     res.reserve(size());

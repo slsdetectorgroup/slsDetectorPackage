@@ -5,16 +5,17 @@
  * reconstructing image. Sample python script for pull socket for this combiner
  * in python/scripts folder. TODO: Not handling empty frames from one socket
  */
+#include "CommandLineOptions.h"
 #include "sls/Receiver.h"
 #include "sls/ToString.h"
 #include "sls/container_utils.h"
 #include "sls/logger.h"
+#include "sls/network_utils.h"
 #include "sls/sls_detector_defs.h"
 
 #include <csignal> //SIGINT
 #include <cstdio>
 #include <cstring>
-#include <iostream>
 #include <mutex>
 #include <ostream>
 #include <semaphore.h>
@@ -28,8 +29,13 @@
 #include <zmq.h>
 
 std::vector<std::thread> threads;
-std::vector<sem_t *> semaphores;
 sls::TLogLevel printHeadersLevel = sls::logDEBUG;
+
+// gettid added in glibc 2.30
+#if __GLIBC__ == 2 && __GLIBC_MINOR__ < 30
+#include <sys/syscall.h>
+#define gettid() syscall(SYS_gettid)
+#endif
 
 /** Define Colors to print data call back in different colors for different
  * recievers */
@@ -57,16 +63,6 @@ struct FrameStatus {
 };
 FrameStatus *global_frame_status = nullptr;
 
-/**
- * Control+C Interrupt Handler
- * to let all the processes know to exit properly
- */
-void sigInterruptHandler(int p) {
-    for (size_t i = 0; i != semaphores.size(); ++i) {
-        sem_post(semaphores[i]);
-    }
-}
-
 void cleanup() {
     if (global_frame_status) {
         std::lock_guard<std::mutex> lock(global_frame_status->mtx);
@@ -86,29 +82,16 @@ void cleanup() {
     }
 }
 
-/**
- * prints usage of this example program
- */
-std::string getHelpMessage() {
-    std::ostringstream os;
-    os << "\nUsage:\n"
-          "./slsFrameSynchronizer [start tcp port] [num recevers] [print "
-          "callback headers (optional)]\n"
-       << "\t - tcp port has to be non-zero and 16 bit\n"
-       << "\t - print callback headers option is 0 (disabled) by default\n";
-    return os.str();
-}
-
 void zmq_free(void *data, void *hint) { delete[] static_cast<char *>(data); }
 
 void print_frames(const PortFrameMap &frame_port_map) {
     LOG(sls::logDEBUG) << "Printing frames";
     for (const auto &it : frame_port_map) {
-        uint16_t udpPort = it.first;
+        const uint16_t udpPort = it.first;
         const auto &frame_map = it.second;
         LOG(sls::logDEBUG) << "UDP port: " << udpPort;
         for (const auto &frame : frame_map) {
-            uint64_t fnum = frame.first;
+            const uint64_t fnum = frame.first;
             const auto &msg_list = frame.second;
             LOG(sls::logDEBUG)
                 << "  acq index: " << fnum << '[' << msg_list.size() << ']';
@@ -127,30 +110,26 @@ std::set<uint64_t> get_valid_fnums(const PortFrameMap &port_frame_map) {
 
     // collect all unique frame numbers from all ports
     std::set<uint64_t> unique_fnums;
-    for (auto it = port_frame_map.begin(); it != port_frame_map.begin(); ++it) {
-        const FrameMap &frame_map = it->second;
-        for (auto frame = frame_map.begin(); frame != frame_map.end();
-             ++frame) {
-            unique_fnums.insert(frame->first);
+    for (const auto &it : port_frame_map) {
+        const FrameMap &frame_map = it.second;
+        for (const auto &frame : frame_map) {
+            unique_fnums.insert(frame.first);
         }
     }
 
     // collect valid frame numbers
     for (auto &fnum : unique_fnums) {
         bool is_valid = true;
-        for (auto it = port_frame_map.begin(); it != port_frame_map.end();
-             ++it) {
-            uint16_t port = it->first;
-            const FrameMap &frame_map = it->second;
+        for (const auto &it : port_frame_map) {
+            const uint16_t port = it.first;
+            const FrameMap &frame_map = it.second;
             auto frame = frame_map.find(fnum);
             // invalid: fnum missing in one port
             if (frame == frame_map.end()) {
                 LOG(sls::logDEBUG)
                     << "Fnum " << fnum << " is missing in port " << port;
-                // invalid: fnum greater than all in that port
-                auto last_frame = std::prev(frame_map.end());
-                auto last_fnum = last_frame->first;
-                if (fnum > last_fnum) {
+                auto upper_frame = frame_map.upper_bound(fnum);
+                if (upper_frame == frame_map.end()) {
                     LOG(sls::logDEBUG) << "And no larger fnum found. Fnum "
                                        << fnum << " is invalid.\n";
                     is_valid = false;
@@ -220,18 +199,26 @@ void Correlate(FrameStatus *stat) {
                 // sending all valid fnum data packets
                 for (const auto &fnum : valid_fnums) {
                     ZmqMsgList msg_list;
-                    PortFrameMap &port_frame_map = stat->frames;
-                    for (auto it = port_frame_map.begin();
-                         it != port_frame_map.end(); ++it) {
-                        uint16_t port = it->first;
-                        const FrameMap &frame_map = it->second;
+                    for (const auto &it : stat->frames) {
+                        const uint16_t port = it.first;
+                        const FrameMap &frame_map = it.second;
                         auto frame = frame_map.find(fnum);
                         if (frame != frame_map.end()) {
                             msg_list.insert(msg_list.end(),
                                             stat->frames[port][fnum].begin(),
                                             stat->frames[port][fnum].end());
-                            // clean up
-                            for (zmq_msg_t *msg : stat->frames[port][fnum]) {
+                        }
+                    }
+                    LOG(printHeadersLevel)
+                        << "Sending data packets for fnum " << fnum;
+                    zmq_send_multipart(socket, msg_list);
+                    // clean up
+                    for (const auto &it : stat->frames) {
+                        const uint16_t port = it.first;
+                        const FrameMap &frame_map = it.second;
+                        auto frame = frame_map.find(fnum);
+                        if (frame != frame_map.end()) {
+                            for (zmq_msg_t *msg : frame->second) {
                                 if (msg) {
                                     zmq_msg_close(msg);
                                     delete msg;
@@ -240,9 +227,6 @@ void Correlate(FrameStatus *stat) {
                             stat->frames[port].erase(fnum);
                         }
                     }
-                    LOG(printHeadersLevel)
-                        << "Sending data packets for fnum " << fnum;
-                    zmq_send_multipart(socket, msg_list);
                 }
             }
             // sending all end packets
@@ -256,6 +240,21 @@ void Correlate(FrameStatus *stat) {
                     }
                 }
                 stat->ends.clear();
+                // clean up old frames
+                for (auto &it : stat->frames) {
+                    FrameMap &frame_map = it.second;
+                    for (auto &frame : frame_map) {
+                        for (zmq_msg_t *msg : frame.second) {
+                            if (msg) {
+                                zmq_msg_close(msg);
+                                delete msg;
+                            }
+                        }
+                        frame.second.clear();
+                    }
+                    frame_map.clear();
+                }
+                stat->frames.clear();
             }
         }
     }
@@ -496,83 +495,46 @@ void GetDataCallback(slsDetectorDefs::sls_receiver_header &header,
     sem_post(&stat->available);
 }
 
+std::vector<sem_t> semaphores;
+
 /**
- * Example of main program using the Receiver class
- *
- * - Defines in file for:
- *  	- Default Number of receivers is 1
- *  	- Default Start TCP port is 1954
+ * Control+C Interrupt Handler
+ * to let all the processes know to exit properly
+ * Only the main thread will call this handler
  */
+void sigInterruptHandler(int p) {
+    (void)signal; // suppress unused warning if needed
+    for (auto &s : semaphores) {
+        sem_post(&s);
+    }
+}
+
 int main(int argc, char *argv[]) {
-
-    /**	- set default values */
-    int numReceivers = 1;
-    uint16_t startTCPPort = DEFAULT_TCP_RX_PORTNO;
-    bool printHeaders = false;
-
-    /**	- get number of receivers and start tcp port from command line
-     * arguments */
-    if (argc > 1) {
-        try {
-            if (argc == 3 || argc == 4) {
-                startTCPPort = sls::StringTo<uint16_t>(argv[1]);
-                if (startTCPPort == 0) {
-                    throw std::runtime_error("Invalid start tcp port");
-                }
-                numReceivers = std::stoi(argv[2]);
-                if (numReceivers > 1024) {
-                    cprintf(RED,
-                            "Did you mix up the order of the arguments?\n%s\n",
-                            getHelpMessage().c_str());
-                    return EXIT_FAILURE;
-                }
-                if (numReceivers == 0) {
-                    cprintf(RED, "Invalid number of receivers.\n%s\n",
-                            getHelpMessage().c_str());
-                    return EXIT_FAILURE;
-                }
-                if (argc == 4) {
-                    printHeaders = sls::StringTo<bool>(argv[3]);
-                    if (printHeaders) {
-                        printHeadersLevel = sls::logINFOBLUE;
-                    }
-                }
-            } else
-                throw std::runtime_error("Invalid number of arguments");
-        } catch (const std::exception &e) {
-            cprintf(RED, "Error: %s\n%s\n", e.what(), getHelpMessage().c_str());
-            return EXIT_FAILURE;
-        }
+    CommandLineOptions cli(AppType::FrameSynchronizer);
+    ParsedOptions opts;
+    try {
+        opts = cli.parse(argc, argv);
+    } catch (sls::RuntimeError &e) {
+        return EXIT_FAILURE;
+    }
+    auto &f = std::get<FrameSyncOptions>(opts);
+    if (f.versionRequested || f.helpRequested) {
+        return EXIT_SUCCESS;
     }
 
-    cprintf(RESET, "Number of Receivers: %d\n", numReceivers);
-    cprintf(RESET, "Start TCP Port: %hu\n", startTCPPort);
-    cprintf(RESET, "Print Callback Headers: %s\n\n",
-            (printHeaders ? "Enabled" : "Disabled"));
+    LOG(sls::logINFOBLUE) << "Current Process [ Tid: " << gettid() << ']';
 
-    /** - Catch signal SIGINT to close files and call destructors properly */
-    struct sigaction sa;
-    sa.sa_flags = 0;                     // no flags
-    sa.sa_handler = sigInterruptHandler; // handler function
-    sigemptyset(&sa.sa_mask); // dont block additional signals during invocation
-                              // of handler
-    if (sigaction(SIGINT, &sa, nullptr) == -1) {
-        cprintf(RED, "Could not set handler function for SIGINT\n");
+    // close files on ctrl+c
+    sls::setupSignalHandler(SIGINT, sigInterruptHandler);
+    // handle locally on socket crash
+    sls::setupSignalHandler(SIGPIPE, SIG_IGN);
+
+    semaphores.resize(f.numReceivers);
+    for (auto &s : semaphores) {
+        sem_init(&s, 0, 0);
     }
 
-    /** - Ignore SIG_PIPE, prevents global signal handler, handle locally,
-       instead of a server crashing due to client crash when writing, it just
-       gives error */
-    struct sigaction asa;
-    asa.sa_flags = 0;          // no flags
-    asa.sa_handler = SIG_IGN;  // handler function
-    sigemptyset(&asa.sa_mask); // dont block additional signals during
-                               // invocation of handler
-    if (sigaction(SIGPIPE, &asa, nullptr) == -1) {
-        cprintf(RED, "Could not set handler function for SIGPIPE\n");
-    }
-
-    FrameStatus stat{true, false, numReceivers};
+    FrameStatus stat{true, false, f.numReceivers};
     // store pointer for signal handler
     global_frame_status = &stat;
 
@@ -580,33 +542,43 @@ int main(int argc, char *argv[]) {
     void *user_data = static_cast<void *>(&stat);
     std::thread combinerThread(Correlate, &stat);
 
-    for (int i = 0; i != numReceivers; ++i) {
-        sem_t *semaphore = new sem_t;
-        sem_init(semaphore, 1, 0);
-        semaphores.push_back(semaphore);
+    std::exception_ptr threadException = nullptr;
+    for (int i = 0; i != f.numReceivers; ++i) {
+        uint16_t port = f.port + i;
+        sem_t *semaphore = &semaphores[i];
+        threads.emplace_back(
+            [i, semaphore, port, user_data, &threadException]() {
+                LOG(sls::logINFOBLUE)
+                    << "Thread " << i << " [ Tid: " << gettid() << ']';
+                try {
+                    sls::Receiver receiver(port);
+                    receiver.registerCallBackStartAcquisition(
+                        StartAcquisitionCallback, user_data);
+                    receiver.registerCallBackAcquisitionFinished(
+                        AcquisitionFinishedCallback, user_data);
+                    receiver.registerCallBackRawDataReady(GetDataCallback,
+                                                          user_data);
 
-        uint16_t port = startTCPPort + i;
-        threads.emplace_back([i, semaphore, port, user_data]() {
-            sls::Receiver receiver(port);
-            receiver.registerCallBackStartAcquisition(StartAcquisitionCallback,
-                                                      user_data);
-            receiver.registerCallBackAcquisitionFinished(
-                AcquisitionFinishedCallback, user_data);
-            receiver.registerCallBackRawDataReady(GetDataCallback, user_data);
-            /**	- as long as no Ctrl+C */
-            sem_wait(semaphore);
-            sem_destroy(semaphore);
-            delete semaphore;
-
-            // clean up frames
-            if (i == 0)
-                cleanup();
-        });
+                    /**	- as long as no Ctrl+C */
+                    // each child shares the common semaphore
+                    sem_wait(semaphore);
+                } catch (...) {
+                    // capture exception and raise SIGINT to exit gracefully
+                    threadException = std::current_exception();
+                    raise(SIGINT);
+                }
+                LOG(sls::logINFOBLUE)
+                    << "Exiting Thread " << i << " [ Tid: " << gettid() << " ]";
+            });
     }
 
-    for (auto &thread : threads) {
-        thread.join();
+    for (auto &t : threads) {
+        t.join();
     }
+
+    for (auto &s : semaphores)
+        sem_destroy(&s);
+    cleanup();
 
     {
         std::lock_guard<std::mutex> lock(stat.mtx);
@@ -615,6 +587,19 @@ int main(int argc, char *argv[]) {
     }
     combinerThread.join();
     sem_destroy(&stat.available);
+
+    if (threadException) {
+        try {
+            std::rethrow_exception(threadException);
+        } catch (const std::exception &e) {
+            LOG(sls::logERROR)
+                << "Unhandled exception from thread: " << e.what();
+            return EXIT_FAILURE;
+        } catch (...) {
+            LOG(sls::logERROR) << "Unknown exception occurred in thread";
+            return EXIT_FAILURE;
+        }
+    }
 
     LOG(sls::logINFOBLUE) << "Goodbye!";
     return EXIT_SUCCESS;

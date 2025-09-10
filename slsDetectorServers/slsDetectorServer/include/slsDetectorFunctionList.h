@@ -113,6 +113,10 @@ void setModuleId(int modid);
 u_int64_t getDetectorMAC();
 u_int32_t getDetectorIP();
 
+#if defined(CHIPTESTBOARDD)
+int enableBlackfinAMCExternalAccessExtension(char *mess);
+#endif
+
 // initialization
 void initControlServer();
 void initStopServer();

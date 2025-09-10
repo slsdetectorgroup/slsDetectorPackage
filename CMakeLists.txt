@@ -21,6 +21,7 @@ if (${CMAKE_VERSION} VERSION_GREATER "3.24")
 endif()
 include(cmake/project_version.cmake)
 include(cmake/SlsAddFlag.cmake)
+include(cmake/helpers.cmake)
 
 
 
@@ -193,11 +194,9 @@ find_package(ClangFormat)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-  message(STATUS "No build type selected, default to Release")
-  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type (default Release)" FORCE)
-endif()
-
+default_build_type("Release")
+set_std_fs_lib()
+message(STATUS "Extra linking to fs lib:${STD_FS_LIB}")
 
 #Enable LTO if available
 include(CheckIPOSupported)

@@ -19,14 +19,14 @@ For a Single Module
         slsReceiver
 
         # custom port 2012
-        slsReceiver -t2012
+        slsReceiver -p 2012
 
 
 For Multiple Modules
     .. code-block:: bash  
 
-        # slsMultiReceiver [starting port] [number of receivers] [print each frame header for debugging]
-        slsMultiReceiver 2012 2 0 
+        # slsMultiReceiver [-p: starting port, -n: number of receivers]
+        slsMultiReceiver -p 2012 -n 2 
 
 
 Client
@@ -130,6 +130,27 @@ For Multiple Modules
 
 .. note ::   
     The **hostname** and **detsize** command in a multi module system can affect the row and column values in the udp/zmq header. The modules are stacked row by row until they reach the y-axis limit set by detsize (if specified). Then, stacking continues in the next column and so on. 
+
+
+
+
+
+Data
+-----
+
+Check out the :ref:`UDP header section<detector udp header>` for details on output UDP header data format.`
+
+Check out the :ref:`Detector image size and format section<data format>`  for details on output data format.
+
+
+Receiver
+---------
+
+When using `slsReceiver`, `slsMultiReceiver` or `slsFrameSynchronizer`, check out the following sections:
+
+ - :ref:`File format<file format>`
+ - :ref:`slsReceiver header format<sls receiver header format>`
+ - :ref:`Master file attributes<master file attributes>`
 
     
 Gui

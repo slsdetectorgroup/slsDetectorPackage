@@ -5342,7 +5342,8 @@ int set_dest_udp_mac(int file_des) {
 
     if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
         return printSocketReadError();
-    LOG(logINFO, ("Setting udp destination mac: 0x%lx\n", arg));
+    LOG(logINFO,
+        ("Setting udp destination mac: 0x%llx\n", (long long unsigned)arg));
 
     // only set
     if (Server_VerifyLock() == OK) {
@@ -5363,7 +5364,8 @@ int get_dest_udp_mac(int file_des) {
     LOG(logDEBUG1, ("Getting udp destination mac\n"));
     // get only
     retval = udpDetails[0].dstmac;
-    LOG(logDEBUG1, ("udp destination mac retval: 0x%lx\n", retval));
+    LOG(logDEBUG1,
+        ("udp destination mac retval: 0x%llx\n", (long long unsigned)retval));
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
@@ -7255,7 +7257,8 @@ int get_receiver_parameters(int file_des) {
     // dynamic range
     ret = getDynamicRange(&i32);
     if (ret == FAIL) {
-        i32 = 0;
+        sprintf(mess, "Could not get dynamic range.\n");
+        return sendError(file_des);
     }
     n += sendData(file_des, &i32, sizeof(i32), INT32);
     if (n < 0)
@@ -7434,6 +7437,20 @@ int get_receiver_parameters(int file_des) {
     u32 = 0;
 #endif
     n += sendData(file_des, &u32, sizeof(u32), INT32);
+    if (n < 0)
+        return printSocketReadError();
+
+        // readout speed
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
+    ret = getReadoutSpeed(&i32);
+    if (ret == FAIL) {
+        sprintf(mess, "Could not get readout speed.\n");
+        return sendError(file_des);
+    }
+#else
+    i32 = 0;
+#endif
+    n += sendData(file_des, &i32, sizeof(i32), INT32);
     if (n < 0)
         return printSocketReadError();
 
@@ -9175,7 +9192,7 @@ int get_dest_udp_list(int file_des) {
     memset(mess, 0, sizeof(mess));
     uint32_t arg = 0;
     uint16_t retvals16[2] = {};
-    uint32_t retvals32[3] = {};
+    uint32_t retvals32[2] = {};
     uint64_t retvals64[2] = {};
 
     if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)

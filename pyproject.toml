@@ -11,9 +11,13 @@ build-backend = "scikit_build_core.build"
 [project]
 name = "slsdet"
 dynamic = ["version"]
+dependencies = [
+    "numpy", 
+]
 
 [tool.cibuildwheel]
 before-all = "uname -a"
+build = "cp{311,312,313}-manylinux_x86_64"
 
 [tool.scikit-build.build]
 verbose = true

@@ -99,6 +99,7 @@ Detector Enum
     MYTHEN3             6
     GOTTHARD2           7    
     ================    ========
+    
     * deprecated since v10.0.0
 
 

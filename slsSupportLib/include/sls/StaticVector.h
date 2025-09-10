@@ -113,10 +113,12 @@ template <typename T, size_t Capacity> class StaticVector {
     // auto begin() noexcept -> decltype(data_.begin()) { return data_.begin();
     // }
     const_iterator begin() const noexcept { return data_.begin(); }
-    iterator end() noexcept { return &data_[current_size]; }
-    const_iterator end() const noexcept { return &data_[current_size]; }
+    iterator end() noexcept { return data_.begin() + current_size; }
+    const_iterator end() const noexcept { return data_.begin() + current_size; }
     const_iterator cbegin() const noexcept { return data_.cbegin(); }
-    const_iterator cend() const noexcept { return &data_[current_size]; }
+    const_iterator cend() const noexcept {
+        return data_.cbegin() + current_size;
+    }
 
     void size_check(size_type s) const {
         if (s > Capacity) {

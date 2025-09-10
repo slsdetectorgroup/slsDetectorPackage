@@ -19,7 +19,7 @@ namespace sls {
 class ServerInterface;
 
 #define MODULE_SHMAPIVERSION 0x190726
-#define MODULE_SHMVERSION    0x230913
+#define MODULE_SHMVERSION    0x250820
 
 /**
  * @short structure allocated in shared memory to store Module settings for
@@ -32,6 +32,7 @@ struct sharedModule {
     int shmversion;
     char hostname[MAX_STR_LENGTH];
     slsDetectorDefs::detectorType detType;
+    bool isValid{true}; // false if freed to block access from python or c++ api
 
     /** END OF FIXED PATTERN -----------------------------------------------*/
 
@@ -66,14 +67,11 @@ class Module : public virtual slsDetectorDefs {
      *                                                *
      * ************************************************/
 
-    /** creating new shared memory
-    verify is if shared memory version matches existing one */
-    explicit Module(detectorType type, int det_id = 0, int module_index = 0,
-                    bool verify = true);
+    /** creating new shared memory */
+    explicit Module(detectorType type, int det_id = 0, int module_index = 0);
 
-    /** opening existing shared memory
-    verify is if shared memory version matches existing one */
-    explicit Module(int det_id = 0, int module_index = 0, bool verify = true);
+    /** opening existing shared memory */
+    explicit Module(int det_id = 0, int module_index = 0);
 
     bool isFixedPatternSharedMemoryCompatible() const;
     std::string getHostname() const;
@@ -301,9 +299,10 @@ class Module : public virtual slsDetectorDefs {
     std::array<pid_t, NUM_RX_THREAD_IDS> getReceiverThreadIds() const;
     bool getRxArping() const;
     void setRxArping(bool enable);
-    defs::ROI getRxROI() const;
-    void setRxROI(const slsDetectorDefs::ROI arg);
-    void setRxROIMetadata(const slsDetectorDefs::ROI arg);
+    std::vector<defs::ROI> getRxROI() const;
+    void setRxROI(const std::vector<slsDetectorDefs::ROI> &portRois);
+    void setRxROIMetadata(const std::vector<slsDetectorDefs::ROI> &args);
+    std::vector<slsDetectorDefs::ROI> getRxROIMetadata() const;
 
     /**************************************************
      *                                                *
@@ -736,13 +735,8 @@ class Module : public virtual slsDetectorDefs {
     template <typename Ret, typename Arg>
     Ret sendToReceiver(int fnum, const Arg &args) const;
 
-    /** Get Detector Type from Shared Memory
-    verify is if shm size matches existing one */
-    detectorType getDetectorTypeFromShm(int det_id, bool verify = true);
-
-    /** Initialize shared memory
-    verify is if shm size matches existing one  */
-    void initSharedMemory(detectorType type, int det_id, bool verify = true);
+    void createSharedMemory(detectorType type, int det_id);
+    void openSharedMemory(int det_id);
 
     /** Initialize module structure to defaults,
     Called when new shared memory is created */

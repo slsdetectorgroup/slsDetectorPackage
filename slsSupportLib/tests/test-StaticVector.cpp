@@ -8,10 +8,10 @@
 #include <sstream>
 #include <vector>
 
-namespace sls {
+using sls::StaticVector;
 
 TEST_CASE("StaticVector is a container") {
-    REQUIRE(is_container<StaticVector<int, 7>>::value == true);
+    REQUIRE(sls::is_container<StaticVector<int, 7>>::value == true);
 }
 
 TEST_CASE("Comparing StaticVector containers") {
@@ -90,10 +90,17 @@ TEST_CASE("Copy construct from array") {
     REQUIRE(fcc == arr);
 }
 
+TEST_CASE("Construct from a smaller StaticVector") {
+    StaticVector<int, 3> sv{1, 2, 3};
+    StaticVector<int, 5> sv2{sv};
+    REQUIRE(sv == sv2);
+}
+
 TEST_CASE("Free function and method gives the same iterators") {
     StaticVector<int, 3> fcc{1, 2, 3};
     REQUIRE(std::begin(fcc) == fcc.begin());
 }
+
 SCENARIO("StaticVectors can be sized and resized", "[support]") {
 
     GIVEN("A default constructed container") {
@@ -246,23 +253,23 @@ SCENARIO("Sorting, removing and other manipulation of a container",
                 REQUIRE(a[3] == 90);
             }
         }
-        // WHEN("Sorting is done using free function for begin and end") {
-        //     std::sort(begin(a), end(a));
-        //     THEN("it also works") {
-        //         REQUIRE(a[0] == 12);
-        //         REQUIRE(a[1] == 12);
-        //         REQUIRE(a[2] == 14);
-        //         REQUIRE(a[3] == 90);
-        //     }
-        // }
-        // WHEN("Erasing elements of a certain value") {
-        //     a.erase(std::remove(begin(a), end(a), 12));
-        //     THEN("all elements of that value are removed") {
-        //         REQUIRE(a.size() == 2);
-        //         REQUIRE(a[0] == 14);
-        //         REQUIRE(a[1] == 90);
-        //     }
-        // }
+        WHEN("Sorting is done using free function for begin and end") {
+            std::sort(std::begin(a), std::end(a));
+            THEN("it also works") {
+                REQUIRE(a[0] == 12);
+                REQUIRE(a[1] == 12);
+                REQUIRE(a[2] == 14);
+                REQUIRE(a[3] == 90);
+            }
+        }
+        WHEN("Erasing elements of a certain value") {
+            a.erase(std::remove(std::begin(a), std::end(a), 12));
+            THEN("all elements of that value are removed") {
+                REQUIRE(a.size() == 2);
+                REQUIRE(a[0] == 14);
+                REQUIRE(a[1] == 90);
+            }
+        }
     }
 }
 
@@ -334,5 +341,3 @@ TEST_CASE("StaticVector stream") {
     oss << vec;
     REQUIRE(oss.str() == "[33, 85667, 2]");
 }
-
-} // namespace sls

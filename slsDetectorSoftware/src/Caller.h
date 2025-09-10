@@ -1,5 +1,5 @@
 // This file is used as input to generate the caller class
-
+#pragma once
 #include "CmdParser.h"
 #include "HelpDacs.h"
 #include "sls/Detector.h"
@@ -21,6 +21,8 @@ class Caller {
     UdpDestination getUdpEntry();
     int GetLevelAndInsertIntoArgs(std::string levelSeparatedCommand);
     void WrongNumberOfParameters(size_t expected);
+    std::vector<defs::ROI> parseRoiVector(const std::string &input);
+    defs::ROI parseRoi(const std::vector<std::string> &args);
 
     template <typename V> std::string OutStringHex(const V &value) {
         if (value.equal())

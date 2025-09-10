@@ -146,7 +146,7 @@ This document describes the differences between vx.x.x and vx.0.2
 
     Quick Start Guide:
         https://slsdetectorgroup.github.io/devdoc/quick_start_guide.html
-        
+
     Firmware Upgrade:
         https://slsdetectorgroup.github.io/devdoc/firmware.html
 
@@ -159,6 +159,15 @@ This document describes the differences between vx.x.x and vx.0.2
     Consuming slsDetectorPackage:
         https://slsdetectorgroup.github.io/devdoc/consuming.html
         
+    Software Architecture
+        https://slsdetectorgroup.github.io/devdoc/softwarearchitecture.html
+
+    Set up commands in config file
+        https://slsdetectorgroup.github.io/devdoc/configcommands.html
+        
+    Image Size and Output Characteristics
+        https://slsdetectorgroup.github.io/devdoc/dataformat.html
+
     API Examples:
         https://github.com/slsdetectorgroup/api-examples
 

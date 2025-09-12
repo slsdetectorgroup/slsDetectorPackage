@@ -205,7 +205,7 @@ TEST_CASE("general - cant put if receiver is not idle", "[.cmdcall][.rx]") {
 
     {
         auto prev_frames =
-            det.getNumberOfFrames().tsquash("#bursts should be same to test");
+            det.getNumberOfFrames().tsquash("#frames should be same to test");
         auto prev_triggers =
             det.getNumberOfTriggers().tsquash("#triggers must be same to test");
         auto prev_findex = det.getAcquisitionIndex();

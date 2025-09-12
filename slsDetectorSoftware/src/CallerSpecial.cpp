@@ -73,6 +73,7 @@ std::string Caller::list(int action) {
     }
     if (args.empty()) {
         std::string ret = "free\n";
+        ret += "user\n";
         for (auto &f : functions) {
             ret += f.first + "\n";
         }
@@ -186,6 +187,12 @@ int Caller::GetLevelAndInsertIntoArgs(std::string levelSeparatedCommand) {
 std::string Caller::free(int action) {
     // This  function is purely for help, actual functionality is in the caller
     return "free\n\tFree detector shared memory\n";
+}
+
+std::string Caller::user(int action) {
+    // This  function is purely for help, actual functionality is in the caller
+    return "user\n\tUser details from shared memory (hostname, type, PID, "
+           "User, Date).\n";
 }
 
 std::string Caller::hostname(int action) {

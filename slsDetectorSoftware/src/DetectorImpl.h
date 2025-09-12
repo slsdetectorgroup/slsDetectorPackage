@@ -24,7 +24,7 @@ class detectorData;
 class Module;
 
 #define DETECTOR_SHMAPIVERSION 0x190809
-#define DETECTOR_SHMVERSION    0x250729
+#define DETECTOR_SHMVERSION    0x250820
 #define SHORT_STRING_LENGTH    50
 
 /**
@@ -51,16 +51,16 @@ struct sharedDetector {
     int totalNumberOfModules;
     slsDetectorDefs::detectorType detType;
 
-    bool isValid{true}; // false if freed to block access from python or c++ api
-
-    /** END OF FIXED PATTERN
-     * -----------------------------------------------*/
-
     /** Number of modules operated at once */
     slsDetectorDefs::xy numberOfModules;
 
     /**  max number of channels for complete detector*/
     slsDetectorDefs::xy numberOfChannels;
+
+    bool isValid{true}; // false if freed to block access from python or c++ api
+
+    /** END OF FIXED PATTERN
+     * -----------------------------------------------*/
 
     bool acquiringFlag;
     bool initialChecks;
@@ -71,13 +71,7 @@ struct sharedDetector {
 
 class DetectorImpl : public virtual slsDetectorDefs {
   public:
-    /**
-     * @param verify true to verify if shared memory version matches existing
-     * one
-     * @param update true to update last user pid, date etc
-     */
-    explicit DetectorImpl(int detector_index = 0, bool verify = true,
-                          bool update = true);
+    explicit DetectorImpl(int detector_index = 0);
 
     template <class CT> struct NonDeduced {
         using type = CT;
@@ -194,9 +188,6 @@ class DetectorImpl : public virtual slsDetectorDefs {
 
     /** return detector index in shared memory */
     int getDetectorIndex() const;
-
-    /** Get user details of shared memory */
-    std::string getUserDetails();
 
     bool getInitialChecks() const;
 
@@ -341,26 +332,20 @@ class DetectorImpl : public virtual slsDetectorDefs {
     /**
      * Creates/open shared memory, initializes detector structure and members
      * Called by constructor/ set hostname / read config file
-     * @param verify true to verify if shared memory version matches existing
-     * one
-     * @param update true to update last user pid, date etc
      */
-    void setupDetector(bool verify = true, bool update = true);
+    void setupDetector();
 
     /**
      * Creates shm and initializes shm structure OR
      * Open shm and maps to structure
-     * @param verify true to verify if shm size matches existing one
      */
-    void initSharedMemory(bool verify = true);
+    void initSharedMemory();
 
     /** Initialize detector structure for the shared memory just created */
     void initializeDetectorStructure();
 
-    /** Initialize members (eg. modules from shm, zmqsockets)
-     * @param verify true to verify if shm size matches existing one
-     */
-    void initializeMembers(bool verify = true);
+    /** Initialize members (eg. modules from shm, zmqsockets)  */
+    void initializeMembers();
 
     /** Update in shm */
     void updateUserdetails();

@@ -34,13 +34,16 @@ ParsedOptions CommandLineOptions::parse(int argc, char *argv[]) {
     optind = 0; // reset getopt
     int opt, option_index = 0;
 
+    bool help_or_version_requested = false;
+
     while ((opt = getopt_long(argc, argv, optString_.c_str(),
                               longOptions_.data(), &option_index)) != -1) {
         switch (opt) {
         case 'v':
         case 'h':
             handleCommonOption(opt, optarg, base);
-            return base; // exit after version/help
+            help_or_version_requested = true;
+            break;
         case 'p':
         case 'u':
             handleCommonOption(opt, optarg, base);
@@ -56,7 +59,7 @@ ParsedOptions CommandLineOptions::parse(int argc, char *argv[]) {
     }
 
     // remaining arguments
-    if (optind < argc) {
+    if (!help_or_version_requested && optind < argc) {
 
         // deprecated and current options => invalid
         if (base.port != DEFAULT_TCP_RX_PORTNO || multi.numReceivers != 1 ||
@@ -87,13 +90,15 @@ ParsedOptions CommandLineOptions::parse(int argc, char *argv[]) {
     }
 
     // Logging
-    LOG(sls::logINFO) << "TCP Port: " << base.port;
-    if (appType_ == AppType::MultiReceiver) {
-        LOG(sls::logINFO) << "Number of receivers: " << multi.numReceivers;
-        LOG(sls::logINFO) << "Callback enabled: " << multi.callbackEnabled;
-    } else if (appType_ == AppType::FrameSynchronizer) {
-        LOG(sls::logINFO) << "Number of receivers: " << frame.numReceivers;
-        LOG(sls::logINFO) << "Print headers: " << frame.printHeaders;
+    if (!help_or_version_requested) {
+        LOG(sls::logINFO) << "TCP Port: " << base.port;
+        if (appType_ == AppType::MultiReceiver) {
+            LOG(sls::logINFO) << "Number of receivers: " << multi.numReceivers;
+            LOG(sls::logINFO) << "Callback enabled: " << multi.callbackEnabled;
+        } else if (appType_ == AppType::FrameSynchronizer) {
+            LOG(sls::logINFO) << "Number of receivers: " << frame.numReceivers;
+            LOG(sls::logINFO) << "Print headers: " << frame.printHeaders;
+        }
     }
 
     switch (appType_) {
@@ -235,7 +240,7 @@ void CommandLineOptions::handleAppSpecificOption(int opt, const char *optarg,
 
     case 't':
         LOG(sls::logWARNING) << "Deprecated option '-t' and '--rx_tcport'. Use "
-                                "'p' or '--port' instead.";
+                                "'--p' or '--port' instead.";
         base.port = parsePort(optarg);
         break;
     }

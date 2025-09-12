@@ -2466,6 +2466,15 @@ free:
     PUT:
       argc: 0
 
+user:
+  is_description: true
+  actions:
+    GET:
+      argc: 0
+    PUT:
+      argc: 0
+
+
 hostname:
   is_description: true
   actions:
@@ -4279,14 +4288,6 @@ initialchecks:
       cast_input: [ true ]
       output: [ args.front() ]
 
-user:
-  help: "\n\tUser details from shared memory (hostname, type, PID, User, Date)."
-  actions:
-    GET:
-      argc: 0
-      check_det_id: true
-      function: getUserDetails
-      output: [ t ]
 
 
 

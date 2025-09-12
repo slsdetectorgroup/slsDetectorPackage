@@ -30,27 +30,15 @@
 namespace sls {
 
 // creating new shm
-Module::Module(detectorType type, int det_id, int module_index, bool verify)
+Module::Module(detectorType type, int det_id, int module_index)
     : moduleIndex(module_index), shm(det_id, module_index) {
-
-    // ensure shared memory was not created before
-    if (shm.exists()) {
-        LOG(logWARNING) << "This shared memory should have been "
-                           "deleted before! "
-                        << shm.getName() << ". Freeing it again";
-        shm.removeSharedMemory();
-    }
-
-    initSharedMemory(type, det_id, verify);
+    createSharedMemory(type, det_id);
 }
 
 // opening existing shm
-Module::Module(int det_id, int module_index, bool verify)
+Module::Module(int det_id, int module_index)
     : moduleIndex(module_index), shm(det_id, module_index) {
-
-    // getDetectorType From shm will check if existing
-    detectorType type = getDetectorTypeFromShm(det_id, verify);
-    initSharedMemory(type, det_id, verify);
+    openSharedMemory(det_id);
 }
 
 bool Module::isFixedPatternSharedMemoryCompatible() const {
@@ -3403,42 +3391,38 @@ Ret Module::sendToReceiver(int fnum, const Arg &args) {
     return static_cast<const Module &>(*this).sendToReceiver<Ret>(fnum, args);
 }
 
-slsDetectorDefs::detectorType Module::getDetectorTypeFromShm(int det_id,
-                                                             bool verify) {
+void Module::createSharedMemory(detectorType type, int det_id) {
+    shm = SharedMemory<sharedModule>(det_id, moduleIndex);
+
+    // ensure shared memory was not created before
+    if (shm.exists()) {
+        LOG(logWARNING)
+            << "This shared memory " + shm.getName() +
+                   " should have been deleted before! Freeing it to continue.";
+        shm.removeSharedMemory();
+    }
+    shm.createSharedMemory();
+    initializeModuleStructure(type);
+}
+
+void Module::openSharedMemory(int det_id) {
+    shm = SharedMemory<sharedModule>(det_id, moduleIndex);
+
     if (!shm.exists()) {
         throw SharedMemoryError("Shared memory " + shm.getName() +
                                 " does not exist.\n Corrupted Multi Shared "
                                 "memory. Please free shared memory.");
     }
 
-    shm.openSharedMemory(verify);
-    if (verify && shm()->shmversion != MODULE_SHMVERSION) {
+    shm.openSharedMemory(true);
+    if (shm()->shmversion != MODULE_SHMVERSION) {
         std::ostringstream ss;
-        ss << "Single shared memory (" << det_id << "-" << moduleIndex
-           << ":)version mismatch (expected 0x" << std::hex << MODULE_SHMVERSION
-           << " but got 0x" << shm()->shmversion << ")" << std::dec
-           << ". Clear Shared memory to continue.";
+        ss << "Module shared memory (" << det_id << "-" << moduleIndex
+           << ":) version mismatch (expected 0x" << std::hex
+           << MODULE_SHMVERSION << " but got 0x" << shm()->shmversion << ")"
+           << std::dec << ". Clear Shared memory to continue.";
         shm.unmapSharedMemory();
         throw SharedMemoryError(ss.str());
-    }
-    return shm()->detType;
-}
-
-void Module::initSharedMemory(detectorType type, int det_id, bool verify) {
-    shm = SharedMemory<sharedModule>(det_id, moduleIndex);
-    if (!shm.exists()) {
-        shm.createSharedMemory();
-        initializeModuleStructure(type);
-    } else {
-        shm.openSharedMemory(verify);
-        if (verify && shm()->shmversion != MODULE_SHMVERSION) {
-            std::ostringstream ss;
-            ss << "Single shared memory (" << det_id << "-" << moduleIndex
-               << ":) version mismatch (expected 0x" << std::hex
-               << MODULE_SHMVERSION << " but got 0x" << shm()->shmversion << ")"
-               << std::dec << ". Clear Shared memory to continue.";
-            throw SharedMemoryError(ss.str());
-        }
     }
 }
 

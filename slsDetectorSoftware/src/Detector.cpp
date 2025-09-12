@@ -29,8 +29,6 @@ void freeSharedMemory(const int detectorIndex, const int moduleIndex) {
     if (moduleIndex >= 0) {
         SharedMemory<sharedModule> moduleShm(detectorIndex, moduleIndex);
         if (moduleShm.exists()) {
-            moduleShm.openSharedMemory(false);
-            moduleShm()->isValid = false;
             moduleShm.removeSharedMemory();
         }
         return;
@@ -43,26 +41,77 @@ void freeSharedMemory(const int detectorIndex, const int moduleIndex) {
     if (detectorShm.exists()) {
         detectorShm.openSharedMemory(false);
         numDetectors = detectorShm()->totalNumberOfModules;
-        detectorShm()->isValid = false;
         detectorShm.removeSharedMemory();
     }
 
     for (int i = 0; i < numDetectors; ++i) {
         SharedMemory<sharedModule> moduleShm(detectorIndex, i);
         if (moduleShm.exists()) {
-            moduleShm.openSharedMemory(false);
-            moduleShm()->isValid = false;
+            moduleShm.removeSharedMemory();
         }
-        moduleShm.removeSharedMemory();
     }
 
     // Ctb configuration
     SharedMemory<CtbConfig> ctbShm(detectorIndex, -1, CtbConfig::shm_tag());
     if (ctbShm.exists()) {
-        ctbShm.openSharedMemory(false);
-        ctbShm()->isValid = false;
         ctbShm.removeSharedMemory();
     }
+}
+
+std::string getUserDetails(const int detectorIndex) {
+
+    int numModules = 0;
+    defs::detectorType type = defs::GENERIC;
+    pid_t pid = -1;
+    std::string hostname = "Unknown";
+    std::string user = "Unknown";
+    std::string date = "Unknown";
+
+    {
+        SharedMemory<sharedDetector> detectorShm(detectorIndex, -1);
+        if (!detectorShm.exists()) {
+            throw SharedMemoryError("No detector with index " +
+                                    std::to_string(detectorIndex) +
+                                    " in shared memory!");
+        }
+        detectorShm.openSharedMemory(false);
+        if (detectorShm()->shmversion < DETECTOR_SHMAPIVERSION) {
+            detectorShm.unmapSharedMemory();
+            throw SharedMemoryError(
+                "Detector Shared memory version too old to get user details!");
+        }
+        numModules = detectorShm()->totalNumberOfModules;
+        type = detectorShm()->detType;
+        pid = detectorShm()->lastPID;
+        user = detectorShm()->lastUser;
+        date = detectorShm()->lastDate;
+
+        detectorShm.unmapSharedMemory();
+    }
+
+    for (int imod = 0; imod != numModules; ++imod) {
+        SharedMemory<sharedModule> moduleShm(detectorIndex, imod);
+        if (moduleShm.exists()) {
+            moduleShm.openSharedMemory(false);
+            if (moduleShm()->shmversion < MODULE_SHMAPIVERSION) {
+                LOG(logWARNING)
+                    << "Module Shared Memory too old to get hostname";
+            } else {
+                hostname = moduleShm()->hostname;
+            }
+            moduleShm.unmapSharedMemory();
+        }
+    }
+
+    std::ostringstream userDetails;
+    userDetails << "Detector Index: " << detectorIndex << "\n"
+                << "Number of Modules: " << numModules << "\n"
+                << "Type: " << type << "\n"
+                << "PID: " << pid << "\n"
+                << "User: " << user << "\n"
+                << "Date: " << date << "\n"
+                << "Hostname: " << hostname << "\n";
+    return userDetails.str();
 }
 
 using defs = slsDetectorDefs;
@@ -2831,8 +2880,6 @@ Result<ns> Detector::getActualTime(Positions pos) const {
 Result<ns> Detector::getMeasurementTime(Positions pos) const {
     return pimpl->Parallel(&Module::getMeasurementTime, pos);
 }
-
-std::string Detector::getUserDetails() const { return pimpl->getUserDetails(); }
 
 std::vector<uint16_t> Detector::getValidPortNumbers(uint16_t start_port) {
     int num_sockets_per_detector = getNumberofUDPInterfaces({}).tsquash(

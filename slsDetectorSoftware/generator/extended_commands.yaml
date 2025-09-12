@@ -12592,19 +12592,32 @@ user:
       - arg_types: []
         argc: 0
         cast_input: []
-        check_det_id: true
+        check_det_id: false
         convert_det_id: true
-        function: getUserDetails
+        function: ''
         input: []
         input_types: []
-        output:
-        - t
+        output: []
         require_det_id: false
         store_result_in_t: true
+    PUT:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
   command_name: user
   function_alias: user
-  help: "\n\tUser details from shared memory (hostname, type, PID, User, Date)."
+  help: ''
   infer_action: true
+  is_description: true
 v_a:
   actions:
     GET:

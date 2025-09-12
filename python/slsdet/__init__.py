@@ -15,7 +15,7 @@ from .gaincaps import Mythen3GainCapsWrapper
 from .PatternGenerator import PatternGenerator
 
 from . import _slsdet
-from ._slsdet import freeSharedMemory
+from ._slsdet import freeSharedMemory, getUserDetails
 
 xy = _slsdet.xy
 defs = _slsdet.slsDetectorDefs

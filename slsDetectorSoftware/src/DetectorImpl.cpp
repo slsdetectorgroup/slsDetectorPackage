@@ -31,21 +31,16 @@
 
 namespace sls {
 
-DetectorImpl::DetectorImpl(int detector_index, bool verify, bool update)
+DetectorImpl::DetectorImpl(int detector_index)
     : detectorIndex(detector_index), shm(detector_index, -1),
       ctb_shm(detector_index, -1, CtbConfig::shm_tag()) {
-    setupDetector(verify, update);
+    setupDetector();
 }
 
-void DetectorImpl::setupDetector(bool verify, bool update) {
-    initSharedMemory(verify);
-    initializeMembers(verify);
-    if (update) {
-        updateUserdetails();
-    }
-
-    if (ctb_shm.exists())
-        ctb_shm.openSharedMemory(verify);
+void DetectorImpl::setupDetector() {
+    initSharedMemory();
+    initializeMembers();
+    updateUserdetails();
 }
 
 bool DetectorImpl::isAllPositions(Positions pos) const {
@@ -57,64 +52,45 @@ void DetectorImpl::setAcquiringFlag(bool flag) { shm()->acquiringFlag = flag; }
 
 int DetectorImpl::getDetectorIndex() const { return detectorIndex; }
 
-std::string DetectorImpl::getUserDetails() {
-    if (modules.empty()) {
-        return std::string("none");
-    }
-
-    std::ostringstream sstream;
-    sstream << "\nHostname: ";
-    for (auto &module : modules) {
-        sstream << (module->isFixedPatternSharedMemoryCompatible()
-                        ? module->getHostname()
-                        : "Unknown")
-                << "+";
-    }
-    sstream << "\nType: ";
-    // get type from detector version shm
-    if (shm()->shmversion >= DETECTOR_SHMAPIVERSION) {
-        sstream << ToString(shm()->detType);
-    }
-    // get type from module shm
-    else {
-        for (auto &module : modules) {
-            sstream << (module->isFixedPatternSharedMemoryCompatible()
-                            ? ToString(module->getDetectorType())
-                            : "Unknown")
-                    << "+";
-        }
-    }
-
-    sstream << "\nPID: " << shm()->lastPID << "\nUser: " << shm()->lastUser
-            << "\nDate: " << shm()->lastDate << std::endl;
-
-    return sstream.str();
-}
-
 bool DetectorImpl::getInitialChecks() const { return shm()->initialChecks; }
 
 void DetectorImpl::setInitialChecks(const bool value) {
     shm()->initialChecks = value;
 }
 
-void DetectorImpl::initSharedMemory(bool verify) {
+void DetectorImpl::initSharedMemory() {
+    // creating new shm
     if (!shm.exists()) {
         shm.createSharedMemory();
         initializeDetectorStructure();
-    } else {
-        shm.openSharedMemory(verify);
-        if (verify && shm()->shmversion != DETECTOR_SHMVERSION) {
+    }
+
+    // opening existing shm
+    else {
+        shm.openSharedMemory(true);
+        if (shm()->shmversion != DETECTOR_SHMVERSION) {
             LOG(logERROR) << "Detector shared memory (" << detectorIndex
                           << ") version mismatch "
                              "(expected 0x"
                           << std::hex << DETECTOR_SHMVERSION << " but got 0x"
                           << shm()->shmversion << std::dec
-                          << ". Clear Shared memory to continue.";
-            throw SharedMemoryError("Shared memory version mismatch!");
+                          << ". Free Shared memory to continue.";
+            shm.unmapSharedMemory();
+            throw SharedMemoryError("Detector Shared memory version mismatch!");
+        }
+        if (ctb_shm.exists()) {
+            ctb_shm.openSharedMemory(true);
+            if (ctb_shm()->shmversion != CTB_SHMVERSION) {
+                LOG(logERROR)
+                    << "CTB shared memory version mismatch (expected 0x"
+                    << std::hex << CTB_SHMVERSION << " but got 0x"
+                    << ctb_shm()->shmversion << std::dec
+                    << ". Free Shared memory to continue.";
+                ctb_shm.unmapSharedMemory();
+                throw SharedMemoryError("Ctb Shared memory version mismatch!");
+            }
         }
     }
-
-    // std::cout <<
 }
 
 void DetectorImpl::initializeDetectorStructure() {
@@ -132,14 +108,14 @@ void DetectorImpl::initializeDetectorStructure() {
     shm()->zmqHwm = -1;
 }
 
-void DetectorImpl::initializeMembers(bool verify) {
+void DetectorImpl::initializeMembers() {
     // DetectorImpl
     zmqSocket.clear();
 
     // get objects from single det shared memory (open)
     for (int i = 0; i < shm()->totalNumberOfModules; i++) {
         try {
-            modules.push_back(make_unique<Module>(detectorIndex, i, verify));
+            modules.push_back(make_unique<Module>(detectorIndex, i));
         } catch (...) {
             modules.clear();
             throw;
@@ -210,10 +186,12 @@ void DetectorImpl::setHostname(const std::vector<std::string> &name) {
 
     if (shm()->detType == defs::CHIPTESTBOARD ||
         shm()->detType == defs::XILINX_CHIPTESTBOARD) {
-        if (ctb_shm.exists())
-            ctb_shm.openSharedMemory(true);
-        else
-            ctb_shm.createSharedMemory();
+        if (ctb_shm.exists()) {
+            throw SharedMemoryError(
+                "This shared memory " + ctb_shm.getName() +
+                " should have been deleted before! Free it to continue.");
+        }
+        ctb_shm.createSharedMemory();
     }
 }
 
@@ -233,7 +211,7 @@ void DetectorImpl::addModule(const std::string &name) {
     }
 
     auto pos = modules.size();
-    modules.emplace_back(make_unique<Module>(type, detectorIndex, pos, false));
+    modules.emplace_back(make_unique<Module>(type, detectorIndex, pos));
     shm()->totalNumberOfModules = modules.size();
     modules[pos]->setControlPort(port);
     modules[pos]->setStopPort(port + 1);

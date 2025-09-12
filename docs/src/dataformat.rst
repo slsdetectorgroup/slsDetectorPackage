@@ -1,4 +1,6 @@
-Data Format
+.. _data format:
+
+Detector Image Size and Format
 ================================
 
 Each UDP port creates its own output file, which contains the data of the image transmitted over that port. More on number of files and naming for each file in the `File format <fileformat.html>`_ section.

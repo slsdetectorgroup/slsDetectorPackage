@@ -29,6 +29,17 @@ struct testFileInfo {
         return file_path + "/" + file_prefix + "_virtual_" +
                std::to_string(file_acq_index) + ".h5";
     }
+    inline void print() const {
+        LOG(logINFO) << "File Info: "
+                     << "\n\tFile Path: " << file_path
+                     << "\n\tFile Prefix: " << file_prefix
+                     << "\n\tFile Acquisition Index: " << file_acq_index
+                     << "\n\tFile Write: " << file_write
+                     << "\n\tFile Overwrite: " << file_overwrite
+                     << "\n\tFile Format: " << ToString(file_format)
+                     << "\n\tMaster Filename: " << getMasterFileNamePrefix()
+                     << "\n\tVirtual Filename: " << getVirtualFileName();
+    }
 };
 
 struct testCtbAcquireInfo {

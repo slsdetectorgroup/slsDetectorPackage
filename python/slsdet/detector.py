@@ -15,7 +15,7 @@ defs = slsDetectorDefs
 
 from .utils import element_if_equal, all_equal, get_set_bits, list_to_bitmask
 from .utils import Geometry, to_geo, element, reduce_time, is_iterable, hostname_list
-from ._slsdet import xy, freeSharedMemory
+from ._slsdet import xy, freeSharedMemory, getUserDetails
 from .gaincaps import Mythen3GainCapsWrapper
 from . import utils as ut
 from .proxy import JsonProxy, SlowAdcProxy, ClkDivProxy, MaxPhaseProxy, ClkFreqProxy, PatLoopProxy, PatNLoopProxy, PatWaitProxy, PatWaitTimeProxy 
@@ -1537,7 +1537,7 @@ class Detector(CppDetectorApi):
         """
         Retrieve user details from shared memory (hostname, type, PID, User, Date)
         """
-        return self.getUserDetails()
+        return getUserDetails(self.getShmId())
 
     @property
     @element
@@ -2184,6 +2184,7 @@ class Detector(CppDetectorApi):
 
         :setter: It loads trim files from settingspath.\n [Mythen3] An energy of -1 will pick up values from detector.
         """
+        
         if self.type == detectorType.MYTHEN3:
             return self.getAllThresholdEnergy()
         return self.getThresholdEnergy()

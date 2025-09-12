@@ -27,17 +27,25 @@
 
 namespace sls {
 
-struct sharedDetector;
+struct CtbConfig;
+// struct sharedDetector;
 
-#define SHM_DETECTOR_PREFIX "/slsDetectorPackage_detector_"
-#define SHM_MODULE_PREFIX   "_module_"
-#define SHM_ENV_NAME        "SLSDETNAME"
+#define SHM_IS_VALID_CHECK_VERSION 0x250820
+#define SHM_DETECTOR_PREFIX        "/slsDetectorPackage_detector_"
+#define SHM_MODULE_PREFIX          "_module_"
+#define SHM_ENV_NAME               "SLSDETNAME"
+
+template <typename T, typename U> constexpr bool is_type() {
+    return std::is_same_v<std::decay_t<U>, T>;
+}
 
 template <typename T> class SharedMemory {
 
+#ifndef DISABLE_STATIC_ASSERT
     static_assert(has_bool_isValid<T>::value,
                   "SharedMemory requires the struct to have a bool member "
                   "named 'isValid'");
+#endif
 
     static constexpr int NAME_MAX_LENGTH = 255;
     std::string name;
@@ -48,6 +56,8 @@ template <typename T> class SharedMemory {
     SharedMemory(int detectorId, int moduleIndex, const std::string &tag = "") {
         name = constructSharedMemoryName(detectorId, moduleIndex, tag);
     }
+
+    explicit SharedMemory(const std::string &shm_name) : name(shm_name) {}
 
     // Disable copy, since we refer to a unique location
     SharedMemory(const SharedMemory &) = delete;
@@ -72,21 +82,60 @@ template <typename T> class SharedMemory {
             unmapSharedMemory();
     }
 
+    bool memoryHasValidFlag() const {
+        if (shared_struct == nullptr) {
+            throw SharedMemoryError(
+                "Shared memory not mapped. Cannot check validity.");
+        }
+        // CtbConfig did not have shmversion before, so exact value check
+        if constexpr (is_type<CtbConfig, T>()) {
+            if (shared_struct->shmversion == SHM_IS_VALID_CHECK_VERSION) {
+                return true;
+            }
+        } else if (shared_struct->shmversion >= SHM_IS_VALID_CHECK_VERSION) {
+            return true;
+        }
+        return false;
+    }
+
+    bool checkValidity() const {
+        if (memoryHasValidFlag() && !shared_struct->isValid)
+            return false;
+        return true;
+    }
+
+    void invalidate() {
+        bool wasValid = true;
+        if (shared_struct == nullptr) {
+            wasValid = false;
+            openSharedMemory(false);
+        }
+        // also called by obsolete shm test structure (so check added)
+        if constexpr (has_bool_isValid<T>::value) {
+            if (memoryHasValidFlag())
+                shared_struct->isValid = false;
+        }
+        if (!wasValid)
+            unmapSharedMemory();
+    }
+
     T *operator()() {
         if (!shared_struct)
             throw SharedMemoryError(getNoShmAccessMessage());
-        if (!shared_struct->isValid) {
+
+        if (!checkValidity())
             throw SharedMemoryError(getInvalidShmMessage());
-        }
+
         return shared_struct;
     }
 
     const T *operator()() const {
         if (!shared_struct)
             throw SharedMemoryError(getNoShmAccessMessage());
-        if (!shared_struct->isValid) {
+
+        if (!checkValidity())
             throw SharedMemoryError(getInvalidShmMessage());
-        }
+
         return shared_struct;
     }
 
@@ -146,6 +195,7 @@ template <typename T> class SharedMemory {
     }
 
     void removeSharedMemory() {
+        invalidate();
         unmapSharedMemory();
         if (shm_unlink(name.c_str()) < 0) {
             // silent exit if shm did not exist anyway

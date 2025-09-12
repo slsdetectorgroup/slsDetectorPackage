@@ -67,6 +67,9 @@ void XILINX_PLL_setFrequency(uint32_t clkIDX, uint32_t freq) {
     bus_w_csp2(XILINX_PLL_BASE_ADDR + XILINX_PLL_CLK_CONFIG_BASE_ADDR + clkIDX * XILINX_PLL_CLK_CONFIG_WIDTH * 4 + XILINX_PLL_CLK_DIV_OFFSET, (clk_div & 0xFF) | ((clk_div_frac & 0x3FF) << 8));
     XILINX_PLL_load();
     XILINX_PLL_waitForLock();
+
+    // wait for firmware to measure the actual frequency
+    usleep(2 * 1000 * 1000);
 }
 
 uint32_t XILINX_PLL_getFrequency(uint32_t clkIDX){

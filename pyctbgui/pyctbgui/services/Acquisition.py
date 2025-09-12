@@ -208,8 +208,6 @@ class AcquisitionTab(QtWidgets.QWidget):
             QtWidgets.QMessageBox.warning(self.mainWindow, "Run Frequency Fail", str(e), QtWidgets.QMessageBox.Ok)
         # TODO: handling double event exceptions
         self.view.spinBoxRunF.editingFinished.connect(self.setRunFrequency)
-        if self.det.type == detectorType.XILINX_CHIPTESTBOARD: # on xilinx we measure the actual frequency, not the requested one. Firmware needs a bit of time to come up with the correct number
-            time.sleep(2)
         self.getRunFrequency()
 
     def getTransceiver(self):
@@ -274,8 +272,6 @@ class AcquisitionTab(QtWidgets.QWidget):
             QtWidgets.QMessageBox.warning(self.mainWindow, "ADC Frequency Fail", str(e), QtWidgets.QMessageBox.Ok)
         # TODO: handling double event exceptions
         self.view.spinBoxADCF.editingFinished.connect(self.setADCFrequency)
-        if self.det.type == detectorType.XILINX_CHIPTESTBOARD: # on xilinx we measure the actual frequency, not the requested one. Firmware needs a bit of time to come up with the correct number
-            time.sleep(2)
         self.getADCFrequency()
 
     def getADCPhase(self):
@@ -321,8 +317,6 @@ class AcquisitionTab(QtWidgets.QWidget):
             QtWidgets.QMessageBox.warning(self.mainWindow, "DBit Frequency Fail", str(e), QtWidgets.QMessageBox.Ok)
         # TODO: handling double event exceptions
         self.view.spinBoxDBITF.editingFinished.connect(self.setDBITFrequency)
-        if self.det.type == detectorType.XILINX_CHIPTESTBOARD: # on xilinx we measure the actual frequency, not the requested one. Firmware needs a bit of time to come up with the correct number
-            time.sleep(2)
         self.getDBITFrequency()
 
     def getDBITPhase(self):

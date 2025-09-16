@@ -84,11 +84,14 @@ void XILINX_PLL_setFrequency(uint32_t clk_index, uint32_t freq) {
 
     // calculate base clock frequency
     uint32_t global_reg = bus_r_csp2(XILINX_PLL_CLKCONFIG_REG);
-    uint32_t clkfbout_mult = ((global_reg && XILINX_PLL_CLKFBOUT_MULT_MSK) >>
+#ifdef VIRTUAL
+    global_reg = 3073;
+#endif
+    uint32_t clkfbout_mult = ((global_reg & XILINX_PLL_CLKFBOUT_MULT_MSK) >>
                               XILINX_PLL_CLKFBOUT_MULT_OFST);
-    uint32_t clkfbout_frac = ((global_reg && XILINX_PLL_CLKFBOUT_FRAC_MSK) >>
+    uint32_t clkfbout_frac = ((global_reg & XILINX_PLL_CLKFBOUT_FRAC_MSK) >>
                               XILINX_PLL_CLKFBOUT_FRAC_OFST);
-    uint32_t divclk_divide = ((global_reg && XILINX_PLL_DIVCLK_DIVIDE_MSK) >>
+    uint32_t divclk_divide = ((global_reg & XILINX_PLL_DIVCLK_DIVIDE_MSK) >>
                               XILINX_PLL_DIVCLK_DIVIDE_OFST);
     uint32_t base_clk_freq = clkfbout_mult * XILINX_PLL_INPUT_FREQ;
     base_clk_freq += (clkfbout_frac * XILINX_PLL_INPUT_FREQ /
@@ -126,9 +129,9 @@ void XILINX_PLL_setFrequency(uint32_t clk_index, uint32_t freq) {
     uint32_t clk_addr = XILINX_PLL_CLKCONFIG_BASE_ADDR +
                         clk_index * XILINX_PLL_CLKCONFIG_WIDTH +
                         XILINX_PLL_CLK_DIV_REG_OFST;
-    uint32_t clk_config_val = ((clk_div << XILINX_PLL_CLK_DIV_DIVIDE_OFST) &&
+    uint32_t clk_config_val = ((clk_div << XILINX_PLL_CLK_DIV_DIVIDE_OFST) &
                                XILINX_PLL_CLK_DIV_DIVIDE_MSK) |
-                              ((clk_div_frac << XILINX_PLL_CLK_DIV_FRAC_OFST) &&
+                              ((clk_div_frac << XILINX_PLL_CLK_DIV_FRAC_OFST) &
                                XILINX_PLL_CLK_DIV_FRAC_MSK);
 
     bus_w_csp2(clk_addr, clk_config_val);
@@ -181,6 +184,9 @@ void XILINX_PLL_load() {
 }
 
 void XILINX_PLL_waitForLock() {
+#ifdef VIRTUAL
+    return;
+#endif
     int timeout_us = 10 * 1000;
     int count = 500;
     while (count > 0) {

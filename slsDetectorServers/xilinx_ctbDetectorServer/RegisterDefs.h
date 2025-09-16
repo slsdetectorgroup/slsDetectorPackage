@@ -2,6 +2,8 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #pragma once
 
+// clang-format off
+
 #define REG_OFFSET (4)
 #define PATTERN_STEP0_MSB_REG (0x10004)
 #define PATTERN_STEP0_LSB_REG (0x10000)
@@ -461,3 +463,5 @@
 #define FRAMES_OUT_REG_2 (0xB068)
 #define PERIOD_OUT_REG_1 (0xB06C)
 #define PERIOD_OUT_REG_2 (0xB070)
+
+// clang-format on

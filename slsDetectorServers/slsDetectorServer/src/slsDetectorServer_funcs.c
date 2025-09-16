@@ -5811,7 +5811,7 @@ int set_clock_frequency(int file_des) {
         case ADC_CLOCK:
             c = ADC_CLK;
             break;
-#if  defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
         case DBIT_CLOCK:
             c = DBIT_CLK;
             break;
@@ -5843,9 +5843,11 @@ int set_clock_frequency(int file_des) {
                 int retval = getFrequency(c);
                 LOG(logDEBUG1, ("retval %s: %d %s\n", modeName, retval,
                                 myDetectorType == GOTTHARD2 ? "Hz" : "MHz"));
-                #if !defined(XILINX_CHIPTESTBOARDD) // XCTB will give the actual frequency, which is not 100% identical to the set frequency
-                    validate(&ret, mess, val, retval, modeName, DEC);
-                #endif
+#if !defined(                                                                  \
+    XILINX_CHIPTESTBOARDD) // XCTB will give the actual frequency, which is not
+                           // 100% identical to the set frequency
+                validate(&ret, mess, val, retval, modeName, DEC);
+#endif
             }
         }
     }
@@ -5863,7 +5865,8 @@ int get_clock_frequency(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Getting clock (%d) frequency\n", arg));
 
-#if !defined(CHIPTESTBOARDD) && !defined(GOTTHARD2D) && !defined(MYTHEN3D) && !defined(XILINX_CHIPTESTBOARDD)
+#if !defined(CHIPTESTBOARDD) && !defined(GOTTHARD2D) && !defined(MYTHEN3D) &&  \
+    !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // get only

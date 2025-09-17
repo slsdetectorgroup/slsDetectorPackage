@@ -72,6 +72,9 @@ configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/../VERSION
     ${CMAKE_BINARY_DIR}/bin/slsdet/VERSION
 )
 
+configure_file(tests/test_free.py ${CMAKE_BINARY_DIR}/bin/test_free.py COPYONLY)
+configure_file(tests/test_commands.py ${CMAKE_BINARY_DIR}/bin/test_commands.py COPYONLY)
+
 if(SLS_INSTALL_PYTHONEXT)
     install(TARGETS _slsdet
         EXPORT "${TARGETS_EXPORT_NAME}"

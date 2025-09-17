@@ -3,8 +3,8 @@
 #include <vector>
 namespace sls {
 
-#define CTB_SHMAPIVERSION 0x250820
-#define CTB_SHMVERSION    0x250820
+#define CTB_SHMAPIVERSION 0x250917
+#define CTB_SHMVERSION    0x250917
 
 class CtbConfig {
   public:

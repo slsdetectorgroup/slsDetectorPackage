@@ -1378,4 +1378,100 @@ TEST_CASE("led", "[.cmdcall]") {
     }
 }
 
+TEST_CASE("define", "[.cmdcall]") {
+    Detector det;
+    Caller caller(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
+
+        REQUIRE_THROWS(caller.call("define", {}, -1, GET));
+        REQUIRE_THROWS(caller.call("define", {"addr", "TEST_MACRO"}, -1, PUT));
+        REQUIRE_THROWS(caller.call("define", {"rfe", "TEST_MACRO"}, -1, PUT));
+        REQUIRE_THROWS(caller.call("define", {"TEST_MACRO", "2"}, -1, PUT));
+        REQUIRE_THROWS(caller.call("define", {"TEST_MACRO"}, -1, GET));
+
+        {
+            REQUIRE_NOTHROW(
+                caller.call("define", {"addr", "REG_MACRO", "0x202"}, -1, PUT));
+            REQUIRE_NOTHROW(
+                caller.call("define", {"bit", "MACRO_BIT", "1"}, -1, PUT));
+            REQUIRE_NOTHROW(
+                caller.call("define", {"bit", "MACRO_BOT", "2"}, -1, PUT));
+            std::ostringstream oss, oss1;
+            caller.call("define", {"addr", "REG_MACRO"}, -1, GET, oss);
+            caller.call("define", {"bit", "MACRO_BIT"}, -1, GET, oss1);
+            REQUIRE(oss.str() == "define addr REG_MACRO 0x202\n");
+            REQUIRE(oss1.str() == "define bit MACRO_BIT 1\n");
+        }
+        {
+            REQUIRE_NOTHROW(
+                caller.call("define", {"addr", "REG_MACRO", "0x205"}, -1, PUT));
+            std::ostringstream oss;
+            caller.call("define", {"addr", "REG_MACRO"}, -1, GET, oss);
+            REQUIRE(oss.str() == "define addr REG_MACRO 0x205\n");
+        }
+
+        if (det.isVirtualDetectorServer().tsquash(
+                "inconsistent virtual values")) {
+            {
+                std::ostringstream oss;
+                REQUIRE_NOTHROW(
+                    caller.call("reg", {"REG_MACRO", "0x0"}, -1, PUT));
+                REQUIRE_NOTHROW(
+                    caller.call("reg", {"REG_MACRO"}, -1, GET, oss));
+                REQUIRE(oss.str() == "reg REG_MACRO 0x0\n");
+            }
+            {
+                std::ostringstream oss;
+                REQUIRE_NOTHROW(caller.call(
+                    "reg", {"REG_MACRO", "(MACRO_BIT | MACRO_BOT)"}, -1, PUT));
+                REQUIRE_NOTHROW(
+                    caller.call("reg", {"REG_MACRO"}, -1, GET, oss));
+                REQUIRE(oss.str() == "reg REG_MACRO 0x3\n");
+            }
+            {
+                std::ostringstream oss;
+                REQUIRE_NOTHROW(caller.call(
+                    "clearbit", {"REG_MACRO", "MACRO_BIT"}, -1, PUT));
+                REQUIRE_NOTHROW(
+                    caller.call("reg", {"REG_MACRO"}, -1, GET, oss));
+                REQUIRE(oss.str() == "reg REG_MACRO 0x2\n");
+            }
+            {
+                std::ostringstream oss, oss1;
+                REQUIRE_NOTHROW(
+                    caller.call("setbit", {"REG_MACRO", "MACRO_BIT"}, -1, PUT));
+                REQUIRE_NOTHROW(
+                    caller.call("reg", {"REG_MACRO"}, -1, GET, oss));
+                REQUIRE(oss.str() == "reg REG_MACRO 0x3\n");
+                REQUIRE_NOTHROW(caller.call(
+                    "getbit", {"REG_MACRO", "MACRO_BIT"}, -1, GET, oss1));
+                REQUIRE(oss1.str() == "getbit REG_MACRO MACRO_BIT 1\n");
+            }
+        }
+    } else {
+        REQUIRE_THROWS(caller.call("define", {"TEST_MACRO"}, -1, GET));
+        REQUIRE_THROWS(caller.call("define", {"TEST_MACRO", "1"}, -1, PUT));
+    }
+}
+
+TEST_CASE("definelist", "[.cmdcall]") {
+    Detector det;
+    Caller caller(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
+        REQUIRE_THROWS(caller.call("definelist", {}, -1, GET));
+        REQUIRE_THROWS(caller.call("definelist", {"addr", "TEST"}, -1, PUT));
+
+        REQUIRE_NOTHROW(caller.call("definelist", {"addr"}, -1, GET));
+        REQUIRE_NOTHROW(caller.call("definelist", {"bit"}, -1, GET));
+    } else {
+        REQUIRE_THROWS(caller.call("definelist", {"addr"}, -1, GET));
+        REQUIRE_THROWS(caller.call("definelist", {"bit"}, -1, GET));
+    }
+
 } // namespace sls

@@ -238,4 +238,26 @@ std::vector<std::string> CtbConfig::getSlowADCNames() const {
 
 const char *CtbConfig::shm_tag() { return shm_tag_; }
 
+bool CtbConfig::is_register_name_in_list(const std::string &name) const {
+    return std::any_of(registernames, registernames + max_regs,
+                       [&name](const NamedPosition &n) {
+                           return std::string(n.name) == name;
+                       });
+}
+
+void CtbConfig::setRegisterName(const std::string &name, const int address) {
+    check_size(name);
+
+    // check if name already exists
+    // if yes update position
+    // else check if index at max_Regs
+    // if yes throw error
+    // else add name and address
+    check_slow_adc_index(index);
+    check_size(name);
+    char *dst = &slowADCnames[index * name_length];
+    memset(dst, '\0', name_length);
+    memcpy(dst, &name[0], name.size());
+}
+
 } // namespace sls

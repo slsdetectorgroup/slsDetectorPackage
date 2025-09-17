@@ -9,6 +9,7 @@
 #include "sls/versionAPI.h"
 
 #include "LTC2620_Driver.h"
+#include "XILINX_PLL.h"
 
 #include "loadPattern.h"
 #ifdef VIRTUAL
@@ -38,6 +39,8 @@ int initCheckDone = 0;
 char initErrorMessage[MAX_STR_LENGTH];
 
 int detPos[2] = {0, 0};
+
+uint32_t clkFrequency[NUM_CLOCKS] = {20, 100, 20, 100};
 
 int chipConfigured = 0;
 int analogEnable = 0;
@@ -1778,3 +1781,28 @@ void getNumberOfChannels(int *nchanx, int *nchany) {
 int getNumberOfChips() { return NCHIP; }
 int getNumberOfDACs() { return NDAC; }
 int getNumberOfChannelsPerChip() { return NCHAN; }
+
+int setFrequency(enum CLKINDEX ind, int val) {
+    if (ind < 0 || ind >= NUM_CLOCKS) {
+        LOG(logERROR, ("Unknown clock index %d to set frequency\n", ind));
+        return FAIL;
+    }
+    if (val <= 0) {
+        return FAIL;
+    }
+
+    char *clock_names[] = {CLK_NAMES};
+    LOG(logINFO, ("\tSetting %s clock (%d) frequency to %d MHz\n",
+                  clock_names[ind], ind, val));
+
+    XILINX_PLL_setFrequency(ind, val);
+    return OK;
+}
+
+int getFrequency(enum CLKINDEX ind) {
+    if (ind < 0 || ind >= NUM_CLOCKS) {
+        LOG(logERROR, ("Unknown clock index %d to get frequency\n", ind));
+        return -1;
+    }
+    return XILINX_PLL_getFrequency(ind);
+}

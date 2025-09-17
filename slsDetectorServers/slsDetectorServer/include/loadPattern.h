@@ -58,7 +58,7 @@ uint64_t getPatternMask();
 void setPatternBitMask(uint64_t mask);
 uint64_t getPatternBitMask();
 
-#ifdef MYTHEN3D
+#if defined(MYTHEN3D) || defined(XILINX_CHIPTESTBOARDD)
 void startPattern();
 #endif
 char *getPatternFileName();

@@ -13,7 +13,7 @@
 extern enum TLogLevel trimmingPrint;
 extern uint32_t clkDivider[];
 #endif
-#ifdef CHIPTESTBOARDD
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
 extern uint32_t clkFrequency[];
 #endif
 
@@ -54,27 +54,12 @@ void initializePatternWord() {
     memset(virtual_pattern, 0, sizeof(virtual_pattern));
 }
 #endif
-#endif
 
-#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
 uint64_t validate_readPatternIOControl() {
-#if defined(CHIPTESTBOARDD)
     return getU64BitReg(PATTERN_IO_CNTRL_LSB_REG, PATTERN_IO_CNTRL_MSB_REG);
-#elif defined(XILINX_CHIPTESTBOARDD)
-    return (uint64_t)(bus_r(PINIOCTRLREG));
-#endif
 }
 
 int validate_writePatternIOControl(char *message, uint64_t arg) {
-    // validate input
-#ifdef XILINX_CHIPTESTBOARDD
-    if (arg > BIT32_MSK) {
-        strcpy(message, "Could not set pattern IO Control. Must be 32 bit for "
-                        "this detector\n");
-        LOG(logERROR, (message));
-        return FAIL;
-    }
-#endif
 
     writePatternIOControl(arg);
 
@@ -95,15 +80,9 @@ int validate_writePatternIOControl(char *message, uint64_t arg) {
 }
 
 void writePatternIOControl(uint64_t word) {
-#ifdef CHIPTESTBOARDD
     LOG(logINFO,
         ("Setting Pattern I/O Control: 0x%llx\n", (long long int)word));
     setU64BitReg(word, PATTERN_IO_CNTRL_LSB_REG, PATTERN_IO_CNTRL_MSB_REG);
-#elif defined(XILINX_CHIPTESTBOARDD)
-    uint32_t val = (uint32_t)word;
-    LOG(logINFO, ("Setting Pattern I/O Control: 0x%x\n", val));
-    bus_w(PINIOCTRLREG, val);
-#endif
 }
 #endif
 
@@ -122,7 +101,7 @@ int validate_readPatternWord(char *message, int addr, uint64_t *word) {
 }
 
 uint64_t readPatternWord(int addr) {
-#ifdef MYTHEN3D
+#if defined(MYTHEN3D) || defined(XILINX_CHIPTESTBOARDD)
     LOG(logDEBUG1, ("  Reading Pattern Word (addr:0x%x)\n", addr));
     // the first word in RAM as base plus the offset of the word to write (addr)
     uint32_t reg_lsb = PATTERN_STEP0_LSB_REG + addr * REG_OFFSET * 2;
@@ -182,7 +161,7 @@ void writePatternWord(int addr, uint64_t word) {
     LOG(logDEBUG1, ("Setting Pattern Word (addr:0x%x, word:0x%llx)\n", addr,
                     (long long int)word));
 
-#ifndef MYTHEN3D
+#ifdef CHIPTESTBOARDD
     uint32_t reg = PATTERN_CNTRL_REG;
 
     // write word
@@ -199,7 +178,6 @@ void writePatternWord(int addr, uint64_t word) {
 #ifdef VIRTUAL
     virtual_pattern[addr] = word;
 #endif
-// mythen
 #else
     // the first word in RAM as base plus the offset of the word to write (addr)
     uint32_t reg_lsb = PATTERN_STEP0_LSB_REG + addr * REG_OFFSET * 2;
@@ -223,29 +201,15 @@ int validate_getPatternWaitAddresses(char *message, int level, int *addr) {
 }
 
 int getPatternWaitAddress(int level) {
-    switch (level) {
-    case 0:
-        return ((bus_r(PATTERN_WAIT_0_ADDR_REG) & PATTERN_WAIT_0_ADDR_MSK) >>
-                PATTERN_WAIT_0_ADDR_OFST);
-    case 1:
-        return ((bus_r(PATTERN_WAIT_1_ADDR_REG) & PATTERN_WAIT_1_ADDR_MSK) >>
-                PATTERN_WAIT_1_ADDR_OFST);
-    case 2:
-        return ((bus_r(PATTERN_WAIT_2_ADDR_REG) & PATTERN_WAIT_2_ADDR_MSK) >>
-                PATTERN_WAIT_2_ADDR_OFST);
-#ifndef MYTHEN3D
-    case 3:
-        return ((bus_r(PATTERN_WAIT_3_ADDR_REG) & PATTERN_WAIT_3_ADDR_MSK) >>
-                PATTERN_WAIT_3_ADDR_OFST);
-    case 4:
-        return ((bus_r(PATTERN_WAIT_4_ADDR_REG) & PATTERN_WAIT_4_ADDR_MSK) >>
-                PATTERN_WAIT_4_ADDR_OFST);
-    case 5:
-        return ((bus_r(PATTERN_WAIT_5_ADDR_REG) & PATTERN_WAIT_5_ADDR_MSK) >>
-                PATTERN_WAIT_5_ADDR_OFST);
-#endif
-    default:
+    if (level < 0 || level >= MAX_LEVELS) {
         return -1;
+    } else {
+        return ((bus_r(PATTERN_LOOPDEF_BASE +
+                       (PATTERN_WAIT_ADDR_WORD_OFST +
+                        level * PATTERN_LOOPDEF_NWORDS_OFST) *
+                           REG_OFFSET) &
+                 PATTERN_WAIT_ADDR_MSK) >>
+                PATTERN_WAIT_ADDR_OFST);
     }
 }
 
@@ -289,35 +253,13 @@ void setPatternWaitAddress(int level, int addr) {
     LOG(logINFO,
 #endif
         ("Setting Pattern Wait Address (level:%d, addr:0x%x)\n", level, addr));
-    switch (level) {
-    case 0:
-        bus_w(PATTERN_WAIT_0_ADDR_REG,
-              ((addr << PATTERN_WAIT_0_ADDR_OFST) & PATTERN_WAIT_0_ADDR_MSK));
-        break;
-    case 1:
-        bus_w(PATTERN_WAIT_1_ADDR_REG,
-              ((addr << PATTERN_WAIT_1_ADDR_OFST) & PATTERN_WAIT_1_ADDR_MSK));
-        break;
-    case 2:
-        bus_w(PATTERN_WAIT_2_ADDR_REG,
-              ((addr << PATTERN_WAIT_2_ADDR_OFST) & PATTERN_WAIT_2_ADDR_MSK));
-        break;
-#ifndef MYTHEN3D
-    case 3:
-        bus_w(PATTERN_WAIT_3_ADDR_REG,
-              ((addr << PATTERN_WAIT_3_ADDR_OFST) & PATTERN_WAIT_3_ADDR_MSK));
-        break;
-    case 4:
-        bus_w(PATTERN_WAIT_4_ADDR_REG,
-              ((addr << PATTERN_WAIT_4_ADDR_OFST) & PATTERN_WAIT_4_ADDR_MSK));
-        break;
-    case 5:
-        bus_w(PATTERN_WAIT_5_ADDR_REG,
-              ((addr << PATTERN_WAIT_5_ADDR_OFST) & PATTERN_WAIT_5_ADDR_MSK));
-        break;
-#endif
-    default:
+    if (level < 0 || level >= MAX_LEVELS) {
         return;
+    } else {
+        bus_w(PATTERN_LOOPDEF_BASE + (PATTERN_WAIT_ADDR_WORD_OFST +
+                                      level * PATTERN_LOOPDEF_NWORDS_OFST) *
+                                         REG_OFFSET,
+              ((addr << PATTERN_WAIT_ADDR_OFST) & PATTERN_WAIT_ADDR_MSK));
     }
 }
 
@@ -340,39 +282,24 @@ int validate_getPatternWaitClocksAndInterval(char *message, int level,
 }
 
 uint64_t getPatternWaitClocks(int level) {
-    switch (level) {
-    case 0:
-        return getU64BitReg(PATTERN_WAIT_TIMER_0_LSB_REG,
-                            PATTERN_WAIT_TIMER_0_MSB_REG);
-    case 1:
-        return getU64BitReg(PATTERN_WAIT_TIMER_1_LSB_REG,
-                            PATTERN_WAIT_TIMER_1_MSB_REG);
-    case 2:
-        return getU64BitReg(PATTERN_WAIT_TIMER_2_LSB_REG,
-                            PATTERN_WAIT_TIMER_2_MSB_REG);
-#ifndef MYTHEN3D
-    case 3:
-        return getU64BitReg(PATTERN_WAIT_TIMER_3_LSB_REG,
-                            PATTERN_WAIT_TIMER_3_MSB_REG);
-    case 4:
-        return getU64BitReg(PATTERN_WAIT_TIMER_4_LSB_REG,
-                            PATTERN_WAIT_TIMER_4_MSB_REG);
-    case 5:
-        return getU64BitReg(PATTERN_WAIT_TIMER_5_LSB_REG,
-                            PATTERN_WAIT_TIMER_5_MSB_REG);
-#endif
-    default:
+    if (level < 0 || level >= MAX_LEVELS) {
         return -1;
+    } else {
+        return getU64BitReg(
+            PATTERN_LOOPDEF_BASE + (PATTERN_WAIT_TIMER_LSB_WORD_OFST +
+                                    level * PATTERN_LOOPDEF_NWORDS_OFST) *
+                                       REG_OFFSET,
+            PATTERN_LOOPDEF_BASE + (PATTERN_WAIT_TIMER_MSB_WORD_OFST +
+                                    level * PATTERN_LOOPDEF_NWORDS_OFST) *
+                                       REG_OFFSET);
     }
 }
 
 uint64_t getPatternWaitInterval(int level) {
     uint64_t numClocks = getPatternWaitClocks(level);
     int runclk = 0;
-#ifdef CHIPTESTBOARDD
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
     runclk = clkFrequency[RUN_CLK];
-#elif XILINX_CHIPTESTBOARDD
-    runclk = RUN_CLK;
 #elif MYTHEN3D
     runclk = clkDivider[SYSTEM_C0];
 #endif
@@ -425,35 +352,18 @@ void setPatternWaitClocks(int level, uint64_t t) {
 #endif
         ("Setting Pattern Wait Time in clocks (level:%d) :%lld\n", level,
          (long long int)t));
-    switch (level) {
-    case 0:
-        setU64BitReg(t, PATTERN_WAIT_TIMER_0_LSB_REG,
-                     PATTERN_WAIT_TIMER_0_MSB_REG);
-        break;
-    case 1:
-        setU64BitReg(t, PATTERN_WAIT_TIMER_1_LSB_REG,
-                     PATTERN_WAIT_TIMER_1_MSB_REG);
-        break;
-    case 2:
-        setU64BitReg(t, PATTERN_WAIT_TIMER_2_LSB_REG,
-                     PATTERN_WAIT_TIMER_2_MSB_REG);
-        break;
-#ifndef MYTHEN3D
-    case 3:
-        setU64BitReg(t, PATTERN_WAIT_TIMER_3_LSB_REG,
-                     PATTERN_WAIT_TIMER_3_MSB_REG);
-        break;
-    case 4:
-        setU64BitReg(t, PATTERN_WAIT_TIMER_4_LSB_REG,
-                     PATTERN_WAIT_TIMER_4_MSB_REG);
-        break;
-    case 5:
-        setU64BitReg(t, PATTERN_WAIT_TIMER_5_LSB_REG,
-                     PATTERN_WAIT_TIMER_5_MSB_REG);
-        break;
-#endif
-    default:
+
+    if (level < 0 || level >= MAX_LEVELS) {
         return;
+    } else {
+        return setU64BitReg(
+            t,
+            PATTERN_LOOPDEF_BASE + (PATTERN_WAIT_TIMER_LSB_WORD_OFST +
+                                    level * PATTERN_LOOPDEF_NWORDS_OFST) *
+                                       REG_OFFSET,
+            PATTERN_LOOPDEF_BASE + (PATTERN_WAIT_TIMER_MSB_WORD_OFST +
+                                    level * PATTERN_LOOPDEF_NWORDS_OFST) *
+                                       REG_OFFSET);
     }
 }
 
@@ -466,12 +376,10 @@ void setPatternWaitInterval(int level, uint64_t t) {
         ("Setting Pattern Wait Time (level:%d) :%lld ns\n", level,
          (long long int)t));
     int runclk = 0;
-#ifdef CHIPTESTBOARDD
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
     runclk = clkFrequency[RUN_CLK];
-#elif XILINX_CHIPTESTBOARDD
-    runclk = RUN_CLK;
 #elif MYTHEN3D
-        runclk = clkDivider[SYSTEM_C0];
+    runclk = clkDivider[SYSTEM_C0];
 #endif
     uint64_t numClocks = t * (1E-3 * runclk);
     setPatternWaitClocks(level, numClocks);
@@ -491,23 +399,13 @@ int validate_getPatternLoopCycles(char *message, int level, int *numLoops) {
 }
 
 int getPatternLoopCycles(int level) {
-    switch (level) {
-    case 0:
-        return bus_r(PATTERN_LOOP_0_ITERATION_REG);
-    case 1:
-        return bus_r(PATTERN_LOOP_1_ITERATION_REG);
-    case 2:
-        return bus_r(PATTERN_LOOP_2_ITERATION_REG);
-#ifndef MYTHEN3D
-    case 3:
-        return bus_r(PATTERN_LOOP_3_ITERATION_REG);
-    case 4:
-        return bus_r(PATTERN_LOOP_4_ITERATION_REG);
-    case 5:
-        return bus_r(PATTERN_LOOP_5_ITERATION_REG);
-#endif
-    default:
+    if (level < 0 || level >= MAX_LEVELS) {
         return -1;
+    } else {
+        return bus_r(PATTERN_LOOPDEF_BASE +
+                     (PATTERN_LOOP_ITERATION_WORD_OFST +
+                      level * PATTERN_LOOPDEF_NWORDS_OFST) *
+                         REG_OFFSET);
     }
 }
 
@@ -546,29 +444,13 @@ void setPatternLoopCycles(int level, int nLoop) {
     LOG(logINFO,
 #endif
         ("Setting Pattern Loop Cycles(level:%d, nLoop:%d)\n", level, nLoop));
-    switch (level) {
-    case 0:
-        bus_w(PATTERN_LOOP_0_ITERATION_REG, nLoop);
-        break;
-    case 1:
-        bus_w(PATTERN_LOOP_1_ITERATION_REG, nLoop);
-        break;
-    case 2:
-        bus_w(PATTERN_LOOP_2_ITERATION_REG, nLoop);
-        break;
-#ifndef MYTHEN3D
-    case 3:
-        bus_w(PATTERN_LOOP_3_ITERATION_REG, nLoop);
-        break;
-    case 4:
-        bus_w(PATTERN_LOOP_4_ITERATION_REG, nLoop);
-        break;
-    case 5:
-        bus_w(PATTERN_LOOP_5_ITERATION_REG, nLoop);
-        break;
-#endif
-    default:
+    if (level < 0 || level >= MAX_LEVELS) {
         return;
+    } else {
+        bus_w(PATTERN_LOOPDEF_BASE + (PATTERN_LOOP_ITERATION_WORD_OFST +
+                                      level * PATTERN_LOOPDEF_NWORDS_OFST) *
+                                         REG_OFFSET,
+              nLoop);
     }
 }
 
@@ -639,59 +521,22 @@ int validate_getPatternLoopAddresses(char *message, int level, int *startAddr,
 }
 
 void getPatternLoopAddresses(int level, int *startAddr, int *stopAddr) {
-    switch (level) {
-    case 0:
-        *startAddr =
-            ((bus_r(PATTERN_LOOP_0_ADDR_REG) & PATTERN_LOOP_0_ADDR_STRT_MSK) >>
-             PATTERN_LOOP_0_ADDR_STRT_OFST);
-        *stopAddr =
-            ((bus_r(PATTERN_LOOP_0_ADDR_REG) & PATTERN_LOOP_0_ADDR_STP_MSK) >>
-             PATTERN_LOOP_0_ADDR_STP_OFST);
-        break;
-    case 1:
-        *startAddr =
-            ((bus_r(PATTERN_LOOP_1_ADDR_REG) & PATTERN_LOOP_1_ADDR_STRT_MSK) >>
-             PATTERN_LOOP_1_ADDR_STRT_OFST);
-        *stopAddr =
-            ((bus_r(PATTERN_LOOP_1_ADDR_REG) & PATTERN_LOOP_1_ADDR_STP_MSK) >>
-             PATTERN_LOOP_1_ADDR_STP_OFST);
-        break;
-    case 2:
-        *startAddr =
-            ((bus_r(PATTERN_LOOP_2_ADDR_REG) & PATTERN_LOOP_2_ADDR_STRT_MSK) >>
-             PATTERN_LOOP_2_ADDR_STRT_OFST);
-        *stopAddr =
-            ((bus_r(PATTERN_LOOP_2_ADDR_REG) & PATTERN_LOOP_2_ADDR_STP_MSK) >>
-             PATTERN_LOOP_2_ADDR_STP_OFST);
-        break;
-#ifndef MYTHEN3D
-    case 3:
-        *startAddr =
-            ((bus_r(PATTERN_LOOP_3_ADDR_REG) & PATTERN_LOOP_3_ADDR_STRT_MSK) >>
-             PATTERN_LOOP_3_ADDR_STRT_OFST);
-        *stopAddr =
-            ((bus_r(PATTERN_LOOP_3_ADDR_REG) & PATTERN_LOOP_3_ADDR_STP_MSK) >>
-             PATTERN_LOOP_3_ADDR_STP_OFST);
-        break;
-    case 4:
-        *startAddr =
-            ((bus_r(PATTERN_LOOP_4_ADDR_REG) & PATTERN_LOOP_4_ADDR_STRT_MSK) >>
-             PATTERN_LOOP_4_ADDR_STRT_OFST);
-        *stopAddr =
-            ((bus_r(PATTERN_LOOP_4_ADDR_REG) & PATTERN_LOOP_4_ADDR_STP_MSK) >>
-             PATTERN_LOOP_4_ADDR_STP_OFST);
-        break;
-    case 5:
-        *startAddr =
-            ((bus_r(PATTERN_LOOP_5_ADDR_REG) & PATTERN_LOOP_5_ADDR_STRT_MSK) >>
-             PATTERN_LOOP_5_ADDR_STRT_OFST);
-        *stopAddr =
-            ((bus_r(PATTERN_LOOP_5_ADDR_REG) & PATTERN_LOOP_5_ADDR_STP_MSK) >>
-             PATTERN_LOOP_5_ADDR_STP_OFST);
-        break;
-#endif
-    default:
-        return;
+    if (level < 0 || level >= MAX_LEVELS) {
+        *startAddr = -1;
+        *stopAddr = -1;
+    } else {
+        *startAddr = ((bus_r(PATTERN_LOOPDEF_BASE +
+                             (PATTERN_LOOP_ADDR_WORD_OFST +
+                              level * PATTERN_LOOPDEF_NWORDS_OFST) *
+                                 REG_OFFSET) &
+                       PATTERN_LOOP_ADDR_STRT_MSK) >>
+                      PATTERN_LOOP_ADDR_STRT_OFST);
+        *stopAddr = ((bus_r(PATTERN_LOOPDEF_BASE +
+                            (PATTERN_LOOP_ADDR_WORD_OFST +
+                             level * PATTERN_LOOPDEF_NWORDS_OFST) *
+                                REG_OFFSET) &
+                      PATTERN_LOOP_ADDR_STP_MSK) >>
+                     PATTERN_LOOP_ADDR_STP_OFST);
     }
 }
 
@@ -747,53 +592,16 @@ void setPatternLoopAddresses(int level, int startAddr, int stopAddr) {
         ("Setting Pattern Loop Address (level:%d, startaddr:0x%x, "
          "stopaddr:0x%x)\n",
          level, startAddr, stopAddr));
-    switch (level) {
-    case 0:
-        bus_w(PATTERN_LOOP_0_ADDR_REG,
-              ((startAddr << PATTERN_LOOP_0_ADDR_STRT_OFST) &
-               PATTERN_LOOP_0_ADDR_STRT_MSK) |
-                  ((stopAddr << PATTERN_LOOP_0_ADDR_STP_OFST) &
-                   PATTERN_LOOP_0_ADDR_STP_MSK));
-        break;
-    case 1:
-        bus_w(PATTERN_LOOP_1_ADDR_REG,
-              ((startAddr << PATTERN_LOOP_1_ADDR_STRT_OFST) &
-               PATTERN_LOOP_1_ADDR_STRT_MSK) |
-                  ((stopAddr << PATTERN_LOOP_1_ADDR_STP_OFST) &
-                   PATTERN_LOOP_1_ADDR_STP_MSK));
-        break;
-    case 2:
-        bus_w(PATTERN_LOOP_2_ADDR_REG,
-              ((startAddr << PATTERN_LOOP_2_ADDR_STRT_OFST) &
-               PATTERN_LOOP_2_ADDR_STRT_MSK) |
-                  ((stopAddr << PATTERN_LOOP_2_ADDR_STP_OFST) &
-                   PATTERN_LOOP_2_ADDR_STP_MSK));
-        break;
-#ifndef MYTHEN3D
-    case 3:
-        bus_w(PATTERN_LOOP_3_ADDR_REG,
-              ((startAddr << PATTERN_LOOP_3_ADDR_STRT_OFST) &
-               PATTERN_LOOP_3_ADDR_STRT_MSK) |
-                  ((stopAddr << PATTERN_LOOP_3_ADDR_STP_OFST) &
-                   PATTERN_LOOP_3_ADDR_STP_MSK));
-        break;
-    case 4:
-        bus_w(PATTERN_LOOP_4_ADDR_REG,
-              ((startAddr << PATTERN_LOOP_4_ADDR_STRT_OFST) &
-               PATTERN_LOOP_4_ADDR_STRT_MSK) |
-                  ((stopAddr << PATTERN_LOOP_4_ADDR_STP_OFST) &
-                   PATTERN_LOOP_4_ADDR_STP_MSK));
-        break;
-    case 5:
-        bus_w(PATTERN_LOOP_5_ADDR_REG,
-              ((startAddr << PATTERN_LOOP_5_ADDR_STRT_OFST) &
-               PATTERN_LOOP_5_ADDR_STRT_MSK) |
-                  ((stopAddr << PATTERN_LOOP_5_ADDR_STP_OFST) &
-                   PATTERN_LOOP_5_ADDR_STP_MSK));
-        break;
-#endif
-    default:
+    if (level < 0 || level >= MAX_LEVELS) {
         return;
+    } else {
+        bus_w(PATTERN_LOOPDEF_BASE + (PATTERN_LOOP_ADDR_WORD_OFST +
+                                      level * PATTERN_LOOPDEF_NWORDS_OFST) *
+                                         REG_OFFSET,
+              ((startAddr << PATTERN_LOOP_ADDR_STRT_OFST) &
+               PATTERN_LOOP_ADDR_STRT_MSK) |
+                  ((stopAddr << PATTERN_LOOP_ADDR_STP_OFST) &
+                   PATTERN_LOOP_ADDR_STP_MSK));
     }
 }
 
@@ -821,6 +629,17 @@ void startPattern() {
     bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_STRT_PATTERN_MSK);
     usleep(1);
     while (bus_r(PAT_STATUS_REG) & PAT_STATUS_RUN_BUSY_MSK) {
+        usleep(1);
+    }
+    LOG(logINFOBLUE, ("Pattern done\n"));
+}
+#endif
+#ifdef XILINX_CHIPTESTBOARDD
+void startPattern() {
+    LOG(logINFOBLUE, ("Starting Pattern\n"));
+    bus_w(FLOW_CONTROL_REG, bus_r(FLOW_CONTROL_REG) | START_F_MSK);
+    usleep(1);
+    while (bus_r(FLOW_CONTROL_REG) & RSM_BUSY_MSK) {
         usleep(1);
     }
     LOG(logINFOBLUE, ("Pattern done\n"));

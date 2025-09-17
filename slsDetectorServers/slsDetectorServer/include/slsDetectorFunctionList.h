@@ -518,8 +518,6 @@ int setPhase(enum CLKINDEX ind, int val, int degrees);
 int getPhase(enum CLKINDEX ind, int degrees);
 int getMaxPhase(enum CLKINDEX ind);
 int validatePhaseinDegrees(enum CLKINDEX ind, int val, int retval);
-int setFrequency(enum CLKINDEX ind, int val);
-int getFrequency(enum CLKINDEX ind);
 void configureSyncFrequency(enum CLKINDEX ind);
 void setADCPipeline(int val);
 int getADCPipeline();
@@ -527,6 +525,11 @@ void setDBITPipeline(int val);
 int getDBITPipeline();
 int setLEDEnable(int enable);
 void setDigitalIODelay(uint64_t pinMask, int delay);
+#endif
+
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
+int setFrequency(enum CLKINDEX ind, int val);
+int getFrequency(enum CLKINDEX ind);
 #endif
 
 // jungfrau/moench specific - powerchip, autocompdisable, clockdiv, asictimer,

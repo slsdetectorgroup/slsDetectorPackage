@@ -6,7 +6,9 @@
 #include <sys/types.h>
 
 void bus_w(u_int32_t offset, u_int32_t data);
+void bus_w_csp2(u_int32_t offset, u_int32_t data);
 u_int32_t bus_r(u_int32_t offset);
+u_int32_t bus_r_csp2(u_int32_t offset);
 uint64_t getU64BitReg(int aLSB, int aMSB);
 void setU64BitReg(uint64_t value, int aLSB, int aMSB);
 u_int32_t readRegister(u_int32_t offset);

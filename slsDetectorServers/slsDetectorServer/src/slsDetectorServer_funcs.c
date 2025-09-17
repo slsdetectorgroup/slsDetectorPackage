@@ -5798,7 +5798,7 @@ int set_clock_frequency(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting clock (%d) frequency : %u\n", args[0], args[1]));
 
-#if !defined(CHIPTESTBOARDD)
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
 
@@ -5811,7 +5811,7 @@ int set_clock_frequency(int file_des) {
         case ADC_CLOCK:
             c = ADC_CLK;
             break;
-#ifdef CHIPTESTBOARDD
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
         case DBIT_CLOCK:
             c = DBIT_CLK;
             break;
@@ -5843,7 +5843,11 @@ int set_clock_frequency(int file_des) {
                 int retval = getFrequency(c);
                 LOG(logDEBUG1, ("retval %s: %d %s\n", modeName, retval,
                                 myDetectorType == GOTTHARD2 ? "Hz" : "MHz"));
+#if !defined(                                                                  \
+    XILINX_CHIPTESTBOARDD) // XCTB will give the actual frequency, which is not
+                           // 100% identical to the set frequency
                 validate(&ret, mess, val, retval, modeName, DEC);
+#endif
             }
         }
     }
@@ -5861,13 +5865,14 @@ int get_clock_frequency(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Getting clock (%d) frequency\n", arg));
 
-#if !defined(CHIPTESTBOARDD) && !defined(GOTTHARD2D) && !defined(MYTHEN3D)
+#if !defined(CHIPTESTBOARDD) && !defined(GOTTHARD2D) && !defined(MYTHEN3D) &&  \
+    !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // get only
     enum CLKINDEX c = 0;
     switch (arg) {
-#if defined(CHIPTESTBOARDD)
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
     case ADC_CLOCK:
         c = ADC_CLK;
         break;
@@ -7463,7 +7468,7 @@ int start_pattern(int file_des) {
     memset(mess, 0, sizeof(mess));
 
     LOG(logDEBUG1, ("Starting Pattern\n"));
-#ifndef MYTHEN3D
+#if !defined(MYTHEN3D) && !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // only set

@@ -6373,6 +6373,48 @@ std::string Caller::imagetest(int action) {
     return os.str();
 }
 
+std::string Caller::include(int action) {
+
+    std::ostringstream os;
+    // print help
+    if (action == slsDetectorDefs::HELP_ACTION) {
+        os << R"V0G0N(
+	Sets detector measurement parameters to those contained in fname. Set up per measurement. Same as parameters command. )V0G0N"
+           << std::endl;
+        return os.str();
+    }
+
+    // check if action and arguments are valid
+    if (action == slsDetectorDefs::PUT_ACTION) {
+        if (1 && args.size() != 1) {
+            throw RuntimeError("Wrong number of arguments for action PUT");
+        }
+
+        if (args.size() == 1) {
+        }
+
+    }
+
+    else {
+
+        throw RuntimeError(
+            "INTERNAL ERROR: Invalid action: supported actions are ['PUT']");
+    }
+
+    // generate code for each action
+    if (action == slsDetectorDefs::PUT_ACTION) {
+        if (args.size() == 1) {
+            if (det_id != -1) {
+                throw RuntimeError("Cannot execute include at module level");
+            }
+            det->loadParameters(args[0]);
+            os << args.front() << '\n';
+        }
+    }
+
+    return os.str();
+}
+
 std::string Caller::initialchecks(int action) {
 
     std::ostringstream os;

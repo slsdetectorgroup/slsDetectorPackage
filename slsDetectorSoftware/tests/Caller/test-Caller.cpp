@@ -46,31 +46,45 @@ TEST_CASE("config", "[.cmdcall]") {
 
 // free: not testing
 
-TEST_CASE("parameters", "[.cmdcall]") {
+void test_include_file(const std::string &cmd) {
     Detector det;
     Caller caller(&det);
+
     // put only
-    REQUIRE_THROWS(caller.call("parameters", {}, -1, GET));
-    /*
-        auto prev_val = det.getNumberOfFrames().tsquash("Number of frames has to
-       be same to test");
-        {
-            system("echo 'frames 2' > /tmp/tempsetup.det ");
-            std::ostringstream oss;
-            caller.call("parameters", {"/tmp/tempsetup.det"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "parameters /tmp/tempsetup.det\n");
-            REQUIRE(det.getNumberOfFrames().tsquash("failed") == 2);
-        }
-        {
-            system("echo '0:frames 1' > /tmp/tempsetup.det ");
-            std::ostringstream oss;
-            caller.call("parameters", {"/tmp/tempsetup.det"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "parameters /tmp/tempsetup.det\n");
-            REQUIRE(det.getNumberOfFrames({0}).tsquash("failed") == 1);
-        }
-        det.setNumberOfFrames(prev_val);
-        */
+    REQUIRE_THROWS(caller.call(cmd, {}, -1, GET));
+
+    auto prev_frames = det.getNumberOfFrames().tsquash(
+        "Number of frames has to be same to test");
+    auto prev_fwrite =
+        det.getFileWrite().tsquash("File write enable has to be same to test");
+
+    {
+        system("echo -e 'frames 2\nfwrite 1' > /tmp/tempsetup.det ");
+        std::ostringstream oss;
+        caller.call(cmd, {"/tmp/tempsetup.det"}, -1, PUT, oss);
+        REQUIRE(oss.str() == cmd + " /tmp/tempsetup.det\n");
+        REQUIRE(det.getNumberOfFrames().tsquash(
+                    "frames inconsistent and failed") == 2);
+        REQUIRE(det.getFileWrite().tsquash("fwrite inconsistent and failed") ==
+                1);
+    }
+    {
+        system("echo -e 'frames 3\nfwrite 0' > /tmp/tempsetup.det ");
+        std::ostringstream oss;
+        caller.call(cmd, {"/tmp/tempsetup.det"}, -1, PUT, oss);
+        REQUIRE(oss.str() == cmd + " /tmp/tempsetup.det\n");
+        REQUIRE(det.getNumberOfFrames().tsquash(
+                    "frames inconsistent and failed") == 3);
+        REQUIRE(det.getFileWrite().tsquash("fwrite inconsistent and failed") ==
+                0);
+    }
+    det.setNumberOfFrames(prev_frames);
+    det.setFileWrite(prev_fwrite);
 }
+
+TEST_CASE("parameters", "[.cmdcall]") { test_include_file("parameters"); }
+
+TEST_CASE("include", "[.cmdcall]") { test_include_file("include"); }
 
 TEST_CASE("hostname", "[.cmdcall]") {
     Detector det;

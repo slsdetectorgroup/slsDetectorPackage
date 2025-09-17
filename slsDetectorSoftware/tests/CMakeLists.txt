@@ -8,6 +8,7 @@ target_sources(tests PRIVATE
 
     ${CMAKE_CURRENT_SOURCE_DIR}/Caller/test-Caller.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Caller/test-Caller-rx.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Caller/test-Caller-rx-running.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Caller/test-Caller-pattern.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Caller/test-Caller-eiger.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Caller/test-Caller-jungfrau.cpp

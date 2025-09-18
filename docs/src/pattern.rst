@@ -70,11 +70,11 @@ The mappings of bit positions in the pattern word to signals/pads of the FPGA ar
 
 .. table:: 
 
-   +----+---+------+----+----------+-------------------+----------------+
-   | 63 | 62| 61-57| 56 |  55-48   |  47-32            |  31-0          |
-   +----+---+------+----+----------+-------------------+----------------+
-   |  A |  D|  --- |  T | EXTIO    | DO, stream source | DIO            |
-   +----+---+------+----+----------+-------------------+----------------+
+   +----+---+------+----+----------+----------+----------------+
+   | 63 | 62| 61-57| 56 |  55-48   |  47-32   |  31-0          |
+   +----+---+------+----+----------+----------+----------------+
+   |  A |  D|  --- |  T | EXTIO    | DO       | DIO            |
+   +----+---+------+----+----------+----------+----------------+
 
 DIO: Driving the 32 FPGA pins corresponding to the lowest 32 bits of the patioctrl command. If bits in patioctrl are 0, the same bit positions in DIO will switch to input pins and connect to dbit sampling. Additionally, some of these 32 bits have an automatic override by detector-specific statemachines which is active whenever one of these statemachines is running (currently bits 7,8,11,14 and 20).
 
@@ -120,3 +120,11 @@ DIO: Driving the 32 FPGA pins corresponding to the lowest 32 bits of the patioct
    +---------+-----+-------+-------+----+-------+---------+--------+
 
 For Mythen3 the pattern word only connects to output pins of the FPGA when the pattern is running. Afterwards the signals will switch back to other logic in the FPGA. Both CTB's hold the last executed pattern word until a new pattern is started.
+
+**Relation of received data to pattern execution**
+
+In the default configuration the Ctb will send out udp packets to the sls_receiver for every end of a pattern execution. This behavior can be changed using STREAMING_CTRL_REG, where one can configure a bit position in the 64-bit pattern word to trigger udp packets. This allows to send more than one packet per pattern or also no packets at all.
+
+The "patternstart" command on the Ctb exists because people do not read this documentation and do not expect every pattern to send packets. It automatically suppresses the packet at the end of a pattern. Additional packets via STREAMING_CTRL_REG are still possible.
+
+For Mythen3 the sending of udp packets is not connected to pattern execution.

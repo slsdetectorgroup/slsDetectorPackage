@@ -634,6 +634,31 @@ void startPattern() {
     LOG(logINFOBLUE, ("Pattern done\n"));
 }
 #endif
+#ifdef CHIPTESTBOARDD
+void startPattern() {
+    // we only want to run the pattern here. No acquisition, no UDP packets
+    
+    // disable 10G UDP temporarily
+    // except if the pattern explicitly contains udp trigger points
+    uint32_t conf_reg_tmp = bus_r(CONFIG_REG);
+    if((bus_r(STREAMING_CTRL_REG) & STREAMING_CTRL_ENA_MSK) == 0){
+        bus_w(CONFIG_REG, conf_reg_tmp & ~CONFIG_GB10_SND_UDP_MSK);
+    }
+
+    // run the pattern, wait till done
+    LOG(logINFOBLUE, ("Starting Pattern\n"));
+    bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_STRT_ACQSTN_MSK);
+    bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_STRT_ACQSTN_MSK);
+    usleep(1);
+    while (bus_r(STATUS_REG) & STATUS_RN_BSY_MSK) {
+        usleep(1);
+    }
+
+    // go back to original config
+    bus_w(CONFIG_REG, conf_reg_tmp);
+    LOG(logINFOBLUE, ("Pattern done\n"));
+}
+#endif
 #ifdef XILINX_CHIPTESTBOARDD
 void startPattern() {
     LOG(logINFOBLUE, ("Starting Pattern\n"));

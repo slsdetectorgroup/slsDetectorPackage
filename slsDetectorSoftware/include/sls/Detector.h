@@ -1943,7 +1943,7 @@ class Detector {
      * selected bits */
     void setPatternBitMask(uint64_t mask, Positions pos = {});
 
-    /** [Mythen3][Xilinx CTB] */
+    /** [CTB][Mythen3][Xilinx CTB] */
     void startPattern(Positions pos = {});
     ///@}
 

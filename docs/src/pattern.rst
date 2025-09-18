@@ -28,7 +28,7 @@ This instructs the firmware to execute the commands from address 0 to 4 (includi
 .. code-block::
 
    start [Ctb, Xilinx_Ctb]
-   patternstart [Mythen3, Xilinx_Ctb]
+   patternstart [Mythen3, Ctb, Xilinx_Ctb]
 
 The maximal number of patword addresses is 8192. However, it is possible to extend the length of the pattern sequence using loops and wait commands. Loops can be configured with the following commands:
 

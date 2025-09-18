@@ -6517,7 +6517,7 @@ patternstart:
         store_result_in_t: false
   command_name: patternstart
   function_alias: patternstart
-  help: "\n\t[Mythen3][Xilinx Ctb] Starts Pattern"
+  help: "\n\t[Mythen3][Ctb][Xilinx Ctb] Starts Pattern"
   infer_action: true
   template: true
 patwait:

@@ -1473,5 +1473,6 @@ TEST_CASE("definelist", "[.cmdcall]") {
         REQUIRE_THROWS(caller.call("definelist", {"addr"}, -1, GET));
         REQUIRE_THROWS(caller.call("definelist", {"bit"}, -1, GET));
     }
+}
 
 } // namespace sls

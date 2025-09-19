@@ -125,6 +125,6 @@ For Mythen3 the pattern word only connects to output pins of the FPGA when the p
 
 In the default configuration the Ctb will send out udp packets to the sls_receiver for every end of a pattern execution. This behavior can be changed using STREAMING_CTRL_REG, where one can configure a bit position in the 64-bit pattern word to trigger udp packets. This allows to send more than one packet per pattern or also no packets at all.
 
-The "patternstart" command on the Ctb exists because people do not read this documentation and do not expect every pattern to send packets. It automatically suppresses the packet at the end of a pattern. Additional packets via STREAMING_CTRL_REG are still possible.
+The "patternstart" command on the ctb exectues the pattern. As long as streaming_ctrl_reg is disabeld, every pattern execution using this command will not send UDP packets.
 
 For Mythen3 the sending of udp packets is not connected to pattern execution.

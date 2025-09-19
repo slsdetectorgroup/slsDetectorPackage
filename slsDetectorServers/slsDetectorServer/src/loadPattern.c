@@ -633,8 +633,7 @@ void startPattern() {
     }
     LOG(logINFOBLUE, ("Pattern done\n"));
 }
-#endif
-#ifdef CHIPTESTBOARDD
+#elif CHIPTESTBOARDD
 void startPattern() {
     // we only want to run the pattern here. No acquisition, no UDP packets
     
@@ -658,8 +657,7 @@ void startPattern() {
     bus_w(CONFIG_REG, conf_reg_tmp);
     LOG(logINFOBLUE, ("Pattern done\n"));
 }
-#endif
-#ifdef XILINX_CHIPTESTBOARDD
+#elif XILINX_CHIPTESTBOARDD
 void startPattern() {
     LOG(logINFOBLUE, ("Starting Pattern\n"));
     bus_w(FLOW_CONTROL_REG, bus_r(FLOW_CONTROL_REG) | START_F_MSK);

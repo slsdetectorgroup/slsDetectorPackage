@@ -7468,7 +7468,8 @@ int start_pattern(int file_des) {
     memset(mess, 0, sizeof(mess));
 
     LOG(logDEBUG1, ("Starting Pattern\n"));
-#if !defined(MYTHEN3D) && !defined(XILINX_CHIPTESTBOARDD) && !defined(CHIPTESTBOARDD)
+#if !defined(MYTHEN3D) && !defined(XILINX_CHIPTESTBOARDD) &&                   \
+    !defined(CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // only set

@@ -157,3 +157,8 @@ typedef struct udp_header_struct {
 
 enum CLKINDEX { RUN_CLK, ADC_CLK, SYNC_CLK, DBIT_CLK, NUM_CLOCKS };
 #define CLK_NAMES "run", "adc", "sync", "dbit"
+
+#define DEFAULT_RUN_CLK  (20)  // MHz
+#define DEFAULT_ADC_CLK  (100) // MHz
+#define DEFAULT_SYNC_CLK (20)  // MHz
+#define DEFAULT_DBIT_CLK (100) // MHz

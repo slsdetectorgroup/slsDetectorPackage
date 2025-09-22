@@ -40,8 +40,7 @@ char initErrorMessage[MAX_STR_LENGTH];
 
 int detPos[2] = {0, 0};
 
-uint32_t clkFrequency[NUM_CLOCKS] = {20, 100, 20, 100};
-
+uint32_t clkFrequency[NUM_CLOCKS] = {};
 int chipConfigured = 0;
 int analogEnable = 0;
 int digitalEnable = 0;
@@ -376,6 +375,10 @@ void setupDetector() {
     LOG(logINFO, ("Setting up Server for 1 Xilinx Chip Test Board\n"));
 
     // default variables
+    clkFrequency[RUN_CLK] = DEFAULT_RUN_CLK;
+    clkFrequency[ADC_CLK] = DEFAULT_ADC_CLK;
+    clkFrequency[SYNC_CLK] = DEFAULT_SYNC_CLK;
+    clkFrequency[DBIT_CLK] = DEFAULT_DBIT_CLK;
     chipConfigured = 0;
     analogEnable = 0;
     digitalEnable = 0;
@@ -1061,12 +1064,12 @@ int setPeriod(int64_t val) {
         return FAIL;
     }
     LOG(logINFO, ("Setting period %lld ns\n", (long long int)val));
-    val *= (1E-3 * RUN_CLK);
+    val *= (1E-3 * clkFrequency[RUN_CLK]);
     setU64BitReg(val, PERIOD_IN_REG_1, PERIOD_IN_REG_2);
 
     // validate for tolerance
     int64_t retval = getPeriod();
-    val /= (1E-3 * RUN_CLK);
+    val /= (1E-3 * clkFrequency[RUN_CLK]);
     if (val != retval) {
         return FAIL;
     }
@@ -1074,7 +1077,8 @@ int setPeriod(int64_t val) {
 }
 
 int64_t getPeriod() {
-    return getU64BitReg(PERIOD_IN_REG_1, PERIOD_IN_REG_2) / (1E-3 * RUN_CLK);
+    return getU64BitReg(PERIOD_IN_REG_1, PERIOD_IN_REG_2) /
+           (1E-3 * clkFrequency[RUN_CLK]);
 }
 
 int setDelayAfterTrigger(int64_t val) {
@@ -1083,12 +1087,12 @@ int setDelayAfterTrigger(int64_t val) {
         return FAIL;
     }
     LOG(logINFO, ("Setting delay after trigger %ld ns\n", val));
-    val *= (1E-3 * RUN_CLK);
+    val *= (1E-3 * clkFrequency[RUN_CLK]);
     setU64BitReg(val, DELAY_IN_REG_1, DELAY_IN_REG_2);
 
     // validate for tolerance
     int64_t retval = getDelayAfterTrigger();
-    val /= (1E-3 * RUN_CLK);
+    val /= (1E-3 * clkFrequency[RUN_CLK]);
     if (val != retval) {
         return FAIL;
     }
@@ -1096,7 +1100,8 @@ int setDelayAfterTrigger(int64_t val) {
 }
 
 int64_t getDelayAfterTrigger() {
-    return getU64BitReg(DELAY_IN_REG_1, DELAY_IN_REG_2) / (1E-3 * RUN_CLK);
+    return getU64BitReg(DELAY_IN_REG_1, DELAY_IN_REG_2) /
+           (1E-3 * clkFrequency[RUN_CLK]);
 }
 
 int64_t getNumFramesLeft() {
@@ -1108,11 +1113,13 @@ int64_t getNumTriggersLeft() {
 }
 
 int64_t getDelayAfterTriggerLeft() {
-    return getU64BitReg(DELAY_OUT_REG_1, DELAY_OUT_REG_2) / (1E-3 * RUN_CLK);
+    return getU64BitReg(DELAY_OUT_REG_1, DELAY_OUT_REG_2) /
+           (1E-3 * clkFrequency[RUN_CLK]);
 }
 
 int64_t getPeriodLeft() {
-    return getU64BitReg(PERIOD_OUT_REG_1, PERIOD_OUT_REG_2) / (1E-3 * RUN_CLK);
+    return getU64BitReg(PERIOD_OUT_REG_1, PERIOD_OUT_REG_2) /
+           (1E-3 * clkFrequency[RUN_CLK]);
 }
 
 int64_t getFramesFromStart() {

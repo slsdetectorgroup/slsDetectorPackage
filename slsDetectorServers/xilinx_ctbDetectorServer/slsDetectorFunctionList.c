@@ -1129,12 +1129,12 @@ int64_t getFramesFromStart() {
 
 int64_t getActualTime() {
     return getU64BitReg(TIME_FROM_START_OUT_REG_1, TIME_FROM_START_OUT_REG_2) /
-           (1E-3 * TICK_CLK);
+           (1E-3 * clkFrequency[SYNC_CLK]);
 }
 
 int64_t getMeasurementTime() {
     return getU64BitReg(FRAME_TIME_OUT_REG_1, FRAME_TIME_OUT_REG_2) /
-           (1E-3 * TICK_CLK);
+           (1E-3 * clkFrequency[SYNC_CLK]);
 }
 
 /* parameters - dac, adc, hv */
@@ -1802,7 +1802,13 @@ int setFrequency(enum CLKINDEX ind, int val) {
     LOG(logINFO, ("\tSetting %s clock (%d) frequency to %d MHz\n",
                   clock_names[ind], ind, val));
 
-    XILINX_PLL_setFrequency(ind, val);
+    if (XILINX_PLL_setFrequency(ind, val) == FAIL) {
+        LOG(logERROR, ("\tCould not set %s clock (%d) frequency to %d MHz\n",
+                       clock_names[ind], ind, val));
+        return FAIL;
+    }
+    clkFrequency[ind] = val;
+    // TODO later: connect setPhase as phase gets reset on freq change
     return OK;
 }
 
@@ -1811,5 +1817,8 @@ int getFrequency(enum CLKINDEX ind) {
         LOG(logERROR, ("Unknown clock index %d to get frequency\n", ind));
         return -1;
     }
-    return XILINX_PLL_getFrequency(ind);
+#ifndef VIRTUAL
+    clkFrequency[ind] = XILINX_PLL_getFrequency(ind);
+#endif
+    return clkFrequency[ind];
 }

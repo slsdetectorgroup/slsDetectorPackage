@@ -71,8 +71,6 @@
 #define POWER_RGLTR_MAX (2661)
 #define VIO_MIN_MV      (1200) // for fpga to function
 
-#define TICK_CLK (20) // MHz (trig_timeFromStart, frametime, timeFromStart)
-
 /* Defines in the Firmware */
 #define WAIT_TIME_PATTERN_READ  (10)
 #define WAIT_TIME_OUT_0US_TIMES (35000) // 2s

@@ -5839,15 +5839,20 @@ int set_clock_frequency(int file_des) {
                 LOG(logINFO, ("Same %s: %d %s\n", modeName, val,
                               myDetectorType == GOTTHARD2 ? "Hz" : "MHz"));
             } else {
-                setFrequency(c, val);
-                int retval = getFrequency(c);
-                LOG(logDEBUG1, ("retval %s: %d %s\n", modeName, retval,
-                                myDetectorType == GOTTHARD2 ? "Hz" : "MHz"));
-#if !defined(                                                                  \
-    XILINX_CHIPTESTBOARDD) // XCTB will give the actual frequency, which is not
-                           // 100% identical to the set frequency
-                validate(&ret, mess, val, retval, modeName, DEC);
+                int ret = setFrequency(c, val);
+                if (ret == FAIL) {
+                    sprintf(mess, "Could not set %s to %d MHz\n", modeName,
+                            val);
+                    LOG(logERROR, (mess));
+                } else {
+                    int retval = getFrequency(c);
+                    LOG(logDEBUG1, ("retval %s: %d MHz\n", modeName, retval));
+#if !defined(XILINX_CHIPTESTBOARDD)
+                    // XCTB will give the actual frequency, which is not
+                    // 100% identical to the set frequency
+                    validate(&ret, mess, val, retval, modeName, DEC);
 #endif
+                }
             }
         }
     }

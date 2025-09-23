@@ -5841,12 +5841,16 @@ int set_clock_frequency(int file_des) {
             } else {
                 int ret = setFrequency(c, val);
                 if (ret == FAIL) {
-                    sprintf(mess, "Could not set %s to %d MHz\n", modeName,
-                            val);
+                    sprintf(mess, "Could not set %s to %d %s\n", modeName, val,
+                            myDetectorType == XILINX_CHIPTESTBOARD ? "kHz"
+                                                                   : "MHz");
                     LOG(logERROR, (mess));
                 } else {
                     int retval = getFrequency(c);
-                    LOG(logDEBUG1, ("retval %s: %d MHz\n", modeName, retval));
+                    LOG(logDEBUG1,
+                        ("retval %s: %d %s\n", modeName, retval,
+                         myDetectorType == XILINX_CHIPTESTBOARD ? "kHz"
+                                                                : "MHz"));
 #if !defined(XILINX_CHIPTESTBOARDD)
                     // XCTB will give the actual frequency, which is not
                     // 100% identical to the set frequency
@@ -5907,8 +5911,11 @@ int get_clock_frequency(int file_des) {
         LOG(logDEBUG1,
             ("retval %s clock (%d) frequency: %d %s\n", clock_names[c], (int)c,
              retval,
-             myDetectorType == GOTTHARD2 || myDetectorType == MYTHEN3 ? "Hz"
-                                                                      : "MHz"));
+             myDetectorType == XILINX_CHIPTESTBOARD
+                 ? "kHz"
+                 : (myDetectorType == GOTTHARD2 || myDetectorType == MYTHEN3
+                        ? "Hz"
+                        : "MHz")));
     }
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));

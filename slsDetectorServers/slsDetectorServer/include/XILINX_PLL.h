@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-void XILINX_PLL_setFrequency(uint32_t clk_index, uint32_t freq);
+int XILINX_PLL_setFrequency(uint32_t clk_index, uint32_t freq);
 uint32_t XILINX_PLL_getFrequency(uint32_t clkIDX);
 bool XILINX_PLL_isLocked();
 void XILINX_PLL_reset();

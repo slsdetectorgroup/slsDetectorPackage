@@ -71,8 +71,6 @@
 #define POWER_RGLTR_MAX (2661)
 #define VIO_MIN_MV      (1200) // for fpga to function
 
-#define TICK_CLK (20) // MHz (trig_timeFromStart, frametime, timeFromStart)
-
 /* Defines in the Firmware */
 #define WAIT_TIME_PATTERN_READ  (10)
 #define WAIT_TIME_OUT_0US_TIMES (35000) // 2s
@@ -157,3 +155,8 @@ typedef struct udp_header_struct {
 
 enum CLKINDEX { RUN_CLK, ADC_CLK, SYNC_CLK, DBIT_CLK, NUM_CLOCKS };
 #define CLK_NAMES "run", "adc", "sync", "dbit"
+
+#define DEFAULT_RUN_CLK  (20000)  // 20 MHz
+#define DEFAULT_ADC_CLK  (100000) // 100 MHz
+#define DEFAULT_SYNC_CLK (20000)  // 20 MHz
+#define DEFAULT_DBIT_CLK (100000) // 100 MHz

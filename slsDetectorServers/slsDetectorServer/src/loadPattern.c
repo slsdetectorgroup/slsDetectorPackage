@@ -623,28 +623,43 @@ uint64_t getPatternBitMask() {
     return getU64BitReg(PATTERN_SET_LSB_REG, PATTERN_SET_MSB_REG);
 }
 
-#ifdef MYTHEN3D
 void startPattern() {
     LOG(logINFOBLUE, ("Starting Pattern\n"));
+#ifdef MYTHEN3D
     bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_STRT_PATTERN_MSK);
     usleep(1);
     while (bus_r(PAT_STATUS_REG) & PAT_STATUS_RUN_BUSY_MSK) {
         usleep(1);
     }
-    LOG(logINFOBLUE, ("Pattern done\n"));
-}
-#endif
-#ifdef XILINX_CHIPTESTBOARDD
-void startPattern() {
-    LOG(logINFOBLUE, ("Starting Pattern\n"));
+#elif CHIPTESTBOARDD
+    // we only want to run the pattern here. No acquisition, no UDP packets
+
+    // disable 10G UDP temporarily
+    // except if the pattern explicitly contains udp trigger points
+    uint32_t conf_reg_tmp = bus_r(CONFIG_REG);
+    if ((bus_r(STREAMING_CTRL_REG) & STREAMING_CTRL_ENA_MSK) == 0) {
+        bus_w(CONFIG_REG, conf_reg_tmp & ~CONFIG_GB10_SND_UDP_MSK);
+    }
+
+    // run the pattern, wait till done
+    bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_STRT_ACQSTN_MSK);
+    bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_STRT_ACQSTN_MSK);
+    usleep(1);
+    while (bus_r(STATUS_REG) & STATUS_RN_BSY_MSK) {
+        usleep(1);
+    }
+
+    // go back to original config
+    bus_w(CONFIG_REG, conf_reg_tmp);
+#elif XILINX_CHIPTESTBOARDD
     bus_w(FLOW_CONTROL_REG, bus_r(FLOW_CONTROL_REG) | START_F_MSK);
     usleep(1);
     while (bus_r(FLOW_CONTROL_REG) & RSM_BUSY_MSK) {
         usleep(1);
     }
+#endif
     LOG(logINFOBLUE, ("Pattern done\n"));
 }
-#endif
 
 char *getPatternFileName() { return clientPatternfile; }
 

@@ -72,14 +72,14 @@
 // clang-format on
 
 // freq in kHz !!
-void XILINX_PLL_setFrequency(uint32_t clk_index, uint32_t freq) {
+int XILINX_PLL_setFrequency(uint32_t clk_index, uint32_t freq) {
     if (clk_index >= XILINX_PLL_NUM_CLKS) {
         LOG(logERROR, ("XILINX_PLL: Invalid clock index %d\n", clk_index));
-        return;
+        return 1;
     }
     if (freq < XILINX_PLL_MIN_FREQ || freq > XILINX_PLL_MAX_FREQ) {
         LOG(logERROR, ("XILINX_PLL: Frequency %d kHz is out of range\n", freq));
-        return;
+        return 1;
     }
 
     // calculate base clock frequency
@@ -103,7 +103,7 @@ void XILINX_PLL_setFrequency(uint32_t clk_index, uint32_t freq) {
     if (clk_div < 1 || clk_div > XILINX_PLL_MAX_CLK_DIV) {
         LOG(logERROR,
             ("XILINX_PLL: Invalid clock divider, need to change base clock\n"));
-        return;
+        return 1;
     }
 
     uint32_t clk_div_frac = 0;
@@ -140,18 +140,19 @@ void XILINX_PLL_setFrequency(uint32_t clk_index, uint32_t freq) {
 
     // wait for firmware to measure the actual frequency
     usleep(2 * 1000 * 1000);
+    return 0;
 }
 
 uint32_t XILINX_PLL_getFrequency(uint32_t clk_index) {
     if (clk_index >= XILINX_PLL_NUM_CLKS) {
         LOG(logERROR, ("XILINX_PLL: Invalid clock index %d\n", clk_index));
-        return 0;
+        return -1;
     }
     if (clk_index > XILINX_PLL_MAX_NUM_CLKS_FOR_GET) {
         LOG(logERROR,
             ("XILINX_PLL: get frequency not implemented for this clock %d\n",
              clk_index));
-        return 0;
+        return -1;
     }
 
     uint32_t base_addr = XILINX_PLL_MEASURE_BASE_ADDR0;

@@ -54,6 +54,7 @@
 #define DEFAULT_ADC_CLK               (40)  // 20
 #define DEFAULT_SYNC_CLK              (40)  // 20
 #define DEFAULT_DBIT_CLK              (200)
+#define NS_TO_CLK_CYCLE               (1E-3) // ns to MHz
 #define DEFAULT_TRANSCEIVER_MASK      (0x3)
 
 #define MAX_TRANSCEIVER_MASK    (0xF)

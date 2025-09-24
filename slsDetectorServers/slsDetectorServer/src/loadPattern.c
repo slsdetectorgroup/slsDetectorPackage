@@ -307,7 +307,7 @@ uint64_t getPatternWaitInterval(int level) {
         LOG(logERROR, ("runclk is 0. Cannot divide by 0. Returning -1.\n"));
         return -1;
     }
-    return numClocks / (1E-3 * runclk);
+    return numClocks / (NS_TO_CLK_CYCLE * runclk);
 }
 
 int validate_setPatternWaitClocksAndInterval(char *message, int level,
@@ -381,7 +381,7 @@ void setPatternWaitInterval(int level, uint64_t t) {
 #elif MYTHEN3D
     runclk = clkDivider[SYSTEM_C0];
 #endif
-    uint64_t numClocks = t * (1E-3 * runclk);
+    uint64_t numClocks = t * (NS_TO_CLK_CYCLE * runclk);
     setPatternWaitClocks(level, numClocks);
 }
 

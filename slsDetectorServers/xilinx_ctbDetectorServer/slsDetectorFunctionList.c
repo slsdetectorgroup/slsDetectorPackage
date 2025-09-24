@@ -1064,12 +1064,12 @@ int setPeriod(int64_t val) {
         return FAIL;
     }
     LOG(logINFO, ("Setting period %lld ns\n", (long long int)val));
-    val *= (1E-3 * clkFrequency[RUN_CLK]);
+    val *= (NS_TO_CLK_CYCLE * clkFrequency[RUN_CLK]);
     setU64BitReg(val, PERIOD_IN_REG_1, PERIOD_IN_REG_2);
 
     // validate for tolerance
     int64_t retval = getPeriod();
-    val /= (1E-3 * clkFrequency[RUN_CLK]);
+    val /= (NS_TO_CLK_CYCLE * clkFrequency[RUN_CLK]);
     if (val != retval) {
         return FAIL;
     }
@@ -1078,7 +1078,7 @@ int setPeriod(int64_t val) {
 
 int64_t getPeriod() {
     return getU64BitReg(PERIOD_IN_REG_1, PERIOD_IN_REG_2) /
-           (1E-3 * clkFrequency[RUN_CLK]);
+           (NS_TO_CLK_CYCLE * clkFrequency[RUN_CLK]);
 }
 
 int setDelayAfterTrigger(int64_t val) {
@@ -1087,12 +1087,12 @@ int setDelayAfterTrigger(int64_t val) {
         return FAIL;
     }
     LOG(logINFO, ("Setting delay after trigger %ld ns\n", val));
-    val *= (1E-3 * clkFrequency[RUN_CLK]);
+    val *= (NS_TO_CLK_CYCLE * clkFrequency[RUN_CLK]);
     setU64BitReg(val, DELAY_IN_REG_1, DELAY_IN_REG_2);
 
     // validate for tolerance
     int64_t retval = getDelayAfterTrigger();
-    val /= (1E-3 * clkFrequency[RUN_CLK]);
+    val /= (NS_TO_CLK_CYCLE * clkFrequency[RUN_CLK]);
     if (val != retval) {
         return FAIL;
     }
@@ -1101,7 +1101,7 @@ int setDelayAfterTrigger(int64_t val) {
 
 int64_t getDelayAfterTrigger() {
     return getU64BitReg(DELAY_IN_REG_1, DELAY_IN_REG_2) /
-           (1E-3 * clkFrequency[RUN_CLK]);
+           (NS_TO_CLK_CYCLE * clkFrequency[RUN_CLK]);
 }
 
 int64_t getNumFramesLeft() {
@@ -1114,12 +1114,12 @@ int64_t getNumTriggersLeft() {
 
 int64_t getDelayAfterTriggerLeft() {
     return getU64BitReg(DELAY_OUT_REG_1, DELAY_OUT_REG_2) /
-           (1E-3 * clkFrequency[RUN_CLK]);
+           (NS_TO_CLK_CYCLE * clkFrequency[RUN_CLK]);
 }
 
 int64_t getPeriodLeft() {
     return getU64BitReg(PERIOD_OUT_REG_1, PERIOD_OUT_REG_2) /
-           (1E-3 * clkFrequency[RUN_CLK]);
+           (NS_TO_CLK_CYCLE * clkFrequency[RUN_CLK]);
 }
 
 int64_t getFramesFromStart() {
@@ -1129,12 +1129,12 @@ int64_t getFramesFromStart() {
 
 int64_t getActualTime() {
     return getU64BitReg(TIME_FROM_START_OUT_REG_1, TIME_FROM_START_OUT_REG_2) /
-           (1E-3 * clkFrequency[SYNC_CLK]);
+           (NS_TO_CLK_CYCLE * clkFrequency[SYNC_CLK]);
 }
 
 int64_t getMeasurementTime() {
     return getU64BitReg(FRAME_TIME_OUT_REG_1, FRAME_TIME_OUT_REG_2) /
-           (1E-3 * clkFrequency[SYNC_CLK]);
+           (NS_TO_CLK_CYCLE * clkFrequency[SYNC_CLK]);
 }
 
 /* parameters - dac, adc, hv */

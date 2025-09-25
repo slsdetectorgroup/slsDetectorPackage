@@ -9,7 +9,7 @@ Welcome to slsDetectorPackage's documentation!
 .. note :: 
 
     This is the documentation for the latest development version of slsDetectorPackage.
-    For further documentation, visit the official page: https://www.psi.ch/en/detectors/documentation
+    For further detector specific documentation, visit [`this page <https://www.psi.ch/en/detectors/documentation>`__]. 
 
 .. toctree::
     :maxdepth: 3

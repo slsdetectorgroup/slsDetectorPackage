@@ -318,6 +318,9 @@ void CtbConfig::addEntry(const char* name, const int value, const bool is_regist
     ++(*size_ptr);
 }
 
+int CtbConfig::getRegisterNamesCount() const { 
+    return num_regs; 
+}
 
 void CtbConfig::setRegisterName(const std::string &name, const int value) {
     addEntry(name.c_str(), value, true);
@@ -354,12 +357,15 @@ std::vector<std::pair<std::string, int>> CtbConfig::getRegisterNames() const {
     return names;
 }
 
+int CtbConfig::getBitNamesCount() const { 
+    return num_bits; 
+}
 
 void CtbConfig::setBitName(const std::string &name, const int value) {
     addEntry(name.c_str(), value, false);
 }
 
-std::optional<int> CtbConfig::getBitAddress(const std::string &name) const {
+std::optional<int> CtbConfig::getBitPosition(const std::string &name) const {
     return lookupEntryByName(name.c_str(), false);
 }
 

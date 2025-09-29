@@ -62,6 +62,7 @@ class InferAction {
     int dbitpipeline();
     int defaultdac();
     int defaultpattern();
+    int define();
     int delay();
     int delayl();
     int detectorserverversion();
@@ -394,6 +395,7 @@ class InferAction {
         {"dbitpipeline", &InferAction::dbitpipeline},
         {"defaultdac", &InferAction::defaultdac},
         {"defaultpattern", &InferAction::defaultpattern},
+        {"define", &InferAction::define},
         {"delay", &InferAction::delay},
         {"delayl", &InferAction::delayl},
         {"detectorserverversion", &InferAction::detectorserverversion},

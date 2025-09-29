@@ -2579,6 +2579,111 @@ std::string Detector::getSlowADCName(const defs::dacIndex i) const {
     return pimpl->getCtbSlowADCName(i);
 }
 
+int Detector::getRegisterDefinitionsCount() const {
+    auto dettype = getDetectorType().squash();
+    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
+        throw RuntimeError("Register Definitions only for CTB");
+    return pimpl->getRegisterDefinitionsCount();
+}
+
+void Detector::setRegisterDefinition(const std::string &name, const int value) {
+    auto dettype = getDetectorType().squash();
+    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
+        throw RuntimeError("Register Definitions only for CTB");
+    pimpl->setRegisterDefinition(name, value);
+}
+
+bool Detector::hasRegisterDefinition(const std::string &name) const {
+    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
+        throw RuntimeError("Register Definitions only for CTB");
+    return pimpl->hasRegisterDefinition(name);
+}
+
+int Detector::getRegisterDefinitionByName(const std::string &name) const {
+    auto dettype = getDetectorType().squash();
+    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
+        throw RuntimeError("Register Definitions only for CTB");
+    return pimpl->getRegisterDefinitionByName(name);
+}
+
+std::string Detector::getRegisterDefinitionByValue(const int value) const {
+    auto dettype = getDetectorType().squash();
+    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
+        throw RuntimeError("Register Definitions only for CTB");
+    return pimpl->getRegisterDefinitionByValue(value);
+}
+
+void Detector::clearRegisterDefinitions() {
+    auto dettype = getDetectorType().squash();
+    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
+        throw RuntimeError("Register Definitions only for CTB");
+    pimpl->setRegisterDefinitions(std::vector<std::pair<std::string, int>>{});
+}
+
+void Detector::setRegisterDefinitions(const std::vector<std::pair<std::string, int>> &list) {
+    auto dettype = getDetectorType().squash();
+    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
+        throw RuntimeError("Register Definitions only for CTB");
+    pimpl->setRegisterDefinitions(list);
+}
+
+std::vector<std::pair<std::string, int>> Detector::getRegisterDefinitions() const {
+    auto dettype = getDetectorType().squash();
+    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
+        throw RuntimeError("Register Definitions only for CTB");
+    return pimpl->getRegisterDefinitions();
+}
+
+int Detector::getBitDefinitionsCount() const {
+    auto dettype = getDetectorType().squash();
+    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
+        throw RuntimeError("Bit Definitions only for CTB");
+    return pimpl->getBitDefinitionsCount();
+}
+
+void Detector::setBitDefinition(const std::string &name, const int value) {
+    auto dettype = getDetectorType().squash();
+    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
+        throw RuntimeError("Bit Definitions only for CTB");
+    pimpl->setBitDefinition(name, value);
+}
+
+bool Detector::hasBitDefinition(const std::string &name) const {
+    auto dettype = getDetectorType().squash();
+    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
+        throw RuntimeError("Bit Definitions only for CTB");
+    return pimpl->hasBitDefinition(name);
+}
+
+int Detector::getBitDefinitionByName(const std::string &name) const {
+    auto dettype = getDetectorType().squash();
+    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
+        throw RuntimeError("Bit Definitions only for CTB");
+    return pimpl->getBitDefinitionByName(name);
+}
+
+void Detector::clearBitDefinitions() {
+    auto dettype = getDetectorType().squash();
+    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
+        throw RuntimeError("Bit Definitions only for CTB");
+    pimpl->setBitDefinitions(std::vector<std::pair<std::string, int>>{});
+}
+
+void Detector::setBitDefinitions(const std::vector<std::pair<std::string, int>> &list) {
+    auto dettype = getDetectorType().squash();
+    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
+        throw RuntimeError("Bit Definitions only for CTB");
+    pimpl->setBitDefinitions(list);
+}
+
+std::vector<std::pair<std::string, int>> Detector::getBitDefinitions() const {
+    auto dettype = getDetectorType().squash();
+    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
+        throw RuntimeError("Bit Definitions only for CTB");
+    return pimpl->getBitDefinitions();
+}
+
+
 // Xilinx Ctb Specific
 
 void Detector::configureTransceiver(Positions pos) {

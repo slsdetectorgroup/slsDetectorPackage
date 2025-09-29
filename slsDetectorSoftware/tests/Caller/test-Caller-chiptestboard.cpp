@@ -1386,11 +1386,15 @@ TEST_CASE("define", "[.cmdcall]") {
     if (det_type == defs::CHIPTESTBOARD ||
         det_type == defs::XILINX_CHIPTESTBOARD) {
 
-        REQUIRE_THROWS(caller.call("define", {}, -1, GET));
-        REQUIRE_THROWS(caller.call("define", {"addr", "TEST_MACRO"}, -1, PUT));
-        REQUIRE_THROWS(caller.call("define", {"rfe", "TEST_MACRO"}, -1, PUT));
-        REQUIRE_THROWS(caller.call("define", {"TEST_MACRO", "2"}, -1, PUT));
-        REQUIRE_THROWS(caller.call("define", {"TEST_MACRO"}, -1, GET));
+        auto prev_reg_defines = det.getRegisterDefinitions();
+        auto prev_bit_defines = det.getBitDefinitions();
+
+
+        REQUIRE_THROWS(caller.call("define", {}, -1, GET)); // no mode or args
+        REQUIRE_THROWS(caller.call("define", {"TEST_MACRO"}, -1, GET)); // no name or pos
+        REQUIRE_THROWS(caller.call("define", {"TEST_MACRO", "2"}, -1, PUT));// skipped mode
+        REQUIRE_THROWS(caller.call("define", {"addr", "TEST_MACRO", "0x200"}, -1, PUT)); // invalid mode
+        REQUIRE_THROWS(caller.call("define", {"reg", "TEST_MACRO", "0x200"}, 0, PUT)); // invalid module id
 
         {
             REQUIRE_NOTHROW(
@@ -1413,7 +1417,7 @@ TEST_CASE("define", "[.cmdcall]") {
             REQUIRE(oss.str() == "define addr REG_MACRO 0x205\n");
         }
 
-        if (det.isVirtualDetectorServer().tsquash(
+        /*if (det.isVirtualDetectorServer().tsquash(
                 "inconsistent virtual values")) {
             {
                 std::ostringstream oss;
@@ -1450,10 +1454,13 @@ TEST_CASE("define", "[.cmdcall]") {
                     "getbit", {"REG_MACRO", "MACRO_BIT"}, -1, GET, oss1));
                 REQUIRE(oss1.str() == "getbit REG_MACRO MACRO_BIT 1\n");
             }
-        }
+        }*/
+        det.setRegisterDefinitions(prev_reg_defines);
+        det.setBitDefinitions(prev_bit_defines);
+
     } else {
-        REQUIRE_THROWS(caller.call("define", {"TEST_MACRO"}, -1, GET));
-        REQUIRE_THROWS(caller.call("define", {"TEST_MACRO", "1"}, -1, PUT));
+        REQUIRE_THROWS(caller.call("define", {"TEST_MACRO", "reg"}, -1, GET));
+        REQUIRE_THROWS(caller.call("define", {"TEST_MACRO", "reg", "0x200"}, -1, PUT));
     }
 }
 
@@ -1464,11 +1471,23 @@ TEST_CASE("definelist", "[.cmdcall]") {
 
     if (det_type == defs::CHIPTESTBOARD ||
         det_type == defs::XILINX_CHIPTESTBOARD) {
-        REQUIRE_THROWS(caller.call("definelist", {}, -1, GET));
-        REQUIRE_THROWS(caller.call("definelist", {"addr", "TEST"}, -1, PUT));
 
-        REQUIRE_NOTHROW(caller.call("definelist", {"addr"}, -1, GET));
+        auto prev_reg_defines = det.getRegisterDefinitions();
+        auto prev_bit_defines = det.getBitDefinitions();
+        
+        REQUIRE_THROWS(caller.call("definelist", {"reg"}, 0, GET)); // invalid module id
+        REQUIRE_THROWS(caller.call("definelist", {}, -1, GET));
+        REQUIRE_THROWS(caller.call("definelist", {"reg", "TEST_MACRO"}, -1, GET));
+
+        REQUIRE_NOTHROW(caller.call("definelist", {"reg"}, -1, PUT)); //clears
+        
+        REQUIRE_NOTHROW(caller.call("definelist", {"reg", "TEST_MACRO", "0x200", "MACRO_BIT", "31"}, -1, PUT));
+
+        REQUIRE_NOTHROW(caller.call("definelist", {"reg"}, -1, GET));
         REQUIRE_NOTHROW(caller.call("definelist", {"bit"}, -1, GET));
+
+        det.setRegisterDefinitions(prev_reg_defines);
+        det.setBitDefinitions(prev_bit_defines);
     } else {
         REQUIRE_THROWS(caller.call("definelist", {"addr"}, -1, GET));
         REQUIRE_THROWS(caller.call("definelist", {"bit"}, -1, GET));

@@ -107,6 +107,7 @@ class Caller {
     std::string dbitpipeline(int action);
     std::string defaultdac(int action);
     std::string defaultpattern(int action);
+    std::string define(int action);
     std::string delay(int action);
     std::string delayl(int action);
     std::string detectorserverversion(int action);
@@ -451,6 +452,7 @@ class Caller {
         {"dbitpipeline", &Caller::dbitpipeline},
         {"defaultdac", &Caller::defaultdac},
         {"defaultpattern", &Caller::defaultpattern},
+        {"define", &Caller::define},
         {"delay", &Caller::delay},
         {"delayl", &Caller::delayl},
         {"detectorserverversion", &Caller::detectorserverversion},

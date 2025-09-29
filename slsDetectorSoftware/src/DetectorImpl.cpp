@@ -2017,4 +2017,78 @@ void DetectorImpl::setCtbSlowADCName(const defs::dacIndex index,
     ctb_shm()->setSlowADCName(static_cast<int>(index - defs::SLOW_ADC0), name);
 }
 
+int DetectorImpl::getRegisterDefinitionsCount() const {
+    ctb_shm()->getRegisterNamesCount();
+}
+
+void DetectorImpl::setRegisterDefinition(const std::string &name, const int value) {
+    ctb_shm()->setRegisterName(name, value);
+}
+
+bool DetectorImpl::hasRegisterDefinition(const std::string &name) const {
+    return ctb_shm()->getRegisterAddress(name).has_value();
+}
+
+int DetectorImpl::getRegisterDefinitionByName(const std::string &name) const {
+    auto val = ctb_shm()->getRegisterAddress(name);
+    if (!val.has_value()) {
+        throw RuntimeError("No register definition found for name: " + name);
+    }
+    return val.value();
+}
+
+std::string DetectorImpl::getRegisterDefinitionByValue(const int value) const {
+    auto val = ctb_shm()->getRegisterName(value);
+    if (!val.has_value()) {
+        throw RuntimeError("No register definition found for address: " + value);
+    }
+    return val.value();
+}
+
+void DetectorImpl::clearRegisterDefinitions() {
+    ctb_shm()->clearRegisterNames();
+}
+
+void DetectorImpl::setRegisterDefinitions(const std::vector<std::pair<std::string, int>> &list){
+    ctb_shm()->setRegisterNames(list);
+}
+
+std::vector<std::pair<std::string, int>> DetectorImpl::getRegisterDefinitions() const{
+    return ctb_shm()->getRegisterNames();
+}
+
+int DetectorImpl::getBitDefinitionsCount() const {
+    return ctb_shm()->getBitNamesCount();
+}
+
+void DetectorImpl::setBitDefinition(const std::string &name, const int value) {
+    ctb_shm()->setBitName(name, value);
+}
+
+bool DetectorImpl::hasBitDefinition(const std::string &name) const {
+    return ctb_shm()->getBitPosition(name).has_value();
+}
+
+int DetectorImpl::getBitDefinitionByName(const std::string &name) const {
+    auto val = ctb_shm()->getBitPosition(name);
+    if (!val.has_value()) {
+        throw RuntimeError("No bit definition found for name: " + name);
+    }
+    return val.value();
+}
+
+void DetectorImpl::clearBitDefinitions() {
+    ctb_shm()->clearBitNames();
+}
+
+void DetectorImpl::setBitDefinitions(const std::vector<std::pair<std::string, int>> &list) {
+    ctb_shm()->setBitNames(list);
+}
+
+std::vector<std::pair<std::string, int>> DetectorImpl::getBitDefinitions() const {
+    return ctb_shm()->getBitNames();
+}
+
+
+
 } // namespace sls

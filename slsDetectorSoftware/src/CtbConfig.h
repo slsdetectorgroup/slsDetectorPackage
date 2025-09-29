@@ -91,6 +91,7 @@ class CtbConfig {
     std::vector<std::string> getSlowADCNames() const;
     static const char *shm_tag();
 
+    int getRegisterNamesCount() const;
     void setRegisterName(const std::string &name, const int value);
     std::optional<int> getRegisterAddress(const std::string &name) const;
     std::optional<std::string> getRegisterName(const int value) const;
@@ -99,8 +100,9 @@ class CtbConfig {
     std::vector<std::pair<std::string, int>> getRegisterNames() const;
 
 
+    int getBitNamesCount() const;
     void setBitName(const std::string &name, const int value);
-    std::optional<int> getBitAddress(const std::string &name) const;
+    std::optional<int> getBitPosition(const std::string &name) const;
     void clearBitNames();
     void setBitNames(const std::vector<std::pair<std::string, int>> &list);
     std::vector<std::pair<std::string, int>> getBitNames() const;

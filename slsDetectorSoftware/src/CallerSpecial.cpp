@@ -1436,5 +1436,74 @@ std::string Caller::sleep(int action) {
     }
     return os.str();
 }
+std::string Caller::define(int action) {
+    std::ostringstream os;
+    if (action == defs::HELP_ACTION) {
+        os << "[name] [reg/bit] [address or bit position]\n\tSets a user defined register or bit name in shared memory. One can get the address or bit position using the name. One can get the name using the address only for registers. One can then use this user-defined name in other commands instead of hard coding the address or bit position such as for reg, setbit, clearbit and getbit commands. The name can be upto 32 characters long."
+           << '\n';
+        return os.str();   
+    } 
+    if (action != defs::GET_ACTION && action != defs::PUT_ACTION) {
+        throw RuntimeError("Unknown action");
+    } 
 
+    auto det_type = det->getDetectorType().squash();
+    if (det_type != defs::XILINX_CHIPTESTBOARD && det_type != defs::CHIPTESTBOARD) {
+        throw RuntimeError("define command only supported for ctb and xilinx_ctb");
+    }
+
+    if (det_id != -1) {
+        throw RuntimeError(
+            "Cannot use define at module level. Use the default multi-module level");
+    }
+
+    if (args.size() < 1) {
+        WrongNumberOfParameters(1);
+    }
+
+    if (args[0] != "reg" && args[0] != "bit") {
+        throw RuntimeError("Unknown argument " + args[0] +
+                            ". Did you mean register or bit?");
+    }
+
+    if (action == defs::GET_ACTION) {
+        if (args.size() != 2) {
+            WrongNumberOfParameters(2);
+        }
+        if (args[0] == "reg") {
+            try {
+                // get name from address
+                int addr = StringTo<int>(args[1]);
+                auto t = det->getRegisterDefinitionByValue(addr);
+                os << OutString(t) << '\n';
+            } catch (...) {
+                // get address from name
+                auto t = det->getRegisterDefinitionByName(args[1]);
+                os << OutStringHex(t) << '\n';
+            }
+        } else if (args[0] == "bit") {
+            // get position from name
+            auto t = det->getBitDefinitionByName(args[1]);
+            os << OutString(t) << '\n';
+        }
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() != 3) {
+            WrongNumberOfParameters(3);
+        }
+        if (args[0] == "reg") {
+            int addr = StringTo<int>(args[2]);
+            det->setRegisterDefinition(args[1], addr);
+            os << "reg " << args[1] << ' ' << ToStringHex(addr) << '\n';
+        } else if (args[0] == "bit") {
+            int pos = StringTo<int>(args[2]);
+            det->setBitDefinition(args[1], pos);
+            os << ToString(args) << '\n';
+        }
+    }
+    return os.str();
+}
+std::string Caller::definelist(int action) {
+    std::ostringstream os;
+    
+}
 } // namespace sls

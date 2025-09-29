@@ -11,8 +11,8 @@ namespace sls {
 
 TEST_CASE("Default construction") {
     static_assert(sizeof(CtbConfig) ==
-                      (2 * sizeof(int) + (18 + 32 + 64 + 5 + 8) * 32) + 16 +
-                          (64 + 64) * (32 + 4),
+                      (2 * sizeof(int) + (18 + 32 + 64 + 5 + 8) * 32) + (16 +
+                          (64 + 64) * (32 + 4)),
                   "Size of CtbConfig does not match ");
 
     CtbConfig c;
@@ -47,6 +47,11 @@ TEST_CASE("Default construction") {
     REQUIRE(sensenames[1] == "SLOWADC1");
     REQUIRE(sensenames[2] == "SLOWADC2");
     REQUIRE(sensenames[3] == "SLOWADC3");
+    auto regisernames = c.getRegisterNames();
+    REQUIRE(regisernames.size() == 0);
+    auto bitnames = c.getBitNames();
+    REQUIRE(bitnames.size() == 0);
+
 }
 
 TEST_CASE("Set and get a single dac name") {
@@ -84,6 +89,124 @@ TEST_CASE("Move CtbConfig ") {
     c1.setDacName(3, "yetanothername");
     CtbConfig c2(std::move(c1));
     REQUIRE(c2.getDacName(3) == "yetanothername");
+}
+
+TEST_CASE("Add or modify a register name") {
+    CtbConfig c;
+    REQUIRE(c.getRegisterNamesCount() == 0);
+
+    REQUIRE_THROWS(c.setRegisterName("reg1_with_a_really_long_name_to_crash", 100));
+
+    // add an entry
+    REQUIRE_NOTHROW(c.setRegisterName("reg1", 100));
+    REQUIRE(c.getRegisterName(100).value() == "reg1");
+    REQUIRE(c.getRegisterAddress("reg1").value() == 100);
+    REQUIRE(c.getRegisterNamesCount() == 1);
+    // modify an entry
+    REQUIRE_NOTHROW(c.setRegisterName("reg1", 0x300));
+    REQUIRE(c.getRegisterAddress("reg1").value() == 0x300);
+    // clear all entries
+    REQUIRE_NOTHROW(c.clearRegisterNames());
+    REQUIRE(c.getRegisterNamesCount() == 0);
+}
+
+TEST_CASE("Add a register list") {
+    CtbConfig c;
+    REQUIRE(c.getRegisterNamesCount() == 0);
+
+    // add a list
+    std::vector<std::pair<std::string, int>> list = {
+        {"reg1", 0x100}, {"reg2", 0x200}, {"reg3", 0x300}};
+    REQUIRE_NOTHROW(c.setRegisterNames(list));
+    REQUIRE(c.getRegisterNamesCount() == 3);
+    auto names = c.getRegisterNames();
+    REQUIRE(names.size() == 3);
+    REQUIRE(names[0].first == "reg1");
+    REQUIRE(names[0].second == 0x100);
+    REQUIRE(names[1].first == "reg2");
+    REQUIRE(names[1].second == 0x200);
+    REQUIRE(names[2].first == "reg3");      
+    REQUIRE(names[2].second == 0x300);
+
+    // clear all entries
+    REQUIRE_NOTHROW(c.clearRegisterNames());
+    REQUIRE(c.getRegisterNames().size() == 0);
+}
+
+TEST_CASE("Finding a regiser name or address") {
+    CtbConfig c;
+
+    // find nothing
+    REQUIRE(c.getRegisterNamesCount() == 0);
+    REQUIRE(c.getRegisterName(100) == std::nullopt);
+    REQUIRE(c.getRegisterAddress("reg1") == std::nullopt); 
+
+    std::vector<std::pair<std::string, int>> list = {
+        {"reg1", 0x100}, {"reg2", 0x200}, {"reg3", 0x300}};
+    REQUIRE_NOTHROW(c.setRegisterNames(list));
+
+    // find
+    REQUIRE(c.getRegisterName(0x100).value() == "reg1");
+    REQUIRE(c.getRegisterName(0x200).value() == "reg2");
+    REQUIRE(c.getRegisterAddress("reg3").value() == 0x300);
+}
+
+TEST_CASE("Add or modify a bit name") {
+    CtbConfig c;
+    REQUIRE(c.getBitNamesCount() == 0);
+
+    REQUIRE_THROWS(c.setBitName("bit1_with_a_really_long_name_to_crash", 100));
+    REQUIRE_THROWS(c.setBitName("bit1", 32));
+    REQUIRE_THROWS(c.setBitName("bit1", -1));
+
+    // add an entry
+    REQUIRE_NOTHROW(c.setBitName("bit1", 2));
+    REQUIRE(c.getBitPosition("bit1").value() == 2);
+    REQUIRE(c.getBitNamesCount() == 1);
+    // modify an entry
+    REQUIRE_NOTHROW(c.setBitName("bit1", 5));
+    REQUIRE(c.getBitPosition("bit1").value() == 5);
+    // clear all entries
+    REQUIRE_NOTHROW(c.clearBitNames());
+    REQUIRE(c.getBitNamesCount() == 0);
+}
+
+TEST_CASE("Add a bit list") {
+    CtbConfig c;
+    REQUIRE(c.getBitNamesCount() == 0);
+
+    // add a list
+    std::vector<std::pair<std::string, int>> list = {
+        {"bit1", 2}, {"reg2", 21}, {"reg3", 31}};
+    REQUIRE_NOTHROW(c.setBitNames(list));
+    REQUIRE(c.getBitNamesCount() == 3);
+    auto names = c.getBitNames();
+    REQUIRE(names.size() == 3);
+    REQUIRE(names[0].first == "bit1");
+    REQUIRE(names[0].second == 2);
+    REQUIRE(names[1].first == "reg2");
+    REQUIRE(names[1].second == 21);
+    REQUIRE(names[2].first == "reg3");      
+    REQUIRE(names[2].second == 31);
+
+    // clear all entries
+    REQUIRE_NOTHROW(c.clearBitNames());
+    REQUIRE(c.getBitNames().size() == 0);
+}
+
+TEST_CASE("Finding a bit value") {
+    CtbConfig c;
+
+    // find nothing
+    REQUIRE(c.getBitNamesCount() == 0);
+    REQUIRE(c.getBitPosition("bit1") == std::nullopt); 
+
+    std::vector<std::pair<std::string, int>> list = {
+        {"bit1", 2}, {"reg2", 21}, {"reg3", 31}};
+    REQUIRE_NOTHROW(c.setBitNames(list));
+
+    // find
+    REQUIRE(c.getBitPosition("reg3").value() == 31);
 }
 
 } // namespace sls

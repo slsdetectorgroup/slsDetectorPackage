@@ -443,14 +443,15 @@ void cleanFifos() {
     uint32_t t_enable_mask = getTransceiverEnableMask();
     uint32_t tclean_msk =
         ((t_enable_mask << X_FIFO_CLEAN_OFST) & X_FIFO_CLEAN_MSK);
+    uint32_t t_before_reg = bus_r(X_FIFO_CLEAN_REG);
     LOG(logINFO, ("Clearing Acquisition Fifos\n"));
     bus_w(A_FIFO_CLEAN_REG, bus_r(A_FIFO_CLEAN_REG) | BIT32_MSK);
     bus_w(D_FIFO_CLEAN_REG, bus_r(D_FIFO_CLEAN_REG) | D_FIFO_CLEAN_MSK);
-    bus_w(X_FIFO_CLEAN_REG, bus_r(X_FIFO_CLEAN_REG) | tclean_msk);
+    bus_w(X_FIFO_CLEAN_REG, t_before_reg | tclean_msk);
 
     bus_w(A_FIFO_CLEAN_REG, 0);
     bus_w(D_FIFO_CLEAN_REG, bus_r(D_FIFO_CLEAN_REG) & ~D_FIFO_CLEAN_MSK);
-    bus_w(X_FIFO_CLEAN_REG, bus_r(X_FIFO_CLEAN_REG) & ~tclean_msk);
+    bus_w(X_FIFO_CLEAN_REG, t_before_reg);
 }
 
 void resetFlow() {

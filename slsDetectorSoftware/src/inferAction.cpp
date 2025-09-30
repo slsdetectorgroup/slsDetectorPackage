@@ -804,6 +804,12 @@ int InferAction::define() {
     }
 }
 
+int InferAction::definelist() {
+
+    throw RuntimeError("sls_detector is disabled for command: definelist. Use "
+                       "sls_detector_get or sls_detector_put");
+}
+
 int InferAction::delay() {
 
     if (args.size() == 0) {

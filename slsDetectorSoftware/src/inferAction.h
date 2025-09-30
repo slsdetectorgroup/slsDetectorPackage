@@ -63,6 +63,7 @@ class InferAction {
     int defaultdac();
     int defaultpattern();
     int define();
+    int definelist();
     int delay();
     int delayl();
     int detectorserverversion();
@@ -396,6 +397,7 @@ class InferAction {
         {"defaultdac", &InferAction::defaultdac},
         {"defaultpattern", &InferAction::defaultpattern},
         {"define", &InferAction::define},
+        {"definelist", &InferAction::definelist},
         {"delay", &InferAction::delay},
         {"delayl", &InferAction::delayl},
         {"detectorserverversion", &InferAction::detectorserverversion},

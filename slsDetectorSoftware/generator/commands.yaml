@@ -2766,6 +2766,7 @@ define:
     actions:
         GET:
           argc: 2
+          arg_types: [ std::string, [int, std::string] ]
         PUT:
           argc: 3
           arg_types: [ std::string, std::string, int ]

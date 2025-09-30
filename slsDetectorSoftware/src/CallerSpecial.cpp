@@ -1439,7 +1439,7 @@ std::string Caller::sleep(int action) {
 std::string Caller::define(int action) {
     std::ostringstream os;
     if (action == defs::HELP_ACTION) {
-        os << "[name] [reg/bit] [address or bit position]\n\tSets a user defined register or bit name in shared memory. One can get the address or bit position using the name. One can get the name using the address only for registers. One can then use this user-defined name in other commands instead of hard coding the address or bit position such as for reg, setbit, clearbit and getbit commands. The name can be upto 32 characters long."
+        os << "[reg/bit] [name] [address or bit position]\n\tSets a user defined register or bit name in shared memory. One can retrieve the address or bit position using the name. One can also retrieve the name using the address, but only for registers. One can then use this user-defined name in other commands instead of hard coding the address or bit position such as for reg, setbit, clearbit and getbit commands. The name can be upto 32 characters long."
            << '\n';
         return os.str();   
     } 
@@ -1504,6 +1504,35 @@ std::string Caller::define(int action) {
 }
 std::string Caller::definelist(int action) {
     std::ostringstream os;
-    
+    if (action == defs::HELP_ACTION) {
+        os << "[reg/bit] \n\tList of user-defined register or bit definitions in shared memory."
+           << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        throw RuntimeError("cannot put");
+    } else if (action == defs::GET_ACTION) {
+
+        auto det_type = det->getDetectorType().squash();
+        if (det_type != defs::XILINX_CHIPTESTBOARD && det_type != defs::CHIPTESTBOARD) {
+            throw RuntimeError("define command only supported for ctb and xilinx_ctb");
+        }
+
+        if (args.size() != 1) {
+            WrongNumberOfParameters(1);
+        }
+
+        if (args[0] == "reg") {
+            auto t = det->getRegisterDefinitions();
+            os << OutString(t) << '\n';
+        } else if (args[0] == "bit") {
+            auto t = det->getBitDefinitions();
+            os << OutString(t) << '\n';
+        } else {
+            throw RuntimeError("Unknown argument " + args[0] +
+                                ". Did you mean register or bit?");
+        }
+    } else {
+        throw RuntimeError("Unknown action");
+    }
+    return os.str();
 }
 } // namespace sls

@@ -274,6 +274,13 @@ ToString(const T &container, const std::string &unit) {
     return os.str();
 }
 
+template <typename T1, typename T2>
+std::string ToString(const std::pair<T1, T2> &p) {
+    std::ostringstream os;
+    os << "(" << ToString(p.first) << ", " << ToString(p.second) << ")";
+    return os.str();
+}
+
 template <typename T>
 T StringTo(const std::string &t, const std::string &unit) {
     double tval{0};

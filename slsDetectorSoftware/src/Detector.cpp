@@ -2377,26 +2377,21 @@ void Detector::setLEDEnable(bool enable, Positions pos) {
 }
 
 void Detector::setDacNames(const std::vector<std::string> names) {
-    auto dettype = getDetectorType().squash();
-    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
-        throw RuntimeError("Named dacs only for CTB");
     pimpl->setCtbDacNames(names);
 }
 
 std::vector<std::string> Detector::getDacNames() const {
-    std::vector<std::string> names;
-    auto type = getDetectorType().squash();
-    if (type == defs::CHIPTESTBOARD || type == defs::XILINX_CHIPTESTBOARD)
+    if (pimpl->isChipTestBoard())
         return pimpl->getCtbDacNames();
 
+    std::vector<std::string> names;
     for (const auto &index : getDacList())
         names.push_back(ToString(index));
     return names;
 }
 
 defs::dacIndex Detector::getDacIndex(const std::string &name) const {
-    auto type = getDetectorType().squash();
-    if (type == defs::CHIPTESTBOARD || type == defs::XILINX_CHIPTESTBOARD) {
+    if (pimpl->isChipTestBoard()) {
         auto names = getDacNames();
         auto it = std::find(names.begin(), names.end(), name);
         if (it == names.end())
@@ -2407,37 +2402,24 @@ defs::dacIndex Detector::getDacIndex(const std::string &name) const {
 }
 
 void Detector::setDacName(const defs::dacIndex i, const std::string &name) {
-    auto dettype = getDetectorType().squash();
-    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
-        throw RuntimeError("Named dacs only for CTB");
     pimpl->setCtbDacName(i, name);
 }
 
 std::string Detector::getDacName(const defs::dacIndex i) const {
-    auto dettype = getDetectorType().squash();
-    if (dettype == defs::CHIPTESTBOARD || dettype == defs::XILINX_CHIPTESTBOARD)
+    if (pimpl->isChipTestBoard())
         return pimpl->getCtbDacName(i);
     return ToString(i);
 }
 
 void Detector::setAdcNames(const std::vector<std::string> names) {
-    auto dettype = getDetectorType().squash();
-    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
-        throw RuntimeError("Named adcs only for CTB");
     pimpl->setCtbAdcNames(names);
 }
 
 std::vector<std::string> Detector::getAdcNames() const {
-    auto dettype = getDetectorType().squash();
-    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
-        throw RuntimeError("Named adcs only for CTB");
     return pimpl->getCtbAdcNames();
 }
 
 int Detector::getAdcIndex(const std::string &name) const {
-    auto dettype = getDetectorType().squash();
-    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
-        throw RuntimeError("Named adcs only for CTB");
     auto names = getAdcNames();
     auto it = std::find(names.begin(), names.end(), name);
     if (it == names.end())
@@ -2446,37 +2428,22 @@ int Detector::getAdcIndex(const std::string &name) const {
 }
 
 void Detector::setAdcName(const int index, const std::string &name) {
-    auto dettype = getDetectorType().squash();
-    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
-        throw RuntimeError("Named adcs only for CTB");
     pimpl->setCtbAdcName(index, name);
 }
 
 std::string Detector::getAdcName(const int i) const {
-    auto dettype = getDetectorType().squash();
-    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
-        throw RuntimeError("Named adcs only for CTB");
     return pimpl->getCtbAdcName(i);
 }
 
 void Detector::setSignalNames(const std::vector<std::string> names) {
-    auto dettype = getDetectorType().squash();
-    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
-        throw RuntimeError("Named signals only for CTB");
     pimpl->setCtbSignalNames(names);
 }
 
 std::vector<std::string> Detector::getSignalNames() const {
-    auto dettype = getDetectorType().squash();
-    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
-        throw RuntimeError("Named signals only for CTB");
     return pimpl->getCtbSignalNames();
 }
 
 int Detector::getSignalIndex(const std::string &name) const {
-    auto dettype = getDetectorType().squash();
-    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
-        throw RuntimeError("Named signals only for CTB");
     auto names = getSignalNames();
     auto it = std::find(names.begin(), names.end(), name);
     if (it == names.end())
@@ -2485,38 +2452,22 @@ int Detector::getSignalIndex(const std::string &name) const {
 }
 
 void Detector::setSignalName(const int index, const std::string &name) {
-    auto dettype = getDetectorType().squash();
-    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
-        throw RuntimeError("Named signals only for CTB");
     pimpl->setCtbSignalName(index, name);
 }
 
 std::string Detector::getSignalName(const int i) const {
-    auto dettype = getDetectorType().squash();
-    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
-        throw RuntimeError("Named signals only for CTB");
     return pimpl->getCtbSignalName(i);
 }
 
 void Detector::setPowerNames(const std::vector<std::string> names) {
-    auto dettype = getDetectorType().squash();
-    if (getDetectorType().squash() != defs::CHIPTESTBOARD &&
-        dettype != defs::XILINX_CHIPTESTBOARD)
-        throw RuntimeError("Named powers only for CTB");
     pimpl->setCtbPowerNames(names);
 }
 
 std::vector<std::string> Detector::getPowerNames() const {
-    auto dettype = getDetectorType().squash();
-    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
-        throw RuntimeError("Named powers only for CTB");
     return pimpl->getCtbPowerNames();
 }
 
 defs::dacIndex Detector::getPowerIndex(const std::string &name) const {
-    auto dettype = getDetectorType().squash();
-    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
-        throw RuntimeError("Named powers only for CTB");
     auto names = getPowerNames();
     auto it = std::find(names.begin(), names.end(), name);
     if (it == names.end())
@@ -2526,37 +2477,22 @@ defs::dacIndex Detector::getPowerIndex(const std::string &name) const {
 
 void Detector::setPowerName(const defs::dacIndex index,
                             const std::string &name) {
-    auto dettype = getDetectorType().squash();
-    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
-        throw RuntimeError("Named powers only for CTB");
     pimpl->setCtbPowerName(index, name);
 }
 
 std::string Detector::getPowerName(const defs::dacIndex i) const {
-    auto dettype = getDetectorType().squash();
-    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
-        throw RuntimeError("Named powers only for CTB");
     return pimpl->getCtbPowerName(i);
 }
 
 void Detector::setSlowADCNames(const std::vector<std::string> names) {
-    auto dettype = getDetectorType().squash();
-    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
-        throw RuntimeError("Named SlowADCs only for CTB");
     pimpl->setCtbSlowADCNames(names);
 }
 
 std::vector<std::string> Detector::getSlowADCNames() const {
-    auto dettype = getDetectorType().squash();
-    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
-        throw RuntimeError("Named SlowADCs only for CTB");
     return pimpl->getCtbSlowADCNames();
 }
 
 defs::dacIndex Detector::getSlowADCIndex(const std::string &name) const {
-    auto dettype = getDetectorType().squash();
-    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
-        throw RuntimeError("Named SlowADCs only for CTB");
     auto names = getSlowADCNames();
     auto it = std::find(names.begin(), names.end(), name);
     if (it == names.end())
@@ -2566,120 +2502,70 @@ defs::dacIndex Detector::getSlowADCIndex(const std::string &name) const {
 
 void Detector::setSlowADCName(const defs::dacIndex index,
                               const std::string &name) {
-    auto dettype = getDetectorType().squash();
-    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
-        throw RuntimeError("Named SlowADCs only for CTB");
     pimpl->setCtbSlowADCName(index, name);
 }
 
 std::string Detector::getSlowADCName(const defs::dacIndex i) const {
-    auto dettype = getDetectorType().squash();
-    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
-        throw RuntimeError("Named SlowADCs only for CTB");
     return pimpl->getCtbSlowADCName(i);
 }
 
 int Detector::getRegisterDefinitionsCount() const {
-    auto dettype = getDetectorType().squash();
-    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
-        throw RuntimeError("Register Definitions only for CTB");
     return pimpl->getRegisterDefinitionsCount();
 }
 
 void Detector::setRegisterDefinition(const std::string &name, const int value) {
-    auto dettype = getDetectorType().squash();
-    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
-        throw RuntimeError("Register Definitions only for CTB");
     pimpl->setRegisterDefinition(name, value);
 }
 
 bool Detector::hasRegisterDefinition(const std::string &name) const {
-    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
-        throw RuntimeError("Register Definitions only for CTB");
     return pimpl->hasRegisterDefinition(name);
 }
 
 int Detector::getRegisterDefinitionByName(const std::string &name) const {
-    auto dettype = getDetectorType().squash();
-    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
-        throw RuntimeError("Register Definitions only for CTB");
     return pimpl->getRegisterDefinitionByName(name);
 }
 
 std::string Detector::getRegisterDefinitionByValue(const int value) const {
-    auto dettype = getDetectorType().squash();
-    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
-        throw RuntimeError("Register Definitions only for CTB");
     return pimpl->getRegisterDefinitionByValue(value);
 }
 
 void Detector::clearRegisterDefinitions() {
-    auto dettype = getDetectorType().squash();
-    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
-        throw RuntimeError("Register Definitions only for CTB");
     pimpl->setRegisterDefinitions(std::vector<std::pair<std::string, int>>{});
 }
 
 void Detector::setRegisterDefinitions(const std::vector<std::pair<std::string, int>> &list) {
-    auto dettype = getDetectorType().squash();
-    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
-        throw RuntimeError("Register Definitions only for CTB");
     pimpl->setRegisterDefinitions(list);
 }
 
 std::vector<std::pair<std::string, int>> Detector::getRegisterDefinitions() const {
-    auto dettype = getDetectorType().squash();
-    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
-        throw RuntimeError("Register Definitions only for CTB");
     return pimpl->getRegisterDefinitions();
 }
 
 int Detector::getBitDefinitionsCount() const {
-    auto dettype = getDetectorType().squash();
-    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
-        throw RuntimeError("Bit Definitions only for CTB");
     return pimpl->getBitDefinitionsCount();
 }
 
 void Detector::setBitDefinition(const std::string &name, const int value) {
-    auto dettype = getDetectorType().squash();
-    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
-        throw RuntimeError("Bit Definitions only for CTB");
     pimpl->setBitDefinition(name, value);
 }
 
 bool Detector::hasBitDefinition(const std::string &name) const {
-    auto dettype = getDetectorType().squash();
-    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
-        throw RuntimeError("Bit Definitions only for CTB");
     return pimpl->hasBitDefinition(name);
 }
 
 int Detector::getBitDefinitionByName(const std::string &name) const {
-    auto dettype = getDetectorType().squash();
-    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
-        throw RuntimeError("Bit Definitions only for CTB");
     return pimpl->getBitDefinitionByName(name);
 }
 
 void Detector::clearBitDefinitions() {
-    auto dettype = getDetectorType().squash();
-    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
-        throw RuntimeError("Bit Definitions only for CTB");
     pimpl->setBitDefinitions(std::vector<std::pair<std::string, int>>{});
 }
 
 void Detector::setBitDefinitions(const std::vector<std::pair<std::string, int>> &list) {
-    auto dettype = getDetectorType().squash();
-    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
-        throw RuntimeError("Bit Definitions only for CTB");
     pimpl->setBitDefinitions(list);
 }
 
 std::vector<std::pair<std::string, int>> Detector::getBitDefinitions() const {
-    auto dettype = getDetectorType().squash();
-    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
-        throw RuntimeError("Bit Definitions only for CTB");
     return pimpl->getBitDefinitions();
 }
 

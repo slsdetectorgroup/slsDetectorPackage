@@ -183,6 +183,11 @@ class DetectorImpl : public virtual slsDetectorDefs {
 
     bool isAllPositions(Positions pos) const;
 
+    inline bool isChipTestBoard() const {
+        return (shm()->detType == defs::CHIPTESTBOARD ||
+                shm()->detType == defs::XILINX_CHIPTESTBOARD);
+    }
+
     /** set acquiring flag in shared memory */
     void setAcquiringFlag(bool flag);
 

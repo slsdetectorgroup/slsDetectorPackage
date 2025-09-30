@@ -1475,16 +1475,16 @@ std::string Caller::define(int action) {
                 // get name from address
                 int addr = StringTo<int>(args[1]);
                 auto t = det->getRegisterDefinitionByValue(addr);
-                os << OutString(t) << '\n';
+                os << t << '\n';
             } catch (...) {
                 // get address from name
                 auto t = det->getRegisterDefinitionByName(args[1]);
-                os << OutStringHex(t) << '\n';
+                os << ToStringHex(t) << '\n';
             }
         } else if (args[0] == "bit") {
             // get position from name
             auto t = det->getBitDefinitionByName(args[1]);
-            os << OutString(t) << '\n';
+            os << ToString(t) << '\n';
         }
     } else if (action == defs::PUT_ACTION) {
         if (args.size() != 3) {
@@ -1522,10 +1522,10 @@ std::string Caller::definelist(int action) {
 
         if (args[0] == "reg") {
             auto t = det->getRegisterDefinitions();
-            os << OutString(t) << '\n';
+            os << ToString(t) << '\n';
         } else if (args[0] == "bit") {
             auto t = det->getBitDefinitions();
-            os << OutString(t) << '\n';
+            os << ToString(t) << '\n';
         } else {
             throw RuntimeError("Unknown argument " + args[0] +
                                 ". Did you mean register or bit?");

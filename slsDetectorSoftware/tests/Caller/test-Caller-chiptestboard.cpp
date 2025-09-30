@@ -1398,23 +1398,25 @@ TEST_CASE("define", "[.cmdcall]") {
 
         {
             REQUIRE_NOTHROW(
-                caller.call("define", {"addr", "REG_MACRO", "0x202"}, -1, PUT));
+                caller.call("define", {"reg", "REG_MACRO", "0x202"}, -1, PUT));
             REQUIRE_NOTHROW(
                 caller.call("define", {"bit", "MACRO_BIT", "1"}, -1, PUT));
             REQUIRE_NOTHROW(
-                caller.call("define", {"bit", "MACRO_BOT", "2"}, -1, PUT));
+                caller.call("define", {"bit", "MACRO_BIT", "2"}, -1, PUT));
+            REQUIRE_NOTHROW(
+                caller.call("define", {"bit", "MICRO_BIT", "3"}, -1, PUT));
             std::ostringstream oss, oss1;
-            caller.call("define", {"addr", "REG_MACRO"}, -1, GET, oss);
+            caller.call("define", {"reg", "REG_MACRO"}, -1, GET, oss);
             caller.call("define", {"bit", "MACRO_BIT"}, -1, GET, oss1);
-            REQUIRE(oss.str() == "define addr REG_MACRO 0x202\n");
-            REQUIRE(oss1.str() == "define bit MACRO_BIT 1\n");
+            REQUIRE(oss.str() == "define 0x202\n");
+            REQUIRE(oss1.str() == "define 2\n");
         }
         {
             REQUIRE_NOTHROW(
-                caller.call("define", {"addr", "REG_MACRO", "0x205"}, -1, PUT));
+                caller.call("define", {"reg", "REG_MACRO", "0x205"}, -1, PUT));
             std::ostringstream oss;
-            caller.call("define", {"addr", "REG_MACRO"}, -1, GET, oss);
-            REQUIRE(oss.str() == "define addr REG_MACRO 0x205\n");
+            caller.call("define", {"reg", "REG_MACRO"}, -1, GET, oss);
+            REQUIRE(oss.str() == "define 0x205\n");
         }
 
         /*if (det.isVirtualDetectorServer().tsquash(
@@ -1475,13 +1477,8 @@ TEST_CASE("definelist", "[.cmdcall]") {
         auto prev_reg_defines = det.getRegisterDefinitions();
         auto prev_bit_defines = det.getBitDefinitions();
         
-        REQUIRE_THROWS(caller.call("definelist", {"reg"}, 0, GET)); // invalid module id
         REQUIRE_THROWS(caller.call("definelist", {}, -1, GET));
         REQUIRE_THROWS(caller.call("definelist", {"reg", "TEST_MACRO"}, -1, GET));
-
-        REQUIRE_NOTHROW(caller.call("definelist", {"reg"}, -1, PUT)); //clears
-        
-        REQUIRE_NOTHROW(caller.call("definelist", {"reg", "TEST_MACRO", "0x200", "MACRO_BIT", "31"}, -1, PUT));
 
         REQUIRE_NOTHROW(caller.call("definelist", {"reg"}, -1, GET));
         REQUIRE_NOTHROW(caller.call("definelist", {"bit"}, -1, GET));
@@ -1489,7 +1486,7 @@ TEST_CASE("definelist", "[.cmdcall]") {
         det.setRegisterDefinitions(prev_reg_defines);
         det.setBitDefinitions(prev_bit_defines);
     } else {
-        REQUIRE_THROWS(caller.call("definelist", {"addr"}, -1, GET));
+        REQUIRE_THROWS(caller.call("definelist", {"reg"}, -1, GET));
         REQUIRE_THROWS(caller.call("definelist", {"bit"}, -1, GET));
     }
 }

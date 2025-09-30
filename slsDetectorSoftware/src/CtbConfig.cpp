@@ -362,6 +362,9 @@ int CtbConfig::getBitNamesCount() const {
 }
 
 void CtbConfig::setBitName(const std::string &name, const int value) {
+    if (value < 0 || value > 31) {
+        throw RuntimeError("Bit position defined for " + name + " must be between 0 and 31");
+    }
     addEntry(name.c_str(), value, false);
 }
 

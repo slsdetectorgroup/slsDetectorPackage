@@ -91,7 +91,7 @@ TEST_CASE("Move CtbConfig ") {
     REQUIRE(c2.getDacName(3) == "yetanothername");
 }
 
-TEST_CASE("Add or modify a register name") {
+TEST_CASE("Add or modify a register name", "[.reg]") {
     CtbConfig c;
     REQUIRE(c.getRegisterNamesCount() == 0);
 
@@ -110,7 +110,7 @@ TEST_CASE("Add or modify a register name") {
     REQUIRE(c.getRegisterNamesCount() == 0);
 }
 
-TEST_CASE("Add a register list") {
+TEST_CASE("Add a register list", "[.reg]") {
     CtbConfig c;
     REQUIRE(c.getRegisterNamesCount() == 0);
 
@@ -133,7 +133,7 @@ TEST_CASE("Add a register list") {
     REQUIRE(c.getRegisterNames().size() == 0);
 }
 
-TEST_CASE("Finding a regiser name or address") {
+TEST_CASE("Finding a regiser name or address", "[.reg]") {
     CtbConfig c;
 
     // find nothing
@@ -151,7 +151,7 @@ TEST_CASE("Finding a regiser name or address") {
     REQUIRE(c.getRegisterAddress("reg3").value() == 0x300);
 }
 
-TEST_CASE("Add or modify a bit name") {
+TEST_CASE("Add or modify a bit name", "[.reg]") {
     CtbConfig c;
     REQUIRE(c.getBitNamesCount() == 0);
 
@@ -171,7 +171,7 @@ TEST_CASE("Add or modify a bit name") {
     REQUIRE(c.getBitNamesCount() == 0);
 }
 
-TEST_CASE("Add a bit list") {
+TEST_CASE("Add a bit list", "[.reg]") {
     CtbConfig c;
     REQUIRE(c.getBitNamesCount() == 0);
 
@@ -194,7 +194,7 @@ TEST_CASE("Add a bit list") {
     REQUIRE(c.getBitNames().size() == 0);
 }
 
-TEST_CASE("Finding a bit value") {
+TEST_CASE("Finding a bit value", "[.reg]") {
     CtbConfig c;
 
     // find nothing

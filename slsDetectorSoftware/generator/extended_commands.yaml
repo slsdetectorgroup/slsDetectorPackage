@@ -2504,8 +2504,7 @@ define:
       args:
       - arg_types:
         - std::string
-        - - int
-          - std::string
+        - std::string
         argc: 2
         cast_input: []
         check_det_id: false

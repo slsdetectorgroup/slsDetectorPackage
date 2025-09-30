@@ -1395,7 +1395,7 @@ TEST_CASE("define", "[.cmdcall]") {
         REQUIRE_THROWS(caller.call("define", {"TEST_MACRO", "2"}, -1, PUT));// skipped mode
         REQUIRE_THROWS(caller.call("define", {"addr", "TEST_MACRO", "0x200"}, -1, PUT)); // invalid mode
         REQUIRE_THROWS(caller.call("define", {"reg", "TEST_MACRO", "0x200"}, 0, PUT)); // invalid module id
-
+            
         {
             REQUIRE_NOTHROW(
                 caller.call("define", {"reg", "REG_MACRO", "0x202"}, -1, PUT));
@@ -1404,24 +1404,29 @@ TEST_CASE("define", "[.cmdcall]") {
             REQUIRE_NOTHROW(
                 caller.call("define", {"bit", "MACRO_BIT", "2"}, -1, PUT));
             REQUIRE_NOTHROW(
-                caller.call("define", {"bit", "MICRO_BIT", "3"}, -1, PUT));
+                caller.call("define", {"bit", "MICRO_BIT", "4"}, -1, PUT));
             std::ostringstream oss, oss1;
             caller.call("define", {"reg", "REG_MACRO"}, -1, GET, oss);
             caller.call("define", {"bit", "MACRO_BIT"}, -1, GET, oss1);
             REQUIRE(oss.str() == "define 0x202\n");
             REQUIRE(oss1.str() == "define 2\n");
         }
+
+        int reg_addr = 0x205;
+        std::string s_reg_addr = std::to_string(reg_addr);
         {
             REQUIRE_NOTHROW(
-                caller.call("define", {"reg", "REG_MACRO", "0x205"}, -1, PUT));
+                caller.call("define", {"reg", "REG_MACRO", s_reg_addr}, -1, PUT));
             std::ostringstream oss;
             caller.call("define", {"reg", "REG_MACRO"}, -1, GET, oss);
-            REQUIRE(oss.str() == "define 0x205\n");
+            REQUIRE(oss.str() == "define " + s_reg_addr + "\n");
         }
 
-        /*if (det.isVirtualDetectorServer().tsquash(
+        // using the defines
+        if (det.isVirtualDetectorServer().tsquash(
                 "inconsistent virtual values")) {
-            {
+            auto prev_val = det.readRegister(reg_addr);
+            /*{
                 std::ostringstream oss;
                 REQUIRE_NOTHROW(
                     caller.call("reg", {"REG_MACRO", "0x0"}, -1, PUT));
@@ -1432,10 +1437,10 @@ TEST_CASE("define", "[.cmdcall]") {
             {
                 std::ostringstream oss;
                 REQUIRE_NOTHROW(caller.call(
-                    "reg", {"REG_MACRO", "(MACRO_BIT | MACRO_BOT)"}, -1, PUT));
+                    "reg", {"REG_MACRO", "(MACRO_BIT | MICRO_BIT)"}, -1, PUT));
                 REQUIRE_NOTHROW(
                     caller.call("reg", {"REG_MACRO"}, -1, GET, oss));
-                REQUIRE(oss.str() == "reg REG_MACRO 0x3\n");
+                REQUIRE(oss.str() == "reg REG_MACRO 0x6\n");
             }
             {
                 std::ostringstream oss;
@@ -1443,7 +1448,7 @@ TEST_CASE("define", "[.cmdcall]") {
                     "clearbit", {"REG_MACRO", "MACRO_BIT"}, -1, PUT));
                 REQUIRE_NOTHROW(
                     caller.call("reg", {"REG_MACRO"}, -1, GET, oss));
-                REQUIRE(oss.str() == "reg REG_MACRO 0x2\n");
+                REQUIRE(oss.str() == "reg REG_MACRO 0x4\n");
             }
             {
                 std::ostringstream oss, oss1;
@@ -1451,12 +1456,16 @@ TEST_CASE("define", "[.cmdcall]") {
                     caller.call("setbit", {"REG_MACRO", "MACRO_BIT"}, -1, PUT));
                 REQUIRE_NOTHROW(
                     caller.call("reg", {"REG_MACRO"}, -1, GET, oss));
-                REQUIRE(oss.str() == "reg REG_MACRO 0x3\n");
+                REQUIRE(oss.str() == "reg REG_MACRO 0x6\n");
                 REQUIRE_NOTHROW(caller.call(
                     "getbit", {"REG_MACRO", "MACRO_BIT"}, -1, GET, oss1));
                 REQUIRE(oss1.str() == "getbit REG_MACRO MACRO_BIT 1\n");
+            }*/
+
+            for (int i = 0; i != det.size(); ++i) {
+                det.writeRegister(reg_addr, prev_val[i], false, {i});
             }
-        }*/
+        }
         det.setRegisterDefinitions(prev_reg_defines);
         det.setBitDefinitions(prev_bit_defines);
 

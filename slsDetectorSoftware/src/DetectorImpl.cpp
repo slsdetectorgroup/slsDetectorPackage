@@ -2159,15 +2159,5 @@ std::vector<std::pair<std::string, int>> DetectorImpl::getBitDefinitions() const
     return ctb_shm()->getBitNames();
 }
 
-Result<uint32_t> DetectorImpl::readRegister(std::string saddr, Positions pos) const {
-    if (!isChipTestBoard())
-        throw RuntimeError("Read Register with user defined register name only for CTB");
-    if (!hasRegisterDefinition(saddr)) {
-        throw RuntimeError("No register definition found for name: " + saddr);
-    }
-    int addr = getRegisterDefinitionByName(saddr);
-    return Parallel(&Module::readRegister, pos, addr);
-}
-
 
 } // namespace sls

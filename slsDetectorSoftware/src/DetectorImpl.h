@@ -349,8 +349,6 @@ class DetectorImpl : public virtual slsDetectorDefs {
     void setBitDefinitions(const std::vector<std::pair<std::string, int>> &list);
     std::vector<std::pair<std::string, int>> getBitDefinitions() const;
     
-    Result<uint32_t> readRegister(std::string saddr, Positions pos = {}) const;
-
   private:
     /**
      * Creates/open shared memory, initializes detector structure and members

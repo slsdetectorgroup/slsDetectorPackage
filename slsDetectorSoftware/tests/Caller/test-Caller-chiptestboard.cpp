@@ -1435,15 +1435,15 @@ TEST_CASE("define", "[.cmdcall]") {
                     caller.call("reg", {"REG_MACRO"}, -1, GET, oss));
                 REQUIRE(oss.str() == "reg REG_MACRO 0x0\n");
             }
-            /*{
+            {
                 std::ostringstream oss;
                 REQUIRE_NOTHROW(caller.call(
-                    "reg", {"REG_MACRO", "(MACRO_BIT | MICRO_BIT)"}, -1, PUT));
+                    "reg", {"REG_MACRO", "MACRO_BIT|MICRO_BIT"}, -1, PUT));
                 REQUIRE_NOTHROW(
                     caller.call("reg", {"REG_MACRO"}, -1, GET, oss));
-                REQUIRE(oss.str() == "reg REG_MACRO 0x6\n");
+                REQUIRE(oss.str() == "reg REG_MACRO 0x14\n");
             }
-            {
+            /*{
                 std::ostringstream oss;
                 REQUIRE_NOTHROW(caller.call(
                     "clearbit", {"REG_MACRO", "MACRO_BIT"}, -1, PUT));

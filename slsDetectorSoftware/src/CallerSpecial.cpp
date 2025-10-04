@@ -1536,21 +1536,36 @@ std::string Caller::definelist(int action) {
     return os.str();
 }
 
+uint32_t Caller::parseValueFromBitNames(const std::string& input) const{
+    uint32_t value = 0;
+    std::stringstream ss(input);
+    std::string token;
+
+    while (std::getline(ss, token, '|')) {
+        if (token.empty())
+            continue;
+        
+        int bit_pos = det->getBitDefinitionByName(token);
+        std::cout << "Bit position for " << token << " is " << bit_pos << std::endl;
+        value |= (1u << bit_pos);
+    }
+    return value;
+}
+
 std::string Caller::reg(int action) {
     std::ostringstream os;
     if (action == defs::HELP_ACTION) {
-        os << "[address] [32 bit value][(optional)--validate]\n\t[Mythen3][Gotthard2] Reads/writes to a 32 bit register in hex. Advanced Function!\n\tGoes to stop server. Hence, can be called while calling blocking acquire().\n\t\t Use --validate to force validation when writing to it.\n\t[Eiger] +0x100 for only left, +0x200 for only right.\n\t\t[Ctb][Xilinx_Ctb] Address can also be a user-defined name set using the define command."
+        os << "[address] [32 bit value][(optional)--validate]\n\t[Mythen3][Gotthard2] Reads/writes to a 32 bit register in hex. Advanced Function!\n\tGoes to stop server. Hence, can be called while calling blocking acquire().\n\t\t Use --validate to force validation when writing to it.\n\t[Eiger] +0x100 for only left, +0x200 for only right.\n\t\t[Ctb][Xilinx_Ctb] Address can also be a user-defined name set using the define command. Value can be a user-defined bit name as well or combined with '|'."
            << '\n';
     } else {
         if (args.size() < 1) {
             WrongNumberOfParameters(1);
         }
+        // get address from int or name
         uint32_t addr = 0;
         try {
-            // get value from address
             addr = StringTo<uint32_t>(args[0]);
         } catch (...) {
-            // get address from name
             auto det_type = det->getDetectorType().squash();
             if (det_type != defs::XILINX_CHIPTESTBOARD && det_type != defs::CHIPTESTBOARD) {
                 throw RuntimeError("User defined register definitions only supported for ctb and xilinx_ctb. Use an actual hard coded address for this detector.");
@@ -1561,7 +1576,7 @@ std::string Caller::reg(int action) {
             if (args.size() != 2 && args.size() != 3) {
                 WrongNumberOfParameters(2);
             }
-            uint32_t val = StringTo<uint32_t>(args[1]);
+            // validate flag
             bool validate = false;
             if (args.size() == 3) {
                 if (args[2] == "--validate") {
@@ -1572,6 +1587,19 @@ std::string Caller::reg(int action) {
                 }
 
             }
+            // get value from int or name
+            uint32_t val = 0;
+            try {
+                val = StringTo<uint32_t>(args[1]);
+            } catch (...) {
+                auto det_type = det->getDetectorType().squash();
+                if (det_type != defs::XILINX_CHIPTESTBOARD && det_type != defs::CHIPTESTBOARD) {
+                    throw RuntimeError("User defined bit definitions only supported for ctb and xilinx_ctb. Use an actual hard coded value for this detector.");
+                }
+                val = parseValueFromBitNames(args[1]);
+                std::cout << "value:"<< val << std::endl;
+            } 
+
             det->writeRegister(addr, val, validate, std::vector<int>{det_id});
             os << args[0] << ' ' << args[1] << '\n';
         } else if (action == defs::GET_ACTION) {

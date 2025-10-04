@@ -2777,10 +2777,6 @@ Result<uint32_t> Detector::readRegister(uint32_t addr, Positions pos) const {
     return pimpl->Parallel(&Module::readRegister, pos, addr);
 }
 
-Result<uint32_t> Detector::readRegister(std::string addr, Positions pos) const {
-    return pimpl->readRegister(addr, pos);
-}
-
 void Detector::writeRegister(uint32_t addr, uint32_t val, bool validate,
                              Positions pos) {
     pimpl->Parallel(&Module::writeRegister, pos, addr, val, validate);

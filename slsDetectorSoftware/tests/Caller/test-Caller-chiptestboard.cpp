@@ -1413,7 +1413,7 @@ TEST_CASE("define", "[.cmdcall]") {
         }
 
         int reg_addr = 0x205;
-        std::string s_reg_addr = std::to_string(reg_addr);
+        std::string s_reg_addr = "0x205";
         {
             REQUIRE_NOTHROW(
                 caller.call("define", {"reg", "REG_MACRO", s_reg_addr}, -1, PUT));
@@ -1426,15 +1426,16 @@ TEST_CASE("define", "[.cmdcall]") {
         if (det.isVirtualDetectorServer().tsquash(
                 "inconsistent virtual values")) {
             auto prev_val = det.readRegister(reg_addr);
-            /*{
+            {
                 std::ostringstream oss;
+                //det.writeRegister(reg_addr, 0x0);
                 REQUIRE_NOTHROW(
                     caller.call("reg", {"REG_MACRO", "0x0"}, -1, PUT));
                 REQUIRE_NOTHROW(
                     caller.call("reg", {"REG_MACRO"}, -1, GET, oss));
                 REQUIRE(oss.str() == "reg REG_MACRO 0x0\n");
             }
-            {
+            /*{
                 std::ostringstream oss;
                 REQUIRE_NOTHROW(caller.call(
                     "reg", {"REG_MACRO", "(MACRO_BIT | MICRO_BIT)"}, -1, PUT));

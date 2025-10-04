@@ -1463,7 +1463,7 @@ std::string Caller::define(int action) {
 
     if (args[0] != "reg" && args[0] != "bit") {
         throw RuntimeError("Unknown argument " + args[0] +
-                            ". Did you mean register or bit?");
+                            ". Did you mean reg or bit?");
     }
 
     if (action == defs::GET_ACTION) {
@@ -1535,4 +1535,55 @@ std::string Caller::definelist(int action) {
     }
     return os.str();
 }
+
+std::string Caller::reg(int action) {
+    std::ostringstream os;
+    if (action == defs::HELP_ACTION) {
+        os << "[address] [32 bit value][(optional)--validate]\n\t[Mythen3][Gotthard2] Reads/writes to a 32 bit register in hex. Advanced Function!\n\tGoes to stop server. Hence, can be called while calling blocking acquire().\n\t\t Use --validate to force validation when writing to it.\n\t[Eiger] +0x100 for only left, +0x200 for only right.\n\t\t[Ctb][Xilinx_Ctb] Address can also be a user-defined name set using the define command."
+           << '\n';
+    } else {
+        if (args.size() < 1) {
+            WrongNumberOfParameters(1);
+        }
+        uint32_t addr = 0;
+        try {
+            // get value from address
+            addr = StringTo<uint32_t>(args[0]);
+        } catch (...) {
+            // get address from name
+            auto det_type = det->getDetectorType().squash();
+            if (det_type != defs::XILINX_CHIPTESTBOARD && det_type != defs::CHIPTESTBOARD) {
+                throw RuntimeError("User defined register definitions only supported for ctb and xilinx_ctb. Use an actual hard coded address for this detector.");
+            }
+            addr = det->getRegisterDefinitionByName(args[0]);
+        }        
+        if (action == defs::PUT_ACTION) {
+            if (args.size() != 2 && args.size() != 3) {
+                WrongNumberOfParameters(2);
+            }
+            uint32_t val = StringTo<uint32_t>(args[1]);
+            bool validate = false;
+            if (args.size() == 3) {
+                if (args[2] == "--validate") {
+                    validate = true;
+                } else {
+                    throw RuntimeError("Unknown argument " + args[2] +
+                                    ". Did you mean --validate?");
+                }
+
+            }
+            det->writeRegister(addr, val, validate, std::vector<int>{det_id});
+            os << args[0] << ' ' << args[1] << '\n';
+        } else if (action == defs::GET_ACTION) {
+                auto t = det->readRegister(addr, std::vector<int>{det_id});
+                os << args[0] << ' ' << OutStringHex(t) << '\n';
+        } else {
+            throw RuntimeError("Unknown action");
+        }
+    }
+    return os.str();
+}
+
+
+
 } // namespace sls

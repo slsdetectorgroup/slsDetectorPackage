@@ -7942,89 +7942,51 @@ reg:
     GET:
       args:
       - arg_types:
-        - uint32_t
+        - std::string
         argc: 1
-        cast_input:
-        - true
+        cast_input: []
         check_det_id: false
         convert_det_id: true
-        function: readRegister
-        input:
-        - args[0]
-        input_types:
-        - uint32_t
-        output:
-        - OutStringHex(t)
-        require_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
         store_result_in_t: true
     PUT:
       args:
       - arg_types:
-        - uint32_t
-        - uint32_t
+        - int
+        - int
         argc: 2
-        cast_input:
-        - true
-        - true
-        - true
+        cast_input: []
         check_det_id: false
         convert_det_id: true
-        function: writeRegister
-        input:
-        - args[0]
-        - args[1]
-        - '"0"'
-        input_types:
-        - uint32_t
-        - uint32_t
-        - bool
-        output:
-        - '"["'
-        - args[0]
-        - '", "'
-        - args[1]
-        - '"]"'
-        require_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
         store_result_in_t: false
       - arg_types:
-        - uint32_t
-        - uint32_t
-        - special::validate
+        - int
+        - int
+        - std::string
         argc: 3
-        cast_input:
-        - true
-        - true
-        - true
+        cast_input: []
         check_det_id: false
         convert_det_id: true
-        exceptions:
-        - condition: args[2] != "--validate"
-          message: '"Could not scan third argument. Did you mean --validate?"'
-        function: writeRegister
-        input:
-        - args[0]
-        - args[1]
-        - '"1"'
-        input_types:
-        - uint32_t
-        - uint32_t
-        - bool
-        output:
-        - '"["'
-        - args[0]
-        - '", "'
-        - args[1]
-        - '"]"'
-        require_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
         store_result_in_t: false
   command_name: reg
   function_alias: reg
-  help: "[address] [32 bit value][(optional)--validate]\n\t[Mythen3][Gotthard2] Reads/writes\
-    \ to a 32 bit register in hex. Advanced Function!\n\tGoes to stop server. Hence,\
-    \ can be called while calling blocking acquire().\n\t\t Use --validate to force\
-    \ validation when writing to it.\n\t[Eiger] +0x100 for only left, +0x200 for only\
-    \ right."
+  help: ''
   infer_action: true
+  is_description: true
 resetdacs:
   actions:
     PUT:

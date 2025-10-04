@@ -2781,6 +2781,19 @@ definelist:
         PUT:
           argc: -1
 
+reg:
+    is_description: true
+    actions:
+        GET:
+          argc: 1
+          arg_types: [ std::string]
+        PUT:
+          args:
+            - argc: 2
+              arg_types: [ int, int ]
+            - argc: 3
+              arg_types: [ int, int, std::string ]
+
 
 ################# special commands ##########################
 
@@ -4191,36 +4204,6 @@ update:
       arg_types: [ special::path, special::path ]
       input_types: [ std::string, std::string ]
       output: [ '"successful"' ]
-
-reg:
-  help: "[address] [32 bit value][(optional)--validate]\n\t[Mythen3][Gotthard2] Reads/writes to a 32 bit register in hex. Advanced Function!\n\tGoes to stop server. Hence, can be called while calling blocking acquire().\n\t\t Use --validate to force validation when writing to it.\n\t[Eiger] +0x100 for only left, +0x200 for only right."
-  actions:
-    GET:
-      argc: 1
-      require_det_id: true
-      function: readRegister
-      input: [ 'args[0]' ]
-      input_types: [ uint32_t ]
-      cast_input: [ true ]
-      output: [ OutStringHex(t) ]
-    PUT:
-      require_det_id: true
-      function: writeRegister
-      output: [ '"["', 'args[0]', '", "', 'args[1]', '"]"' ]
-      args:
-        - argc: 2
-          input: [ 'args[0]', 'args[1]', '"0"' ]
-          input_types: [ uint32_t, uint32_t, bool ]
-          arg_types: [ uint32_t, uint32_t ]
-          cast_input: [ true, true, true ]
-        - argc: 3
-          arg_types: [ uint32_t, uint32_t, special::validate ]
-          exceptions:
-            - condition: 'args[2] != "--validate"'
-              message: '"Could not scan third argument. Did you mean --validate?"'
-          input: [ 'args[0]', 'args[1]', '"1"' ]
-          input_types: [ uint32_t, uint32_t, bool ]
-          cast_input: [ true, true, true ]
 
 adcreg:
   help: "[address] [value]\n\t[Jungfrau][Moench][Ctb] Writes to an adc register in hex. Advanced user Function!"

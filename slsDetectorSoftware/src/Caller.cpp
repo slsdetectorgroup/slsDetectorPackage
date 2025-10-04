@@ -8454,7 +8454,7 @@ std::string Caller::patternstart(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << R"V0G0N(
-	[Mythen3][Xilinx Ctb] Starts Pattern )V0G0N"
+	[Mythen3][Ctb][Xilinx Ctb] Starts Pattern )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -10090,119 +10090,6 @@ std::string Caller::rebootcontroller(int action) {
         if (args.size() == 0) {
             det->rebootController(std::vector<int>{det_id});
             os << "successful" << '\n';
-        }
-    }
-
-    return os.str();
-}
-
-std::string Caller::reg(int action) {
-
-    std::ostringstream os;
-    // print help
-    if (action == slsDetectorDefs::HELP_ACTION) {
-        os << R"V0G0N([address] [32 bit value][(optional)--validate]
-	[Mythen3][Gotthard2] Reads/writes to a 32 bit register in hex. Advanced Function!
-	Goes to stop server. Hence, can be called while calling blocking acquire().
-		 Use --validate to force validation when writing to it.
-	[Eiger] +0x100 for only left, +0x200 for only right. )V0G0N"
-           << std::endl;
-        return os.str();
-    }
-
-    // check if action and arguments are valid
-    if (action == slsDetectorDefs::GET_ACTION) {
-        if (1 && args.size() != 1) {
-            throw RuntimeError("Wrong number of arguments for action GET");
-        }
-
-        if (args.size() == 1) {
-            try {
-                StringTo<uint32_t>(args[0]);
-            } catch (...) {
-                throw RuntimeError("Could not convert argument 0 to uint32_t");
-            }
-        }
-
-    }
-
-    else if (action == slsDetectorDefs::PUT_ACTION) {
-        if (1 && args.size() != 2 && args.size() != 3) {
-            throw RuntimeError("Wrong number of arguments for action PUT");
-        }
-
-        if (args.size() == 2) {
-            try {
-                StringTo<uint32_t>(args[0]);
-            } catch (...) {
-                throw RuntimeError("Could not convert argument 0 to uint32_t");
-            }
-            try {
-                StringTo<uint32_t>(args[1]);
-            } catch (...) {
-                throw RuntimeError("Could not convert argument 1 to uint32_t");
-            }
-            try {
-                StringTo<bool>("0");
-            } catch (...) {
-                throw RuntimeError("Could not convert argument 2 to bool");
-            }
-        }
-
-        if (args.size() == 3) {
-            try {
-                StringTo<uint32_t>(args[0]);
-            } catch (...) {
-                throw RuntimeError("Could not convert argument 0 to uint32_t");
-            }
-            try {
-                StringTo<uint32_t>(args[1]);
-            } catch (...) {
-                throw RuntimeError("Could not convert argument 1 to uint32_t");
-            }
-            try {
-                StringTo<bool>("1");
-            } catch (...) {
-                throw RuntimeError("Could not convert argument 2 to bool");
-            }
-        }
-
-    }
-
-    else {
-
-        throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
-                           "are ['GET', 'PUT']");
-    }
-
-    // generate code for each action
-    if (action == slsDetectorDefs::GET_ACTION) {
-        if (args.size() == 1) {
-            auto arg0 = StringTo<uint32_t>(args[0]);
-            auto t = det->readRegister(arg0, std::vector<int>{det_id});
-            os << OutStringHex(t) << '\n';
-        }
-    }
-
-    if (action == slsDetectorDefs::PUT_ACTION) {
-        if (args.size() == 2) {
-            auto arg0 = StringTo<uint32_t>(args[0]);
-            auto arg1 = StringTo<uint32_t>(args[1]);
-            auto arg2 = StringTo<bool>("0");
-            det->writeRegister(arg0, arg1, arg2, std::vector<int>{det_id});
-            os << "[" << args[0] << ", " << args[1] << "]" << '\n';
-        }
-
-        if (args.size() == 3) {
-            if (args[2] != "--validate") {
-                throw RuntimeError(
-                    "Could not scan third argument. Did you mean --validate?");
-            }
-            auto arg0 = StringTo<uint32_t>(args[0]);
-            auto arg1 = StringTo<uint32_t>(args[1]);
-            auto arg2 = StringTo<bool>("1");
-            det->writeRegister(arg0, arg1, arg2, std::vector<int>{det_id});
-            os << "[" << args[0] << ", " << args[1] << "]" << '\n';
         }
     }
 

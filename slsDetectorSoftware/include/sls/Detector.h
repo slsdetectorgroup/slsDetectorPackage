@@ -2093,6 +2093,11 @@ class Detector {
      * right. */
     Result<uint32_t> readRegister(uint32_t addr, Positions pos = {}) const;
 
+    /** [CTB][Xilinx CTB] Advanced user function! \n \
+     * Same as above but uses register/ bit definitions from setRegisterDefinitions and setBitDefinitions
+     */
+    Result<uint32_t> readRegister(std::string addr, Positions pos = {}) const;
+
     /** Advanced user Function! \n
      * Goes to stop server. Hence, can be called while calling blocking
      * acquire(). \n [Eiger] Address is +0x100 for only left, +0x200 for only

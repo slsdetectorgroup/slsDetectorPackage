@@ -1938,7 +1938,7 @@ if [[ "${cword}" == "3" ]]; then
 FCN_RETURN=""
 fi
 if [[ "${cword}" == "4" ]]; then
-FCN_RETURN="--validate"
+FCN_RETURN=""
 fi
 fi
 return 0
@@ -1953,7 +1953,7 @@ if [[ "${cword}" == "3" ]]; then
 FCN_RETURN=""
 fi
 if [[ "${cword}" == "4" ]]; then
-FCN_RETURN="--validate"
+FCN_RETURN=""
 fi
 fi
 if [[ ${IS_GET} -eq 0 ]]; then

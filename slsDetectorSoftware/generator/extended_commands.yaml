@@ -801,39 +801,6 @@ badchannels:
   help: ''
   infer_action: true
   is_description: true
-bitoperations:
-  actions:
-    GET:
-      args:
-      - arg_types: []
-        argc: -1
-        cast_input: []
-        check_det_id: false
-        convert_det_id: true
-        function: ''
-        input: []
-        input_types: []
-        output: []
-        require_det_id: false
-        store_result_in_t: true
-    PUT:
-      args:
-      - arg_types: []
-        argc: -1
-        cast_input: []
-        check_det_id: false
-        convert_det_id: true
-        function: ''
-        input: []
-        input_types: []
-        output: []
-        require_det_id: false
-        store_result_in_t: false
-  command_name: bitoperations
-  function_alias: bitoperations
-  help: ''
-  infer_action: true
-  is_description: true
 blockingtrigger:
   actions:
     PUT:
@@ -1140,8 +1107,7 @@ clearbit:
         require_det_id: false
         store_result_in_t: false
   command_name: clearbit
-  duplicate_function: true
-  function_alias: bitoperations
+  function_alias: clearbit
   help: ''
   infer_action: true
   is_description: true
@@ -4770,8 +4736,7 @@ getbit:
         require_det_id: false
         store_result_in_t: true
   command_name: getbit
-  duplicate_function: true
-  function_alias: bitoperations
+  function_alias: getbit
   help: ''
   infer_action: true
   is_description: true
@@ -9593,8 +9558,7 @@ setbit:
         require_det_id: false
         store_result_in_t: false
   command_name: setbit
-  duplicate_function: true
-  function_alias: bitoperations
+  function_alias: setbit
   help: ''
   infer_action: true
   is_description: true

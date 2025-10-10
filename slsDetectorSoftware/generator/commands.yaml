@@ -2795,18 +2795,8 @@ reg:
               arg_types: [ int, int, std::string ]
 
 
-bitoperations:
-    is_description: true
-    actions:
-        GET:
-          argc: -1
-        PUT:
-          argc: -1
-
 getbit:
     is_description: true
-    duplicate_function: true
-    function_alias: bitoperations
     actions:
         GET:
           argc: -1
@@ -2814,16 +2804,12 @@ getbit:
 
 setbit:
     is_description: true
-    duplicate_function: true
-    function_alias: bitoperations
     actions:
         PUT:
           argc: -1
 
 clearbit:
     is_description: true
-    duplicate_function: true
-    function_alias: bitoperations
     actions:
         PUT:
           argc: -1

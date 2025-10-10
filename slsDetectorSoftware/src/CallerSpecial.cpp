@@ -1613,6 +1613,17 @@ std::string Caller::reg(int action) {
     return os.str();
 }
 
+std::string Caller::getbit(int action) {
+    return bitoperations(action);
+}
+
+std::string Caller::setbit(int action) {
+    return bitoperations(action);
+}   
+
+std::string Caller::clearbit(int action) {
+    return bitoperations(action);
+}
 
 std::string Caller::bitoperations(int action) {
     std::ostringstream os;

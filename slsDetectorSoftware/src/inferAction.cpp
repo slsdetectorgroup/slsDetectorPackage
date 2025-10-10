@@ -280,12 +280,6 @@ int InferAction::badchannels() {
                        "sls_detector_get or sls_detector_put");
 }
 
-int InferAction::bitoperations() {
-
-    throw RuntimeError("sls_detector is disabled for command: bitoperations. "
-                       "Use sls_detector_get or sls_detector_put");
-}
-
 int InferAction::blockingtrigger() {
 
     if (args.size() == 0) {
@@ -402,6 +396,12 @@ int InferAction::chipversion() {
 
         throw RuntimeError("Could not infer action: Wrong number of arguments");
     }
+}
+
+int InferAction::clearbit() {
+
+    throw RuntimeError("sls_detector is disabled for command: clearbit. Use "
+                       "sls_detector_get or sls_detector_put");
 }
 
 int InferAction::clearbusy() {
@@ -1506,6 +1506,12 @@ int InferAction::gates() {
 
         throw RuntimeError("Could not infer action: Wrong number of arguments");
     }
+}
+
+int InferAction::getbit() {
+
+    throw RuntimeError("sls_detector is disabled for command: getbit. Use "
+                       "sls_detector_get or sls_detector_put");
 }
 
 int InferAction::hardwareversion() {
@@ -3051,6 +3057,12 @@ int InferAction::serialnumber() {
 
         throw RuntimeError("Could not infer action: Wrong number of arguments");
     }
+}
+
+int InferAction::setbit() {
+
+    throw RuntimeError("sls_detector is disabled for command: setbit. Use "
+                       "sls_detector_get or sls_detector_put");
 }
 
 int InferAction::settings() {

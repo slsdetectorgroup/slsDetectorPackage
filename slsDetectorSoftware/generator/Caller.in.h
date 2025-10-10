@@ -75,6 +75,8 @@ class Caller {
                                   uint32_t subFrameIndex, void *this_pointer);
     uint32_t parseValueFromBitNames(const std::string& input) const;
 
+    std::string bitoperations(int action);
+
     FunctionMap functions{
         {"list", &Caller::list},
 

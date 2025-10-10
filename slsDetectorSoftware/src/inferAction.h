@@ -29,6 +29,7 @@ class InferAction {
     int asamples();
     int autocompdisable();
     int badchannels();
+    int bitoperations();
     int blockingtrigger();
     int burstmode();
     int burstperiod();
@@ -37,7 +38,6 @@ class InferAction {
     int bustest();
     int cdsgain();
     int chipversion();
-    int clearbit();
     int clearbusy();
     int clientversion();
     int clkdiv();
@@ -108,7 +108,6 @@ class InferAction {
     int gatedelay2();
     int gatedelay3();
     int gates();
-    int getbit();
     int hardwareversion();
     int highvoltage();
     int hostname();
@@ -231,7 +230,6 @@ class InferAction {
     int scanerrmsg();
     int selinterface();
     int serialnumber();
-    int setbit();
     int settings();
     int settingslist();
     int settingspath();
@@ -363,6 +361,7 @@ class InferAction {
         {"asamples", &InferAction::asamples},
         {"autocompdisable", &InferAction::autocompdisable},
         {"badchannels", &InferAction::badchannels},
+        {"bitoperations", &InferAction::bitoperations},
         {"blockingtrigger", &InferAction::blockingtrigger},
         {"burstmode", &InferAction::burstmode},
         {"burstperiod", &InferAction::burstperiod},
@@ -371,7 +370,7 @@ class InferAction {
         {"bustest", &InferAction::bustest},
         {"cdsgain", &InferAction::cdsgain},
         {"chipversion", &InferAction::chipversion},
-        {"clearbit", &InferAction::clearbit},
+        {"clearbit", &InferAction::bitoperations},
         {"clearbusy", &InferAction::clearbusy},
         {"clientversion", &InferAction::clientversion},
         {"clkdiv", &InferAction::clkdiv},
@@ -442,7 +441,7 @@ class InferAction {
         {"gatedelay2", &InferAction::gatedelay2},
         {"gatedelay3", &InferAction::gatedelay3},
         {"gates", &InferAction::gates},
-        {"getbit", &InferAction::getbit},
+        {"getbit", &InferAction::bitoperations},
         {"hardwareversion", &InferAction::hardwareversion},
         {"highvoltage", &InferAction::highvoltage},
         {"hostname", &InferAction::hostname},
@@ -568,7 +567,7 @@ class InferAction {
         {"scanerrmsg", &InferAction::scanerrmsg},
         {"selinterface", &InferAction::selinterface},
         {"serialnumber", &InferAction::serialnumber},
-        {"setbit", &InferAction::setbit},
+        {"setbit", &InferAction::bitoperations},
         {"settings", &InferAction::settings},
         {"settingslist", &InferAction::settingslist},
         {"settingspath", &InferAction::settingspath},

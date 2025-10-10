@@ -1433,7 +1433,7 @@ TEST_CASE("define", "[.cmdcall]") {
                     caller.call("reg", {"REG_MACRO", "0x0"}, -1, PUT));
                 REQUIRE_NOTHROW(
                     caller.call("reg", {"REG_MACRO"}, -1, GET, oss));
-                REQUIRE(oss.str() == "reg REG_MACRO 0x0\n");
+                REQUIRE(oss.str() == "reg 0x0\n");
             }
             {
                 std::ostringstream oss;
@@ -1441,15 +1441,15 @@ TEST_CASE("define", "[.cmdcall]") {
                     "reg", {"REG_MACRO", "MACRO_BIT|MICRO_BIT"}, -1, PUT));
                 REQUIRE_NOTHROW(
                     caller.call("reg", {"REG_MACRO"}, -1, GET, oss));
-                REQUIRE(oss.str() == "reg REG_MACRO 0x14\n");
+                REQUIRE(oss.str() == "reg 0x14\n");
             }
-            /*{
+            {
                 std::ostringstream oss;
                 REQUIRE_NOTHROW(caller.call(
                     "clearbit", {"REG_MACRO", "MACRO_BIT"}, -1, PUT));
                 REQUIRE_NOTHROW(
                     caller.call("reg", {"REG_MACRO"}, -1, GET, oss));
-                REQUIRE(oss.str() == "reg REG_MACRO 0x4\n");
+                REQUIRE(oss.str() == "reg 0x10\n");
             }
             {
                 std::ostringstream oss, oss1;
@@ -1457,11 +1457,11 @@ TEST_CASE("define", "[.cmdcall]") {
                     caller.call("setbit", {"REG_MACRO", "MACRO_BIT"}, -1, PUT));
                 REQUIRE_NOTHROW(
                     caller.call("reg", {"REG_MACRO"}, -1, GET, oss));
-                REQUIRE(oss.str() == "reg REG_MACRO 0x6\n");
+                REQUIRE(oss.str() == "reg 0x14\n");
                 REQUIRE_NOTHROW(caller.call(
                     "getbit", {"REG_MACRO", "MACRO_BIT"}, -1, GET, oss1));
-                REQUIRE(oss1.str() == "getbit REG_MACRO MACRO_BIT 1\n");
-            }*/
+                REQUIRE(oss1.str() == "getbit 1\n");
+            }
 
             for (int i = 0; i != det.size(); ++i) {
                 det.writeRegister(reg_addr, prev_val[i], false, {i});

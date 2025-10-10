@@ -2795,6 +2795,39 @@ reg:
               arg_types: [ int, int, std::string ]
 
 
+bitoperations:
+    is_description: true
+    actions:
+        GET:
+          argc: -1
+        PUT:
+          argc: -1
+
+getbit:
+    is_description: true
+    duplicate_function: true
+    function_alias: bitoperations
+    actions:
+        GET:
+          argc: -1
+
+
+setbit:
+    is_description: true
+    duplicate_function: true
+    function_alias: bitoperations
+    actions:
+        PUT:
+          argc: -1
+
+clearbit:
+    is_description: true
+    duplicate_function: true
+    function_alias: bitoperations
+    actions:
+        PUT:
+          argc: -1
+
 ################# special commands ##########################
 
 virtual:
@@ -4217,62 +4250,7 @@ adcreg:
       cast_input: [ true, true ]
       output: [ ToString(args) ]
 
-getbit:
-  help: "[reg address in hex] [bit index]\n\tGets bit in address."
-  actions:
-    GET:
-      argc: 2
-      exceptions:
-        - condition: 'StringTo<int>(args[1]) < 0 || StringTo<int>(args[1]) > 31'
-          message: '"Bit number out of range: " + args[1]'
-      require_det_id: true
-      function: getBit
-      input: [ 'args[0]', 'args[1]' ]
-      input_types: [ uint32_t, int ]
-      cast_input: [ true, true ]
-      output: [ OutString(t) ]
 
-Setbit:
-  template: true
-  actions:
-    PUT:
-      require_det_id: true
-      function: setBit
-      output: [ '"["', 'args[0]', '", "', 'args[1]', '"]"' ]    
-      args:
-        - argc: 2
-          exceptions:
-            - condition: 'StringTo<int>(args[1]) < 0 || StringTo<int>(args[1]) > 31'
-              message: '"Bit number out of range: " + args[1]'
-          input: [ 'args[0]', 'args[1]', '"0"' ]  
-          input_types: [ uint32_t, int, bool ]
-          arg_types: [ uint32_t, int ]
-          cast_input: [ true, true, true ]
-        - argc: 3
-          arg_types: [ uint32_t, int, special::validate ]
-          exceptions:
-            - condition: 'StringTo<int>(args[1]) < 0 || StringTo<int>(args[1]) > 31'
-              message: '"Bit number out of range: " + args[1]'
-            - condition: 'args[2] != "--validate"'
-              message: '"Could not scan third argument. Did you mean --validate?"'
-          input: [ 'args[0]', 'args[1]', '"1"' ]
-          input_types: [ uint32_t, int, bool ]
-          cast_input: [ true, true, true ]
-
-
-setbit:
-  inherit_actions: Setbit
-  help: "[reg address in hex] [bit index]\n\tSets bit in address.\n\tUse --validate to force validation."
-  actions:
-    PUT:
-      function: setBit
-
-clearbit:
-  inherit_actions: Setbit
-  help: "[reg address in hex] [bit index]\n\tClears bit in address.\n\tUse --validate to force validation."
-  actions:
-    PUT:
-      function: clearBit
 
 initialchecks:
   help: "[0, 1]\n\t[Mythen3][Gotthard2] Enable or disable intial compatibility and other checks at detector start up. It is enabled by default. Must come before 'hostname' command to take effect. Can be used to reprogram fpga when current firmware is incompatible.\n\tAdvanced User function!"

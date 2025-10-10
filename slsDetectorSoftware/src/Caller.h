@@ -74,6 +74,7 @@ class Caller {
     std::string asamples(int action);
     std::string autocompdisable(int action);
     std::string badchannels(int action);
+    std::string bitoperations(int action);
     std::string blockingtrigger(int action);
     std::string burstmode(int action);
     std::string burstperiod(int action);
@@ -82,7 +83,6 @@ class Caller {
     std::string bustest(int action);
     std::string cdsgain(int action);
     std::string chipversion(int action);
-    std::string clearbit(int action);
     std::string clearbusy(int action);
     std::string clientversion(int action);
     std::string clkdiv(int action);
@@ -153,7 +153,6 @@ class Caller {
     std::string gatedelay2(int action);
     std::string gatedelay3(int action);
     std::string gates(int action);
-    std::string getbit(int action);
     std::string hardwareversion(int action);
     std::string highvoltage(int action);
     std::string hostname(int action);
@@ -276,7 +275,6 @@ class Caller {
     std::string scanerrmsg(int action);
     std::string selinterface(int action);
     std::string serialnumber(int action);
-    std::string setbit(int action);
     std::string settings(int action);
     std::string settingslist(int action);
     std::string settingspath(int action);
@@ -421,6 +419,7 @@ class Caller {
         {"asamples", &Caller::asamples},
         {"autocompdisable", &Caller::autocompdisable},
         {"badchannels", &Caller::badchannels},
+        {"bitoperations", &Caller::bitoperations},
         {"blockingtrigger", &Caller::blockingtrigger},
         {"burstmode", &Caller::burstmode},
         {"burstperiod", &Caller::burstperiod},
@@ -429,7 +428,7 @@ class Caller {
         {"bustest", &Caller::bustest},
         {"cdsgain", &Caller::cdsgain},
         {"chipversion", &Caller::chipversion},
-        {"clearbit", &Caller::clearbit},
+        {"clearbit", &Caller::bitoperations},
         {"clearbusy", &Caller::clearbusy},
         {"clientversion", &Caller::clientversion},
         {"clkdiv", &Caller::clkdiv},
@@ -500,7 +499,7 @@ class Caller {
         {"gatedelay2", &Caller::gatedelay2},
         {"gatedelay3", &Caller::gatedelay3},
         {"gates", &Caller::gates},
-        {"getbit", &Caller::getbit},
+        {"getbit", &Caller::bitoperations},
         {"hardwareversion", &Caller::hardwareversion},
         {"highvoltage", &Caller::highvoltage},
         {"hostname", &Caller::hostname},
@@ -626,7 +625,7 @@ class Caller {
         {"scanerrmsg", &Caller::scanerrmsg},
         {"selinterface", &Caller::selinterface},
         {"serialnumber", &Caller::serialnumber},
-        {"setbit", &Caller::setbit},
+        {"setbit", &Caller::bitoperations},
         {"settings", &Caller::settings},
         {"settingslist", &Caller::settingslist},
         {"settingspath", &Caller::settingspath},

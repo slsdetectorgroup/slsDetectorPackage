@@ -1499,6 +1499,8 @@ std::string Caller::define(int action) {
             det->setBitDefinition(args[1], pos);
             os << ToString(args) << '\n';
         }
+    } else {
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -1546,7 +1548,6 @@ uint32_t Caller::parseValueFromBitNames(const std::string& input) const{
             continue;
         
         int bit_pos = det->getBitDefinitionByName(token);
-        std::cout << "Bit position for " << token << " is " << bit_pos << std::endl;
         value |= (1u << bit_pos);
     }
     return value;
@@ -1555,7 +1556,7 @@ uint32_t Caller::parseValueFromBitNames(const std::string& input) const{
 std::string Caller::reg(int action) {
     std::ostringstream os;
     if (action == defs::HELP_ACTION) {
-        os << "[address] [32 bit value][(optional)--validate]\n\t[Mythen3][Gotthard2] Reads/writes to a 32 bit register in hex. Advanced Function!\n\tGoes to stop server. Hence, can be called while calling blocking acquire().\n\t\t Use --validate to force validation when writing to it.\n\t[Eiger] +0x100 for only left, +0x200 for only right.\n\t\t[Ctb][Xilinx_Ctb] Address can also be a user-defined name set using the define command. Value can be a user-defined bit name as well or combined with '|'."
+        os << "[address] [32 bit value][(optional)--validate]\n\t[Mythen3][Gotthard2] Reads/writes to a 32 bit register in hex. Advanced Function!\n\tGoes to stop server. Hence, can be called while calling blocking acquire().\n\t\t Use --validate to force validation when writing to it.\n\t[Eiger] +0x100 for only left, +0x200 for only right.\n\t\t[Ctb][Xilinx_Ctb] Address can also be a user-defined name set previously using the define command. Value can be a user-defined bit name as well or combined with '|'."
            << '\n';
     } else {
         if (args.size() < 1) {
@@ -1601,10 +1602,10 @@ std::string Caller::reg(int action) {
             } 
 
             det->writeRegister(addr, val, validate, std::vector<int>{det_id});
-            os << args[0] << ' ' << args[1] << '\n';
+            os << '[' << args[0] << ", " << args[1] << "]\n";
         } else if (action == defs::GET_ACTION) {
                 auto t = det->readRegister(addr, std::vector<int>{det_id});
-                os << args[0] << ' ' << OutStringHex(t) << '\n';
+                os << OutStringHex(t) << '\n';
         } else {
             throw RuntimeError("Unknown action");
         }
@@ -1613,5 +1614,92 @@ std::string Caller::reg(int action) {
 }
 
 
+std::string Caller::bitoperations(int action) {
+    std::ostringstream os;
+    if (action == defs::HELP_ACTION) {
+        if (cmd == "getbit") {
+            os << "[reg address in hex] [bit index]\n\tGets bit in address."
+            << '\n';
+        } else if (cmd == "setbit") {
+            os << "[reg address in hex] [bit index]\n\tSets bit in address.\n\tUse --validate to force validation."
+            << '\n';        
+        } else if (cmd == "clearbit") {
+            os << "[reg address in hex] [bit index]\n\tClears bit in address.\n\tUse --validate to force validation."
+            << '\n';        
+        } else {
+            throw RuntimeError("Unknown command");
+        }
+        os << "\n\t\t[Ctb][Xilinx_Ctb] Address or bit position can also be a user-defined name set previously using the define command.";
+        os << '\n';    
+    } else {
+        if (action != defs::GET_ACTION && action != defs::PUT_ACTION) {
+            throw RuntimeError("Unknown action");
+        }
+
+        // first 2 args: addr and bit
+        if (args.size() < 2) {
+            WrongNumberOfParameters(2);
+        }
+
+        // get address from int or name
+        uint32_t addr = 0;
+        try {
+            addr = StringTo<uint32_t>(args[0]);
+        } catch (...) {
+            auto det_type = det->getDetectorType().squash();
+            if (det_type != defs::XILINX_CHIPTESTBOARD && det_type != defs::CHIPTESTBOARD) {
+                throw RuntimeError("User defined register definitions only supported for ctb and xilinx_ctb. Use an actual hard coded address for this detector.");
+            }
+            addr = det->getRegisterDefinitionByName(args[0]);
+        }      
+
+        // get bit postition from int or name
+        int bit = 0;
+        try {
+            bit = StringTo<int>(args[1]);
+        } catch (...) {
+            auto det_type = det->getDetectorType().squash();
+            if (det_type != defs::XILINX_CHIPTESTBOARD && det_type != defs::CHIPTESTBOARD) {
+                throw RuntimeError("User defined bit definitions only supported for ctb and xilinx_ctb. Use an actual hard coded bit positions for this detector.");
+            }
+            bit = det->getBitDefinitionByName(args[1]);
+        } 
+
+        if (action == defs::GET_ACTION) {
+            if (cmd == "setbit" || cmd == "clearbit") 
+                throw RuntimeError("Cannot get");
+            
+            auto t = det->getBit(addr, bit, std::vector<int>{det_id});
+            os << OutString(t) << '\n';        
+        } else {
+            if (cmd == "getbit")
+                throw RuntimeError("Cannot put");
+            
+            if (args.size() > 3)
+                WrongNumberOfParameters(2);
+            
+            // third arg: flag
+            bool validate = false;
+            if (args.size() == 3) {
+                if (args[2] == "--validate") {
+                    validate = true;
+                } else {
+                    throw RuntimeError("Unknown argument " + args[2] +
+                                    ". Did you mean --validate?");
+                }
+            }
+
+            if (cmd == "setbit") 
+                det->setBit(addr, bit, validate, std::vector<int>{det_id});
+            else if (cmd == "clearbit")
+                det->clearBit(addr, bit, validate, std::vector<int>{det_id});
+            else
+                throw RuntimeError("Unknown command");
+            os << '[' << args[0] << ", " << args[1] << "]\n";
+            
+        }
+    }
+    return os.str();
+}
 
 } // namespace sls

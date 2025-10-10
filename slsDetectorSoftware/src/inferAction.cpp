@@ -280,6 +280,12 @@ int InferAction::badchannels() {
                        "sls_detector_get or sls_detector_put");
 }
 
+int InferAction::bitoperations() {
+
+    throw RuntimeError("sls_detector is disabled for command: bitoperations. "
+                       "Use sls_detector_get or sls_detector_put");
+}
+
 int InferAction::blockingtrigger() {
 
     if (args.size() == 0) {
@@ -390,22 +396,6 @@ int InferAction::chipversion() {
 
     if (args.size() == 0) {
         return slsDetectorDefs::GET_ACTION;
-    }
-
-    else {
-
-        throw RuntimeError("Could not infer action: Wrong number of arguments");
-    }
-}
-
-int InferAction::clearbit() {
-
-    if (args.size() == 2) {
-        return slsDetectorDefs::PUT_ACTION;
-    }
-
-    if (args.size() == 3) {
-        return slsDetectorDefs::PUT_ACTION;
     }
 
     else {
@@ -1510,18 +1500,6 @@ int InferAction::gates() {
 
     if (args.size() == 1) {
         return slsDetectorDefs::PUT_ACTION;
-    }
-
-    else {
-
-        throw RuntimeError("Could not infer action: Wrong number of arguments");
-    }
-}
-
-int InferAction::getbit() {
-
-    if (args.size() == 2) {
-        return slsDetectorDefs::GET_ACTION;
     }
 
     else {
@@ -3067,22 +3045,6 @@ int InferAction::serialnumber() {
 
     if (args.size() == 0) {
         return slsDetectorDefs::GET_ACTION;
-    }
-
-    else {
-
-        throw RuntimeError("Could not infer action: Wrong number of arguments");
-    }
-}
-
-int InferAction::setbit() {
-
-    if (args.size() == 2) {
-        return slsDetectorDefs::PUT_ACTION;
-    }
-
-    if (args.size() == 3) {
-        return slsDetectorDefs::PUT_ACTION;
     }
 
     else {

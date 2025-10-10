@@ -2533,11 +2533,13 @@ void Detector::clearRegisterDefinitions() {
     pimpl->setRegisterDefinitions(std::vector<std::pair<std::string, int>>{});
 }
 
-void Detector::setRegisterDefinitions(const std::vector<std::pair<std::string, int>> &list) {
+void Detector::setRegisterDefinitions(
+    const std::vector<std::pair<std::string, int>> &list) {
     pimpl->setRegisterDefinitions(list);
 }
 
-std::vector<std::pair<std::string, int>> Detector::getRegisterDefinitions() const {
+std::vector<std::pair<std::string, int>>
+Detector::getRegisterDefinitions() const {
     return pimpl->getRegisterDefinitions();
 }
 
@@ -2561,14 +2563,14 @@ void Detector::clearBitDefinitions() {
     pimpl->setBitDefinitions(std::vector<std::pair<std::string, int>>{});
 }
 
-void Detector::setBitDefinitions(const std::vector<std::pair<std::string, int>> &list) {
+void Detector::setBitDefinitions(
+    const std::vector<std::pair<std::string, int>> &list) {
     pimpl->setBitDefinitions(list);
 }
 
 std::vector<std::pair<std::string, int>> Detector::getBitDefinitions() const {
     return pimpl->getBitDefinitions();
 }
-
 
 // Xilinx Ctb Specific
 

@@ -1439,22 +1439,31 @@ std::string Caller::sleep(int action) {
 std::string Caller::define(int action) {
     std::ostringstream os;
     if (action == defs::HELP_ACTION) {
-        os << "[reg/bit] [name] [address or bit position]\n\tSets a user defined register or bit name in shared memory. One can retrieve the address or bit position using the name. One can also retrieve the name using the address, but only for registers. One can then use this user-defined name in other commands instead of hard coding the address or bit position such as for reg, setbit, clearbit and getbit commands. The name can be upto 32 characters long."
+        os << "[reg/bit] [name] [address or bit position]\n\tSets a user "
+              "defined register or bit name in shared memory. One can retrieve "
+              "the address or bit position using the name. One can also "
+              "retrieve the name using the address, but only for registers. "
+              "One can then use this user-defined name in other commands "
+              "instead of hard coding the address or bit position such as for "
+              "reg, setbit, clearbit and getbit commands. The name can be upto "
+              "32 characters long."
            << '\n';
-        return os.str();   
-    } 
+        return os.str();
+    }
     if (action != defs::GET_ACTION && action != defs::PUT_ACTION) {
         throw RuntimeError("Unknown action");
-    } 
+    }
 
     auto det_type = det->getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD && det_type != defs::CHIPTESTBOARD) {
-        throw RuntimeError("define command only supported for ctb and xilinx_ctb");
+    if (det_type != defs::XILINX_CHIPTESTBOARD &&
+        det_type != defs::CHIPTESTBOARD) {
+        throw RuntimeError(
+            "define command only supported for ctb and xilinx_ctb");
     }
 
     if (det_id != -1) {
-        throw RuntimeError(
-            "Cannot use define at module level. Use the default multi-module level");
+        throw RuntimeError("Cannot use define at module level. Use the default "
+                           "multi-module level");
     }
 
     if (args.size() < 1) {
@@ -1463,7 +1472,7 @@ std::string Caller::define(int action) {
 
     if (args[0] != "reg" && args[0] != "bit") {
         throw RuntimeError("Unknown argument " + args[0] +
-                            ". Did you mean reg or bit?");
+                           ". Did you mean reg or bit?");
     }
 
     if (action == defs::GET_ACTION) {
@@ -1507,15 +1516,18 @@ std::string Caller::define(int action) {
 std::string Caller::definelist(int action) {
     std::ostringstream os;
     if (action == defs::HELP_ACTION) {
-        os << "[reg/bit] \n\tList of user-defined register or bit definitions in shared memory."
+        os << "[reg/bit] \n\tList of user-defined register or bit definitions "
+              "in shared memory."
            << '\n';
     } else if (action == defs::PUT_ACTION) {
         throw RuntimeError("cannot put");
     } else if (action == defs::GET_ACTION) {
 
         auto det_type = det->getDetectorType().squash();
-        if (det_type != defs::XILINX_CHIPTESTBOARD && det_type != defs::CHIPTESTBOARD) {
-            throw RuntimeError("define command only supported for ctb and xilinx_ctb");
+        if (det_type != defs::XILINX_CHIPTESTBOARD &&
+            det_type != defs::CHIPTESTBOARD) {
+            throw RuntimeError(
+                "define command only supported for ctb and xilinx_ctb");
         }
 
         if (args.size() != 1) {
@@ -1530,7 +1542,7 @@ std::string Caller::definelist(int action) {
             os << ToString(t) << '\n';
         } else {
             throw RuntimeError("Unknown argument " + args[0] +
-                                ". Did you mean register or bit?");
+                               ". Did you mean register or bit?");
         }
     } else {
         throw RuntimeError("Unknown action");
@@ -1538,7 +1550,7 @@ std::string Caller::definelist(int action) {
     return os.str();
 }
 
-uint32_t Caller::parseValueFromBitNames(const std::string& input) const{
+uint32_t Caller::parseValueFromBitNames(const std::string &input) const {
     uint32_t value = 0;
     std::stringstream ss(input);
     std::string token;
@@ -1546,7 +1558,7 @@ uint32_t Caller::parseValueFromBitNames(const std::string& input) const{
     while (std::getline(ss, token, '|')) {
         if (token.empty())
             continue;
-        
+
         int bit_pos = det->getBitDefinitionByName(token);
         value |= (1u << bit_pos);
     }
@@ -1556,7 +1568,16 @@ uint32_t Caller::parseValueFromBitNames(const std::string& input) const{
 std::string Caller::reg(int action) {
     std::ostringstream os;
     if (action == defs::HELP_ACTION) {
-        os << "[address] [32 bit value][(optional)--validate]\n\t[Mythen3][Gotthard2] Reads/writes to a 32 bit register in hex. Advanced Function!\n\tGoes to stop server. Hence, can be called while calling blocking acquire().\n\t\t Use --validate to force validation when writing to it.\n\t[Eiger] +0x100 for only left, +0x200 for only right.\n\t\t[Ctb][Xilinx_Ctb] Address can also be a user-defined name set previously using the define command. Value can be a user-defined bit name as well or combined with '|'."
+        os << "[address] [32 bit "
+              "value][(optional)--validate]\n\t[Mythen3][Gotthard2] "
+              "Reads/writes to a 32 bit register in hex. Advanced "
+              "Function!\n\tGoes to stop server. Hence, can be called while "
+              "calling blocking acquire().\n\t\t Use --validate to force "
+              "validation when writing to it.\n\t[Eiger] +0x100 for only left, "
+              "+0x200 for only right.\n\t\t[Ctb][Xilinx_Ctb] Address can also "
+              "be a user-defined name set previously using the define command. "
+              "Value can be a user-defined bit name as well or combined with "
+              "'|'."
            << '\n';
     } else {
         if (args.size() < 1) {
@@ -1568,11 +1589,15 @@ std::string Caller::reg(int action) {
             addr = StringTo<uint32_t>(args[0]);
         } catch (...) {
             auto det_type = det->getDetectorType().squash();
-            if (det_type != defs::XILINX_CHIPTESTBOARD && det_type != defs::CHIPTESTBOARD) {
-                throw RuntimeError("User defined register definitions only supported for ctb and xilinx_ctb. Use an actual hard coded address for this detector.");
+            if (det_type != defs::XILINX_CHIPTESTBOARD &&
+                det_type != defs::CHIPTESTBOARD) {
+                throw RuntimeError(
+                    "User defined register definitions only supported for ctb "
+                    "and xilinx_ctb. Use an actual hard coded address for this "
+                    "detector.");
             }
             addr = det->getRegisterDefinitionByName(args[0]);
-        }        
+        }
         if (action == defs::PUT_ACTION) {
             if (args.size() != 2 && args.size() != 3) {
                 WrongNumberOfParameters(2);
@@ -1584,9 +1609,8 @@ std::string Caller::reg(int action) {
                     validate = true;
                 } else {
                     throw RuntimeError("Unknown argument " + args[2] +
-                                    ". Did you mean --validate?");
+                                       ". Did you mean --validate?");
                 }
-
             }
             // get value from int or name
             uint32_t val = 0;
@@ -1594,18 +1618,22 @@ std::string Caller::reg(int action) {
                 val = StringTo<uint32_t>(args[1]);
             } catch (...) {
                 auto det_type = det->getDetectorType().squash();
-                if (det_type != defs::XILINX_CHIPTESTBOARD && det_type != defs::CHIPTESTBOARD) {
-                    throw RuntimeError("User defined bit definitions only supported for ctb and xilinx_ctb. Use an actual hard coded value for this detector.");
+                if (det_type != defs::XILINX_CHIPTESTBOARD &&
+                    det_type != defs::CHIPTESTBOARD) {
+                    throw RuntimeError(
+                        "User defined bit definitions only supported for ctb "
+                        "and xilinx_ctb. Use an actual hard coded value for "
+                        "this detector.");
                 }
                 val = parseValueFromBitNames(args[1]);
-                std::cout << "value:"<< val << std::endl;
-            } 
+                std::cout << "value:" << val << std::endl;
+            }
 
             det->writeRegister(addr, val, validate, std::vector<int>{det_id});
             os << '[' << args[0] << ", " << args[1] << "]\n";
         } else if (action == defs::GET_ACTION) {
-                auto t = det->readRegister(addr, std::vector<int>{det_id});
-                os << OutStringHex(t) << '\n';
+            auto t = det->readRegister(addr, std::vector<int>{det_id});
+            os << OutStringHex(t) << '\n';
         } else {
             throw RuntimeError("Unknown action");
         }
@@ -1613,35 +1641,32 @@ std::string Caller::reg(int action) {
     return os.str();
 }
 
-std::string Caller::getbit(int action) {
-    return bitoperations(action);
-}
+std::string Caller::getbit(int action) { return bitoperations(action); }
 
-std::string Caller::setbit(int action) {
-    return bitoperations(action);
-}   
+std::string Caller::setbit(int action) { return bitoperations(action); }
 
-std::string Caller::clearbit(int action) {
-    return bitoperations(action);
-}
+std::string Caller::clearbit(int action) { return bitoperations(action); }
 
 std::string Caller::bitoperations(int action) {
     std::ostringstream os;
     if (action == defs::HELP_ACTION) {
         if (cmd == "getbit") {
             os << "[reg address in hex] [bit index]\n\tGets bit in address."
-            << '\n';
+               << '\n';
         } else if (cmd == "setbit") {
-            os << "[reg address in hex] [bit index]\n\tSets bit in address.\n\tUse --validate to force validation."
-            << '\n';        
+            os << "[reg address in hex] [bit index]\n\tSets bit in "
+                  "address.\n\tUse --validate to force validation."
+               << '\n';
         } else if (cmd == "clearbit") {
-            os << "[reg address in hex] [bit index]\n\tClears bit in address.\n\tUse --validate to force validation."
-            << '\n';        
+            os << "[reg address in hex] [bit index]\n\tClears bit in "
+                  "address.\n\tUse --validate to force validation."
+               << '\n';
         } else {
             throw RuntimeError("Unknown command");
         }
-        os << "\n\t\t[Ctb][Xilinx_Ctb] Address or bit position can also be a user-defined name set previously using the define command.";
-        os << '\n';    
+        os << "\n\t\t[Ctb][Xilinx_Ctb] Address or bit position can also be a "
+              "user-defined name set previously using the define command.";
+        os << '\n';
     } else {
         if (action != defs::GET_ACTION && action != defs::PUT_ACTION) {
             throw RuntimeError("Unknown action");
@@ -1658,11 +1683,15 @@ std::string Caller::bitoperations(int action) {
             addr = StringTo<uint32_t>(args[0]);
         } catch (...) {
             auto det_type = det->getDetectorType().squash();
-            if (det_type != defs::XILINX_CHIPTESTBOARD && det_type != defs::CHIPTESTBOARD) {
-                throw RuntimeError("User defined register definitions only supported for ctb and xilinx_ctb. Use an actual hard coded address for this detector.");
+            if (det_type != defs::XILINX_CHIPTESTBOARD &&
+                det_type != defs::CHIPTESTBOARD) {
+                throw RuntimeError(
+                    "User defined register definitions only supported for ctb "
+                    "and xilinx_ctb. Use an actual hard coded address for this "
+                    "detector.");
             }
             addr = det->getRegisterDefinitionByName(args[0]);
-        }      
+        }
 
         // get bit postition from int or name
         int bit = 0;
@@ -1670,25 +1699,29 @@ std::string Caller::bitoperations(int action) {
             bit = StringTo<int>(args[1]);
         } catch (...) {
             auto det_type = det->getDetectorType().squash();
-            if (det_type != defs::XILINX_CHIPTESTBOARD && det_type != defs::CHIPTESTBOARD) {
-                throw RuntimeError("User defined bit definitions only supported for ctb and xilinx_ctb. Use an actual hard coded bit positions for this detector.");
+            if (det_type != defs::XILINX_CHIPTESTBOARD &&
+                det_type != defs::CHIPTESTBOARD) {
+                throw RuntimeError(
+                    "User defined bit definitions only supported for ctb and "
+                    "xilinx_ctb. Use an actual hard coded bit positions for "
+                    "this detector.");
             }
             bit = det->getBitDefinitionByName(args[1]);
-        } 
+        }
 
         if (action == defs::GET_ACTION) {
-            if (cmd == "setbit" || cmd == "clearbit") 
+            if (cmd == "setbit" || cmd == "clearbit")
                 throw RuntimeError("Cannot get");
-            
+
             auto t = det->getBit(addr, bit, std::vector<int>{det_id});
-            os << OutString(t) << '\n';        
+            os << OutString(t) << '\n';
         } else {
             if (cmd == "getbit")
                 throw RuntimeError("Cannot put");
-            
+
             if (args.size() > 3)
                 WrongNumberOfParameters(2);
-            
+
             // third arg: flag
             bool validate = false;
             if (args.size() == 3) {
@@ -1696,18 +1729,17 @@ std::string Caller::bitoperations(int action) {
                     validate = true;
                 } else {
                     throw RuntimeError("Unknown argument " + args[2] +
-                                    ". Did you mean --validate?");
+                                       ". Did you mean --validate?");
                 }
             }
 
-            if (cmd == "setbit") 
+            if (cmd == "setbit")
                 det->setBit(addr, bit, validate, std::vector<int>{det_id});
             else if (cmd == "clearbit")
                 det->clearBit(addr, bit, validate, std::vector<int>{det_id});
             else
                 throw RuntimeError("Unknown command");
             os << '[' << args[0] << ", " << args[1] << "]\n";
-            
         }
     }
     return os.str();

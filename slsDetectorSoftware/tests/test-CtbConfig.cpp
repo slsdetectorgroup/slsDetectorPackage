@@ -11,8 +11,8 @@ namespace sls {
 
 TEST_CASE("Default construction") {
     static_assert(sizeof(CtbConfig) ==
-                      (2 * sizeof(int) + (18 + 32 + 64 + 5 + 8) * 32) + (16 +
-                          (64 + 64) * (32 + 4)),
+                      (2 * sizeof(int) + (18 + 32 + 64 + 5 + 8) * 32) +
+                          (16 + (64 + 64) * (32 + 4)),
                   "Size of CtbConfig does not match ");
 
     CtbConfig c;
@@ -51,7 +51,6 @@ TEST_CASE("Default construction") {
     REQUIRE(regisernames.size() == 0);
     auto bitnames = c.getBitNames();
     REQUIRE(bitnames.size() == 0);
-
 }
 
 TEST_CASE("Set and get a single dac name") {
@@ -95,7 +94,8 @@ TEST_CASE("Add or modify a register name", "[.reg]") {
     CtbConfig c;
     REQUIRE(c.getRegisterNamesCount() == 0);
 
-    REQUIRE_THROWS(c.setRegisterName("reg1_with_a_really_long_name_to_crash", 100));
+    REQUIRE_THROWS(
+        c.setRegisterName("reg1_with_a_really_long_name_to_crash", 100));
 
     // add an entry
     REQUIRE_NOTHROW(c.setRegisterName("reg1", 100));
@@ -125,7 +125,7 @@ TEST_CASE("Add a register list", "[.reg]") {
     REQUIRE(names[0].second == 0x100);
     REQUIRE(names[1].first == "reg2");
     REQUIRE(names[1].second == 0x200);
-    REQUIRE(names[2].first == "reg3");      
+    REQUIRE(names[2].first == "reg3");
     REQUIRE(names[2].second == 0x300);
 
     // clear all entries
@@ -139,7 +139,7 @@ TEST_CASE("Finding a regiser name or address", "[.reg]") {
     // find nothing
     REQUIRE(c.getRegisterNamesCount() == 0);
     REQUIRE(c.getRegisterName(100) == std::nullopt);
-    REQUIRE(c.getRegisterAddress("reg1") == std::nullopt); 
+    REQUIRE(c.getRegisterAddress("reg1") == std::nullopt);
 
     std::vector<std::pair<std::string, int>> list = {
         {"reg1", 0x100}, {"reg2", 0x200}, {"reg3", 0x300}};
@@ -186,7 +186,7 @@ TEST_CASE("Add a bit list", "[.reg]") {
     REQUIRE(names[0].second == 2);
     REQUIRE(names[1].first == "reg2");
     REQUIRE(names[1].second == 21);
-    REQUIRE(names[2].first == "reg3");      
+    REQUIRE(names[2].first == "reg3");
     REQUIRE(names[2].second == 31);
 
     // clear all entries
@@ -199,7 +199,7 @@ TEST_CASE("Finding a bit value", "[.reg]") {
 
     // find nothing
     REQUIRE(c.getBitNamesCount() == 0);
-    REQUIRE(c.getBitPosition("bit1") == std::nullopt); 
+    REQUIRE(c.getBitPosition("bit1") == std::nullopt);
 
     std::vector<std::pair<std::string, int>> list = {
         {"bit1", 2}, {"reg2", 21}, {"reg3", 31}};

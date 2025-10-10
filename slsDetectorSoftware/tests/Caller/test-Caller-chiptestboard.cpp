@@ -1389,13 +1389,16 @@ TEST_CASE("define", "[.cmdcall]") {
         auto prev_reg_defines = det.getRegisterDefinitions();
         auto prev_bit_defines = det.getBitDefinitions();
 
-
         REQUIRE_THROWS(caller.call("define", {}, -1, GET)); // no mode or args
-        REQUIRE_THROWS(caller.call("define", {"TEST_MACRO"}, -1, GET)); // no name or pos
-        REQUIRE_THROWS(caller.call("define", {"TEST_MACRO", "2"}, -1, PUT));// skipped mode
-        REQUIRE_THROWS(caller.call("define", {"addr", "TEST_MACRO", "0x200"}, -1, PUT)); // invalid mode
-        REQUIRE_THROWS(caller.call("define", {"reg", "TEST_MACRO", "0x200"}, 0, PUT)); // invalid module id
-            
+        REQUIRE_THROWS(
+            caller.call("define", {"TEST_MACRO"}, -1, GET)); // no name or pos
+        REQUIRE_THROWS(caller.call("define", {"TEST_MACRO", "2"}, -1,
+                                   PUT)); // skipped mode
+        REQUIRE_THROWS(caller.call("define", {"addr", "TEST_MACRO", "0x200"},
+                                   -1, PUT)); // invalid mode
+        REQUIRE_THROWS(caller.call("define", {"reg", "TEST_MACRO", "0x200"}, 0,
+                                   PUT)); // invalid module id
+
         {
             REQUIRE_NOTHROW(
                 caller.call("define", {"reg", "REG_MACRO", "0x202"}, -1, PUT));
@@ -1415,8 +1418,8 @@ TEST_CASE("define", "[.cmdcall]") {
         int reg_addr = 0x205;
         std::string s_reg_addr = "0x205";
         {
-            REQUIRE_NOTHROW(
-                caller.call("define", {"reg", "REG_MACRO", s_reg_addr}, -1, PUT));
+            REQUIRE_NOTHROW(caller.call(
+                "define", {"reg", "REG_MACRO", s_reg_addr}, -1, PUT));
             std::ostringstream oss;
             caller.call("define", {"reg", "REG_MACRO"}, -1, GET, oss);
             REQUIRE(oss.str() == "define " + s_reg_addr + "\n");
@@ -1428,7 +1431,7 @@ TEST_CASE("define", "[.cmdcall]") {
             auto prev_val = det.readRegister(reg_addr);
             {
                 std::ostringstream oss;
-                //det.writeRegister(reg_addr, 0x0);
+                // det.writeRegister(reg_addr, 0x0);
                 REQUIRE_NOTHROW(
                     caller.call("reg", {"REG_MACRO", "0x0"}, -1, PUT));
                 REQUIRE_NOTHROW(
@@ -1472,7 +1475,8 @@ TEST_CASE("define", "[.cmdcall]") {
 
     } else {
         REQUIRE_THROWS(caller.call("define", {"TEST_MACRO", "reg"}, -1, GET));
-        REQUIRE_THROWS(caller.call("define", {"TEST_MACRO", "reg", "0x200"}, -1, PUT));
+        REQUIRE_THROWS(
+            caller.call("define", {"TEST_MACRO", "reg", "0x200"}, -1, PUT));
     }
 }
 
@@ -1486,9 +1490,10 @@ TEST_CASE("definelist", "[.cmdcall]") {
 
         auto prev_reg_defines = det.getRegisterDefinitions();
         auto prev_bit_defines = det.getBitDefinitions();
-        
+
         REQUIRE_THROWS(caller.call("definelist", {}, -1, GET));
-        REQUIRE_THROWS(caller.call("definelist", {"reg", "TEST_MACRO"}, -1, GET));
+        REQUIRE_THROWS(
+            caller.call("definelist", {"reg", "TEST_MACRO"}, -1, GET));
 
         REQUIRE_NOTHROW(caller.call("definelist", {"reg"}, -1, GET));
         REQUIRE_NOTHROW(caller.call("definelist", {"bit"}, -1, GET));

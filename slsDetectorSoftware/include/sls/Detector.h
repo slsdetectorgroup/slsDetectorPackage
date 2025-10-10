@@ -1839,31 +1839,32 @@ class Detector {
 
     /** [CTB][Xilinx CTB] */
     int getRegisterDefinitionsCount() const;
-    
+
     /** [CTB][Xilinx CTB] */
     void setRegisterDefinition(const std::string &name, const int value);
-    
+
     /** [CTB][Xilinx CTB] */
     bool hasRegisterDefinition(const std::string &name) const;
 
     /** [CTB][Xilinx CTB] */
     int getRegisterDefinitionByName(const std::string &name) const;
-    
+
     /** [CTB][Xilinx CTB] */
     std::string getRegisterDefinitionByValue(const int value) const;
-    
+
     /** [CTB][Xilinx CTB] */
     void clearRegisterDefinitions();
-    
+
     /** [CTB][Xilinx CTB] */
-    void setRegisterDefinitions(const std::vector<std::pair<std::string, int>> &list);
-    
+    void setRegisterDefinitions(
+        const std::vector<std::pair<std::string, int>> &list);
+
     /** [CTB][Xilinx CTB] */
     std::vector<std::pair<std::string, int>> getRegisterDefinitions() const;
 
     /** [CTB][Xilinx CTB] */
     int getBitDefinitionsCount() const;
-    
+
     /** [CTB][Xilinx CTB] */
     void setBitDefinition(const std::string &name, const int value);
 
@@ -1872,16 +1873,17 @@ class Detector {
 
     /** [CTB][Xilinx CTB] */
     int getBitDefinitionByName(const std::string &name) const;
-    
+
     /** [CTB][Xilinx CTB] */
     void clearBitDefinitions();
-    
+
     /** [CTB][Xilinx CTB] */
-    void setBitDefinitions(const std::vector<std::pair<std::string, int>> &list);
-    
+    void
+    setBitDefinitions(const std::vector<std::pair<std::string, int>> &list);
+
     /** [CTB][Xilinx CTB] */
     std::vector<std::pair<std::string, int>> getBitDefinitions() const;
-    
+
     ///@}
 
     /** @name Xilinx CTB Specific */

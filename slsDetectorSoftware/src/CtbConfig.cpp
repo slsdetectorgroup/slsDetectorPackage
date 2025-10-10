@@ -238,47 +238,54 @@ std::vector<std::string> CtbConfig::getSlowADCNames() const {
 
 const char *CtbConfig::shm_tag() { return shm_tag_; }
 
-
-std::optional<Entry*> CtbConfig::findEntryByName(const std::string &name, const bool is_register) {
-    Entry* begin = is_register ? registernames : bitnames;
-    Entry* end = begin + (is_register ? num_regs : num_bits);
+std::optional<Entry *> CtbConfig::findEntryByName(const std::string &name,
+                                                  const bool is_register) {
+    Entry *begin = is_register ? registernames : bitnames;
+    Entry *end = begin + (is_register ? num_regs : num_bits);
     auto it = std::find_if(begin, end, [&name](const Entry &e) {
         return std::strncmp(e.key, name.c_str(), CTB_NAME_LENGTH) == 0;
     });
 
-    if (it != end) return it;
+    if (it != end)
+        return it;
     return std::nullopt;
 }
 
 // const overload
-std::optional<const Entry*> CtbConfig::findEntryByName(const std::string &name, const bool is_register) const {
-    const Entry* begin = is_register ? registernames : bitnames;
-    const Entry* end = begin + (is_register ? num_regs : num_bits);
+std::optional<const Entry *>
+CtbConfig::findEntryByName(const std::string &name,
+                           const bool is_register) const {
+    const Entry *begin = is_register ? registernames : bitnames;
+    const Entry *end = begin + (is_register ? num_regs : num_bits);
     auto it = std::find_if(begin, end, [&name](const Entry &e) {
         return std::strncmp(e.key, name.c_str(), CTB_NAME_LENGTH) == 0;
     });
 
-    if (it != end) return it;
+    if (it != end)
+        return it;
     return std::nullopt;
 }
 
-std::optional<const Entry*> CtbConfig::findEntryByValue(const int value, const bool is_register) const {
-    const Entry* begin = is_register ? registernames : bitnames;
-    const Entry* end = begin + (is_register ? num_regs : num_bits);
-    auto it = std::find_if(begin, end, [&value](const Entry &e) {
-        return e.value == value;
-    });
+std::optional<const Entry *>
+CtbConfig::findEntryByValue(const int value, const bool is_register) const {
+    const Entry *begin = is_register ? registernames : bitnames;
+    const Entry *end = begin + (is_register ? num_regs : num_bits);
+    auto it = std::find_if(
+        begin, end, [&value](const Entry &e) { return e.value == value; });
 
-    if (it != end) return it;
+    if (it != end)
+        return it;
     return std::nullopt;
 }
 
-std::optional<int> CtbConfig::lookupEntryByName(const char* name, const bool is_register) const {
+std::optional<int> CtbConfig::lookupEntryByName(const char *name,
+                                                const bool is_register) const {
     auto entry = findEntryByName(name, is_register);
     return (entry ? std::optional<int>((*entry)->value) : std::nullopt);
 }
 
-std::optional<std::string> CtbConfig::lookupEntryByValue(const int value, const bool is_register) const {
+std::optional<std::string>
+CtbConfig::lookupEntryByValue(const int value, const bool is_register) const {
     if (!is_register) {
         throw RuntimeError("Lookup by value only valid for registers");
     }
@@ -286,28 +293,35 @@ std::optional<std::string> CtbConfig::lookupEntryByValue(const int value, const 
     return (entry ? std::optional<std::string>((*entry)->key) : std::nullopt);
 }
 
-void CtbConfig::addEntry(const char* name, const int value, const bool is_register) {
+void CtbConfig::addEntry(const char *name, const int value,
+                         const bool is_register) {
     check_size(name);
 
-    Entry* begin = is_register ? registernames : bitnames;
-    size_t* size_ptr = is_register ? &num_regs : &num_bits;
+    Entry *begin = is_register ? registernames : bitnames;
+    size_t *size_ptr = is_register ? &num_regs : &num_bits;
     size_t max_size = is_register ? max_regs : max_bits;
 
     // exists: overwrite value
     if (auto entry = findEntryByName(name, is_register)) {
-        (*entry)->value = value; 
+        (*entry)->value = value;
         return;
-    } 
+    }
 
     // check size
     if (*size_ptr >= max_size) {
-        throw RuntimeError("Maximum number of " + std::string(is_register ? "registers" : "bits") + " reached. Clear shared memory and try again.");
+        throw RuntimeError("Maximum number of " +
+                           std::string(is_register ? "registers" : "bits") +
+                           " reached. Clear shared memory and try again.");
     }
 
     // check value exists
     if (is_register) {
         if (auto addr_entry = findEntryByValue(value, is_register)) {
-            throw RuntimeError("Address " + std::to_string(value) + " already assigned to " + std::string(is_register ? "register" : "bit") + " '" + std::string((*addr_entry)->key) + "'. Cannot assign to '" + name + "'");
+            throw RuntimeError("Address " + std::to_string(value) +
+                               " already assigned to " +
+                               std::string(is_register ? "register" : "bit") +
+                               " '" + std::string((*addr_entry)->key) +
+                               "'. Cannot assign to '" + name + "'");
         }
     }
 
@@ -318,15 +332,14 @@ void CtbConfig::addEntry(const char* name, const int value, const bool is_regist
     ++(*size_ptr);
 }
 
-int CtbConfig::getRegisterNamesCount() const { 
-    return num_regs; 
-}
+int CtbConfig::getRegisterNamesCount() const { return num_regs; }
 
 void CtbConfig::setRegisterName(const std::string &name, const int value) {
     addEntry(name.c_str(), value, true);
 }
 
-std::optional<int> CtbConfig::getRegisterAddress(const std::string &name) const {
+std::optional<int>
+CtbConfig::getRegisterAddress(const std::string &name) const {
     return lookupEntryByName(name.c_str(), true);
 }
 
@@ -339,13 +352,14 @@ void CtbConfig::clearRegisterNames() {
     num_regs = 0;
 }
 
-void CtbConfig::setRegisterNames(const std::vector<std::pair<std::string, int>> &list) {
+void CtbConfig::setRegisterNames(
+    const std::vector<std::pair<std::string, int>> &list) {
     if (list.size() > max_regs) {
         throw RuntimeError("Register names need to be of size less than " +
                            std::to_string(max_regs));
     }
     clearRegisterNames();
-    for (const auto& [name, value] : list) {
+    for (const auto &[name, value] : list) {
         setRegisterName(name, value);
     }
 }
@@ -353,17 +367,17 @@ void CtbConfig::setRegisterNames(const std::vector<std::pair<std::string, int>> 
 std::vector<std::pair<std::string, int>> CtbConfig::getRegisterNames() const {
     std::vector<std::pair<std::string, int>> names;
     for (size_t i = 0; i != num_regs; ++i)
-        names.push_back({std::string(registernames[i].key), registernames[i].value});
+        names.push_back(
+            {std::string(registernames[i].key), registernames[i].value});
     return names;
 }
 
-int CtbConfig::getBitNamesCount() const { 
-    return num_bits; 
-}
+int CtbConfig::getBitNamesCount() const { return num_bits; }
 
 void CtbConfig::setBitName(const std::string &name, const int value) {
     if (value < 0 || value > 31) {
-        throw RuntimeError("Bit position defined for " + name + " must be between 0 and 31");
+        throw RuntimeError("Bit position defined for " + name +
+                           " must be between 0 and 31");
     }
     addEntry(name.c_str(), value, false);
 }
@@ -377,13 +391,14 @@ void CtbConfig::clearBitNames() {
     num_bits = 0;
 }
 
-void CtbConfig::setBitNames(const std::vector<std::pair<std::string, int>> &list) {
+void CtbConfig::setBitNames(
+    const std::vector<std::pair<std::string, int>> &list) {
     if (list.size() > max_bits) {
         throw RuntimeError("Bit names need to be of size less than " +
                            std::to_string(max_bits));
     }
     clearBitNames();
-    for (const auto& [name, value] : list) {
+    for (const auto &[name, value] : list) {
         setBitName(name, value);
     }
 }
@@ -394,6 +409,5 @@ std::vector<std::pair<std::string, int>> CtbConfig::getBitNames() const {
         names.push_back({std::string(bitnames[i].key), bitnames[i].value});
     return names;
 }
-
 
 } // namespace sls

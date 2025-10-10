@@ -73,7 +73,7 @@ class Caller {
 
     static void EmptyDataCallBack(detectorData *data, uint64_t frameIndex,
                                   uint32_t subFrameIndex, void *this_pointer);
-    uint32_t parseValueFromBitNames(const std::string& input) const;
+    uint32_t parseValueFromBitNames(const std::string &input) const;
 
     std::string bitoperations(int action);
 

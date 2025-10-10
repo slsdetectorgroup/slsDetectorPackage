@@ -1,8 +1,8 @@
 #pragma once
-#include <string>
-#include <vector>
 #include <optional>
+#include <string>
 #include <variant>
+#include <vector>
 
 namespace sls {
 
@@ -12,8 +12,8 @@ namespace sls {
 #define CTB_NAME_LENGTH 32
 
 struct Entry {
-  char key[CTB_NAME_LENGTH]{};
-  int value{0};
+    char key[CTB_NAME_LENGTH]{};
+    int value{0};
 };
 
 class CtbConfig {
@@ -51,12 +51,17 @@ class CtbConfig {
     void check_slow_adc_index(size_t i) const;
     void check_size(const std::string &name) const;
 
-    std::optional<Entry*> findEntryByName(const std::string &name, const bool is_register);
-    std::optional<const Entry*> findEntryByName(const std::string &name, const bool is_register) const;
-    std::optional<const Entry*> findEntryByValue(const int value, const bool is_register) const;
-    std::optional<int> lookupEntryByName(const char* name, const bool is_register) const;
-    std::optional<std::string> lookupEntryByValue(const int value, const bool is_register) const;
-    void addEntry(const char* name, const int value, const bool is_register);
+    std::optional<Entry *> findEntryByName(const std::string &name,
+                                           const bool is_register);
+    std::optional<const Entry *> findEntryByName(const std::string &name,
+                                                 const bool is_register) const;
+    std::optional<const Entry *> findEntryByValue(const int value,
+                                                  const bool is_register) const;
+    std::optional<int> lookupEntryByName(const char *name,
+                                         const bool is_register) const;
+    std::optional<std::string> lookupEntryByValue(const int value,
+                                                  const bool is_register) const;
+    void addEntry(const char *name, const int value, const bool is_register);
 
   public:
     CtbConfig();
@@ -98,7 +103,6 @@ class CtbConfig {
     void clearRegisterNames();
     void setRegisterNames(const std::vector<std::pair<std::string, int>> &list);
     std::vector<std::pair<std::string, int>> getRegisterNames() const;
-
 
     int getBitNamesCount() const;
     void setBitName(const std::string &name, const int value);

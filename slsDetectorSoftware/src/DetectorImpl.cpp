@@ -1936,7 +1936,7 @@ void DetectorImpl::setBadChannels(const std::vector<int> list, Positions pos) {
 
 std::vector<std::string> DetectorImpl::getCtbDacNames() const {
     if (!isChipTestBoard())
-        throw RuntimeError("Named DACs only for CTB");    
+        throw RuntimeError("Named DACs only for CTB");
     return ctb_shm()->getDacNames();
 }
 
@@ -2053,7 +2053,7 @@ std::string DetectorImpl::getCtbSlowADCName(const defs::dacIndex i) const {
 void DetectorImpl::setCtbSlowADCName(const defs::dacIndex index,
                                      const std::string &name) {
     if (!isChipTestBoard())
-        throw RuntimeError("Named Slow ADCs only for CTB");                                        
+        throw RuntimeError("Named Slow ADCs only for CTB");
     ctb_shm()->setSlowADCName(static_cast<int>(index - defs::SLOW_ADC0), name);
 }
 
@@ -2063,7 +2063,8 @@ int DetectorImpl::getRegisterDefinitionsCount() const {
     return ctb_shm()->getRegisterNamesCount();
 }
 
-void DetectorImpl::setRegisterDefinition(const std::string &name, const int value) {
+void DetectorImpl::setRegisterDefinition(const std::string &name,
+                                         const int value) {
     if (!isChipTestBoard())
         throw RuntimeError("Register Definitions only for CTB");
     ctb_shm()->setRegisterName(name, value);
@@ -2090,7 +2091,8 @@ std::string DetectorImpl::getRegisterDefinitionByValue(const int value) const {
         throw RuntimeError("Register Definitions only for CTB");
     auto val = ctb_shm()->getRegisterName(value);
     if (!val.has_value()) {
-        throw RuntimeError("No register definition found for address: " + value);
+        throw RuntimeError("No register definition found for address: " +
+                           value);
     }
     return val.value();
 }
@@ -2101,15 +2103,17 @@ void DetectorImpl::clearRegisterDefinitions() {
     ctb_shm()->clearRegisterNames();
 }
 
-void DetectorImpl::setRegisterDefinitions(const std::vector<std::pair<std::string, int>> &list){
+void DetectorImpl::setRegisterDefinitions(
+    const std::vector<std::pair<std::string, int>> &list) {
     if (!isChipTestBoard())
-        throw RuntimeError("Register Definitions only for CTB");    
+        throw RuntimeError("Register Definitions only for CTB");
     ctb_shm()->setRegisterNames(list);
 }
 
-std::vector<std::pair<std::string, int>> DetectorImpl::getRegisterDefinitions() const {
+std::vector<std::pair<std::string, int>>
+DetectorImpl::getRegisterDefinitions() const {
     if (!isChipTestBoard())
-        throw RuntimeError("Register Definitions only for CTB");    
+        throw RuntimeError("Register Definitions only for CTB");
     return ctb_shm()->getRegisterNames();
 }
 
@@ -2147,17 +2151,18 @@ void DetectorImpl::clearBitDefinitions() {
     ctb_shm()->clearBitNames();
 }
 
-void DetectorImpl::setBitDefinitions(const std::vector<std::pair<std::string, int>> &list) {
+void DetectorImpl::setBitDefinitions(
+    const std::vector<std::pair<std::string, int>> &list) {
     if (!isChipTestBoard())
         throw RuntimeError("Bit Definitions only for CTB");
     ctb_shm()->setBitNames(list);
 }
 
-std::vector<std::pair<std::string, int>> DetectorImpl::getBitDefinitions() const {
+std::vector<std::pair<std::string, int>>
+DetectorImpl::getBitDefinitions() const {
     if (!isChipTestBoard())
         throw RuntimeError("Bit Definitions only for CTB");
     return ctb_shm()->getBitNames();
 }
-
 
 } // namespace sls

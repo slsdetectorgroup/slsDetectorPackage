@@ -127,7 +127,6 @@ std::string ToString(const std::pair<T1, T2> &p) {
     return os.str();
 }
 
-
 /** Conversion of integer types, do not remove trailing zeros */
 template <typename T>
 typename std::enable_if<std::is_integral<T>::value, std::string>::type

@@ -2778,8 +2778,6 @@ definelist:
         GET:
           argc: 1
           arg_types: [ std::string ]
-        PUT:
-          argc: -1
 
 reg:
     is_description: true

@@ -712,6 +712,11 @@ if [[ "${cword}" == "2" ]]; then
 FCN_RETURN=""
 fi
 fi
+if [[ ${IS_GET} -eq 0 ]]; then
+if [[ "${cword}" == "2" ]]; then
+FCN_RETURN=""
+fi
+fi
 return 0
 }
 __delay() {

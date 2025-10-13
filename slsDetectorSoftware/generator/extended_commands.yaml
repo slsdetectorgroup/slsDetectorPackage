@@ -2517,19 +2517,6 @@ definelist:
         output: []
         require_det_id: false
         store_result_in_t: true
-    PUT:
-      args:
-      - arg_types: []
-        argc: -1
-        cast_input: []
-        check_det_id: false
-        convert_det_id: true
-        function: ''
-        input: []
-        input_types: []
-        output: []
-        require_det_id: false
-        store_result_in_t: false
   command_name: definelist
   function_alias: definelist
   help: ''

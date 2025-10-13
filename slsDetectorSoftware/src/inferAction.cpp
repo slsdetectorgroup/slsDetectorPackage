@@ -806,8 +806,14 @@ int InferAction::define() {
 
 int InferAction::definelist() {
 
-    throw RuntimeError("sls_detector is disabled for command: definelist. Use "
-                       "sls_detector_get or sls_detector_put");
+    if (args.size() == 1) {
+        return slsDetectorDefs::GET_ACTION;
+    }
+
+    else {
+
+        throw RuntimeError("Could not infer action: Wrong number of arguments");
+    }
 }
 
 int InferAction::delay() {

@@ -1095,8 +1095,24 @@ clearbit:
   actions:
     PUT:
       args:
-      - arg_types: []
-        argc: -1
+      - arg_types:
+        - std::string
+        - std::string
+        argc: 2
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+      - arg_types:
+        - std::string
+        - std::string
+        - bool
+        argc: 3
         cast_input: []
         check_det_id: false
         convert_det_id: true
@@ -4724,8 +4740,10 @@ getbit:
   actions:
     GET:
       args:
-      - arg_types: []
-        argc: -1
+      - arg_types:
+        - std::string
+        - std::string
+        argc: 2
         cast_input: []
         check_det_id: false
         convert_det_id: true
@@ -9546,8 +9564,24 @@ setbit:
   actions:
     PUT:
       args:
-      - arg_types: []
-        argc: -1
+      - arg_types:
+        - std::string
+        - std::string
+        argc: 2
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+      - arg_types:
+        - std::string
+        - std::string
+        - bool
+        argc: 3
         cast_input: []
         check_det_id: false
         convert_det_id: true

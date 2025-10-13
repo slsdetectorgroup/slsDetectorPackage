@@ -247,10 +247,32 @@ return 0
 }
 __clearbit() {
 FCN_RETURN=""
+if [[ ${IS_GET} -eq 0 ]]; then
+if [[ "${cword}" == "2" ]]; then
+FCN_RETURN=""
+fi
+if [[ "${cword}" == "3" ]]; then
+FCN_RETURN=""
+fi
+if [[ "${cword}" == "4" ]]; then
+FCN_RETURN="0 1"
+fi
+fi
 return 0
 }
 __clearbusy() {
 FCN_RETURN=""
+if [[ ${IS_GET} -eq 1 ]]; then
+if [[ "${cword}" == "2" ]]; then
+FCN_RETURN=""
+fi
+if [[ "${cword}" == "3" ]]; then
+FCN_RETURN=""
+fi
+if [[ "${cword}" == "4" ]]; then
+FCN_RETURN="0 1"
+fi
+fi
 return 0
 }
 __clientversion() {
@@ -1084,6 +1106,22 @@ return 0
 }
 __getbit() {
 FCN_RETURN=""
+if [[ ${IS_GET} -eq 1 ]]; then
+if [[ "${cword}" == "2" ]]; then
+FCN_RETURN=""
+fi
+if [[ "${cword}" == "3" ]]; then
+FCN_RETURN=""
+fi
+fi
+if [[ ${IS_GET} -eq 0 ]]; then
+if [[ "${cword}" == "2" ]]; then
+FCN_RETURN=""
+fi
+if [[ "${cword}" == "3" ]]; then
+FCN_RETURN=""
+fi
+fi
 return 0
 }
 __hardwareversion() {
@@ -2278,6 +2316,17 @@ return 0
 }
 __setbit() {
 FCN_RETURN=""
+if [[ ${IS_GET} -eq 0 ]]; then
+if [[ "${cword}" == "2" ]]; then
+FCN_RETURN=""
+fi
+if [[ "${cword}" == "3" ]]; then
+FCN_RETURN=""
+fi
+if [[ "${cword}" == "4" ]]; then
+FCN_RETURN="0 1"
+fi
+fi
 return 0
 }
 __settings() {

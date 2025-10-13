@@ -331,7 +331,7 @@ if [[ "${cword}" == "3" ]]; then
 FCN_RETURN=""
 fi
 if [[ "${cword}" == "4" ]]; then
-FCN_RETURN="0 1"
+FCN_RETURN="--validate"
 fi
 fi
 return 0
@@ -346,7 +346,7 @@ if [[ "${cword}" == "3" ]]; then
 FCN_RETURN=""
 fi
 if [[ "${cword}" == "4" ]]; then
-FCN_RETURN="0 1"
+FCN_RETURN="--validate"
 fi
 fi
 return 0
@@ -2014,7 +2014,7 @@ if [[ "${cword}" == "3" ]]; then
 FCN_RETURN=""
 fi
 if [[ "${cword}" == "4" ]]; then
-FCN_RETURN=""
+FCN_RETURN="--validate"
 fi
 fi
 return 0
@@ -2029,7 +2029,7 @@ if [[ "${cword}" == "3" ]]; then
 FCN_RETURN=""
 fi
 if [[ "${cword}" == "4" ]]; then
-FCN_RETURN=""
+FCN_RETURN="--validate"
 fi
 fi
 if [[ ${IS_GET} -eq 0 ]]; then
@@ -2400,7 +2400,7 @@ if [[ "${cword}" == "3" ]]; then
 FCN_RETURN=""
 fi
 if [[ "${cword}" == "4" ]]; then
-FCN_RETURN="0 1"
+FCN_RETURN="--validate"
 fi
 fi
 return 0

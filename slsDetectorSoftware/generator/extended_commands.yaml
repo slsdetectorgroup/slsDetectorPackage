@@ -1111,7 +1111,7 @@ clearbit:
       - arg_types:
         - std::string
         - std::string
-        - bool
+        - special::validate
         argc: 3
         cast_input: []
         check_det_id: false
@@ -7925,7 +7925,7 @@ reg:
       - arg_types:
         - int
         - int
-        - std::string
+        - special::validate
         argc: 3
         cast_input: []
         check_det_id: false
@@ -9580,7 +9580,7 @@ setbit:
       - arg_types:
         - std::string
         - std::string
-        - bool
+        - special::validate
         argc: 3
         cast_input: []
         check_det_id: false

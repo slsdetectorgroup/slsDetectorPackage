@@ -2792,7 +2792,7 @@ reg:
             - argc: 2
               arg_types: [ int, int ]
             - argc: 3
-              arg_types: [ int, int, std::string ]
+              arg_types: [ int, int, special::validate ]
 
 
 getbit:
@@ -2811,7 +2811,7 @@ setbit:
             - argc: 2
               arg_types: [ std::string, std::string ]
             - argc: 3
-              arg_types: [ std::string, std::string, bool ]
+              arg_types: [ std::string, std::string, special::validate ]
 
 clearbit:
     is_description: true
@@ -2821,7 +2821,7 @@ clearbit:
             - argc: 2
               arg_types: [ std::string, std::string ]
             - argc: 3
-              arg_types: [ std::string, std::string, bool ]
+              arg_types: [ std::string, std::string, special::validate ]
 
 
 ################# special commands ##########################

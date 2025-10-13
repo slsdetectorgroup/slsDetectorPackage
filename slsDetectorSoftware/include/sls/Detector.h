@@ -1856,11 +1856,10 @@ class Detector {
     void clearRegisterDefinitions();
 
     /** [CTB][Xilinx CTB] */
-    void setRegisterDefinitions(
-        const std::vector<std::pair<std::string, int>> &list);
+    void setRegisterDefinitions(const std::map<std::string, int> &list);
 
     /** [CTB][Xilinx CTB] */
-    std::vector<std::pair<std::string, int>> getRegisterDefinitions() const;
+    std::map<std::string, int> getRegisterDefinitions() const;
 
     /** [CTB][Xilinx CTB] */
     int getBitDefinitionsCount() const;
@@ -1878,11 +1877,10 @@ class Detector {
     void clearBitDefinitions();
 
     /** [CTB][Xilinx CTB] */
-    void
-    setBitDefinitions(const std::vector<std::pair<std::string, int>> &list);
+    void setBitDefinitions(const std::map<std::string, int> &list);
 
     /** [CTB][Xilinx CTB] */
-    std::vector<std::pair<std::string, int>> getBitDefinitions() const;
+    std::map<std::string, int> getBitDefinitions() const;
 
     ///@}
 

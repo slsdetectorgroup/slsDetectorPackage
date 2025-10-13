@@ -2104,14 +2104,13 @@ void DetectorImpl::clearRegisterDefinitions() {
 }
 
 void DetectorImpl::setRegisterDefinitions(
-    const std::vector<std::pair<std::string, int>> &list) {
+    const std::map<std::string, int> &list) {
     if (!isChipTestBoard())
         throw RuntimeError("Register Definitions only for CTB");
     ctb_shm()->setRegisterNames(list);
 }
 
-std::vector<std::pair<std::string, int>>
-DetectorImpl::getRegisterDefinitions() const {
+std::map<std::string, int> DetectorImpl::getRegisterDefinitions() const {
     if (!isChipTestBoard())
         throw RuntimeError("Register Definitions only for CTB");
     return ctb_shm()->getRegisterNames();
@@ -2151,15 +2150,13 @@ void DetectorImpl::clearBitDefinitions() {
     ctb_shm()->clearBitNames();
 }
 
-void DetectorImpl::setBitDefinitions(
-    const std::vector<std::pair<std::string, int>> &list) {
+void DetectorImpl::setBitDefinitions(const std::map<std::string, int> &list) {
     if (!isChipTestBoard())
         throw RuntimeError("Bit Definitions only for CTB");
     ctb_shm()->setBitNames(list);
 }
 
-std::vector<std::pair<std::string, int>>
-DetectorImpl::getBitDefinitions() const {
+std::map<std::string, int> DetectorImpl::getBitDefinitions() const {
     if (!isChipTestBoard())
         throw RuntimeError("Bit Definitions only for CTB");
     return ctb_shm()->getBitNames();

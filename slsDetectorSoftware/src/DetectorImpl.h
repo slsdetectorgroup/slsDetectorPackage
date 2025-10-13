@@ -339,17 +339,15 @@ class DetectorImpl : public virtual slsDetectorDefs {
     int getRegisterDefinitionByName(const std::string &name) const;
     std::string getRegisterDefinitionByValue(const int value) const;
     void clearRegisterDefinitions();
-    void setRegisterDefinitions(
-        const std::vector<std::pair<std::string, int>> &list);
-    std::vector<std::pair<std::string, int>> getRegisterDefinitions() const;
+    void setRegisterDefinitions(const std::map<std::string, int> &list);
+    std::map<std::string, int> getRegisterDefinitions() const;
     int getBitDefinitionsCount() const;
     void setBitDefinition(const std::string &name, const int value);
     bool hasBitDefinition(const std::string &name) const;
     int getBitDefinitionByName(const std::string &name) const;
     void clearBitDefinitions();
-    void
-    setBitDefinitions(const std::vector<std::pair<std::string, int>> &list);
-    std::vector<std::pair<std::string, int>> getBitDefinitions() const;
+    void setBitDefinitions(const std::map<std::string, int> &list);
+    std::map<std::string, int> getBitDefinitions() const;
 
   private:
     /**

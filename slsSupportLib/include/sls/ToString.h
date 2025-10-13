@@ -120,13 +120,6 @@ ToString(const T &value) {
     return std::to_string(value);
 }
 
-template <typename T1, typename T2>
-std::string ToString(const std::pair<T1, T2> &p) {
-    std::ostringstream os;
-    os << "(" << ToString(p.first) << ", " << ToString(p.second) << ")";
-    return os.str();
-}
-
 /** Conversion of integer types, do not remove trailing zeros */
 template <typename T>
 typename std::enable_if<std::is_integral<T>::value, std::string>::type

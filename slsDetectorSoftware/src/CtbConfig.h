@@ -1,4 +1,5 @@
 #pragma once
+#include <map>
 #include <optional>
 #include <string>
 #include <variant>
@@ -101,15 +102,15 @@ class CtbConfig {
     std::optional<int> getRegisterAddress(const std::string &name) const;
     std::optional<std::string> getRegisterName(const int value) const;
     void clearRegisterNames();
-    void setRegisterNames(const std::vector<std::pair<std::string, int>> &list);
-    std::vector<std::pair<std::string, int>> getRegisterNames() const;
+    void setRegisterNames(const std::map<std::string, int> &list);
+    std::map<std::string, int> getRegisterNames() const;
 
     int getBitNamesCount() const;
     void setBitName(const std::string &name, const int value);
     std::optional<int> getBitPosition(const std::string &name) const;
     void clearBitNames();
-    void setBitNames(const std::vector<std::pair<std::string, int>> &list);
-    std::vector<std::pair<std::string, int>> getBitNames() const;
+    void setBitNames(const std::map<std::string, int> &list);
+    std::map<std::string, int> getBitNames() const;
 };
 
 } // namespace sls

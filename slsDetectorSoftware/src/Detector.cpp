@@ -2530,16 +2530,14 @@ std::string Detector::getRegisterDefinitionByValue(const int value) const {
 }
 
 void Detector::clearRegisterDefinitions() {
-    pimpl->setRegisterDefinitions(std::vector<std::pair<std::string, int>>{});
+    pimpl->setRegisterDefinitions(std::map<std::string, int>{});
 }
 
-void Detector::setRegisterDefinitions(
-    const std::vector<std::pair<std::string, int>> &list) {
+void Detector::setRegisterDefinitions(const std::map<std::string, int> &list) {
     pimpl->setRegisterDefinitions(list);
 }
 
-std::vector<std::pair<std::string, int>>
-Detector::getRegisterDefinitions() const {
+std::map<std::string, int> Detector::getRegisterDefinitions() const {
     return pimpl->getRegisterDefinitions();
 }
 
@@ -2560,15 +2558,14 @@ int Detector::getBitDefinitionByName(const std::string &name) const {
 }
 
 void Detector::clearBitDefinitions() {
-    pimpl->setBitDefinitions(std::vector<std::pair<std::string, int>>{});
+    pimpl->setBitDefinitions(std::map<std::string, int>{});
 }
 
-void Detector::setBitDefinitions(
-    const std::vector<std::pair<std::string, int>> &list) {
+void Detector::setBitDefinitions(const std::map<std::string, int> &list) {
     pimpl->setBitDefinitions(list);
 }
 
-std::vector<std::pair<std::string, int>> Detector::getBitDefinitions() const {
+std::map<std::string, int> Detector::getBitDefinitions() const {
     return pimpl->getBitDefinitions();
 }
 

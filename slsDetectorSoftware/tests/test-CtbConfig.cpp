@@ -115,18 +115,16 @@ TEST_CASE("Add a register list", "[.reg]") {
     REQUIRE(c.getRegisterNamesCount() == 0);
 
     // add a list
-    std::vector<std::pair<std::string, int>> list = {
+    std::map<std::string, int> list = {
         {"reg1", 0x100}, {"reg2", 0x200}, {"reg3", 0x300}};
     REQUIRE_NOTHROW(c.setRegisterNames(list));
-    REQUIRE(c.getRegisterNamesCount() == 3);
+    REQUIRE(c.getRegisterNamesCount() == static_cast<int>(list.size()));
     auto names = c.getRegisterNames();
     REQUIRE(names.size() == 3);
-    REQUIRE(names[0].first == "reg1");
-    REQUIRE(names[0].second == 0x100);
-    REQUIRE(names[1].first == "reg2");
-    REQUIRE(names[1].second == 0x200);
-    REQUIRE(names[2].first == "reg3");
-    REQUIRE(names[2].second == 0x300);
+    for (const auto &[key, val] : list) {
+        REQUIRE(names.count(key) == 1);
+        REQUIRE(names.at(key) == val);
+    }
 
     // clear all entries
     REQUIRE_NOTHROW(c.clearRegisterNames());
@@ -141,7 +139,7 @@ TEST_CASE("Finding a regiser name or address", "[.reg]") {
     REQUIRE(c.getRegisterName(100) == std::nullopt);
     REQUIRE(c.getRegisterAddress("reg1") == std::nullopt);
 
-    std::vector<std::pair<std::string, int>> list = {
+    std::map<std::string, int> list = {
         {"reg1", 0x100}, {"reg2", 0x200}, {"reg3", 0x300}};
     REQUIRE_NOTHROW(c.setRegisterNames(list));
 
@@ -176,18 +174,15 @@ TEST_CASE("Add a bit list", "[.reg]") {
     REQUIRE(c.getBitNamesCount() == 0);
 
     // add a list
-    std::vector<std::pair<std::string, int>> list = {
-        {"bit1", 2}, {"reg2", 21}, {"reg3", 31}};
+    std::map<std::string, int> list = {{"bit1", 2}, {"bit2", 21}, {"bit3", 31}};
     REQUIRE_NOTHROW(c.setBitNames(list));
     REQUIRE(c.getBitNamesCount() == 3);
     auto names = c.getBitNames();
-    REQUIRE(names.size() == 3);
-    REQUIRE(names[0].first == "bit1");
-    REQUIRE(names[0].second == 2);
-    REQUIRE(names[1].first == "reg2");
-    REQUIRE(names[1].second == 21);
-    REQUIRE(names[2].first == "reg3");
-    REQUIRE(names[2].second == 31);
+    REQUIRE(names.size() == static_cast<int>(3));
+    for (const auto &[key, val] : list) {
+        REQUIRE(names.count(key) == 1);
+        REQUIRE(names.at(key) == val);
+    }
 
     // clear all entries
     REQUIRE_NOTHROW(c.clearBitNames());
@@ -201,12 +196,11 @@ TEST_CASE("Finding a bit value", "[.reg]") {
     REQUIRE(c.getBitNamesCount() == 0);
     REQUIRE(c.getBitPosition("bit1") == std::nullopt);
 
-    std::vector<std::pair<std::string, int>> list = {
-        {"bit1", 2}, {"reg2", 21}, {"reg3", 31}};
+    std::map<std::string, int> list = {{"bit1", 2}, {"bit2", 21}, {"bit3", 31}};
     REQUIRE_NOTHROW(c.setBitNames(list));
 
     // find
-    REQUIRE(c.getBitPosition("reg3").value() == 31);
+    REQUIRE(c.getBitPosition("bit3").value() == 31);
 }
 
 } // namespace sls

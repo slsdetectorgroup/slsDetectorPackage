@@ -352,9 +352,8 @@ void CtbConfig::clearRegisterNames() {
     num_regs = 0;
 }
 
-void CtbConfig::setRegisterNames(
-    const std::vector<std::pair<std::string, int>> &list) {
-    if (list.size() > max_regs) {
+void CtbConfig::setRegisterNames(const std::map<std::string, int> &list) {
+    if (list.size() >= max_regs) {
         throw RuntimeError("Register names need to be of size less than " +
                            std::to_string(max_regs));
     }
@@ -364,11 +363,10 @@ void CtbConfig::setRegisterNames(
     }
 }
 
-std::vector<std::pair<std::string, int>> CtbConfig::getRegisterNames() const {
-    std::vector<std::pair<std::string, int>> names;
+std::map<std::string, int> CtbConfig::getRegisterNames() const {
+    std::map<std::string, int> names;
     for (size_t i = 0; i != num_regs; ++i)
-        names.push_back(
-            {std::string(registernames[i].key), registernames[i].value});
+        names[std::string(registernames[i].key)] = registernames[i].value;
     return names;
 }
 
@@ -391,9 +389,8 @@ void CtbConfig::clearBitNames() {
     num_bits = 0;
 }
 
-void CtbConfig::setBitNames(
-    const std::vector<std::pair<std::string, int>> &list) {
-    if (list.size() > max_bits) {
+void CtbConfig::setBitNames(const std::map<std::string, int> &list) {
+    if (list.size() >= max_bits) {
         throw RuntimeError("Bit names need to be of size less than " +
                            std::to_string(max_bits));
     }
@@ -403,10 +400,10 @@ void CtbConfig::setBitNames(
     }
 }
 
-std::vector<std::pair<std::string, int>> CtbConfig::getBitNames() const {
-    std::vector<std::pair<std::string, int>> names;
+std::map<std::string, int> CtbConfig::getBitNames() const {
+    std::map<std::string, int> names;
     for (size_t i = 0; i != num_bits; ++i)
-        names.push_back({std::string(bitnames[i].key), bitnames[i].value});
+        names[std::string(bitnames[i].key)] = bitnames[i].value;
     return names;
 }
 

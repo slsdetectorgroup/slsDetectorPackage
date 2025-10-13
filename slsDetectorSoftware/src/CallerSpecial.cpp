@@ -1469,9 +1469,10 @@ std::string Caller::define(int action) {
     if (args.size() < 1) {
         WrongNumberOfParameters(1);
     }
+    std::string mode = args[0];
 
-    if (args[0] != "reg" && args[0] != "bit") {
-        throw RuntimeError("Unknown argument " + args[0] +
+    if (mode != "reg" && mode != "bit") {
+        throw RuntimeError("Unknown argument " + mode +
                            ". Did you mean reg or bit?");
     }
 
@@ -1479,7 +1480,7 @@ std::string Caller::define(int action) {
         if (args.size() != 2) {
             WrongNumberOfParameters(2);
         }
-        if (args[0] == "reg") {
+        if (mode == "reg") {
             try {
                 // get name from address
                 int addr = StringTo<int>(args[1]);
@@ -1490,7 +1491,7 @@ std::string Caller::define(int action) {
                 auto t = det->getRegisterDefinitionByName(args[1]);
                 os << ToStringHex(t) << '\n';
             }
-        } else if (args[0] == "bit") {
+        } else if (mode == "bit") {
             // get position from name
             auto t = det->getBitDefinitionByName(args[1]);
             os << ToString(t) << '\n';
@@ -1499,11 +1500,11 @@ std::string Caller::define(int action) {
         if (args.size() != 3) {
             WrongNumberOfParameters(3);
         }
-        if (args[0] == "reg") {
+        if (mode == "reg") {
             int addr = StringTo<int>(args[2]);
             det->setRegisterDefinition(args[1], addr);
             os << "reg " << args[1] << ' ' << ToStringHex(addr) << '\n';
-        } else if (args[0] == "bit") {
+        } else if (mode == "bit") {
             int pos = StringTo<int>(args[2]);
             det->setBitDefinition(args[1], pos);
             os << ToString(args) << '\n';

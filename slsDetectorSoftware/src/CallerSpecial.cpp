@@ -1480,13 +1480,20 @@ std::string Caller::define(int action) {
             WrongNumberOfParameters(2);
         }
         if (mode == "reg") {
+            bool value_found = false;
             try {
-                // get name from address
+                StringTo<int>(args[1]);
+                value_found = true;
+            } catch (...) {
+            }
+            // get name from address
+            if (value_found) {
                 int addr = StringTo<int>(args[1]);
                 auto t = det->getRegisterDefinitionByValue(addr);
                 os << t << '\n';
-            } catch (...) {
-                // get address from name
+            }
+            // get address from name
+            else {
                 auto t = det->getRegisterDefinitionByName(args[1]);
                 os << ToStringHex(t) << '\n';
             }

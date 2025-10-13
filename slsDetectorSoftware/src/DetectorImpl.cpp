@@ -2092,7 +2092,7 @@ std::string DetectorImpl::getRegisterDefinitionByValue(const int value) const {
     auto val = ctb_shm()->getRegisterName(value);
     if (!val.has_value()) {
         throw RuntimeError("No register definition found for address: " +
-                           value);
+                           ToStringHex(value));
     }
     return val.value();
 }

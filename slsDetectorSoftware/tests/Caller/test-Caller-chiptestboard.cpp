@@ -1409,8 +1409,21 @@ TEST_CASE("define", "[.cmdcall]") {
             REQUIRE_NOTHROW(
                 caller.call("define", {"bit", "MICRO_BIT", "4"}, -1, PUT));
             std::ostringstream oss, oss1;
-            caller.call("define", {"reg", "REG_MACRO"}, -1, GET, oss);
-            caller.call("define", {"bit", "MACRO_BIT"}, -1, GET, oss1);
+            REQUIRE_NOTHROW(
+                caller.call("define", {"reg", "REG_MACRO"}, -1, GET, oss));
+            REQUIRE_NOTHROW(
+                caller.call("define", {"bit", "MACRO_BIT"}, -1, GET, oss1));
+
+            REQUIRE_NOTHROW(caller.call("define", {"reg", "0x202"}, -1, GET));
+            REQUIRE_THROWS(caller.call("define", {"reg", "0x203"}, -1, GET));
+
+            try {
+                caller.call("define", {"reg", "0x203"}, -1, GET, oss);
+            } catch (const std::exception &e) {
+                REQUIRE(std::string(e.what()) ==
+                        "No register definition found for address: 0x203");
+            }
+
             REQUIRE(oss.str() == "define 0x202\n");
             REQUIRE(oss1.str() == "define 2\n");
         }

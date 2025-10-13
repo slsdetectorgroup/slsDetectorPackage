@@ -1561,9 +1561,8 @@ std::string Caller::reg(int action) {
               "validation when writing to it.\n\t[Eiger] +0x100 for only left, "
               "+0x200 for only right.\n\t\t[Ctb][Xilinx_Ctb] Address can also "
               "be a user-defined name that was set previously using the define "
-              "command. "
-              "Value can be a user-defined bit name as well or combined with "
-              "'|'."
+              "command. Value can be a user-defined bit name as well or "
+              "combined with '|'."
            << '\n';
     } else {
 
@@ -1576,15 +1575,9 @@ std::string Caller::reg(int action) {
             if (args.size() != 2 && args.size() != 3) {
                 WrongNumberOfParameters(2);
             }
-            // validate flag
             bool validate = false;
             if (args.size() == 3) {
-                if (args[2] == "--validate") {
-                    validate = true;
-                } else {
-                    throw RuntimeError("Unknown argument " + args[2] +
-                                       ". Did you mean --validate?");
-                }
+                validate = parseValidate(2);
             }
             uint32_t val = parseRegValue(1);
             det->writeRegister(addr, val, validate, std::vector<int>{det_id});
@@ -1639,6 +1632,17 @@ int Caller::parseBitNumber(int argPos) const {
         bit = det->getBitDefinitionByName(args[argPos]);
     }
     return bit;
+}
+
+bool Caller::parseValidate(int argPos) const {
+    bool validate = false;
+    if (args[argPos] == "--validate") {
+        validate = true;
+    } else {
+        throw RuntimeError("Unknown argument " + args[argPos] +
+                           ". Did you mean --validate?");
+    }
+    return validate;
 }
 
 uint32_t Caller::parseRegValue(int argPos) const {
@@ -1716,15 +1720,9 @@ std::string Caller::bitoperations(int action) {
             if (args.size() > 3)
                 WrongNumberOfParameters(2);
 
-            // third arg: flag
             bool validate = false;
             if (args.size() == 3) {
-                if (args[2] == "--validate") {
-                    validate = true;
-                } else {
-                    throw RuntimeError("Unknown argument " + args[2] +
-                                       ". Did you mean --validate?");
-                }
+                validate = parseValidate(2);
             }
 
             if (cmd == "setbit")

@@ -2092,25 +2092,35 @@ class Detector {
     /** Advanced user Function! \n
      * Goes to stop server. Hence, can be called while calling blocking
      * acquire(). \n [Eiger] Address is +0x100 for only left, +0x200 for only
-     * right. */
+     * right. \n[Ctb][Xilinx_Ctb] Address can be picked up from a custom name
+     * using getRegisterDefinitionByName that was set up prior using
+     * setRegisterDefinition */
     Result<uint32_t> readRegister(uint32_t addr, Positions pos = {}) const;
 
     /** Advanced user Function! \n
      * Goes to stop server. Hence, can be called while calling blocking
      * acquire(). \n [Eiger] Address is +0x100 for only left, +0x200 for only
-     * right. */
+     * right.  \n[Ctb][Xilinx_Ctb] Address can be picked up from a custom name
+     * using getRegisterDefinitionByName that was set up prior using
+     * setRegisterDefinition. Similarly the bit position name */
     void writeRegister(uint32_t addr, uint32_t val, bool validate = false,
                        Positions pos = {});
 
-    /** Advanced user Function!  */
+    /** Advanced user Function! \n[Ctb][Xilinx_Ctb] Address can be picked up
+     * from a custom name using getRegisterDefinitionByName that was set up
+     * prior using setRegisterDefinition. Similarly the bit position name  */
     void setBit(uint32_t addr, int bitnr, bool validate = false,
                 Positions pos = {});
 
-    /** Advanced user Function!  */
+    /** Advanced user Function! \n[Ctb][Xilinx_Ctb] Address can be picked up
+     * from a custom name using getRegisterDefinitionByName that was set up
+     * prior using setRegisterDefinition. Similarly the bit position name  */
     void clearBit(uint32_t addr, int bitnr, bool validate = false,
                   Positions pos = {});
 
-    /** Advanced user Function!  */
+    /** Advanced user Function!  \n[Ctb][Xilinx_Ctb] Address can be picked up
+     * from a custom name using getRegisterDefinitionByName that was set up
+     * prior using setRegisterDefinition. Similarly the bit position name */
     Result<int> getBit(uint32_t addr, int bitnr, Positions pos = {});
 
     /** [Jungfrau][Moench][Mythen3][Gotthard2][CTB] Advanced user

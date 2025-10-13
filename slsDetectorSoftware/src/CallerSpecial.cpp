@@ -1575,7 +1575,8 @@ std::string Caller::reg(int action) {
               "calling blocking acquire().\n\t\t Use --validate to force "
               "validation when writing to it.\n\t[Eiger] +0x100 for only left, "
               "+0x200 for only right.\n\t\t[Ctb][Xilinx_Ctb] Address can also "
-              "be a user-defined name set previously using the define command. "
+              "be a user-defined name that was set previously using the define "
+              "command. "
               "Value can be a user-defined bit name as well or combined with "
               "'|'."
            << '\n';
@@ -1665,7 +1666,8 @@ std::string Caller::bitoperations(int action) {
             throw RuntimeError("Unknown command");
         }
         os << "\n\t\t[Ctb][Xilinx_Ctb] Address or bit position can also be a "
-              "user-defined name set previously using the define command.";
+              "user-defined name that was set previously using the define "
+              "command.";
         os << '\n';
     } else {
         if (action != defs::GET_ACTION && action != defs::PUT_ACTION) {

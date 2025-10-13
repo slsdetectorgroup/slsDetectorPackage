@@ -1470,7 +1470,6 @@ std::string Caller::define(int action) {
         WrongNumberOfParameters(1);
     }
     std::string mode = args[0];
-
     if (mode != "reg" && mode != "bit") {
         throw RuntimeError("Unknown argument " + mode +
                            ". Did you mean reg or bit?");
@@ -1530,19 +1529,18 @@ std::string Caller::definelist(int action) {
             throw RuntimeError(
                 "define command only supported for ctb and xilinx_ctb");
         }
-
         if (args.size() != 1) {
             WrongNumberOfParameters(1);
         }
-
-        if (args[0] == "reg") {
+        std::string mode = args[0];
+        if (mode == "reg") {
             auto t = det->getRegisterDefinitions();
             os << ToString(t) << '\n';
-        } else if (args[0] == "bit") {
+        } else if (mode == "bit") {
             auto t = det->getBitDefinitions();
             os << ToString(t) << '\n';
         } else {
-            throw RuntimeError("Unknown argument " + args[0] +
+            throw RuntimeError("Unknown argument " + mode +
                                ". Did you mean register or bit?");
         }
     } else {
@@ -1576,11 +1574,11 @@ std::string Caller::reg(int action) {
             if (args.size() != 2 && args.size() != 3) {
                 WrongNumberOfParameters(2);
             }
+            uint32_t val = parseRegValue(1);
             bool validate = false;
             if (args.size() == 3) {
                 validate = parseValidate(2);
             }
-            uint32_t val = parseRegValue(1);
             det->writeRegister(addr, val, validate, std::vector<int>{det_id});
             os << '[' << args[0] << ", " << args[1] << "]\n";
         } else if (action == defs::GET_ACTION) {

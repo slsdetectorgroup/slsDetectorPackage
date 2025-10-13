@@ -7897,8 +7897,8 @@ reg:
     PUT:
       args:
       - arg_types:
-        - int
-        - int
+        - uint32_t
+        - uint32_t
         argc: 2
         cast_input: []
         check_det_id: false
@@ -7910,8 +7910,8 @@ reg:
         require_det_id: false
         store_result_in_t: false
       - arg_types:
-        - int
-        - int
+        - uint32_t
+        - uint32_t
         - special::validate
         argc: 3
         cast_input: []

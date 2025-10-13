@@ -2788,9 +2788,9 @@ reg:
         PUT:
           args:
             - argc: 2
-              arg_types: [ int, int ]
+              arg_types: [ uint32_t, uint32_t ]
             - argc: 3
-              arg_types: [ int, int, special::validate ]
+              arg_types: [ uint32_t, uint32_t, special::validate ]
 
 
 getbit:

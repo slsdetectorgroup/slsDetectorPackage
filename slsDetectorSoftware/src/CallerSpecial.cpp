@@ -1550,21 +1550,6 @@ std::string Caller::definelist(int action) {
     return os.str();
 }
 
-uint32_t Caller::parseValueFromBitNames(const std::string &input) const {
-    uint32_t value = 0;
-    std::stringstream ss(input);
-    std::string token;
-
-    while (std::getline(ss, token, '|')) {
-        if (token.empty())
-            continue;
-
-        int bit_pos = det->getBitDefinitionByName(token);
-        value |= (1u << bit_pos);
-    }
-    return value;
-}
-
 std::string Caller::reg(int action) {
     std::ostringstream os;
     if (action == defs::HELP_ACTION) {
@@ -1581,24 +1566,12 @@ std::string Caller::reg(int action) {
               "'|'."
            << '\n';
     } else {
+
         if (args.size() < 1) {
             WrongNumberOfParameters(1);
         }
-        // get address from int or name
-        uint32_t addr = 0;
-        try {
-            addr = StringTo<uint32_t>(args[0]);
-        } catch (...) {
-            auto det_type = det->getDetectorType().squash();
-            if (det_type != defs::XILINX_CHIPTESTBOARD &&
-                det_type != defs::CHIPTESTBOARD) {
-                throw RuntimeError(
-                    "User defined register definitions only supported for ctb "
-                    "and xilinx_ctb. Use an actual hard coded address for this "
-                    "detector.");
-            }
-            addr = det->getRegisterDefinitionByName(args[0]);
-        }
+        uint32_t addr = parseAddress(0);
+
         if (action == defs::PUT_ACTION) {
             if (args.size() != 2 && args.size() != 3) {
                 WrongNumberOfParameters(2);
@@ -1613,23 +1586,7 @@ std::string Caller::reg(int action) {
                                        ". Did you mean --validate?");
                 }
             }
-            // get value from int or name
-            uint32_t val = 0;
-            try {
-                val = StringTo<uint32_t>(args[1]);
-            } catch (...) {
-                auto det_type = det->getDetectorType().squash();
-                if (det_type != defs::XILINX_CHIPTESTBOARD &&
-                    det_type != defs::CHIPTESTBOARD) {
-                    throw RuntimeError(
-                        "User defined bit definitions only supported for ctb "
-                        "and xilinx_ctb. Use an actual hard coded value for "
-                        "this detector.");
-                }
-                val = parseValueFromBitNames(args[1]);
-                std::cout << "value:" << val << std::endl;
-            }
-
+            uint32_t val = parseRegValue(1);
             det->writeRegister(addr, val, validate, std::vector<int>{det_id});
             os << '[' << args[0] << ", " << args[1] << "]\n";
         } else if (action == defs::GET_ACTION) {
@@ -1647,6 +1604,71 @@ std::string Caller::getbit(int action) { return bitoperations(action); }
 std::string Caller::setbit(int action) { return bitoperations(action); }
 
 std::string Caller::clearbit(int action) { return bitoperations(action); }
+
+uint32_t Caller::parseAddress(int argPos) const {
+    uint32_t addr = 0;
+    try {
+        addr = StringTo<uint32_t>(args[argPos]);
+    } catch (...) {
+        auto det_type = det->getDetectorType().squash();
+        if (det_type != defs::XILINX_CHIPTESTBOARD &&
+            det_type != defs::CHIPTESTBOARD) {
+            throw RuntimeError("Could not parse address " + args[argPos] +
+                               ". User defined register definitions only "
+                               "supported for ctb and xilinx_ctb. Use an "
+                               "actual hard coded address for this detector.");
+        }
+        addr = det->getRegisterDefinitionByName(args[argPos]);
+    }
+    return addr;
+}
+
+int Caller::parseBitNumber(int argPos) const {
+    int bit = 0;
+    try {
+        bit = StringTo<int>(args[argPos]);
+    } catch (...) {
+        auto det_type = det->getDetectorType().squash();
+        if (det_type != defs::XILINX_CHIPTESTBOARD &&
+            det_type != defs::CHIPTESTBOARD) {
+            throw RuntimeError("Could not parse bit name " + args[argPos] +
+                               ". User defined bit definitions only supported "
+                               "for ctb and  xilinx_ctb. Use an actual hard "
+                               "coded bit positions for this detector.");
+        }
+        bit = det->getBitDefinitionByName(args[argPos]);
+    }
+    return bit;
+}
+
+uint32_t Caller::parseRegValue(int argPos) const {
+    uint32_t val = 0;
+    try {
+        val = StringTo<uint32_t>(args[argPos]);
+    } catch (...) {
+        auto det_type = det->getDetectorType().squash();
+        if (det_type != defs::XILINX_CHIPTESTBOARD &&
+            det_type != defs::CHIPTESTBOARD) {
+            throw RuntimeError(
+                "Could not parse reg value " + args[argPos] +
+                ". User defined bit definitions only supported for ctb "
+                "and xilinx_ctb. Use an actual hard coded value for "
+                "this detector.");
+        }
+        // parse combined bit names (OR)
+        val = 0;
+        std::stringstream ss(args[argPos]);
+        std::string token;
+        while (std::getline(ss, token, '|')) {
+            if (token.empty())
+                continue;
+
+            int bit_pos = det->getBitDefinitionByName(token);
+            val |= (1u << bit_pos);
+        }
+    }
+    return val;
+}
 
 std::string Caller::bitoperations(int action) {
     std::ostringstream os;
@@ -1678,38 +1700,8 @@ std::string Caller::bitoperations(int action) {
         if (args.size() < 2) {
             WrongNumberOfParameters(2);
         }
-
-        // get address from int or name
-        uint32_t addr = 0;
-        try {
-            addr = StringTo<uint32_t>(args[0]);
-        } catch (...) {
-            auto det_type = det->getDetectorType().squash();
-            if (det_type != defs::XILINX_CHIPTESTBOARD &&
-                det_type != defs::CHIPTESTBOARD) {
-                throw RuntimeError(
-                    "User defined register definitions only supported for ctb "
-                    "and xilinx_ctb. Use an actual hard coded address for this "
-                    "detector.");
-            }
-            addr = det->getRegisterDefinitionByName(args[0]);
-        }
-
-        // get bit postition from int or name
-        int bit = 0;
-        try {
-            bit = StringTo<int>(args[1]);
-        } catch (...) {
-            auto det_type = det->getDetectorType().squash();
-            if (det_type != defs::XILINX_CHIPTESTBOARD &&
-                det_type != defs::CHIPTESTBOARD) {
-                throw RuntimeError(
-                    "User defined bit definitions only supported for ctb and "
-                    "xilinx_ctb. Use an actual hard coded bit positions for "
-                    "this detector.");
-            }
-            bit = det->getBitDefinitionByName(args[1]);
-        }
+        uint32_t addr = parseAddress(0);
+        int bit = parseBitNumber(1);
 
         if (action == defs::GET_ACTION) {
             if (cmd == "setbit" || cmd == "clearbit")

@@ -74,9 +74,9 @@ class Caller {
     static void EmptyDataCallBack(detectorData *data, uint64_t frameIndex,
                                   uint32_t subFrameIndex, void *this_pointer);
     uint32_t parseAddress(int argPos) const;
-    int parseBitNumber(int argPos) const;
+    std::array<int, 2> parseBitNumberAndAddress(int argPos) const;
     bool parseValidate(int argPos) const;
-    uint32_t parseRegValue(int argPos) const;
+    std::array<int,2> parseRegAddressAndValue() const;
 
     std::string bitoperations(int action);
 

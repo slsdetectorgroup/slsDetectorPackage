@@ -1865,22 +1865,25 @@ class Detector {
     int getBitDefinitionsCount() const;
 
     /** [CTB][Xilinx CTB] */
-    void setBitDefinition(const std::string &name, const int value);
+    void setBitDefinition(const std::string &name, const int value, const int address);
 
     /** [CTB][Xilinx CTB] */
     bool hasBitDefinition(const std::string &name) const;
 
-    /** [CTB][Xilinx CTB] */
-    int getBitDefinitionByName(const std::string &name) const;
+    /** [CTB][Xilinx CTB] returns bit position and address */
+    std::array<int, 2> getBitDefinitionByName(const std::string &name) const;
+
+      /** [CTB][Xilinx CTB] */
+    std::string getBitDefinitionByValue(const int value, const int address) const;
 
     /** [CTB][Xilinx CTB] */
     void clearBitDefinitions();
 
     /** [CTB][Xilinx CTB] */
-    void setBitDefinitions(const std::map<std::string, int> &list);
+    void setBitDefinitions(const std::map<std::string, std::array<int, 2>> &list);
 
     /** [CTB][Xilinx CTB] */
-    std::map<std::string, int> getBitDefinitions() const;
+    std::map<std::string, std::array<int, 2>> getBitDefinitions() const;
 
     ///@}
 

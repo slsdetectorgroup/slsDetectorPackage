@@ -122,7 +122,7 @@ endif()
 
 
 option(SLS_USE_HDF5 "HDF5 File format" OFF)
-option(SLS_BUILD_SHARED_LIBRARIES "Build shared libaries" ON)
+option(SLS_BUILD_SHARED_LIBRARIES "Build shared libaries" OFF)
 option(SLS_USE_TEXTCLIENT "Text Client" ON)
 option(SLS_USE_DETECTOR "Detector libs" ON)
 option(SLS_USE_RECEIVER "Receiver" ON)

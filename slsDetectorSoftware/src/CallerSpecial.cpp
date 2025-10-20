@@ -1520,13 +1520,7 @@ std::string Caller::define(int action) {
                     WrongNumberOfParameters(3);
                 }
                 int pos = StringTo<int>(args[1]);
-                // get address
-                int addr = 0;
-                if (is_extended_int(args[2])) {
-                    addr = StringTo<int>(args[2]);
-                } else {
-                    addr = det->getRegisterDefinitionByName(args[2]);
-                }
+                int addr = parseAddress(2);
                 auto t = det->getBitDefinitionByValue(pos, addr);
                 os << t << '\n';
             }
@@ -1545,15 +1539,7 @@ std::string Caller::define(int action) {
                 throw RuntimeError("Bit position must be an integer value.");
             }
             int pos = StringTo<int>(args[2]);
-            int addr = 0;
-            // address by value
-            if (is_extended_int(args[3])) {
-                addr = StringTo<int>(args[3]);
-            }
-            // address by name
-            else {
-                addr = det->getRegisterDefinitionByName(args[3]);
-            }
+            int addr = parseAddress(3);
             det->setBitDefinition(args[1], pos, addr);
             os << ToString(args) << '\n';
         }
@@ -1615,13 +1601,7 @@ std::string Caller::reg(int action) {
            << '\n';
     } else {
 
-        // remove --validate if present
-        bool validate = false;
-        auto it = std::find(args.begin(), args.end(), "--validate");
-        if (it != args.end()) {
-            args.erase(it); 
-            validate = true;
-        }
+        bool validate = parseandRemoveValidate();
 
         auto [addr, val] = parseRegAddressAndValue();
 
@@ -1680,13 +1660,12 @@ std::array<int, 2> Caller::parseBitNumberAndAddress() const {
     return {bit, addr};
 }
 
-bool Caller::parseValidate(int argPos) const {
+bool Caller::parseandRemoveValidate() const {
     bool validate = false;
-    if (args[argPos] == "--validate") {
+    auto it = std::find(args.begin(), args.end(), "--validate");
+    if (it != args.end()) {
+        args.erase(it);
         validate = true;
-    } else {
-        throw RuntimeError("Unknown argument " + args[argPos] +
-                           ". Did you mean --validate?");
     }
     return validate;
 }

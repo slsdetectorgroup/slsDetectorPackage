@@ -61,13 +61,13 @@ if(SLS_USE_SYSTEM_ZMQ)
 
     if (TARGET ZeroMQ::libzmq)
         set(ZEROMQ_TARGET ZeroMQ::libzmq)
-        message(STATUS "Found target: ${ZEROMQ_TARGET}")
+        message(STATUS "Found target: ${ZEROMQ_TARGET} version: ${ZeroMQ_VERSION}")
     elseif (TARGET libzmq)
         set(ZEROMQ_TARGET libzmq)
-        message(STATUS "Found target: ${ZEROMQ_TARGET}")
+        message(STATUS "Found target: ${ZEROMQ_TARGET} version: ${ZeroMQ_VERSION}")
     elseif (TARGET ZeroMQ::ZeroMQ) # rare older naming
         set(ZEROMQ_TARGET ZeroMQ::ZeroMQ)
-        message(STATUS "Found target: ${ZEROMQ_TARGET}")
+        message(STATUS "Found target: ${ZEROMQ_TARGET} version: ${ZeroMQ_VERSION}")
     endif()
 
     # 2) Fallback: use pkg-config hints + manual find_* to create an imported target
@@ -95,15 +95,13 @@ if(SLS_USE_SYSTEM_ZMQ)
             )
             set(ZEROMQ_TARGET libzmq)
         endif()
+        message(STATUS "ZeroMQ version (pkg-config): ${PC_ZeroMQ_VERSION}")
+        
     endif()
 
     # 3) Error out if still not found, with a helpful message
     if (NOT ZEROMQ_TARGET)
-    message(FATAL_ERROR
-        "ZeroMQ (libzmq) not found.\n"
-        "Install it (e.g. Debian/Ubuntu: 'sudo apt install libzmq3-dev' or 'libzmq5-dev', "
-        "Fedora: 'sudo dnf install zeromq-devel', macOS: 'brew install zeromq', "
-        "Windows (vcpkg): 'vcpkg install zeromq').")
+        message(FATAL_ERROR "ZeroMQ (libzmq) not found. Please install ZeroMQ development files.")
     endif()
 
 # Use it

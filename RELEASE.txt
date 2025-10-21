@@ -256,6 +256,10 @@ This document describes the differences between v10.0.0 and v9.2.0
         Quick start guide has been updated
             https://slsdetectorgroup.github.io/devdoc/quick_start_guide.html
 
+Building shared libraries is disabled by default. If you need to link 
+against any of the libSls*.so libraries, you can enable this by passing
+ -DSLS_BUILD_SHARED_LIBRARIES=ON to CMake.
+ 
 Added SLS_USE_SYSTEM_ZMQ option (default OFF) to use the libzmq of the host
 instead of the one included in our repo. 
 

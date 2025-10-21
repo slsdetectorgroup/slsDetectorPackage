@@ -26,6 +26,8 @@ This document describes the differences between vx.x.x and vx.0.2
 1 New, Changed or Resolved Features
 =====================================
 
+Added SLS_USE_SYSTEM_ZMQ option (default OFF) to use the libzmq of the host
+instead of the one included in our repo. 
 
  
 

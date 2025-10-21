@@ -256,6 +256,8 @@ This document describes the differences between v10.0.0 and v9.2.0
         Quick start guide has been updated
             https://slsdetectorgroup.github.io/devdoc/quick_start_guide.html
 
+Added SLS_USE_SYSTEM_ZMQ option (default OFF) to use the libzmq of the host
+instead of the one included in our repo. 
 
 
 2  On-board Detector Server Compatibility

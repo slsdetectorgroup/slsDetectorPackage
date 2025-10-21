@@ -72,6 +72,10 @@ TEST_CASE("Receive data from a vector") {
     CHECK(data_to_send == data_received);
 }
 
+// TODO! Test blocking on apple, investigate when implementing
+// receiver support in macOS
+#ifndef __APPLE__
+
 TEST_CASE("Shutdown socket without hanging when waiting for data") {
     constexpr int port = 50001;
     constexpr ssize_t packet_size = 8000;
@@ -81,13 +85,14 @@ TEST_CASE("Shutdown socket without hanging when waiting for data") {
     // Start a thread and wait for package
     // if the socket is left open we would block
     std::future<bool> ret =
-        std::async(&UdpRxSocket::ReceivePacket, &s, (char *)&buff);
+        std::async(std::launch::async, &UdpRxSocket::ReceivePacket, &s, (char *)&buff);
 
     s.Shutdown();
     auto r = ret.get();
 
     CHECK(r == false); // since we didn't get the packet
 }
+#endif
 
 TEST_CASE("Too small packet") {
     constexpr int port = 50001;

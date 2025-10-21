@@ -25,10 +25,8 @@
 #include <sys/stat.h> // fstat
 #include <unistd.h>
 
-namespace sls {
-
-class CtbConfig;
-// struct sharedDetector;
+// ********************** Defines for shared memory. **********************
+// WARNING! before chaning these search the codebase for their usage!
 
 #define SHM_IS_VALID_CHECK_VERSION 0x250820
 
@@ -42,6 +40,12 @@ class CtbConfig;
 #endif
 
 #define SHM_ENV_NAME               "SLSDETNAME"
+// ************************************************************************
+
+namespace sls {
+
+class CtbConfig;
+
 
 template <typename T, typename U> constexpr bool is_type() {
     return std::is_same_v<std::decay_t<U>, T>;

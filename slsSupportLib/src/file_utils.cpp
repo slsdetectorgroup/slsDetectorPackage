@@ -15,6 +15,10 @@
 #include <sys/types.h>
 #include <unistd.h> //readlink
 
+#if defined(__APPLE__)
+#include <mach-o/dyld.h>
+#endif
+
 namespace sls {
 
 int readDataFile(std::ifstream &infile, short int *data, int nch, int offset) {
@@ -246,21 +250,39 @@ std::vector<int> getChannelsFromFile(const std::string &fname) {
 }
 
 std::string getAbsolutePathFromCurrentProcess(const std::string &fname) {
+
     if (fname[0] == '/') {
         return fname;
     }
 
-    // get path of current binary
-    char path[MAX_STR_LENGTH];
-    memset(path, 0, MAX_STR_LENGTH);
-    ssize_t len = readlink("/proc/self/exe", path, MAX_STR_LENGTH - 1);
+    //in case PATH_MAX defines the longest possible path on linux and macOS
+    //use string instead of char array to avoid overflow
+    std::string path(PATH_MAX, '\0'); 
+
+
+    #if defined(__APPLE__)
+    uint32_t size = PATH_MAX;
+    if (_NSGetExecutablePath(path.data(), &size) != 0) {
+        throw std::runtime_error("Failed to get executable path");
+    }
+    // Resolve any symlinks and .. components
+    char resolved[PATH_MAX];
+    if (!realpath(path.data(), resolved)) {
+        throw std::runtime_error("realpath failed for executable");
+    }
+    #else
+
+
+    ssize_t len = readlink("/proc/self/exe", path, PATH_MAX - 1);
     if (len < 0) {
         throw RuntimeError("Could not get absolute path for " + fname);
     }
     path[len] = '\0';
 
+    #endif
+
     // get dir path and attach file name
-    std::string absPath = (std::string(dirname(path)) + '/' + fname);
+    std::string absPath = (std::string(dirname(path.data())) + '/' + fname);
     return absPath;
 }
 

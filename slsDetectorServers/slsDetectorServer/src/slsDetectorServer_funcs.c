@@ -5342,7 +5342,8 @@ int set_dest_udp_mac(int file_des) {
 
     if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
         return printSocketReadError();
-    LOG(logINFO, ("Setting udp destination mac: 0x%lx\n", arg));
+    LOG(logINFO,
+        ("Setting udp destination mac: 0x%llx\n", (long long unsigned)arg));
 
     // only set
     if (Server_VerifyLock() == OK) {
@@ -5363,7 +5364,8 @@ int get_dest_udp_mac(int file_des) {
     LOG(logDEBUG1, ("Getting udp destination mac\n"));
     // get only
     retval = udpDetails[0].dstmac;
-    LOG(logDEBUG1, ("udp destination mac retval: 0x%lx\n", retval));
+    LOG(logDEBUG1,
+        ("udp destination mac retval: 0x%llx\n", (long long unsigned)retval));
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
@@ -5796,7 +5798,7 @@ int set_clock_frequency(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting clock (%d) frequency : %u\n", args[0], args[1]));
 
-#if !defined(CHIPTESTBOARDD)
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
 
@@ -5809,7 +5811,7 @@ int set_clock_frequency(int file_des) {
         case ADC_CLOCK:
             c = ADC_CLK;
             break;
-#ifdef CHIPTESTBOARDD
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
         case DBIT_CLOCK:
             c = DBIT_CLK;
             break;
@@ -5837,11 +5839,24 @@ int set_clock_frequency(int file_des) {
                 LOG(logINFO, ("Same %s: %d %s\n", modeName, val,
                               myDetectorType == GOTTHARD2 ? "Hz" : "MHz"));
             } else {
-                setFrequency(c, val);
-                int retval = getFrequency(c);
-                LOG(logDEBUG1, ("retval %s: %d %s\n", modeName, retval,
-                                myDetectorType == GOTTHARD2 ? "Hz" : "MHz"));
-                validate(&ret, mess, val, retval, modeName, DEC);
+                int ret = setFrequency(c, val);
+                if (ret == FAIL) {
+                    sprintf(mess, "Could not set %s to %d %s\n", modeName, val,
+                            myDetectorType == XILINX_CHIPTESTBOARD ? "kHz"
+                                                                   : "MHz");
+                    LOG(logERROR, (mess));
+                } else {
+                    int retval = getFrequency(c);
+                    LOG(logDEBUG1,
+                        ("retval %s: %d %s\n", modeName, retval,
+                         myDetectorType == XILINX_CHIPTESTBOARD ? "kHz"
+                                                                : "MHz"));
+#if !defined(XILINX_CHIPTESTBOARDD)
+                    // XCTB will give the actual frequency, which is not
+                    // 100% identical to the set frequency
+                    validate(&ret, mess, val, retval, modeName, DEC);
+#endif
+                }
             }
         }
     }
@@ -5859,13 +5874,14 @@ int get_clock_frequency(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Getting clock (%d) frequency\n", arg));
 
-#if !defined(CHIPTESTBOARDD) && !defined(GOTTHARD2D) && !defined(MYTHEN3D)
+#if !defined(CHIPTESTBOARDD) && !defined(GOTTHARD2D) && !defined(MYTHEN3D) &&  \
+    !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // get only
     enum CLKINDEX c = 0;
     switch (arg) {
-#if defined(CHIPTESTBOARDD)
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
     case ADC_CLOCK:
         c = ADC_CLK;
         break;
@@ -5895,8 +5911,11 @@ int get_clock_frequency(int file_des) {
         LOG(logDEBUG1,
             ("retval %s clock (%d) frequency: %d %s\n", clock_names[c], (int)c,
              retval,
-             myDetectorType == GOTTHARD2 || myDetectorType == MYTHEN3 ? "Hz"
-                                                                      : "MHz"));
+             myDetectorType == XILINX_CHIPTESTBOARD
+                 ? "kHz"
+                 : (myDetectorType == GOTTHARD2 || myDetectorType == MYTHEN3
+                        ? "Hz"
+                        : "MHz")));
     }
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
@@ -7255,7 +7274,8 @@ int get_receiver_parameters(int file_des) {
     // dynamic range
     ret = getDynamicRange(&i32);
     if (ret == FAIL) {
-        i32 = 0;
+        sprintf(mess, "Could not get dynamic range.\n");
+        return sendError(file_des);
     }
     n += sendData(file_des, &i32, sizeof(i32), INT32);
     if (n < 0)
@@ -7437,6 +7457,20 @@ int get_receiver_parameters(int file_des) {
     if (n < 0)
         return printSocketReadError();
 
+        // readout speed
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
+    ret = getReadoutSpeed(&i32);
+    if (ret == FAIL) {
+        sprintf(mess, "Could not get readout speed.\n");
+        return sendError(file_des);
+    }
+#else
+    i32 = 0;
+#endif
+    n += sendData(file_des, &i32, sizeof(i32), INT32);
+    if (n < 0)
+        return printSocketReadError();
+
     LOG(logINFO, ("Sent %d bytes for receiver parameters\n", n));
     return OK;
 }
@@ -7446,7 +7480,8 @@ int start_pattern(int file_des) {
     memset(mess, 0, sizeof(mess));
 
     LOG(logDEBUG1, ("Starting Pattern\n"));
-#ifndef MYTHEN3D
+#if !defined(MYTHEN3D) && !defined(XILINX_CHIPTESTBOARDD) &&                   \
+    !defined(CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // only set
@@ -9175,7 +9210,7 @@ int get_dest_udp_list(int file_des) {
     memset(mess, 0, sizeof(mess));
     uint32_t arg = 0;
     uint16_t retvals16[2] = {};
-    uint32_t retvals32[3] = {};
+    uint32_t retvals32[2] = {};
     uint64_t retvals64[2] = {};
 
     if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)

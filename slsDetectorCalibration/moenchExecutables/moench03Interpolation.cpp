@@ -126,11 +126,11 @@ int main(int argc, char *argv[]) {
 
     int quad; 
 #ifndef FF
+    double int_x, int_y;
+    int *img;
 #ifndef NOINTERPOLATION
     char fname[10000];
     int ok;
-    double int_x, int_y;
-    int *img;
     cout << "read ff " << argv[2] << endl;
     sprintf(fname, "%s", argv[2]);
     interp->readFlatField(fname);

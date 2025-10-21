@@ -4,11 +4,13 @@
 This file is used for common utils used for integration tests between simulators and receivers.
 '''
 
+from pathlib import Path
 import sys, subprocess, time, argparse
 from enum import Enum
 from colorama import Fore, Style, init
+from datetime import timedelta
 
-from slsdet import Detector, detectorSettings
+from slsdet import Detector, Ctb, detectorSettings, burstMode
 from slsdet.defines import DEFAULT_TCP_RX_PORTNO, DEFAULT_UDP_DST_PORTNO
 SERVER_START_PORTNO=1900
 
@@ -104,7 +106,7 @@ def startProcessInBackground(cmd, fp):
         raise RuntimeException(f'Failed to start {cmd}:{str(e)}') from e
 
 
-def startProcessInBackgroundWithLogFile(cmd, fp, log_file_name):
+def startProcessInBackgroundWithLogFile(cmd, fp, log_file_name: str):
     Log(LogLevel.INFOBLUE, 'Starting up ' +  ' '.join(cmd) + '. Log: ' +  log_file_name)
     Log(LogLevel.INFOBLUE, 'Starting up ' +  ' '.join(cmd) + '. Log: ' +  log_file_name, fp)
     try:
@@ -112,6 +114,22 @@ def startProcessInBackgroundWithLogFile(cmd, fp, log_file_name):
             subprocess.Popen(cmd, stdout=log_fp, stderr=log_fp, text=True)
     except Exception as e:
         raise RuntimeException(f'Failed to start {cmd}:{str(e)}') from e
+
+
+def checkLogForErrors(fp, log_file_path: str):
+    try:
+        with open(log_file_path, 'r') as log_file:
+            for line in log_file:
+                if 'Error' in line:
+                    Log(LogLevel.ERROR, f"Error found in log: {line.strip()}")
+                    Log(LogLevel.ERROR, f"Error found in log: {line.strip()}", fp)
+                    raise RuntimeException("Error found in log file")
+    except FileNotFoundError:
+        print(f"Log file not found: {log_file_path}")
+        raise
+    except Exception as e:
+        print(f"Exception while reading log: {e}")
+        raise
 
 
 def runProcessWithLogFile(name, cmd, fp, log_file_name):
@@ -140,7 +158,7 @@ def startDetectorVirtualServer(name :str, num_mods, fp):
     for i in range(num_mods):
         port_no = SERVER_START_PORTNO + (i * 2)
         cmd = [name + 'DetectorServer_virtual', '-p', str(port_no)]
-        startProcessInBackground(cmd, fp)
+        startProcessInBackgroundWithLogFile(cmd, fp, "/tmp/virtual_det_" + name + "_" + str(i) + ".txt")
         match name:
             case 'jungfrau':
                 time.sleep(7)
@@ -150,9 +168,12 @@ def startDetectorVirtualServer(name :str, num_mods, fp):
                 time.sleep(3)
 
 
-def connectToVirtualServers(name, num_mods):
+def connectToVirtualServers(name, num_mods, ctb_object=False):
     try:
-        d = Detector()
+        if ctb_object:
+            d = Ctb()
+        else:
+            d = Detector()
     except Exception as e:
         raise RuntimeException(f'Could not create Detector object for {name}. Error: {str(e)}') from e
 
@@ -199,16 +220,50 @@ def loadConfig(name, rx_hostname, settingsdir, fp, num_mods = 1, num_frames = 1)
             d.setThresholdEnergy(4500, detectorSettings.STANDARD)
 
         d.frames = num_frames
+      
     except Exception as e:
         raise RuntimeException(f'Could not load config for {name}. Error: {str(e)}') from e
+    
+    return d
 
+# for easy acquire
+def loadBasicSettings(name, d, fp):
+    Log(LogLevel.INFO, 'Loading basic settings for ' + name)
+    Log(LogLevel.INFO, 'Loading basic settings for ' + name, fp)
+    try:
+        # basic settings for easy acquire
+        if name == "jungfrau":
+            d.exptime = timedelta(microseconds = 200)
+            d.readnrows = 512
+        elif name == "moench":
+            d.exptime = timedelta(microseconds = 200)
+            d.readnrows = 400
+        elif name == "eiger":
+            d.exptime = timedelta(microseconds = 200)
+            d.readnrows = 256
+            d.dr = 16
+        elif name == "mythen3":
+            d.setExptime(-1, timedelta(microseconds = 200))
+            d.dr = 16
+            d.counters = [0, 1, 2]
+        elif name == "gotthard2":
+            d.exptime = timedelta(microseconds = 200)
+            d.burstmode = burstMode.CONTINUOUS_EXTERNAL
+            d.bursts = 1
+            d.burstperiod = 0
+        d.period = timedelta(milliseconds = 2)
 
-def ParseArguments(description, default_num_mods=1):
+    except Exception as e:
+        raise RuntimeException(f'Could not load config for {name}. Error: {str(e)}') from e
+    
+def ParseArguments(description, default_num_mods=1, markers=False, general_tests_option=False):
     parser = argparse.ArgumentParser(description)
+
+    default_settings_path = Path(__file__).resolve().parents[2] / "settingsdir"
 
     parser.add_argument('rx_hostname', nargs='?', default='localhost',
                         help='Hostname/IP of the current machine')
-    parser.add_argument('settingspath', nargs='?', default='../../settingsdir',
+    parser.add_argument('settingspath', nargs='?', default=str(default_settings_path),
                         help='Relative or absolute path to the settings directory')
     parser.add_argument('-n', '--num-mods', nargs='?', default=default_num_mods, type=int,
                         help='Number of modules to test with')
@@ -216,7 +271,14 @@ def ParseArguments(description, default_num_mods=1):
                         help='Number of frames to test with')
     parser.add_argument('-s', '--servers', nargs='*',
                         help='Detector servers to run')
+    if markers:
+        parser.add_argument('-m', '--markers', nargs='?', default ='[.cmdcall]',
+                        help = 'Markers to use for cmd tests, default: [.cmdcall]')
 
+    if general_tests_option:
+        parser.add_argument('-g', '--general_tests', action='store_true',
+                        help = 'Enable general tests (no value needed)')
+        
     args = parser.parse_args()
 
     # Set default server list if not provided
@@ -231,11 +293,21 @@ def ParseArguments(description, default_num_mods=1):
             'xilinx_ctb'
         ]
 
-    Log(LogLevel.INFO, 'Arguments:\n' + 
-        'rx_hostname: ' + args.rx_hostname + 
-        '\nsettingspath: \'' + args.settingspath + 
-        '\nservers: \'' + ' '.join(args.servers) + 
-        '\nnum_mods: \'' + str(args.num_mods) + 
-        '\nnum_frames: \'' + str(args.num_frames) + '\'') 
+    msg = (
+        'Arguments:\n'
+        f'rx_hostname: {args.rx_hostname}\n'
+        f"settingspath: '{args.settingspath}'\n"
+        f"servers: '{' '.join(args.servers)}'\n"
+        f"num_mods: '{args.num_mods}'\n"
+        f"num_frames: '{args.num_frames}'"
+    )
+    if markers:
+        msg += f"\nmarkers: '{args.markers}'"
+
+    if general_tests_option:
+        msg += f"\ngeneral_tests: '{args.general_tests}'"
+
+    Log(LogLevel.INFO, msg)
+
 
     return args   

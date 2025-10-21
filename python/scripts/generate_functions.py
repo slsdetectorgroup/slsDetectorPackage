@@ -13,13 +13,17 @@ import subprocess
 import argparse
 import sys
 import time
+import ctypes.util, re  # to check libclang version 
 from pathlib import Path
 from parse import system_include_paths, clang_format_version
 
 REDC = "\033[91m"
 GREENC = "\033[92m"
+YELLOWC = "\033[93m"
 ENDC = "\033[0m"
 
+def yellow(msg):
+    return f"{YELLOWC}{msg}{ENDC}"
 
 def red(msg):
     return f"{REDC}{msg}{ENDC}"
@@ -27,6 +31,25 @@ def red(msg):
 
 def green(msg):
     return f"{GREENC}{msg}{ENDC}"
+
+
+def check_libclang_version(required="12"):
+    # Use already-loaded libclang, or let cindex resolve it
+    lib = ctypes.CDLL(cindex.Config.library_file or ctypes.util.find_library("clang"))
+
+    # Get version string
+    lib.clang_getClangVersion.restype = ctypes.c_void_p
+    version_ptr = lib.clang_getClangVersion()
+    version_str = ctypes.cast(version_ptr, ctypes.c_char_p).value.decode()
+
+    # Parse and check version
+    match = re.search(r"version\s+(\d+)", version_str)
+    if not match or match.group(1) != required:
+        msg = red(f"libclang version {match.group(1) if match else '?'} found, but version {required} required. Bye!")
+        print(msg)
+        sys.exit(1)
+    msg = green(f"Found libclang version {required}")
+    print(msg)
 
 
 def check_clang_format_version(required_version):
@@ -120,6 +143,24 @@ def time_return_lambda(node, args):
 
 
 def visit(node):
+
+    loc = node.location
+    # skip if ndoe is outside project directory
+    if loc.file and not str(loc.file).startswith(str(cargs.build_path.parent)):
+        return
+    
+    '''
+    # to see which file was causing the error (not in Detector.h, so skipping others in the above code)
+    try:
+        kind = node.kind
+    except ValueError as e:
+        loc = node.location
+        file_name = loc.file.name if loc.file else "<unknown file>"
+        msg = yellow(f"\nWarning: skipping node with unknown CursorKind id {node._kind_id} at {file_name}:{loc.line}:{loc.column}")
+        print(msg)
+        return 
+    '''
+        
     if node.kind == cindex.CursorKind.CLASS_DECL:
         if node.displayname == "Detector":
             for child in node.get_children():
@@ -161,6 +202,7 @@ if __name__ == "__main__":
     )
     cargs = parser.parse_args()
 
+    check_libclang_version("12")
     check_clang_format_version(12)
     check_for_compile_commands_json(cargs.build_path)
 

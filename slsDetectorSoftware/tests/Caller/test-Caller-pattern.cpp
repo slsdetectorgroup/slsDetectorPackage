@@ -436,7 +436,8 @@ TEST_CASE("patternstart", "[.cmdcall]") {
     Caller caller(&det);
     REQUIRE_THROWS(caller.call("patternstart", {}, -1, GET));
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::MYTHEN3) {
+    if (det_type == defs::MYTHEN3 || det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         REQUIRE_NOTHROW(caller.call("patternstart", {}, -1, PUT));
     } else {
         REQUIRE_THROWS(caller.call("patternstart", {}, -1, PUT));

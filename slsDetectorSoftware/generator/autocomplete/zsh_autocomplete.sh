@@ -2117,20 +2117,6 @@ return 0
 }
 __rx_roi() {
 FCN_RETURN=""
-if [[ ${IS_GET} -eq 0 ]]; then
-if [[ "${cword}" == "2" ]]; then
-FCN_RETURN=""
-fi
-if [[ "${cword}" == "3" ]]; then
-FCN_RETURN=""
-fi
-if [[ "${cword}" == "4" ]]; then
-FCN_RETURN=""
-fi
-if [[ "${cword}" == "5" ]]; then
-FCN_RETURN=""
-fi
-fi
 return 0
 }
 __rx_silent() {

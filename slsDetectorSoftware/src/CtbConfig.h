@@ -3,7 +3,16 @@
 #include <vector>
 namespace sls {
 
+#define CTB_SHMAPIVERSION 0x250820
+#define CTB_SHMVERSION    0x250820
+
 class CtbConfig {
+  public:
+    /** fixed pattern */
+    int shmversion{CTB_SHMVERSION};
+    bool isValid{true}; // false if freed to block access from python or c++ api
+                        /** end of fixed pattern */
+  private:
     static constexpr size_t name_length = 20;
     static constexpr size_t num_dacs = 18;
     static constexpr size_t num_adcs = 32;

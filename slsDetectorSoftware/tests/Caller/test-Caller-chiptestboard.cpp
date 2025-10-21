@@ -17,119 +17,6 @@ namespace sls {
 using test::GET;
 using test::PUT;
 
-TEST_CASE("ctb_acquire_check_file_size", "[.cmdcall]") {
-    Detector det;
-    Caller caller(&det);
-    auto det_type =
-        det.getDetectorType().tsquash("Inconsistent detector types to test");
-
-    if (det_type == defs::CHIPTESTBOARD ||
-        det_type == defs::XILINX_CHIPTESTBOARD) {
-        int num_frames_to_acquire = 2;
-        // all the test cases
-        {
-            testCtbAcquireInfo test_ctb_config;
-            test_ctb_config.readout_mode = defs::ANALOG_AND_DIGITAL;
-            REQUIRE_NOTHROW(test_ctb_acquire_with_receiver(
-                test_ctb_config, num_frames_to_acquire, det, caller));
-        }
-        {
-            testCtbAcquireInfo test_ctb_config;
-            test_ctb_config.readout_mode = defs::ANALOG_AND_DIGITAL;
-            test_ctb_config.dbit_offset = 16;
-            REQUIRE_NOTHROW(test_ctb_acquire_with_receiver(
-                test_ctb_config, num_frames_to_acquire, det, caller));
-        }
-        {
-            testCtbAcquireInfo test_ctb_config;
-            test_ctb_config.readout_mode = defs::ANALOG_AND_DIGITAL;
-            test_ctb_config.dbit_reorder = true;
-            REQUIRE_NOTHROW(test_ctb_acquire_with_receiver(
-                test_ctb_config, num_frames_to_acquire, det, caller));
-        }
-        {
-            testCtbAcquireInfo test_ctb_config;
-            test_ctb_config.readout_mode = defs::ANALOG_AND_DIGITAL;
-            test_ctb_config.dbit_offset = 16;
-            test_ctb_config.dbit_reorder = true;
-            REQUIRE_NOTHROW(test_ctb_acquire_with_receiver(
-                test_ctb_config, num_frames_to_acquire, det, caller));
-        }
-        {
-            testCtbAcquireInfo test_ctb_config;
-            test_ctb_config.readout_mode = defs::ANALOG_AND_DIGITAL;
-            test_ctb_config.dbit_offset = 16;
-            test_ctb_config.dbit_list.clear();
-            REQUIRE_NOTHROW(test_ctb_acquire_with_receiver(
-                test_ctb_config, num_frames_to_acquire, det, caller));
-        }
-        {
-            testCtbAcquireInfo test_ctb_config;
-            test_ctb_config.readout_mode = defs::ANALOG_AND_DIGITAL;
-            test_ctb_config.dbit_offset = 16;
-            test_ctb_config.dbit_list.clear();
-            test_ctb_config.dbit_reorder = true;
-            REQUIRE_NOTHROW(test_ctb_acquire_with_receiver(
-                test_ctb_config, num_frames_to_acquire, det, caller));
-        }
-        {
-            testCtbAcquireInfo test_ctb_config;
-            test_ctb_config.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
-            REQUIRE_NOTHROW(test_ctb_acquire_with_receiver(
-                test_ctb_config, num_frames_to_acquire, det, caller));
-        }
-        {
-            testCtbAcquireInfo test_ctb_config;
-            test_ctb_config.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
-            test_ctb_config.dbit_offset = 16;
-            REQUIRE_NOTHROW(test_ctb_acquire_with_receiver(
-                test_ctb_config, num_frames_to_acquire, det, caller));
-        }
-        {
-            testCtbAcquireInfo test_ctb_config;
-            test_ctb_config.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
-            test_ctb_config.dbit_list.clear();
-            REQUIRE_NOTHROW(test_ctb_acquire_with_receiver(
-                test_ctb_config, num_frames_to_acquire, det, caller));
-        }
-        {
-            testCtbAcquireInfo test_ctb_config;
-            test_ctb_config.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
-            test_ctb_config.dbit_offset = 16;
-            test_ctb_config.dbit_list.clear();
-            REQUIRE_NOTHROW(test_ctb_acquire_with_receiver(
-                test_ctb_config, num_frames_to_acquire, det, caller));
-        }
-        {
-            testCtbAcquireInfo test_ctb_config;
-            test_ctb_config.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
-            test_ctb_config.dbit_offset = 16;
-            test_ctb_config.dbit_list.clear();
-            test_ctb_config.dbit_reorder = true;
-            REQUIRE_NOTHROW(test_ctb_acquire_with_receiver(
-                test_ctb_config, num_frames_to_acquire, det, caller));
-        }
-        {
-            testCtbAcquireInfo test_ctb_config;
-            test_ctb_config.readout_mode = defs::TRANSCEIVER_ONLY;
-            test_ctb_config.dbit_offset = 16;
-            test_ctb_config.dbit_list.clear();
-            test_ctb_config.dbit_reorder = true;
-            REQUIRE_NOTHROW(test_ctb_acquire_with_receiver(
-                test_ctb_config, num_frames_to_acquire, det, caller));
-        }
-        {
-            testCtbAcquireInfo test_ctb_config;
-            test_ctb_config.readout_mode = defs::ANALOG_ONLY;
-            test_ctb_config.dbit_offset = 16;
-            test_ctb_config.dbit_list.clear();
-            test_ctb_config.dbit_reorder = true;
-            REQUIRE_NOTHROW(test_ctb_acquire_with_receiver(
-                test_ctb_config, num_frames_to_acquire, det, caller));
-        }
-    }
-}
-
 /* dacs */
 
 TEST_CASE("dacname", "[.cmdcall]") {
@@ -1113,7 +1000,7 @@ TEST_CASE("dbitclk", "[.cmdcall]") {
     auto det_type = det.getDetectorType().squash();
 
     if (det_type == defs::CHIPTESTBOARD) {
-        auto prev_val = det.getRUNClock();
+        auto prev_val = det.getDBITClock();
         {
             std::ostringstream oss;
             caller.call("dbitclk", {"20"}, -1, PUT, oss);
@@ -1130,7 +1017,7 @@ TEST_CASE("dbitclk", "[.cmdcall]") {
             REQUIRE(oss.str() == "dbitclk 10\n");
         }
         for (int i = 0; i != det.size(); ++i) {
-            det.setRUNClock(prev_val[i], {i});
+            det.setDBITClock(prev_val[i], {i});
         }
     } else {
         // clock index might work
@@ -1138,91 +1025,43 @@ TEST_CASE("dbitclk", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("v_a", "[.cmdcall]") {
+TEST_CASE("v_abcd", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::CHIPTESTBOARD ||
-        det_type == defs::XILINX_CHIPTESTBOARD) {
-        auto prev_val = det.getPower(defs::V_POWER_A);
-        {
-            std::ostringstream oss1, oss2;
-            caller.call("v_a", {"1200"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "v_a 1200\n");
-            caller.call("v_a", {}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "v_a 1200\n");
-        }
-        for (int i = 0; i != det.size(); ++i) {
-            det.setPower(defs::V_POWER_A, prev_val[i], {i});
-        }
-    } else {
-        REQUIRE_THROWS(caller.call("v_a", {}, -1, GET));
-    }
-}
 
-TEST_CASE("v_b", "[.cmdcall]") {
-    Detector det;
-    Caller caller(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::CHIPTESTBOARD ||
-        det_type == defs::XILINX_CHIPTESTBOARD) {
-        auto prev_val = det.getPower(defs::V_POWER_B);
-        {
-            std::ostringstream oss1, oss2;
-            caller.call("v_b", {"1200"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "v_b 1200\n");
-            caller.call("v_b", {}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "v_b 1200\n");
-        }
-        for (int i = 0; i != det.size(); ++i) {
-            det.setPower(defs::V_POWER_B, prev_val[i], {i});
-        }
-    } else {
-        REQUIRE_THROWS(caller.call("v_b", {}, -1, GET));
-    }
-}
+    std::vector<std::string> cmds{"v_a", "v_b", "v_c", "v_d"};
+    std::vector<defs::dacIndex> indices{defs::V_POWER_A, defs::V_POWER_B,
+                                        defs::V_POWER_C, defs::V_POWER_D};
 
-TEST_CASE("v_c", "[.cmdcall]") {
-    Detector det;
-    Caller caller(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::CHIPTESTBOARD ||
-        det_type == defs::XILINX_CHIPTESTBOARD) {
-        auto prev_val = det.getPower(defs::V_POWER_C);
-        {
-            std::ostringstream oss1, oss2;
-            caller.call("v_c", {"1200"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "v_c 1200\n");
-            caller.call("v_c", {}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "v_c 1200\n");
-        }
-        for (int i = 0; i != det.size(); ++i) {
-            det.setPower(defs::V_POWER_C, prev_val[i], {i});
-        }
-    } else {
-        REQUIRE_THROWS(caller.call("v_c", {}, -1, GET));
+    if (det.isVirtualDetectorServer().tsquash("Inconsistent virtual servers")) {
+        cmds.push_back("v_io");
+        indices.push_back(defs::V_POWER_IO);
     }
-}
 
-TEST_CASE("v_d", "[.cmdcall]") {
-    Detector det;
-    Caller caller(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::CHIPTESTBOARD ||
-        det_type == defs::XILINX_CHIPTESTBOARD) {
-        auto prev_val = det.getPower(defs::V_POWER_D);
-        {
-            std::ostringstream oss1, oss2;
-            caller.call("v_d", {"1200"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "v_d 1200\n");
-            caller.call("v_d", {}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "v_d 1200\n");
+    for (size_t i = 0; i < cmds.size(); ++i) {
+        if (det_type == defs::CHIPTESTBOARD ||
+            det_type == defs::XILINX_CHIPTESTBOARD) {
+            auto prev_val = det.getPower(indices[i]);
+            {
+                std::ostringstream oss;
+                caller.call(cmds[i], {"0"}, -1, PUT, oss);
+                REQUIRE(oss.str() == cmds[i] + " 0\n");
+            }
+            {
+                std::ostringstream oss1, oss2;
+                caller.call(cmds[i], {"1200"}, -1, PUT, oss1);
+                REQUIRE(oss1.str() == cmds[i] + " 1200\n");
+                caller.call(cmds[i], {}, -1, GET, oss2);
+                REQUIRE(oss2.str() == cmds[i] + " 1200\n");
+            }
+            for (int i = 0; i != det.size(); ++i) {
+                det.setPower(indices[i], prev_val[i], {i});
+            }
+
+        } else {
+            REQUIRE_THROWS(caller.call(cmds[i], {}, -1, GET));
         }
-        for (int i = 0; i != det.size(); ++i) {
-            det.setPower(defs::V_POWER_D, prev_val[i], {i});
-        }
-    } else {
-        REQUIRE_THROWS(caller.call("v_d", {}, -1, GET));
     }
 }
 

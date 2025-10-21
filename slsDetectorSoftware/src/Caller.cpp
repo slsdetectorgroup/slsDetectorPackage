@@ -73,7 +73,8 @@ std::string Caller::adcclk(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << R"V0G0N([n_clk in MHz]
-	[Ctb] ADC clock frequency in MHz. )V0G0N"
+	[Ctb] ADC clock frequency in MHz.
+	[xilinx Ctb] ADC clock frequency in kHz. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -2805,7 +2806,8 @@ std::string Caller::dbitclk(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << R"V0G0N([n_clk in MHz]
-	[Ctb] Clock for latching the digital bits in MHz. )V0G0N"
+	[Ctb] Clock for latching the digital bits in MHz.
+	[xilinx Ctb] Clock for latching the digital bits in kHz. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -8452,7 +8454,7 @@ std::string Caller::patternstart(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << R"V0G0N(
-	[Mythen3] Starts Pattern )V0G0N"
+	[Mythen3][Xilinx Ctb] Starts Pattern )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -10429,7 +10431,8 @@ std::string Caller::runclk(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << R"V0G0N([n_clk in MHz]
-	[Ctb] Run clock in MHz. )V0G0N"
+	[Ctb] Run clock in MHz.
+	[xilinx Ctb] Run clock in kHz. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -16310,48 +16313,6 @@ std::string Caller::updatemode(int action) {
             auto arg0 = StringTo<int>(args[0]);
             det->setUpdateMode(arg0, std::vector<int>{det_id});
             os << args.front() << '\n';
-        }
-    }
-
-    return os.str();
-}
-
-std::string Caller::user(int action) {
-
-    std::ostringstream os;
-    // print help
-    if (action == slsDetectorDefs::HELP_ACTION) {
-        os << R"V0G0N(
-	User details from shared memory (hostname, type, PID, User, Date). )V0G0N"
-           << std::endl;
-        return os.str();
-    }
-
-    // check if action and arguments are valid
-    if (action == slsDetectorDefs::GET_ACTION) {
-        if (1 && args.size() != 0) {
-            throw RuntimeError("Wrong number of arguments for action GET");
-        }
-
-        if (args.size() == 0) {
-        }
-
-    }
-
-    else {
-
-        throw RuntimeError(
-            "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
-    }
-
-    // generate code for each action
-    if (action == slsDetectorDefs::GET_ACTION) {
-        if (args.size() == 0) {
-            if (det_id != -1) {
-                throw RuntimeError("Cannot execute user at module level");
-            }
-            auto t = det->getUserDetails();
-            os << t << '\n';
         }
     }
 

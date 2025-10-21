@@ -22,6 +22,10 @@ class IpAddr;
 // shm by mistake
 void freeSharedMemory(const int detectorIndex = 0, const int moduleIndex = -1);
 
+// Free function to avoid dependence on class
+// and get user details directly from shm
+std::string getUserDetails(const int detectorIndex = 0);
+
 /**
  * \class Detector
  */
@@ -118,6 +122,10 @@ class Detector {
     defs::xy getModuleGeometry() const;
 
     Result<defs::xy> getModuleSize(Positions pos = {}) const;
+
+    defs::xy getPortPerModuleGeometry() const;
+
+    Result<defs::xy> getPortSize(Positions pos = {}) const;
 
     /** Gets the actual full detector size. It is the same even if ROI changes
      */
@@ -710,7 +718,7 @@ class Detector {
      * restarts client and receiver zmq sockets if zmq streaming enabled. \n
      * [Gotthard2] second interface enabled to send veto information via 10Gbps
      * for debugging. By default, if veto enabled, it is sent via 2.5 gbps
-     * interface. */
+     * interface. \nSetting this resets the receiver roi */
     void setNumberofUDPInterfaces(int n, Positions pos = {});
 
     /** [Jungfrau][Moench] */
@@ -985,13 +993,14 @@ class Detector {
      * every minute. Useful in 10G mode. */
     void setRxArping(bool value, Positions pos = {});
 
-    /** at module level */
-    Result<defs::ROI> getIndividualRxROIs(Positions pos) const;
+    /** If module_id  is -1, returns multi level ROIs. Else it returns port
+     * level ROIs. Max 2 ports and hence max 2 elements per readout */
+    std::vector<defs::ROI> getRxROI(int module_id = -1) const;
 
-    defs::ROI getRxROI() const;
-
-    /** only at multi module level without gap pixels */
-    void setRxROI(const defs::ROI value);
+    /** only at multi module level without gap pixels. If more than 1 ROI per
+     * UDP port, it will throw. Setting number of udp interfaces will clear the
+     * roi. Cannot be set for CTB or Xilinx CTB */
+    void setRxROI(const std::vector<defs::ROI> &args);
 
     void clearRxROI();
 
@@ -1444,7 +1453,7 @@ class Detector {
                      Positions pos = {});
 
     /** [Gotthard2]  */
-    Result<defs::burstMode> getBurstMode(Positions pos = {});
+    Result<defs::burstMode> getBurstMode(Positions pos = {}) const;
 
     /** [Gotthard2]  BURST_INTERNAL (default), BURST_EXTERNAL,
      * CONTINUOUS_INTERNAL, CONTINUOUS_EXTERNAL. Also changes clkdiv 2, 3, 4 */
@@ -1603,16 +1612,16 @@ class Detector {
     /** [CTB] */
     void setNumberOfAnalogSamples(int value, Positions pos = {});
 
-    /** [CTB] */
+    /** [CTB] in MHz, [XCTB] in kHz */
     Result<int> getADCClock(Positions pos = {}) const;
 
-    /** [CTB] */
+    /** [CTB] in MHz, [XCTB] in kHz */
     void setADCClock(int value_in_MHz, Positions pos = {});
 
-    /** [CTB] */
+    /** [CTB] in MHz, [XCTB] in kHz */
     Result<int> getRUNClock(Positions pos = {}) const;
 
-    /** [CTB] */
+    /** [CTB] in MHz, [XCTB] in kHz */
     void setRUNClock(int value_in_MHz, Positions pos = {});
 
     /** [CTB]  in MHZ */
@@ -1682,10 +1691,10 @@ class Detector {
      */
     void setReadoutMode(defs::readoutMode value, Positions pos = {});
 
-    /** [CTB] */
+    /** [CTB] in MHz, [XCTB] in kHz */
     Result<int> getDBITClock(Positions pos = {}) const;
 
-    /** [CTB] */
+    /** [CTB] in MHz, [XCTB] in kHz */
     void setDBITClock(int value_in_MHz, Positions pos = {});
 
     /**
@@ -1934,7 +1943,7 @@ class Detector {
      * selected bits */
     void setPatternBitMask(uint64_t mask, Positions pos = {});
 
-    /** [Mythen3] */
+    /** [CTB][Mythen3][Xilinx CTB] */
     void startPattern(Positions pos = {});
     ///@}
 
@@ -2131,10 +2140,6 @@ class Detector {
     /** [Jungfrau][Moench][Mythen3][CTB][Xilinx CTB] Get timestamp at a frame
      * start [Gotthard2] not in burst and auto mode */
     Result<ns> getMeasurementTime(Positions pos = {}) const;
-
-    /** get user details from shared memory  (hostname, type, PID, User, Date)
-     */
-    std::string getUserDetails() const;
 
     ///@}
 

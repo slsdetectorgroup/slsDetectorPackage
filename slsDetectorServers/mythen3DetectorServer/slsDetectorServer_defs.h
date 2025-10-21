@@ -63,6 +63,7 @@
 #define DEFAULT_SYSTEM_C1           (6)  //(166666666) // str_clk, 166 MHz const
 #define DEFAULT_SYSTEM_C2           (5)  //(200000000) // smp_clk, 200 MHz const
 #define DEFAULT_TRIMMING_RUN_CLKDIV (40) // (25000000) // 25 MHz
+#define NS_TO_CLK_CYCLE             (1E-3) // ns to MHz
 
 #define FULL_SPEED_CLKDIV    (10) //(100000000) 100 MHz
 #define HALF_SPEED_CLKDIV    (20) //( 50000000) 50 MHz

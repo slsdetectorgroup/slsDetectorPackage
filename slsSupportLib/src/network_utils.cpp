@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
+#include "sls/network_utils.h"
 #include "sls/sls_detector_exceptions.h"
 
-#include "sls/network_utils.h"
 #include <algorithm>
 #include <arpa/inet.h>
 #include <cassert>
+#include <csignal>
 #include <cstdlib>
 #include <cstring>
 #include <ifaddrs.h>
@@ -205,17 +206,27 @@ MacAddr InterfaceNameToMac(const std::string &inf) {
 }
 
 void validatePortNumber(uint16_t port) {
-    // random local port. might work if internal = bad practise
-    if (port == 0) {
-        throw RuntimeError("Invalid port number. Must be between 1 - 65535.");
+    if (port < 1024 || port > std::numeric_limits<uint16_t>::max()) {
+        throw RuntimeError(std::string("Invalid port number ") +
+                           std::to_string(port) +
+                           ". Must be between 1024 - 65535.");
     }
 }
 
 void validatePortRange(uint16_t startPort, int numPorts) {
     validatePortNumber(startPort);
-    if ((startPort + numPorts) > std::numeric_limits<uint16_t>::max()) {
-        throw RuntimeError("Invalid port range. Must be between 1 - 65535.");
-    }
+    validatePortNumber(startPort + numPorts - 1);
 }
 
+void setupSignalHandler(int signal, void (*handler)(int)) {
+    // Catch signal SIGINT to close files and call destructors properly
+    struct sigaction sa {};
+    sa.sa_handler = handler;
+    sigemptyset(&sa.sa_mask); // dont block additional signals
+    sa.sa_flags = 0;
+    if (sigaction(signal, &sa, nullptr) == -1) {
+        throw RuntimeError("Could not set handler for " +
+                           std::string(strsignal(signal)));
+    }
+}
 } // namespace sls

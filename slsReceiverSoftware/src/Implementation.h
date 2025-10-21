@@ -58,9 +58,10 @@ class Implementation : private virtual slsDetectorDefs {
     bool getArping() const;
     pid_t getArpingProcessId() const;
     void setArping(const bool i, const std::vector<std::string> ips);
-    ROI getReceiverROI() const;
-    void setReceiverROI(const ROI arg);
-    void setReceiverROIMetadata(const ROI arg);
+    std::vector<defs::ROI> getPortROIs() const;
+    void setPortROIs(const std::vector<defs::ROI> &args);
+    void setMultiROIMetadata(const std::vector<slsDetectorDefs::ROI> &args);
+    std::vector<slsDetectorDefs::ROI> getMultiROIMetadata() const;
 
     /**************************************************
      *                                                 *
@@ -255,10 +256,12 @@ class Implementation : private virtual slsDetectorDefs {
     bool getDbitReorder() const;
     /* [Ctb] */
     void setDbitReorder(const bool reorder);
-
     uint32_t getTransceiverEnableMask() const;
     /* [Ctb] */
     void setTransceiverEnableMask(const uint32_t mask);
+    speedLevel getReadoutSpeed() const;
+    /* [Eiger][Jungfrau][Moench][Mythen3][Gotthard2]*/
+    void setReadoutSpeed(const speedLevel i);
 
     /**************************************************
      *                                                *
@@ -283,7 +286,7 @@ class Implementation : private virtual slsDetectorDefs {
     void SetupFifoStructure();
 
     const xy GetPortGeometry() const;
-    const ROI GetMaxROIPerPort() const;
+    void ResetRois();
     void ResetParametersforNewAcquisition();
     void CreateUDPSockets();
     void SetupWriter();
@@ -308,10 +311,8 @@ class Implementation : private virtual slsDetectorDefs {
     bool framePadding{true};
     pid_t parentThreadId;
     pid_t tcpThreadId;
-    ROI receiverRoi{};
-    std::array<ROI, 2> portRois{};
-    // receiver roi for complete detector for metadata
-    ROI receiverRoiMetadata{};
+    std::vector<slsDetectorDefs::ROI> portRois;
+    std::vector<slsDetectorDefs::ROI> multiRoiMetadata;
 
     // file parameters
     fileFormat fileFormatType{BINARY};
@@ -370,6 +371,7 @@ class Implementation : private virtual slsDetectorDefs {
     int thresholdEnergyeV{-1};
     std::array<int, 3> thresholdAllEnergyeV = {{-1, -1, -1}};
     std::vector<int64_t> rateCorrections;
+    speedLevel readoutSpeed{FULL_SPEED};
 
     // callbacks
     void (*startAcquisitionCallBack)(const startCallbackHeader,

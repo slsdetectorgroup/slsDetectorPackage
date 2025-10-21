@@ -26,7 +26,6 @@ TEST_CASE("Convert string to bool", "[support]") {
     REQUIRE(StringTo<bool>("0") == false);
 }
 
-
 TEST_CASE("Integer conversions", "[support]") {
     REQUIRE(ToString(0) == "0");
     REQUIRE(ToString(1) == "1");

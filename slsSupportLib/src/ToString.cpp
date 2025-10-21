@@ -5,12 +5,7 @@
 
 namespace sls {
 
-
-std::string ToString(bool value) {
-    return value ? "1" : "0";
-}
-
-
+std::string ToString(bool value) { return value ? "1" : "0"; }
 
 std::string ToString(const slsDetectorDefs::xy &coord) {
     std::ostringstream oss;
@@ -94,6 +89,7 @@ std::string ToString(const slsDetectorDefs::rxParameters &r) {
         << "scanParams:" << ToString(r.scanParams) << std::endl
         << "transceiverSamples:" << r.transceiverSamples << std::endl
         << "transceiverMask:" << r.transceiverMask << std::endl
+        << "readoutSpeed:" << ToString(r.readoutSpeed) << std::endl
         << ']';
     return oss.str();
 }

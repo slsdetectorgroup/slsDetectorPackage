@@ -10,6 +10,7 @@
 #include <ios>
 #include <iostream>
 #include <libgen.h> // dirname
+#include <limits.h>
 #include <sstream>
 #include <sys/stat.h>
 #include <sys/types.h>

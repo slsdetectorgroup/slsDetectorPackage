@@ -27,12 +27,20 @@
 
 namespace sls {
 
-struct CtbConfig;
+class CtbConfig;
 // struct sharedDetector;
 
 #define SHM_IS_VALID_CHECK_VERSION 0x250820
+
+//Max shared memory name length in macOS is 31 characters
+#ifdef __APPLE__
+#define SHM_DETECTOR_PREFIX        "/sls_"
+#define SHM_MODULE_PREFIX          "_mod_"
+#else
 #define SHM_DETECTOR_PREFIX        "/slsDetectorPackage_detector_"
 #define SHM_MODULE_PREFIX          "_module_"
+#endif
+
 #define SHM_ENV_NAME               "SLSDETNAME"
 
 template <typename T, typename U> constexpr bool is_type() {

@@ -178,31 +178,38 @@ IpAddr InterfaceNameToIp(const std::string &ifn) {
 }
 
 MacAddr InterfaceNameToMac(const std::string &inf) {
+
+#ifdef __APPLE__
+    throw RuntimeError(
+        "InterfaceNameToMac not implemented on macOS yet");
+#else
+
     // TODO! Copied from genericSocket needs to be refactored!
-    // struct ifreq ifr;
-    // char mac[32];
-    // const int mac_len = sizeof(mac);
-    // memset(mac, 0, mac_len);
+    struct ifreq ifr;
+    char mac[32];
+    const int mac_len = sizeof(mac);
+    memset(mac, 0, mac_len);
 
-    // int sock = socket(PF_INET, SOCK_STREAM, 0);
-    // strncpy(ifr.ifr_name, inf.c_str(), sizeof(ifr.ifr_name) - 1);
-    // ifr.ifr_name[sizeof(ifr.ifr_name) - 1] = '\0';
+    int sock = socket(PF_INET, SOCK_STREAM, 0);
+    strncpy(ifr.ifr_name, inf.c_str(), sizeof(ifr.ifr_name) - 1);
+    ifr.ifr_name[sizeof(ifr.ifr_name) - 1] = '\0';
 
-    // if (-1 == ioctl(sock, SIOCGIFHWADDR, &ifr)) {
-    //     perror("ioctl(SIOCGIFHWADDR) ");
-    //     return MacAddr{};
-    // }
-    // for (int j = 0, k = 0; j < 6; j++) {
-    //     k += snprintf(
-    //         mac + k, mac_len - k - 1, j ? ":%02X" : "%02X",
-    //         (int)(unsigned int)(unsigned char)ifr.ifr_hwaddr.sa_data[j]);
-    // }
-    // mac[mac_len - 1] = '\0';
+    if (-1 == ioctl(sock, SIOCGIFHWADDR, &ifr)) {
+        perror("ioctl(SIOCGIFHWADDR) ");
+        return MacAddr{};
+    }
+    for (int j = 0, k = 0; j < 6; j++) {
+        k += snprintf(
+            mac + k, mac_len - k - 1, j ? ":%02X" : "%02X",
+            (int)(unsigned int)(unsigned char)ifr.ifr_hwaddr.sa_data[j]);
+    }
+    mac[mac_len - 1] = '\0';
 
-    // if (sock != 1) {
-    //     close(sock);
-    // }
+    if (sock != 1) {
+        close(sock);
+    }
     return MacAddr();
+#endif
 }
 
 void validatePortNumber(uint16_t port) {

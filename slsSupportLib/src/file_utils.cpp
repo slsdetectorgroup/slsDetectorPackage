@@ -274,7 +274,7 @@ std::string getAbsolutePathFromCurrentProcess(const std::string &fname) {
     #else
 
 
-    ssize_t len = readlink("/proc/self/exe", path, PATH_MAX - 1);
+    ssize_t len = readlink("/proc/self/exe", path.data(), PATH_MAX - 1);
     if (len < 0) {
         throw RuntimeError("Could not get absolute path for " + fname);
     }

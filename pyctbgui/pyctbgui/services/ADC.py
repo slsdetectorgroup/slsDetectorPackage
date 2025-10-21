@@ -154,6 +154,8 @@ class AdcTab(QtWidgets.QWidget):
                 self.mainWindow.analogPlots[i].setData(waveform)
                 plotName = getattr(self.view, f"labelADC{i}").text()
                 waveforms[plotName] = waveform
+            elif checkBoxEn.isChecked(): 
+                idx += 1
         return waveforms
 
     @recordOrApplyPedestal

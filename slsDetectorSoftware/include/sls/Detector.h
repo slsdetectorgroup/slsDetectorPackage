@@ -1612,16 +1612,16 @@ class Detector {
     /** [CTB] */
     void setNumberOfAnalogSamples(int value, Positions pos = {});
 
-    /** [CTB] */
+    /** [CTB] in MHz, [XCTB] in kHz */
     Result<int> getADCClock(Positions pos = {}) const;
 
-    /** [CTB] */
+    /** [CTB] in MHz, [XCTB] in kHz */
     void setADCClock(int value_in_MHz, Positions pos = {});
 
-    /** [CTB] */
+    /** [CTB] in MHz, [XCTB] in kHz */
     Result<int> getRUNClock(Positions pos = {}) const;
 
-    /** [CTB] */
+    /** [CTB] in MHz, [XCTB] in kHz */
     void setRUNClock(int value_in_MHz, Positions pos = {});
 
     /** [CTB]  in MHZ */
@@ -1691,10 +1691,10 @@ class Detector {
      */
     void setReadoutMode(defs::readoutMode value, Positions pos = {});
 
-    /** [CTB] */
+    /** [CTB] in MHz, [XCTB] in kHz */
     Result<int> getDBITClock(Positions pos = {}) const;
 
-    /** [CTB] */
+    /** [CTB] in MHz, [XCTB] in kHz */
     void setDBITClock(int value_in_MHz, Positions pos = {});
 
     /**
@@ -1943,7 +1943,7 @@ class Detector {
      * selected bits */
     void setPatternBitMask(uint64_t mask, Positions pos = {});
 
-    /** [Mythen3] */
+    /** [CTB][Mythen3][Xilinx CTB] */
     void startPattern(Positions pos = {});
     ///@}
 

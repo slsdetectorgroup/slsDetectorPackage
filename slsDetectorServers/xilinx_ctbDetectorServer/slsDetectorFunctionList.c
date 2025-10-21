@@ -9,6 +9,7 @@
 #include "sls/versionAPI.h"
 
 #include "LTC2620_Driver.h"
+#include "XILINX_PLL.h"
 
 #include "loadPattern.h"
 #ifdef VIRTUAL
@@ -39,6 +40,7 @@ char initErrorMessage[MAX_STR_LENGTH];
 
 int detPos[2] = {0, 0};
 
+uint32_t clkFrequency[NUM_CLOCKS] = {};
 int chipConfigured = 0;
 int analogEnable = 0;
 int digitalEnable = 0;
@@ -373,6 +375,10 @@ void setupDetector() {
     LOG(logINFO, ("Setting up Server for 1 Xilinx Chip Test Board\n"));
 
     // default variables
+    clkFrequency[RUN_CLK] = DEFAULT_RUN_CLK;
+    clkFrequency[ADC_CLK] = DEFAULT_ADC_CLK;
+    clkFrequency[SYNC_CLK] = DEFAULT_SYNC_CLK;
+    clkFrequency[DBIT_CLK] = DEFAULT_DBIT_CLK;
     chipConfigured = 0;
     analogEnable = 0;
     digitalEnable = 0;
@@ -434,14 +440,18 @@ void cleanFifos() {
 #ifdef VIRTUAL
     return;
 #endif
+    uint32_t t_enable_mask = getTransceiverEnableMask();
+    uint32_t tclean_msk =
+        ((t_enable_mask << X_FIFO_CLEAN_OFST) & X_FIFO_CLEAN_MSK);
+    uint32_t t_before_reg = bus_r(X_FIFO_CLEAN_REG);
     LOG(logINFO, ("Clearing Acquisition Fifos\n"));
     bus_w(A_FIFO_CLEAN_REG, bus_r(A_FIFO_CLEAN_REG) | BIT32_MSK);
     bus_w(D_FIFO_CLEAN_REG, bus_r(D_FIFO_CLEAN_REG) | D_FIFO_CLEAN_MSK);
-    bus_w(X_FIFO_CLEAN_REG, bus_r(X_FIFO_CLEAN_REG) | X_FIFO_CLEAN_MSK);
+    bus_w(X_FIFO_CLEAN_REG, t_before_reg | tclean_msk);
 
     bus_w(A_FIFO_CLEAN_REG, 0);
     bus_w(D_FIFO_CLEAN_REG, bus_r(D_FIFO_CLEAN_REG) & ~D_FIFO_CLEAN_MSK);
-    bus_w(X_FIFO_CLEAN_REG, bus_r(X_FIFO_CLEAN_REG) & ~X_FIFO_CLEAN_MSK);
+    bus_w(X_FIFO_CLEAN_REG, t_before_reg);
 }
 
 void resetFlow() {
@@ -1058,12 +1068,12 @@ int setPeriod(int64_t val) {
         return FAIL;
     }
     LOG(logINFO, ("Setting period %lld ns\n", (long long int)val));
-    val *= (1E-3 * RUN_CLK);
+    val *= (NS_TO_CLK_CYCLE * clkFrequency[RUN_CLK]);
     setU64BitReg(val, PERIOD_IN_REG_1, PERIOD_IN_REG_2);
 
     // validate for tolerance
     int64_t retval = getPeriod();
-    val /= (1E-3 * RUN_CLK);
+    val /= (NS_TO_CLK_CYCLE * clkFrequency[RUN_CLK]);
     if (val != retval) {
         return FAIL;
     }
@@ -1071,7 +1081,8 @@ int setPeriod(int64_t val) {
 }
 
 int64_t getPeriod() {
-    return getU64BitReg(PERIOD_IN_REG_1, PERIOD_IN_REG_2) / (1E-3 * RUN_CLK);
+    return getU64BitReg(PERIOD_IN_REG_1, PERIOD_IN_REG_2) /
+           (NS_TO_CLK_CYCLE * clkFrequency[RUN_CLK]);
 }
 
 int setDelayAfterTrigger(int64_t val) {
@@ -1080,12 +1091,12 @@ int setDelayAfterTrigger(int64_t val) {
         return FAIL;
     }
     LOG(logINFO, ("Setting delay after trigger %ld ns\n", val));
-    val *= (1E-3 * RUN_CLK);
+    val *= (NS_TO_CLK_CYCLE * clkFrequency[RUN_CLK]);
     setU64BitReg(val, DELAY_IN_REG_1, DELAY_IN_REG_2);
 
     // validate for tolerance
     int64_t retval = getDelayAfterTrigger();
-    val /= (1E-3 * RUN_CLK);
+    val /= (NS_TO_CLK_CYCLE * clkFrequency[RUN_CLK]);
     if (val != retval) {
         return FAIL;
     }
@@ -1093,7 +1104,8 @@ int setDelayAfterTrigger(int64_t val) {
 }
 
 int64_t getDelayAfterTrigger() {
-    return getU64BitReg(DELAY_IN_REG_1, DELAY_IN_REG_2) / (1E-3 * RUN_CLK);
+    return getU64BitReg(DELAY_IN_REG_1, DELAY_IN_REG_2) /
+           (NS_TO_CLK_CYCLE * clkFrequency[RUN_CLK]);
 }
 
 int64_t getNumFramesLeft() {
@@ -1105,11 +1117,13 @@ int64_t getNumTriggersLeft() {
 }
 
 int64_t getDelayAfterTriggerLeft() {
-    return getU64BitReg(DELAY_OUT_REG_1, DELAY_OUT_REG_2) / (1E-3 * RUN_CLK);
+    return getU64BitReg(DELAY_OUT_REG_1, DELAY_OUT_REG_2) /
+           (NS_TO_CLK_CYCLE * clkFrequency[RUN_CLK]);
 }
 
 int64_t getPeriodLeft() {
-    return getU64BitReg(PERIOD_OUT_REG_1, PERIOD_OUT_REG_2) / (1E-3 * RUN_CLK);
+    return getU64BitReg(PERIOD_OUT_REG_1, PERIOD_OUT_REG_2) /
+           (NS_TO_CLK_CYCLE * clkFrequency[RUN_CLK]);
 }
 
 int64_t getFramesFromStart() {
@@ -1119,12 +1133,12 @@ int64_t getFramesFromStart() {
 
 int64_t getActualTime() {
     return getU64BitReg(TIME_FROM_START_OUT_REG_1, TIME_FROM_START_OUT_REG_2) /
-           (1E-3 * TICK_CLK);
+           (NS_TO_CLK_CYCLE * clkFrequency[SYNC_CLK]);
 }
 
 int64_t getMeasurementTime() {
     return getU64BitReg(FRAME_TIME_OUT_REG_1, FRAME_TIME_OUT_REG_2) /
-           (1E-3 * TICK_CLK);
+           (NS_TO_CLK_CYCLE * clkFrequency[SYNC_CLK]);
 }
 
 /* parameters - dac, adc, hv */
@@ -1191,6 +1205,26 @@ void setVLimit(int l) {
         vLimit = l;
 }
 
+int getBitOffsetFromDACIndex(enum DACINDEX ind) {
+    switch (ind) {
+    case D_PWR_IO:
+        return POWER_VIO_OFST;
+    case D_PWR_A:
+        return POWER_VCC_A_OFST;
+    case D_PWR_B:
+        return POWER_VCC_B_OFST;
+    case D_PWR_C:
+        return POWER_VCC_C_OFST;
+    case D_PWR_D:
+        return POWER_VCC_D_OFST;
+    default:
+        LOG(logERROR,
+            ("DAC index %d is not defined to get offset in ctrl register\n",
+             ind));
+        return -1;
+    }
+}
+
 int isPowerValid(enum DACINDEX ind, int val) {
     char *powerNames[] = {PWR_NAMES};
     int pwrIndex = (int)(ind - D_PWR_D);
@@ -1213,10 +1247,23 @@ int isPowerValid(enum DACINDEX ind, int val) {
 }
 
 int getPower(enum DACINDEX ind) {
+    // get bit offset in ctrl register
+    int bitOffset = getBitOffsetFromDACIndex(ind);
+    if (bitOffset == -1) {
+        return -1;
+    }
+
+    // powered enable off
+    {
+        uint32_t addr = CTRL_REG;
+        uint32_t mask = (1 << bitOffset);
+        if (!(bus_r(addr) & mask))
+            return 0;
+    }
+
     char *powerNames[] = {PWR_NAMES};
     int pwrIndex = (int)(ind - D_PWR_D);
 
-    // check dac value
     // not set yet
     if (dacValues[ind] == -1) {
         LOG(logERROR,
@@ -1226,7 +1273,8 @@ int getPower(enum DACINDEX ind) {
 
     // dac powered off
     if (dacValues[ind] == LTC2620_D_GetPowerDownValue()) {
-        LOG(logWARNING, ("Power V%s is powered down\n", powerNames[pwrIndex]));
+        LOG(logWARNING, ("Power V%s enabled, but voltage is at minimum or 0.\n",
+                         powerNames[pwrIndex]));
         return LTC2620_D_GetPowerDownValue();
     }
 
@@ -1240,26 +1288,43 @@ int getPower(enum DACINDEX ind) {
 }
 
 void setPower(enum DACINDEX ind, int val) {
+    // validate index and get bit offset in ctrl register
+    int bitOffset = getBitOffsetFromDACIndex(ind);
+    if (bitOffset == -1) {
+        return;
+    }
+    uint32_t addr = CTRL_REG;
+    uint32_t mask = (1 << bitOffset);
+
+    if (val == -1)
+        return;
+
     char *powerNames[] = {PWR_NAMES};
     int pwrIndex = (int)(ind - D_PWR_D);
+    LOG(logINFO, ("Setting Power V%s to %d mV\n", powerNames[pwrIndex], val));
 
-    // power down dac
-    if (val == LTC2620_D_GetPowerDownValue()) {
-        LOG(logINFO, ("\tPowering down V%d\n", powerNames[pwrIndex]));
-        setDAC(ind, LTC2620_D_GetPowerDownValue(), 0);
+    // validate value (already checked at tcp (funcs.c))
+    if (!isPowerValid(ind, val)) {
+        LOG(logERROR, ("Invalid power value for V%s: %d mV\n",
+                       powerNames[pwrIndex], val));
+        return;
     }
 
-    // set dac
-    else if (val >= 0) {
-        LOG(logINFO,
-            ("Setting Power V%s to %d mV\n", powerNames[pwrIndex], val));
+    // Switch off power enable
+    LOG(logDEBUG1, ("Switching off power enable\n"));
+    bus_w(addr, bus_r(addr) & ~(mask));
 
-        // validate value (already checked at tcp (funcs.c))
-        if (!isPowerValid(ind, val)) {
-            return;
-        }
+    // power down dac
+    LOG(logINFO, ("\tPowering down V%d\n", powerNames[pwrIndex]));
+    setDAC(ind, LTC2620_D_GetPowerDownValue(), 0);
 
-        // convert voltage to dac
+    //(power off is anyway done with power enable)
+    if (val == 0)
+        val = LTC2620_D_GetPowerDownValue();
+
+    // convert voltage to dac (power off is anyway done with power enable)
+    if (val != LTC2620_D_GetPowerDownValue()) {
+
         int dacval = -1;
         if (ConvertToDifferentRange(
                 POWER_RGLTR_MIN, POWER_RGLTR_MAX, LTC2620_D_GetMaxInput(),
@@ -1276,6 +1341,12 @@ void setPower(enum DACINDEX ind, int val) {
         LOG(logINFO, ("Setting Power V%s: %d mV (%d dac)\n",
                       powerNames[pwrIndex], val, dacval));
         setDAC(ind, dacval, 0);
+
+        // if valid, enable power
+        if (dacval >= 0) {
+            LOG(logDEBUG1, ("Switching on power enable\n"));
+            bus_w(addr, bus_r(addr) | mask);
+        }
     }
 }
 
@@ -1629,7 +1700,7 @@ int stopStateMachine() {
 #endif
     // stop state machine
     bus_w(FLOW_CONTROL_REG, bus_r(FLOW_CONTROL_REG) | STOP_F_MSK);
-
+    cleanFifos();
     return OK;
 }
 
@@ -1778,3 +1849,37 @@ void getNumberOfChannels(int *nchanx, int *nchany) {
 int getNumberOfChips() { return NCHIP; }
 int getNumberOfDACs() { return NDAC; }
 int getNumberOfChannelsPerChip() { return NCHAN; }
+
+int setFrequency(enum CLKINDEX ind, int val) {
+    if (ind < 0 || ind >= NUM_CLOCKS) {
+        LOG(logERROR, ("Unknown clock index %d to set frequency\n", ind));
+        return FAIL;
+    }
+    if (val <= 0) {
+        return FAIL;
+    }
+
+    char *clock_names[] = {CLK_NAMES};
+    LOG(logINFO, ("\tSetting %s clock (%d) frequency to %d kHz\n",
+                  clock_names[ind], ind, val));
+
+    if (XILINX_PLL_setFrequency(ind, val) == FAIL) {
+        LOG(logERROR, ("\tCould not set %s clock (%d) frequency to %d kHz\n",
+                       clock_names[ind], ind, val));
+        return FAIL;
+    }
+    clkFrequency[ind] = val;
+    // TODO later: connect setPhase as phase gets reset on freq change
+    return OK;
+}
+
+int getFrequency(enum CLKINDEX ind) {
+    if (ind < 0 || ind >= NUM_CLOCKS) {
+        LOG(logERROR, ("Unknown clock index %d to get frequency\n", ind));
+        return -1;
+    }
+#ifndef VIRTUAL
+    clkFrequency[ind] = XILINX_PLL_getFrequency(ind);
+#endif
+    return clkFrequency[ind];
+}

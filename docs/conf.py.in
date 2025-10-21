@@ -20,7 +20,7 @@ print(sys.path)
 
 # -- Project information -----------------------------------------------------
 
-project = 'slsDetectorPackage'
+project = 'slsDetectorPackage @PROJECT_VERSION@'
 copyright = '2020, PSD Detector Group'
 author = 'PSD Detector Group'
 version = '@PROJECT_VERSION@'

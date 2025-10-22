@@ -16,7 +16,6 @@
 #include <netdb.h>
 #include <sstream>
 #include <sys/ioctl.h>
-#include <sys/prctl.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -178,6 +177,12 @@ IpAddr InterfaceNameToIp(const std::string &ifn) {
 }
 
 MacAddr InterfaceNameToMac(const std::string &inf) {
+
+#ifdef __APPLE__
+    throw RuntimeError(
+        "InterfaceNameToMac not implemented on macOS yet");
+#else
+
     // TODO! Copied from genericSocket needs to be refactored!
     struct ifreq ifr;
     char mac[32];
@@ -203,6 +208,7 @@ MacAddr InterfaceNameToMac(const std::string &inf) {
         close(sock);
     }
     return MacAddr(mac);
+#endif
 }
 
 void validatePortNumber(uint16_t port) {

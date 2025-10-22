@@ -33,7 +33,7 @@ against any of the libSls*.so libraries, you can enable this by passing
 Added SLS_USE_SYSTEM_ZMQ option (default OFF) to use the libzmq of the host
 instead of the one included in our repo. 
 
- 
+Experimental support for building the detector client (including python bindings) on macOS
 
 2  On-board Detector Server Compatibility
 ==========================================

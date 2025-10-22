@@ -27,6 +27,10 @@ void CmdParser::Parse(std::string s) {
     // taking s by value we can modify it.
     Reset();
 
+    // If the string is empty there is nothing to parse
+    if (s.empty())
+        return;
+
     // Are we looking at -h --help? avoid removing h from command starting
     // with h when combined with detector id (ex, 1-hostname)
     bool h = replace_first(&s, "--help", " ");

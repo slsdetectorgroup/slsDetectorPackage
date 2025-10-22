@@ -38,9 +38,15 @@ void freeShm(const int dindex, const int mIndex) {
 }
 
 constexpr int shm_id = 10;
+
+//macOS does not expose shm in the filesystem
+#ifndef __APPLE__
+
 const std::string file_path =
     std::string("/dev/shm/slsDetectorPackage_detector_") +
     std::to_string(shm_id);
+
+
 
 TEST_CASE("Free obsolete (without isValid)", "[detector][shm]") {
 
@@ -89,6 +95,8 @@ TEST_CASE("Free obsolete (without isValid)", "[detector][shm]") {
     }
 }
 
+#endif
+
 TEST_CASE("Create SharedMemory read and write", "[detector][shm]") {
     SharedMemory<Data> shm(shm_id, -1);
     if (shm.exists()) {
@@ -96,9 +104,9 @@ TEST_CASE("Create SharedMemory read and write", "[detector][shm]") {
     }
     shm.createSharedMemory();
 
-    const char *env_p = std::getenv("SLSDETNAME");
+    const char *env_p = std::getenv(SHM_ENV_NAME);
     std::string env_name = env_p ? ("_" + std::string(env_p)) : "";
-    CHECK(shm.getName() == std::string("/slsDetectorPackage_detector_") +
+    CHECK(shm.getName() == std::string(SHM_DETECTOR_PREFIX) +
                                std::to_string(shm_id) + env_name);
     shm()->x = 3;
     shm()->y = 5.7;
@@ -168,11 +176,11 @@ TEST_CASE("Open two shared memories to the same place", "[detector][shm]") {
 }
 
 TEST_CASE("Move SharedMemory", "[detector][shm]") {
-    const char *env_p = std::getenv("SLSDETNAME");
+    const char *env_p = std::getenv(SHM_ENV_NAME);
     std::string env_name = env_p ? ("_" + std::string(env_p)) : "";
 
     SharedMemory<Data> shm(shm_id, -1);
-    CHECK(shm.getName() == std::string("/slsDetectorPackage_detector_") +
+    CHECK(shm.getName() == std::string(SHM_DETECTOR_PREFIX) +
                                std::to_string(shm_id) + env_name);
     shm.createSharedMemory();
     shm()->x = 9;
@@ -183,13 +191,13 @@ TEST_CASE("Move SharedMemory", "[detector][shm]") {
     CHECK(shm2()->x == 9);
     REQUIRE_THROWS(
         shm()); // trying to access should throw instead of returning a nullptr
-    CHECK(shm2.getName() == std::string("/slsDetectorPackage_detector_") +
+    CHECK(shm2.getName() == std::string(SHM_DETECTOR_PREFIX) +
                                 std::to_string(shm_id) + env_name);
     shm2.removeSharedMemory();
 }
 
 TEST_CASE("Create several shared memories", "[detector][shm]") {
-    const char *env_p = std::getenv("SLSDETNAME");
+    const char *env_p = std::getenv(SHM_ENV_NAME);
     std::string env_name = env_p ? ("_" + std::string(env_p)) : "";
 
     constexpr int N = 5;
@@ -205,7 +213,7 @@ TEST_CASE("Create several shared memories", "[detector][shm]") {
 
     for (int i = 0; i != N; ++i) {
         CHECK(v[i]()->x == i);
-        CHECK(v[i].getName() == std::string("/slsDetectorPackage_detector_") +
+        CHECK(v[i].getName() == std::string(SHM_DETECTOR_PREFIX) +
                                     std::to_string(i + shm_id) + env_name);
     }
 
@@ -216,12 +224,12 @@ TEST_CASE("Create several shared memories", "[detector][shm]") {
 }
 
 TEST_CASE("Create create a shared memory with a tag") {
-    const char *env_p = std::getenv("SLSDETNAME");
+    const char *env_p = std::getenv(SHM_ENV_NAME);
     std::string env_name = env_p ? ("_" + std::string(env_p)) : "";
 
     SharedMemory<Data> shm(0, -1, "ctbdacs");
     REQUIRE(shm.getName() ==
-            "/slsDetectorPackage_detector_0" + env_name + "_ctbdacs");
+            std::string(SHM_DETECTOR_PREFIX) + "0" + env_name + "_ctbdacs");
 }
 
 TEST_CASE("Create create a shared memory with a tag when SLSDETNAME is set") {
@@ -235,7 +243,7 @@ TEST_CASE("Create create a shared memory with a tag when SLSDETNAME is set") {
     setenv(SHM_ENV_NAME, "myprefix", 1);
 
     SharedMemory<Data> shm(0, -1, "ctbdacs");
-    REQUIRE(shm.getName() == "/slsDetectorPackage_detector_0_myprefix_ctbdacs");
+    REQUIRE(shm.getName() == std::string(SHM_DETECTOR_PREFIX) + "0_myprefix_ctbdacs");
 
     // Clean up after us
     if (old_slsdetname.empty())

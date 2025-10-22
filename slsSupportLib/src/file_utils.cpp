@@ -267,10 +267,11 @@ std::string getAbsolutePathFromCurrentProcess(const std::string &fname) {
         throw std::runtime_error("Failed to get executable path");
     }
     // Resolve any symlinks and .. components
-    char resolved[PATH_MAX];
-    if (!realpath(path.data(), resolved)) {
+    std::string resolved(PATH_MAX, '\0'); 
+    if (!realpath(path.data(), resolved.data())) {
         throw std::runtime_error("realpath failed for executable");
     }
+    path = resolved;
     #else
 
 

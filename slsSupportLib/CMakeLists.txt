@@ -1,5 +1,14 @@
 # SPDX-License-Identifier: LGPL-3.0-or-other
 # Copyright (C) 2021 Contributors to the SLS Detector Package
+
+find_package(Threads REQUIRED)
+
+# POSIX threads are required for the moment but we use CMake to find them
+# Once migrated to std::thread this can be removed
+if(NOT CMAKE_USE_PTHREADS_INIT)
+    message(FATAL_ERROR "A POSIX threads (pthread) implementation is required, but was not found.")
+endif()
+
 set(SOURCES
     src/string_utils.cpp
     src/file_utils.cpp
@@ -89,6 +98,7 @@ target_link_libraries(slsSupportObject
   PUBLIC
     slsProjectOptions 
     ${STD_FS_LIB} # from helpers.cmake
+    Threads::Threads # slsDetector and Receiver need this
     
   PRIVATE
     slsProjectWarnings

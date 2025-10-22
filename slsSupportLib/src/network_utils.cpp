@@ -208,7 +208,7 @@ MacAddr InterfaceNameToMac(const std::string &inf) {
     if (sock != 1) {
         close(sock);
     }
-    return MacAddr();
+    return MacAddr(mac);
 #endif
 }
 

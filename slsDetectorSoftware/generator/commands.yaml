@@ -1272,7 +1272,7 @@ asamples:
       function: setNumberOfAnalogSamples
 
 adcclk:
-  help: "[n_clk in MHz]\n\t[Ctb] ADC clock frequency in MHz."
+  help: "[n_clk in MHz]\n\t[Ctb] ADC clock frequency in MHz.\n\t[xilinx Ctb] ADC clock frequency in kHz."
   inherit_actions: INTEGER_COMMAND_VEC_ID
   actions:
     GET:
@@ -1281,7 +1281,7 @@ adcclk:
       function: setADCClock
 
 runclk:
-  help: "[n_clk in MHz]\n\t[Ctb] Run clock in MHz."
+  help: "[n_clk in MHz]\n\t[Ctb] Run clock in MHz.\n\t[xilinx Ctb] Run clock in kHz."
   inherit_actions: INTEGER_COMMAND_VEC_ID
   actions:
     GET:
@@ -1318,7 +1318,7 @@ romode:
       input_types: [ defs::readoutMode ]
 
 dbitclk:
-  help: "[n_clk in MHz]\n\t[Ctb] Clock for latching the digital bits in MHz."
+  help: "[n_clk in MHz]\n\t[Ctb] Clock for latching the digital bits in MHz.\n\t[xilinx Ctb] Clock for latching the digital bits in kHz."
   inherit_actions: INTEGER_COMMAND_VEC_ID
   actions:
     GET:
@@ -1791,7 +1791,7 @@ defaultpattern:
 
 patternstart:
   inherit_actions: EXECUTE_SET_COMMAND
-  help: "\n\t[Mythen3] Starts Pattern"
+  help: "\n\t[Mythen3][Ctb][Xilinx Ctb] Starts Pattern"
   actions:
     PUT:
       function: startPattern

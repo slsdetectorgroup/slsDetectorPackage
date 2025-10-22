@@ -1,30 +1,30 @@
 
 # turn off clock
-setbit 0xB1B0 16 
-setbit 0xB1B8 0
+setbit 0xC00C 16 
+setbit 0xC014 0
 sleep 1
 
 # reset Matterhorn periphery
-setbit 0xB1B8 1
+setbit 0xC014 1
 sleep 1
 
 # turn on clock
-clearbit 0xB1B0 16
-setbit 0xB1B8 0
+clearbit 0xC00C 16
+setbit 0xC014 0
 sleep 1
 
 # reset rx transceiver datapath
-setbit 0xB820 4
+setbit 0xC120 4
 sleep 1
 
 # reset 8b10b counters
-setbit 0xB820 9
-setbit 0xB820 10
-setbit 0xB820 11
-setbit 0xB820 12
+setbit 0xC120 9
+setbit 0xC120 10
+setbit 0xC120 11
+setbit 0xC120 12
 sleep 1
-clearbit 0xB820 9
-clearbit 0xB820 10
+clearbit 0xC120 9
+clearbit 0xC120 10
 
 # reset buffer fifos
 reg 0x9024 0xFFFFFFFF

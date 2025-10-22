@@ -3332,7 +3332,11 @@ class Detector(CppDetectorApi):
     @property
     @element
     def runclk(self):
-        """[Ctb] Run clock in MHz."""
+        """
+        [Ctb] Sets Run clock frequency in MHz. \n
+        [Xilinx Ctb] Sets Run clock frequency in kHz.
+        """
+
         return self.getRUNClock()
 
     @runclk.setter
@@ -3413,7 +3417,11 @@ class Detector(CppDetectorApi):
     @property
     @element
     def dbitclk(self):
-        """[Ctb] Clock for latching the digital bits in MHz."""
+        """
+        [Ctb] Sets clock for latching the digital bits in MHz. \n
+        [Xilinx Ctb] clock for latching the digital bits in kHz.
+        """
+
         return self.getDBITClock()
 
     @dbitclk.setter
@@ -3540,7 +3548,11 @@ class Detector(CppDetectorApi):
     @property
     @element
     def adcclk(self):
-        """[Ctb] Sets ADC clock frequency in MHz. """
+        """
+        [Ctb] Sets ADC clock frequency in MHz. \n
+        [Xilinx Ctb] Sets ADC clock frequency in kHz.
+        """
+
         return self.getADCClock()
 
     @adcclk.setter

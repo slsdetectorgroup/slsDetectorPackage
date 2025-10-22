@@ -162,8 +162,16 @@ if (SLS_USE_RECEIVER_BINARIES)
         rt
     PRIVATE
         slsProjectWarnings
-        "$<BUILD_INTERFACE:libzmq-static>"
+        
     )
+
+    #Treat both vendored and system zmq as interface for receiver binaries
+    if(SLS_USE_SYSTEM_ZMQ)
+        message(STATUS "slsFrameSynchronizer ZEROMQ_TARGET=${ZEROMQ_TARGET}")
+        target_link_libraries(slsFrameSynchronizer PRIVATE "${ZEROMQ_TARGET}")
+    else()
+        target_link_libraries(slsFrameSynchronizer PRIVATE "$<BUILD_INTERFACE:libzmq-static>")
+    endif()
 
     install(TARGETS slsReceiver slsMultiReceiver slsFrameSynchronizer
         EXPORT "${TARGETS_EXPORT_NAME}"

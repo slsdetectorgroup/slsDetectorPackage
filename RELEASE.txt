@@ -23,12 +23,17 @@ This document describes the differences between vx.x.x and vx.0.2
 
 
 
-
 1 New, Changed or Resolved Features
 =====================================
 
-
+Building shared libraries is disabled by default. If you need to link 
+against any of the libSls*.so libraries, you can enable this by passing
+ -DSLS_BUILD_SHARED_LIBRARIES=ON to CMake.
  
+Added SLS_USE_SYSTEM_ZMQ option (default OFF) to use the libzmq of the host
+instead of the one included in our repo. 
+
+Experimental support for building the detector client (including python bindings) on macOS
 
 2  On-board Detector Server Compatibility
 ==========================================

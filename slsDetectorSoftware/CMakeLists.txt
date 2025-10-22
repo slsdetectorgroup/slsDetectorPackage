@@ -29,7 +29,6 @@ target_link_libraries(slsDetectorObject
         slsProjectOptions
         slsSupportStatic
         pthread
-        rt
     PRIVATE
         slsProjectWarnings
 )

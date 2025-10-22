@@ -16,7 +16,6 @@
 #include <netdb.h>
 #include <sstream>
 #include <sys/ioctl.h>
-// #include <sys/prctl.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>

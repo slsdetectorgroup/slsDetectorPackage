@@ -118,7 +118,6 @@ if (SLS_USE_RECEIVER_BINARIES)
     target_link_libraries(slsReceiver PUBLIC
     PUBLIC
         slsReceiverStatic
-        rt
     PRIVATE
         slsProjectWarnings
     )
@@ -137,7 +136,6 @@ if (SLS_USE_RECEIVER_BINARIES)
     target_link_libraries(slsMultiReceiver 
     PUBLIC
         slsReceiverStatic
-        rt
     PRIVATE
         slsProjectWarnings
     )
@@ -156,7 +154,6 @@ if (SLS_USE_RECEIVER_BINARIES)
     target_link_libraries(slsFrameSynchronizer 
     PUBLIC
         slsReceiverStatic
-        rt
     PRIVATE
         slsProjectWarnings
         

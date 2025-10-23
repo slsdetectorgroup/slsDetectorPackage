@@ -29,6 +29,7 @@ requirements:
     - libtiff
     - zlib
     - expat
+    - zeromq
   
   run:
     - libstdcxx-ng

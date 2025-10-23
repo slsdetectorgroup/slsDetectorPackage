@@ -3,8 +3,6 @@
 add_executable(using_logger using_logger.cpp)
 target_link_libraries(using_logger 
     slsSupportShared
-    pthread
-    rt
 )  
 
 set_target_properties(using_logger PROPERTIES

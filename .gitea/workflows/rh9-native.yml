@@ -24,4 +24,4 @@ jobs:
 
       - name: C++ unit tests
         working-directory: ${{gitea.workspace}}/build
-        run: ctest
+        run: ctest -j1  --rerun-failed --output-on-failure

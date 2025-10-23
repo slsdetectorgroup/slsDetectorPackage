@@ -3,21 +3,32 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to slsDetectorPackage's documentation!
+slsDetectorPackage
 ==============================================
 
 .. note :: 
 
     This is the documentation for the latest development version of slsDetectorPackage.
-    For further documentation, visit the official page: https://www.psi.ch/en/detectors/documentation
+    For further detector specific documentation, visit `this page <https://www.psi.ch/en/detectors/documentation>`__. 
 
 .. toctree::
-    :maxdepth: 1
+    :maxdepth: 3
     :caption: Installation:
 
     installation
     dependencies
     consuming
+
+
+.. toctree::
+    :caption: how to
+    :maxdepth: 2
+
+    softwarearchitecture
+    configcommands
+    quick_start_guide
+    dataformat
+    multidet
    
 .. toctree::
     :caption: C++ API
@@ -28,6 +39,9 @@ Welcome to slsDetectorPackage's documentation!
     receiver_api
     examples
 
+
+
+    
 .. toctree::
     :caption: Python API
     :maxdepth: 2
@@ -36,13 +50,15 @@ Welcome to slsDetectorPackage's documentation!
     pydetector
     pyenums
     pyexamples
+    pyPatternGenerator
+    pattern
 
 .. toctree::
     :caption: Command line
-    :maxdepth: 2
+    :maxdepth: 1
 
     commandline  
-    quick_start_guide
+
 
 .. toctree::
     :caption: Developer
@@ -79,8 +95,26 @@ Welcome to slsDetectorPackage's documentation!
     :caption: Receiver
     :maxdepth: 2
 
-    receivers
     slsreceiver
+    receivers
+    
+
+.. toctree::
+    :caption: Receiver Files
+    :maxdepth: 3
+
+    fileformat
+    slsreceiverheaderformat
+    dataformat
+    masterfileattributes
+    binaryfileformat
+    hdf5fileformat
+
+.. toctree::
+    :caption: Receiver ZMQ Stream
+    :maxdepth: 2
+
+    zmqjsonheaderformat
 
 .. toctree::
     :caption: Troubleshooting

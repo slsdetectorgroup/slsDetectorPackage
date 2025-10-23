@@ -30,11 +30,7 @@ extern int checkModuleFlag;
 extern int ignoreConfigFileFlag;
 
 // Global variables from slsDetectorFunctionList
-#ifdef GOTTHARDD
-extern int phaseShift;
-#endif
-#if defined(GOTTHARDD) || defined(GOTTHARD2D) || defined(EIGERD) ||            \
-    defined(MYTHEN3D)
+#if defined(GOTTHARD2D) || defined(EIGERD) || defined(MYTHEN3D)
 extern int masterCommandLine;
 #endif
 #ifdef EIGERD
@@ -59,8 +55,7 @@ int main(int argc, char *argv[]) {
     char version[MAX_STR_LENGTH] = {0};
     memset(version, 0, MAX_STR_LENGTH);
     ignoreConfigFileFlag = 0;
-#if defined(GOTTHARDD) || defined(GOTTHARD2D) || defined(EIGERD) ||            \
-    defined(MYTHEN3D)
+#if defined(GOTTHARD2D) || defined(EIGERD) || defined(MYTHEN3D)
     masterCommandLine = -1;
 #endif
 #ifdef EIGERD
@@ -82,17 +77,16 @@ int main(int argc, char *argv[]) {
             "\t-g, --nomodule           : [Mythen3][Gotthard2][Xilinx Ctb] \n"
             "\t                           Generic or No Module mode. Skips "
             "detector type checks. \n"
-            "\t-f, --phaseshift <value> : [Gotthard] only. Sets phase shift. \n"
             "\t-d, --devel              : Developer mode. Skips firmware "
             "checks. \n"
             "\t-u, --update             : Update mode. Skips firmware checks "
             "and "
             "initial detector setup. \n"
             "\t-i, --ignore-config      : "
-            "[Eiger][Jungfrau][Gotthard][Gotthard2] \n"
+            "[Eiger][Jungfrau][Gotthard2] \n"
             "\t                           Ignore config file. \n"
             "\t-m, --master <master>    : "
-            "[Eiger][Mythen3][Gotthard][Gotthard2] \n"
+            "[Eiger][Mythen3][Gotthard2] \n"
             "\t                           Set Master to 0 or 1. Precedence "
             "over "
             "config file. Only for virtual servers except Eiger. \n"
@@ -117,7 +111,6 @@ int main(int argc, char *argv[]) {
         {"help", no_argument, NULL, 'h'},
         {"version", no_argument, NULL, 'v'},
         {"port", required_argument, NULL, 'p'},
-        {"phaseshift", required_argument, NULL, 'f'},
         {"nomodule", no_argument, NULL, 'g'}, // generic
         {"devel", no_argument, NULL, 'd'},
         {"update", no_argument, NULL, 'u'},
@@ -133,7 +126,7 @@ int main(int argc, char *argv[]) {
     int c = 0;
 
     while (c != -1) {
-        c = getopt_long(argc, argv, "hvp:f:gduim:t:s", long_options,
+        c = getopt_long(argc, argv, "hvp:gduim:t:s", long_options,
                         &option_index);
 
         // Detect the end of the options
@@ -143,9 +136,7 @@ int main(int argc, char *argv[]) {
         switch (c) {
 
         case 'v':
-#ifdef GOTTHARDD
-            strcpy(version, APIGOTTHARD);
-#elif EIGERD
+#ifdef EIGERD
             strcpy(version, APIEIGER);
 #elif JUNGFRAUD
             strcpy(version, APIJUNGFRAU);
@@ -157,31 +148,18 @@ int main(int argc, char *argv[]) {
             strcpy(version, APIMYTHEN3);
 #elif GOTTHARD2D
             strcpy(version, APIGOTTHARD2);
+#elif XILINX_CHIPTESTBOARDD
+            strcpy(version, APIXILINXCTB);
 #endif
             LOG(logINFO, ("SLS Detector Server Version: %s\n", version));
-            exit(EXIT_SUCCESS);
+            return EXIT_SUCCESS;
 
         case 'p':
             if (sscanf(optarg, "%d", &portno) != 1) {
                 LOG(logERROR, ("Cannot scan port argument\n%s", helpMessage));
-                exit(EXIT_FAILURE);
+                return EXIT_FAILURE;
             }
             LOG(logINFO, ("Detected port: %d\n", portno));
-            break;
-
-        case 'f':
-#ifndef GOTTHARDD
-            LOG(logERROR,
-                ("Phase shift argument not implemented for this detector\n"));
-            exit(EXIT_FAILURE);
-#else
-            if (sscanf(optarg, "%d", &phaseShift) != 1) {
-                LOG(logERROR,
-                    ("Cannot scan phase shift argument\n%s", helpMessage));
-                exit(EXIT_FAILURE);
-            }
-            LOG(logINFO, ("Detected phase shift: %d\n", phaseShift));
-#endif
             break;
 
         case 'g':
@@ -205,13 +183,12 @@ int main(int argc, char *argv[]) {
             break;
 
         case 'i':
-#if defined(EIGERD) || defined(GOTTHARDD) || defined(GOTTHARD2D) ||            \
-    defined(JUNGFRAUD)
+#if defined(EIGERD) || defined(GOTTHARD2D) || defined(JUNGFRAUD)
             LOG(logINFO, ("Ignoring config file\n"));
             ignoreConfigFileFlag = 1;
 #else
             LOG(logERROR, ("No server config files for this detector\n"));
-            exit(EXIT_FAILURE);
+            return EXIT_FAILURE;
 #endif
             break;
 
@@ -219,12 +196,11 @@ int main(int argc, char *argv[]) {
 #if !defined(VIRTUAL) && !defined(EIGERD)
             LOG(logERROR, ("Cannot set master via the detector server for this "
                            "detector\n"));
-            exit(EXIT_FAILURE);
-#elif defined(GOTTHARDD) || defined(GOTTHARD2D) || defined(EIGERD) ||          \
-    defined(MYTHEN3D)
+            return EXIT_FAILURE;
+#elif defined(GOTTHARD2D) || defined(EIGERD) || defined(MYTHEN3D)
             if (sscanf(optarg, "%d", &masterCommandLine) != 1) {
                 LOG(logERROR, ("Cannot scan master argument\n%s", helpMessage));
-                exit(EXIT_FAILURE);
+                return EXIT_FAILURE;
             }
             if (masterCommandLine == 1) {
                 LOG(logINFO, ("Detector Master mode\n"));
@@ -233,7 +209,7 @@ int main(int argc, char *argv[]) {
             }
 #else
             LOG(logERROR, ("No master implemented for this detector server\n"));
-            exit(EXIT_FAILURE);
+            return EXIT_FAILURE;
 #endif
             break;
 
@@ -241,7 +217,7 @@ int main(int argc, char *argv[]) {
 #ifdef EIGERD
             if (sscanf(optarg, "%d", &topCommandLine) != 1) {
                 LOG(logERROR, ("Cannot scan top argument\n%s", helpMessage));
-                exit(EXIT_FAILURE);
+                return EXIT_FAILURE;
             }
             if (topCommandLine == 1) {
                 LOG(logINFO, ("Detector Top mode\n"));
@@ -250,16 +226,16 @@ int main(int argc, char *argv[]) {
             }
 #else
             LOG(logERROR, ("No top implemented for this detector server\n"));
-            exit(EXIT_FAILURE);
+            return EXIT_FAILURE;
 #endif
             break;
 
         case 'h':
             printf("%s", helpMessage);
-            exit(EXIT_SUCCESS);
+            return EXIT_SUCCESS;
         default:
             printf("\n%s", helpMessage);
-            exit(EXIT_FAILURE);
+            return EXIT_FAILURE;
         }
     }
 
@@ -400,5 +376,5 @@ int main(int argc, char *argv[]) {
 #endif
     }
     LOG(logINFO, ("Goodbye!\n"));
-    return 0;
+    return EXIT_SUCCESS;
 }

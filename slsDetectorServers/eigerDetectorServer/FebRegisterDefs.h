@@ -98,8 +98,8 @@
 // everything at  ~200 kHz (200 kHz MHz ddr readout)
 #define DAQ_CHIP_CONTROLLER_SUPER_SLOW_SPEED 0x000c0000
 
-//#define DAQ_FIFO_ENABLE 0x00100000 commented out as it
-// is not used anywhere
+// #define DAQ_FIFO_ENABLE 0x00100000 commented out as it
+//  is not used anywhere
 #define DAQ_REG_CHIP_CMDS_INT_TRIGGER 0x00100000
 
 // direct chip commands to the DAQ_REG_CHIP_CMDS register
@@ -131,8 +131,9 @@
 #define DAQ_NEXPOSURERS_ACTIVATE_AUTO_SUBIMAGING 0x20000000
 #define DAQ_NEXPOSURERS_ACTIVATE_RATE_CORRECTION 0x40000000
 
-//#define DAQ_MASTER_HALF_MODULE                        0x80000000 currently not
-// used
+// #define DAQ_MASTER_HALF_MODULE                        0x80000000 currently
+// not
+//  used
 
 // chips static bits
 #define DAQ_STATIC_BIT_PROGRAM 0x00000001

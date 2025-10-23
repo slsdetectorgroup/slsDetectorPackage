@@ -15,6 +15,8 @@
 #include "loadPattern.h"
 
 #include <netinet/in.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h> // usleep
 #ifdef VIRTUAL
@@ -51,12 +53,12 @@ int dataBytes = 0;
 int analogDataBytes = 0;
 int digitalDataBytes = 0;
 int transceiverDataBytes = 0;
-char *analogData = 0;
-char *digitalData = 0;
-char *transceiverData = 0;
-char volatile *analogDataPtr = 0;
-char volatile *digitalDataPtr = 0;
-char volatile *transceiverDataPtr = 0;
+char *analogData = NULL;
+char *digitalData = NULL;
+char *transceiverData = NULL;
+char volatile *analogDataPtr = NULL;
+char volatile *digitalDataPtr = NULL;
+char volatile *transceiverDataPtr = NULL;
 char udpPacketData[UDP_PACKET_DATA_BYTES + sizeof(sls_detector_header)];
 uint32_t adcEnableMask_1g = BIT32_MSK;
 // 10g readout
@@ -92,6 +94,10 @@ void basictests() {
     LOG(logINFOBLUE, ("********* Chip Test Board Virtual Server *********\n"));
 #else
     LOG(logINFOBLUE, ("************* Chip Test Board Server *************\n"));
+    initError = enableBlackfinAMCExternalAccessExtension(initErrorMessage);
+    if (initError == FAIL) {
+        return;
+    }
     initError = defineGPIOpins(initErrorMessage);
     if (initError == FAIL) {
         return;
@@ -437,6 +443,32 @@ uint32_t getDetectorIP() {
     return res;
 }
 
+int enableBlackfinAMCExternalAccessExtension(char *mess) {
+    unsigned int value;
+    const char *file_path = BFIN_AMC_ACCESS_EXTENSION_FNAME;
+    FILE *file = fopen(file_path, "r");
+    if (!file) {
+        strcpy(mess, "Failed to enable blackfin AMC access extension. Could "
+                     "not read EBIU_AMBCTL1\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    fscanf(file, "%x", &value);
+    fclose(file);
+
+    value |= BFIN_AMC_ACCESS_EXTENSION_ENA_VAL;
+    file = fopen(file_path, "w");
+    if (!file) {
+        strcpy(mess, "Failed to enable blackfin AMC access extension. Could "
+                     "not write EBIU_AMBCTL1\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    fprintf(file, "0x%x", value);
+    fclose(file);
+    return OK;
+}
+
 /* initialization */
 
 void initControlServer() {
@@ -475,21 +507,15 @@ void setupDetector() {
     analogDataBytes = 0;
     digitalDataBytes = 0;
     transceiverDataBytes = 0;
-    if (analogData) {
-        free(analogData);
-        analogData = 0;
-    }
-    if (digitalData) {
-        free(digitalData);
-        digitalData = 0;
-    }
-    if (transceiverData) {
-        free(transceiverData);
-        transceiverData = 0;
-    }
-    analogDataPtr = 0;
-    digitalDataPtr = 0;
-    transceiverData = 0;
+    free(analogData);
+    analogData = NULL;
+    free(digitalData);
+    digitalData = NULL;
+    free(transceiverData);
+    transceiverData = NULL;
+    analogDataPtr = NULL;
+    digitalDataPtr = NULL;
+    transceiverData = NULL;
     {
         for (int i = 0; i < NUM_CLOCKS; ++i) {
             clkPhase[i] = 0;
@@ -640,22 +666,15 @@ int updateDatabytesandAllocateRAM() {
         return FAIL;
     }
     // clear RAM
-    if (analogData) {
-        free(analogData);
-        analogData = 0;
-    }
-    if (digitalData) {
-        free(digitalData);
-        digitalData = 0;
-    }
-    if (transceiverData) {
-        free(transceiverData);
-        transceiverData = 0;
-    }
+    free(analogData);
+    analogData = NULL;
+    free(digitalData);
+    digitalData = NULL;
+    free(transceiverData);
+    transceiverData = NULL;
     // allocate RAM
     if (analogDataBytes) {
         analogData = malloc(analogDataBytes);
-        // cannot malloc
         if (analogData == NULL) {
             LOG(logERROR, ("Can not allocate analog data RAM for even 1 frame. "
                            "Probable cause: Memory Leak.\n"));
@@ -665,7 +684,6 @@ int updateDatabytesandAllocateRAM() {
     }
     if (digitalDataBytes) {
         digitalData = malloc(digitalDataBytes);
-        // cannot malloc
         if (digitalData == NULL) {
             LOG(logERROR,
                 ("Can not allocate digital data RAM for even 1 frame. "
@@ -677,7 +695,6 @@ int updateDatabytesandAllocateRAM() {
     }
     if (transceiverDataBytes) {
         transceiverData = malloc(transceiverDataBytes);
-        // cannot malloc
         if (transceiverData == NULL) {
             LOG(logERROR,
                 ("Can not allocate transceiver data RAM for even 1 frame. "
@@ -1110,26 +1127,17 @@ int setNumTransceiverSamples(int val) {
 int getNumTransceiverSamples() { return ntSamples; }
 
 int setExpTime(int64_t val) {
-    if (val < 0) {
-        LOG(logERROR, ("Invalid exptime: %lld ns\n", (long long int)val));
-        return FAIL;
-    }
-    LOG(logINFO, ("Setting exptime %lld ns\n", (long long int)val));
-    val *= (1E-3 * clkFrequency[RUN_CLK]);
-    setPatternWaitTime(0, val);
+    setPatternWaitInterval(0, val);
 
     // validate for tolerance
     int64_t retval = getExpTime();
-    val /= (1E-3 * clkFrequency[RUN_CLK]);
     if (val != retval) {
         return FAIL;
     }
     return OK;
 }
 
-int64_t getExpTime() {
-    return getPatternWaitTime(0) / (1E-3 * clkFrequency[RUN_CLK]);
-}
+int64_t getExpTime() { return getPatternWaitInterval(0); }
 
 int setPeriod(int64_t val) {
     if (val < 0) {
@@ -2209,7 +2217,8 @@ int startStateMachine() {
         LOG(logERROR, ("Could not start Virtual acquisition thread\n"));
         sharedMemory_setStatus(IDLE);
         return FAIL;
-    }
+    } else
+        pthread_detach(pthread_virtual_tid);
     LOG(logINFOGREEN, ("Virtual Acquisition started\n"));
     return OK;
 #endif
@@ -2281,10 +2290,22 @@ void *start_timer(void *arg) {
     int packetsPerFrame = ceil((double)imageSize / (double)dataSize);
 
     // Generate Data
-    char imageData[imageSize];
+    char *imageData = (char *)malloc(imageSize);
     memset(imageData, 0, imageSize);
+
+    if (imageData == NULL) {
+        LOG(logERROR, ("Can not allocate image Data RAM."
+                       "Probable cause: Memory Leak.\n"));
+        return NULL;
+    }
+    /*
     for (int i = 0; i < imageSize; i += sizeof(uint16_t)) {
         *((uint16_t *)(imageData + i)) = i;
+    }
+    */
+
+    for (int i = 0; i < imageSize; i += 2 * sizeof(uint64_t)) {
+        *((uint64_t *)(imageData + i)) = 0xffffffffffffffff;
     }
 
     // Send data
@@ -2341,6 +2362,8 @@ void *start_timer(void *arg) {
         }
         setNextFrameNumber(frameNr + numFrames);
     }
+
+    free(imageData);
 
     closeUDPSocket(0);
 

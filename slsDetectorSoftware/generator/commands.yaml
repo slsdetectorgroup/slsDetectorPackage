@@ -441,7 +441,7 @@ period:
       function: setPeriod
 
 delay:
-  help: "[duration] [(optional unit) ns|us|ms|s]\n\t[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb][Moench][Xilinx Ctb] Delay after trigger"
+  help: "[duration] [(optional unit) ns|us|ms|s]\n\t[Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Moench][Xilinx Ctb] Delay after trigger"
   inherit_actions: TIME_COMMAND
   actions:
     GET:
@@ -468,7 +468,7 @@ subdeadtime:
       function: setSubDeadTime
 
 compdisabletime:
-  help: "[duration] [(optional unit) ns|us|ms|s]\n\t[Jungfrau] Time before end of exposure when comparator is disabled. It is only possible for chipv1.1."
+  help: "[duration] [(optional unit) ns|us|ms|s]\n\t[Jungfrau] Time before end of exposure when comparator is disabled."
   inherit_actions: TIME_COMMAND
   actions:
     GET:
@@ -496,14 +496,14 @@ burstperiod:
 
 ################# TIME_GET_COMMAND #############
 delayl:
-  help: "\n\t[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Delay Left in Acquisition. \n\t[Gotthard2] only in continuous mode."
+  help: "\n\t[Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Delay Left in Acquisition. \n\t[Gotthard2] only in continuous mode."
   inherit_actions: TIME_GET_COMMAND
   actions:
     GET:
       function: getDelayAfterTriggerLeft
 
 periodl:
-  help: "\n\t[Gotthard][Jungfrau][Moench][Ctb][Mythen3][Gotthard2][Xilinx Ctb] Period left for current frame. \n\t[Gotthard2] only in continuous mode."
+  help: "\n\t[Jungfrau][Moench][Ctb][Mythen3][Gotthard2][Xilinx Ctb] Period left for current frame. \n\t[Gotthard2] only in continuous mode."
   inherit_actions: TIME_GET_COMMAND
   actions:
     GET:
@@ -522,13 +522,6 @@ measuredsubperiod:
   actions:
     GET:
       function: getMeasuredSubFramePeriod
-
-exptimel:
-  help: "[(optional unit) ns|us|ms|s]\n\t[Gotthard] Exposure time left for current frame. "
-  inherit_actions: TIME_GET_COMMAND
-  actions:
-    GET:
-      function: getExptimeLeft
 
 runtime:
   help: "[(optional unit) ns|us|ms|s]\n\t[Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Time from detector start up.\n\t[Gotthard2] not in burst and auto mode."
@@ -641,7 +634,7 @@ adcinvert:
 
 ################# INTEGER_COMMAND_VEC_ID #################
 settings:
-  help: "[standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain, highgain0, fixgain1, fixgain2, forceswitchg1, forceswitchg2, verylowgain, g1_hg, g1_lg, g2_hc_hg, g2_hc_lg, g2_lc_hg, g2_lc_lg, g4_hg, g4_lg, gain0]\n\t Detector Settings\n\t[Jungfrau] - [ gain0 | highgain0]\n\t[Gotthard] - [dynamicgain | highgain | lowgain | mediumgain | veryhighgain]\n\t[Gotthard] Also loads default dacs on to the detector.\n\t[Gotthard2] - [dynamicgain | fixgain1 | fixgain2]\n\t[Mythen3] - [standard | fast | highgain] Also changes vrshaper and vrpreamp. \n\t[Eiger] Use threshold or thresholdnotb. \n\t[Eiger] threshold and settings loaded from file found in settingspath. \n\t[Moench] - [g1_hg | g1_lg | g2_hc_hg | g2_hc_lg | g2_lc_hg | g2_lc_lg | g4_hg | g4_lg]"
+  help: "[standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain, highgain0, fixgain1, fixgain2, forceswitchg1, forceswitchg2, verylowgain, g1_hg, g1_lg, g2_hc_hg, g2_hc_lg, g2_lc_hg, g2_lc_lg, g4_hg, g4_lg, gain0]\n\t Detector Settings\n\t[Jungfrau] - [ gain0 | highgain0]\n\t[Gotthard2] - [dynamicgain | fixgain1 | fixgain2]\n\t[Mythen3] - [standard | fast | highgain] Also changes vrshaper and vrpreamp. \n\t[Eiger] Use threshold or thresholdnotb. \n\t[Eiger] threshold and settings loaded from file found in settingspath. \n\t[Moench] - [g1_hg | g1_lg | g2_hc_hg | g2_hc_lg | g2_lc_hg | g2_lc_lg | g4_hg | g4_lg]"
   inherit_actions: INTEGER_COMMAND_VEC_ID
   actions:
     GET:
@@ -688,7 +681,7 @@ column:
       function: setColumn
 
 timing:
-  help: "[auto|trigger|gating|burst_trigger]\n\tTiming Mode of detector.\n\t[Jungfrau][Moench][Gotthard][Ctb][Gotthard2][Xilinx Ctb] [auto|trigger]\n\t[Mythen3] [auto|trigger|gating|trigger_gating]\n\t[Eiger] [auto|trigger|gating|burst_trigger]"
+  help: "[auto|trigger|gating|burst_trigger|trigger_gating]\n\tTiming Mode of detector.\n\t[Jungfrau][Moench][Ctb][Gotthard2][Xilinx Ctb] [auto|trigger]\n\t[Mythen3] [auto|trigger|gating|trigger_gating]\n\t[Eiger] [auto|trigger|gating|burst_trigger]"
   inherit_actions: INTEGER_COMMAND_VEC_ID
   actions:
     GET:
@@ -698,7 +691,7 @@ timing:
       input_types: [ defs::timingMode ]
       
 highvoltage:
-  help: "[n_value]\n\tHigh voltage to the sensor in Voltage. \n\t[Gotthard] [0|90|110|120|150|180|200] \n\t[Eiger][Mythen3][Gotthard2] 0-200 \n\t[Jungfrau][Moench][Ctb] [0|60-200]"
+  help: "[n_value]\n\tHigh voltage to the sensor in Voltage. \n\t[Eiger][Mythen3][Gotthard2] 0-200 \n\t[Jungfrau][Moench][Ctb] [0|60-200]"
   inherit_actions: INTEGER_COMMAND_VEC_ID
   actions:
     GET:
@@ -717,7 +710,7 @@ powerchip:
       input_types: [ bool ]
 
 imagetest:
-  help: "[0, 1]\n\t[Gotthard] 1 adds channel intensity with precalculated values when taking an acquisition. Default is 0.\n\t[Eiger][Jungfrau][Moench] Only for Virtual servers. If 0, each pixel intensity incremented by 1. If 1, all pixels almost saturated."
+  help: "[0, 1]\n\t[Eiger][Jungfrau][Moench] Only for Virtual servers. If 0, each pixel intensity incremented by 1. If 1, all pixels almost saturated."
   inherit_actions: INTEGER_COMMAND_VEC_ID
   actions:
     GET:
@@ -1123,7 +1116,7 @@ temp_control:
       input_types: [ bool ]
 
 autocompdisable:
-  help: "[0, 1]\n\t[Jungfrau] Auto comparator disable mode. By default, the on-chip gain switching is active during the entire exposure.This mode disables the on - chip gain switching comparator automatically after 93.75% (only for chipv1.0) of exposure time (only for longer than 100us). It is possible to set the duration for chipv1.1 using compdisabletime command.\n\tDefault is 0 or this mode disabled(comparator enabled throughout). 1 enables mode. 0 disables mode. "
+  help: "[0, 1]\n\t[Jungfrau] Auto comparator disable mode. By default, the on-chip gain switching is active during the entire exposure.This mode disables the on - chip gain switching comparator automatically and the duration is set using compdisabletime command.\n\tDefault is 0 or this mode disabled(comparator enabled throughout). 1 enables mode. 0 disables mode. "
   inherit_actions: INTEGER_COMMAND_VEC_ID
   actions:
     GET:
@@ -1210,7 +1203,7 @@ polarity:
       input_types: [ defs::polarity ]
 
 timing_info_decoder:
-  help: "[swissfel|shine]\n\t[Jungfrau] Advanced Command and only for Swissfel and Shine. Sets the bunch id or timing info decoder. Default is swissfel."
+  help: "[swissfel|shine]\n\t[Jungfrau] Advanced Command and only for Swissfel and Shine. Sets the bunch id or timing info decoder. Default is swissfel. Only allowed for pcbv2.0."
   inherit_actions: INTEGER_COMMAND_VEC_ID
   actions:
     GET:
@@ -1279,7 +1272,7 @@ asamples:
       function: setNumberOfAnalogSamples
 
 adcclk:
-  help: "[n_clk in MHz]\n\t[Ctb] ADC clock frequency in MHz."
+  help: "[n_clk in MHz]\n\t[Ctb] ADC clock frequency in MHz.\n\t[xilinx Ctb] ADC clock frequency in kHz."
   inherit_actions: INTEGER_COMMAND_VEC_ID
   actions:
     GET:
@@ -1288,7 +1281,7 @@ adcclk:
       function: setADCClock
 
 runclk:
-  help: "[n_clk in MHz]\n\t[Ctb] Run clock in MHz."
+  help: "[n_clk in MHz]\n\t[Ctb] Run clock in MHz.\n\t[xilinx Ctb] Run clock in kHz."
   inherit_actions: INTEGER_COMMAND_VEC_ID
   actions:
     GET:
@@ -1325,7 +1318,7 @@ romode:
       input_types: [ defs::readoutMode ]
 
 dbitclk:
-  help: "[n_clk in MHz]\n\t[Ctb] Clock for latching the digital bits in MHz."
+  help: "[n_clk in MHz]\n\t[Ctb] Clock for latching the digital bits in MHz.\n\t[xilinx Ctb] Clock for latching the digital bits in kHz."
   inherit_actions: INTEGER_COMMAND_VEC_ID
   actions:
     GET:
@@ -1419,11 +1412,23 @@ lock:
       function: setDetectorLock
       input_types: [ bool ]
 
+
+rx_dbitreorder:
+  help: "[0, 1]\n\t[Ctb] Reorder digital data such that it groups each signal (0-63) from all the different samples together . Default is 1. Setting to 0 means 'do not reorder' and to keep what the board spits out, which is that all signals in a sample are grouped together."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getRxDbitReorder
+    PUT:
+      function: setRxDbitReorder
+      input_types: [ bool ]
+
+
 ################# INTEGER_COMMAND_VEC_ID_GET #################
 
 master:
   inherit_actions: INTEGER_COMMAND_VEC_ID_GET
-  help: "[0, 1]\n\t[Eiger][Gotthard2][Jungfrau][Moench] Sets (half) module to master and other(s) to slaves.\n\t[Gotthard][Gotthard2][Mythen3][Eiger][Jungfrau][Moench] Gets if the current (half) module is master."
+  help: "[0, 1]\n\t[Eiger][Gotthard2][Jungfrau][Moench] Sets (half) module to master and other(s) to slaves.\n\t[Gotthard2][Mythen3][Eiger][Jungfrau][Moench] Gets if the current (half) module is master."
   actions:
     GET:
       function: getMaster
@@ -1514,7 +1519,7 @@ triggers:
 
 dr:
   inherit_actions: INTEGER_COMMAND_SET_NOID_GET_ID
-  help: "[value]\n\tDynamic Range or number of bits per pixel in detector.\n\t[Eiger] Options: 4, 8, 12, 16, 32. If set to 32, also sets clkdivider to 2, else to 0.\n\t[Mythen3] Options: 8, 16, 32\n\t[Jungfrau][Moench][Gotthard][Ctb][Mythen3][Gotthard2][Xilinx Ctb] 16"
+  help: "[value]\n\tDynamic Range or number of bits per pixel in detector.\n\t[Eiger] Options: 4, 8, 12, 16, 32. If set to 32, also sets clkdivider to 2, else to 0.\n\t[Mythen3] Options: 8, 16, 32\n\t[Jungfrau][Moench][Ctb][Mythen3][Gotthard2][Xilinx Ctb] 16"
   actions:
     GET:
       function: getDynamicRange
@@ -1736,7 +1741,7 @@ readout:
 
 rx_clearroi:
   inherit_actions: EXECUTE_SET_COMMAND_NOID
-  help: "Resets Region of interest in receiver. Default is all channels/pixels enabled."
+  help: "\n\tResets Region of interest in receiver. Default is all channels/pixels enabled."
   actions:
     PUT:
       function: clearRxROI
@@ -1777,13 +1782,6 @@ udp_validate:
     PUT:
       function: validateUDPConfiguration
 
-clearroi:
-  inherit_actions: EXECUTE_SET_COMMAND
-  help: "\n\t[Gotthard] Resets Region of interest in detector. All channels enabled. Default is all channels enabled."
-  actions:
-    PUT:
-      function: clearROI
-
 defaultpattern:
   inherit_actions: EXECUTE_SET_COMMAND
   help: "\n\t[Mythen3] Loads and runs default pattern in pattern generator. It is to go back to initial settings."
@@ -1793,7 +1791,7 @@ defaultpattern:
 
 patternstart:
   inherit_actions: EXECUTE_SET_COMMAND
-  help: "\n\t[Mythen3] Starts Pattern"
+  help: "\n\t[Mythen3][Ctb][Xilinx Ctb] Starts Pattern"
   actions:
     PUT:
       function: startPattern
@@ -1807,21 +1805,21 @@ resetfpga:
 
 rebootcontroller:
   inherit_actions: EXECUTE_SET_COMMAND
-  help: "\n\t[Jungfrau][Moench][Ctb][Gotthard][Mythen3][Gotthard2][Xilinx Ctb] Reboot controller of detector."
+  help: "\n\t[Jungfrau][Moench][Ctb][Mythen3][Gotthard2][Xilinx Ctb] Reboot controller of detector."
   actions:
     PUT:
       function: rebootController
 
 firmwaretest:
   inherit_actions: EXECUTE_SET_COMMAND
-  help: "\n\t[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Firmware test, ie. reads a read fixed pattern from a register."
+  help: "\n\t[Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Firmware test, ie. reads a read fixed pattern from a register."
   actions:
     PUT:
       function: executeFirmwareTest
 
 bustest:
   inherit_actions: EXECUTE_SET_COMMAND
-  help: "\n\t[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb] Bus test, ie. Writes different values in a R/W register and confirms the writes to check bus.\n\tAdvanced User function!"
+  help: "\n\t[Jungfrau][Moench][Mythen3][Gotthard2][Ctb] Bus test, ie. Writes different values in a R/W register and confirms the writes to check bus.\n\tAdvanced User function!"
   actions:
     PUT:
       function: executeBusTest
@@ -1893,21 +1891,21 @@ moduleid:
 
 type:
   inherit_actions: GET_COMMAND
-  help: "\n\tReturns detector type. Can be Eiger, Jungfrau, Gotthard, Moench, Mythen3, Gotthard2, ChipTestBoard, Xilinx_ChipTestBoard"
+  help: "\n\tReturns detector type. Can be Eiger, Jungfrau, Moench, Mythen3, Gotthard2, ChipTestBoard, Xilinx_ChipTestBoard"
   actions:
     GET:
       function: getDetectorType
 
 framesl:
   inherit_actions: GET_COMMAND
-  help: "\n\t[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Number of frames left in acquisition. \n\t[Gotthard2] only in continuous auto mode."
+  help: "\n\t[Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Number of frames left in acquisition. \n\t[Gotthard2] only in continuous auto mode."
   actions:
     GET:
       function: getNumberOfFramesLeft
 
 triggersl:
   inherit_actions: GET_COMMAND
-  help: "\n\t[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Number of triggers left in acquisition. Only when external trigger used."
+  help: "\n\t[Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Number of triggers left in acquisition. Only when external trigger used."
   actions:
     GET:
       function: getNumberOfTriggersLeft
@@ -2034,7 +2032,7 @@ framecounter:
 ################# GET_COMMAND_HEX ############################
 serialnumber:
   inherit_actions: GET_COMMAND
-  help: "\n\t[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb]\n\tSerial number of detector."
+  help: "\n\t[Jungfrau][Moench][Mythen3][Gotthard2][Ctb]\n\tSerial number of detector."
   actions:
     GET:
       function: getSerialNumber
@@ -2086,7 +2084,7 @@ templist:
 ################# GET_IND_COMMAND ############################
 temp_adc:
   inherit_actions: GET_IND_COMMAND
-  help: "[n_value]\n\t[Jungfrau][Moench][Gotthard] ADC Temperature"
+  help: "[n_value]\n\t[Jungfrau][Moench] ADC Temperature"
   actions:
     GET:
       function: getTemperature
@@ -2095,7 +2093,7 @@ temp_adc:
 
 temp_fpga:
   inherit_actions: GET_IND_COMMAND
-  help: "[n_value]\n\t[Eiger][Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Xilinx CTB] FPGA Temperature"
+  help: "[n_value]\n\t[Eiger][Jungfrau][Moench][Mythen3][Gotthard2][Xilinx CTB] FPGA Temperature"
   actions:
     GET:
       function: getTemperature
@@ -2468,6 +2466,15 @@ free:
     PUT:
       argc: 0
 
+user:
+  is_description: true
+  actions:
+    GET:
+      argc: 0
+    PUT:
+      argc: 0
+
+
 hostname:
   is_description: true
   actions:
@@ -2600,11 +2607,7 @@ rx_roi:
         GET:
           argc: 0
         PUT:
-          args:
-            - argc: 2
-              arg_types: [ int, int ]
-            - argc: 4
-              arg_types: [ int, int, int, int ]
+          argc: -1
 
 ratecorr:
     is_description: true
@@ -2655,6 +2658,44 @@ slowadc:
         GET:
           argc: 1
           arg_types: [ int ]
+
+patwaittime:
+    is_description: true
+    actions:
+        GET:
+          argc: -1
+        PUT:
+          argc: -1
+
+patwaittime0:
+    is_description: true
+    duplicate_function: true
+    function_alias: patwaittime
+    actions:
+        GET:
+          argc: -1
+        PUT:
+          argc: -1
+
+patwaittime1:
+    is_description: true
+    duplicate_function: true
+    function_alias: patwaittime
+    actions:
+        GET:
+          argc: -1
+        PUT:
+          argc: -1
+
+patwaittime2:
+    is_description: true
+    duplicate_function: true
+    function_alias: patwaittime
+    actions:
+        GET:
+          argc: -1
+        PUT:
+          argc: -1
 
 rx_dbitlist:
     is_description: true
@@ -2852,7 +2893,7 @@ Exptime:
 
 exptime:
   inherit_actions: Exptime
-  help: "[duration] [(optional unit) ns|us|ms|s]\n\t[Eiger][Jungfrau][Moench][Gotthard][Gotthard2][Ctb][Xilinx Ctb] Exposure time\n\t[Mythen3] Exposure time of all gate signals in auto and trigger mode (internal gating). To specify gate index, use exptime1, exptime2, exptime3."
+  help: "[duration] [(optional unit) ns|us|ms|s]\n\t[Eiger][Jungfrau][Moench][Gotthard2][Ctb][Xilinx Ctb] Exposure time\n\t[Mythen3] Exposure time of all gate signals in auto and trigger mode (internal gating). To specify gate index, use exptime1, exptime2, exptime3."
   actions:
     GET:
       function: getExptime
@@ -2946,7 +2987,7 @@ readoutspeed:
 
 adcphase:
   infer_action: true
-  help: "[n_value] [(optional)deg]\n\t[Jungfrau][Moench][Ctb][Gotthard] Phase shift of ADC clock. \n\t[Jungfrau][Moench] Absolute phase shift. If deg used, then shift in degrees. Changing Speed also resets adcphase to recommended defaults.\n\t[Ctb] Absolute phase shift. If deg used, then shift in degrees. Changing adcclk also resets adcphase and sets it to previous values.\n\t[Gotthard] Relative phase shift. Cannot get"
+  help: "[n_value] [(optional)deg]\n\t[Jungfrau][Moench][Ctb] Phase shift of ADC clock. \n\t[Jungfrau][Moench] Absolute phase shift. If deg used, then shift in degrees. Changing Speed also resets adcphase to recommended defaults.\n\t[Ctb] Absolute phase shift. If deg used, then shift in degrees. Changing adcclk also resets adcphase and sets it to previous values."
   actions:
     GET:
       require_det_id: true
@@ -3147,7 +3188,7 @@ maxclkphaseshift:
       function: getMaxClockPhaseShift
 
 clkdiv:
-  help: "[n_clock] [n_divider]\n\t[Gotthard2][Mythen3] Clock Divider of clock n_clock. Must be greater than 1.n\t[Gotthard2] Clock index range: 0-5\n\t[Mythen3] Clock index range: 0"
+  help: "[n_clock] [n_divider]\n\t[Gotthard2][Mythen3] Clock Divider of clock n_clock. Must be greater than 1.\n\t[Gotthard2] Clock index range: 0-5\n\t[Mythen3] Clock index range: 0"
   actions:
     GET:
       extra_variables:
@@ -3182,7 +3223,7 @@ clkdiv:
       output: [ 'args[0]', "' '", 'args[1]' ]
 
 extsig:
-  help: "[n_signal] [signal_type]\n\t[Gotthard][Mythen3] External signal mode for trigger timing mode.\n\t[Gotthard] [0] [trigger_in_rising_edge|trigger_in_falling_edge]\n\t[Mythen3] [0-7] [trigger_in_rising_edge|trigger_in_falling_edge|inversion_on|inversion_off]\n\t where 0 is master input trigger signal, 1-3 is master input gate signals, 4 is busy out signal and 5-7 is master output gate signals."
+  help: "[n_signal] [signal_type]\n\t[Mythen3] External signal mode for trigger timing mode.\n\t[Mythen3] [0-7] [trigger_in_rising_edge|trigger_in_falling_edge|inversion_on|inversion_off]\n\t where 0 is master input trigger signal, 1-3 is master input gate signals, 4 is busy out signal and 5-7 is master output gate signals."
   actions:
     GET:
       argc: 1
@@ -3253,7 +3294,7 @@ dac:
           output: [ "args[0]", "' '", "args[1]", '" mV"' ]
 
 resetdacs:
-  help: "[(optional) hard] \n\t[Eiger][Jungfrau][Moench][Gotthard][Gotthard2][Mythen3]Reset dac values to the defaults. A 'hard' optional reset will reset the dacs to the hardcoded defaults in on-board detector server."
+  help: "[(optional) hard] \n\t[Eiger][Jungfrau][Moench][Gotthard2][Mythen3]Reset dac values to the defaults. A 'hard' optional reset will reset the dacs to the hardcoded defaults in on-board detector server."
   actions:
     PUT:
       function: resetToDefaultDacs
@@ -3429,7 +3470,7 @@ udp_dstlist:
       output: [ ToString(args) ]
 
 txdelay:
-  help: "[n_delay]\n\t[Eiger][Jungfrau][Moench][Mythen3] Set transmission delay for all modules in the detector using the step size provided.Sets up \n\t[Eiger] txdelay_left to (2 * mod_index * n_delay), \n\t[Eiger] txdelay_right to ((2 * mod_index + 1) * n_delay) and \n\t[Eiger] txdelay_frame to (2 *num_modules * n_delay)\n\t[Jungfrau][Moench][Mythen3] txdelay_frame to (num_modules * n_delay) for every module."
+  help: "[n_delay]\n\t[Eiger][Jungfrau][Moench][Mythen3] Set transmission delay for all modules in the detector using the step size provided.Sets up \n\t[Eiger] txdelay_left to (2 * mod_index * n_delay), \n\t[Eiger] txdelay_right to ((2 * mod_index + 1) * n_delay) and \n\t[Eiger] txdelay_frame to (2 * num_modules * n_delay)\n\t[Jungfrau][Moench][Mythen3] txdelay_frame to (num_modules * n_delay) for every module."
   actions:
     GET:
       argc: 0
@@ -3560,7 +3601,7 @@ temp_event:
       output: [ '"cleared"' ]
 
 pedestalmode:
-  help: " [frames<uint8_t>] [loops<uint16_t>]\n\t\t[Jungfrau] Enable pedestal mode. \n\t\tThe number of frames or triggers is overwritten by: \n\t\t(#pedestal_frames x #pedestal_loops x 2). \n\t\tIn auto timing mode or in trigger mode with #frames > 1, \n\t\t#frames is overwritten and #triggers = 1, \n\t\telse #triggers is overwritten and #frames = 1. \n\t\tOne cannot set #frames, #triggers or timing mode in pedestal mode (exception thrown).\n\npedestalmode [0]\n\t\t[Jungfrau] Disable pedestal mode.\n\t\tDisabling pedestal mode will set back the normal mode values of #frames and #triggers."
+  help: " [frames<uint8_t>] [loops<uint16_t>]\n\t\t[Jungfrau] Enable pedestal mode. \n\t\tThe number of frames or triggers is overwritten by: \n\t\t(#pedestal_frames x #pedestal_loops x 2). \n\t\tIn auto timing mode or in trigger mode with #frames > 1, \n\t\t#frames is overwritten and #triggers = 1, \n\t\telse #triggers is overwritten and #frames = 1. \n\t\tOne cannot set #frames, #triggers or timing mode in pedestal mode (exception thrown).\n\tpedestalmode [0]\n\t\t[Jungfrau] Disable pedestal mode.\n\t\tDisabling pedestal mode will set back the normal mode values of #frames and #triggers."
   actions: 
     GET:
       argc: 0
@@ -3583,30 +3624,6 @@ pedestalmode:
           input_types: [ defs::pedestalParameters ]
           input: [ 'defs::pedestalParameters(StringTo<uint8_t>(args[0]), StringTo<uint16_t>(args[1]))' ]
 
-roi:
-  help: "[xmin] [xmax] \n\t[Gotthard] Region of interest in detector.\n\tOptions: Only a single ROI per module. \n\tEither all channels or a single adc or 2 chips (256 channels). Default is all channels enabled (-1 -1). "
-  actions:
-    GET:
-      argc: 0
-      require_det_id: true
-      function: getROI
-      output: [ t ]
-    PUT:
-      argc: 2
-      exceptions:
-        - condition: 'det_id == -1 && det->size() > 1'
-          message: '"Cannot execute ROI at multi module level"'
-      require_det_id: true
-      convert_det_id: false
-      function: setROI
-      arg_types: [ int, int ]
-      extra_variables:
-        - name: t
-          type: defs::ROI
-          value: defs::ROI(StringTo<int>(args[0]), StringTo<int>(args[1]))
-      input: [ t ]
-      input_types: [ defs::ROI ]
-      output: [ 't' ]
 
 inj_ch:
   help: "[offset] [increment]\n\t[Gotthard2] Inject channels with current source for calibration. Offset is starting channel that is injected, increment determines succeeding channels to be injected."
@@ -3627,7 +3644,7 @@ inj_ch:
       output: [ ToString(args) ]
 
 vetophoton:
-  help: "[ichip] [#photons] [energy in keV] [reference file]\n\t[Gotthard2] Set veto reference for 128 channels for chip ichip according to reference file and #photons and energy in keV.\n[ichip] [output file]\n\t Get gain indices and veto reference for 128 channels for chip ichip, saved to file."
+  help: "[ichip] [#photons] [energy in keV] [reference file]\n\t[Gotthard2] Set veto reference for 128 channels for chip ichip according to reference file and #photons and energy in keV.\n\t[ichip] [output file]\n\t Get gain indices and veto reference for 128 channels for chip ichip, saved to file."
   actions:
     GET:
       argc: 2
@@ -3874,8 +3891,7 @@ diodelay:
       cast_input: [ true, true ]
       output: [ ToString(args) ]
 
-# pattern is a keyword in yaml, so patternX is used to avoid it
-patternX:
+pattern:
   help: "[fname]\n\t[Mythen3][Ctb][Xilinx Ctb] Loads ASCII pattern file directly to server (instead of executing line by line)"
   command_name: "pattern"
   actions:
@@ -3884,8 +3900,8 @@ patternX:
       require_det_id: true
       function: setPattern
       input: [ 'args[0]' ]
+      arg_types: [special::path]
       input_types: [ std::string ]
-      cast_input: [ false ]
       output: [ 'args.front()' ]
 
 patword:
@@ -3930,34 +3946,34 @@ patlimits:
 
 patloop:
   help: "[0-6] [start addr] [stop addr] \n\t[Ctb][Mythen3][Xilinx Ctb] Limits of the loop level provided.\n\t[Mythen3] Level options: 0-3 only."
+  infer_action: false
+  pattern_command: patloop
   actions:
     GET:
-      argc: -1
-      pattern_command:
-        command_name: patloop
-        nGetArgs: 0
-        nPutArgs: 2
+      argc: 1
       require_det_id: true
       function: getPatternLoopAddresses
+      extra_variables:
+        - name: level
+          type: int
+          value: "StringTo<int>(args[0])"
       input: [ level ]
       input_types: [ int ]
-      cast_input: [ false ]
       output: [level,"' '" ,"OutStringHex(t, 4)" ]
     PUT:
-      argc: -1
-      extra_variables:
-        - name: start
-          type: int
-          value: "StringTo<int>(args[iArg++])"
-        - name: stop
-          type: int
-          value: "StringTo<int>(args[iArg++])"
-      pattern_command:
-        command_name: patloop
-        nGetArgs: 0
-        nPutArgs: 2
+      argc: 3
       require_det_id: true
       function: setPatternLoopAddresses
+      extra_variables:
+        - name: level
+          type: int
+          value: "StringTo<int>(args[0])"
+        - name: start
+          type: int
+          value: "StringTo<int>(args[1])"
+        - name: stop
+          type: int
+          value: "StringTo<int>(args[2])"
       input: [ level, start, stop ]
       input_types: [ int, int, int ]
       output: [level,"' '" , "'['" , "ToStringHex(start, 4)" , '", "' , "ToStringHex(stop, 4)", "']'" ]
@@ -3979,34 +3995,33 @@ patloop2:
 
 patnloop:
   help: "[0-6] [n_cycles] \n\t[Ctb][Mythen3][Xilinx Ctb] Number of cycles of the loop level provided.\n\t[Mythen3] Level options: 0-3 only."
+  infer_action: false
+  pattern_command: patnloop
   actions:
     GET:
-      argc: -1
-      pattern_command:
-        command_name: patnloop
-        nGetArgs: 0
-        nPutArgs: 1
+      argc: 1
       require_det_id: true
       function: getPatternLoopCycles
+      extra_variables:
+        - name: level
+          type: int
+          value: "StringTo<int>(args[0])"
       input: [ level ]
       input_types: [ int ]
-      cast_input: [ false ]
       output: [ level,"' '" , "OutString(t)" ]
     PUT:
-      argc: -1
-      extra_variables:
-        - name: nloops
-          type: std::string
-          value: "args[iArg++]"
-      pattern_command:
-        command_name: patnloop
-        nGetArgs: 0
-        nPutArgs: 1
+      argc: 2
       require_det_id: true
       function: setPatternLoopCycles
+      extra_variables:
+        - name: level
+          type: int
+          value: "StringTo<int>(args[0])"
+        - name: nloops
+          type: int
+          value: "StringTo<int>(args[1])"
       input: [ level, nloops ]
       input_types: [ int, int ]
-      cast_input: [ false, true ]
       output: [ level,"' '" , nloops ]
 
 patnloop0:
@@ -4014,9 +4029,9 @@ patnloop0:
     inherit_actions: patnloop
     actions:
       GET:
-        output: [ "OutString(t)" ]
+        output: [ OutString(t) ]
       PUT:
-        output: [ "nloops" ]
+        output: [ nloops ]
 
 patnloop1:
     inherit_actions: patnloop0
@@ -4026,31 +4041,31 @@ patnloop2:
 
 patwait:
   help: "[0-6] [addr] \n\t[Ctb][Mythen3][Xilinx Ctb] Wait address for loop level provided. \n\t[Mythen3] Level options: 0-3 only."
+  infer_action: false
+  pattern_command: patwait
   actions:
     GET:
-      argc: -1
-      pattern_command:
-        command_name: patwait
-        nGetArgs: 0
-        nPutArgs: 1
+      argc: 1
       require_det_id: true
       function: getPatternWaitAddr
+      extra_variables:
+        - name: level
+          type: int
+          value: "StringTo<int>(args[0])"
       input: [ level ]
       input_types: [ int ]
-      cast_input: [ false ]
       output: [level,"' '" ,  "OutStringHex(t, 4)" ]
     PUT:
-      argc: -1
-      extra_variables:
-        - name: addr
-          type: int
-          value: "StringTo<int>(args[iArg++])"
-      pattern_command:
-        command_name: patwait
-        nGetArgs: 0
-        nPutArgs: 1
+      argc: 2
       require_det_id: true
       function: setPatternWaitAddr
+      extra_variables:
+        - name: level
+          type: int
+          value: "StringTo<int>(args[0])"
+        - name: addr
+          type: int
+          value: "StringTo<int>(args[1])"
       input: [ level, addr ]
       input_types: [ int, int ]
       output: [level,"' '" ,  "ToStringHex(addr, 4)" ]
@@ -4069,52 +4084,6 @@ patwait1:
 
 patwait2:
     inherit_actions: patwait0
-
-patwaittime:
-  help: "[0-6] [n_clk] \n\t[Ctb][Mythen3][Xilinx Ctb] Wait time in clock cycles for the loop provided.\n\t[Mythen3] Level options: 0-3 only."
-  actions:
-    GET:
-      argc: -1
-      pattern_command:
-        command_name: patwaittime
-        nGetArgs: 0
-        nPutArgs: 1
-      require_det_id: true
-      function: getPatternWaitTime
-      input: [ level ]
-      input_types: [ int ]
-      cast_input: [ false ]
-      output: [ level,"' '" , "OutString(t)" ]
-    PUT:
-      argc: -1
-      extra_variables:
-        - name: waittime
-          type: uint64_t
-          value: "StringTo<uint64_t>(args[iArg++])"
-      pattern_command:
-        command_name: patwaittime
-        nGetArgs: 0
-        nPutArgs: 1
-      require_det_id: true
-      function: setPatternWaitTime
-      input: [ level, waittime ]
-      input_types: [ int, int ]
-      output: [level,"' '" ,  "waittime" ]
-
-patwaittime0:
-    help: "\n\tDeprecated command. Use patwaittime."
-    inherit_actions: patwaittime
-    actions:
-      GET:
-        output: [ "OutString(t)" ]
-      PUT:
-        output: [ "waittime" ]
-
-patwaittime1:
-    inherit_actions: patwaittime0
-
-patwaittime2:
-    inherit_actions: patwaittime0
 
 rx_jsonpara:
   help: "[key1] [value1]\n\t[Receiver] Additional json header parameter streamed out from receiver. If not found in header, the pair is appended. An empty values deletes parameter. Max 20 characters for each key/value."
@@ -4189,7 +4158,7 @@ updatekernel:
       output: [ '"successful"' ]
 
 update:
-  help: "\n\tWithout tftp: [server_name (incl fullpath)] [fname.pof (incl full path)] This does not use tftp.\n\t\t[Jungfrau][Moench][Gotthard][Ctb] Updates the firmware, detector server, deletes old server, creates the symbolic link and then reboots detector controller. \n\t\t[Mythen3][Gotthard2] will require a script to start up the shorter named server link at start up. \n\t\tserver_name is full path name of detector server binary\n\t\tfname is full path of programming file"
+  help: "\n\tWithout tftp: [server_name (incl fullpath)] [fname.pof (incl full path)] This does not use tftp.\n\t\t[Jungfrau][Moench][Ctb] Updates the firmware, detector server, deletes old server, creates the symbolic link and then reboots detector controller. \n\t\t[Mythen3][Gotthard2] will require a script to start up the shorter named server link at start up. \n\t\tserver_name is full path name of detector server binary\n\t\tfname is full path of programming file"
   actions:
     PUT:
       argc: 2
@@ -4234,7 +4203,7 @@ reg:
           cast_input: [ true, true, true ]
 
 adcreg:
-  help: "[address] [value]\n\t[Jungfrau][Moench][Ctb][Gotthard] Writes to an adc register in hex. Advanced user Function!"
+  help: "[address] [value]\n\t[Jungfrau][Moench][Ctb] Writes to an adc register in hex. Advanced user Function!"
   actions:
     PUT:
       argc: 2
@@ -4319,14 +4288,6 @@ initialchecks:
       cast_input: [ true ]
       output: [ args.front() ]
 
-user:
-  help: "\n\tUser details from shared memory (hostname, type, PID, User, Date)."
-  actions:
-    GET:
-      argc: 0
-      check_det_id: true
-      function: getUserDetails
-      output: [ t ]
 
 
 

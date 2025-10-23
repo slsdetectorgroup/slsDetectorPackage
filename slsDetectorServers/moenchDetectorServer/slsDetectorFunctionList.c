@@ -1858,7 +1858,8 @@ int startStateMachine() {
         LOG(logERROR, ("Could not start Virtual acquisition thread\n"));
         sharedMemory_setStatus(IDLE);
         return FAIL;
-    }
+    } else
+        pthread_detach(pthread_virtual_tid);
     LOG(logINFOGREEN, ("Virtual Acquisition started\n"));
     return OK;
 #endif
@@ -1926,7 +1927,8 @@ void *start_timer(void *arg) {
         getNextFrameNumber(&frameNr);
         int iRxEntry = firstDest;
         for (int iframes = 0; iframes != numFrames; ++iframes) {
-            usleep(transmissionDelayUs);
+            if (transmissionDelayUs)
+                usleep(transmissionDelayUs);
 
             // check if manual stop
             if (sharedMemory_getStop() == 1) {

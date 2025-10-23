@@ -1,4 +1,5 @@
 .. _Virtual Detector Servers:
+
 Simulators
 ===========
 
@@ -22,7 +23,6 @@ Binaries
 
         eigerDetectorServer_virtual
         jungfrauDetectorServer_virtual
-        gotthardDetectorServer_virtual
         gotthard2DetectorServer_virtual
         mythen3DetectorServer_virtual
         moenchDetectorServer_virtual

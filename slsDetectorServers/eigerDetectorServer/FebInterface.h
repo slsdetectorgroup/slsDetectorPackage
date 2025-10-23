@@ -4,8 +4,8 @@
 
 int Feb_Interface_WriteTo(unsigned int ch);
 int Feb_Interface_ReadFrom(unsigned int ch, unsigned int ntrys);
-void Feb_Interface_FebInterface();
-void Feb_Interface_SetAddress(unsigned int leftAddr, unsigned int rightAddr);
+int Feb_Interface_FebInterface();
+int Feb_Interface_SetAddress(unsigned int leftAddr, unsigned int rightAddr);
 int Feb_Interface_SetByteOrder();
 int Feb_Interface_ReadRegister(unsigned int sub_num, unsigned int reg_num,
                                unsigned int *value_read);

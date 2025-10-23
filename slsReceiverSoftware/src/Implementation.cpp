@@ -111,7 +111,6 @@ void Implementation::SetupFifoStructure() {
 void Implementation::setDetectorType(const detectorType d) {
 
     switch (d) {
-    case GOTTHARD:
     case EIGER:
     case JUNGFRAU:
     case MOENCH:
@@ -131,9 +130,6 @@ void Implementation::setDetectorType(const detectorType d) {
 
     // set detector specific variables
     switch (d) {
-    case GOTTHARD:
-        generalData = new GotthardData();
-        break;
     case EIGER:
         generalData = new EigerData();
         break;
@@ -158,6 +154,9 @@ void Implementation::setDetectorType(const detectorType d) {
     default:
         break;
     }
+
+    // number of portrois should be equal to number of interfaces
+    ResetRois();
 
     SetLocalNetworkParameters();
     SetupFifoStructure();
@@ -188,7 +187,7 @@ void Implementation::SetupListener(int i) {
     listener[i]->SetUdpPortNumber(udpPortNum[i]);
     listener[i]->SetEthernetInterface(eth[i]);
     listener[i]->SetActivate(activated);
-    listener[i]->SetNoRoi(portRois[i].noRoi());
+    listener[i]->SetIsOutsideRoi(portRois[i].noRoi());
     listener[i]->SetDetectorDatastream(detectorDataStream[i]);
     listener[i]->SetSilentMode(silentMode);
 }
@@ -198,14 +197,14 @@ void Implementation::SetupDataProcessor(int i) {
     dataProcessor[i]->SetGeneralData(generalData);
     dataProcessor[i]->SetUdpPortNumber(udpPortNum[i]);
     dataProcessor[i]->SetActivate(activated);
-    dataProcessor[i]->SetReceiverROI(portRois[i]);
+    dataProcessor[i]->SetPortROI(portRois[i]);
+    if (i == 0)
+        dataProcessor[0]->setMultiROIMetadata(multiRoiMetadata);
     dataProcessor[i]->SetDataStreamEnable(dataStreamEnable);
     dataProcessor[i]->SetStreamingFrequency(streamingFrequency);
     dataProcessor[i]->SetStreamingTimerInMs(streamingTimerInMs);
     dataProcessor[i]->SetStreamingStartFnum(streamingStartFnum);
     dataProcessor[i]->SetFramePadding(framePadding);
-    dataProcessor[i]->SetCtbDbitList(ctbDbitList);
-    dataProcessor[i]->SetCtbDbitOffset(ctbDbitOffset);
     dataProcessor[i]->SetQuadEnable(quadEnable);
     dataProcessor[i]->SetFlipRows(flipRows);
     dataProcessor[i]->SetNumberofTotalFrames(numberOfTotalFrames);
@@ -222,8 +221,7 @@ void Implementation::SetupDataStreamer(int i) {
     dataStreamer[i]->SetFlipRows(flipRows);
     dataStreamer[i]->SetNumberofPorts(numPorts);
     dataStreamer[i]->SetNumberofTotalFrames(numberOfTotalFrames);
-    dataStreamer[i]->SetReceiverROI(
-        portRois[i].completeRoi() ? GetMaxROIPerPort() : portRois[i]);
+    dataStreamer[i]->SetPortROI(portRois[i]);
 }
 
 slsDetectorDefs::xy Implementation::getDetectorSize() const {
@@ -239,18 +237,13 @@ const slsDetectorDefs::xy Implementation::GetPortGeometry() const {
     return portGeometry;
 }
 
-const slsDetectorDefs::ROI Implementation::GetMaxROIPerPort() const {
-    return slsDetectorDefs::ROI{0, (int)generalData->nPixelsX - 1, 0,
-                                (int)generalData->nPixelsY - 1};
-}
-
 void Implementation::setDetectorSize(const slsDetectorDefs::xy size) {
     xy portGeometry = GetPortGeometry();
 
     std::string log_message = "Detector Size (ports): (";
     numModules = size;
-    numPorts.x = portGeometry.x * size.x;
-    numPorts.y = portGeometry.y * size.y;
+    numPorts.x = portGeometry.x * numModules.x;
+    numPorts.y = portGeometry.y * numModules.y;
     if (quadEnable) {
         numPorts.x = 1;
         numPorts.y = 2;
@@ -407,97 +400,57 @@ void Implementation::setArping(const bool i,
     }
 }
 
-slsDetectorDefs::ROI Implementation::getReceiverROI() const {
-    return receiverRoi;
+std::vector<slsDetectorDefs::ROI> Implementation::getPortROIs() const {
+    return portRois;
 }
 
-void Implementation::setReceiverROI(const slsDetectorDefs::ROI arg) {
-    receiverRoi = arg;
+void Implementation::ResetRois() {
+    int numports = generalData->numUDPInterfaces;
+    std::vector<ROI> rois(numports);
+    std::vector<ROI> multiRoi(1);
+    setPortROIs(rois);
+    setMultiROIMetadata(multiRoi);
+}
 
-    if (generalData->numUDPInterfaces == 1 ||
-        generalData->detType == slsDetectorDefs::GOTTHARD2) {
-        portRois[0] = arg;
-    } else {
-        slsDetectorDefs::xy nPortDim(generalData->nPixelsX,
-                                     generalData->nPixelsY);
-
-        for (int iPort = 0; iPort != generalData->numUDPInterfaces; ++iPort) {
-            // default init = complete roi
-            slsDetectorDefs::ROI portRoi{};
-
-            // no roi
-            if (arg.noRoi()) {
-                portRoi.setNoRoi();
-            }
-
-            // incomplete roi
-            else if (!arg.completeRoi()) {
-                // get port limits
-                slsDetectorDefs::ROI portFullRoi{0, nPortDim.x - 1, 0,
-                                                 nPortDim.y - 1};
-                if (iPort == 1) {
-                    // left right (eiger)
-                    if (GetPortGeometry().x == 2) {
-                        portFullRoi.xmin += nPortDim.x;
-                        portFullRoi.xmax += nPortDim.x;
-                    }
-                    // top bottom (jungfrau or moench)
-                    else {
-                        portFullRoi.ymin += nPortDim.y;
-                        portFullRoi.ymax += nPortDim.y;
-                    }
-                }
-                LOG(logDEBUG)
-                    << iPort << ": portfullroi:" << ToString(portFullRoi);
-
-                // no roi
-                if (arg.xmin > portFullRoi.xmax ||
-                    arg.xmax < portFullRoi.xmin ||
-                    arg.ymin > portFullRoi.ymax ||
-                    arg.ymax < portFullRoi.ymin) {
-                    portRoi.setNoRoi();
-                }
-
-                // incomplete module roi
-                else if (arg.xmin > portFullRoi.xmin ||
-                         arg.xmax < portFullRoi.xmax ||
-                         arg.ymin > portFullRoi.ymin ||
-                         arg.ymax < portFullRoi.ymax) {
-                    portRoi.xmin = (arg.xmin <= portFullRoi.xmin)
-                                       ? 0
-                                       : (arg.xmin % nPortDim.x);
-                    portRoi.xmax = (arg.xmax >= portFullRoi.xmax)
-                                       ? nPortDim.x - 1
-                                       : (arg.xmax % nPortDim.x);
-                    portRoi.ymin = (arg.ymin <= portFullRoi.ymin)
-                                       ? 0
-                                       : (arg.ymin % nPortDim.y);
-                    portRoi.ymax = (arg.ymax >= portFullRoi.ymax)
-                                       ? nPortDim.y - 1
-                                       : (arg.ymax % nPortDim.y);
-                }
-            }
-            portRois[iPort] = portRoi;
+void Implementation::setPortROIs(const std::vector<defs::ROI> &args) {
+    int nx = static_cast<int>(generalData->nPixelsX);
+    int ny = static_cast<int>(generalData->nPixelsY);
+    // validate rois
+    for (auto &it : args) {
+        if (it.completeRoi() || it.noRoi()) {
+            continue; // valid
+        }
+        if (it.xmin < 0 || it.xmax < 0 || it.xmin >= nx || it.xmax >= nx) {
+            throw RuntimeError("Invalid ROI x coordinates: " + ToString(it));
+        }
+        if (ny > 1 &&
+            (it.ymin < 0 || it.ymax < 0 || it.ymin >= ny || it.ymax >= ny)) {
+            throw RuntimeError("Invalid ROI y coordinates: " + ToString(it));
         }
     }
+    portRois = args;
+
     for (size_t i = 0; i != listener.size(); ++i)
-        listener[i]->SetNoRoi(portRois[i].noRoi());
-    for (size_t i = 0; i != dataProcessor.size(); ++i)
-        dataProcessor[i]->SetReceiverROI(portRois[i]);
+        listener[i]->SetIsOutsideRoi(portRois[i].noRoi());
+    for (size_t i = 0; i != dataProcessor.size(); ++i) {
+        dataProcessor[i]->SetPortROI(portRois[i]);
+    }
     for (size_t i = 0; i != dataStreamer.size(); ++i) {
-        dataStreamer[i]->SetReceiverROI(
-            portRois[i].completeRoi() ? GetMaxROIPerPort() : portRois[i]);
+        dataStreamer[i]->SetPortROI(portRois[i]);
     }
-    LOG(logINFO) << "receiver roi: " << ToString(receiverRoi);
-    if (generalData->numUDPInterfaces == 2 &&
-        generalData->detType != slsDetectorDefs::GOTTHARD2) {
-        LOG(logINFO) << "port rois: " << ToString(portRois);
-    }
+    LOG(logINFO) << "Rois (per port): " << ToString(portRois);
 }
 
-void Implementation::setReceiverROIMetadata(const ROI arg) {
-    receiverRoiMetadata = arg;
-    LOG(logINFO) << "receiver roi Metadata: " << ToString(receiverRoiMetadata);
+void Implementation::setMultiROIMetadata(
+    const std::vector<slsDetectorDefs::ROI> &args) {
+    multiRoiMetadata = args;
+    if (dataProcessor.size() > 0)
+        dataProcessor[0]->setMultiROIMetadata(multiRoiMetadata);
+    LOG(logINFO) << "Multi ROI Metadata: " << ToString(multiRoiMetadata);
+}
+
+std::vector<slsDetectorDefs::ROI> Implementation::getMultiROIMetadata() const {
+    return multiRoiMetadata;
 }
 
 /**************************************************
@@ -793,8 +746,7 @@ void Implementation::stopReceiver() {
                 summary = (i == 0 ? "\n\tDeactivated Left Port"
                                   : "\n\tDeactivated Right Port");
             } else if (portRois[i].noRoi()) {
-                summary = (i == 0 ? "\n\tNo Roi on Left Port"
-                                  : "\n\tNo Roi on Right Port");
+                summary = "\n\tNo Roi on Port[" + std::to_string(i) + ']';
             } else {
                 std::ostringstream os;
                 os << "\n\tMissing Packets\t\t: " << mpMessage
@@ -919,7 +871,12 @@ void Implementation::CreateUDPSockets() {
 }
 
 void Implementation::SetupWriter() {
+
     try {
+        // check if filePath empty and throw error
+        if (filePath.empty()) {
+            throw ReceiverError("File path cannot be empty");
+        }
         // check if folder exists and throw if it cant create
         mkdir_p(filePath);
         // create first files
@@ -951,7 +908,7 @@ void Implementation::StartMasterWriter() {
             masterAttributes.detType = generalData->detType;
             masterAttributes.timingMode = timingMode;
             masterAttributes.geometry = numPorts;
-            masterAttributes.imageSize = generalData->imageSize;
+            masterAttributes.imageSize = generalData->actualImageSize;
             masterAttributes.nPixels =
                 xy(generalData->nPixelsX, generalData->nPixelsY);
             masterAttributes.maxFramesPerFile = generalData->framesPerFile;
@@ -959,7 +916,20 @@ void Implementation::StartMasterWriter() {
             masterAttributes.framePadding = framePadding;
             masterAttributes.scanParams = scanParams;
             masterAttributes.totalFrames = numberOfTotalFrames;
-            masterAttributes.receiverRoi = receiverRoiMetadata;
+            // complete ROI (for each port TODO?)
+            if (multiRoiMetadata.size() == 1 &&
+                multiRoiMetadata[0].completeRoi()) {
+                int nTotalPixelsX = (generalData->nPixelsX * numPorts.x);
+                int nTotalPixelsY = (generalData->nPixelsY * numPorts.y);
+                if (nTotalPixelsY == 1) {
+                    masterAttributes.rois.push_back(ROI{0, nTotalPixelsX - 1});
+                } else {
+                    masterAttributes.rois.push_back(
+                        ROI{0, nTotalPixelsX - 1, 0, nTotalPixelsY - 1});
+                }
+            } else {
+                masterAttributes.rois = multiRoiMetadata;
+            }
             masterAttributes.exptime = acquisitionTime;
             masterAttributes.period = acquisitionPeriod;
             masterAttributes.burstMode = burstMode;
@@ -973,7 +943,7 @@ void Implementation::StartMasterWriter() {
             masterAttributes.quad = quadEnable;
             masterAttributes.readNRows = readNRows;
             masterAttributes.ratecorr = rateCorrections;
-            masterAttributes.adcmask = generalData->tengigaEnable
+            masterAttributes.adcMask = generalData->tengigaEnable
                                            ? generalData->adcEnableMaskTenGiga
                                            : generalData->adcEnableMaskOneGiga;
             masterAttributes.analog =
@@ -989,10 +959,12 @@ void Implementation::StartMasterWriter() {
                     ? 1
                     : 0;
             masterAttributes.digitalSamples = generalData->nDigitalSamples;
-            masterAttributes.dbitoffset = ctbDbitOffset;
-            masterAttributes.dbitlist = 0;
-            for (auto &i : ctbDbitList) {
-                masterAttributes.dbitlist |= (1 << i);
+            masterAttributes.dbitOffset = generalData->ctbDbitOffset;
+            masterAttributes.dbitReorder = generalData->ctbDbitReorder;
+            masterAttributes.dbitList = 0;
+
+            for (auto &i : generalData->ctbDbitList) {
+                masterAttributes.dbitList |= (static_cast<uint64_t>(1) << i);
             }
             masterAttributes.transceiverSamples =
                 generalData->nTransceiverSamples;
@@ -1002,7 +974,6 @@ void Implementation::StartMasterWriter() {
                  generalData->readoutType == DIGITAL_AND_TRANSCEIVER)
                     ? 1
                     : 0;
-            masterAttributes.detectorRoi = generalData->detectorRoi;
             masterAttributes.counterMask = generalData->counterMask;
             masterAttributes.exptimeArray[0] = acquisitionTime1;
             masterAttributes.exptimeArray[1] = acquisitionTime2;
@@ -1012,6 +983,7 @@ void Implementation::StartMasterWriter() {
             masterAttributes.gateDelayArray[2] = gateDelay3;
             masterAttributes.gates = numberOfGates;
             masterAttributes.additionalJsonHeader = additionalJsonHeader;
+            masterAttributes.readoutSpeed = readoutSpeed;
 
             // create master file
             masterFileName = dataProcessor[0]->CreateMasterFile(
@@ -1019,14 +991,36 @@ void Implementation::StartMasterWriter() {
                 fileFormatType, &masterAttributes, &hdf5LibMutex);
         }
 #ifdef HDF5C
+        // create virtual and master file
         if (fileFormatType == HDF5) {
+
+            bool gotthard25um = ((generalData->detType == GOTTHARD ||
+                                  generalData->detType == GOTTHARD2) &&
+                                 (numPorts.x * numPorts.y) == 2);
+
+            // virtual hdf5 not allowed with roi for the following cases in hdf5
+            if (multiRoiMetadata.size() > 1 ||
+                (!multiRoiMetadata[0].completeRoi())) {
+                if (generalData->dynamicRange == 4) {
+                    throw std::runtime_error(
+                        "Skipping virtual hdf5 file since rx_roi is enabled "
+                        "and it is in 4 bit mode.");
+                }
+                if (gotthard25um && (numPorts.x * numPorts.y) == 2) {
+                    throw std::runtime_error(
+                        "Skipping virtual hdf5 file since rx_roi is "
+                        "enabled and there are 2 Gotthard 25um modules.");
+                }
+            }
+
             std::string virtualFileName;
             // create virtual hdf5 file (if multiple files)
             if (dataProcessor[0]->GetFilesInAcquisition() > 1 ||
                 (numPorts.x * numPorts.y) > 1) {
                 virtualFileName = dataProcessor[0]->CreateVirtualFile(
                     filePath, fileName, fileIndex, overwriteEnable, silentMode,
-                    modulePos, numPorts.x, numPorts.y, &hdf5LibMutex);
+                    modulePos, numPorts.x, numPorts.y, &hdf5LibMutex,
+                    gotthard25um);
             }
             // link file in master
             if (masterFileWriteEnable) {
@@ -1087,8 +1081,9 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
 
         // fifo
         SetupFifoStructure();
-        // recalculate port rois
-        setReceiverROI(receiverRoi);
+
+        // number of portrois should be equal to number of interfaces
+        ResetRois();
 
         // create threads
         for (int i = 0; i < generalData->numUDPInterfaces; ++i) {
@@ -1595,22 +1590,6 @@ void Implementation::setDynamicRange(const uint32_t i) {
     LOG(logINFO) << "Dynamic Range: " << generalData->dynamicRange;
 }
 
-slsDetectorDefs::ROI Implementation::getROI() const {
-    return generalData->detectorRoi;
-}
-
-void Implementation::setDetectorROI(slsDetectorDefs::ROI arg) {
-    if (generalData->detectorRoi.xmin != arg.xmin ||
-        generalData->detectorRoi.xmax != arg.xmax) {
-        // only for gotthard
-        generalData->SetDetectorROI(arg);
-        SetupFifoStructure();
-    }
-
-    LOG(logINFO) << "Detector ROI: " << ToString(generalData->detectorRoi);
-    LOG(logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
-}
-
 bool Implementation::getTenGigaEnable() const {
     return generalData->tengigaEnable;
 }
@@ -1764,22 +1743,29 @@ void Implementation::setTenGigaADCEnableMask(uint32_t mask) {
     LOG(logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
 }
 
-std::vector<int> Implementation::getDbitList() const { return ctbDbitList; }
-
-void Implementation::setDbitList(const std::vector<int> &v) {
-    ctbDbitList = v;
-    for (const auto &it : dataProcessor)
-        it->SetCtbDbitList(ctbDbitList);
-    LOG(logINFO) << "Dbit list: " << ToString(ctbDbitList);
+std::vector<int> Implementation::getDbitList() const {
+    return generalData->ctbDbitList;
 }
 
-int Implementation::getDbitOffset() const { return ctbDbitOffset; }
+void Implementation::setDbitList(const std::vector<int> &v) {
+    generalData->SetctbDbitList(v);
+    LOG(logINFO) << "Dbit list: " << ToString(v);
+}
+
+int Implementation::getDbitOffset() const { return generalData->ctbDbitOffset; }
 
 void Implementation::setDbitOffset(const int s) {
-    ctbDbitOffset = s;
-    for (const auto &it : dataProcessor)
-        it->SetCtbDbitOffset(ctbDbitOffset);
-    LOG(logINFO) << "Dbit offset: " << ctbDbitOffset;
+    generalData->SetctbDbitOffset(s);
+    LOG(logINFO) << "Dbit offset: " << s;
+}
+
+bool Implementation::getDbitReorder() const {
+    return generalData->ctbDbitReorder;
+}
+
+void Implementation::setDbitReorder(const bool reorder) {
+    generalData->SetctbDbitReorder(reorder);
+    LOG(logINFO) << "Dbit reorder: " << reorder;
 }
 
 uint32_t Implementation::getTransceiverEnableMask() const {
@@ -1796,13 +1782,22 @@ void Implementation::setTransceiverEnableMask(uint32_t mask) {
     LOG(logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
 }
 
+slsDetectorDefs::speedLevel Implementation::getReadoutSpeed() const {
+    return readoutSpeed;
+}
+
+void Implementation::setReadoutSpeed(const slsDetectorDefs::speedLevel i) {
+    readoutSpeed = i;
+    LOG(logINFO) << "Readout Speed: " << ToString(readoutSpeed);
+}
+
 /**************************************************
  *                                                *
  *    Callbacks                                   *
  *                                                *
  * ************************************************/
 void Implementation::registerCallBackStartAcquisition(
-    int (*func)(const startCallbackHeader, void *), void *arg) {
+    void (*func)(const startCallbackHeader, void *), void *arg) {
     startAcquisitionCallBack = func;
     pStartAcquisition = arg;
 }

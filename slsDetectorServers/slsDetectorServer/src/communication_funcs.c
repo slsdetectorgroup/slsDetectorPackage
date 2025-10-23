@@ -590,13 +590,16 @@ int Server_SendResult(int fileDes, intType itype, void *retval,
     sendData(fileDes, &ret1, sizeof(ret1), INT32);
     if (ret == FAIL) {
         // send error message
-        if (strlen(mess))
+        if (strlen(mess)) {
             sendData(fileDes, mess, MAX_STR_LENGTH, OTHER);
+            usleep(0); // test
+        }
         // debugging feature. should not happen.
-        else
+        else {
             LOG(logERROR, ("No error message provided for this failure in %s "
                            "server. Will mess up TCP.\n",
                            (isControlServer ? "control" : "stop")));
+        }
     }
     // send return value
     sendData(fileDes, retval, retvalSize, itype);
@@ -619,7 +622,7 @@ void getIpAddressinString(char *cip, uint32_t ip) {
     inet_ntop(AF_INET, &ip, cip, INET_ADDRSTRLEN);
 #else
     sprintf(cip, "%d.%d.%d.%d", (ip >> 24) & 0xff, (ip >> 16) & 0xff,
-            (ip >> 8) & 0xff, (ip)&0xff);
+            (ip >> 8) & 0xff, (ip) & 0xff);
 #endif
 }
 

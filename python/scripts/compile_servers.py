@@ -55,7 +55,6 @@ servers = [
 #     "jungfrauDetectorServer",
       "mythen3DetectorServer",
 #     "gotthard2DetectorServer",
-#     "gotthardDetectorServer",
 #     "ctbDetectorServer",
 #     "moenchDetectorServer",
 ]

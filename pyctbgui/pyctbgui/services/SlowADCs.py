@@ -4,7 +4,7 @@ from pathlib import Path
 from PyQt5 import uic, QtWidgets
 
 from pyctbgui.utils.defines import Defines
-from slsdet import dacIndex
+from slsdet import dacIndex, detectorType
 
 
 class SlowAdcTab(QtWidgets.QWidget):
@@ -17,7 +17,8 @@ class SlowAdcTab(QtWidgets.QWidget):
         self.det = None
 
     def setup_ui(self):
-        pass
+        if self.det.type == detectorType.XILINX_CHIPTESTBOARD:
+            self.view.pushButtonTemp.setDisabled(True)      
 
     def connect_ui(self):
         for i in range(Defines.slowAdc.count):
@@ -28,7 +29,8 @@ class SlowAdcTab(QtWidgets.QWidget):
         self.updateSlowAdcNames()
         for i in range(Defines.slowAdc.count):
             self.updateSlowAdc(i)
-        self.updateTemperature()
+        if self.det.type == detectorType.CHIPTESTBOARD:
+            self.updateTemperature()
 
     def updateSlowAdcNames(self):
         for i, name in enumerate(self.mainWindow.det.getSlowADCNames()):

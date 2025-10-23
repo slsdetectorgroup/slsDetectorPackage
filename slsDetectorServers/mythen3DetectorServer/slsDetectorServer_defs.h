@@ -3,7 +3,7 @@
 #pragma once
 #include "sls/sls_detector_defs.h"
 
-#define REQRD_FRMWRE_VRSN (0x230124)
+#define REQRD_FRMWRE_VRSN (0x241113)
 #define KERNEL_DATE_VRSN  "Mon May 10 18:00:21 CEST 2021"
 #define ID_FILE           "detid_mythen3.txt"
 
@@ -50,7 +50,7 @@
 #define DEFAULT_NUM_CYCLES               (1)
 #define DEFAULT_GATE_WIDTH               (100 * 1000 * 1000) // ns
 #define DEFAULT_GATE_DELAY               (0)
-#define DEFAULT_PERIOD                   (2 * 1000 * 1000) // ns
+#define DEFAULT_PERIOD                   (0) // ns
 #define DEFAULT_DELAY_AFTER_TRIGGER      (0)
 #define DEFAULT_HIGH_VOLTAGE             (0)
 #define DEFAULT_TIMING_MODE              (AUTO_TIMING)
@@ -63,6 +63,7 @@
 #define DEFAULT_SYSTEM_C1           (6)  //(166666666) // str_clk, 166 MHz const
 #define DEFAULT_SYSTEM_C2           (5)  //(200000000) // smp_clk, 200 MHz const
 #define DEFAULT_TRIMMING_RUN_CLKDIV (40) // (25000000) // 25 MHz
+#define NS_TO_CLK_CYCLE             (1E-3) // ns to MHz
 
 #define FULL_SPEED_CLKDIV    (10) //(100000000) 100 MHz
 #define HALF_SPEED_CLKDIV    (20) //( 50000000) 50 MHz

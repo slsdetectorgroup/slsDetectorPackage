@@ -17,7 +17,7 @@
 #define BUFFERSIZE         16
 #define I2C_DEVICE_FILE    "/dev/i2c-0"
 #define I2C_DEVICE_ADDRESS 0x4C
-//#define I2C_DEVICE_ADDRESS	0x48
+// #define I2C_DEVICE_ADDRESS	0x48
 #define I2C_REGISTER_ADDRESS 0x40
 
 int i2c_open(const char *file, unsigned int addr) {

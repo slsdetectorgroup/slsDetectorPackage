@@ -85,17 +85,17 @@ void Listener::SetEthernetInterface(const std::string e) {
 
 void Listener::SetActivate(bool enable) {
     activated = enable;
-    disabledPort = (!activated || !detectorDataStream || noRoi);
+    disabledPort = (!activated || !detectorDataStream || isOutsideRoi);
 }
 
 void Listener::SetDetectorDatastream(bool enable) {
     detectorDataStream = enable;
-    disabledPort = (!activated || !detectorDataStream || noRoi);
+    disabledPort = (!activated || !detectorDataStream || isOutsideRoi);
 }
 
-void Listener::SetNoRoi(bool enable) {
-    noRoi = enable;
-    disabledPort = (!activated || !detectorDataStream || noRoi);
+void Listener::SetIsOutsideRoi(bool enable) {
+    isOutsideRoi = enable;
+    disabledPort = (!activated || !detectorDataStream || isOutsideRoi);
 }
 
 void Listener::SetSilentMode(bool enable) { silentMode = enable; }
@@ -149,12 +149,12 @@ void Listener::CreateUDPSocket(int &actualSize) {
             packetSize = generalData->vetoPacketSize;
         }
 
-        std::string ip =
-            (eth.length() ? InterfaceNameToIp(eth).str().c_str() : "");
-
+        std::string ip;
+        if (eth.length() > 0)
+            ip = InterfaceNameToIp(eth).str();
         udpSocket = nullptr;
         udpSocket = make_unique<UdpRxSocket>(
-            udpPortNumber, packetSize, (ip.length() ? ip.c_str() : nullptr),
+            udpPortNumber, packetSize, (ip.empty() ? nullptr : ip.c_str()),
             generalData->udpSocketBufferSize);
         LOG(logINFO) << index << ": UDP port opened at port " << udpPortNumber
                      << " (" << (ip.length() ? ip : "any") << ')';
@@ -213,10 +213,13 @@ void Listener::CreateDummySocketForUDPSocketBufferSize(int s, int &actualSize) {
     try {
         // to allowe ports to be bound from udpsocket
         udpSocket.reset();
-        UdpRxSocket g(
-            udpPortNumber, packetSize,
-            (eth.length() ? InterfaceNameToIp(eth).str().c_str() : nullptr),
-            generalData->udpSocketBufferSize);
+
+        std::string ip;
+        if (eth.length() > 0)
+            ip = InterfaceNameToIp(eth).str();
+        UdpRxSocket g(udpPortNumber, packetSize,
+                      (ip.empty() ? nullptr : ip.c_str()),
+                      generalData->udpSocketBufferSize);
 
         // doubled due to kernel bookkeeping (could also be less due to
         // permissions)
@@ -347,8 +350,6 @@ uint32_t Listener::ListenToAnImage(sls_receiver_header &dstHeader,
         carryOverFlag = false;
     }
 
-    // until last packet isHeaderEmpty to account for gotthard short frame, else
-    // never entering this loop)
     while (numpackets < pperFrame) {
         // listen to new packet
         if (!udpSocketAlive || !udpSocket->ReceivePacket(&listeningPacket[0])) {
@@ -460,15 +461,6 @@ void Listener::CopyPacket(char *dst, char *src, uint32_t dataSize,
 
     // copy packet data
     switch (generalData->detType) {
-    // for gotthard,
-    // 1st packet: 4 bytes fnum, CACA + CACA, 639*2 bytes data
-    // 2nd packet: 4 bytes fnum, previous 1*2 bytes data  + 640*2 bytes data
-    case GOTTHARD:
-        if (!pnum)
-            memcpy(dst, &src[detHeaderSize + 4], dataSize - 2);
-        else
-            memcpy(dst + dataSize - 2, &src[detHeaderSize], dataSize + 2);
-        break;
     case CHIPTESTBOARD:
     case XILINX_CHIPTESTBOARD:
         if (pnum == (generalData->packetsPerFrame - 1))
@@ -514,14 +506,7 @@ void Listener::GetPacketIndices(uint64_t &fnum, uint32_t &pnum, uint64_t &bnum,
         fnum = header->frameNumber;
         pnum = header->packetNumber;
     } else {
-        // set first packet to be odd or even (check required when switching
-        // from roi to no roi)
-        if (generalData->detType == GOTTHARD && !startedFlag) {
-            oddStartingPacket =
-                generalData->SetOddStartingPacket(index, &packet[0]);
-        }
-        generalData->GetHeaderInfo(index, &packet[0], oddStartingPacket, fnum,
-                                   pnum, bnum);
+        generalData->GetHeaderInfo(index, &packet[0], fnum, pnum, bnum);
     }
 }
 

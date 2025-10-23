@@ -88,12 +88,20 @@ message(STATUS "RAPID: ${SLS_INTERNAL_RAPIDJSON_DIR}")
 target_link_libraries(slsSupportObject 
   PUBLIC
     slsProjectOptions 
+    ${STD_FS_LIB} # from helpers.cmake
     
   PRIVATE
     slsProjectWarnings
     md5sls     
-    "$<BUILD_INTERFACE:libzmq-static>"
 )
+
+#Treat both vendored and system zmq as interface for receiver binaries
+if(SLS_USE_SYSTEM_ZMQ)
+    message(STATUS "slsSupportLib using ZEROMQ_TARGET=${ZEROMQ_TARGET}")
+    target_link_libraries(slsSupportObject PRIVATE "${ZEROMQ_TARGET}")
+else()
+    target_link_libraries(slsSupportObject PRIVATE "$<BUILD_INTERFACE:libzmq-static>")
+endif()
 
 if (SLS_USE_TESTS)
     add_subdirectory(tests)

@@ -1,8 +1,16 @@
 # SPDX-License-Identifier: LGPL-3.0-or-other
 # Copyright (C) 2021 Contributors to the SLS Detector Package
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.15)
 project(slsDetectorPackage)
-set(PROJECT_VERSION 9.0.0)
+
+# Read VERSION file into project version
+set(VERSION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/VERSION")
+file(READ "${VERSION_FILE}" VERSION_CONTENT)
+string(STRIP "${VERSION_CONTENT}" PROJECT_VERSION_STRING)
+set(PROJECT_VERSION ${PROJECT_VERSION_STRING})
+
+# Pass it to the compiler
+add_compile_definitions(SLS_DET_VERSION="${PROJECT_VERSION}")
 
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 
@@ -13,49 +21,140 @@ if (${CMAKE_VERSION} VERSION_GREATER "3.24")
 endif()
 include(cmake/project_version.cmake)
 include(cmake/SlsAddFlag.cmake)
+include(cmake/helpers.cmake)
 
 
+option(SLS_USE_SYSTEM_ZMQ "Use system installed libzmq" OFF)
 
 # Using FetchContent to get libzmq
 include(FetchContent)
 option(SLS_FETCH_ZMQ_FROM_GITHUB "Fetch zmq from github" OFF)
 option(SLS_FETCH_PYBIND11_FROM_GITHUB "Fetch pybind11 from github" OFF)
 
-if(SLS_FETCH_ZMQ_FROM_GITHUB)
-    # Opt in to pull down a zmq version from github instead of
-    # using the bundled verison
-    FetchContent_Declare(
-        libzmq
-        GIT_REPOSITORY https://github.com/zeromq/libzmq.git
-        GIT_TAG        v4.3.4
-    )
+
+
+# Allow FetchContent_Populate to be called with a single argument
+# otherwise deprecated warning is issued
+# Note: From cmake 3.28 we can pass EXCLUDE_FROM_ALL to FetchContent_Declare
+# and avoid direct use of Populate
+if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.30")
+    cmake_policy(SET CMP0169 OLD) 
+endif()
+
+# Patch libzmq to set minimum cmake version to 3.15 to avoid warnings
+# with newer cmake versions
+# Patch is applied in the FetchContent_Declare
+set(SLS_LIBZMQ_VERSION "4.3.4")
+
+find_program(PATCH_EXECUTABLE patch)
+if(NOT PATCH_EXECUTABLE)
+    message(FATAL_ERROR "The 'patch' tool is required for patching lib zeromq. Please install it.")
+endif()
+
+if(SLS_USE_SYSTEM_ZMQ)
+    # find_package(ZeroMQ REQUIRED)
+    # 1) Try a CMake package config if available (vcpkg, Homebrew, source builds)
+    #    Many installs export either ZeroMQ::libzmq or libzmq.
+    find_package(ZeroMQ QUIET CONFIG)
+
+    set(ZEROMQ_TARGET "")
+
+    if (TARGET ZeroMQ::libzmq)
+        set(ZEROMQ_TARGET ZeroMQ::libzmq)
+        message(STATUS "Found target: ${ZEROMQ_TARGET} version: ${ZeroMQ_VERSION}")
+    elseif (TARGET libzmq)
+        set(ZEROMQ_TARGET libzmq)
+        message(STATUS "Found target: ${ZEROMQ_TARGET} version: ${ZeroMQ_VERSION}")
+    elseif (TARGET ZeroMQ::ZeroMQ) # rare older naming
+        set(ZEROMQ_TARGET ZeroMQ::ZeroMQ)
+        message(STATUS "Found target: ${ZEROMQ_TARGET} version: ${ZeroMQ_VERSION}")
+    endif()
+
+    # 2) Fallback: use pkg-config hints + manual find_* to create an imported target
+    if (NOT ZEROMQ_TARGET)
+        find_package(PkgConfig QUIET)
+        if (PkgConfig_FOUND)
+            pkg_check_modules(PC_ZeroMQ QUIET libzmq)
+        endif()
+
+        find_path(ZEROMQ_INCLUDE_DIR
+            NAMES zmq.h
+            HINTS ${PC_ZeroMQ_INCLUDE_DIRS}
+        )
+
+        find_library(ZEROMQ_LIBRARY
+            NAMES zmq libzmq
+            HINTS ${PC_ZeroMQ_LIBRARY_DIRS}
+        )
+
+        if (ZEROMQ_INCLUDE_DIR AND ZEROMQ_LIBRARY)
+            add_library(libzmq UNKNOWN IMPORTED)
+            set_target_properties(libzmq PROPERTIES
+            IMPORTED_LOCATION "${ZEROMQ_LIBRARY}"
+            INTERFACE_INCLUDE_DIRECTORIES "${ZEROMQ_INCLUDE_DIR}"
+            )
+            set(ZEROMQ_TARGET libzmq)
+        endif()
+        message(STATUS "ZeroMQ version (pkg-config): ${PC_ZeroMQ_VERSION}")
+        
+    endif()
+
+    # 3) Error out if still not found, with a helpful message
+    if (NOT ZEROMQ_TARGET)
+        message(FATAL_ERROR "ZeroMQ (libzmq) not found. Please install ZeroMQ development files.")
+    endif()
+
+# Use it
+# target_link_libraries(your_target PRIVATE ${ZEROMQ_TARGET})
+
+    message(STATUS "Using system installed libzmq: ${ZeroMQ_LIBRARIES}")
+    message(STATUS "ZeroMQ target: ${ZEROMQ_TARGET}")
+    message(STATUS "ZeroMQ include dirs: ${ZeroMQ_INCLUDE_DIRS}")
 else()
-    # Standard behaviour use libzmq included in this repo (libs/libzmq)
-    FetchContent_Declare(
-        libzmq
-        URL ${CMAKE_CURRENT_SOURCE_DIR}/libs/libzmq/libzmq-4.3.4.tar.gz
-        URL_HASH MD5=cc20b769ac10afa352e5ed2769bb23b3
-    )
+    if(SLS_FETCH_ZMQ_FROM_GITHUB)
+        # Opt in to pull down a zmq version from github instead of
+        # using the bundled version
+        FetchContent_Declare(
+            libzmq
+            GIT_REPOSITORY https://github.com/zeromq/libzmq.git
+            GIT_TAG        v${SLS_LIBZMQ_VERSION}
+            PATCH_COMMAND ${CMAKE_COMMAND} -E chdir <SOURCE_DIR> patch -p1 < ${CMAKE_CURRENT_SOURCE_DIR}/libs/libzmq/libzmq_cmake_version.patch
+            UPDATE_DISCONNECTED 1
+        )
+    else()
+        # Standard behaviour use libzmq included in this repo (libs/libzmq)
+        FetchContent_Declare(
+            libzmq
+            URL ${CMAKE_CURRENT_SOURCE_DIR}/libs/libzmq/libzmq-${SLS_LIBZMQ_VERSION}.tar.gz
+            URL_HASH MD5=cc20b769ac10afa352e5ed2769bb23b3
+            PATCH_COMMAND ${CMAKE_COMMAND} -E chdir <SOURCE_DIR> patch -p1 < ${CMAKE_CURRENT_SOURCE_DIR}/libs/libzmq/libzmq_cmake_version.patch
+            UPDATE_DISCONNECTED 1
+        )
+    endif()
+
+
+    # Disable unwanted options from libzmq
+    set(BUILD_TESTS OFF CACHE BOOL "Switch off libzmq test build")
+    set(BUILD_SHARED OFF CACHE BOOL "Switch off libzmq shared libs")
+    set(WITH_PERF_TOOL OFF CACHE BOOL "")
+    set(ENABLE_CPACK OFF CACHE BOOL "")
+    set(ENABLE_CLANG OFF CACHE BOOL "")
+    set(ENABLE_CURVE OFF CACHE BOOL "")
+    set(ENABLE_DRAFTS OFF CACHE BOOL "")
+    set(ENABLE_PRECOMPILED OFF CACHE BOOL "")
+    set(WITH_DOC OFF CACHE BOOL "")
+    set(WITH_DOCS OFF CACHE BOOL "")
+
+
+    # Using GetProperties and Populate to be able to exclude zmq
+    # from install (not possible with FetchContent_MakeAvailable(libzmq))
+    FetchContent_GetProperties(libzmq)
+    if(NOT libzmq_POPULATED)
+    FetchContent_Populate(libzmq)
+    add_subdirectory(${libzmq_SOURCE_DIR} ${libzmq_BINARY_DIR} EXCLUDE_FROM_ALL)
+    endif()
+
 endif()
-
-# Disable unwanted options from libzmq
-set(BUILD_TESTS OFF CACHE BOOL "Switch off libzmq test build")
-set(BUILD_SHARED OFF CACHE BOOL "Switch off libzmq shared libs")
-set(WITH_PERF_TOOL OFF CACHE BOOL "")
-set(ENABLE_CPACK OFF CACHE BOOL "")
-set(ENABLE_CLANG OFF CACHE BOOL "")
-set(ENABLE_CURVE OFF CACHE BOOL "")
-set(ENABLE_DRAFTS OFF CACHE BOOL "")
-
-# Using GetProperties and Populate to be able to exclude zmq
-# from install (not possible with FetchContent_MakeAvailable(libzmq))
-FetchContent_GetProperties(libzmq)
-if(NOT libzmq_POPULATED)
-  FetchContent_Populate(libzmq)
-  add_subdirectory(${libzmq_SOURCE_DIR} ${libzmq_BINARY_DIR} EXCLUDE_FROM_ALL)
-endif()
-
-
 
 include(GNUInstallDirs)
 
@@ -84,7 +183,7 @@ endif()
 
 
 option(SLS_USE_HDF5 "HDF5 File format" OFF)
-option(SLS_BUILD_SHARED_LIBRARIES "Build shared libaries" ON)
+option(SLS_BUILD_SHARED_LIBRARIES "Build shared libaries" OFF)
 option(SLS_USE_TEXTCLIENT "Text Client" ON)
 option(SLS_USE_DETECTOR "Detector libs" ON)
 option(SLS_USE_RECEIVER "Receiver" ON)
@@ -156,11 +255,9 @@ find_package(ClangFormat)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-  message(STATUS "No build type selected, default to Release")
-  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type (default Release)" FORCE)
-endif()
-
+default_build_type("Release")
+set_std_fs_lib()
+message(STATUS "Extra linking to fs lib:${STD_FS_LIB}")
 
 #Enable LTO if available
 include(CheckIPOSupported)
@@ -183,7 +280,7 @@ endif()
 # to control options for the libraries
 if(NOT TARGET slsProjectOptions)
     add_library(slsProjectOptions INTERFACE)
-    target_compile_features(slsProjectOptions INTERFACE cxx_std_11)
+   target_compile_features(slsProjectOptions INTERFACE cxx_std_17)
 endif()
 
 if (NOT TARGET slsProjectWarnings)
@@ -241,8 +338,8 @@ endif()
 if(SLS_USE_SANITIZER)
     target_compile_options(slsProjectOptions INTERFACE -fsanitize=address,undefined -fno-omit-frame-pointer)
     target_link_libraries(slsProjectOptions INTERFACE -fsanitize=address,undefined)
-    # target_compile_options(slsProjectOptions INTERFACE -fsanitize=thread)
-    # target_link_libraries(slsProjectOptions INTERFACE -fsanitize=thread)
+    #target_compile_options(slsProjectOptions INTERFACE -fsanitize=thread -fno-omit-frame-pointer)
+    #target_link_libraries(slsProjectOptions INTERFACE -fsanitize=thread)
 endif()
 
 
@@ -296,19 +393,21 @@ if (SLS_USE_INTEGRATION_TESTS)
 endif (SLS_USE_INTEGRATION_TESTS)
 
 if (SLS_USE_PYTHON)
-    find_package (Python 3.6 COMPONENTS Interpreter Development)
+    find_package (Python 3.8 COMPONENTS Interpreter Development.Module REQUIRED)
+    set(PYBIND11_FINDPYTHON ON) # Needed for RH8
     if(SLS_FETCH_PYBIND11_FROM_GITHUB)
         FetchContent_Declare(
             pybind11
             GIT_REPOSITORY https://github.com/pybind/pybind11
-            GIT_TAG        v2.11.0
+            GIT_TAG        v2.13.6
         )
 
     else()
+    # https://github.com/pybind/pybind11/releases
         FetchContent_Declare(
             pybind11
-            URL ${CMAKE_SOURCE_DIR}/libs/pybind11/v2.11.0.tar.gz
-            URL_HASH MD5=90c4946e87c64d8d8fc0ae4edf35d780
+            URL ${CMAKE_CURRENT_SOURCE_DIR}/libs/pybind11/v2.13.6.tar.gz
+            URL_HASH MD5=a04dead9c83edae6d84e2e343da7feeb
         )
     endif()
     FetchContent_MakeAvailable(pybind11)
@@ -320,9 +419,15 @@ if (SLS_USE_CTBGUI)
     add_subdirectory(pyctbgui)
 endif(SLS_USE_CTBGUI)
 
-configure_file( .clang-tidy  
-    ${CMAKE_BINARY_DIR}/.clang-tidy  
-)
+# Workaround for file note being copied to build directory
+# when issuing a python -m build
+# TODO! Proper fix
+if(EXISTS ".clang-tidy")
+    configure_file(.clang-tidy  
+        ${CMAKE_BINARY_DIR}/.clang-tidy  
+    )
+endif()
+
 
 if (SLS_BUILD_EXAMPLES)
     add_subdirectory(sample)

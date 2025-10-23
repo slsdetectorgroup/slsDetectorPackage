@@ -202,6 +202,56 @@ Receiver PC Tuning Options
             ethtool -K xth1 gro
         
 
+    * **permanent ethtool settings**
+
+        There are two main methods.
+
+        1. ``systemd service`` (recommended for Fedora and modern RHEL)
+
+            This is the preferred method on systems using systemd and NetworkManager, such as Fedora and RHEL 8+.
+
+            Create a systemd service template:
+                .. code-block:: ini
+
+                    # /etc/systemd/system/ethtool@.service
+
+                    [Unit]
+                    Description=Set RX buffer size with ethtool
+                    After=network-online.target
+                    Wants=network-online.target
+
+                    [Service]
+                    ExecStart=/usr/sbin/ethtool -G %i rx 8192
+                    Type=oneshot
+
+                    [Install]
+                    WantedBy=multi-user.target
+
+
+            Enable the service for a specific interface:
+                .. code-block:: bash
+
+                    sudo systemctl enable ethtool@xth1.service
+
+            This ensures the setting is applied at every boot once the network is online.
+
+
+        2. ``ETHTOOL_OPTS in ifcfg scripts`` (legacy method for RHEL 7 and earlier)
+
+            This method applies only to systems using the legacy network-scripts backend, typically RHEL 7 and earlier. 
+
+            .. code-block:: bash
+
+                # edit the corresponding ``ifcfg-*`` file
+                # file: /etc/sysconfig/network-scripts/ifcfg-eth0
+
+                # add or modify the following line:
+                ETHTOOL_OPTS="-K ${DEVICE} gro on; -G ${DEVICE} rx 4096; -L ${DEVICE} combined 4; -C ${DEVICE} rx-usecs 100; -C ${DEVICE} adaptive-rx on"
+
+                # restart the interface
+                ifdown eth0 && ifup eth0
+
+
 #. Disable power saving in CPU frequency scaling and set system to performance 
     * Check current policy (default might be powersave or schedutil)
         .. code-block:: bash
@@ -385,13 +435,13 @@ Cannot get data without a module attached
 You cannot get data without a module attached as a specific pin is floating. Attach module to get data.
 
 
-Gotthard
-----------
 
+Mythen3
+--------
 
-Missing first frame or next frame after a delay
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Connect the data link from the Module directly to receiver pc or to a private network.
+Detector status is waiting even in auto timing mode
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Check if the control board or the flat band cable is connected properly. If not, connect them properly and try again.
 
 
 Jungfrau

@@ -39,8 +39,8 @@ patternParameters *setChipStatusRegisterPattern(int csr) {
     patword = clearBit(SIGNAL_resCounter, patword);
     for (int i = 0; i < 8; i++)
         pat->word[iaddr++] = patword;
-    //#This version of the serializer pushes in the MSB first (compatible with
-    // the CSR bit numbering)
+    // #This version of the serializer pushes in the MSB first (compatible with
+    //  the CSR bit numbering)
     for (int ib = nbits - 1; ib >= 0; ib--) {
         if (csr & (1 << ib))
             patword = setBit(SIGNAL_serialIN, patword);
@@ -304,7 +304,7 @@ patternParameters *setChannelRegisterChip(int ichip, char *mask,
                 chanReg |= (0x1 << (3 + icounter));
             }
         }
-
+        chanReg /= 2;
         // deserialize
         if (chanReg & CHAN_REG_BAD_CHANNEL_MSK) {
             LOG(logINFOBLUE,

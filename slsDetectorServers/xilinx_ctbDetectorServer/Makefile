@@ -7,7 +7,12 @@ support_lib = ../../slsSupportLib/include/
 det_lib = ../../slsDetectorSoftware/include/sls/
 md5_dir = ../../slsSupportLib/src/
 
-CROSS  		= aarch64-none-linux-gnu-
+ifeq ($(shell uname -m),aarch64)
+    # no cross compilation needed when on aarch64
+    CROSS = 
+else
+    CROSS = aarch64-none-linux-gnu-
+endif
 CC    		= $(CROSS)gcc
 #TODO: allow these warnings and fix code
 CFLAGS		+=  -Wall -std=gnu99 -Wno-format-overflow -Wno-format-truncation -DXILINX_CHIPTESTBOARDD -DARMPROCESSOR -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(det_lib) -I$(current_dir)  #-DDEBUG1 #-DVERBOSEI #-DVERBOSE 
@@ -18,7 +23,7 @@ DESTDIR		?= 	bin
 INSTMODE	= 	0777
 
 SRCS 		= 	slsDetectorFunctionList.c  
-SRCS		+=	$(main_src)slsDetectorServer.c $(main_src)slsDetectorServer_funcs.c $(main_src)communication_funcs.c $(main_src)arm64.c $(main_src)common.c $(main_src)/sharedMemory.c $(main_src)/loadPattern.c $(md5_dir)md5.c $(main_src)programViaArm.c $(main_src)LTC2620_Driver.c 
+SRCS		+=	$(main_src)slsDetectorServer.c $(main_src)slsDetectorServer_funcs.c $(main_src)communication_funcs.c $(main_src)arm64.c $(main_src)XILINX_PLL.c $(main_src)common.c $(main_src)/sharedMemory.c $(main_src)/loadPattern.c $(md5_dir)md5.c $(main_src)programViaArm.c $(main_src)LTC2620_Driver.c 
 
 OBJS 		= 	$(SRCS:.c=.o) 
  
@@ -31,11 +36,10 @@ version: clean versioning $(PROGS)
 
 boot: $(OBJS) 
 
-version_branch=$(API_BRANCH)
 version_name=APIXILINXCTB
 version_path=slsDetectorServers/xilinx_ctbDetectorServer
 versioning: 
-	cd ../../ && echo $(PWD) && echo `tput setaf 6; ./updateAPIVersion.sh $(version_name) $(version_path) $(version_branch);  tput sgr0;`
+	cd ../../ && echo $(PWD) && echo `tput setaf 6; python updateAPIVersion.py $(version_name) $(version_path);  tput sgr0;`
 
 
 $(PROGS): $(OBJS)
@@ -43,6 +47,10 @@ $(PROGS): $(OBJS)
 	mkdir -p $(DESTDIR) 
 	$(CC) -o $@ $^ $(CFLAGS) $(LDLIBS) 
 	mv $(PROGS) $(DESTDIR)
+	cp chip_config_xilinx.txt $(DESTDIR)
+	cp reset_chip_xilinx.txt $(DESTDIR)
+	cp enable_clock_pattern.pyat $(DESTDIR)
+	cp readout_pattern.pyat $(DESTDIR)
 	rm $(main_src)*.o $(md5_dir)*.o
 clean:
 	rm -rf $(DESTDIR)/$(PROGS)  *.o *.gdb $(main_src)*.o $(md5_dir)*.o

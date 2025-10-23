@@ -9,6 +9,7 @@
 #include "sls/versionAPI.h"
 
 #include "LTC2620_Driver.h"
+#include "XILINX_PLL.h"
 
 #include "loadPattern.h"
 #ifdef VIRTUAL
@@ -39,6 +40,7 @@ char initErrorMessage[MAX_STR_LENGTH];
 
 int detPos[2] = {0, 0};
 
+uint32_t clkFrequency[NUM_CLOCKS] = {};
 int chipConfigured = 0;
 int analogEnable = 0;
 int digitalEnable = 0;
@@ -373,6 +375,10 @@ void setupDetector() {
     LOG(logINFO, ("Setting up Server for 1 Xilinx Chip Test Board\n"));
 
     // default variables
+    clkFrequency[RUN_CLK] = DEFAULT_RUN_CLK;
+    clkFrequency[ADC_CLK] = DEFAULT_ADC_CLK;
+    clkFrequency[SYNC_CLK] = DEFAULT_SYNC_CLK;
+    clkFrequency[DBIT_CLK] = DEFAULT_DBIT_CLK;
     chipConfigured = 0;
     analogEnable = 0;
     digitalEnable = 0;
@@ -434,14 +440,18 @@ void cleanFifos() {
 #ifdef VIRTUAL
     return;
 #endif
+    uint32_t t_enable_mask = getTransceiverEnableMask();
+    uint32_t tclean_msk =
+        ((t_enable_mask << X_FIFO_CLEAN_OFST) & X_FIFO_CLEAN_MSK);
+    uint32_t t_before_reg = bus_r(X_FIFO_CLEAN_REG);
     LOG(logINFO, ("Clearing Acquisition Fifos\n"));
     bus_w(A_FIFO_CLEAN_REG, bus_r(A_FIFO_CLEAN_REG) | BIT32_MSK);
     bus_w(D_FIFO_CLEAN_REG, bus_r(D_FIFO_CLEAN_REG) | D_FIFO_CLEAN_MSK);
-    bus_w(X_FIFO_CLEAN_REG, bus_r(X_FIFO_CLEAN_REG) | X_FIFO_CLEAN_MSK);
+    bus_w(X_FIFO_CLEAN_REG, t_before_reg | tclean_msk);
 
     bus_w(A_FIFO_CLEAN_REG, 0);
     bus_w(D_FIFO_CLEAN_REG, bus_r(D_FIFO_CLEAN_REG) & ~D_FIFO_CLEAN_MSK);
-    bus_w(X_FIFO_CLEAN_REG, bus_r(X_FIFO_CLEAN_REG) & ~X_FIFO_CLEAN_MSK);
+    bus_w(X_FIFO_CLEAN_REG, t_before_reg);
 }
 
 void resetFlow() {
@@ -492,7 +502,19 @@ void setTransceiverAlignment(int align) {
 #endif
 
 int isTransceiverAligned() {
-    return (bus_r(TRANSCEIVERSTATUS) & RXBYTEISALIGNED_MSK);
+#ifdef VIRTUAL
+    return 1;
+#endif
+    int times = 0;
+    int retval = bus_r(TRANSCEIVERSTATUS2) & RXLOCKED_MSK;
+    while (retval) {
+        retval = bus_r(TRANSCEIVERSTATUS2) & RXLOCKED_MSK;
+        times++;
+        usleep(10);
+        if (times == 5)
+            return 1;
+    }
+    return retval;
 }
 
 int waitTransceiverAligned(char *mess) {
@@ -511,7 +533,9 @@ int waitTransceiverAligned(char *mess) {
     int times = 0;
     while (transceiverWordAligned == 0) {
         if (times++ > WAIT_TIME_OUT_0US_TIMES) {
-            sprintf(mess, "Transceiver alignment timed out\n");
+            sprintf(mess, "Transceiver alignment timed out. Check connection, "
+                          "p-n inversions, LSB-MSB inversions, link error "
+                          "counters and channel enable settings\n");
             LOG(logERROR, (mess));
             return FAIL;
         }
@@ -587,34 +611,197 @@ int getPowerChip() {
 
 int configureChip(char *mess) {
     LOG(logINFOBLUE, ("\tConfiguring chip\n"));
-
-    // enable correct endianness (Only for MH_PR_2)
-    // uint32_t addr = MATTERHORNSPIREG1;
-    // bus_w(addr, bus_r(addr) &~MATTERHORNSPI1_MSK);
-    // bus_w(addr, bus_r(addr) | ((0x40000 << MATTERHORNSPI1_OFST) &
-    // MATTERHORNSPI1_MSK));
-
-    // start configuration
-    uint32_t addr = MATTERHORNSPICTRL;
-    bus_w(addr, bus_r(addr) | CONFIGSTART_P_MSK);
-    bus_w(addr, bus_r(addr) & ~CONFIGSTART_P_MSK);
-
-    // wait until configuration is done
-#ifndef VIRTUAL
-    int configDone = (bus_r(MATTERHORNSPICTRL) & BUSY_MSK);
-    int times = 0;
-    while (configDone == 0) {
-        if (times++ > WAIT_TIME_OUT_0US_TIMES) {
-            sprintf(mess, "Configuration of chip timed out\n");
-            LOG(logERROR, (mess));
-            return FAIL;
-        }
-        usleep(0);
-        configDone = (bus_r(MATTERHORNSPICTRL) & BUSY_MSK);
+    chipConfigured = 0;
+    if (readConfigFile(mess, CONFIG_CHIP_FILE, "chip config") == FAIL) {
+        return FAIL;
     }
-#endif
+    if (readConfigFile(mess, RESET_CHIP_FILE, "reset chip") == FAIL) {
+        return FAIL;
+    }
+    LOG(logINFOBLUE, ("Chip configured.\n"));
     chipConfigured = 1;
-    LOG(logINFOBLUE, ("\tChip configured\n"));
+    return OK;
+}
+
+int readConfigFile(char *mess, char *fileName, char *fileType) {
+    const int fileNameSize = 128;
+    char fname[fileNameSize];
+    if (getAbsPath(fname, fileNameSize, fileName) == FAIL) {
+        sprintf(mess, "Could not get full path for %s file [%s].\n", fileType,
+                fname);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    if (access(fname, F_OK) != 0) {
+        sprintf(mess, "Could not find %s file [%s].\n", fileType, fname);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    FILE *fd = fopen(fname, "r");
+    if (fd == NULL) {
+        sprintf(mess, "Could not open on-board detector server %s file [%s].\n",
+                fileType, fname);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    LOG(logINFOBLUE, ("Reading %s file %s\n", fileType, fname));
+
+    const size_t LZ = 256;
+    char line[LZ];
+    memset(line, 0, LZ);
+    char command[LZ];
+
+    // keep reading a line
+    while (fgets(line, LZ, fd)) {
+
+        // ignore comments
+        if (line[0] == '#') {
+            LOG(logDEBUG1, ("Ignoring Comment\n"));
+            continue;
+        }
+
+        // ignore empty lines
+        if (strlen(line) <= 1) {
+            LOG(logDEBUG1, ("Ignoring Empty line\n"));
+            continue;
+        }
+
+        // removing leading spaces
+        if (line[0] == ' ' || line[0] == '\t') {
+            int len = strlen(line);
+            // find first valid character
+            int i = 0;
+            for (i = 0; i < len; ++i) {
+                if (line[i] != ' ' && line[i] != '\t') {
+                    break;
+                }
+            }
+            // ignore the line full of spaces (last char \n)
+            if (i >= len - 1) {
+                LOG(logDEBUG1, ("Ignoring line full of spaces\n"));
+                continue;
+            }
+            // copying only valid char
+            char temp[LZ];
+            memset(temp, 0, LZ);
+            memcpy(temp, line + i, strlen(line) - i);
+            memset(line, 0, LZ);
+            memcpy(line, temp, strlen(temp));
+            LOG(logDEBUG1, ("Removing leading spaces.\n"));
+        }
+
+        LOG(logDEBUG1, ("Command to process: (size:%d) %.*s\n", strlen(line),
+                        strlen(line) - 1, line));
+        memset(command, 0, LZ);
+
+        // reg command
+        if (!strncmp(line, "reg", strlen("reg"))) {
+            uint32_t addr = 0;
+            uint32_t val = 0;
+            if (sscanf(line, "%s %x %x", command, &addr, &val) != 3) {
+                sprintf(mess, "Could not scan reg command. Line:[%s].\n", line);
+                LOG(logERROR, (mess));
+                return FAIL;
+            }
+            bus_w(addr, val);
+            LOG(logINFOBLUE, ("Wrote 0x%x to 0x%x\n", val, addr));
+        }
+
+        // setbit command
+        else if (!strncmp(line, "setbit", strlen("setbit"))) {
+            uint32_t addr = 0;
+            uint32_t bit = 0;
+            if (sscanf(line, "%s %x %d", command, &addr, &bit) != 3) {
+                sprintf(mess, "Could not scan setbit command. Line:[%s].\n",
+                        line);
+                LOG(logERROR, (mess));
+                return FAIL;
+            }
+            bus_w(addr, bus_r(addr) | (1 << bit));
+            LOG(logINFOBLUE, ("Set bit %d in 0x%x\n", bit, addr));
+        }
+
+        // clearbit command
+        else if (!strncmp(line, "clearbit", strlen("clearbit"))) {
+            uint32_t addr = 0;
+            uint32_t bit = 0;
+            if (sscanf(line, "%s %x %d", command, &addr, &bit) != 3) {
+                sprintf(mess, "Could not scan clearbit command. Line:[%s].\n",
+                        line);
+                LOG(logERROR, (mess));
+                return FAIL;
+            }
+            bus_w(addr, bus_r(addr) & ~(1 << bit));
+            LOG(logINFOBLUE, ("Cleared bit %d in 0x%x\n", bit, addr));
+        }
+
+        // pollbit command
+        else if (!strncmp(line, "pollbit", strlen("pollbit"))) {
+            uint32_t addr = 0;
+            uint32_t bit = 0;
+            uint32_t val = 0;
+            if (sscanf(line, "%s %x %d %d", command, &addr, &bit, &val) != 4) {
+                sprintf(mess, "Could not scan pollbit command. Line:[%s].\n",
+                        line);
+                LOG(logERROR, (mess));
+                return FAIL;
+            }
+#ifndef VIRTUAL
+            int times = 0;
+            while (((bus_r(addr) >> bit) & 0x1) != val) {
+                if (times++ > WAIT_TIME_OUT_0US_TIMES) {
+                    sprintf(mess, "Polling bit %d in 0x%x timed out\n", bit,
+                            addr);
+                    LOG(logERROR, (mess));
+                    return FAIL;
+                }
+                usleep(0);
+            }
+#endif
+            LOG(logINFOBLUE, ("Polled bit %d in 0x%x\n", bit, addr));
+        }
+
+        // pattern command
+        else if (!strncmp(line, "pattern", strlen("pattern"))) {
+            // take a file name and call loadPatterFile
+            char patternFileName[LZ];
+            if (sscanf(line, "%s %s", command, patternFileName) != 2) {
+                sprintf(mess, "Could not scan pattern command. Line:[%s].\n",
+                        line);
+                LOG(logERROR, (mess));
+                return FAIL;
+            }
+            if (loadPatternFile(patternFileName, mess) == FAIL) {
+                return FAIL;
+            }
+            LOG(logINFOBLUE, ("loaded pattern [%s].\n", patternFileName));
+        }
+
+        // sleep command
+        else if (!strncmp(line, "sleep", strlen("sleep"))) {
+            int time = 0;
+            if (sscanf(line, "%s %d", command, &time) != 2) {
+                sprintf(mess, "Could not scan sleep command. Line:[%s].\n",
+                        line);
+                LOG(logERROR, (mess));
+                return FAIL;
+            }
+            usleep(time * 1000 * 1000);
+            LOG(logINFOBLUE, ("Slept for %d s\n", time));
+        }
+
+        // other commands
+        else {
+            sprintf(mess,
+                    "Could not scan command from on-board server "
+                    "%s file. Line:[%s].\n",
+                    fileType, line);
+            break;
+        }
+        memset(line, 0, LZ);
+    }
+    fclose(fd);
+    LOG(logINFOBLUE, ("Successfully read %s file.\n", fileType));
     return OK;
 }
 
@@ -863,24 +1050,17 @@ int getNumTransceiverSamples() {
 }
 
 int setExpTime(int64_t val) {
-    if (val < 0) {
-        LOG(logERROR, ("Invalid exptime: %lld ns\n", (long long int)val));
-        return FAIL;
-    }
-    LOG(logINFO, ("Setting exptime %lld ns\n", (long long int)val));
-    val *= (1E-3 * RUN_CLK);
-    setPatternWaitTime(0, val);
+    setPatternWaitInterval(0, val);
 
     // validate for tolerance
     int64_t retval = getExpTime();
-    val /= (1E-3 * RUN_CLK);
     if (val != retval) {
         return FAIL;
     }
     return OK;
 }
 
-int64_t getExpTime() { return getPatternWaitTime(0) / (1E-3 * RUN_CLK); }
+int64_t getExpTime() { return getPatternWaitInterval(0); }
 
 int setPeriod(int64_t val) {
     if (val < 0) {
@@ -888,12 +1068,12 @@ int setPeriod(int64_t val) {
         return FAIL;
     }
     LOG(logINFO, ("Setting period %lld ns\n", (long long int)val));
-    val *= (1E-3 * RUN_CLK);
+    val *= (NS_TO_CLK_CYCLE * clkFrequency[RUN_CLK]);
     setU64BitReg(val, PERIOD_IN_REG_1, PERIOD_IN_REG_2);
 
     // validate for tolerance
     int64_t retval = getPeriod();
-    val /= (1E-3 * RUN_CLK);
+    val /= (NS_TO_CLK_CYCLE * clkFrequency[RUN_CLK]);
     if (val != retval) {
         return FAIL;
     }
@@ -901,7 +1081,8 @@ int setPeriod(int64_t val) {
 }
 
 int64_t getPeriod() {
-    return getU64BitReg(PERIOD_IN_REG_1, PERIOD_IN_REG_2) / (1E-3 * RUN_CLK);
+    return getU64BitReg(PERIOD_IN_REG_1, PERIOD_IN_REG_2) /
+           (NS_TO_CLK_CYCLE * clkFrequency[RUN_CLK]);
 }
 
 int setDelayAfterTrigger(int64_t val) {
@@ -910,12 +1091,12 @@ int setDelayAfterTrigger(int64_t val) {
         return FAIL;
     }
     LOG(logINFO, ("Setting delay after trigger %ld ns\n", val));
-    val *= (1E-3 * RUN_CLK);
+    val *= (NS_TO_CLK_CYCLE * clkFrequency[RUN_CLK]);
     setU64BitReg(val, DELAY_IN_REG_1, DELAY_IN_REG_2);
 
     // validate for tolerance
     int64_t retval = getDelayAfterTrigger();
-    val /= (1E-3 * RUN_CLK);
+    val /= (NS_TO_CLK_CYCLE * clkFrequency[RUN_CLK]);
     if (val != retval) {
         return FAIL;
     }
@@ -923,7 +1104,8 @@ int setDelayAfterTrigger(int64_t val) {
 }
 
 int64_t getDelayAfterTrigger() {
-    return getU64BitReg(DELAY_IN_REG_1, DELAY_IN_REG_2) / (1E-3 * RUN_CLK);
+    return getU64BitReg(DELAY_IN_REG_1, DELAY_IN_REG_2) /
+           (NS_TO_CLK_CYCLE * clkFrequency[RUN_CLK]);
 }
 
 int64_t getNumFramesLeft() {
@@ -935,11 +1117,13 @@ int64_t getNumTriggersLeft() {
 }
 
 int64_t getDelayAfterTriggerLeft() {
-    return getU64BitReg(DELAY_OUT_REG_1, DELAY_OUT_REG_2) / (1E-3 * RUN_CLK);
+    return getU64BitReg(DELAY_OUT_REG_1, DELAY_OUT_REG_2) /
+           (NS_TO_CLK_CYCLE * clkFrequency[RUN_CLK]);
 }
 
 int64_t getPeriodLeft() {
-    return getU64BitReg(PERIOD_OUT_REG_1, PERIOD_OUT_REG_2) / (1E-3 * RUN_CLK);
+    return getU64BitReg(PERIOD_OUT_REG_1, PERIOD_OUT_REG_2) /
+           (NS_TO_CLK_CYCLE * clkFrequency[RUN_CLK]);
 }
 
 int64_t getFramesFromStart() {
@@ -949,12 +1133,12 @@ int64_t getFramesFromStart() {
 
 int64_t getActualTime() {
     return getU64BitReg(TIME_FROM_START_OUT_REG_1, TIME_FROM_START_OUT_REG_2) /
-           (1E-3 * TICK_CLK);
+           (NS_TO_CLK_CYCLE * clkFrequency[SYNC_CLK]);
 }
 
 int64_t getMeasurementTime() {
     return getU64BitReg(FRAME_TIME_OUT_REG_1, FRAME_TIME_OUT_REG_2) /
-           (1E-3 * TICK_CLK);
+           (NS_TO_CLK_CYCLE * clkFrequency[SYNC_CLK]);
 }
 
 /* parameters - dac, adc, hv */
@@ -1021,6 +1205,26 @@ void setVLimit(int l) {
         vLimit = l;
 }
 
+int getBitOffsetFromDACIndex(enum DACINDEX ind) {
+    switch (ind) {
+    case D_PWR_IO:
+        return POWER_VIO_OFST;
+    case D_PWR_A:
+        return POWER_VCC_A_OFST;
+    case D_PWR_B:
+        return POWER_VCC_B_OFST;
+    case D_PWR_C:
+        return POWER_VCC_C_OFST;
+    case D_PWR_D:
+        return POWER_VCC_D_OFST;
+    default:
+        LOG(logERROR,
+            ("DAC index %d is not defined to get offset in ctrl register\n",
+             ind));
+        return -1;
+    }
+}
+
 int isPowerValid(enum DACINDEX ind, int val) {
     char *powerNames[] = {PWR_NAMES};
     int pwrIndex = (int)(ind - D_PWR_D);
@@ -1043,10 +1247,23 @@ int isPowerValid(enum DACINDEX ind, int val) {
 }
 
 int getPower(enum DACINDEX ind) {
+    // get bit offset in ctrl register
+    int bitOffset = getBitOffsetFromDACIndex(ind);
+    if (bitOffset == -1) {
+        return -1;
+    }
+
+    // powered enable off
+    {
+        uint32_t addr = CTRL_REG;
+        uint32_t mask = (1 << bitOffset);
+        if (!(bus_r(addr) & mask))
+            return 0;
+    }
+
     char *powerNames[] = {PWR_NAMES};
     int pwrIndex = (int)(ind - D_PWR_D);
 
-    // check dac value
     // not set yet
     if (dacValues[ind] == -1) {
         LOG(logERROR,
@@ -1056,7 +1273,8 @@ int getPower(enum DACINDEX ind) {
 
     // dac powered off
     if (dacValues[ind] == LTC2620_D_GetPowerDownValue()) {
-        LOG(logWARNING, ("Power V%s powered down\n", powerNames[pwrIndex]));
+        LOG(logWARNING, ("Power V%s enabled, but voltage is at minimum or 0.\n",
+                         powerNames[pwrIndex]));
         return LTC2620_D_GetPowerDownValue();
     }
 
@@ -1070,26 +1288,43 @@ int getPower(enum DACINDEX ind) {
 }
 
 void setPower(enum DACINDEX ind, int val) {
+    // validate index and get bit offset in ctrl register
+    int bitOffset = getBitOffsetFromDACIndex(ind);
+    if (bitOffset == -1) {
+        return;
+    }
+    uint32_t addr = CTRL_REG;
+    uint32_t mask = (1 << bitOffset);
+
+    if (val == -1)
+        return;
+
     char *powerNames[] = {PWR_NAMES};
     int pwrIndex = (int)(ind - D_PWR_D);
+    LOG(logINFO, ("Setting Power V%s to %d mV\n", powerNames[pwrIndex], val));
 
-    // power down dac
-    if (val == LTC2620_D_GetPowerDownValue()) {
-        LOG(logINFO, ("\tPowering down V%d\n", powerNames[pwrIndex]));
-        setDAC(ind, LTC2620_D_GetPowerDownValue(), 0);
+    // validate value (already checked at tcp (funcs.c))
+    if (!isPowerValid(ind, val)) {
+        LOG(logERROR, ("Invalid power value for V%s: %d mV\n",
+                       powerNames[pwrIndex], val));
+        return;
     }
 
-    // set dac
-    else if (val >= 0) {
-        LOG(logINFO,
-            ("Setting Power V%s to %d mV\n", powerNames[pwrIndex], val));
+    // Switch off power enable
+    LOG(logDEBUG1, ("Switching off power enable\n"));
+    bus_w(addr, bus_r(addr) & ~(mask));
 
-        // validate value (already checked at tcp (funcs.c))
-        if (!isPowerValid(ind, val)) {
-            return;
-        }
+    // power down dac
+    LOG(logINFO, ("\tPowering down V%d\n", powerNames[pwrIndex]));
+    setDAC(ind, LTC2620_D_GetPowerDownValue(), 0);
 
-        // convert voltage to dac
+    //(power off is anyway done with power enable)
+    if (val == 0)
+        val = LTC2620_D_GetPowerDownValue();
+
+    // convert voltage to dac (power off is anyway done with power enable)
+    if (val != LTC2620_D_GetPowerDownValue()) {
+
         int dacval = -1;
         if (ConvertToDifferentRange(
                 POWER_RGLTR_MIN, POWER_RGLTR_MAX, LTC2620_D_GetMaxInput(),
@@ -1106,6 +1341,12 @@ void setPower(enum DACINDEX ind, int val) {
         LOG(logINFO, ("Setting Power V%s: %d mV (%d dac)\n",
                       powerNames[pwrIndex], val, dacval));
         setDAC(ind, dacval, 0);
+
+        // if valid, enable power
+        if (dacval >= 0) {
+            LOG(logDEBUG1, ("Switching on power enable\n"));
+            bus_w(addr, bus_r(addr) | mask);
+        }
     }
 }
 
@@ -1329,35 +1570,18 @@ int startStateMachine() {
         LOG(logERROR, ("Could not start Virtual acquisition thread\n"));
         sharedMemory_setStatus(IDLE);
         return FAIL;
-    }
+    } else
+        pthread_detach(pthread_virtual_tid);
     LOG(logINFOGREEN, ("Virtual Acquisition started\n"));
     return OK;
 #endif
 
-    LOG(logINFOBLUE, ("Starting State Machine\n"));
-    // cleanFifos(); removing this for now as its done before readout pattern
+    LOG(logINFOBLUE, ("Starting readout\n"));
 
-    // start state machine
-    bus_w(FLOW_CONTROL_REG, bus_r(FLOW_CONTROL_REG) | START_F_MSK);
-
-    LOG(logINFORED, ("Waiting for exposing to be done\n"));
-    int exposingDone = (bus_r(FLOW_STATUS_REG) & RSM_BUSY_MSK);
-    while (exposingDone != 0) {
-        usleep(0);
-        exposingDone = (bus_r(FLOW_STATUS_REG) & RSM_BUSY_MSK);
-    }
-
-    LOG(logINFORED, ("Starting readout of chip to fifo\n"));
+    // MM:readout via pattern does not work right now due to firmware bug,
+    // readout via MatterhornCTRL for the moment
+    // bus_w(FLOW_CONTROL_REG, bus_r(FLOW_CONTROL_REG) | START_F_MSK);
     bus_w(MATTERHORNSPICTRL, bus_r(MATTERHORNSPICTRL) | STARTREAD_P_MSK);
-
-    LOG(logINFORED, ("Waiting until k-words or end of acquisition\n"));
-    usleep(0);
-    int commaDet = (bus_r(TRANSCEIVERSTATUS) & RXCOMMADET_MSK);
-    while (commaDet == 0) {
-        usleep(0);
-        commaDet = (bus_r(TRANSCEIVERSTATUS) & RXCOMMADET_MSK);
-    }
-    LOG(logINFORED, ("Kwords or end of acquisition detected\n"));
 
     return OK;
 }
@@ -1384,8 +1608,12 @@ void *start_timer(void *arg) {
                     packetSize, packetsPerFrame));
 
     // Generate Data
-    char imageData[imageSize];
+    char *imageData = (char *)malloc(imageSize);
     memset(imageData, 0, imageSize);
+    if (imageData == NULL) {
+        LOG(logERROR, ("Can not allocate image.\n"));
+        return NULL;
+    }
     for (int i = 0; i < imageSize; i += sizeof(uint16_t)) {
         *((uint16_t *)(imageData + i)) = i;
     }
@@ -1408,6 +1636,7 @@ void *start_timer(void *arg) {
         usleep(expUs);
 
         int srcOffset = 0;
+        int dataSent = 0;
         // loop packet
         for (int i = 0; i != packetsPerFrame; ++i) {
 
@@ -1424,10 +1653,12 @@ void *start_timer(void *arg) {
             header->column = detPos[X];
 
             // fill data
+            int remaining = imageSize - dataSent;
+            int dataSize = remaining < maxDataSize ? remaining : maxDataSize;
             memcpy(packetData + sizeof(sls_detector_header),
-                   imageData + srcOffset,
-                   (imageSize < maxDataSize ? imageSize : maxDataSize));
-            srcOffset += maxDataSize;
+                   imageData + srcOffset, dataSize);
+            srcOffset += dataSize;
+            dataSent += dataSize;
 
             sendUDPPacket(0, 0, packetData, packetSize);
         }
@@ -1469,57 +1700,7 @@ int stopStateMachine() {
 #endif
     // stop state machine
     bus_w(FLOW_CONTROL_REG, bus_r(FLOW_CONTROL_REG) | STOP_F_MSK);
-
-    return OK;
-}
-
-int startReadOut() {
-    LOG(logINFOBLUE, ("Starting Readout\n"));
-#ifdef VIRTUAL
-    // cannot set #frames and exptiem temporarily to 1 and 0,
-    // because have to set it back after readout (but this is non blocking)
-    return startStateMachine();
-#endif
-    // check if data in fifo
-    int ret = FAIL;
-    if (transceiverEnable) {
-        if ((bus_r(X_FIFO_EMPTY_STATUS_REG) & X_FIFO_EMPTY_STATUS_MSK) !=
-            X_FIFO_EMPTY_STATUS_MSK) {
-            LOG(logINFO, ("Data in transceiver fifo\n"));
-            ret = OK;
-        }
-    }
-    if (analogEnable) {
-        if (bus_r(A_FIFO_EMPTY_STATUS_REG) != BIT32_MSK) {
-            LOG(logINFO, ("Data in analog fifo\n"));
-            ret = OK;
-        }
-    }
-    if (digitalEnable) {
-        if ((bus_r(D_FIFO_EMPTY_STATUS_REG) & D_FIFO_EMPTY_STATUS_MSK) !=
-            D_FIFO_EMPTY_STATUS_MSK) {
-            LOG(logINFO, ("Data in digital fifo\n"));
-            ret = OK;
-        }
-    }
-    // if no module, dont check fifo empty
-    if (checkModuleFlag && ret == FAIL) {
-        LOG(logERROR, ("No data in fifo\n"));
-        return FAIL;
-    }
-
-    LOG(logINFOBLUE, ("Streaming data from fifo\n"));
-    bus_w(FIFO_TO_GB_CONTROL_REG,
-          bus_r(FIFO_TO_GB_CONTROL_REG) | START_STREAMING_P_MSK);
-
-    // wait until streaming is done (not same as fifo empty)
-    int streamingBusy = (bus_r(STATUSREG1) & TRANSMISSIONBUSY_MSK);
-    while (streamingBusy != 0) {
-        usleep(0);
-        streamingBusy = (bus_r(STATUSREG1) & TRANSMISSIONBUSY_MSK);
-    }
-    LOG(logINFORED, ("Streaming done\n"));
-
+    cleanFifos();
     return OK;
 }
 
@@ -1558,36 +1739,33 @@ enum runStatus getRunStatus() {
     LOG(logINFOBLUE, ("Status: IDLE\n"));
     return IDLE;
 #endif
-    uint32_t retval = bus_r(FLOW_STATUS_REG);
-    LOG(logINFO, ("Flow Status Register: %08x\n", retval));
+    uint32_t retval = bus_r(STATUS_REG);
+    LOG(logINFO, ("Status Register: %08x\n", retval));
 
-    if (retval & RSM_TRG_WAIT_MSK) {
-        LOG(logINFOBLUE, ("Status: WAITING\n"));
-        return WAITING;
-    } else if (retval & RSM_BUSY_MSK) {
-        LOG(logINFOBLUE, ("Status: RUNNING (exposing)\n"));
-        return RUNNING;
-    } else if (bus_r(MATTERHORNSPICTRL) & READOUTFROMASIC_MSK) {
-        LOG(logINFOBLUE, ("Status: RUNNING (data from chip to fifo)\n"));
-        return RUNNING;
-    } else if (bus_r(STATUSREG1) & TRANSMISSIONBUSY_MSK) {
-        LOG(logINFOBLUE, ("Status: TRANSMITTING\n"));
-        return TRANSMITTING;
+    if (retval == 0x0) {
+        return IDLE;
     }
 
-    LOG(logINFOBLUE, ("Status: IDLE\n"));
-    return IDLE;
-    // TODO: STOPPED, ERROR?
+    if (retval & RX_NOT_GOOD_MSK) {
+        LOG(logINFOBLUE, ("Status: ERROR\n"));
+        return ERROR;
+    }
+
+    if (retval & WAIT_FOR_TRIGGER_MSK) {
+        LOG(logINFOBLUE, ("Status: WAITING\n"));
+        return WAITING;
+    }
+
+    LOG(logINFOBLUE, ("Status: RUNNING\n"));
+    return RUNNING;
+    // TODO: STOPPED?
 }
 
 u_int32_t runBusy() {
 #ifdef VIRTUAL
     return ((sharedMemory_getStatus() == RUNNING) ? 1 : 0);
 #endif
-    uint32_t exposingBusy = bus_r(FLOW_STATUS_REG) & RSM_BUSY_MSK;
-    uint32_t fillingFifoBusy = bus_r(MATTERHORNSPICTRL) & READOUTFROMASIC_MSK;
-    uint32_t streamingBusy = bus_r(STATUSREG1) & TRANSMISSIONBUSY_MSK;
-    return (exposingBusy || fillingFifoBusy || streamingBusy);
+    return (bus_r(STATUS_REG));
 }
 
 void waitForAcquisitionEnd() {
@@ -1671,3 +1849,37 @@ void getNumberOfChannels(int *nchanx, int *nchany) {
 int getNumberOfChips() { return NCHIP; }
 int getNumberOfDACs() { return NDAC; }
 int getNumberOfChannelsPerChip() { return NCHAN; }
+
+int setFrequency(enum CLKINDEX ind, int val) {
+    if (ind < 0 || ind >= NUM_CLOCKS) {
+        LOG(logERROR, ("Unknown clock index %d to set frequency\n", ind));
+        return FAIL;
+    }
+    if (val <= 0) {
+        return FAIL;
+    }
+
+    char *clock_names[] = {CLK_NAMES};
+    LOG(logINFO, ("\tSetting %s clock (%d) frequency to %d kHz\n",
+                  clock_names[ind], ind, val));
+
+    if (XILINX_PLL_setFrequency(ind, val) == FAIL) {
+        LOG(logERROR, ("\tCould not set %s clock (%d) frequency to %d kHz\n",
+                       clock_names[ind], ind, val));
+        return FAIL;
+    }
+    clkFrequency[ind] = val;
+    // TODO later: connect setPhase as phase gets reset on freq change
+    return OK;
+}
+
+int getFrequency(enum CLKINDEX ind) {
+    if (ind < 0 || ind >= NUM_CLOCKS) {
+        LOG(logERROR, ("Unknown clock index %d to get frequency\n", ind));
+        return -1;
+    }
+#ifndef VIRTUAL
+    clkFrequency[ind] = XILINX_PLL_getFrequency(ind);
+#endif
+    return clkFrequency[ind];
+}

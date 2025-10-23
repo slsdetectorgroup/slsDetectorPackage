@@ -20,7 +20,7 @@ print(sys.path)
 
 # -- Project information -----------------------------------------------------
 
-project = 'slsDetectorPackage'
+project = 'slsDetectorPackage @PROJECT_VERSION@'
 copyright = '2020, PSD Detector Group'
 author = 'PSD Detector Group'
 version = '@PROJECT_VERSION@'
@@ -63,4 +63,4 @@ html_static_path = ['static']
 
 
 def setup(app):
-    app.add_stylesheet('css/extra.css')  # may also be an URL
+    app.add_css_file('css/extra.css')  # may also be an URL

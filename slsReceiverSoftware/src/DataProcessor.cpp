@@ -3,7 +3,7 @@
 /************************************************
  * @file DataProcessor.cpp
  * @short creates data processor thread that
- * pulls pointers to memory addresses from fifos
+ * pulls pointers to memory addresses from  fifos
  * and processes data stored in them & writes them to file
  ***********************************************/
 
@@ -23,6 +23,7 @@
 #include <cerrno>
 #include <cstring>
 #include <iostream>
+#include <numeric>
 
 namespace sls {
 
@@ -47,10 +48,15 @@ void DataProcessor::SetUdpPortNumber(const uint16_t portNumber) {
 
 void DataProcessor::SetActivate(bool enable) { activated = enable; }
 
-void DataProcessor::SetReceiverROI(ROI roi) {
-    receiverRoi = roi;
-    receiverRoiEnabled = receiverRoi.completeRoi() ? false : true;
-    receiverNoRoi = receiverRoi.noRoi();
+void DataProcessor::SetPortROI(ROI roi) {
+    portRoi = roi;
+    isPartiallyInRoi = portRoi.completeRoi() ? false : true;
+    isOutsideRoi = portRoi.noRoi();
+}
+
+void DataProcessor::setMultiROIMetadata(
+    const std::vector<slsDetectorDefs::ROI> &args) {
+    multiRoiMetadata = args;
 }
 
 void DataProcessor::SetDataStreamEnable(bool enable) {
@@ -70,12 +76,6 @@ void DataProcessor::SetStreamingStartFnum(uint32_t value) {
 }
 
 void DataProcessor::SetFramePadding(bool enable) { framePadding = enable; }
-
-void DataProcessor::SetCtbDbitList(std::vector<int> value) {
-    ctbDbitList = value;
-}
-
-void DataProcessor::SetCtbDbitOffset(int value) { ctbDbitOffset = value; }
 
 void DataProcessor::SetQuadEnable(bool value) { quadEnable = value; }
 
@@ -159,17 +159,17 @@ void DataProcessor::CreateFirstFiles(const std::string &fileNamePrefix,
     CloseFiles();
 
     // deactivated (half module/ single port or no roi), dont write file
-    if (!activated || !detectorDataStream || receiverNoRoi) {
+    if (!activated || !detectorDataStream || isOutsideRoi) {
         return;
     }
 
 #ifdef HDF5C
     int nx = generalData->nPixelsX;
     int ny = generalData->nPixelsY;
-    if (receiverRoiEnabled) {
-        nx = receiverRoi.xmax - receiverRoi.xmin + 1;
-        ny = receiverRoi.ymax - receiverRoi.ymin + 1;
-        if (receiverRoi.ymax == -1 || receiverRoi.ymin == -1) {
+    if (isPartiallyInRoi) {
+        nx = portRoi.xmax - portRoi.xmin + 1;
+        ny = portRoi.ymax - portRoi.ymin + 1;
+        if (portRoi.ymax == -1 || portRoi.ymin == -1) {
             ny = 1;
         }
     }
@@ -206,16 +206,11 @@ std::string DataProcessor::CreateVirtualFile(
     const std::string &filePath, const std::string &fileNamePrefix,
     const uint64_t fileIndex, const bool overWriteEnable, const bool silentMode,
     const int modulePos, const int numModX, const int numModY,
-    std::mutex *hdf5LibMutex) {
+    std::mutex *hdf5LibMutex, bool gotthard25um) {
 
-    if (receiverRoiEnabled) {
-        throw std::runtime_error(
-            "Skipping virtual hdf5 file since rx_roi is enabled.");
-    }
-
-    bool gotthard25um = ((generalData->detType == GOTTHARD ||
-                          generalData->detType == GOTTHARD2) &&
-                         (numModX * numModY) == 2);
+    int ny = generalData->nPixelsY;
+    if (generalData->dynamicRange == 4)
+        ny /= 2;
 
     // 0 for infinite files
     uint32_t framesPerFile =
@@ -229,10 +224,10 @@ std::string DataProcessor::CreateVirtualFile(
     return masterFileUtility::CreateVirtualHDF5File(
         filePath, fileNamePrefix, fileIndex, overWriteEnable, silentMode,
         modulePos, generalData->numUDPInterfaces, framesPerFile,
-        generalData->nPixelsX, generalData->nPixelsY, generalData->dynamicRange,
-        numFramesCaught, numModX, numModY, dataFile->GetPDataType(),
+        generalData->nPixelsX, ny, generalData->dynamicRange, numFramesCaught,
+        numModX, numModY, dataFile->GetPDataType(),
         dataFile->GetParameterNames(), dataFile->GetParameterDataTypes(),
-        hdf5LibMutex, gotthard25um);
+        hdf5LibMutex, gotthard25um, multiRoiMetadata);
 }
 
 void DataProcessor::LinkFileInMaster(const std::string &masterFileName,
@@ -240,18 +235,14 @@ void DataProcessor::LinkFileInMaster(const std::string &masterFileName,
                                      const bool silentMode,
                                      std::mutex *hdf5LibMutex) {
 
-    if (receiverRoiEnabled) {
-        throw std::runtime_error(
-            "Should not be here, roi with hdf5 virtual should throw.");
-    }
     std::string fname{virtualFileName}, masterfname{masterFileName};
     // if no virtual file, link data file
     if (virtualFileName.empty()) {
         fname = dataFile->GetFileName();
     }
-    masterFileUtility::LinkHDF5FileInMaster(masterfname, fname,
-                                            dataFile->GetParameterNames(),
-                                            silentMode, hdf5LibMutex);
+    masterFileUtility::LinkHDF5FileInMaster(
+        masterfname, fname, dataFile->GetParameterNames(), silentMode,
+        hdf5LibMutex, multiRoiMetadata.size());
 }
 #endif
 
@@ -300,13 +291,13 @@ void DataProcessor::ThreadExecution() {
                        memImage->data);
     } catch (const std::exception &e) {
         fifo->FreeAddress(buffer);
-        return;
+        throw RuntimeError(e.what());
     }
 
     // stream (if time/freq to stream) or free
     if (streamCurrentFrame) {
         // copy the complete image back if roi enabled
-        if (receiverRoiEnabled) {
+        if (isPartiallyInRoi) {
             memImage->size = generalData->imageSize;
             memcpy(memImage->data, &completeImageToStreamBeforeCropping[0],
                    generalData->imageSize);
@@ -333,6 +324,7 @@ void DataProcessor::StopProcessing(char *buf) {
 
 void DataProcessor::ProcessAnImage(sls_receiver_header &header, size_t &size,
                                    size_t &firstImageIndex, char *data) {
+
     uint64_t fnum = header.detHeader.frameNumber;
     LOG(logDEBUG1) << "DataProcessing " << index << ": fnum:" << fnum;
     currentFrameIndex = fnum;
@@ -356,9 +348,20 @@ void DataProcessor::ProcessAnImage(sls_receiver_header &header, size_t &size,
     if (framePadding && nump < generalData->packetsPerFrame)
         PadMissingPackets(header, data);
 
-    // rearrange ctb digital bits (if ctbDbitlist is not empty)
-    if (!ctbDbitList.empty()) {
-        RearrangeDbitData(size, data);
+    if (generalData->readoutType == slsDetectorDefs::DIGITAL_ONLY ||
+        generalData->readoutType == slsDetectorDefs::ANALOG_AND_DIGITAL ||
+        generalData->readoutType == slsDetectorDefs::DIGITAL_AND_TRANSCEIVER) {
+        // rearrange ctb digital bits
+        if (!generalData->ctbDbitList.empty()) {
+            ArrangeDbitData(size, data);
+        } else if (generalData->ctbDbitReorder) {
+            std::vector<int> ctbDbitList(64);
+            std::iota(ctbDbitList.begin(), ctbDbitList.end(), 0);
+            generalData->SetctbDbitList(ctbDbitList);
+            ArrangeDbitData(size, data);
+        } else if (generalData->ctbDbitOffset > 0) {
+            RemoveTrailingBits(size, data);
+        }
     }
 
     // 'stream Image' check has to be done here before crop image
@@ -374,7 +377,7 @@ void DataProcessor::ProcessAnImage(sls_receiver_header &header, size_t &size,
         streamCurrentFrame = false;
     }
 
-    if (receiverRoiEnabled) {
+    if (isPartiallyInRoi) {
         // copy the complete image to stream before cropping
         if (streamCurrentFrame) {
             memcpy(&completeImageToStreamBeforeCropping[0], data,
@@ -505,16 +508,6 @@ void DataProcessor::PadMissingPackets(sls_receiver_header header, char *data) {
 
         // missing packet
         switch (generalData->detType) {
-        // for gotthard, 1st packet: 4 bytes fnum, CACA + CACA, 639*2 bytes
-        // data
-        //              2nd packet: 4 bytes fnum, previous 1*2 bytes data  +
-        //              640*2 bytes data !!
-        case GOTTHARD:
-            if (pnum == 0u)
-                memset(data + (pnum * dsize), 0xFF, dsize - 2);
-            else
-                memset(data + (pnum * dsize), 0xFF, dsize + 2);
-            break;
         case CHIPTESTBOARD:
         case XILINX_CHIPTESTBOARD:
             if (pnum == (pperFrame - 1))
@@ -530,11 +523,53 @@ void DataProcessor::PadMissingPackets(sls_receiver_header header, char *data) {
     }
 }
 
+void DataProcessor::RemoveTrailingBits(size_t &size, char *data) {
+
+    if (!(generalData->detType == slsDetectorDefs::CHIPTESTBOARD ||
+          generalData->detType == slsDetectorDefs::XILINX_CHIPTESTBOARD)) {
+        throw std::runtime_error("behavior undefined for detector " +
+                                 std::to_string(generalData->detType));
+    }
+
+    const size_t nAnalogDataBytes = generalData->GetNumberOfAnalogDatabytes();
+    const size_t nDigitalDataBytes = generalData->GetNumberOfDigitalDatabytes();
+    const size_t nTransceiverDataBytes =
+        generalData->GetNumberOfTransceiverDatabytes();
+    const size_t ctbDbitOffset = generalData->ctbDbitOffset;
+
+    const size_t ctbDigitalDataBytes = nDigitalDataBytes - ctbDbitOffset;
+
+    // no digital data
+    if (ctbDigitalDataBytes == 0) {
+        LOG(logWARNING)
+            << "No digital data for call back, yet ctbDbitOffset is non zero.";
+        return;
+    }
+
+    // update size and copy data
+    memmove(data + nAnalogDataBytes, data + nAnalogDataBytes + ctbDbitOffset,
+            ctbDigitalDataBytes + nTransceiverDataBytes);
+
+    size = nAnalogDataBytes + ctbDigitalDataBytes + nTransceiverDataBytes;
+}
+
 /** ctb specific */
-void DataProcessor::RearrangeDbitData(size_t &size, char *data) {
-    int nAnalogDataBytes = generalData->GetNumberOfAnalogDatabytes();
-    int nDigitalDataBytes = generalData->GetNumberOfDigitalDatabytes();
-    int nTransceiverDataBytes = generalData->GetNumberOfTransceiverDatabytes();
+void DataProcessor::ArrangeDbitData(size_t &size, char *data) {
+
+    if (!(generalData->detType == slsDetectorDefs::CHIPTESTBOARD ||
+          generalData->detType == slsDetectorDefs::XILINX_CHIPTESTBOARD)) {
+        throw std::runtime_error("behavior undefined for detector " +
+                                 std::to_string(generalData->detType));
+    }
+
+    const size_t nAnalogDataBytes = generalData->GetNumberOfAnalogDatabytes();
+    const size_t nDigitalDataBytes = generalData->GetNumberOfDigitalDatabytes();
+    const size_t nTransceiverDataBytes =
+        generalData->GetNumberOfTransceiverDatabytes();
+    const size_t ctbDbitOffset = generalData->ctbDbitOffset;
+    const bool ctbDbitReorder = generalData->ctbDbitReorder;
+    const auto ctbDbitList = generalData->ctbDbitList;
+
     // TODO! (Erik) Refactor and add tests
     int ctbDigitalDataBytes = nDigitalDataBytes - ctbDbitOffset;
 
@@ -545,61 +580,115 @@ void DataProcessor::RearrangeDbitData(size_t &size, char *data) {
         return;
     }
 
+    char *source = (data + nAnalogDataBytes + ctbDbitOffset);
+
     const int numDigitalSamples = (ctbDigitalDataBytes / sizeof(uint64_t));
 
-    // const int numResult8Bits = ceil((numDigitalSamples * ctbDbitList.size())
-    // / 8.00);
-    int numBitsPerDbit = numDigitalSamples;
-    if ((numBitsPerDbit % 8) != 0)
-        numBitsPerDbit += (8 - (numDigitalSamples % 8));
-    const int totalNumBytes = (numBitsPerDbit / 8) * ctbDbitList.size();
-    std::vector<uint8_t> result(totalNumBytes);
+    int totalNumBytes =
+        0; // number of bytes for selected digital data given by dtbDbitList
+
+    // store each selected bit from all samples consecutively
+    if (ctbDbitReorder) {
+        size_t numBitsPerDbit =
+            numDigitalSamples; // num bits per selected digital
+                               // Bit for all samples
+        if ((numBitsPerDbit % 8) != 0)
+            numBitsPerDbit += (8 - (numDigitalSamples % 8));
+        totalNumBytes = (numBitsPerDbit / 8) * ctbDbitList.size();
+    }
+    // store all selected bits from one sample consecutively
+    else {
+        size_t numBitsPerSample =
+            ctbDbitList.size(); // num bits for all selected bits per sample
+        if ((numBitsPerSample % 8) != 0)
+            numBitsPerSample += (8 - (numBitsPerSample % 8));
+        totalNumBytes = (numBitsPerSample / 8) * numDigitalSamples;
+    }
+
+    std::vector<uint8_t> result(totalNumBytes, 0);
     uint8_t *dest = &result[0];
 
-    auto *source = (uint64_t *)(data + nAnalogDataBytes + ctbDbitOffset);
-
-    // loop through digital bit enable vector
-    int bitoffset = 0;
-    for (auto bi : ctbDbitList) {
-        // where numbits * numDigitalSamples is not a multiple of 8
-        if (bitoffset != 0) {
-            bitoffset = 0;
-            ++dest;
-        }
-
-        // loop through the frame digital data
-        for (auto *ptr = source; ptr < (source + numDigitalSamples);) {
-            // get selected bit from each 8 bit
-            uint8_t bit = (*ptr++ >> bi) & 1;
-            *dest |= bit << bitoffset;
-            ++bitoffset;
-            // extract destination in 8 bit batches
-            if (bitoffset == 8) {
+    if (ctbDbitReorder) {
+        // loop through digital bit enable vector
+        int bitoffset = 0;
+        for (auto bi : ctbDbitList) {
+            // where numbits * numDigitalSamples is not a multiple of 8
+            if (bitoffset != 0) {
                 bitoffset = 0;
                 ++dest;
+            }
+
+            uint8_t byte_index = bi / 8;
+
+            // loop through the frame digital data
+            for (auto *ptr = source + byte_index;
+                 ptr < (source + 8 * numDigitalSamples); ptr += 8) {
+                // get selected bit from each 8 bit
+                uint8_t bit = (*ptr >> bi % 8) & 1;
+                *dest |= bit << bitoffset; // stored as least significant
+                ++bitoffset;
+                // extract destination in 8 bit batches
+                if (bitoffset == 8) {
+                    bitoffset = 0;
+                    ++dest;
+                }
+            }
+        }
+    } else {
+        // loop through the digital data
+        int bitoffset = 0;
+        for (auto *ptr = source; ptr < (source + 8 * numDigitalSamples);
+             ptr += 8) {
+            // where bit enable vector size is not a multiple of 8
+            if (bitoffset != 0) {
+                bitoffset = 0;
+                ++dest;
+            }
+
+            // loop through digital bit enable vector
+            for (auto bi : ctbDbitList) {
+                // get selected bit from each 64 bit
+                uint8_t byte_index = bi / 8;
+
+                uint8_t bit = (*(ptr + byte_index) >> (bi % 8)) & 1;
+                *dest |= bit << bitoffset;
+                ++bitoffset;
+                // extract destination in 8 bit batches
+                if (bitoffset == 8) {
+                    bitoffset = 0;
+                    ++dest;
+                }
             }
         }
     }
 
+    size = totalNumBytes * sizeof(uint8_t) + nAnalogDataBytes +
+           nTransceiverDataBytes;
+
+    // check if size changed, if so move transceiver data to avoid gap in memory
+    if (size != nAnalogDataBytes + nDigitalDataBytes + nTransceiverDataBytes)
+        memmove(data + nAnalogDataBytes + totalNumBytes * sizeof(uint8_t),
+                data + nAnalogDataBytes + nDigitalDataBytes,
+                nTransceiverDataBytes);
+
     // copy back to memory and update size
     memcpy(data + nAnalogDataBytes, result.data(),
            totalNumBytes * sizeof(uint8_t));
-    size = totalNumBytes * sizeof(uint8_t) + nAnalogDataBytes + ctbDbitOffset +
-           nTransceiverDataBytes;
-    LOG(logDEBUG1) << "totalNumBytes: " << totalNumBytes
+
+    LOG(logDEBUG1) << "nDigitalDataBytes: " << totalNumBytes
                    << " nAnalogDataBytes:" << nAnalogDataBytes
                    << " ctbDbitOffset:" << ctbDbitOffset
                    << " nTransceiverDataBytes:" << nTransceiverDataBytes
-                   << " size:" << size;
+                   << " toal size:" << size;
 }
 
 void DataProcessor::CropImage(size_t &size, char *data) {
-    LOG(logDEBUG) << "Cropping Image to ROI " << ToString(receiverRoi);
+    LOG(logDEBUG1) << "Cropping Image to ROI " << ToString(portRoi);
     int nPixelsX = generalData->nPixelsX;
-    int xmin = receiverRoi.xmin;
-    int xmax = receiverRoi.xmax;
-    int ymin = receiverRoi.ymin;
-    int ymax = receiverRoi.ymax;
+    int xmin = portRoi.xmin;
+    int xmax = portRoi.xmax;
+    int ymin = portRoi.ymin;
+    int ymax = portRoi.ymax;
     int xwidth = xmax - xmin + 1;
     int ywidth = ymax - ymin + 1;
     if (ymin == -1 || ymax == -1) {

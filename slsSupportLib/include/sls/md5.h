@@ -130,7 +130,7 @@ extern "C" {
         ll = (c)->D;                                                           \
         (void)HOST_l2c(ll, (s));                                               \
     } while (0)
-#define ROTATE(a, n) (((a) << (n)) | (((a)&0xffffffff) >> (32 - (n))))
+#define ROTATE(a, n) (((a) << (n)) | (((a) & 0xffffffff) >> (32 - (n))))
 #if defined(DATA_ORDER_IS_BIG_ENDIAN)
 
 #define HOST_c2l(c, l)                                                         \

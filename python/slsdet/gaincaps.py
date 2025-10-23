@@ -1,6 +1,6 @@
 
 
-import _slsdet
+from . import _slsdet
 gc = _slsdet.slsDetectorDefs.M3_GainCaps
 
 

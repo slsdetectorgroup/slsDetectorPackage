@@ -89,18 +89,3 @@ DACS
    :widths: 35, 35
    :header-rows: 1
 
-Gotthard
--------------
-
-.. csv-table:: Default values
-   :file: gotthard.csv
-   :widths: 35, 35
-   :header-rows: 1
-
-DACS
-^^^^^^^^^^^^^
-
-.. csv-table:: Gotthard DACS
-   :file: gotthard-dacs.csv
-   :widths: 35, 35
-   :header-rows: 1

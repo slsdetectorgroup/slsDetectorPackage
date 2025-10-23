@@ -33,6 +33,8 @@ using Interface = ServerInterface;
 #define gettid() syscall(SYS_gettid)
 #endif
 
+std::mutex ClientInterface::callbackMutex;
+
 ClientInterface::~ClientInterface() {
     killTcpThread = true;
     LOG(logINFO) << "Shutting down TCP Socket on port " << portNumber;
@@ -42,7 +44,7 @@ ClientInterface::~ClientInterface() {
 }
 
 ClientInterface::ClientInterface(uint16_t portNumber)
-    : detType(GOTTHARD), portNumber(portNumber), server(portNumber) {
+    : detType(GENERIC), portNumber(portNumber), server(portNumber) {
     validatePortNumber(portNumber);
     functionTable();
     parentThreadId = gettid();
@@ -54,13 +56,15 @@ std::string ClientInterface::getReceiverVersion() { return APIRECEIVER; }
 
 /***callback functions***/
 void ClientInterface::registerCallBackStartAcquisition(
-    int (*func)(const startCallbackHeader, void *), void *arg) {
+    void (*func)(const startCallbackHeader, void *), void *arg) {
+    std::lock_guard<std::mutex> lock(callbackMutex);
     startAcquisitionCallBack = func;
     pStartAcquisition = arg;
 }
 
 void ClientInterface::registerCallBackAcquisitionFinished(
     void (*func)(const endCallbackHeader, void *), void *arg) {
+    std::lock_guard<std::mutex> lock(callbackMutex);
     acquisitionFinishedCallBack = func;
     pAcquisitionFinished = arg;
 }
@@ -69,6 +73,7 @@ void ClientInterface::registerCallBackRawDataReady(
     void (*func)(sls_receiver_header &, dataCallbackHeader, char *, size_t &,
                  void *),
     void *arg) {
+    std::lock_guard<std::mutex> lock(callbackMutex);
     rawDataReadyCallBack = func;
     pRawDataReady = arg;
 }
@@ -115,7 +120,6 @@ int ClientInterface::functionTable(){
 	flist[F_GET_LAST_RECEIVER_CLIENT_IP]	=	&ClientInterface::get_last_client_ip;
 	flist[F_GET_RECEIVER_VERSION]			=	&ClientInterface::get_version;
 	flist[F_SETUP_RECEIVER]				    =	&ClientInterface::setup_receiver;
-	flist[F_RECEIVER_SET_DETECTOR_ROI]		=	&ClientInterface::set_detector_roi;
 	flist[F_RECEIVER_SET_NUM_FRAMES]        =   &ClientInterface::set_num_frames;  
 	flist[F_SET_RECEIVER_NUM_TRIGGERS]      =   &ClientInterface::set_num_triggers;           
 	flist[F_SET_RECEIVER_NUM_BURSTS]        =   &ClientInterface::set_num_bursts;         
@@ -214,7 +218,10 @@ int ClientInterface::functionTable(){
     flist[F_RECEIVER_SET_TRANSCEIVER_MASK]  =   &ClientInterface::set_transceiver_mask;
     flist[F_RECEIVER_SET_ROW]               =   &ClientInterface::set_row;
     flist[F_RECEIVER_SET_COLUMN]            =   &ClientInterface::set_column;    
-
+    flist[F_GET_RECEIVER_DBIT_REORDER]      =   &ClientInterface::get_dbit_reorder;
+    flist[F_SET_RECEIVER_DBIT_REORDER]      =   &ClientInterface::set_dbit_reorder;
+    flist[F_RECEIVER_GET_ROI_METADATA]      =   &ClientInterface::get_roi_metadata;
+    flist[F_SET_RECEIVER_READOUT_SPEED]     =   &ClientInterface::set_readout_speed;
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
 		LOG(logDEBUG1) << "function fnum: " << i << " (" <<
@@ -404,12 +411,11 @@ int ClientInterface::setup_receiver(Interface &socket) {
             impl()->setReadoutMode(arg.roMode);
             impl()->setTenGigaADCEnableMask(arg.adc10gMask);
             impl()->setTransceiverEnableMask(arg.transceiverMask);
+        } else {
+            impl()->setReadoutSpeed(arg.readoutSpeed);
         }
         if (detType == CHIPTESTBOARD) {
             impl()->setADCEnableMask(arg.adcMask);
-        }
-        if (detType == GOTTHARD) {
-            impl()->setDetectorROI(arg.roi);
         }
         if (detType == MYTHEN3) {
             impl()->setCounterMask(arg.countermask);
@@ -438,7 +444,6 @@ int ClientInterface::setup_receiver(Interface &socket) {
 
 void ClientInterface::setDetectorType(detectorType arg) {
     switch (arg) {
-    case GOTTHARD:
     case EIGER:
     case CHIPTESTBOARD:
     case XILINX_CHIPTESTBOARD:
@@ -461,33 +466,20 @@ void ClientInterface::setDetectorType(detectorType arg) {
                            std::string(e.what()) + ']');
     }
     // callbacks after (in setdetectortype, the object is reinitialized)
-    if (startAcquisitionCallBack != nullptr)
-        impl()->registerCallBackStartAcquisition(startAcquisitionCallBack,
-                                                 pStartAcquisition);
-    if (acquisitionFinishedCallBack != nullptr)
-        impl()->registerCallBackAcquisitionFinished(acquisitionFinishedCallBack,
-                                                    pAcquisitionFinished);
-    if (rawDataReadyCallBack != nullptr)
-        impl()->registerCallBackRawDataReady(rawDataReadyCallBack,
-                                             pRawDataReady);
+    {
+        std::lock_guard<std::mutex> lock(callbackMutex);
+        if (startAcquisitionCallBack != nullptr)
+            impl()->registerCallBackStartAcquisition(startAcquisitionCallBack,
+                                                     pStartAcquisition);
+        if (acquisitionFinishedCallBack != nullptr)
+            impl()->registerCallBackAcquisitionFinished(
+                acquisitionFinishedCallBack, pAcquisitionFinished);
+        if (rawDataReadyCallBack != nullptr)
+            impl()->registerCallBackRawDataReady(rawDataReadyCallBack,
+                                                 pRawDataReady);
+    }
 
     impl()->setThreadIds(parentThreadId, tcpThreadId);
-}
-
-int ClientInterface::set_detector_roi(Interface &socket) {
-    auto arg = socket.Receive<ROI>();
-    LOG(logDEBUG1) << "Set Detector ROI: " << ToString(arg);
-
-    if (detType != GOTTHARD)
-        functionNotImplemented();
-
-    verifyIdle(socket);
-    try {
-        impl()->setDetectorROI(arg);
-    } catch (const std::exception &e) {
-        throw RuntimeError("Could not set ROI [" + std::string(e.what()) + ']');
-    }
-    return socket.Send(OK);
 }
 
 int ClientInterface::set_num_frames(Interface &socket) {
@@ -562,6 +554,7 @@ int ClientInterface::set_num_analog_samples(Interface &socket) {
     if (detType != CHIPTESTBOARD && detType != XILINX_CHIPTESTBOARD) {
         functionNotImplemented();
     }
+    verifyIdle(socket);
     try {
         impl()->setNumberofAnalogSamples(value);
     } catch (const std::exception &e) {
@@ -578,6 +571,7 @@ int ClientInterface::set_num_digital_samples(Interface &socket) {
     if (detType != CHIPTESTBOARD && detType != XILINX_CHIPTESTBOARD) {
         functionNotImplemented();
     }
+    verifyIdle(socket);
     try {
         impl()->setNumberofDigitalSamples(value);
     } catch (const std::exception &e) {
@@ -1704,19 +1698,37 @@ int ClientInterface::set_arping(Interface &socket) {
 }
 
 int ClientInterface::get_receiver_roi(Interface &socket) {
-    auto retval = impl()->getReceiverROI();
-    LOG(logDEBUG1) << "Receiver roi retval:" << ToString(retval);
-    return socket.sendResult(retval);
+    auto retvals = impl()->getPortROIs();
+    LOG(logDEBUG1) << "Receiver roi retval:" << ToString(retvals);
+    auto size = static_cast<int>(retvals.size());
+    if (size != impl()->getNumberofUDPInterfaces()) {
+        throw RuntimeError("Invalid number of ROIs received: " +
+                           std::to_string(size) + ". Expected: " +
+                           std::to_string(impl()->getNumberofUDPInterfaces()));
+    }
+    socket.Send(size);
+    if (size > 0)
+        socket.Send(retvals);
+    return OK;
 }
 
 int ClientInterface::set_receiver_roi(Interface &socket) {
-    auto arg = socket.Receive<ROI>();
+    auto roiSize = socket.Receive<int>();
+    std::vector<ROI> args(roiSize);
+    if (roiSize > 0) {
+        socket.Receive(args);
+    }
+    if (roiSize != impl()->getNumberofUDPInterfaces()) {
+        throw RuntimeError("Invalid number of ROIs received: " +
+                           std::to_string(roiSize) + ". Expected: " +
+                           std::to_string(impl()->getNumberofUDPInterfaces()));
+    }
     if (detType == CHIPTESTBOARD || detType == XILINX_CHIPTESTBOARD)
         functionNotImplemented();
-    LOG(logDEBUG1) << "Set Receiver ROI: " << ToString(arg);
+    LOG(logDEBUG1) << "Set Receiver ROI: " << ToString(args);
     verifyIdle(socket);
     try {
-        impl()->setReceiverROI(arg);
+        impl()->setPortROIs(args);
     } catch (const std::exception &e) {
         throw RuntimeError("Could not set Receiver ROI [" +
                            std::string(e.what()) + ']');
@@ -1726,18 +1738,26 @@ int ClientInterface::set_receiver_roi(Interface &socket) {
 }
 
 int ClientInterface::set_receiver_roi_metadata(Interface &socket) {
-    auto arg = socket.Receive<ROI>();
+    auto roiSize = socket.Receive<int>();
+    LOG(logDEBUG1) << "Number of ReceiverROI metadata: " << roiSize;
+    if (roiSize < 1) {
+        throw RuntimeError("Invalid number of ROIs received: " +
+                           std::to_string(roiSize) + ". Min: 1.");
+    }
+    std::vector<ROI> rois(roiSize);
+    if (roiSize > 0) {
+        socket.Receive(rois);
+    }
     if (detType == CHIPTESTBOARD || detType == XILINX_CHIPTESTBOARD)
         functionNotImplemented();
-    LOG(logDEBUG1) << "Set Receiver ROI Metadata: " << ToString(arg);
     verifyIdle(socket);
+    LOG(logINFO) << "Setting ReceiverROI metadata[" << roiSize << ']';
     try {
-        impl()->setReceiverROIMetadata(arg);
+        impl()->setMultiROIMetadata(rois);
     } catch (const std::exception &e) {
         throw RuntimeError("Could not set ReceiverROI metadata [" +
                            std::string(e.what()) + ']');
     }
-
     return socket.Send(OK);
 }
 
@@ -1747,6 +1767,7 @@ int ClientInterface::set_num_transceiver_samples(Interface &socket) {
     if (detType != CHIPTESTBOARD && detType != XILINX_CHIPTESTBOARD) {
         functionNotImplemented();
     }
+    verifyIdle(socket);
     try {
         impl()->setNumberofTransceiverSamples(value);
     } catch (const std::exception &e) {
@@ -1799,6 +1820,68 @@ int ClientInterface::set_column(Interface &socket) {
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting column to " << value;
     impl()->setColumn(value);
+    return socket.Send(OK);
+}
+
+int ClientInterface::get_dbit_reorder(Interface &socket) {
+    if (detType != CHIPTESTBOARD && detType != XILINX_CHIPTESTBOARD)
+        functionNotImplemented();
+    int retval = impl()->getDbitReorder();
+    LOG(logDEBUG1) << "Dbit reorder retval: " << retval;
+    return socket.sendResult(retval);
+}
+
+int ClientInterface::set_dbit_reorder(Interface &socket) {
+    auto arg = socket.Receive<int>();
+    if (detType != CHIPTESTBOARD && detType != XILINX_CHIPTESTBOARD)
+        functionNotImplemented();
+    if (arg < 0) {
+        throw RuntimeError("Invalid dbit reorder: " + std::to_string(arg));
+    }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting Dbit reorder: " << arg;
+    impl()->setDbitReorder(arg);
+    return socket.Send(OK);
+}
+
+int ClientInterface::get_roi_metadata(Interface &socket) {
+    if (detType == CHIPTESTBOARD || detType == XILINX_CHIPTESTBOARD)
+        functionNotImplemented();
+    auto retvals = impl()->getMultiROIMetadata();
+    LOG(logDEBUG1) << "Receiver ROI metadata retval:" << ToString(retvals);
+    auto size = static_cast<int>(retvals.size());
+    socket.Send(size);
+    if (size > 0)
+        socket.Send(retvals);
+    return OK;
+}
+
+int ClientInterface::set_readout_speed(Interface &socket) {
+    auto value = socket.Receive<int>();
+    verifyIdle(socket);
+    switch (detType) {
+    case GOTTHARD2:
+        if (value != G2_108MHZ && value != G2_144MHZ)
+            throw RuntimeError("Invalid readout speed for GOTTHARD2: " +
+                               std::to_string(value));
+        break;
+
+    case EIGER:
+    case JUNGFRAU:
+    case MYTHEN3:
+    case MOENCH:
+        if (value < 0 || value > QUARTER_SPEED) {
+            throw RuntimeError("Invalid readout speed: " +
+                               std::to_string(value));
+        }
+        break;
+
+    default:
+        functionNotImplemented();
+    }
+
+    LOG(logDEBUG1) << "Setting readout speed to " << value;
+    impl()->setReadoutSpeed(static_cast<speedLevel>(value));
     return socket.Send(OK);
 }
 

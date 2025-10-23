@@ -59,15 +59,6 @@ TEST_CASE("Setting and reading back Jungfrau dacs", "[.cmdcall][.dacs]") {
         REQUIRE_THROWS(caller.call("vcn", {}, -1, GET));
         REQUIRE_THROWS(caller.call("vishaper", {}, -1, GET));
         REQUIRE_THROWS(caller.call("iodelay", {}, -1, GET));
-        // gotthard
-        // REQUIRE_THROWS(caller.call("vref_ds", {}, -1, GET));
-        REQUIRE_THROWS(caller.call("vcascn_pb", {}, -1, GET));
-        REQUIRE_THROWS(caller.call("vcascp_pb", {}, -1, GET));
-        REQUIRE_THROWS(caller.call("vout_cm", {}, -1, GET));
-        REQUIRE_THROWS(caller.call("vcasc_out", {}, -1, GET));
-        REQUIRE_THROWS(caller.call("vin_cm", {}, -1, GET));
-        // REQUIRE_THROWS(caller.call("vref_comp", {}, -1, GET));
-        REQUIRE_THROWS(caller.call("ib_test_c", {}, -1, GET));
         // mythen3
         REQUIRE_THROWS(caller.call("vrpreamp", {}, -1, GET));
         REQUIRE_THROWS(caller.call("vrshaper", {}, -1, GET));
@@ -262,8 +253,7 @@ TEST_CASE("compdisabletime", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU &&
-        det.getChipVersion().squash() * 10 == 11) {
+    if (det_type == defs::JUNGFRAU) {
         auto prev_val = det.getComparatorDisableTime();
         {
             std::ostringstream oss;
@@ -670,7 +660,8 @@ TEST_CASE("pedestalmode", "[.cmdcall]") {
 TEST_CASE("timing_info_decoder", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
-    if (det.getDetectorType().squash() == defs::JUNGFRAU) {
+    if (det.getDetectorType().squash() == defs::JUNGFRAU &&
+        det.getHardwareVersion().squash() == "2.0") {
         auto prev_val = det.getTimingInfoDecoder();
         /*{
             std::ostringstream oss;

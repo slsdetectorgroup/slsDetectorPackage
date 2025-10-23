@@ -40,6 +40,7 @@ class qDrawPlot : public QWidget, private Ui::PlotObject {
     void SetDataCallBack(bool enable);
     void SetBinary(bool enable, int from = 0, int to = 0);
     void StartAcquisition();
+    void UpdateROI();
 
   public slots:
     void SetPersistency(int val);
@@ -123,7 +124,7 @@ class qDrawPlot : public QWidget, private Ui::PlotObject {
     QString zTitle2d{"Intensity"};
     QString plotTitle{""};
     QString indexTitle{""};
-    bool completeImage{false};
+    bool completeImage{true};
     bool xyRangeChanged{false};
     double xyRange[4]{0, 0, 0, 0};
     bool isXYRange[4]{false, false, false, false};
@@ -166,8 +167,8 @@ class qDrawPlot : public QWidget, private Ui::PlotObject {
     int64_t currentFrame{0};
     mutable std::mutex mPlots;
     int64_t currentAcqIndex{0};
-    slsDetectorDefs::ROI rxRoi{};
-    bool isRxRoiDisplayed{false};
+    bool hasRoi{false};
+    bool roiDisplayInitialized{false};
     bool isGapPixels{false};
 
     unsigned int nPixelsX{0};
@@ -176,6 +177,7 @@ class qDrawPlot : public QWidget, private Ui::PlotObject {
     uint32_t gainMask{0};
     int gainOffset{0};
     bool gotthard25;
+    std::vector<slsDetectorDefs::ROI> roi{1};
 };
 
 } // namespace sls

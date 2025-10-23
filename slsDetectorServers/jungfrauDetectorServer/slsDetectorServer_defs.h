@@ -5,8 +5,8 @@
 #include "sls/sls_detector_defs.h"
 
 #define MIN_REQRD_VRSN_T_RD_API  0x171220
-#define REQRD_FRMWRE_VRSN_BOARD2 0x230920 // 1.0 pcb (version = 010)
-#define REQRD_FRMWRE_VRSN        0x230921 // 2.0 pcb (version = 011)
+#define REQRD_FRMWRE_VRSN_BOARD2 0x250209 // 1.0 pcb (version = 010)
+#define REQRD_FRMWRE_VRSN        0x250208 // 2.0 pcb (version = 011)
 
 #define NUM_HARDWARE_VERSIONS (2)
 #define HARDWARE_VERSION_NUMBERS                                               \
@@ -48,6 +48,7 @@
 #define DEFAULT_SETTINGS                 (GAIN0)
 #define DEFAULT_GAINMODE                 (DYNAMIC)
 #define DEFAULT_TX_UDP_PORT              (0x7e9a)
+#define DEFAULT_TMP_CNTRL                (1)
 #define DEFAULT_TMP_THRSHLD              (65 * 1000) // milli degree Celsius
 #define DEFAULT_NUM_STRG_CLLS            (0)
 #define DEFAULT_STRG_CLL_STRT            (0xf)

@@ -46,17 +46,27 @@ int Beb_deactivated_left_datastream = 1;
 int Beb_deactivated_right_datastream = 1;
 int Beb_deactivated_num_destinations = 1;
 
-void Beb_Beb() {
+int Beb_Beb() {
     Beb_send_ndata = 0;
     Beb_send_buffer_size = 1026;
+
     Beb_send_data_raw =
         malloc((Beb_send_buffer_size + 1) * sizeof(unsigned int));
+    if (Beb_send_data_raw == NULL) {
+        LOG(logERROR, ("Could not allocate memory for beb (send_data_raw)\n"));
+        return 0;
+    }
     Beb_send_data = &Beb_send_data_raw[1];
 
     Beb_recv_ndata = 0;
     Beb_recv_buffer_size = 1026;
+
     Beb_recv_data_raw =
         malloc((Beb_recv_buffer_size + 1) * sizeof(unsigned int));
+    if (Beb_recv_data_raw == NULL) {
+        LOG(logERROR, ("Could not allocate memory for beb (recv_data_raw)\n"));
+        return 0;
+    }
     Beb_recv_data = &Beb_recv_data_raw[1];
 
     udp_header = (struct udp_header_type){
@@ -83,6 +93,7 @@ void Beb_Beb() {
     Beb_ClearHeaderData(1);
 
     Beb_bit_mode = 4;
+    return 1;
 }
 
 void Beb_ClearHeaderData(int ten_gig) {

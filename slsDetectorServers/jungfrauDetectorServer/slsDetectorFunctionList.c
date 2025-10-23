@@ -555,6 +555,7 @@ void setupDetector() {
     setNextFrameNumber(DEFAULT_STARTING_FRAME_NUMBER);
 
     // temp threshold and reset event
+    setTemperatureControl(DEFAULT_TMP_CNTRL);
     setThresholdTemperature(DEFAULT_TMP_THRSHLD);
     setTemperatureEvent(0);
     if (getChipVersion() == 11) {
@@ -1973,9 +1974,6 @@ int autoCompDisable(int on) {
 }
 
 int setComparatorDisableTime(int64_t val) {
-    if (getChipVersion() != 11) {
-        return FAIL;
-    }
     if (val < 0) {
         LOG(logERROR,
             ("Invalid comp disable time: %lld ns\n", (long long int)val));
@@ -2254,7 +2252,6 @@ int setThresholdTemperature(int val) {
 
     double ftemp = (double)temp / 1000.00;
     LOG(logDEBUG1, ("Threshold Temperature read %f °C\n", ftemp));
-
     return temp;
 }
 
@@ -2734,7 +2731,8 @@ int startStateMachine() {
         LOG(logERROR, ("Could not start Virtual acquisition thread\n"));
         sharedMemory_setStatus(IDLE);
         return FAIL;
-    }
+    } else
+        pthread_detach(pthread_virtual_tid);
     LOG(logINFOGREEN, ("Virtual Acquisition started\n"));
     return OK;
 #endif
@@ -2790,9 +2788,9 @@ void *start_timer(void *arg) {
             }
 
             if ((i % 1024) < 300) {
-                gainVal = 1;
+                gainVal = 0;
             } else if ((i % 1024) < 600) {
-                gainVal = 2;
+                gainVal = 1;
             } else {
                 gainVal = 3;
             }
@@ -2816,7 +2814,8 @@ void *start_timer(void *arg) {
         getNextFrameNumber(&frameNr);
         int iRxEntry = firstDest;
         for (int iframes = 0; iframes != numFrames; ++iframes) {
-            usleep(transmissionDelayUs);
+            if (transmissionDelayUs)
+                usleep(transmissionDelayUs);
 
             // check if manual stop
             if (sharedMemory_getStop() == 1) {
@@ -2829,17 +2828,29 @@ void *start_timer(void *arg) {
             clock_gettime(CLOCK_REALTIME, &begin);
             usleep(expUs);
 
+#ifdef TEST_CHANGE_GAIN_EVERY_FRAME
             // change gain and data for every frame
             {
                 const int npixels = (NCHAN * NCHIP);
+
+                // random gain values, 2 becomes 3 as 2 is invalid
+                int randomGainValues[3] = {0};
+                srand(time(0));
+                for (int i = 0; i != 3; ++i) {
+                    int r = rand() % 3;
+                    if (r == 2)
+                        r = 3;
+                    randomGainValues[i] = r;
+                }
+
                 for (int i = 0; i < npixels; ++i) {
                     int gainVal = 0;
                     if ((i % 1024) < 300) {
-                        gainVal = 1 + iframes;
+                        gainVal = randomGainValues[0];
                     } else if ((i % 1024) < 600) {
-                        gainVal = 2 + iframes;
+                        gainVal = randomGainValues[1];
                     } else {
-                        gainVal = 3 + iframes;
+                        gainVal = randomGainValues[2];
                     }
                     int dataVal =
                         *((uint16_t *)(imageData + i * sizeof(uint16_t)));
@@ -2850,7 +2861,7 @@ void *start_timer(void *arg) {
                         (uint16_t)pixelVal;
                 }
             }
-
+#endif
             int srcOffset = 0;
             int srcOffset2 = DATA_BYTES / 2;
             int row0 = (numInterfaces == 1 ? detPos[1] : detPos[3]);

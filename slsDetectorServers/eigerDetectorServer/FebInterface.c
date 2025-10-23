@@ -22,34 +22,57 @@ unsigned int Feb_Interface_recv_buffer_size;
 unsigned int *Feb_Interface_recv_data_raw;
 unsigned int *Feb_Interface_recv_data;
 
-void Feb_Interface_FebInterface() {
+int Feb_Interface_FebInterface() {
     ll = &ll_local;
     Feb_Interface_nfebs = 0;
     Feb_Interface_feb_numb = 0;
 
     Feb_Interface_send_ndata = 0;
     Feb_Interface_send_buffer_size = 1026;
+
     Feb_Interface_send_data_raw =
         malloc((Feb_Interface_send_buffer_size + 1) * sizeof(unsigned int));
+    if (Feb_Interface_send_data_raw == NULL) {
+        LOG(logERROR,
+            ("Could not allocate memory for feb interface (send_data_raw)\n"));
+        return 0;
+    }
     Feb_Interface_send_data = &Feb_Interface_send_data_raw[1];
 
     Feb_Interface_recv_ndata = 0;
     Feb_Interface_recv_buffer_size = 1026;
+
     Feb_Interface_recv_data_raw =
         malloc((Feb_Interface_recv_buffer_size + 1) * sizeof(unsigned int));
+    if (Feb_Interface_recv_data_raw == NULL) {
+        LOG(logERROR,
+            ("Could not allocate memory for feb interface (recv_data_raw)\n"));
+
+        return 0;
+    }
     Feb_Interface_recv_data = &Feb_Interface_recv_data_raw[1];
 
     Local_LocalLinkInterface(
         ll, XPAR_PLB_LL_FIFO_AURORA_DUAL_CTRL_FEB_RIGHT_BASEADDR);
+
+    return 1;
 }
 
-void Feb_Interface_SetAddress(unsigned int leftAddr, unsigned int rightAddr) {
-    if (Feb_Interface_feb_numb)
-        free(Feb_Interface_feb_numb);
+int Feb_Interface_SetAddress(unsigned int leftAddr, unsigned int rightAddr) {
+    free(Feb_Interface_feb_numb);
     Feb_Interface_nfebs = 2;
+
     Feb_Interface_feb_numb = malloc(2 * sizeof(unsigned int));
+    if (Feb_Interface_feb_numb == NULL) {
+        LOG(logERROR,
+            ("Could not allocate memory for feb interface (feb_numb)\n"));
+        Feb_Interface_nfebs = 0;
+        return 0;
+    }
+
     Feb_Interface_feb_numb[0] = leftAddr;
     Feb_Interface_feb_numb[1] = rightAddr;
+    return 1;
 }
 
 int Feb_Interface_WriteTo(unsigned int ch) {

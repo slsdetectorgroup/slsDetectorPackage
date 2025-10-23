@@ -14,6 +14,7 @@ target_sources(tests PRIVATE
                 ${CMAKE_CURRENT_SOURCE_DIR}/test-TypeTraits.cpp
                 ${CMAKE_CURRENT_SOURCE_DIR}/test-UdpRxSocket.cpp
                 ${CMAKE_CURRENT_SOURCE_DIR}/test-logger.cpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/test-Version.cpp
                 ${CMAKE_CURRENT_SOURCE_DIR}/test-ZmqSocket.cpp
                 )
 

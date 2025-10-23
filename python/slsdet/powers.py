@@ -3,7 +3,7 @@
 from .detector_property import DetectorProperty
 from functools import partial
 import numpy as np
-import _slsdet
+from . import _slsdet
 from .detector import freeze
 dacIndex = _slsdet.slsDetectorDefs.dacIndex
 class Power(DetectorProperty):

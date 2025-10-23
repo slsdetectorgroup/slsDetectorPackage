@@ -54,11 +54,16 @@ template <> struct type_caster<std::chrono::nanoseconds> {
                 value = duration_cast<nanoseconds>(duration<double>(PyFloat_AsDouble(src.ptr())));
                 return true;
             }
+            // If invoked with an int we assume it is nanoseconds and convert, same as in chrono.h
+            if (PyLong_Check(src.ptr())) {
+                value = duration_cast<nanoseconds>(duration<int64_t>(PyLong_AsLongLong(src.ptr())));
+                return true;
+            }
 
 
             // Lastly if we were actually called with a DurationWrapper object we get
             // the number of nanoseconds and create a std::chrono::nanoseconds from it
-            py::object py_cls = py::module::import("_slsdet").attr("DurationWrapper");
+            py::object py_cls = py::module::import("slsdet._slsdet").attr("DurationWrapper");
             if (py::isinstance(src, py_cls)){
                 sls::DurationWrapper *cls = src.cast<sls::DurationWrapper *>();
                 value = nanoseconds(cls->count());
@@ -77,7 +82,7 @@ template <> struct type_caster<std::chrono::nanoseconds> {
          * set the count from chrono::nanoseconds and return
          */
         static handle cast(std::chrono::nanoseconds src, return_value_policy /* policy */, handle /* parent */) {
-            py::object py_cls = py::module::import("_slsdet").attr("DurationWrapper");
+            py::object py_cls = py::module::import("slsdet._slsdet").attr("DurationWrapper");
             py::object* obj = new py::object;
             *obj = py_cls();
             sls::DurationWrapper *dur = obj->cast<sls::DurationWrapper *>();

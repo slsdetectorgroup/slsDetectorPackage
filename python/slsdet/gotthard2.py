@@ -11,7 +11,7 @@ from .detector import Detector, freeze
 
 # from .adcs import Adc, DetectorAdcs
 from .dacs import DetectorDacs
-import _slsdet
+from . import _slsdet
 dacIndex = _slsdet.slsDetectorDefs.dacIndex
 from .detector_property import DetectorProperty
 

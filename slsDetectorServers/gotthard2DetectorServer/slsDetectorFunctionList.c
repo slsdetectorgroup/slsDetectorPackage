@@ -3326,11 +3326,12 @@ int *getBadChannels(int *numChannels) {
     if (*numChannels > 0) {
         // get list of bad channels
         retvals = malloc(*numChannels * sizeof(int));
-        memset(retvals, 0, *numChannels * sizeof(int));
         if (retvals == NULL) {
+            LOG(logERROR, ("Could not allocate memory to get bad channels\n"));
             *numChannels = -1;
             return NULL;
         }
+        memset(retvals, 0, *numChannels * sizeof(int));
         int chIndex = 0;
         int numAddr = MASK_STRIP_NUM_REGS;
         // loop through registers
@@ -3380,7 +3381,8 @@ int startStateMachine() {
         LOG(logERROR, ("Could not start Virtual acquisition thread\n"));
         sharedMemory_setStatus(IDLE);
         return FAIL;
-    }
+    } else
+        pthread_detach(pthread_virtual_tid);
     LOG(logINFOGREEN, ("Virtual Acquisition started\n"));
     return OK;
 #endif

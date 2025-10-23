@@ -13,7 +13,6 @@ containing results from all modules. (:ref:`Result class<Result Class>`)
 
 Here are some :ref:`examples <Cplusplus Api Examples>` on how to use the API.
 
-.. _Cplusplus Api Examples:
 .. doxygenclass:: sls::Detector
    :members:
    :undoc-members:

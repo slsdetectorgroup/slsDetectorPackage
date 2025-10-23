@@ -2,7 +2,7 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #pragma once
 
-//#include "types.h"
+// #include "types.h"
 #include <stdint.h>
 /******************************************************************************/
 /* types                                                                      */

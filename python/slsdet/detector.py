@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: LGPL-3.0-or-other
 # Copyright (C) 2021 Contributors to the SLS Detector Package
-from _slsdet import CppDetectorApi
-from _slsdet import slsDetectorDefs
-from _slsdet import IpAddr, MacAddr
+from ._slsdet import CppDetectorApi
+from ._slsdet import slsDetectorDefs
+from ._slsdet import IpAddr, MacAddr
 
 runStatus = slsDetectorDefs.runStatus
 timingMode = slsDetectorDefs.timingMode
@@ -15,7 +15,7 @@ defs = slsDetectorDefs
 
 from .utils import element_if_equal, all_equal, get_set_bits, list_to_bitmask
 from .utils import Geometry, to_geo, element, reduce_time, is_iterable, hostname_list
-from _slsdet import xy
+from ._slsdet import xy, freeSharedMemory, getUserDetails
 from .gaincaps import Mythen3GainCapsWrapper
 from . import utils as ut
 from .proxy import JsonProxy, SlowAdcProxy, ClkDivProxy, MaxPhaseProxy, ClkFreqProxy, PatLoopProxy, PatNLoopProxy, PatWaitProxy, PatWaitTimeProxy 
@@ -90,7 +90,7 @@ class Detector(CppDetectorApi):
 
     def free(self):
         """Free detector shared memory"""
-        self.freeSharedMemory()
+        freeSharedMemory(self.getShmId())
 
     @property
     def config(self):
@@ -151,6 +151,10 @@ class Detector(CppDetectorApi):
     def hostname(self):
         """Frees shared memory and sets hostname (or IP address) of all modules concatenated by + 
         Virtual servers can already use the port in hostname separated by ':' and ports incremented by 2 to accomodate the stop server as well.
+
+        Note
+        -----
+        The row and column values in the udp/zmq header are affected by the order in this command and the detsize command. The modules are stacked row by row until they reach the y-axis limit set by detsize (if specified). Then, stacking continues in the next column and so on. This only affects row and column in udp/zmq header.
         
         Example
         -------
@@ -270,7 +274,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def serialnumber(self):
-        """Jungfrau][Gotthard][Mythen3][Gotthard2][CTB][Moench] Serial number of detector """
+        """Jungfrau][Mythen3][Gotthard2][CTB][Moench] Serial number of detector """
         return ut.lhex(self.getSerialNumber())
 
     @property
@@ -308,7 +312,7 @@ class Detector(CppDetectorApi):
         -----
         [Eiger] Options: 4, 8, 12, 16, 32. If set to 32, also sets clkdivider to 2 (quarter speed), else to 0 (full speed)\n
         [Mythen3] Options: 8, 16, 32 \n
-        [Jungfrau][Moench][Gotthard][Ctb][Mythen3][Gotthard2][Xilinx Ctb] 16
+        [Jungfrau][Moench][Ctb][Mythen3][Gotthard2][Xilinx Ctb] 16
         """
         return self.getDynamicRange()
 
@@ -368,7 +372,6 @@ class Detector(CppDetectorApi):
         
         [Eiger] Use threshold command to load settings
         [Jungfrau] GAIN0, HIGHGAIN0 \n
-        [Gotthard] DYNAMICGAIN, HIGHGAIN, LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN \n
         [Gotthard2] DYNAMICGAIN, FIXGAIN1, FIXGAIN2 \n
         [Eiger] settings loaded from file found in settingspath
         [Moench] G1_HIGHGAIN, G1_LOWGAIN, G2_HIGHCAP_HIGHGAIN, G2_HIGHCAP_LOWGAIN, G2_LOWCAP_HIGHGAIN, G2_LOWCAP_LOWGAIN, G4_HIGHGAIN, G4_LOWGAIN
@@ -400,7 +403,7 @@ class Detector(CppDetectorApi):
     @element
     def framesl(self):
         """
-        [Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][CTB][Xilinx CTB] Number of frames left in acquisition.\n
+        [Jungfrau][Moench][Mythen3][Gotthard2][CTB][Xilinx CTB] Number of frames left in acquisition.\n
 
         Note
         ----
@@ -631,7 +634,7 @@ class Detector(CppDetectorApi):
     @element
     def periodl(self):
         """
-        [Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2][Xilinx Ctb] Period left for current frame.
+        [Jungfrau][Moench][CTB][Mythen3][Gotthard2][Xilinx Ctb] Period left for current frame.
 
         Note
         -----
@@ -653,7 +656,7 @@ class Detector(CppDetectorApi):
     @element
     def delay(self):
         """
-        [Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2][Xilinx Ctb] Delay after trigger, accepts either a value in seconds, DurationWrapper or datetime.timedelta
+        [Jungfrau][Moench][CTB][Mythen3][Gotthard2][Xilinx Ctb] Delay after trigger, accepts either a value in seconds, DurationWrapper or datetime.timedelta
 
         :getter: always returns in seconds. To get in DurationWrapper, use getDelayAfterTrigger
 
@@ -695,7 +698,7 @@ class Detector(CppDetectorApi):
     @element
     def delayl(self):
         """
-        [Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2][Xilinx Ctb] Delay left after trigger during acquisition, accepts either a value in seconds, datetime.timedelta or DurationWrapper
+        [Jungfrau][Moench][CTB][Mythen3][Gotthard2][Xilinx Ctb] Delay left after trigger during acquisition, accepts either a value in seconds, datetime.timedelta or DurationWrapper
 
         Note
         -----
@@ -1440,8 +1443,6 @@ class Detector(CppDetectorApi):
     @udp_srcip.setter
     def udp_srcip(self, ip):
         if ip == "auto":
-            if self.type == detectorType.GOTTHARD:
-                raise NotImplementedError('Auto for udp_srcip cannot be used for GotthardI')
             ip = socket.gethostbyname(self.hostname[0])        
         ip = ut.make_ip(ip)
         ut.set_using_dict(self.setSourceUDPIP, ip)
@@ -1522,7 +1523,6 @@ class Detector(CppDetectorApi):
 
         Note
         -----
-        [Gotthard] 0, 90, 110, 120, 150, 180, 200 \n
         [Eiger][Mythen3][Gotthard2] 0 - 200 \n
         [Jungfrau][Moench][Ctb] 0, 60 - 200
         """
@@ -1537,7 +1537,7 @@ class Detector(CppDetectorApi):
         """
         Retrieve user details from shared memory (hostname, type, PID, User, Date)
         """
-        return self.getUserDetails()
+        return getUserDetails(self.getShmId())
 
     @property
     @element
@@ -1650,7 +1650,7 @@ class Detector(CppDetectorApi):
     def master(self):
         """
         [Eiger][Gotthard2][Jungfrau][Moench] Sets (half) module to master and other(s) to slaves.\n
-        [Gotthard][Gotthard2][Mythen3][Eiger][Jungfrau][Moench] Gets if the current (half) module is master.
+        [Gotthard2][Mythen3][Eiger][Jungfrau][Moench] Gets if the current (half) module is master.
         """
         return self.getMaster()
 
@@ -1908,7 +1908,7 @@ class Detector(CppDetectorApi):
 
     @property
     def adcreg(self):
-        """[Jungfrau][Moench][Ctb][Gotthard] Writes to an adc register 
+        """[Jungfrau][Moench][Ctb] Writes to an adc register 
 
         Note
         -----
@@ -1937,7 +1937,7 @@ class Detector(CppDetectorApi):
     @element
     def triggersl(self):
         """
-        [Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][CTB][Xilinx CTB] Number of triggers left in acquisition.\n
+        [Jungfrau][Moench][Mythen3][Gotthard2][CTB][Xilinx CTB] Number of triggers left in acquisition.\n
         
         Note
         ----
@@ -2184,6 +2184,7 @@ class Detector(CppDetectorApi):
 
         :setter: It loads trim files from settingspath.\n [Mythen3] An energy of -1 will pick up values from detector.
         """
+        
         if self.type == detectorType.MYTHEN3:
             return self.getAllThresholdEnergy()
         return self.getThresholdEnergy()
@@ -2202,7 +2203,7 @@ class Detector(CppDetectorApi):
         Note
         -----
         Default: AUTO_TIMING \n
-        [Jungfrau][Moench][Gotthard][Ctb][Gotthard2][Xilinx Ctb] AUTO_TIMING, TRIGGER_EXPOSURE \n
+        [Jungfrau][Moench][Ctb][Gotthard2][Xilinx Ctb] AUTO_TIMING, TRIGGER_EXPOSURE \n
         [Mythen3] AUTO_TIMING, TRIGGER_EXPOSURE, GATED, TRIGGER_GATED \n
         [Eiger] AUTO_TIMING, TRIGGER_EXPOSURE, GATED, BURST_TRIGGER
         """
@@ -2259,7 +2260,7 @@ class Detector(CppDetectorApi):
     def type(self):
         """ Returns detector type. 
         Enum: detectorType
-        [EIGER, JUNGFRAU, GOTTHARD, MOENCH, MYTHEN3, GOTTHARD2, CHIPTESTBOARD]
+        [EIGER, JUNGFRAU, MOENCH, MYTHEN3, GOTTHARD2, CHIPTESTBOARD]
 
         :setter: Not implemented
         """
@@ -2566,7 +2567,7 @@ class Detector(CppDetectorApi):
 
         Note
         -----
-        By default, the on-chip gain switching is active during the entire exposure. This mode disables the on-chip gain switching comparator automatically after 93.75% of exposure time (only for longer than 100us). The % is only for chipv1.0, the duration can be set for chipv1.1.\n
+        By default, the on-chip gain switching is active during the entire exposure. This mode disables the on-chip gain switching comparator automatically and the duration is set using compdisabletime.\n
         Default is 0 or this mode disabled (comparator enabled throughout). 1 enables mode. 0 disables mode. 
         """
         return self.getAutoComparatorDisable()
@@ -2579,10 +2580,6 @@ class Detector(CppDetectorApi):
     @element
     def compdisabletime(self):
         """[Jungfrau] Time before end of exposure when comparator is disabled. 
-
-        Note
-        -----
-        It is only possible for chipv1.1.
 
         :getter: always returns in seconds. To get in DurationWrapper, use getComparatorDisableTime
 
@@ -2913,7 +2910,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def timing_info_decoder(self):
-        """[Jungfrau] [Jungfrau] Advanced Command and only for SWISSFEL and SHINE. Sets the bunch id or timing info decoder. Default is SWISSFEL.
+        """[Jungfrau] [Jungfrau] Advanced Command and only for SWISSFEL and SHINE. Sets the bunch id or timing info decoder. Default is SWISSFEL. Only allowed for pcbv2.0.
         Enum: timingInfoDecoder
         """
         return self.getTimingInfoDecoder()
@@ -3308,7 +3305,11 @@ class Detector(CppDetectorApi):
     @property
     @element
     def runclk(self):
-        """[Ctb] Run clock in MHz."""
+        """
+        [Ctb] Sets Run clock frequency in MHz. \n
+        [Xilinx Ctb] Sets Run clock frequency in kHz.
+        """
+
         return self.getRUNClock()
 
     @runclk.setter
@@ -3389,7 +3390,11 @@ class Detector(CppDetectorApi):
     @property
     @element
     def dbitclk(self):
-        """[Ctb] Clock for latching the digital bits in MHz."""
+        """
+        [Ctb] Sets clock for latching the digital bits in MHz. \n
+        [Xilinx Ctb] clock for latching the digital bits in kHz.
+        """
+
         return self.getDBITClock()
 
     @dbitclk.setter
@@ -3469,6 +3474,16 @@ class Detector(CppDetectorApi):
 
     @property
     @element
+    def rx_dbitreorder(self):
+        """[Ctb] Reorder digital data to group together all samples per signal. Default is 1. Setting to 0 means 'do not reorder' and to keep what the board spits out, which is that all signals in a sample are grouped together."""
+        return self.getRxDbitReorder()
+
+    @rx_dbitreorder.setter
+    def rx_dbitreorder(self, value):
+        ut.set_using_dict(self.setRxDbitReorder, value)
+
+    @property
+    @element
     def maxadcphaseshift(self):
         """[Jungfrau][Moench][CTB] Absolute maximum Phase shift of ADC clock.
         
@@ -3479,15 +3494,13 @@ class Detector(CppDetectorApi):
     @property
     @element
     def adcphase(self):
-        """[Gotthard][Jungfrau][Moench][CTB] Sets phase shift of ADC clock. 
+        """[Jungfrau][Moench][CTB] Sets phase shift of ADC clock. 
 
         Note
         -----
         [Jungfrau][Moench] Absolute phase shift. Changing Speed also resets adcphase to recommended defaults.\n
-        [Ctb] Absolute phase shift. Changing adcclk also resets adcphase and sets it to previous values.\n
-        [Gotthard] Relative phase shift.
+        [Ctb] Absolute phase shift. Changing adcclk also resets adcphase and sets it to previous values.
 
-        :getter: Not implemented for Gotthard
         """
         return self.getADCPhase()
 
@@ -3508,7 +3521,11 @@ class Detector(CppDetectorApi):
     @property
     @element
     def adcclk(self):
-        """[Ctb] Sets ADC clock frequency in MHz. """
+        """
+        [Ctb] Sets ADC clock frequency in MHz. \n
+        [Xilinx Ctb] Sets ADC clock frequency in kHz.
+        """
+
         return self.getADCClock()
 
     @adcclk.setter
@@ -3702,7 +3719,13 @@ class Detector(CppDetectorApi):
     @property
     def patwaittime(self):
         """
-        [Ctb][Mythen3][Xilinx Ctb] Wait time in clock cycles of loop level provided.
+        [Ctb][Mythen3][Xilinx Ctb] Wait time in clock cycles of loop level provided. 
+
+        Info
+        ----
+
+        :getter: Always return in clock cycles. To get in DurationWrapper, use getPatternWaitInterval
+        :setter: Accepts either a value in clock cycles or a time unit (timedelta, DurationWrapper)
         
         Example
         -------
@@ -3713,41 +3736,85 @@ class Detector(CppDetectorApi):
         0: 5
         1: 20
         2: 30
+        >>> # using timedelta (up to microseconds precision)
+        >>> from datetime import timedelta
+        >>> d.patwaittime[0] = timedelta(seconds=1, microseconds=3)
+        >>> 
+        >>> # using DurationWrapper to set in seconds
+        >>> from slsdet import DurationWrapper
+        >>> d.patwaittime[0] = DurationWrapper(1.2)
+        >>> 
+        >>> # using DurationWrapper to set in ns
+        >>> t = DurationWrapper()
+        >>> t.set_count(500)
+        >>> d.patwaittime = t
+        >>>
+        >>> # to get in clock cycles
+        >>> d.patwaittime
+        1000
+        >>> 
+        >>> d.getPatternWaitInterval(0)
+        sls::DurationWrapper(total_seconds: 1.23 count: 1230000000)
         """
         return PatWaitTimeProxy(self)
 
-    @property
-    @element
-    def patwaittime0(self):
-        """[Ctb][Mythen3][Xilinx Ctb] Wait 0 time in clock cycles."""
-        return self.getPatternWaitTime(0)
 
-    @patwaittime0.setter
-    def patwaittime0(self, nclk):
-        nclk = ut.merge_args(0, nclk)
-        ut.set_using_dict(self.setPatternWaitTime, *nclk)
+    def create_patwaittime_property(level):
+        docstring_template ="""
+        Deprecated command. Use patwaittime instead.
+        [Ctb][Mythen3][Xilinx Ctb] Wait time in clock cycles of loop level {level} provided. 
 
-    @property
-    @element
-    def patwaittime1(self):
-        """[Ctb][Mythen3][Xilinx Ctb] Wait 1 time in clock cycles."""
-        return self.getPatternWaitTime(1)
+        Info
+        ----
 
-    @patwaittime1.setter
-    def patwaittime1(self, nclk):
-        nclk = ut.merge_args(1, nclk)
-        ut.set_using_dict(self.setPatternWaitTime, *nclk)
+        :getter: Always return in clock cycles. To get in DurationWrapper, use getPatternWaitInterval
+        :setter: Accepts either a value in clock cycles or a time unit (timedelta, DurationWrapper)
+        
+        Example
+        -------
+        >>> d.patwaittime{level} = 5
+        >>> d.patwaittime{level}
+        5
+        >>> # using timedelta (up to microseconds precision)
+        >>> from datetime import timedelta
+        >>> d.patwaittime{level} = timedelta(seconds=1, microseconds=3)
+        >>> 
+        >>> # using DurationWrapper to set in seconds
+        >>> from slsdet import DurationWrapper
+        >>> d.patwaittime{level} = DurationWrapper(1.2)
+        >>> 
+        >>> # using DurationWrapper to set in ns
+        >>> t = DurationWrapper()
+        >>> t.set_count(500)
+        >>> d.patwaittime{level} = t
+        >>>
+        >>> # to get in clock cycles
+        >>> d.patwaittime{level}
+        1000
+        >>> 
+        >>> d.getPatternWaitInterval(level)
+        sls::DurationWrapper(total_seconds: 1.23 count: 1230000000)
+        """
+        @property
+        @element
+        def patwaittime(self):
+            return self.getPatternWaitClocks(level)
 
-    @property
-    @element
-    def patwaittime2(self):
-        """[Ctb][Mythen3][Xilinx Ctb] Wait 2 time in clock cycles."""
-        return self.getPatternWaitTime(2)
+        @patwaittime.setter
+        def patwaittime(self, value):
+            if isinstance(value, (int, float)) and not isinstance(value, bool):
+                nclk = ut.merge_args(level, value)
+                ut.set_using_dict(self.setPatternWaitClocks, level, *nclk)
+            else:
+                ut.set_time_using_dict(self.setPatternWaitInterval, level, value)
+        
+        patwaittime.__doc__ = docstring_template.format(level=level)
 
-    @patwaittime2.setter
-    def patwaittime2(self, nclk):
-        nclk = ut.merge_args(2, nclk)
-        ut.set_using_dict(self.setPatternWaitTime, *nclk)
+        return patwaittime
+    
+    patwaittime0 = create_patwaittime_property(0)
+    patwaittime1 = create_patwaittime_property(1)
+    patwaittime2 = create_patwaittime_property(2)
 
 
     @property
@@ -4037,27 +4104,6 @@ class Detector(CppDetectorApi):
         """
         return ClkDivProxy(self)
 
-
-    """
-    ---------------------------<<<Gotthard specific>>>---------------------------
-    """
-
-    @property
-    def exptimel(self):
-        """[Gotthard] Exposure time left for current frame.
-        
-        :getter: always returns in seconds. To get in DurationWrapper, use getExptimeLeft
-        :setter: Not Implemented
-        
-        Example
-        -----------
-        >>> d.exptimel
-        181.23
-        >>> d.getExptimeLeft()
-        [sls::DurationWrapper(total_seconds: 181.23 count: 181230000000)]
-        """
-        t = self.getExptimeLeft()
-        return reduce_time(t)
 
 
     """

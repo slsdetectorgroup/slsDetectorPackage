@@ -9,18 +9,21 @@ from .detector import Detector
 from .jungfrau import Jungfrau
 from .mythen3 import Mythen3
 from .gotthard2 import Gotthard2
-from .gotthard import Gotthard
 from .moench import Moench
 from .pattern import Pattern, patternParameters
 from .gaincaps import Mythen3GainCapsWrapper
+from .PatternGenerator import PatternGenerator
 
-import _slsdet
+from . import _slsdet
+from ._slsdet import freeSharedMemory, getUserDetails
+
 xy = _slsdet.xy
 defs = _slsdet.slsDetectorDefs
 
 #Make enums and #defines available at top level
 from .enums import *
 from .defines import *
+
 
 IpAddr = _slsdet.IpAddr
 MacAddr = _slsdet.MacAddr
@@ -29,12 +32,17 @@ currentSrcParameters = _slsdet.currentSrcParameters
 DurationWrapper = _slsdet.DurationWrapper
 pedestalParameters = _slsdet.pedestalParameters
 
-
-import subprocess
-def get_git_tag():
+import os
+def read_version():
     try:
-        return subprocess.check_output(['git', 'describe', '--tags', '--abbrev=0']).strip().decode('utf-8')
-    except subprocess.CalledProcessError:
-        return 'developer'
-__version__ = get_git_tag()
+        version_file = os.path.join(os.path.dirname(__file__), 'VERSION')
+        with open(version_file, "r") as f:
+            return f.read().strip()
+    except:
+        raise RuntimeError("VERSION file not found in slsdet package from init.py")
+    
+__version__ = read_version()
+
+
+
 

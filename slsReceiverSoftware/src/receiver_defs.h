@@ -19,8 +19,8 @@ namespace sls {
 // files
 
 // versions
-#define HDF5_WRITER_VERSION   (6.6) // 1 decimal places
-#define BINARY_WRITER_VERSION (7.2) // 1 decimal places
+#define HDF5_WRITER_VERSION   (7.0) // 1 decimal places
+#define BINARY_WRITER_VERSION (8.0) // 1 decimal places
 
 #define MAX_FRAMES_PER_FILE            20000
 #define SHORT_MAX_FRAMES_PER_FILE      100000
@@ -56,9 +56,6 @@ struct image_structure {
 
 // parameters to calculate fifo depth
 #define SAMPLE_TIME_IN_NS (100000000) // 100ms
-
-// to differentiate between gotthard and short gotthard
-#define GOTTHARD_PACKET_SIZE (1286)
 
 #define DUMMY_PACKET_VALUE (0xFFFFFFFF)
 

@@ -118,7 +118,7 @@
      </widget>
     </item>
     <item row="1" column="4">
-     <widget class="QLabel" name="label_70">
+     <widget class="QLabel" name="labelRunF">
       <property name="text">
        <string>Run Clock Frequency (MHz):</string>
       </property>
@@ -218,7 +218,7 @@
    </property>
    <layout class="QGridLayout" name="gridLayout_6">
     <item row="2" column="3">
-     <widget class="QLabel" name="label_74">
+     <widget class="QLabel" name="labelDBITF">
       <property name="minimumSize">
        <size>
         <width>200</width>
@@ -231,7 +231,7 @@
      </widget>
     </item>
     <item row="2" column="0">
-     <widget class="QLabel" name="label_71">
+     <widget class="QLabel" name="labelADCF">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
         <horstretch>0</horstretch>
@@ -278,7 +278,7 @@
      </widget>
     </item>
     <item row="4" column="3">
-     <widget class="QLabel" name="label_76">
+     <widget class="QLabel" name="labelDBITPipeline">
       <property name="text">
        <string>DBIT Pipeline:</string>
       </property>
@@ -338,21 +338,21 @@
      </widget>
     </item>
     <item row="4" column="0">
-     <widget class="QLabel" name="label_73">
+     <widget class="QLabel" name="labelADCPipeline">
       <property name="text">
        <string>ADC Pipeline:</string>
       </property>
      </widget>
     </item>
     <item row="3" column="0">
-     <widget class="QLabel" name="label_72">
+     <widget class="QLabel" name="labelADCPhase">
       <property name="text">
        <string>ADC Clock Phase (a.u.):</string>
       </property>
      </widget>
     </item>
     <item row="3" column="3">
-     <widget class="QLabel" name="label_75">
+     <widget class="QLabel" name="labelDBITPhase">
       <property name="text">
        <string>DBIT Clock Phase (a.u.):</string>
       </property>

@@ -1,3 +1,5 @@
+.. _detector_servers:
+
 Getting Started
 ===============
 
@@ -27,25 +29,24 @@ Arguments
          -p, --port <port>        : TCP communication port with client. 
          -g, --nomodule           : [Mythen3][Gotthard2] 
                                     Generic or No Module mode. Skips detector type checks. 
-         -f, --phaseshift <value> : [Gotthard] only. Sets phase shift. 
          -d, --devel              : Developer mode. Skips firmware checks. 
          -u, --update             : Update mode. Skips firmware checks and initial detector setup. 
-         -i, --ignore-config      : [Eiger][Jungfrau][Gotthard][Gotthard2][Moench] 
+         -i, --ignore-config      : [Eiger][Jungfrau][Gotthard2][Moench] 
                                     Ignore config file. 
-         -m, --master <master>    : [Eiger][Mythen3][Gotthard][Gotthard2] 
+         -m, --master <master>    : [Eiger][Mythen3][Gotthard2] 
                                     Set Master to 0 or 1. Precedence over config file. Only for virtual servers except Eiger. 
          -t, --top <top>          : [Eiger] Set Top to 0 or 1. Precedence over config file. 
          -s, --stopserver         : Stop server. Do not use as it is created by control server 
 
 
 .. _Automatic start servers:
+
 Automatic start 
 ------------------
 
 One can start the on-board detector server automatically upon powering on the board.
 
-#. Create a soft link to the binary on board 
-   :
+#. Create a soft link to the binary on board:
       .. code-block:: bash
       
          ln -sf someDetectorServervx.x.x someDetectorServer
@@ -65,7 +66,7 @@ One can start the on-board detector server automatically upon powering on the bo
          /home/root/executables/eigerDetectorServer &> /dev/null &
          exit 0
 
-   Jungfrau | Moench | CTB | Gotthard I
+   Jungfrau | Moench | CTB
       .. code-block:: bash
 
          # Edit inittab on board
@@ -87,8 +88,7 @@ One can start the on-board detector server automatically upon powering on the bo
          /root/xxxDetectorServer >> /dev/null &
 
 
-#. Sync, reboot and verify
-   :
+#. Sync, reboot and verify:
       .. code-block:: bash
       
          sync

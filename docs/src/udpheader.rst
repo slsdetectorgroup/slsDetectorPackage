@@ -3,13 +3,32 @@
 Format
 =======
 
-The UDP data format for the packets consist of a common header for all detectors, followed by the data for that one packet.
+The UDP data format for the packets consist of a common header of 48 bytes for all detectors, followed by the data for that one packet.
 
 
 Current Version
 ---------------------------
 
 **v2.0 (slsDetectorPackage v7.0.0+)**
+
+.. code-block:: cpp 
+    
+    typedef struct {
+        uint64_t frameNumber;
+        uint32_t expLength;
+        uint32_t packetNumber;
+        uint64_t detSpec1;
+        uint64_t timestamp;
+        uint16_t modId;
+        uint16_t row;
+        uint16_t column;
+        uint16_t detSpec2;
+        uint32_t detSpec3;
+        uint16_t detSpec4;
+        uint8_t detType;
+        uint8_t version;
+    } sls_detector_header;
+
 
 .. table:: <---------------------------------------------------- 8 bytes per row --------------------------------------------->
     :align: center
@@ -54,9 +73,9 @@ Description
 
 * **modId**: module ID picked up from det_id_[detector type].txt on the detector cpu.
 
-* **row**: row position of the module in the detector system. It is calculated by the order of the module in hostname command, as well as the detsize command.
+* **row**: row position of the module in the detector system. It is calculated by the order of the module in hostname command, as well as the detsize command. The modules are stacked row by row until they reach the y-axis limit set by detsize (if specified). Then, stacking continues in the next column and so on.
 
-* **column**: column position of the module in the detector system.  It is calculated by the order of the module in hostname command, as well as the detsize command.
+* **column**: column position of the module in the detector system.  It is calculated by the order of the module in hostname command, as well as the detsize command. The modules are stacked row by row until they reach the y-axis limit set by detsize (if specified). Then, stacking continues in the next column and so on.
 
 * **detType**: detector type from enum of detectorType in the package.
 
@@ -73,14 +92,15 @@ Detector Enum
     ================    ========
     GENERIC             0
     EIGER               1
-    GOTTHARD            2    
+    GOTTHARD*           2    
     JUNGFRAU            3    
     CHIPTESTBOARD       4        
     MOENCH              5
     MYTHEN3             6
     GOTTHARD2           7    
     ================    ========
-
+    
+    * deprecated since v10.0.0
 
 
 Previous Versions

@@ -106,9 +106,9 @@
     (0x0000FFFF << I2C_SDA_HOLD_COUNT_PERIOD_OFST)
 
 /** Receive Data Fifo Level register */
-//#define I2C_RX_DATA_FIFO_LVL_OFST           (0)
-//#define I2C_RX_DATA_FIFO_LVL_MSK            (0x000000FF <<
-// I2C_RX_DATA_FIFO_LVL_OFST)
+// #define I2C_RX_DATA_FIFO_LVL_OFST           (0)
+// #define I2C_RX_DATA_FIFO_LVL_MSK            (0x000000FF <<
+//  I2C_RX_DATA_FIFO_LVL_OFST)
 
 // defines in the fpga
 uint32_t I2C_Control_Reg = 0x0;

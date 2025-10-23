@@ -58,9 +58,10 @@ class Implementation : private virtual slsDetectorDefs {
     bool getArping() const;
     pid_t getArpingProcessId() const;
     void setArping(const bool i, const std::vector<std::string> ips);
-    ROI getReceiverROI() const;
-    void setReceiverROI(const ROI arg);
-    void setReceiverROIMetadata(const ROI arg);
+    std::vector<defs::ROI> getPortROIs() const;
+    void setPortROIs(const std::vector<defs::ROI> &args);
+    void setMultiROIMetadata(const std::vector<slsDetectorDefs::ROI> &args);
+    std::vector<slsDetectorDefs::ROI> getMultiROIMetadata() const;
 
     /**************************************************
      *                                                 *
@@ -211,9 +212,6 @@ class Implementation : private virtual slsDetectorDefs {
     void setCounterMask(const uint32_t i);
     uint32_t getDynamicRange() const;
     void setDynamicRange(const uint32_t i);
-    ROI getROI() const;
-    /* [Gotthard] */
-    void setDetectorROI(ROI arg);
     bool getTenGigaEnable() const;
     /* [Eiger][Ctb] */
     void setTenGigaEnable(const bool b);
@@ -255,9 +253,15 @@ class Implementation : private virtual slsDetectorDefs {
     int getDbitOffset() const;
     /* [Ctb] */
     void setDbitOffset(const int s);
+    bool getDbitReorder() const;
+    /* [Ctb] */
+    void setDbitReorder(const bool reorder);
     uint32_t getTransceiverEnableMask() const;
     /* [Ctb] */
     void setTransceiverEnableMask(const uint32_t mask);
+    speedLevel getReadoutSpeed() const;
+    /* [Eiger][Jungfrau][Moench][Mythen3][Gotthard2]*/
+    void setReadoutSpeed(const speedLevel i);
 
     /**************************************************
      *                                                *
@@ -265,9 +269,8 @@ class Implementation : private virtual slsDetectorDefs {
      *                                                *
      * ************************************************/
     /** params: file path, file name, file index, image size */
-    void registerCallBackStartAcquisition(int (*func)(const startCallbackHeader,
-                                                      void *),
-                                          void *arg);
+    void registerCallBackStartAcquisition(
+        void (*func)(const startCallbackHeader, void *), void *arg);
     /** params: total frames caught */
     void registerCallBackAcquisitionFinished(
         void (*func)(const endCallbackHeader, void *), void *arg);
@@ -283,7 +286,7 @@ class Implementation : private virtual slsDetectorDefs {
     void SetupFifoStructure();
 
     const xy GetPortGeometry() const;
-    const ROI GetMaxROIPerPort() const;
+    void ResetRois();
     void ResetParametersforNewAcquisition();
     void CreateUDPSockets();
     void SetupWriter();
@@ -308,14 +311,12 @@ class Implementation : private virtual slsDetectorDefs {
     bool framePadding{true};
     pid_t parentThreadId;
     pid_t tcpThreadId;
-    ROI receiverRoi{};
-    std::array<ROI, 2> portRois{};
-    // receiver roi for complete detector for metadata
-    ROI receiverRoiMetadata{};
+    std::vector<slsDetectorDefs::ROI> portRois;
+    std::vector<slsDetectorDefs::ROI> multiRoiMetadata;
 
     // file parameters
     fileFormat fileFormatType{BINARY};
-    std::string filePath{"/"};
+    std::string filePath{};
     std::string fileName{"run"};
     uint64_t fileIndex{0};
     bool fileWriteEnable{false};
@@ -370,11 +371,11 @@ class Implementation : private virtual slsDetectorDefs {
     int thresholdEnergyeV{-1};
     std::array<int, 3> thresholdAllEnergyeV = {{-1, -1, -1}};
     std::vector<int64_t> rateCorrections;
-    std::vector<int> ctbDbitList;
-    int ctbDbitOffset{0};
+    speedLevel readoutSpeed{FULL_SPEED};
 
     // callbacks
-    int (*startAcquisitionCallBack)(const startCallbackHeader, void *){nullptr};
+    void (*startAcquisitionCallBack)(const startCallbackHeader,
+                                     void *){nullptr};
     void *pStartAcquisition{nullptr};
     void (*acquisitionFinishedCallBack)(const endCallbackHeader,
                                         void *){nullptr};

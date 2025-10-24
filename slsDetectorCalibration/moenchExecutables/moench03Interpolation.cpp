@@ -17,7 +17,7 @@
 #endif
 
 //#include "etaInterpolationPosXY.h"
-#include "etaInterpolationPosXY.h"
+#include "etaInterpolationRosenblatt.h"
 #include "noInterpolation.h"
 //#include "etaInterpolationCleverAdaptiveBins.h"
 //#include "etaInterpolationRandomBins.h"
@@ -114,8 +114,8 @@ int main(int argc, char *argv[]) {
     //int f0 = -1;
     //  int nSubPixels = nsubpix;
 #ifndef NOINTERPOLATION
-    eta2InterpolationPosXY *interp =
-      new eta2InterpolationPosXY(NC, NR, nsubpix, nsubpix, etabins, etabins, etamin, etamax);
+    eta2InterpolationRosenblatt *interp =
+      new eta2InterpolationRosenblatt(NC, NR, nsubpix, nsubpix, etabins, etabins, etamin, etamax);
     // eta2InterpolationCleverAdaptiveBins *interp=new
     // eta2InterpolationCleverAdaptiveBins(NC, NR, nsubpix, etabins, etamin,
     // etamax);
@@ -134,6 +134,7 @@ int main(int argc, char *argv[]) {
     cout << "read ff " << argv[2] << endl;
     sprintf(fname, "%s", argv[2]);
     interp->readFlatField(fname);
+    
     interp->prepareInterpolation(ok); //, MAX_ITERATIONS);
 #endif
     // return 0;

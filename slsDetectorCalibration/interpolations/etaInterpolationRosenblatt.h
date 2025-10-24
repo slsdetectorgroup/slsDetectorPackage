@@ -2,11 +2,12 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #ifndef ETA_INTERPOLATION_POSXY_H
 #define ETA_INTERPOLATION_POSXY_H
-
+//#define SAVE_ALL
 //#include "sls/tiffIO.h"
 #include "eta2InterpolationBase.h"
 #include "eta3InterpolationBase.h"
 #include "etaInterpolationBase.h"
+
 
 class etaInterpolationRosenblatt : public virtual etaInterpolationBase {
   public:
@@ -117,12 +118,13 @@ class etaInterpolationRosenblatt : public virtual etaInterpolationBase {
         }
 
 
-	for (int ib = 0; ib < nbetaY; ib++) {
-	  int val=0;
 	  for (int ibx = 0; ibx < nbetaX; ibx++) {
+	  int val=0;
+	for (int ib = 0; ib < nbetaY; ib++) {
 	    val+=hhx[ibx + ib * nbetaX];
 	  }
-	  for (int ibx = 0; ibx < nbetaX; ibx++) {
+	// for (int ibx = 0; ibx < nbetaX; ibx++) {
+	for (int ib = 0; ib < nbetaY; ib++) {
 	    hhx[ibx + ib * nbetaX]=val;
           }    
 	}
@@ -139,7 +141,7 @@ class etaInterpolationRosenblatt : public virtual etaInterpolationBase {
                 }
             }
 	}
-
+	/*
         int ibx, iby, ib;
 
         iby = 0;
@@ -173,10 +175,10 @@ class etaInterpolationRosenblatt : public virtual etaInterpolationBase {
             for (ibx = 0; ibx < nbetaY; ibx++)
                 hhy[ib + nbetaX * ibx] = hhy[iby + nbetaX * ibx];
         }
-
-#ifdef SAVE_ALL
+	*/
+	//#ifdef SAVE_ALL
         debugSaveAll();
-#endif
+	//#endif
         delete[] hx;
         delete[] hy;
         delete[] hix;

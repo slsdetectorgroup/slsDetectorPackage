@@ -200,6 +200,9 @@ class etaInterpolationBase : public slsInterpolation {
     // virtual void prepareInterpolation(int &ok)=0;
 
     void debugSaveAll(int ind = 0) {
+
+      std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++SAVING ETAS"<< std::endl;
+      
         int ibx, iby;
         char tit[10000];
 
@@ -214,21 +217,21 @@ class etaInterpolationBase : public slsInterpolation {
             etah[ii] = heta[ii];
             tot_eta += heta[ii];
         }
-        sprintf(tit, "/scratch/eta_%d.tiff", ind);
+        sprintf(tit, "eta_%d.tiff", ind);
         WriteToTiff(etah, tit, nbetaX, nbetaY);
 
         for (int ii = 0; ii < nbetaX * nbetaY; ii++) {
             ibb = (hhx[ii] * nSubPixelsX);
             etah[ii] = ibb;
         }
-        sprintf(tit, "/scratch/eta_hhx_%d.tiff", ind);
+        sprintf(tit, "eta_hhx_%d.tiff", ind);
         WriteToTiff(etah, tit, nbetaX, nbetaY);
 
         for (int ii = 0; ii < nbetaX * nbetaY; ii++) {
             ibb = hhy[ii] * nSubPixelsY;
             etah[ii] = ibb;
         }
-        sprintf(tit, "/scratch/eta_hhy_%d.tiff", ind);
+        sprintf(tit, "eta_hhy_%d.tiff", ind);
         WriteToTiff(etah, tit, nbetaX, nbetaY);
 
         float *ftest = new float[nSubPixelsX * nSubPixelsY];
@@ -262,7 +265,7 @@ class etaInterpolationBase : public slsInterpolation {
                      << std::endl;
         }
 
-        sprintf(tit, "/scratch/ftest_%d.tiff", ind);
+        sprintf(tit, "./ftest_%d.tiff", ind);
         WriteToTiff(ftest, tit, nSubPixelsX, nSubPixelsY);
 
         // int ibx=0, iby=0;
@@ -280,7 +283,7 @@ class etaInterpolationBase : public slsInterpolation {
             } else
                 etah[ii] = 0;
         }
-        sprintf(tit, "/scratch/eta_bad_%d.tiff", ind);
+        sprintf(tit, "./eta_bad_%d.tiff", ind);
         WriteToTiff(etah, tit, nbetaX, nbetaY);
         // std::cout << "Index: " << ind << "\t Bad bins: "<< nbad << std::endl;
         // int ibx=0, iby=0;

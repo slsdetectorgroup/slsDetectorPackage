@@ -99,6 +99,10 @@ target_link_libraries(slsSupportObject
     md5sls     
 )
 
+#RH8 glibc 2.28, RH9 glibc 2.34 linking rt is only needed with glibc < 2.34
+#but we do it for all Linux builds to avoid too many conditionals
+target_link_libraries (slsSupportObject PUBLIC $<$<PLATFORM_ID:Linux>:rt>) 
+
 #Treat both vendored and system zmq as interface for receiver binaries
 if(SLS_USE_SYSTEM_ZMQ)
     message(STATUS "slsSupportLib using ZEROMQ_TARGET=${ZEROMQ_TARGET}")

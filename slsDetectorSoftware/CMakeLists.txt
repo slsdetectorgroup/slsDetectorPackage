@@ -31,9 +31,7 @@ target_link_libraries(slsDetectorObject
     PRIVATE
         slsProjectWarnings
 )
-#RH8 glibc 2.28, RH9 glibc 2.34 linking rt is only needed with glibc < 2.34
-#but we do it for all Linux builds to avoid too many conditionals
-target_link_libraries (slsDetectorObject PUBLIC $<$<PLATFORM_ID:Linux>:rt>) 
+
 
 set(DETECTOR_LIBRARY_TARGETS slsDetectorObject)
 

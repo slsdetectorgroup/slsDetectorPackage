@@ -50,6 +50,12 @@ datetime.timedelta, DurationWrapper or by setting the time in seconds.
     >>> d.getExptime()
     [sls::DurationWrapper(total_seconds: 181.23 count: 181230000000)]
 
+    # In C++ it is possible to use chrono literals to set time more easily
+    # d.setExptime(7ms). However, this is not possible due to pythons syntax.
+    # instead we can create a unit that we use for conversion.
+    >>> ms = dt.timedelta(milliseconds = 1)
+    >>> d.exptime = 7.5*ms
+
 
 
 ------------------------------------

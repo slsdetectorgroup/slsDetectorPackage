@@ -1841,49 +1841,49 @@ class Detector {
     int getRegisterDefinitionsCount() const;
 
     /** [CTB][Xilinx CTB] */
-    void setRegisterDefinition(const std::string &name, const int value);
+    void setRegisterDefinition(const std::string &name, defs::RegisterAddress addr);
 
     /** [CTB][Xilinx CTB] */
     bool hasRegisterDefinition(const std::string &name) const;
 
     /** [CTB][Xilinx CTB] */
-    int getRegisterDefinitionByName(const std::string &name) const;
+    defs::RegisterAddress getRegisterDefinitionByName(const std::string &name) const;
 
     /** [CTB][Xilinx CTB] */
-    std::string getRegisterDefinitionByValue(const int value) const;
+    std::string getRegisterDefinitionByValue(defs::RegisterAddress addr) const;
 
     /** [CTB][Xilinx CTB] */
     void clearRegisterDefinitions();
 
     /** [CTB][Xilinx CTB] */
-    void setRegisterDefinitions(const std::map<std::string, int> &list);
+    void setRegisterDefinitions(const std::map<std::string, defs::RegisterAddress> &list);
 
     /** [CTB][Xilinx CTB] */
-    std::map<std::string, int> getRegisterDefinitions() const;
+    std::map<std::string, defs::RegisterAddress> getRegisterDefinitions() const;
 
     /** [CTB][Xilinx CTB] */
     int getBitDefinitionsCount() const;
 
     /** [CTB][Xilinx CTB] */
-    void setBitDefinition(const std::string &name, const int value, const int address);
+    void setBitDefinition(const std::string &name, defs::BitPosition bit);
 
     /** [CTB][Xilinx CTB] */
     bool hasBitDefinition(const std::string &name) const;
 
     /** [CTB][Xilinx CTB] returns bit position and address */
-    std::array<int, 2> getBitDefinitionByName(const std::string &name) const;
+    defs::BitPosition getBitDefinitionByName(const std::string &name) const;
 
       /** [CTB][Xilinx CTB] */
-    std::string getBitDefinitionByValue(const int value, const int address) const;
+    std::string getBitDefinitionByValue(defs::BitPosition bit) const;
 
     /** [CTB][Xilinx CTB] */
     void clearBitDefinitions();
 
     /** [CTB][Xilinx CTB] */
-    void setBitDefinitions(const std::map<std::string, std::array<int, 2>> &list);
+    void setBitDefinitions(const std::map<std::string, defs::BitPosition> &list);
 
     /** [CTB][Xilinx CTB] */
-    std::map<std::string, std::array<int, 2>> getBitDefinitions() const;
+    std::map<std::string, defs::BitPosition> getBitDefinitions() const;
 
     ///@}
 

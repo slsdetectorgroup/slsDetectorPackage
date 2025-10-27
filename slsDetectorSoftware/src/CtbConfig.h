@@ -1,4 +1,8 @@
 #pragma once
+
+#include "sls/sls_detector_defs.h"
+#include "sls/string_utils.h"
+
 #include <map>
 #include <optional>
 #include <string>
@@ -11,6 +15,36 @@ namespace sls {
 #define CTB_SHMVERSION    0x250919
 
 #define CTB_NAME_LENGTH 32
+
+using RegAddr = slsDetectorDefs::RegisterAddress;
+using BitPos = slsDetectorDefs::BitPosition;
+
+
+struct RegisterDefinition {
+    char name[CTB_NAME_LENGTH]{};
+    RegAddr address{0};
+
+    RegisterDefinition(const std::string& n, RegAddr addr)
+        : address(addr) {
+        if (n.empty()) {
+            throw sls::RuntimeError("Register name cannot be empty.");
+        }
+        strcpy_checked(name, n);
+    }
+};
+
+struct BitDefinition {
+    char name[CTB_NAME_LENGTH]{};
+    BitPos pos;
+
+    BitDefinition(const std::string& n, BitPos p)
+        : pos(p) {
+        if (n.empty()) {
+            throw sls::RuntimeError("Bit name cannot be empty.");
+        }
+        strcpy_checked(name, n);  
+    }
+};
 
 struct Entry {
     char key[CTB_NAME_LENGTH]{};

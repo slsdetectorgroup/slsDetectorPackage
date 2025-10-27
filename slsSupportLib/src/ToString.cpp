@@ -173,6 +173,17 @@ std::ostream &operator<<(std::ostream &os,
     return os << ToString(r);
 }
 
+std::string ToString(const defs::BitPosition s) {
+    std::ostringstream os;
+    os << '[' << ToString(s.bit) << ',' << ToStringHex(s.reg.value) << ']';
+    return os.str();
+}
+
+std::ostream &operator<<(std::ostream &os,
+                         const slsDetectorDefs::BitPosition &p) {
+    return os << ToString(p);
+}
+
 std::string ToString(const defs::runStatus s) {
     switch (s) {
     case defs::ERROR:

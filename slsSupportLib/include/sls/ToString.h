@@ -47,6 +47,7 @@ std::string ToString(const defs::polarity s);
 std::string ToString(const defs::timingInfoDecoder s);
 std::string ToString(const defs::collectionMode s);
 
+
 std::string ToString(bool value);
 
 std::string ToString(const slsDetectorDefs::xy &coord);
@@ -65,6 +66,10 @@ std::ostream &operator<<(std::ostream &os,
 std::string ToString(const slsDetectorDefs::pedestalParameters &r);
 std::ostream &operator<<(std::ostream &os,
                          const slsDetectorDefs::pedestalParameters &r);
+std::string ToString(const defs::BitPosition s);
+std::ostream &operator<<(std::ostream &os,
+                         const defs::BitPosition &p);
+
 const std::string &ToString(const std::string &s);
 
 /** Convert std::chrono::duration with specified output unit */

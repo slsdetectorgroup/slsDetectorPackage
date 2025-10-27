@@ -130,6 +130,36 @@ class slsDetectorDefs {
             return ((x == other.x) && (y == other.y));
         }
     } __attribute__((packed));
+
+    struct RegisterAddress {
+        int value{0};
+
+        explicit RegisterAddress(int v) : value(v) {
+            if (v < 0) {
+                throw sls::RuntimeError("Register address cannot be negative.");
+            }
+        }
+    };
+
+    struct BitPosition {
+        RegisterAddress reg{0};
+        int bit{0};
+
+        explicit BitPosition(RegisterAddress r, int b)
+            : reg(r), bit(b) {
+            if (b < 0 || b > 31) {
+                throw sls::RuntimeError("Bit position must be between 0 and 31.");
+            }
+        }
+    }; 
+
+    struct RegisterValue {
+        uint32_t value{0};
+
+        explicit RegisterValue(uint32_t v)
+            : value(v) {}
+    };
+
 #endif
 
     /**

@@ -69,7 +69,6 @@ foreach(exe ${MOENCH_EXECUTABLES})
         PUBLIC
         slsSupportStatic
         ${ZeroMQ_LIBRARIES} 
-        pthread 
         tiffio
 
         PRIVATE

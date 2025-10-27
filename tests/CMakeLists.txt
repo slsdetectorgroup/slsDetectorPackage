@@ -24,7 +24,6 @@ target_link_libraries(tests
     PUBLIC 
       slsProjectOptions
       slsSupportStatic
-      pthread
     PRIVATE
       slsProjectWarnings
 )  

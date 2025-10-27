@@ -30,7 +30,8 @@ target_compile_definitions(eigerDetectorServer_virtual
 )
 
 target_link_libraries(eigerDetectorServer_virtual
-    PUBLIC pthread rt slsProjectCSettings
+    PUBLIC 
+        slsProjectCSettings
 )
 
 set_target_properties(eigerDetectorServer_virtual PROPERTIES

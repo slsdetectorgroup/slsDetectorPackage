@@ -31,7 +31,9 @@ target_compile_definitions(xilinx_ctbDetectorServer_virtual
 )
 
 target_link_libraries(xilinx_ctbDetectorServer_virtual
-    PUBLIC pthread rt m slsProjectCSettings
+    PUBLIC 
+        m 
+        slsProjectCSettings
 )
 
 set_target_properties(xilinx_ctbDetectorServer_virtual PROPERTIES

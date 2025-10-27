@@ -1,5 +1,8 @@
 # SPDX-License-Identifier: LGPL-3.0-or-other
 # Copyright (C) 2021 Contributors to the SLS Detector Package
+
+
+
 set(SOURCES
     src/string_utils.cpp
     src/file_utils.cpp
@@ -89,11 +92,16 @@ target_link_libraries(slsSupportObject
   PUBLIC
     slsProjectOptions 
     ${STD_FS_LIB} # from helpers.cmake
+    Threads::Threads # slsDetector and Receiver need this
     
   PRIVATE
     slsProjectWarnings
     md5sls     
 )
+
+#RH8 glibc 2.28, RH9 glibc 2.34 linking rt is only needed with glibc < 2.34
+#but we do it for all Linux builds to avoid too many conditionals
+target_link_libraries (slsSupportObject PUBLIC $<$<PLATFORM_ID:Linux>:rt>) 
 
 #Treat both vendored and system zmq as interface for receiver binaries
 if(SLS_USE_SYSTEM_ZMQ)

@@ -31,7 +31,8 @@ target_compile_definitions(gotthard2DetectorServer_virtual
 )
 
 target_link_libraries(gotthard2DetectorServer_virtual
-    PUBLIC pthread rt slsProjectCSettings
+    PUBLIC 
+        slsProjectCSettings
 )
 
 set_target_properties(gotthard2DetectorServer_virtual PROPERTIES

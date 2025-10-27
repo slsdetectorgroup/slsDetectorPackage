@@ -37,7 +37,7 @@ jobs:
 
       - name: C++ unit tests
         working-directory: ${{github.workspace}}/build
-        run: ctest -C ${{env.BUILD_TYPE}} -j1
+        run: ctest -C ${{env.BUILD_TYPE}} -j1 --rerun-failed --output-on-failure
 
       - name: Python unit tests
         working-directory: ${{github.workspace}}/build/bin

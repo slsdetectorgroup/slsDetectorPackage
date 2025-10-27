@@ -28,11 +28,10 @@ target_link_libraries(slsDetectorObject
     PUBLIC
         slsProjectOptions
         slsSupportStatic
-        pthread
-        rt
     PRIVATE
         slsProjectWarnings
 )
+
 
 set(DETECTOR_LIBRARY_TARGETS slsDetectorObject)
 
@@ -98,8 +97,7 @@ if(SLS_USE_TEXTCLIENT)
         add_executable(${val1} src/CmdApp.cpp)
 
         target_link_libraries(${val1} 
-        slsDetectorStatic
-        pthread
+            slsDetectorStatic
         )
         SET_SOURCE_FILES_PROPERTIES( src/Caller.cpp PROPERTIES COMPILE_FLAGS "-Wno-unused-variable -Wno-unused-but-set-variable")
 

@@ -24,6 +24,15 @@ include(cmake/SlsAddFlag.cmake)
 include(cmake/helpers.cmake)
 
 
+find_package(Threads REQUIRED)
+
+# POSIX threads are required for the moment but we use CMake to find them
+# Once migrated to std::thread this can be removed
+if(NOT CMAKE_USE_PTHREADS_INIT)
+    message(FATAL_ERROR "A POSIX threads (pthread) implementation is required, but was not found.")
+endif()
+
+
 option(SLS_USE_SYSTEM_ZMQ "Use system installed libzmq" OFF)
 
 # Using FetchContent to get libzmq
@@ -332,6 +341,9 @@ if (NOT TARGET slsProjectCSettings)
                                                 -Wno-format-truncation
                                     )
     sls_disable_c_warning("-Wstringop-truncation")
+    target_link_libraries(slsProjectCSettings INTERFACE
+        Threads::Threads
+    )
 endif()
 
 

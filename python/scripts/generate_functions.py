@@ -33,6 +33,31 @@ def green(msg):
     return f"{GREENC}{msg}{ENDC}"
 
 
+QUALIFY_KINDS = {
+    cindex.CursorKind.NAMESPACE,
+    cindex.CursorKind.CLASS_DECL,
+    cindex.CursorKind.STRUCT_DECL,
+    cindex.CursorKind.CLASS_TEMPLATE,
+    cindex.CursorKind.ENUM_DECL,
+    cindex.CursorKind.UNION_DECL,
+    cindex.CursorKind.TYPE_ALIAS_DECL,
+}
+
+def qualified_name(cur: cindex.Cursor, include_leaf: bool = True) -> str:
+    """
+    Build a fully-qualified name by following semantic_parent up to the TU.
+    If include_leaf is False, returns just the enclosing scope (namespaces, classes).
+    """
+    parts = []
+    c = cur if include_leaf else cur.semantic_parent
+    while c and c.kind != cindex.CursorKind.TRANSLATION_UNIT:
+        name = c.spelling or c.displayname  # displayname helps for anonymous namespaces
+        if name and (c.kind in QUALIFY_KINDS or c is cur):
+            parts.append(name)
+        c = c.semantic_parent
+    return "::".join(reversed(parts))
+
+
 def check_libclang_version(required="12"):
     # Use already-loaded libclang, or let cindex resolve it
     lib = ctypes.CDLL(cindex.Config.library_file or ctypes.util.find_library("clang"))
@@ -76,8 +101,8 @@ def check_for_compile_commands_json(path):
         print(msg)
 
 
-default_build_path = "/home/l_frojdh/sls/build/"
-fpath = "../../slsDetectorSoftware/src/Detector.cpp"
+default_build_path = Path("../../build/")
+fpath = Path("../../slsDetectorSoftware/src/Detector.cpp")
 
 
 m = []
@@ -87,25 +112,14 @@ ag2 = []
 cn = []
 
 
-def get_arguments(node):
-    args = [a.type.spelling for a in node.get_arguments()]
-    args = [
-        "py::arg() = Positions{}" if item == "sls::Positions" else "py::arg()"
-        for item in args
-    ]
-    args = ", ".join(args)
-    if args:
-        args = f", {args}"
-    return args
-
 
 def get_arguments_with_default(node):
     args = []
     for arg in node.get_arguments():
         tokens = [t.spelling for t in arg.get_tokens()]
-        # print(tokens)
         if "=" in tokens:
-            if arg.type.spelling == "sls::Positions":  # TODO! automate
+            # if arg.type.spelling == "sls::Positions":  # TODO! automate+
+            if arg.type.spelling == "Positions":  # TODO! automate
                 args.append("py::arg() = Positions{}")
             else:
                 args.append("py::arg()" + "".join(tokens[tokens.index("=") :]))
@@ -174,6 +188,10 @@ def visit(node):
                     m.append(child)
                     args = get_arguments_with_default(child)
                     fs = get_fdec(child)
+                    qualified_class = qualified_name(child.semantic_parent)  # "ns1::ns2::Detector"
+                    # lines.append(
+                    #     f'CppDetectorApi.def("{child.spelling}", {fs} &{qualified_class}::{child.spelling}{args});'
+                    # )
                     lines.append(
                         f'CppDetectorApi.def("{child.spelling}",{fs} &Detector::{child.spelling}{args});'
                     )
@@ -202,8 +220,11 @@ if __name__ == "__main__":
     )
     cargs = parser.parse_args()
 
-    check_libclang_version("12")
-    check_clang_format_version(12)
+    # check_libclang_version("12")
+    # check_clang_format_version(12)
+    cargs.build_path = cargs.build_path.resolve()
+    print(f'Using build path: {cargs.build_path}')
+
     check_for_compile_commands_json(cargs.build_path)
 
     print("Parsing functions in Detector.h - ", end="", flush=True)
@@ -212,11 +233,17 @@ if __name__ == "__main__":
     db = cindex.CompilationDatabase.fromDirectory(cargs.build_path)
     index = cindex.Index.create()
     args = db.getCompileCommands(fpath)
+
+    
     args = list(iter(args).__next__().arguments)[0:-1]
-    args = args + "-x c++ --std=c++11".split()
+    # print('\n\nUsing compile commands:', args)
+    # args = args + "-x c++ --std=c++17".split()
     syspath = system_include_paths("clang++")
     incargs = ["-I" + inc for inc in syspath]
     args = args + incargs
+    args = [arg for arg in args if arg.startswith("-I") or arg.startswith("-D")]
+    # args = incargs
+    # print(f"\n\nUsing compile args: {' '.join(args)}")
     tu = index.parse(fpath, args=args)
     visit(tu.cursor)
     print(green("OK"))
@@ -241,5 +268,5 @@ if __name__ == "__main__":
     subprocess.run(["clang-format", "../src/detector.cpp", "-i"])
     print(green(" OK"))
 
-    print("Changes since last commit:")
-    subprocess.run(["git", "diff", "../src/detector.cpp"])
+    # print("Changes since last commit:")
+    # subprocess.run(["git", "diff", "../src/detector.cpp"])

@@ -79,4 +79,10 @@ def system_include_paths(compiler, cpp=True):
         line = line.strip()
         paths.append(line)
     paths = [p.decode('utf-8') for p in paths]
+
+    # Only keep include paths from the conda prefix 
+    # remove anything pointing to gcc
+    prefix = os.environ['CONDA_PREFIX']
+    paths = [p for p in paths if prefix in p]
+    paths = [p for p in paths if 'gcc' not in p]
     return paths 

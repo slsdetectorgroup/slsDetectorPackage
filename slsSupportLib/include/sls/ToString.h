@@ -66,9 +66,6 @@ std::ostream &operator<<(std::ostream &os,
 std::string ToString(const slsDetectorDefs::pedestalParameters &r);
 std::ostream &operator<<(std::ostream &os,
                          const slsDetectorDefs::pedestalParameters &r);
-std::string ToString(const defs::BitPosition s);
-std::ostream &operator<<(std::ostream &os,
-                         const defs::BitPosition &p);
 
 const std::string &ToString(const std::string &s);
 

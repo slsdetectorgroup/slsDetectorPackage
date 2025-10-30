@@ -1440,28 +1440,38 @@ std::string Caller::define(int action) {
     std::ostringstream os;
     if (action == defs::HELP_ACTION) {
         os << "[Ctb][Xilinx Ctb]"
-                "\n\t[addr] [addr name] [address]"
-                "\n\t[bit] [bit name] [bit position] [addr name/ address]"
-                "\n\n\tSets a user defined register or bit name in shared memory. The name can be upto 32 characters long."
-                "\n\teg."
-                "\n\tsls_detector_put define addr test_reg 0x200"
-                "\n\tsls_detector_put define bit test_bit 2 test_reg"
-                "\n\tsls_detector_put define bit test_bit 2 0x200"
-                "\n\n\tOne can retrieve the address or bit position using the name.And vice versa, but bit name retrieval requires both bit and register name/address."
-                "\n\teg."
-                "\n\tsls_detector_get define addr test_reg"
-                "\n\tsls_detector_get define addr 0x200"
-                "\n\tsls_detector_get define bit test_bit"
-                "\n\tsls_detector_get define bit 2 test_reg"
-                "\n\tsls_detector_get define bit 2 0x200"
-                "\n\n\tOne can then use this user-defined name in other commands instead of hard coding the address or bit position such as for reg, setbit, clearbit and getbit commands. When using bit names, register name or address is not expected as the bit name is tied to a specific register already. For reg command, using bit names or concatenation of them is the value that will be set, provided both bit names are tied to the same register address."
-                "\n\teg."
-                "\n\tsls_detector_put reg test_reg 0x1"
-                "\n\tsls_detector_put reg test_bit"
-                "\n\tsls_detector_put reg test_bit|test_bit2"
-                "\n\tsls_detector_put setbit test_bit"
-                "\n\tsls_detector_put clearbit test_bit"
-                "\n\tsls_detector_get getbit test_bit"
+              "\n\t[addr] [addr name] [address]"
+              "\n\t[bit] [bit name] [bit position] [addr name/ address]"
+              "\n\n\tSets a user defined register or bit name in shared "
+              "memory. The name can be upto 32 characters long."
+              "\n\teg."
+              "\n\tsls_detector_put define addr test_reg 0x200"
+              "\n\tsls_detector_put define bit test_bit test_reg 2"
+              "\n\tsls_detector_put define bit test_bit 0x200 2"
+              "\n\n\tOne can retrieve the address or bit position using the "
+              "name.And vice versa, but bit name retrieval requires both bit "
+              "and register name/address."
+              "\n\teg."
+              "\n\tsls_detector_get define addr test_reg"
+              "\n\tsls_detector_get define addr 0x200"
+              "\n\tsls_detector_get define bit test_bit"
+              "\n\tsls_detector_get define bit test_reg 2"
+              "\n\tsls_detector_get define bit 0x200 2"
+              "\n\n\tOne can then use this user-defined name in other commands "
+              "instead of hard coding the address or bit position such as for "
+              "reg, setbit, clearbit and getbit commands. When using bit "
+              "names, register name or address is not expected as the bit name "
+              "is tied to a specific register already. For reg command, using "
+              "bit names or concatenation of them is the value that will be "
+              "set, provided both bit names are tied to the same register "
+              "address."
+              "\n\teg."
+              "\n\tsls_detector_put reg test_reg 0x1"
+              "\n\tsls_detector_put reg test_bit"
+              "\n\tsls_detector_put reg test_bit|test_bit2"
+              "\n\tsls_detector_put setbit test_bit"
+              "\n\tsls_detector_put clearbit test_bit"
+              "\n\tsls_detector_get getbit test_bit"
            << '\n';
         return os.str();
     }
@@ -1488,16 +1498,17 @@ std::string Caller::define(int action) {
     std::string mode = args[0];
     if (mode == "addr") {
         if (action == defs::GET_ACTION) {
+
             // get name from address
-            if (is_extended_int(args[1])) {
-                auto addr = defs::RegisterAddress(StringTo<int>(args[1]));
+            if (is_hex_or_dec_int(args[1])) {
+                auto addr = parseAddress(1);
                 auto t = det->getRegisterDefinitionByValue(addr);
                 os << t << '\n';
             }
             // get address from name
             else {
                 auto t = det->getRegisterDefinitionByName(args[1]);
-                os << ToStringHex(t.value) << '\n';
+                os << t.str() << '\n';
             }
         } 
         // put action
@@ -1505,29 +1516,28 @@ std::string Caller::define(int action) {
             if (args.size() != 3) {
                 WrongNumberOfParameters(3);
             }
-            if (!is_extended_int(args[2])) {
+            if (!is_hex_or_dec_int(args[2])) {
                 throw RuntimeError("Address must be an integer value.");
             }
-            auto addr = defs::RegisterAddress(StringTo<int>(args[2]));
+            auto addr = RegisterAddress(args[2]);
             det->setRegisterDefinition(args[1], addr);
-            os << "addr " << args[1] << ' ' << ToStringHex(addr.value) << '\n';
+            os << "addr " << args[1] << ' ' << addr.str() << '\n';
         }
     } else if (mode == "bit") {
         if (action == defs::GET_ACTION) {
             // get name from position and address
-            if (is_extended_int(args[1])) {
+            if (is_hex_or_dec_int(args[1])) {
                 if (args.size() != 3) {
                     WrongNumberOfParameters(3);
                 }
-                auto pos = defs::BitPosition(parseAddress(2), 
-                                             StringTo<int>(args[1]));
+                auto pos = BitPosition(parseAddress(1), StringTo<int>(args[2]));
                 auto t = det->getBitDefinitionByValue(pos);
                 os << t << '\n';
             }
             // get position from name
             else {
                 auto t = det->getBitDefinitionByName(args[1]);
-                os << t << '\n';
+                os << t.str() << '\n';
             }
         } 
         // put action
@@ -1538,8 +1548,7 @@ std::string Caller::define(int action) {
             if (!is_int(args[2])) {
                 throw RuntimeError("Bit position must be an integer value.");
             }
-            auto pos = defs::BitPosition(parseAddress(3), 
-                                         StringTo<int>(args[2]));
+            auto pos = BitPosition(parseAddress(2), StringTo<int>(args[3]));
             det->setBitDefinition(args[1], pos);
             os << ToString(args) << '\n';
         }
@@ -1624,9 +1633,9 @@ std::string Caller::setbit(int action) { return bitoperations(action); }
 
 std::string Caller::clearbit(int action) { return bitoperations(action); }
 
-defs::RegisterAddress Caller::parseAddress(int argPos) const {
-    if (is_extended_int(args[argPos])) {
-        return defs::RegisterAddress(StringTo<int>(args[argPos]));
+RegisterAddress Caller::parseAddress(int argPos) const {
+    if (is_hex_or_dec_int(args[argPos])) {
+        return RegisterAddress(args[argPos]);
     }
     auto det_type = det->getDetectorType().squash();
     if (det_type != defs::XILINX_CHIPTESTBOARD && det_type != defs::CHIPTESTBOARD) {
@@ -1635,25 +1644,25 @@ defs::RegisterAddress Caller::parseAddress(int argPos) const {
     return det->getRegisterDefinitionByName(args[argPos]);
 }
 
-
-defs::BitPosition Caller::parseBitNumberAndAddress() const {
+BitPosition Caller::parseBitPosition() {
     // bit name
     if (args.size() == 1) {
+        auto det_type = det->getDetectorType().squash();
         if (det_type != defs::XILINX_CHIPTESTBOARD && det_type != defs::CHIPTESTBOARD) {
             throw RuntimeError("Could not parse bit name " + args[0] + ". User defined bit definitions only supported for ctb and xilinx_ctb. Use an actual hard coded bit position for this detector.");
         }
         return det->getBitDefinitionByName(args[0]);
     }
 
-    // bit position and address
+    // address and bit position
     else if (args.size() == 2) {
-        return defs::BitPosition(parseAddress(1), StringTo<int>(args[0]));
+        return BitPosition(parseAddress(0), StringTo<int>(args[1]));
     } else {
         WrongNumberOfParameters(1);
     }
 }
 
-bool Caller::parseandRemoveValidate() const {
+bool Caller::parseandRemoveValidate() {
     bool validate = false;
     auto it = std::find(args.begin(), args.end(), "--validate");
     if (it != args.end()) {
@@ -1663,14 +1672,18 @@ bool Caller::parseandRemoveValidate() const {
     return validate;
 }
 
-std::pair<defs::RegisterAddress, defs::RegisterValue> Caller::parseRegAddressAndValue() const {
+std::pair<RegisterAddress, RegisterValue> Caller::parseRegAddressAndValue() {
+    // address and value
+    if (args.size() == 2) {
+        return std::make_pair(parseAddress(0), RegisterValue(args[1]));
+    }
     // parse bit name (or concatenation of them)
-    if (args.size() == 1) {
+    else if (args.size() == 1) {
         auto det_type = det->getDetectorType().squash();
         if (det_type != defs::XILINX_CHIPTESTBOARD && det_type != defs::CHIPTESTBOARD) {
             throw RuntimeError("Could not parse reg value " + args[0] + ". User defined bit definitions only supported for ctb and xilinx_ctb. Use an actual hard coded value for this detector.");
         }
-        RegisterAddress addr; 
+        RegisterAddress addr;
         RegisterValue val;
 
         std::stringstream ss(args[0]);
@@ -1679,20 +1692,20 @@ std::pair<defs::RegisterAddress, defs::RegisterValue> Caller::parseRegAddressAnd
             if (token.empty())
                 continue;
 
-            defs::BitPosition pos1 = det->getBitDefinitionByName(token);
+            BitPosition pos1 = det->getBitDefinitionByName(token);
             // if address not set, set it in retval[0]
-            if (addr.value == 0) {
-                addr.value = pos1.reg;
-            } else if (addr.value != pos1.reg) {
-                throw RuntimeError("Bit names provided are tied to different register addresses.");
+            if (addr == 0) {
+                addr = pos1.address();
+            } else if (addr != pos1.address()) {
+                throw RuntimeError(
+                    "Bit names provided are tied to different register "
+                    "addresses: [" +
+                    addr.str() + " " + pos1.address().str() +
+                    "]. Cannot write to different registers at the same time.");
             }
-            int bit_pos = pos1.bit;
+            int bit_pos = pos1.bitPosition();
             val |= (1u << bit_pos);
         }
-    } 
-    // bit position and address
-    else if (args.size() == 2) {
-        return std::make_pait(parseAddress(0), defs::RegisterValue(StringTo<uint32_t>(args[1])));
     } else {
         WrongNumberOfParameters(1);
     }
@@ -1730,15 +1743,8 @@ std::string Caller::bitoperations(int action) {
             throw RuntimeError("Unknown action");
         }
 
-        // remove --validate if present
-        bool validate = false;
-        auto it = std::find(args.begin(), args.end(), "--validate");
-        if (it != args.end()) {
-            args.erase(it); 
-            validate = true;
-        }
-
-        auto [bit, addr] = parseBitNumberAndAddress();
+        bool validate = parseandRemoveValidate();
+        auto [bit, addr] = parseBitPosition();
         if (action == defs::GET_ACTION) {
             if (cmd == "setbit" || cmd == "clearbit")
                 throw RuntimeError("Cannot get");

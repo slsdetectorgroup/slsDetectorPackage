@@ -3,6 +3,7 @@
 #pragma once
 #include "sls/Pattern.h"
 #include "sls/Result.h"
+#include "sls/bit_utils.h"
 #include "sls/network_utils.h"
 #include "sls/sls_detector_defs.h"
 #include <chrono>

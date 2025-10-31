@@ -2513,31 +2513,31 @@ int Detector::getRegisterDefinitionsCount() const {
     return pimpl->getRegisterDefinitionsCount();
 }
 
-void Detector::setRegisterDefinition(const std::string &name, const int value) {
-    pimpl->setRegisterDefinition(name, value);
+void Detector::setRegisterDefinition(const std::string &name, RegisterAddress addr) {
+    pimpl->setRegisterDefinition(name, addr);
 }
 
 bool Detector::hasRegisterDefinition(const std::string &name) const {
     return pimpl->hasRegisterDefinition(name);
 }
 
-int Detector::getRegisterDefinitionByName(const std::string &name) const {
+RegisterAddress Detector::getRegisterDefinitionByName(const std::string &name) const {
     return pimpl->getRegisterDefinitionByName(name);
 }
 
-std::string Detector::getRegisterDefinitionByValue(const int value) const {
+std::string Detector::getRegisterDefinitionByValue(RegisterAddress value) const {
     return pimpl->getRegisterDefinitionByValue(value);
 }
 
 void Detector::clearRegisterDefinitions() {
-    pimpl->setRegisterDefinitions(std::map<std::string, int>{});
+    pimpl->clearRegisterDefinitions();
 }
 
-void Detector::setRegisterDefinitions(const std::map<std::string, int> &list) {
+void Detector::setRegisterDefinitions(const std::map<std::string, RegisterAddress> &list) {
     pimpl->setRegisterDefinitions(list);
 }
 
-std::map<std::string, int> Detector::getRegisterDefinitions() const {
+std::map<std::string, RegisterAddress> Detector::getRegisterDefinitions() const {
     return pimpl->getRegisterDefinitions();
 }
 
@@ -2545,27 +2545,27 @@ int Detector::getBitDefinitionsCount() const {
     return pimpl->getBitDefinitionsCount();
 }
 
-void Detector::setBitDefinition(const std::string &name, const int value) {
-    pimpl->setBitDefinition(name, value);
+void Detector::setBitDefinition(const std::string &name, BitPosition bitPos) {
+    pimpl->setBitDefinition(name, bitPos);
 }
 
 bool Detector::hasBitDefinition(const std::string &name) const {
     return pimpl->hasBitDefinition(name);
 }
 
-int Detector::getBitDefinitionByName(const std::string &name) const {
+BitPosition Detector::getBitDefinitionByName(const std::string &name) const {
     return pimpl->getBitDefinitionByName(name);
 }
 
 void Detector::clearBitDefinitions() {
-    pimpl->setBitDefinitions(std::map<std::string, int>{});
+    pimpl->clearBitDefinitions();
 }
 
-void Detector::setBitDefinitions(const std::map<std::string, int> &list) {
+void Detector::setBitDefinitions(const std::map<std::string, BitPosition> &list) {
     pimpl->setBitDefinitions(list);
 }
 
-std::map<std::string, int> Detector::getBitDefinitions() const {
+std::map<std::string, BitPosition> Detector::getBitDefinitions() const {
     return pimpl->getBitDefinitions();
 }
 
@@ -2793,6 +2793,28 @@ void Detector::clearBit(uint32_t addr, int bitnr, bool validate,
 Result<int> Detector::getBit(uint32_t addr, int bitnr, Positions pos) {
     return pimpl->Parallel(&Module::getBit, pos, addr, bitnr);
 }
+
+Result<RegisterValue> Detector::readRegister(RegisterAddress addr, Positions pos) const {
+    return pimpl->Parallel(&Module::readRegister, pos, addr);
+}
+
+void Detector::writeRegister(RegisterAddress addr, RegisterValue val, bool validate, Positions pos) {
+    pimpl->Parallel(&Module::writeRegister, pos, addr, val, validate);
+}
+
+void Detector::setBit(BitPosition bitPos, bool validate, Positions pos) {
+    pimpl->Parallel(&Module::setBit, pos, bitPos.address(), bitPos.bitPosition(), validate);
+}
+
+void Detector::clearBit(BitPosition bitPos, int bitnr, bool validate,
+                        Positions pos) {
+    pimpl->Parallel(&Module::clearBit, pos, bitPos.address(), bitPos.bitPosition(), validate);
+}
+
+Result<int> Detector::getBit(BitPosition bitPos, int bitnr, Positions pos) {
+    return pimpl->Parallel(&Module::getBit, pos, bitPos.address(), bitPos.bitPosition());
+}
+
 
 void Detector::executeFirmwareTest(Positions pos) {
     pimpl->Parallel(&Module::executeFirmwareTest, pos);

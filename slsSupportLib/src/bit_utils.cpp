@@ -13,6 +13,9 @@ RegisterAddress::RegisterAddress(int address)  : addr_(address) {
 }
 
 RegisterAddress::RegisterAddress(const std::string &address) {
+    if (!is_hex_or_dec_int(address)) {
+        throw RuntimeError("Address must be an integer value.");
+    }
     int addr = StringTo<int>(address);
     if (addr < 0) {
         throw RuntimeError("Register address cannot be negative.");

@@ -1492,16 +1492,18 @@ std::string Caller::define(int action) {
     }
 
     // mode: addr or bit
-    if (args.size() < 2) {
+    if (args.empty()) {
         WrongNumberOfParameters(2);
     }
     std::string mode = args[0];
     if (mode == "addr") {
         if (action == defs::GET_ACTION) {
-
+            if (args.size() != 2) {
+                WrongNumberOfParameters(2);
+            }
             // get name from address
             if (is_hex_or_dec_int(args[1])) {
-                auto addr = parseAddress(1);
+                auto addr = RegisterAddress(args[1]);
                 auto t = det->getRegisterDefinitionByValue(addr);
                 os << t << '\n';
             }
@@ -1516,28 +1518,24 @@ std::string Caller::define(int action) {
             if (args.size() != 3) {
                 WrongNumberOfParameters(3);
             }
-            if (!is_hex_or_dec_int(args[2])) {
-                throw RuntimeError("Address must be an integer value.");
-            }
             auto addr = RegisterAddress(args[2]);
             det->setRegisterDefinition(args[1], addr);
             os << "addr " << args[1] << ' ' << addr.str() << '\n';
         }
     } else if (mode == "bit") {
         if (action == defs::GET_ACTION) {
+            // get position from name
+            if (args.size() == 2) {
+                auto t = det->getBitDefinitionByName(args[1]);
+                os << t.str() << '\n';
+            }
             // get name from position and address
-            if (is_hex_or_dec_int(args[1])) {
-                if (args.size() != 3) {
-                    WrongNumberOfParameters(3);
-                }
+            else if (args.size() != 3) {
                 auto pos = BitPosition(parseAddress(1), StringTo<int>(args[2]));
                 auto t = det->getBitDefinitionByValue(pos);
                 os << t << '\n';
-            }
-            // get position from name
-            else {
-                auto t = det->getBitDefinitionByName(args[1]);
-                os << t.str() << '\n';
+            } else {
+                WrongNumberOfParameters(2);
             }
         } 
         // put action
@@ -1545,7 +1543,7 @@ std::string Caller::define(int action) {
             if (args.size() != 4) {
                 WrongNumberOfParameters(4);
             } 
-            if (!is_int(args[2])) {
+            if (!is_int(args[3])) {
                 throw RuntimeError("Bit position must be an integer value.");
             }
             auto pos = BitPosition(parseAddress(2), StringTo<int>(args[3]));
@@ -1558,6 +1556,7 @@ std::string Caller::define(int action) {
     }
     return os.str();
 }
+
 std::string Caller::definelist(int action) {
     std::ostringstream os;
     if (action == defs::HELP_ACTION) {
@@ -1606,18 +1605,28 @@ std::string Caller::reg(int action) {
               "+0x200 for only right.\n\t\t[Ctb][Xilinx_Ctb] Address can also "
               "be a user-defined name that was set previously using the define "
               "command. Value can be a user-defined bit name as well or "
-              "combined with '|'.When using bit names, avoid register name/ address as the bit name is tied to a specific register already.\n"
+              "combined with '|' without spaces eg. 'test_bit|run_bit' .When using bit names, avoid register name/ address as the bit name is tied to a specific register already.\n"
+              "\n\n\teg."
+              "\n\tsls_detector_get reg test_reg"
+              "\n\tsls_detector_put reg test_bit"
+              "\n\tsls_detector_put reg test_reg 0xFF --validate"
+              "\n\tsls_detector_put reg 0x200 0xFFF"
+              "\n\tsls_detector_put reg test_bit|test_bit2"
            << '\n';
     } else {
 
-        bool validate = parseandRemoveValidate();
 
-        auto [addr, val] = parseRegAddressAndValue();
 
         if (action == defs::PUT_ACTION) {
+            bool validate = parseandRemoveValidate();
+            auto [addr, val] = parseRegAddressAndValue();
             det->writeRegister(addr, val, validate, std::vector<int>{det_id});
             os << '[' << args[0] << ", " << args[1] << "]\n";
         } else if (action == defs::GET_ACTION) {
+            if (args.size() != 1) {
+                WrongNumberOfParameters(1);
+            }
+            auto addr = parseAddress(0);
             auto t = det->readRegister(addr, std::vector<int>{det_id});
             os << OutStringHex(t) << '\n';
         } else {
@@ -1632,6 +1641,65 @@ std::string Caller::getbit(int action) { return bitoperations(action); }
 std::string Caller::setbit(int action) { return bitoperations(action); }
 
 std::string Caller::clearbit(int action) { return bitoperations(action); }
+
+std::string Caller::bitoperations(int action) {
+    std::ostringstream os;
+    if (action == defs::HELP_ACTION) {
+        if (cmd == "getbit") {
+            os << "[reg address in hex] [bit index]\n\tGets bit in address."
+               << '\n';
+        } else if (cmd == "setbit") {
+            os << "[reg address in hex] [bit index]\n\tSets bit in "
+                  "address.\n\tUse --validate to force validation."
+               << '\n';
+        } else if (cmd == "clearbit") {
+            os << "[reg address in hex] [bit index]\n\tClears bit in "
+                  "address.\n\tUse --validate to force validation."
+               << '\n';
+        } else {
+            throw RuntimeError("Unknown command");
+        }
+        os << "\n\t\t[Ctb][Xilinx_Ctb] Address or bit position can also be a "
+              "user-defined name that was set previously using the define "
+              "command. When using bit names, avoid register name/ address as the bit name is tied to a specific register already."
+              "\n\n\teg."
+              "\n\tsls_detector_get getbit 0x200 2"
+              "\n\tsls_detector_get getbit test_reg 2"
+              "\n\tsls_detector_get getbit test_bit"
+              "\n\tsls_detector_put setbit 0x200 2"
+              "\n\tsls_detector_put setbit test_reg 2"
+              "\n\tsls_detector_put setbit test_bit"
+              "\n\tsls_detector_put clearbit test_bit";
+        os << '\n';
+    } else {
+        if (action != defs::GET_ACTION && action != defs::PUT_ACTION) {
+            throw RuntimeError("Unknown action");
+        }
+
+        bool validate = parseandRemoveValidate();
+        auto bitPosition = parseBitPosition();
+        auto addr = bitPosition.address();
+        int bit = bitPosition.bitPosition();
+        if (action == defs::GET_ACTION) {
+            if (cmd == "setbit" || cmd == "clearbit")
+                throw RuntimeError("Cannot get");
+
+            auto t = det->getBit(addr, bit, std::vector<int>{det_id});
+            os << OutString(t) << '\n';
+        } else {
+            if (cmd == "getbit")
+                throw RuntimeError("Cannot put");
+            if (cmd == "setbit")
+                det->setBit(addr, bit, validate, std::vector<int>{det_id});
+            else if (cmd == "clearbit")
+                det->clearBit(addr, bit, validate, std::vector<int>{det_id});
+            else
+                throw RuntimeError("Unknown command");
+            os << '[' << args[0] << ", " << args[1] << "]\n";
+        }
+    }
+    return os.str();
+}
 
 RegisterAddress Caller::parseAddress(int argPos) const {
     if (is_hex_or_dec_int(args[argPos])) {
@@ -1699,8 +1767,7 @@ std::pair<RegisterAddress, RegisterValue> Caller::parseRegAddressAndValue() {
             } else if (addr != pos1.address()) {
                 throw RuntimeError(
                     "Bit names provided are tied to different register "
-                    "addresses: [" +
-                    addr.str() + " " + pos1.address().str() +
+                    "addresses: [" + addr.str() + " " + pos1.address().str() +
                     "]. Cannot write to different registers at the same time.");
             }
             int bit_pos = pos1.bitPosition();
@@ -1711,59 +1778,5 @@ std::pair<RegisterAddress, RegisterValue> Caller::parseRegAddressAndValue() {
     }
 }
 
-std::string Caller::bitoperations(int action) {
-    std::ostringstream os;
-    if (action == defs::HELP_ACTION) {
-        if (cmd == "getbit") {
-            os << "[reg address in hex] [bit index]\n\tGets bit in address."
-               << '\n';
-        } else if (cmd == "setbit") {
-            os << "[reg address in hex] [bit index]\n\tSets bit in "
-                  "address.\n\tUse --validate to force validation."
-               << '\n';
-        } else if (cmd == "clearbit") {
-            os << "[reg address in hex] [bit index]\n\tClears bit in "
-                  "address.\n\tUse --validate to force validation."
-               << '\n';
-        } else {
-            throw RuntimeError("Unknown command");
-        }
-        os << "\n\t\t[Ctb][Xilinx_Ctb] Address or bit position can also be a "
-              "user-defined name that was set previously using the define "
-              "command. When using bit names, avoid register name/ address as the bit name is tied to a specific register already."
-              "\n\n\teg."
-              "\n\tsls_detector_get getbit test_bit"
-              "\n\tsls_detector_put setbit test_bit"
-              "\n\tsls_detector_put clearbit test_bit"
-              "\n\tsls_detector_put reg test_bit"
-              "\n\tsls_detector_put reg test_bit|test_bit2";
-        os << '\n';
-    } else {
-        if (action != defs::GET_ACTION && action != defs::PUT_ACTION) {
-            throw RuntimeError("Unknown action");
-        }
-
-        bool validate = parseandRemoveValidate();
-        auto [bit, addr] = parseBitPosition();
-        if (action == defs::GET_ACTION) {
-            if (cmd == "setbit" || cmd == "clearbit")
-                throw RuntimeError("Cannot get");
-
-            auto t = det->getBit(addr, bit, std::vector<int>{det_id});
-            os << OutString(t) << '\n';
-        } else {
-            if (cmd == "getbit")
-                throw RuntimeError("Cannot put");
-            if (cmd == "setbit")
-                det->setBit(addr, bit, validate, std::vector<int>{det_id});
-            else if (cmd == "clearbit")
-                det->clearBit(addr, bit, validate, std::vector<int>{det_id});
-            else
-                throw RuntimeError("Unknown command");
-            os << '[' << args[0] << ", " << args[1] << "]\n";
-        }
-    }
-    return os.str();
-}
 
 } // namespace sls

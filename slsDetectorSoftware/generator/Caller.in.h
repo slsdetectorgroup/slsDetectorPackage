@@ -74,11 +74,11 @@ class Caller {
     static void EmptyDataCallBack(detectorData *data, uint64_t frameIndex,
                                   uint32_t subFrameIndex, void *this_pointer);
 
-    RegisterAddress parseAddress(const int argPos) const;
+    std::string bitoperations(int action);
+    RegisterAddress parseAddress(int argPos) const;
     BitPosition parseBitPosition();
     bool parseandRemoveValidate();
     std::pair<RegisterAddress, RegisterValue> parseRegAddressAndValue();
-    std::string bitoperations(int action);
 
     FunctionMap functions{
         {"list", &Caller::list},

@@ -6,6 +6,7 @@
 #include "CtbConfig.h"
 #include "SharedMemory.h"
 #include <fstream>
+#include <set>
 
 namespace sls {
 
@@ -51,6 +52,12 @@ TEST_CASE("Default construction") {
     REQUIRE(regisernames.size() == 0);
     auto bitnames = c.getBitNames();
     REQUIRE(bitnames.size() == 0);
+    REQUIRE(c.getRegisterNamesCount() == 0);
+    auto registerNames = c.getRegisterNames();
+    REQUIRE(registerNames.size() == 0);
+    REQUIRE(c.getBitNamesCount() == 0);
+    auto bitNames = c.getBitNames();
+    REQUIRE(bitNames.size() == 0);
 }
 
 TEST_CASE("Set and get a single dac name") {
@@ -92,22 +99,27 @@ TEST_CASE("Move CtbConfig ") {
 
 TEST_CASE("Add or modify a register name", "[.reg]") {
     CtbConfig c;
+    auto addr = RegisterAddress(100);
+    auto addr1 = RegisterAddress(300);
+
     REQUIRE(c.getRegisterNamesCount() == 0);
-
     REQUIRE_THROWS(
-        c.setRegisterName("reg1_with_a_really_long_name_to_crash", 100));
-
+        c.setRegisterName("reg1_with_a_really_long_name_to_crash", addr));
     // add an entry
-    REQUIRE_NOTHROW(c.setRegisterName("reg1", 100));
-    REQUIRE(c.getRegisterName(100).value() == "reg1");
-    REQUIRE(c.getRegisterAddress("reg1").value() == 100);
+    REQUIRE_NOTHROW(c.setRegisterName("reg1", addr));
+    REQUIRE(c.getRegisterName(addr) == "reg1");
+    REQUIRE(c.getRegisterAddress("reg1") == addr);
     REQUIRE(c.getRegisterNamesCount() == 1);
     // modify an entry
-    REQUIRE_NOTHROW(c.setRegisterName("reg1", 0x300));
-    REQUIRE(c.getRegisterAddress("reg1").value() == 0x300);
+    REQUIRE_NOTHROW(c.setRegisterName("reg1", addr1));
+    REQUIRE(c.getRegisterAddress("reg1") == addr1);
+    REQUIRE(c.getRegisterName(addr1) == "reg1");
     // clear all entries
     REQUIRE_NOTHROW(c.clearRegisterNames());
     REQUIRE(c.getRegisterNamesCount() == 0);
+    REQUIRE_THROWS(c.getRegisterName(addr));
+    REQUIRE_THROWS(c.getRegisterAddress("reg1"));
+    REQUIRE_THROWS(c.getRegisterName(addr1));
 }
 
 TEST_CASE("Add a register list", "[.reg]") {
@@ -115,15 +127,24 @@ TEST_CASE("Add a register list", "[.reg]") {
     REQUIRE(c.getRegisterNamesCount() == 0);
 
     // add a list
-    std::map<std::string, int> list = {
-        {"reg1", 0x100}, {"reg2", 0x200}, {"reg3", 0x300}};
+    std::map<std::string, RegisterAddress> list = {
+        {"reg1", RegisterAddress(0x100)},
+        {"reg2", RegisterAddress(0x200)},
+        {"reg3", RegisterAddress(0x300)}};
     REQUIRE_NOTHROW(c.setRegisterNames(list));
     REQUIRE(c.getRegisterNamesCount() == static_cast<int>(list.size()));
     auto names = c.getRegisterNames();
     REQUIRE(names.size() == 3);
+
+    std::set<RegisterAddress> seen_values;
     for (const auto &[key, val] : list) {
+        // check for duplicate keys, and key-value match
         REQUIRE(names.count(key) == 1);
         REQUIRE(names.at(key) == val);
+
+        // check for duplicate values
+        REQUIRE(seen_values.count(val) == 0);
+        seen_values.insert(val);
     }
 
     // clear all entries
@@ -133,55 +154,82 @@ TEST_CASE("Add a register list", "[.reg]") {
 
 TEST_CASE("Finding a regiser name or address", "[.reg]") {
     CtbConfig c;
+    RegisterAddress addr1(0x100);
+    RegisterAddress addr2(0x200);
+    RegisterAddress addr3(0x300);
 
     // find nothing
     REQUIRE(c.getRegisterNamesCount() == 0);
-    REQUIRE(c.getRegisterName(100) == std::nullopt);
-    REQUIRE(c.getRegisterAddress("reg1") == std::nullopt);
+    REQUIRE_THROWS(c.getRegisterName(addr1));
+    REQUIRE_THROWS(c.getRegisterAddress("reg1"));
 
-    std::map<std::string, int> list = {
-        {"reg1", 0x100}, {"reg2", 0x200}, {"reg3", 0x300}};
+    std::map<std::string, RegisterAddress> list = {
+        {"reg1", addr1}, {"reg2", addr2}, {"reg3", addr3}};
     REQUIRE_NOTHROW(c.setRegisterNames(list));
 
     // find
-    REQUIRE(c.getRegisterName(0x100).value() == "reg1");
-    REQUIRE(c.getRegisterName(0x200).value() == "reg2");
-    REQUIRE(c.getRegisterAddress("reg3").value() == 0x300);
+    REQUIRE(c.getRegisterName(addr1) == "reg1");
+    REQUIRE(c.getRegisterName(addr2) == "reg2");
+    REQUIRE(c.getRegisterAddress("reg3") == addr3);
 }
 
 TEST_CASE("Add or modify a bit name", "[.reg]") {
     CtbConfig c;
+    RegisterAddress addr(0x100);
+    BitPosition pos(addr, 2);
+    BitPosition pos1(addr, 5);
+
     REQUIRE(c.getBitNamesCount() == 0);
 
-    REQUIRE_THROWS(c.setBitName("bit1_with_a_really_long_name_to_crash", 100));
-    REQUIRE_THROWS(c.setBitName("bit1", 32));
-    REQUIRE_THROWS(c.setBitName("bit1", -1));
+    REQUIRE_THROWS(c.setBitName("bit1_with_a_really_long_name_to_crash",
+                                BitPosition(addr, 100)));
+    REQUIRE_THROWS(c.setBitName("bit1", BitPosition(addr, 32)));
+    REQUIRE_THROWS(c.setBitName("bit1", BitPosition(addr, -1)));
 
     // add an entry
-    REQUIRE_NOTHROW(c.setBitName("bit1", 2));
-    REQUIRE(c.getBitPosition("bit1").value() == 2);
+    REQUIRE_NOTHROW(c.setBitName("bit1", pos));
+    REQUIRE(c.getBitName(pos) == "bit1");
+    REQUIRE(c.getBitPosition("bit1") == pos);
     REQUIRE(c.getBitNamesCount() == 1);
     // modify an entry
-    REQUIRE_NOTHROW(c.setBitName("bit1", 5));
-    REQUIRE(c.getBitPosition("bit1").value() == 5);
+    REQUIRE_NOTHROW(c.setBitName("bit1", pos1));
+    REQUIRE(c.getBitPosition("bit1") == pos1);
+    REQUIRE(c.getBitName(pos1) == "bit1");
     // clear all entries
     REQUIRE_NOTHROW(c.clearBitNames());
     REQUIRE(c.getBitNamesCount() == 0);
+    REQUIRE_THROWS(c.getBitName(pos));
+    REQUIRE_THROWS(c.getBitPosition("bit1"));
+    REQUIRE_THROWS(c.getBitName(pos1));
 }
 
 TEST_CASE("Add a bit list", "[.reg]") {
     CtbConfig c;
     REQUIRE(c.getBitNamesCount() == 0);
 
+    RegisterAddress addr(0x100);
+    BitPosition pos1(addr, 2);
+    BitPosition pos2(addr, 21);
+
+    BitPosition pos3(addr, 31);
+
     // add a list
-    std::map<std::string, int> list = {{"bit1", 2}, {"bit2", 21}, {"bit3", 31}};
+    std::map<std::string, BitPosition> list = {
+        {"bit1", pos1}, {"bit2", pos2}, {"bit3", pos3}};
     REQUIRE_NOTHROW(c.setBitNames(list));
     REQUIRE(c.getBitNamesCount() == 3);
     auto names = c.getBitNames();
-    REQUIRE(names.size() == static_cast<int>(3));
+    REQUIRE(names.size() == 3);
+
+    std::set<BitPosition> seen_values;
     for (const auto &[key, val] : list) {
+        // check for duplicate keys, and key-value match
         REQUIRE(names.count(key) == 1);
         REQUIRE(names.at(key) == val);
+
+        // check for duplicate values
+        REQUIRE(seen_values.count(val) == 0);
+        seen_values.insert(val);
     }
 
     // clear all entries
@@ -191,16 +239,22 @@ TEST_CASE("Add a bit list", "[.reg]") {
 
 TEST_CASE("Finding a bit value", "[.reg]") {
     CtbConfig c;
+    RegisterAddress addr(0x100);
+    BitPosition pos(addr, 2);
+    BitPosition pos1(addr, 21);
+    BitPosition pos2(addr, 31);
 
     // find nothing
     REQUIRE(c.getBitNamesCount() == 0);
-    REQUIRE(c.getBitPosition("bit1") == std::nullopt);
+    REQUIRE_THROWS(c.getBitPosition("bit"));
 
-    std::map<std::string, int> list = {{"bit1", 2}, {"bit2", 21}, {"bit3", 31}};
+    std::map<std::string, BitPosition> list = {
+        {"bit1", pos}, {"bit1", pos1}, {"bit2", pos2}};
     REQUIRE_NOTHROW(c.setBitNames(list));
 
     // find
-    REQUIRE(c.getBitPosition("bit3").value() == 31);
+    REQUIRE(c.getBitPosition("bit3") == pos2);
+    REQUIRE(c.getBitName(pos1) == "bit1");
 }
 
 } // namespace sls

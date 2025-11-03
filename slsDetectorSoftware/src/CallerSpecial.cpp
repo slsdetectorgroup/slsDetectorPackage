@@ -1504,12 +1504,12 @@ std::string Caller::define(int action) {
             // get name from address
             if (is_hex_or_dec_int(args[1])) {
                 auto addr = RegisterAddress(args[1]);
-                auto t = det->getRegisterDefinitionByValue(addr);
+                auto t = det->getRegisterDefinition(addr);
                 os << t << '\n';
             }
             // get address from name
             else {
-                auto t = det->getRegisterDefinitionByName(args[1]);
+                auto t = det->getRegisterDefinition(args[1]);
                 os << t.str() << '\n';
             }
         } 
@@ -1526,13 +1526,19 @@ std::string Caller::define(int action) {
         if (action == defs::GET_ACTION) {
             // get position from name
             if (args.size() == 2) {
-                auto t = det->getBitDefinitionByName(args[1]);
-                os << t.str() << '\n';
+                auto t = det->getBitDefinition(args[1]);
+                bool found_addr = det->hasRegisterDefinition(t.address());
+                if (found_addr) {
+                    os << '[' << det->getRegisterDefinition(t.address()) << ", "
+                       << std::to_string(t.bitPosition()) << "]\n";
+                } else {
+                    os << t.str() << '\n';
+                }
             }
             // get name from position and address
             else if (args.size() != 3) {
                 auto pos = BitPosition(parseAddress(1), StringTo<int>(args[2]));
-                auto t = det->getBitDefinitionByValue(pos);
+                auto t = det->getBitDefinition(pos);
                 os << t << '\n';
             } else {
                 WrongNumberOfParameters(2);
@@ -1582,7 +1588,20 @@ std::string Caller::definelist(int action) {
             os << ToString(t) << '\n';
         } else if (mode == "bit") {
             auto t = det->getBitDefinitions();
-            os << ToString(t) << '\n';
+            os << '[';
+            for (const auto &[key, val] : t) {
+                bool found_addr = det->hasRegisterDefinition(val.address());
+                if (found_addr) {
+                    os << '[' << det->getRegisterDefinition(val.address())
+                       << ", " << std::to_string(val.bitPosition()) << "]\n";
+                } else {
+                    os << val.str() << '\n';
+                }
+                if (&key != &t.rbegin()->first) {
+                    os << ", ";
+                }
+            }
+            os << "]\n";
         } else {
             throw RuntimeError("Unknown argument " + mode +
                                ". Did you mean register or bit?");

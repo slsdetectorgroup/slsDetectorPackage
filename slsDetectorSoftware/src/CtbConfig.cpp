@@ -244,13 +244,35 @@ void CtbConfig::setRegisterName(const std::string &name, RegisterAddress addr) {
     addEntry<RegisterDefinition, RegisterAddress>(name, addr, registers, num_regs, max_regs, "register");
 }
 
-std::optional<RegisterAddress>
-CtbConfig::getRegisterAddress(const std::string &name) const {
-    return lookupEntryByName<RegisterDefinition, RegisterAddress>(name, registers, num_regs);
+bool CtbConfig::hasRegisterName(const std::string &name) const {
+    return lookupEntryByName<RegisterDefinition, RegisterAddress>(
+               name, registers, num_regs)
+        .has_value();
 }
 
-std::optional<std::string> CtbConfig::getRegisterName(RegisterAddress addr) const {
-    return lookupEntryByValue<RegisterDefinition, RegisterAddress>(addr, registers, num_regs);
+bool CtbConfig::hasRegisterAddress(RegisterAddress addr) const {
+    return lookupEntryByValue<RegisterDefinition, RegisterAddress>(
+               addr, registers, num_regs)
+        .has_value();
+}
+
+RegisterAddress CtbConfig::getRegisterAddress(const std::string &name) const {
+    auto val = lookupEntryByName<RegisterDefinition, RegisterAddress>(
+        name, registers, num_regs);
+    if (!val.has_value()) {
+        throw RuntimeError("No register definition found for name: " + name);
+    }
+    return val.value();
+}
+
+std::string CtbConfig::getRegisterName(RegisterAddress addr) const {
+    auto val = lookupEntryByValue<RegisterDefinition, RegisterAddress>(
+        addr, registers, num_regs);
+    if (!val.has_value()) {
+        throw RuntimeError("No register definition found for address: " +
+                           addr.str());
+    }
+    return val.value();
 }
 
 void CtbConfig::clearRegisterNames() {
@@ -258,7 +280,8 @@ void CtbConfig::clearRegisterNames() {
     num_regs = 0;
 }
 
-void CtbConfig::setRegisterNames(const std::map<std::string, RegisterAddress> &list) {
+void CtbConfig::setRegisterNames(
+    const std::map<std::string, RegisterAddress> &list) {
     if (list.size() >= max_regs) {
         throw RuntimeError("Register names need to be of size less than " +
                            std::to_string(max_regs));
@@ -279,11 +302,38 @@ std::map<std::string, RegisterAddress> CtbConfig::getRegisterNames() const {
 int CtbConfig::getBitNamesCount() const { return num_bits; }
 
 void CtbConfig::setBitName(const std::string &name, BitPosition bitPos) {
-    addEntry<BitDefinition, BitPosition>(name, bitPos, bits, num_bits, max_bits, "bit");
+    addEntry<BitDefinition, BitPosition>(name, bitPos, bits, num_bits, max_bits,
+                                         "bit");
 }
 
-std::optional<BitPosition> CtbConfig::getBitPosition(const std::string &name) const {
-    return lookupEntryByName<BitDefinition, BitPosition>(name, bits, num_bits);
+bool CtbConfig::hasBitName(const std::string &name) const {
+    return lookupEntryByName<BitDefinition, BitPosition>(name, bits, num_bits)
+        .has_value();
+}
+
+bool CtbConfig::hasBitPosition(BitPosition bitPos) const {
+    return lookupEntryByValue<BitDefinition, BitPosition>(bitPos, bits,
+                                                          num_bits)
+        .has_value();
+}
+
+BitPosition CtbConfig::getBitPosition(const std::string &name) const {
+    auto val =
+        lookupEntryByName<BitDefinition, BitPosition>(name, bits, num_bits);
+    if (!val.has_value()) {
+        throw RuntimeError("No bit definition found for name: " + name);
+    }
+    return val.value();
+}
+
+std::string CtbConfig::getBitName(BitPosition bitPos) const {
+    auto val =
+        lookupEntryByValue<BitDefinition, BitPosition>(bitPos, bits, num_bits);
+    if (!val.has_value()) {
+        throw RuntimeError("No bit definition found for bit position: " +
+                           bitPos.str());
+    }
+    return val.value();
 }
 
 void CtbConfig::clearBitNames() {

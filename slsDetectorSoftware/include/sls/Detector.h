@@ -1848,10 +1848,13 @@ class Detector {
     bool hasRegisterDefinition(const std::string &name) const;
 
     /** [CTB][Xilinx CTB] */
-    RegisterAddress getRegisterDefinitionByName(const std::string &name) const;
+    bool hasRegisterDefinition(RegisterAddress addr) const;
 
     /** [CTB][Xilinx CTB] */
-    std::string getRegisterDefinitionByValue(RegisterAddress addr) const;
+    RegisterAddress getRegisterDefinition(const std::string &name) const;
+
+    /** [CTB][Xilinx CTB] */
+    std::string getRegisterDefinition(RegisterAddress addr) const;
 
     /** [CTB][Xilinx CTB] */
     void clearRegisterDefinitions();
@@ -1866,16 +1869,19 @@ class Detector {
     int getBitDefinitionsCount() const;
 
     /** [CTB][Xilinx CTB] */
-    void setBitDefinition(const std::string &name, BitPosition bit);
+    void setBitDefinition(const std::string &name, BitPosition bitPos);
 
     /** [CTB][Xilinx CTB] */
     bool hasBitDefinition(const std::string &name) const;
 
-    /** [CTB][Xilinx CTB] returns bit position and address */
-    BitPosition getBitDefinitionByName(const std::string &name) const;
+    /** [CTB][Xilinx CTB] */
+    bool hasBitDefinition(BitPosition bitPos) const;
 
-      /** [CTB][Xilinx CTB] */
-    std::string getBitDefinitionByValue(BitPosition bit) const;
+    /** [CTB][Xilinx CTB] returns bit position and address */
+    BitPosition getBitDefinition(const std::string &name) const;
+
+    /** [CTB][Xilinx CTB] */
+    std::string getBitDefinition(BitPosition bitPos) const;
 
     /** [CTB][Xilinx CTB] */
     void clearBitDefinitions();
@@ -1907,7 +1913,7 @@ class Detector {
 
     /** Advanced user Function! \n
      * [Ctb][Xilinx_Ctb]  Address can be picked up from a custom name using getRegisterDefinitionByName that was set up prior using setRegisterDefinition */
-    Result<int> getBit(uint32_t addr, int bitnr, Positions pos = {});
+    Result<int> getBit(BitPosition bitPos, Positions pos = {});
 
     ///@}
 

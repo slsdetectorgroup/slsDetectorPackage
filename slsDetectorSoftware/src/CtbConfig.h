@@ -24,13 +24,14 @@ class RegisterDefinition {
         RegisterAddress addr_;
     
     public:
-        RegisterDefinition(const std::string& name, RegisterAddress address)
-        : addr_(address) {
-            if (name.empty()) {
-                throw sls::RuntimeError("Register name cannot be empty.");
-            }
-            strcpy_checked(name_, name);
-        }
+      RegisterDefinition() noexcept = default;
+      RegisterDefinition(const std::string &name, RegisterAddress address)
+          : addr_(address) {
+          if (name.empty()) {
+              throw sls::RuntimeError("Register name cannot be empty.");
+          }
+          strcpy_checked(name_, name);
+      }
 
         std::string name() const noexcept { return name_; }
         RegisterAddress value() const noexcept { return addr_; }
@@ -42,13 +43,14 @@ class BitDefinition {
         BitPosition bitPos_;
 
     public:
-        BitDefinition(const std::string& name, BitPosition bitPos)
-        : bitPos_(bitPos) {
-            if (name.empty()) {
-                throw sls::RuntimeError("Bit name cannot be empty.");
-            }
-            strcpy_checked(name_, name);  
-        }
+      BitDefinition() noexcept = default;
+      BitDefinition(const std::string &name, BitPosition bitPos)
+          : bitPos_(bitPos) {
+          if (name.empty()) {
+              throw sls::RuntimeError("Bit name cannot be empty.");
+          }
+          strcpy_checked(name_, name);
+      }
 
         std::string name() const noexcept { return name_; }
         BitPosition value() const noexcept { return bitPos_; }
@@ -165,10 +167,6 @@ class CtbConfig {
 
   public:
     CtbConfig();
-    CtbConfig(const CtbConfig &) = default;
-    CtbConfig(CtbConfig &&) = default;
-    CtbConfig &operator=(const CtbConfig &) = default;
-    ~CtbConfig() = default;
 
     void setDacNames(const std::vector<std::string> &names);
     void setDacName(size_t index, const std::string &name);
@@ -198,16 +196,20 @@ class CtbConfig {
 
     int getRegisterNamesCount() const;
     void setRegisterName(const std::string &name, RegisterAddress addr);
-    std::optional<RegisterAddress> getRegisterAddress(const std::string &name) const;
-    std::optional<std::string> getRegisterName(RegisterAddress addr) const;
+    bool hasRegisterName(const std::string &name) const;
+    bool hasRegisterAddress(RegisterAddress addr) const;
+    RegisterAddress getRegisterAddress(const std::string &name) const;
+    std::string getRegisterName(RegisterAddress addr) const;
     void clearRegisterNames();
     void setRegisterNames(const std::map<std::string, RegisterAddress> &list);
     std::map<std::string, RegisterAddress> getRegisterNames() const;
 
     int getBitNamesCount() const;
     void setBitName(const std::string &name, BitPosition bitPos);
-    std::optional<BitPosition> getBitPosition(const std::string &name) const;
-    std::optional<std::string> getBitPosition(BitPosition bitPos) const;
+    bool hasBitName(const std::string &name) const;
+    bool hasBitPosition(BitPosition bitPos) const;
+    BitPosition getBitPosition(const std::string &name) const;
+    std::string getBitName(BitPosition bitPos) const;
     void clearBitNames();
     void setBitNames(const std::map<std::string, BitPosition> &list);
     std::map<std::string, BitPosition> getBitNames() const;

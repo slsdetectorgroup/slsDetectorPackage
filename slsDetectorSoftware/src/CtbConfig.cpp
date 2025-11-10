@@ -241,7 +241,8 @@ const char *CtbConfig::shm_tag() { return shm_tag_; }
 int CtbConfig::getRegisterNamesCount() const { return num_regs; }
 
 void CtbConfig::setRegisterName(const std::string &name, RegisterAddress addr) {
-    addEntry<RegisterDefinition, RegisterAddress>(name, addr, registers, num_regs, max_regs, "register");
+    addEntry<RegisterDefinition, RegisterAddress>(
+        name, addr, registers, num_regs, max_regs, "register");
 }
 
 bool CtbConfig::hasRegisterName(const std::string &name) const {

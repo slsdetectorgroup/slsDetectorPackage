@@ -2108,7 +2108,8 @@ void DetectorImpl::setRegisterDefinitions(
     ctb_shm()->setRegisterNames(list);
 }
 
-std::map<std::string, RegisterAddress> DetectorImpl::getRegisterDefinitions() const {
+std::map<std::string, RegisterAddress>
+DetectorImpl::getRegisterDefinitions() const {
     if (!isChipTestBoard())
         throw RuntimeError("Register Definitions only for CTB");
     return ctb_shm()->getRegisterNames();
@@ -2120,7 +2121,8 @@ int DetectorImpl::getBitDefinitionsCount() const {
     return ctb_shm()->getBitNamesCount();
 }
 
-void DetectorImpl::setBitDefinition(const std::string &name, BitPosition bitPos) {
+void DetectorImpl::setBitDefinition(const std::string &name,
+                                    BitPosition bitPos) {
     if (!isChipTestBoard())
         throw RuntimeError("Bit Definitions only for CTB");
     ctb_shm()->setBitName(name, bitPos);
@@ -2156,7 +2158,8 @@ void DetectorImpl::clearBitDefinitions() {
     ctb_shm()->clearBitNames();
 }
 
-void DetectorImpl::setBitDefinitions(const std::map<std::string, BitPosition> &list) {
+void DetectorImpl::setBitDefinitions(
+    const std::map<std::string, BitPosition> &list) {
     if (!isChipTestBoard())
         throw RuntimeError("Bit Definitions only for CTB");
     ctb_shm()->setBitNames(list);

@@ -1,8 +1,8 @@
 #pragma once
 
+#include "sls/bit_utils.h"
 #include "sls/sls_detector_defs.h"
 #include "sls/string_utils.h"
-#include "sls/bit_utils.h"
 
 #include <map>
 #include <optional>
@@ -17,43 +17,44 @@ namespace sls {
 
 #define CTB_NAME_LENGTH 32
 
-
 class RegisterDefinition {
-    private:
-        char name_[CTB_NAME_LENGTH]{};
-        RegisterAddress addr_;
-    
-    public:
-      RegisterDefinition() noexcept = default;
-      RegisterDefinition(const std::string &name, RegisterAddress address)
-          : addr_(address) {
-          if (name.empty()) {
-              throw sls::RuntimeError("Register name cannot be empty.");
-          }
-          strcpy_checked(name_, name);
-      }
+  private:
+    char name_[CTB_NAME_LENGTH]{};
+    RegisterAddress addr_;
 
-        std::string name() const noexcept { return name_; }
-        RegisterAddress value() const noexcept { return addr_; }
+  public:
+    RegisterDefinition() noexcept = default;
+    RegisterDefinition(const std::string &name, RegisterAddress address)
+        : addr_(address) {
+        if (name.empty()) {
+            throw sls::RuntimeError("Register name cannot be empty.");
+        }
+        strcpy_checked(name_, name);
+    }
+
+    std::string name() const noexcept { return name_; }
+    RegisterAddress value() const noexcept { return addr_; }
+    void setValue(RegisterAddress address) noexcept { addr_ = address; }
 };
 
 class BitDefinition {
-    private:
-        char name_[CTB_NAME_LENGTH]{};
-        BitPosition bitPos_;
+  private:
+    char name_[CTB_NAME_LENGTH]{};
+    BitPosition bitPos_;
 
-    public:
-      BitDefinition() noexcept = default;
-      BitDefinition(const std::string &name, BitPosition bitPos)
-          : bitPos_(bitPos) {
-          if (name.empty()) {
-              throw sls::RuntimeError("Bit name cannot be empty.");
-          }
-          strcpy_checked(name_, name);
-      }
+  public:
+    BitDefinition() noexcept = default;
+    BitDefinition(const std::string &name, BitPosition bitPos)
+        : bitPos_(bitPos) {
+        if (name.empty()) {
+            throw sls::RuntimeError("Bit name cannot be empty.");
+        }
+        strcpy_checked(name_, name);
+    }
 
-        std::string name() const noexcept { return name_; }
-        BitPosition value() const noexcept { return bitPos_; }
+    std::string name() const noexcept { return name_; }
+    BitPosition value() const noexcept { return bitPos_; }
+    void setValue(BitPosition bitPos) noexcept { bitPos_ = bitPos; }
 };
 
 class CtbConfig {
@@ -90,25 +91,23 @@ class CtbConfig {
     void check_slow_adc_index(size_t i) const;
     void check_size(const std::string &name) const;
 
-
-    /*template <typename T>
-    std::optional<T *> findEntryByName(const std::string &name, T* array, size_t count) {
-        T *begin = is_register ? registers : bits;
-        Entry *end = begin + (is_register ? num_regs : num_bits);
-
-        auto it = std::find_if(array, array + count, [&name](const T& e) {
-            return std::strncmp(e.key, name.c_str(), CTB_NAME_LENGTH) == 0;
-        });
+    template <typename T>
+    std::optional<T *> findEntryByName(const std::string &name, T *array,
+                                       size_t count) {
+        auto it = std::find_if(array, array + count,
+                               [&name](T &e) { return (e.name() == name); });
 
         if (it != array + count)
             return it;
         return std::nullopt;
-    }*/
+    }
 
     template <typename T>
-    std::optional<const T *> findEntryByName(const std::string &name, T* array, size_t count) const {
-        auto it = std::find_if(array, array + count, [&name](const T& e) {
-            return std::strncmp(e.name(), name.c_str(), CTB_NAME_LENGTH) == 0;
+    std::optional<const T *> findEntryByName(const std::string &name,
+                                             const T *array,
+                                             size_t count) const {
+        auto it = std::find_if(array, array + count, [&name](const T &e) {
+            return (e.name() == name);
         });
 
         if (it != array + count)
@@ -116,10 +115,20 @@ class CtbConfig {
         return std::nullopt;
     }
 
+    template <typename T, typename Tval>
+    std::optional<T *> findEntryByValue(Tval value, T *array, size_t count) {
+        auto it = std::find_if(array, array + count,
+                               [&value](T &e) { return e.value() == value; });
+
+        if (it != array + count)
+            return it;
+        return std::nullopt;
+    }
 
     template <typename T, typename Tval>
-    std::optional<const T *> findEntryByValue(Tval value, T* array, size_t count) const {
-        auto it = std::find_if(array, array + count, [&value](const T& e) {
+    std::optional<const T *> findEntryByValue(Tval value, const T *array,
+                                              size_t count) const {
+        auto it = std::find_if(array, array + count, [&value](const T &e) {
             return e.value() == value;
         });
 
@@ -127,37 +136,45 @@ class CtbConfig {
             return it;
         return std::nullopt;
     }
-         
+
     template <typename T, typename Tval>
-    std::optional<Tval> lookupEntryByName(const std::string &name, const T* array, size_t count) const {
+    std::optional<const Tval> lookupEntryByName(const std::string &name,
+                                                const T *array,
+                                                size_t count) const {
         auto entry = findEntryByName<T>(name, array, count);
         return (entry ? std::optional<Tval>((*entry)->value()) : std::nullopt);
     }
 
     template <typename T, typename Tval>
-    std::optional<std::string> lookupEntryByValue(Tval value, const T* array, size_t count) const {
+    std::optional<std::string> lookupEntryByValue(Tval value, const T *array,
+                                                  size_t count) const {
         auto entry = findEntryByValue<T>(value, array, count);
-        return (entry ? std::optional<std::string>((*entry)->name()) : std::nullopt);
+        return (entry ? std::optional<std::string>((*entry)->name())
+                      : std::nullopt);
     }
 
-    template <typename T, typename Tval>   
-    void addEntry(const std::string& name, Tval value, T* array, size_t& count, size_t max_count, const std::string& type_name) {
+    template <typename T, typename Tval>
+    void addEntry(const std::string &name, Tval value, T *array, size_t &count,
+                  size_t max_count, const std::string &type_name) {
         check_size(name);
 
         // exists: overwrite value
         if (auto entry = findEntryByName<T>(name, array, count)) {
-            (*entry)->value = value;
+            (*entry)->setValue(value);
             return;
         }
 
         // check size
         if (count >= max_count) {
-            throw RuntimeError("Maximum number of " + type_name + " reached. Clear shared memory and try again.");
+            throw RuntimeError("Maximum number of " + type_name +
+                               " reached. Clear shared memory and try again.");
         }
 
         // check value exists
         if (auto entry = findEntryByValue<T>(value, array, count)) {
-            throw RuntimeError(value.str() + " already assigned to " + typename + " '" + std::string((*entry)->name()) + "'. Cannot assign to '" + name + "'");
+            throw RuntimeError(value.str() + " already assigned to " +
+                               type_name + " '" + (*entry)->name() +
+                               "'. Cannot assign to '" + name + "'");
         }
 
         // add new entry

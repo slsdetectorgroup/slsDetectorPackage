@@ -2513,7 +2513,8 @@ int Detector::getRegisterDefinitionsCount() const {
     return pimpl->getRegisterDefinitionsCount();
 }
 
-void Detector::setRegisterDefinition(const std::string &name, RegisterAddress addr) {
+void Detector::setRegisterDefinition(const std::string &name,
+                                     RegisterAddress addr) {
     pimpl->setRegisterDefinition(name, addr);
 }
 
@@ -2533,15 +2534,15 @@ std::string Detector::getRegisterDefinition(RegisterAddress addr) const {
     return pimpl->getRegisterDefinition(addr);
 }
 
-void Detector::clearRegisterDefinitions() {
-    pimpl->clearRegisterDefinitions();
-}
+void Detector::clearRegisterDefinitions() { pimpl->clearRegisterDefinitions(); }
 
-void Detector::setRegisterDefinitions(const std::map<std::string, RegisterAddress> &list) {
+void Detector::setRegisterDefinitions(
+    const std::map<std::string, RegisterAddress> &list) {
     pimpl->setRegisterDefinitions(list);
 }
 
-std::map<std::string, RegisterAddress> Detector::getRegisterDefinitions() const {
+std::map<std::string, RegisterAddress>
+Detector::getRegisterDefinitions() const {
     return pimpl->getRegisterDefinitions();
 }
 
@@ -2569,41 +2570,15 @@ std::string Detector::getBitDefinition(BitPosition bitPos) const {
     return pimpl->getBitDefinition(bitPos);
 }
 
-void Detector::clearBitDefinitions() {
-    pimpl->clearBitDefinitions();
-}
+void Detector::clearBitDefinitions() { pimpl->clearBitDefinitions(); }
 
-void Detector::setBitDefinitions(const std::map<std::string, BitPosition> &list) {
+void Detector::setBitDefinitions(
+    const std::map<std::string, BitPosition> &list) {
     pimpl->setBitDefinitions(list);
 }
 
 std::map<std::string, BitPosition> Detector::getBitDefinitions() const {
     return pimpl->getBitDefinitions();
-}
-
-Result<RegisterValue> Detector::readRegister(RegisterAddress addr,
-                                             Positions pos) const {
-    return pimpl->Parallel(&Module::readRegister, pos, addr);
-}
-
-void Detector::writeRegister(RegisterAddress addr, RegisterValue val,
-                             bool validate, Positions pos) {
-    pimpl->Parallel(&Module::writeRegister, pos, addr, val, validate);
-}
-
-void Detector::setBit(BitPosition bitPos, bool validate, Positions pos) {
-    pimpl->Parallel(&Module::setBit, pos, bitPos.address(),
-                    bitPos.bitPosition(), validate);
-}
-
-void Detector::clearBit(BitPosition bitPos, bool validate, Positions pos) {
-    pimpl->Parallel(&Module::clearBit, pos, bitPos.address(),
-                    bitPos.bitPosition(), validate);
-}
-
-Result<int> Detector::getBit(BitPosition bitPos, Positions pos) {
-    return pimpl->Parallel(&Module::getBit, pos, bitPos.address(),
-                           bitPos.bitPosition());
 }
 
 // Xilinx Ctb Specific
@@ -2827,8 +2802,38 @@ void Detector::clearBit(uint32_t addr, int bitnr, bool validate,
     pimpl->Parallel(&Module::clearBit, pos, addr, bitnr, validate);
 }
 
-Result<int> Detector::getBit(uint32_t addr, int bitnr, Positions pos) {
+Result<int> Detector::getBit(uint32_t addr, int bitnr, Positions pos) const {
     return pimpl->Parallel(&Module::getBit, pos, addr, bitnr);
+}
+
+Result<RegisterValue> Detector::readRegister(RegisterAddress addr,
+                                             Positions pos) const {
+    auto t = pimpl->Parallel(&Module::readRegister, pos, addr);
+    Result<RegisterValue> res;
+    for (const auto &val : t) {
+        res.push_back(RegisterValue(val));
+    }
+    return res;
+}
+
+void Detector::writeRegister(RegisterAddress addr, RegisterValue val,
+                             bool validate, Positions pos) {
+    pimpl->Parallel(&Module::writeRegister, pos, addr, val, validate);
+}
+
+void Detector::setBit(BitPosition bitPos, bool validate, Positions pos) {
+    pimpl->Parallel(&Module::setBit, pos, bitPos.address(),
+                    bitPos.bitPosition(), validate);
+}
+
+void Detector::clearBit(BitPosition bitPos, bool validate, Positions pos) {
+    pimpl->Parallel(&Module::clearBit, pos, bitPos.address(),
+                    bitPos.bitPosition(), validate);
+}
+
+Result<int> Detector::getBit(BitPosition bitPos, Positions pos) const {
+    return pimpl->Parallel(&Module::getBit, pos, bitPos.address(),
+                           bitPos.bitPosition());
 }
 
 void Detector::executeFirmwareTest(Positions pos) {

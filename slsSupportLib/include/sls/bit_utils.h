@@ -3,6 +3,7 @@
 #pragma once
 
 #include <bitset>
+#include <stdint.h>
 #include <vector>
 namespace sls {
 template <typename T> std::vector<int> getSetBits(T val) {
@@ -21,15 +22,15 @@ template <typename T> std::vector<int> getSetBits(T val) {
 
 class RegisterAddress {
   private:
-    int addr_{0};
+    uint32_t addr_{0};
 
   public:
     constexpr RegisterAddress() noexcept = default;
-    explicit RegisterAddress(int address);
+    explicit RegisterAddress(uint32_t address) : addr_(address) {}
     explicit RegisterAddress(const std::string &address);
 
     std::string str() const;
-    operator int() const noexcept { return addr_; }
+    operator uint32_t() const noexcept { return addr_; }
 
     constexpr bool operator==(const RegisterAddress &other) const {
         return (addr_ == other.addr_);

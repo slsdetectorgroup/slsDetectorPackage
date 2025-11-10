@@ -340,7 +340,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
     RegisterAddress getRegisterDefinition(const std::string &name) const;
     std::string getRegisterDefinition(RegisterAddress addr) const;
     void clearRegisterDefinitions();
-    void setRegisterDefinitions(const std::map<std::string, RegisterAddress> &list);
+    void
+    setRegisterDefinitions(const std::map<std::string, RegisterAddress> &list);
     std::map<std::string, RegisterAddress> getRegisterDefinitions() const;
     int getBitDefinitionsCount() const;
     void setBitDefinition(const std::string &name, BitPosition bitPos);

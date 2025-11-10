@@ -401,10 +401,11 @@ class Caller {
                                   uint32_t subFrameIndex, void *this_pointer);
 
     std::string bitoperations(int action);
-    RegisterAddress parseAddress(int argPos) const;
-    BitPosition parseBitPosition();
-    bool parseandRemoveValidate();
-    std::pair<RegisterAddress, RegisterValue> parseRegAddressAndValue();
+    RegisterAddress parseAddress(const std::string &saddr) const;
+    bool parseValidate() const;
+    BitPosition parseBitPosition(const bool validate) const;
+    std::pair<RegisterAddress, RegisterValue>
+    parseRegAddressAndValue(const bool validate) const;
 
     FunctionMap functions{
         {"list", &Caller::list},

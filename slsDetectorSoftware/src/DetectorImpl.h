@@ -334,20 +334,24 @@ class DetectorImpl : public virtual slsDetectorDefs {
     void setCtbSlowADCName(const defs::dacIndex index, const std::string &name);
 
     int getRegisterDefinitionsCount() const;
-    void setRegisterDefinition(const std::string &name, const int value);
+    void setRegisterDefinition(const std::string &name, RegisterAddress addr);
     bool hasRegisterDefinition(const std::string &name) const;
-    int getRegisterDefinitionByName(const std::string &name) const;
-    std::string getRegisterDefinitionByValue(const int value) const;
+    bool hasRegisterDefinition(RegisterAddress addr) const;
+    RegisterAddress getRegisterDefinition(const std::string &name) const;
+    std::string getRegisterDefinition(RegisterAddress addr) const;
     void clearRegisterDefinitions();
-    void setRegisterDefinitions(const std::map<std::string, int> &list);
-    std::map<std::string, int> getRegisterDefinitions() const;
+    void
+    setRegisterDefinitions(const std::map<std::string, RegisterAddress> &list);
+    std::map<std::string, RegisterAddress> getRegisterDefinitions() const;
     int getBitDefinitionsCount() const;
-    void setBitDefinition(const std::string &name, const int value);
+    void setBitDefinition(const std::string &name, BitPosition bitPos);
     bool hasBitDefinition(const std::string &name) const;
-    int getBitDefinitionByName(const std::string &name) const;
+    bool hasBitDefinition(BitPosition bitPos) const;
+    BitPosition getBitDefinition(const std::string &name) const;
+    std::string getBitDefinition(BitPosition bitPos) const;
     void clearBitDefinitions();
-    void setBitDefinitions(const std::map<std::string, int> &list);
-    std::map<std::string, int> getBitDefinitions() const;
+    void setBitDefinitions(const std::map<std::string, BitPosition> &list);
+    std::map<std::string, BitPosition> getBitDefinitions() const;
 
   private:
     /**

@@ -43,6 +43,15 @@ bool is_int(const std::string &s) {
                          }) == s.end();
 }
 
+bool is_hex_or_dec_int(const std::string &s) {
+    try {
+        StringTo<int>(s);
+        return true;
+    } catch (...) {
+    }
+    return false;
+}
+
 bool replace_first(std::string *s, const std::string &substr,
                    const std::string &repl) {
     auto pos = s->find(substr);

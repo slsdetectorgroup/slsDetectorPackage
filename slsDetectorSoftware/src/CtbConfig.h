@@ -1,4 +1,9 @@
 #pragma once
+
+#include "sls/bit_utils.h"
+#include "sls/sls_detector_defs.h"
+#include "sls/string_utils.h"
+
 #include <map>
 #include <optional>
 #include <string>
@@ -7,14 +12,49 @@
 
 namespace sls {
 
-#define CTB_SHMAPIVERSION 0x250919
-#define CTB_SHMVERSION    0x250919
+#define CTB_SHMAPIVERSION 0x251031
+#define CTB_SHMVERSION    0x251031
 
 #define CTB_NAME_LENGTH 32
 
-struct Entry {
-    char key[CTB_NAME_LENGTH]{};
-    int value{0};
+class RegisterDefinition {
+  private:
+    char name_[CTB_NAME_LENGTH]{};
+    RegisterAddress addr_;
+
+  public:
+    RegisterDefinition() noexcept = default;
+    RegisterDefinition(const std::string &name, RegisterAddress address)
+        : addr_(address) {
+        if (name.empty()) {
+            throw sls::RuntimeError("Register name cannot be empty.");
+        }
+        strcpy_checked(name_, name);
+    }
+
+    std::string name() const noexcept { return name_; }
+    RegisterAddress value() const noexcept { return addr_; }
+    void setValue(RegisterAddress address) noexcept { addr_ = address; }
+};
+
+class BitDefinition {
+  private:
+    char name_[CTB_NAME_LENGTH]{};
+    BitPosition bitPos_;
+
+  public:
+    BitDefinition() noexcept = default;
+    BitDefinition(const std::string &name, BitPosition bitPos)
+        : bitPos_(bitPos) {
+        if (name.empty()) {
+            throw sls::RuntimeError("Bit name cannot be empty.");
+        }
+        strcpy_checked(name_, name);
+    }
+
+    std::string name() const noexcept { return name_; }
+    BitPosition value() const noexcept { return bitPos_; }
+    void setValue(BitPosition bitPos) noexcept { bitPos_ = bitPos; }
 };
 
 class CtbConfig {
@@ -31,19 +71,18 @@ class CtbConfig {
     static constexpr size_t num_signals = 64;
     static constexpr size_t num_powers = 5;
     static constexpr size_t num_slowADCs = 8;
-    static constexpr size_t max_regs = 64;
-    static constexpr size_t max_bits = 64;
-    size_t num_regs{0};
-    size_t num_bits{0};
-
     char dacnames[name_length * num_dacs]{};
     char adcnames[name_length * num_adcs]{};
     char signalnames[name_length * num_signals]{};
     char powernames[name_length * num_powers]{};
     char slowADCnames[name_length * num_slowADCs]{};
 
-    Entry registernames[max_regs]{};
-    Entry bitnames[max_bits]{};
+    static constexpr size_t max_regs = 64;
+    static constexpr size_t max_bits = 64;
+    size_t num_regs{0};
+    size_t num_bits{0};
+    RegisterDefinition registers[max_regs];
+    BitDefinition bits[max_bits];
 
     void check_dac_index(size_t i) const;
     void check_adc_index(size_t i) const;
@@ -52,24 +91,99 @@ class CtbConfig {
     void check_slow_adc_index(size_t i) const;
     void check_size(const std::string &name) const;
 
-    std::optional<Entry *> findEntryByName(const std::string &name,
-                                           const bool is_register);
-    std::optional<const Entry *> findEntryByName(const std::string &name,
-                                                 const bool is_register) const;
-    std::optional<const Entry *> findEntryByValue(const int value,
-                                                  const bool is_register) const;
-    std::optional<int> lookupEntryByName(const char *name,
-                                         const bool is_register) const;
-    std::optional<std::string> lookupEntryByValue(const int value,
-                                                  const bool is_register) const;
-    void addEntry(const char *name, const int value, const bool is_register);
+    template <typename T>
+    std::optional<T *> findEntryByName(const std::string &name, T *array,
+                                       size_t count) {
+        auto it = std::find_if(array, array + count,
+                               [&name](T &e) { return (e.name() == name); });
+
+        if (it != array + count)
+            return it;
+        return std::nullopt;
+    }
+
+    template <typename T>
+    std::optional<const T *> findEntryByName(const std::string &name,
+                                             const T *array,
+                                             size_t count) const {
+        auto it = std::find_if(array, array + count, [&name](const T &e) {
+            return (e.name() == name);
+        });
+
+        if (it != array + count)
+            return it;
+        return std::nullopt;
+    }
+
+    template <typename T, typename Tval>
+    std::optional<T *> findEntryByValue(Tval value, T *array, size_t count) {
+        auto it = std::find_if(array, array + count,
+                               [&value](T &e) { return e.value() == value; });
+
+        if (it != array + count)
+            return it;
+        return std::nullopt;
+    }
+
+    template <typename T, typename Tval>
+    std::optional<const T *> findEntryByValue(Tval value, const T *array,
+                                              size_t count) const {
+        auto it = std::find_if(array, array + count, [&value](const T &e) {
+            return e.value() == value;
+        });
+
+        if (it != array + count)
+            return it;
+        return std::nullopt;
+    }
+
+    template <typename T, typename Tval>
+    std::optional<const Tval> lookupEntryByName(const std::string &name,
+                                                const T *array,
+                                                size_t count) const {
+        auto entry = findEntryByName<T>(name, array, count);
+        return (entry ? std::optional<Tval>((*entry)->value()) : std::nullopt);
+    }
+
+    template <typename T, typename Tval>
+    std::optional<std::string> lookupEntryByValue(Tval value, const T *array,
+                                                  size_t count) const {
+        auto entry = findEntryByValue<T>(value, array, count);
+        return (entry ? std::optional<std::string>((*entry)->name())
+                      : std::nullopt);
+    }
+
+    template <typename T, typename Tval>
+    void addEntry(const std::string &name, Tval value, T *array, size_t &count,
+                  size_t max_count, const std::string &type_name) {
+        check_size(name);
+
+        // exists: overwrite value
+        if (auto entry = findEntryByName<T>(name, array, count)) {
+            (*entry)->setValue(value);
+            return;
+        }
+
+        // check size
+        if (count >= max_count) {
+            throw RuntimeError("Maximum number of " + type_name +
+                               " reached. Clear shared memory and try again.");
+        }
+
+        // check value exists
+        if (auto entry = findEntryByValue<T>(value, array, count)) {
+            throw RuntimeError(value.str() + " already assigned to " +
+                               type_name + " '" + (*entry)->name() +
+                               "'. Cannot assign to '" + name + "'");
+        }
+
+        // add new entry
+        array[count] = T(name, value);
+        ++(count);
+    }
 
   public:
     CtbConfig();
-    CtbConfig(const CtbConfig &) = default;
-    CtbConfig(CtbConfig &&) = default;
-    CtbConfig &operator=(const CtbConfig &) = default;
-    ~CtbConfig() = default;
 
     void setDacNames(const std::vector<std::string> &names);
     void setDacName(size_t index, const std::string &name);
@@ -98,19 +212,24 @@ class CtbConfig {
     static const char *shm_tag();
 
     int getRegisterNamesCount() const;
-    void setRegisterName(const std::string &name, const int value);
-    std::optional<int> getRegisterAddress(const std::string &name) const;
-    std::optional<std::string> getRegisterName(const int value) const;
+    void setRegisterName(const std::string &name, RegisterAddress addr);
+    bool hasRegisterName(const std::string &name) const;
+    bool hasRegisterAddress(RegisterAddress addr) const;
+    RegisterAddress getRegisterAddress(const std::string &name) const;
+    std::string getRegisterName(RegisterAddress addr) const;
     void clearRegisterNames();
-    void setRegisterNames(const std::map<std::string, int> &list);
-    std::map<std::string, int> getRegisterNames() const;
+    void setRegisterNames(const std::map<std::string, RegisterAddress> &list);
+    std::map<std::string, RegisterAddress> getRegisterNames() const;
 
     int getBitNamesCount() const;
-    void setBitName(const std::string &name, const int value);
-    std::optional<int> getBitPosition(const std::string &name) const;
+    void setBitName(const std::string &name, BitPosition bitPos);
+    bool hasBitName(const std::string &name) const;
+    bool hasBitPosition(BitPosition bitPos) const;
+    BitPosition getBitPosition(const std::string &name) const;
+    std::string getBitName(BitPosition bitPos) const;
     void clearBitNames();
-    void setBitNames(const std::map<std::string, int> &list);
-    std::map<std::string, int> getBitNames() const;
+    void setBitNames(const std::map<std::string, BitPosition> &list);
+    std::map<std::string, BitPosition> getBitNames() const;
 };
 
 } // namespace sls

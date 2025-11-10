@@ -5,6 +5,7 @@
 #include <cassert>
 #include <cstdint>
 #include <cstring>
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -33,6 +34,35 @@ void strcpy_safe(char (&destination)[array_size], const std::string &source) {
     destination[array_size - 1] = '\0';
 }
 
+// Runtime-checked variant — throws if it won't fit
+template <size_t array_size>
+void strcpy_checked(char (&destination)[array_size], const char *source) {
+    if (!source)
+        throw std::runtime_error("Null source pointer in strcpy_checked");
+
+    size_t len = std::strlen(source);
+    if (len >= (array_size - 1)) {
+        throw std::runtime_error("String length (" + std::to_string(len) +
+                                 ") should be less than " +
+                                 std::to_string(array_size - 1) + " chars");
+    }
+    std::strncpy(destination, source, array_size - 1);
+    destination[array_size - 1] = '\0';
+}
+
+template <size_t array_size>
+void strcpy_checked(char (&destination)[array_size],
+                    const std::string &source) {
+    if (source.size() >= (array_size - 1)) {
+        throw std::runtime_error("String length (" +
+                                 std::to_string(source.size()) +
+                                 ") should be less than " +
+                                 std::to_string(array_size - 1) + " chars");
+    }
+    std::strncpy(destination, source.c_str(), array_size - 1);
+    destination[array_size - 1] = '\0';
+}
+
 /*
 Removes all occurrences of the specified char from a c string
 Templated on array size to ensure no access after buffer limits.
@@ -58,6 +88,8 @@ std::vector<std::string> split(const std::string &strToSplit, char delimeter);
 std::string RemoveUnit(std::string &str);
 
 bool is_int(const std::string &s);
+/** '0x200' is also an int here */
+bool is_hex_or_dec_int(const std::string &s);
 
 bool replace_first(std::string *s, const std::string &substr,
                    const std::string &repl);

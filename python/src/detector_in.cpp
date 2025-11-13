@@ -8,6 +8,7 @@
 #include "sls/bit_utils.h"
 #include "sls/sls_detector_defs.h"
 #include "sls/TimeHelper.h"
+#include "sls/bit_utils.h"
 
 #include <array>
 #include <chrono>

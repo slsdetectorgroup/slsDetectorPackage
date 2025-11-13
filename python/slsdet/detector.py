@@ -3,6 +3,7 @@
 from ._slsdet import CppDetectorApi
 from ._slsdet import slsDetectorDefs
 from ._slsdet import IpAddr, MacAddr
+from ._slsdet import RegisterAddress, RegisterValue, BitPosition
 
 runStatus = slsDetectorDefs.runStatus
 timingMode = slsDetectorDefs.timingMode

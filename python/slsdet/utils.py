@@ -141,6 +141,14 @@ def make_ip(arg):
 def make_mac(arg):
     return _make(arg, _slsdet.MacAddr)
 
+def make_register_address(arg):
+    return _make(arg, _slsdet.RegisterAddress)
+
+def make_bit_position(arg):
+    return _make(arg, _slsdet.BitPosition)
+
+def make_register_value(arg):
+    return _make(arg, _slsdet.RegisterValue)
 
 def make_path(arg):
     return _make(arg, Path)

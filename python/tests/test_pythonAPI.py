@@ -1,8 +1,12 @@
 import pytest 
+import sys 
+
+from conftest import test_with_simulators
 
 from slsdet import Detector
 
-def test_rx_ROI():
+@pytest.mark.withdetectorsimulators
+def test_rx_ROI(test_with_simulators):
     """ Test setting and getting rx_ROI property of Detector class. """
 
     d = Detector()

@@ -1,16 +1,11 @@
 # SPDX-License-Identifier: LGPL-3.0-or-other
 # Copyright (C) 2021 Contributors to the SLS Detector Package
+
 '''
-This file is used to start up simulators, receivers and test roi for every detector in many configurations.
+This file is used to start up simulators, receivers and test python API, tests are less exhaustive than C++ tests.
 '''
 
-import sys, time
 import traceback
-
-from slsdet import Detector, burstMode
-from slsdet.defines import DEFAULT_TCP_RX_PORTNO, DEFAULT_UDP_DST_PORTNO
-from datetime import timedelta
-
 
 from utils_for_test import (
     Log,
@@ -21,30 +16,26 @@ from utils_for_test import (
     startReceiver,
     startDetectorVirtualServer,
     connectToVirtualServers,
+    loadConfig, 
     loadBasicSettings,
-    loadConfig,
     runProcessWithLogFile
 )
 
-LOG_PREFIX_FNAME = '/tmp/slsDetectorPackage_virtual_roi_test'
+LOG_PREFIX_FNAME = '/tmp/slsDetectorPackage_virtual_PythonAPI_test'
 MAIN_LOG_FNAME = LOG_PREFIX_FNAME + '_log.txt'
-ROI_TEST_FNAME = LOG_PREFIX_FNAME + '_results_'
+PYTHONAPI_TEST_FNAME = LOG_PREFIX_FNAME + '_results_'
 
-def startTestsForAll(fp):
+def startTests(fp):
     servers = [
-        'eiger',
-        'jungfrau',
-        'mythen3',
-        'gotthard2',
         'moench',
     ]
     nmods = 2
     for server in servers:
-        for ninterfaces in range(1, 2):
+        for ninterfaces in range(1,2):
             if ninterfaces == 2 and server != 'jungfrau' and server != 'moench':
                 continue
             try:
-                msg = f'Starting Roi Tests for {server}'
+                msg = f'Starting Python API Tests for {server}'
                 if server == 'jungfrau' or server == 'moench':
                     msg += f' with {ninterfaces} interfaces'
                 Log(LogLevel.INFOBLUE, msg)
@@ -52,17 +43,17 @@ def startTestsForAll(fp):
                 cleanup(fp)
                 startDetectorVirtualServer(server, nmods, fp)
                 startReceiver(nmods, fp)
-                d = loadConfig(name=server, log_file_fp = fp, num_mods=nmods, num_frames=5, num_interfaces=ninterfaces)
+                d = loadConfig(name=server, log_file_fp=fp, num_mods=nmods, num_frames=1, num_interfaces=ninterfaces)
                 loadBasicSettings(name=server, d=d, fp=fp)
 
-                fname = ROI_TEST_FNAME + server + '.txt'
-                cmd = ['tests', 'rx_roi', '--abort', '-s']
-                runProcessWithLogFile('Roi Tests for ' + server, cmd, fp, fname)
+                fname = PYTHONAPI_TEST_FNAME + server + '.txt'
+                cmd = ['python', '-m', 'pytest', '../python/tests/test_pythonAPI.py']
+                runProcessWithLogFile('Python API Tests for ' + server, cmd, fp, fname)
                 Log(LogLevel.INFO, '\n')
             except Exception as e:
-                raise RuntimeException(f'Roi Tests failed') from e
+                raise RuntimeException(f'Python API Tests failed') from e
 
-    Log(LogLevel.INFOGREEN, 'Passed all Roi tests for all detectors \n' + str(servers))
+    Log(LogLevel.INFOGREEN, 'Passed all Python API tests for server ' + str(servers) + '\n')
   
 
 if __name__ == '__main__':
@@ -70,13 +61,10 @@ if __name__ == '__main__':
 
     with open(MAIN_LOG_FNAME, 'w') as fp:
         try:
-            startTestsForAll(fp)
-            #TODO: check master file as well for both json and hdf5 as well
+            startTests(fp)
             cleanup(fp)
         except Exception as e:
             with open(MAIN_LOG_FNAME, 'a') as fp_error:
                 traceback.print_exc(file=fp_error)
             cleanup(fp)
             Log(LogLevel.ERROR, f'Tests Failed.')
-
-

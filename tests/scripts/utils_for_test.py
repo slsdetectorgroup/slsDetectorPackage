@@ -193,14 +193,28 @@ def connectToVirtualServers(name, num_mods, ctb_object=False):
 
     return d
 
+def startReceiver(num_mods, fp):
+    if num_mods == 1:
+        cmd = ['slsReceiver']
+    else:
+        cmd = ['slsMultiReceiver', str(DEFAULT_TCP_RX_PORTNO), str(num_mods)]
+        # in 10.0.0
+        #cmd = ['slsMultiReceiver', '-p', str(DEFAULT_TCP_RX_PORTNO), '-n', str(num_mods)]
+    startProcessInBackground(cmd, fp)
+    time.sleep(1)
 
-def loadConfig(name, rx_hostname, settingsdir, fp, num_mods = 1, num_frames = 1):
+
+def loadConfig(name, rx_hostname = 'localhost', settingsdir = None, log_file_fp = None, num_mods = 1, num_frames = 1, num_interfaces = 1):
     Log(LogLevel.INFO, 'Loading config')
-    Log(LogLevel.INFO, 'Loading config', fp)
+    Log(LogLevel.INFO, 'Loading config', log_file_fp)
     try:
         d = connectToVirtualServers(name, num_mods)
+
+        if name == 'jungfrau' or name == 'moench':
+            d.numinterfaces = num_interfaces
+
         d.udp_dstport = DEFAULT_UDP_DST_PORTNO
-        if name == 'eiger':
+        if name == 'eiger' or name == 'jungfrau' or name == 'moench':
             d.udp_dstport2 = DEFAULT_UDP_DST_PORTNO + 1
 
         d.rx_hostname = rx_hostname
@@ -209,6 +223,7 @@ def loadConfig(name, rx_hostname, settingsdir, fp, num_mods = 1, num_frames = 1)
             d.udp_srcip = 'auto'
 
         if name == "jungfrau" or name == "moench" or name == "xilinx_ctb":
+            d.udp_dstip2 = 'auto'
             d.powerchip = 1
 
         if name == "xilinx_ctb":

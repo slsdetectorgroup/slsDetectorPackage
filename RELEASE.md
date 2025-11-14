@@ -1,7 +1,7 @@
-SLS Detector Package Major Release 10.0.0 released on 10.09.2025
+SLS Detector Package Minor Release 10.0.1 released on ?
 ================================================================
 
-This document describes the differences between v10.0.0 and v9.2.0   
+This document describes the differences between v10.0.1 and v10.0.0   
 
 
 
@@ -20,242 +20,35 @@ This document describes the differences between v10.0.0 and v9.2.0
 
 
 
-
 1 Changes
 ==========
-
 
 
 1.1 Compilation Changes
 ========================
 
 
-    *   C++ standard
-        Bumped up C++ standard from 11 (gcc4.8+) to 17 (gcc8+).
-
-
-    *   GotthardI
-        Dropped support for GotthardI from v10.0.0.
-
-
-    *   PATCH 
-        Find PATCH command required for compilation. Needed for lib zeromq patching.
-
-
-    *   pmodules support discontinued
-    
-
 1.2 New or Changed Features
 ============================
 
+    Python
+    -------
+
+    * receiver ROI can be set from Python using command ``rx_roi``(it supports any sequence of four ints e.g. a tuple (xmin, xmax, ymin, ymax) or a sequence of such for multiple ROIS)
+    * one can clear all ROI's from Python using command ``clear_rx_roi`` 
 
 
 1.2.1 Breaking API
 ===================
 
 
-    Client
-    ------
-
-
-    *   Shared Memory Version
-        Version has changed and will throw when using an earlier version of 
-        shared memory without freeing it first.
-
-
-    *   [Mythen3] patternX
-        This command has been changed back to 'pattern' as before.
-
-
-    *   TCP API Incompatibility
-        The size of the expected structure has changed when setting rx_hostname compared to previous versions. This change makes it incompatible.
-
-
-    *   User details
-        One can get user or detector details directly from shared memory without
-        creating the Detector class. It is now a free function.
-        C++ API: getUserDetails
-        python/ command line: user
-        
-
-    Receiver
-    --------
-
-    
-    *   Multiple ROIs
-        Previously, only one ROI was allowed per detector.
-        Now, multiple ROIs are allowed, but restricted to a single ROI per
-        UDP port. More details on its help.
-        
-        As before, this ROI is cut out at the receiver level before 
-        writing to file. It does not affect network load, but reduces file size.
-        
-        Please note that the signature has changed in the Detector API as it now expects a vector. getRxROI returns detector level vector of ROIs for
-        the entire detector or port level vector of ROIs for the module index
-        provided.
-        
-        Command line: rx_roi, rx_clearroi
-        C++ API: get/setRxROI, clearRxROI 
-
-  
-    *   Master File Version
-        Binary Master Version: 7.3 => 8.0
-        HDF5 Master Version: 6.7 => 7.0
-
-
-    *   Master File Attributes
-        - Fixed master file inconsistencies between binary and hdf5 format.
-            So the parameter names might differ in master file.
-        - Fixed time inconsistencies due to tolerance for gotthardII.
-        - Replaced many of the values that was simply writted usign 'toString'
-            with array-based output.
-        - JSON additional header always written.
-        - HDF5 master file reads 'Version', instead of 'version'.    
-
-
-
 1.2.2 Resolved or Changed Features
 ===================================
-
-
-    Python
-    ------
-
-
-    *   Shared Memory outliving free
-        Depending on a variable’s scope, it was possible to access an invalid
-        object and its shared memory even after calling free, since resources
-        were not fully released. Shared memory structures now include a flag
-        indicating invalidity and will throw an error if accessed after being
-        freed.
-
-
-    Client
-    ------
-
-
-    *   UDP Destination List
-        CLI: udp_dstlist
-        C++ API: getDestinationUDPList
-        Was returning incorrect values. Fixed.
-        
-    
-    Receiver
-    --------
-
-
-    *   [Mythen3] Master File Attributes
-        Previously, did not create HDF5 Master file without crashing. Fixed now.
-
-
-    *   Default File Path
-        It used to be '/'. Now, changed to empty and will throw if still 
-        unchanged before an acquisition.
-
-
-    *   Command Line Arguments
-        They have been refactored for slsReceiver, slsMultiReceiver and 
-        slsFrameSynchronizer. Existing commands remain fully supported for now.
-
-        Usage: slsReceiver Options:
-            -v, --version       : Version.
-            -p, --port          : TCP port to communicate with client for configuration. Non-zero and 16 bit.
-            -u, --uid           : Set effective user id if receiver started with privileges. 
-
-        Usage: slsMultiReceiver Options:
-            -v, --version       : Version.
-            -n, --num-receivers : Number of receivers.
-            -p, --port          : TCP port to communicate with client for configuration. Non-zero and 16 bit.
-            -c, --callback      : Enable dummy callbacks for debugging. Disabled by default. 
-            -u, --uid           : Set effective user id if receiver started with privileges. 
-
-        Usage: slsFrameSynchronizer Options:
-            -v, --version       : Version.
-            -n, --num-receivers : Number of receivers.
-            -p, --port          : TCP port to communicate with client for configuration. Non-zero and 16 bit.
-            -c, --print-headers : Print callback headers for debugging. Disabled by default.
-            -u, --uid           : Set effective user id if receiver started with privileges. 
-
-
-    *   [Moench] No intertpolation
-        Fixed no interpolation for Moench03.
 
 
 
 1.2.3 New Features
 ===================
-
-
-    Compilation
-    -----------
-
-
-    *   Conda and pypi
-        Automatic release on both upon release.
-
-
-    Python
-    ------
-
-
-    *   Exposing Free Shared Memory
-        One can do either `slsdet.freeSharedMemory()` or `d.free()`
-
-
-    Client
-    ------
-
-
-    *   Port size and Port per Module Geometry in Detector class
-        C++ API: getPortSize, getPortPerModuleGeometry
-
-
-    *   ROI structure
-        Added 'overlap' function to check if it overlaps with another.
-
-
-    Receiver
-    --------
-
-
-    *   HDF5 Virtual File with ROI
-        Previously, virtual file was not created with ROI. It is now.
-
-
-    *   Readout speed added to Master File
-        
-
-    Documentation
-    -------------
-
-
-    *   Multi Detector and Multi user
-        Documentation on multi detector index and multi user considerations for
-        using the same client system.
-            https://slsdetectorgroup.github.io/devdoc/multidet.html
-
-   
-    *   10GbE PC tuning
-        Further information for permanent ethtool settings updated.
-            https://slsdetectorgroup.github.io/devdoc/troubleshooting.html#receiver-pc-tuning-options
-
-
-    *   Image Size and Output Characteristics
-        Information for different detector types and different parameters that
-        affect image size and characteristics have been added.
-            https://slsdetectorgroup.github.io/devdoc/dataformat.html
-
-
-    *   'How To' section added
-        Software Architecture
-            https://slsdetectorgroup.github.io/devdoc/softwarearchitecture.html
-
-        Set up commands most often used in the config file
-            https://slsdetectorgroup.github.io/devdoc/configcommands.html
-
-        Quick start guide has been updated
-            https://slsdetectorgroup.github.io/devdoc/quick_start_guide.html
-
 
 
 2  On-board Detector Server Compatibility

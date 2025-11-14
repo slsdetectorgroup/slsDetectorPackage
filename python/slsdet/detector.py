@@ -333,6 +333,9 @@ class Detector(CppDetectorApi):
         else:
             self.setRxROI(rois)
 
+    def clear_rx_roi(self): 
+        """Clears all the ROIs configured in the receiver."""
+        self.clearRxROI()
 
     @property
     @element

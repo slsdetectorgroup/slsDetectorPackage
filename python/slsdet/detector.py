@@ -24,6 +24,7 @@ import datetime as dt
 
 from functools import wraps
 from collections import namedtuple
+from collections.abc import Sequence
 import socket
 import numpy as np
 
@@ -321,7 +322,16 @@ class Detector(CppDetectorApi):
         Each ROI should be represented as a tuple of (x_start, y_start, x_end, y_end). \n
         Example: [(0, 100, 50, 100)] \n
         """
-        self.setRxROI(rois)
+        # TODO: maybe better to accept py::object in setRxROI and handle there? 
+        if not isinstance(rois, Sequence):
+            raise TypeError(
+            "setRxROI failed: expected a tuple/list of ints x_min, x_max, y_min, y_max "
+            "or a sequence of such."
+        )
+        if(not isinstance(rois[0], Sequence)): 
+            self.setRxROI([rois])
+        else:
+            self.setRxROI(rois)
 
 
     @property

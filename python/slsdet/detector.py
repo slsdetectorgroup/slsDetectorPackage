@@ -301,6 +301,28 @@ class Detector(CppDetectorApi):
     def rx_arping(self, value):
         ut.set_using_dict(self.setRxArping, value)
 
+    @property
+    def rx_roi(self): 
+        """Gets the list of ROIs configured in the receiver. 
+
+        Note
+        -----
+        Each ROI is represented as a tuple of (x_start, y_start, x_end, y_end). \n
+        If no ROIs are configured, returns an empty list.
+        """
+        return self.getRxROI() #vector of Roi structs how represented? 
+    
+    @rx_roi.setter
+    def rx_roi(self, rois):
+        """Sets the list of ROIs in the receiver.
+
+        Note
+        -----
+        Each ROI should be represented as a tuple of (x_start, y_start, x_end, y_end). \n
+        Example: [(0, 100, 50, 100)] \n
+        """
+        self.setRxROI(rois)
+
 
     @property
     @element

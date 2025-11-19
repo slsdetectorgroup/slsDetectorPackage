@@ -19,6 +19,9 @@ void init_det(py::module &m) {
     using sls::ns;
     using sls::Positions;
     using sls::Result;
+    using sls::RegisterAddress;
+    using sls::RegisterValue;
+    using sls::BitPosition;
 
     m.def("freeSharedMemory", (void (*)(const int, const int)) &sls::freeSharedMemory, py::arg() = 0, py::arg() = -1);
 

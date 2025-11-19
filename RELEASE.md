@@ -34,7 +34,7 @@ This document describes the differences between v10.0.1 and v10.0.0
     Python
     -------
 
-    * receiver ROI can be set from Python using command ``rx_roi``(it supports any sequence of four ints e.g. a tuple (xmin, xmax, ymin, ymax) or a sequence of such for multiple ROIS)
+    * receiver ROI can be set from Python using command ``rx_roi``(it supports any sequence of four or two (for mythen3 and gotthard) ints e.g. a tuple (xmin, xmax, ymin, ymax) or a sequence of such for multiple ROIS)
     * one can clear all ROI's from Python using command ``rx_clearroi`` 
 
 

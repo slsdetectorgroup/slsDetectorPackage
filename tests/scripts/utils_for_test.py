@@ -218,11 +218,14 @@ def loadConfig(name, rx_hostname = 'localhost', settingsdir = None, log_file_fp 
 
         d.rx_hostname = rx_hostname
         d.udp_dstip = 'auto'
+
         if name != "eiger":
             d.udp_srcip = 'auto'
 
-        if name == "jungfrau" or name == "moench" or name == "xilinx_ctb":
+        if name == "jungfrau" or name == "moench":  
             d.udp_dstip2 = 'auto'
+
+        if name == "jungfrau" or name == "moench" or name == "xilinx_ctb":
             d.powerchip = 1
 
         if name == "xilinx_ctb":

@@ -16,7 +16,6 @@ SERVER_START_PORTNO=1900
 
 init(autoreset=True)
 
-
 class LogLevel(Enum):
     INFO = 0
     INFORED = 1
@@ -229,11 +228,11 @@ def loadConfig(name, rx_hostname = 'localhost', settingsdir = None, log_file_fp 
         if name == "xilinx_ctb":
             d.configureTransceiver()
 
-        if name == "eiger":
-            d.trimen = [4500, 5400, 6400]
-            d.settingspath = settingsdir + '/eiger/'
-            d.setThresholdEnergy(4500, detectorSettings.STANDARD)
-
+        if settingsdir is not None and name in ['eiger', 'mythen3']: 
+            d.settingspath = settingsdir + '/' + name + '/'
+            d.trimen = [4500, 5400, 6400] if name == 'eiger' else [4000, 6000, 8000, 12000]
+            d.setThresholdEnergy(4500, detectorSettings.STANDARD) 
+            
         d.frames = num_frames
       
     except Exception as e:

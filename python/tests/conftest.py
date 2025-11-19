@@ -15,15 +15,11 @@ print(sys.path)
 from utils_for_test import (
     Log,
     LogLevel,
-    RuntimeException,
     cleanup,
-    startProcessInBackground,
     startReceiver,
     startDetectorVirtualServer,
-    connectToVirtualServers,
     loadConfig, 
     loadBasicSettings,
-    runProcessWithLogFile
 )
 
 def pytest_addoption(parser):

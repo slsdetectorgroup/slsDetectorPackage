@@ -35,7 +35,7 @@ This document describes the differences between v10.0.1 and v10.0.0
     -------
 
     * receiver ROI can be set from Python using command ``rx_roi``(it supports any sequence of four ints e.g. a tuple (xmin, xmax, ymin, ymax) or a sequence of such for multiple ROIS)
-    * one can clear all ROI's from Python using command ``clear_rx_roi`` 
+    * one can clear all ROI's from Python using command ``rx_clearroi`` 
 
 
 1.2.1 Breaking API

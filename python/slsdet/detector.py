@@ -309,18 +309,23 @@ class Detector(CppDetectorApi):
         Note
         -----
         Each ROI is represented as a tuple of (x_start, y_start, x_end, y_end). \n
-        If no ROIs are configured, returns an empty list.
+        If no ROIs are configured, returns [[-1,-1,-1,-1]].
         """
         return self.getRxROI() #vector of Roi structs how represented? 
     
     @rx_roi.setter
     def rx_roi(self, rois):
-        """Sets the list of ROIs in the receiver.
+        """
+        Sets the list of ROIs in the receiver.
+        Can only set multiple ROIs at multi module level without gap pixels. If more than 1 ROI per
+        UDP port, it will throw. Setting number of udp interfaces will clear the
+        roi. Cannot be set for CTB or Xilinx CTB.  
 
         Note
         -----
-        Each ROI should be represented as a tuple of (x_start, y_start, x_end, y_end). \n
-        Example: [(0, 100, 50, 100)] \n
+        Each ROI should be represented as a sequence of 4 ints (x_start, y_start, x_end, y_end). \n
+        For multiple ROI's pass a sequence of sequence \n
+        Example: [[0, 100, 50, 100]] \n
         """
         # TODO: maybe better to accept py::object in setRxROI and handle there? 
         if not isinstance(rois, Sequence):
@@ -333,7 +338,7 @@ class Detector(CppDetectorApi):
         else:
             self.setRxROI(rois)
 
-    def clear_rx_roi(self): 
+    def rx_clearroi(self): 
         """Clears all the ROIs configured in the receiver."""
         self.clearRxROI()
 

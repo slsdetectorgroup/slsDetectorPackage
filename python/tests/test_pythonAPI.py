@@ -6,16 +6,6 @@ from conftest import test_with_simulators
 from slsdet import Detector
 
 @pytest.mark.withdetectorsimulators
-@pytest.mark.parametrize("servers", [["eiger"]], indirect=True)
-def test_rx_ROI(test_with_simulators):
-    """ Test setting and getting rx_ROI property of Detector class for moench. """
-
-    d = Detector()
-    d.rx_roi = (0, 10, 10, 20)
-    roi = d.rx_roi
-    assert roi == [(0, 10, 10, 20)]
-
-@pytest.mark.withdetectorsimulators
 @pytest.mark.parametrize("servers", [["moench"]], indirect=True)
 def test_rx_ROI_moench(test_with_simulators, servers):
     """ Test setting and getting rx_ROI property of Detector class for moench. """

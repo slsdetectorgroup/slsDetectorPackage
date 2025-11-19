@@ -100,7 +100,8 @@ template <> struct type_caster<std::chrono::nanoseconds> {
 
 // Type caster for sls::defs::ROI from tuple
 template <> struct type_caster<sls::defs::ROI> {
-    PYBIND11_TYPE_CASTER(sls::defs::ROI, _("Sequence[int, int, int, int]"));
+    PYBIND11_TYPE_CASTER(sls::defs::ROI, _("Sequence[int, int, int, int] or "
+                                           "Sequence[int, int]"));
 
     // convert c++ ROI to python tuple
     static handle cast(const sls::defs::ROI &roi, return_value_policy, handle) {
@@ -118,7 +119,7 @@ template <> struct type_caster<sls::defs::ROI> {
             return false;
         }
 
-        if (seq.size() != 4)
+        if (seq.size() != 4 && seq.size() != 2)
             return false;
         // Check if each element is an int
         for (auto item : seq) {
@@ -129,8 +130,12 @@ template <> struct type_caster<sls::defs::ROI> {
 
         value.xmin = seq[0].cast<int>();
         value.xmax = seq[1].cast<int>();
-        value.ymin = seq[2].cast<int>();
-        value.ymax = seq[3].cast<int>();
+
+        if (seq.size() == 4) {
+            value.ymin = seq[2].cast<int>();
+            value.ymax = seq[3].cast<int>();
+        }
+
         return true;
     }
 };

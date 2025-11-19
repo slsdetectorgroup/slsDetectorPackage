@@ -217,6 +217,7 @@ def loadConfig(name, rx_hostname = 'localhost', settingsdir = None, log_file_fp 
             d.udp_dstport2 = DEFAULT_UDP_DST_PORTNO + 1
 
         d.rx_hostname = rx_hostname
+
         d.udp_dstip = 'auto'
 
         if name != "eiger":
@@ -235,7 +236,7 @@ def loadConfig(name, rx_hostname = 'localhost', settingsdir = None, log_file_fp 
             d.settingspath = settingsdir + '/' + name + '/'
             d.trimen = [4500, 5400, 6400] if name == 'eiger' else [4000, 6000, 8000, 12000]
             d.setThresholdEnergy(4500, detectorSettings.STANDARD) 
-            
+        
         d.frames = num_frames
       
     except Exception as e:

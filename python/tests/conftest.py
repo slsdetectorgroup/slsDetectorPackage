@@ -38,8 +38,18 @@ def pytest_collection_modifyitems(config, items):
         if "withdetectorsimulators" in item.keywords:
             item.add_marker(skip)
 
+#helper fixture for servers
 @pytest.fixture
-def test_with_simulators():
+def servers(request):
+    try:
+        return request.param  # comes from @pytest.mark.parametrize(..., indirect=True)
+    except AttributeError:
+        # fallback default if the test did not parametrize
+        return ['eiger', 'jungfrau', 'mythen3', 'gotthard2', 'ctb', 'moench', 'xilinx_ctb']
+    return request.param
+
+@pytest.fixture
+def test_with_simulators(servers):
     """ Fixture to automatically setup virtual detector servers for testing. """
 
     LOG_PREFIX_FNAME = '/tmp/slsDetectorPackage_virtual_PythonAPI_test'
@@ -47,7 +57,6 @@ def test_with_simulators():
 
     with open(MAIN_LOG_FNAME, 'w') as fp:
         try:
-            servers = ['moench']
             nmods = 2
             for server in servers:
                 for ninterfaces in range(1,2):

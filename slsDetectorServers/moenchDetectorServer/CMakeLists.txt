@@ -29,7 +29,8 @@ target_compile_definitions(moenchDetectorServer_virtual
 )
 
 target_link_libraries(moenchDetectorServer_virtual
-    PUBLIC pthread rt slsProjectCSettings
+    PUBLIC 
+        slsProjectCSettings
 )
 
 set_target_properties(moenchDetectorServer_virtual PROPERTIES

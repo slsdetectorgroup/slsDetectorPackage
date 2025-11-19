@@ -76,11 +76,8 @@ foreach(exe ${JUNGFRAU_EXECUTABLES})
     target_link_libraries(${exe} 
         PUBLIC
         slsSupportStatic
-        pthread 
         tiffio
         fmt::fmt
-          #-L/usr/lib64/
-        #-lm  -lstdc++  -lrt
 
         PRIVATE
         slsProjectWarnings

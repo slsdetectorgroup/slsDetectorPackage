@@ -324,8 +324,9 @@ class Detector(CppDetectorApi):
         Note
         -----
         Each ROI should be represented as a sequence of 4 ints (x_start, y_start, x_end, y_end). \n
+        For mythen3 or gotthard2 pass a sequence of 2 ints (x_start, x_end) \n
         For multiple ROI's pass a sequence of sequence \n
-        Example: [[0, 100, 50, 100]] \n
+        Example: [[0, 100, 50, 100], [260, 270, 50,100]] \n
         """
         # TODO: maybe better to accept py::object in setRxROI and handle there? 
         if not isinstance(rois, Sequence):

@@ -89,7 +89,7 @@ std::string RemoveUnit(std::string &str);
 
 bool is_int(const std::string &s);
 /** '0x200' is also an int here */
-bool is_hex_or_dec_int(const std::string &s);
+bool is_hex_or_dec_uint(const std::string &s);
 
 bool replace_first(std::string *s, const std::string &substr,
                    const std::string &repl);

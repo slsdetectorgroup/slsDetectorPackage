@@ -7,7 +7,7 @@
 namespace sls {
 
 RegisterAddress::RegisterAddress(const std::string &address) {
-    if (!is_hex_or_dec_int(address)) {
+    if (!is_hex_or_dec_uint(address)) {
         throw RuntimeError("Address must be an integer value.");
     }
     uint32_t addr = StringTo<uint32_t>(address);
@@ -30,6 +30,9 @@ std::string BitPosition::str() const {
 }
 
 RegisterValue::RegisterValue(const std::string &value) {
+    if (!is_hex_or_dec_uint(value)) {
+        throw RuntimeError("Value must be an integer value.");
+    }
     uint32_t val = StringTo<uint32_t>(value);
     value_ = val;
 }

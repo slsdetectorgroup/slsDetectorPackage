@@ -8,7 +8,7 @@ Testing functions from utils.py
 
 import pytest
 from slsdet.utils import *
-from slsdet import IpAddr, MacAddr, DurationWrapper
+from slsdet import IpAddr, MacAddr, DurationWrapper, RegisterAddress, RegisterValue, BitPosition
 import datetime as dt
 import pathlib
 from pathlib import Path
@@ -197,6 +197,80 @@ def test_make_mac_from_tuple():
     arg = ("84:a9:aa:24:32:88", "84:a9:3e:24:32:aa")
     assert make_mac(arg) == (MacAddr("84:a9:aa:24:32:88"),
                              MacAddr("84:a9:3e:24:32:aa"))
+
+def test_make_reg_addr_from_dict():
+    arg = {0: 0, 1: 0x305}
+    res = make_register_address(arg)
+    assert res == {0: RegisterAddress(0x0), 1: RegisterAddress(0x305)}
+    assert res[0].str() == "0x0"
+    assert res[1].str() == "0x305"
+
+
+def test_make_reg_addr_from_str():
+    reg_addr = "0x305"
+    assert make_register_address(reg_addr).str() == reg_addr
+
+
+def test_make_reg_addr_from_list():
+    arg = [0x305, "0x1fff1fff", 0xc34a]
+    assert make_register_address(arg) == [RegisterAddress(a) for a in arg]
+
+
+def test_make_reg_addr_from_tuple():
+    arg = ("0x340")
+    assert make_register_address(arg) == (RegisterAddress(arg))
+
+
+def test_make_reg_val_from_dict():
+    arg = {0: 0, 1: 0x305}
+    res = make_register_value(arg)
+    assert res == {0: RegisterValue(0x0), 1: RegisterValue(0x305)}
+    assert res[0].str() == "0x0"
+    assert res[1].str() == "0x305"
+
+
+def test_make_reg_val_from_str():
+    reg_val = "0x305"
+    assert make_register_value(reg_val).str() == reg_val
+
+
+def test_make_reg_val_from_list():
+    arg = [0x305, "0x1fff1fff", 0xc34a]
+    assert make_register_value(arg) == [RegisterValue(a) for a in arg]
+
+
+def test_make_reg_val_from_tuple():
+    arg = ("0x340")
+    assert make_register_value(arg) == (RegisterValue(arg))
+
+
+def test_make_bit_pos_from_dict():
+    arg = {
+        0: (RegisterAddress(0), 2), 
+        1: (RegisterAddress(0x305), 23)
+    }
+    res = make_bit_position(arg)
+    assert res == {
+        0: BitPosition(RegisterAddress("0x0"), 2), 
+        1: BitPosition(RegisterAddress("0x305"), 23)
+    }
+    assert res[0].str() == "[0x0, 2]"
+    assert res[1].str() == "[0x305, 23]"
+
+
+def test_make_bit_pos_from_list():
+    arg = [
+        (RegisterAddress(0), 2), 
+        (RegisterAddress(0x305), 23)
+    ]
+    expected = [BitPosition(*a) for a in arg]
+    assert make_bit_position(arg) == expected
+
+
+def test_make_bit_pos_from_tuple():
+    arg = (RegisterAddress(0x305), 23)
+    expected = BitPosition(*arg)
+    assert make_bit_position(arg) == expected
 
 
 def test_make_path_from_str():

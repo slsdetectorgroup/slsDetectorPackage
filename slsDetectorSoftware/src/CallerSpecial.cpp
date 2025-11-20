@@ -1502,7 +1502,7 @@ std::string Caller::define(int action) {
                 WrongNumberOfParameters(2);
             }
             // get name from address
-            if (is_hex_or_dec_int(args[1])) {
+            if (is_hex_or_dec_uint(args[1])) {
                 auto addr = RegisterAddress(args[1]);
                 auto t = det->getRegisterDefinition(addr);
                 os << t << '\n';
@@ -1546,7 +1546,7 @@ std::string Caller::define(int action) {
                     std::string err_str = e.what();
                     if (err_str.find("No bit definition found") !=
                             std::string::npos &&
-                        !is_hex_or_dec_int(args[1])) {
+                        !is_hex_or_dec_uint(args[1])) {
                         err_str += " and addr = " + args[1];
                         throw RuntimeError(err_str);
                     }
@@ -1738,7 +1738,7 @@ std::string Caller::bitoperations(int action) {
 }
 
 RegisterAddress Caller::parseAddress(const std::string &saddr) const {
-    if (is_hex_or_dec_int(saddr)) {
+    if (is_hex_or_dec_uint(saddr)) {
         return RegisterAddress(saddr);
     }
     auto det_type = det->getDetectorType().squash();
@@ -1821,7 +1821,7 @@ Caller::parseRegAddressAndValue(const bool validate) const {
     if (argsSize == 2) {
         std::string saddr = args[0];
         std::string sval = args[1];
-        if (!is_hex_or_dec_int(sval)) {
+        if (!is_hex_or_dec_uint(sval)) {
             throw RuntimeError(
                 "If " + sval +
                 " is a bit name, use only one argument to specify it.");

@@ -155,15 +155,24 @@ def make_path(arg):
 
 
 def _make(arg, transform):
-    """Helper function for make_mac and make_ip special cases for
+    """Helper function for make_mac, make_ip and other special cases for
     dict, list and tuple. Otherwise just calls transform"""
     if isinstance(arg, dict):
-        return {key: transform(value) for key, value in arg.items()}
+        return {key: _make(value, transform) for key, value in arg.items()}
     elif isinstance(arg, list):
-        return [transform(a) for a in arg]
+        return [_make(a, transform) for a in arg]
     elif isinstance(arg, tuple):
-        return tuple(transform(a) for a in arg)
+        # special case for BitPosition
+        if transform is _slsdet.BitPosition:
+            addr, bit = arg
+            if isinstance(addr, int):
+                addr = _slsdet.RegisterAddress(addr)
+            return transform(addr, bit)
+        else:
+            # general case: recursively transform each element
+            return tuple(_make(a, transform) for a in arg)
     else:
+        # single element
         return transform(arg)
 
 

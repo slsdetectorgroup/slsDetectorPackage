@@ -59,8 +59,8 @@ class RuntimeException (Exception):
 
 def checkIfProcessRunning(processName):
     cmd = f"pgrep -f {processName}"
-    Log(LogLevel.INFO, f"mycmd: {cmd}")
     res = subprocess.getoutput(cmd)
+    Log(LogLevel.INFO, f"mycmd: {res}")
     return res.strip().splitlines()
 
 

@@ -49,7 +49,7 @@ target_link_libraries(slsReceiverObject
     slsProjectOptions
     slsSupportStatic
   PRIVATE
-    slsProjectWarnings #don't propagate warnigns 
+    slsProjectWarnings #don't propagate warnings
 )
 
 target_compile_definitions(slsReceiverObject 
@@ -118,8 +118,6 @@ if (SLS_USE_RECEIVER_BINARIES)
     target_link_libraries(slsReceiver PUBLIC
     PUBLIC
         slsReceiverStatic
-        pthread
-        rt
     PRIVATE
         slsProjectWarnings
     )
@@ -138,8 +136,6 @@ if (SLS_USE_RECEIVER_BINARIES)
     target_link_libraries(slsMultiReceiver 
     PUBLIC
         slsReceiverStatic
-        pthread
-        rt
     PRIVATE
         slsProjectWarnings
     )
@@ -158,12 +154,18 @@ if (SLS_USE_RECEIVER_BINARIES)
     target_link_libraries(slsFrameSynchronizer 
     PUBLIC
         slsReceiverStatic
-        pthread
-        rt
     PRIVATE
         slsProjectWarnings
-        "$<BUILD_INTERFACE:libzmq-static>"
+        
     )
+
+    #Treat both vendored and system zmq as interface for receiver binaries
+    if(SLS_USE_SYSTEM_ZMQ)
+        message(STATUS "slsFrameSynchronizer ZEROMQ_TARGET=${ZEROMQ_TARGET}")
+        target_link_libraries(slsFrameSynchronizer PRIVATE "${ZEROMQ_TARGET}")
+    else()
+        target_link_libraries(slsFrameSynchronizer PRIVATE "$<BUILD_INTERFACE:libzmq-static>")
+    endif()
 
     install(TARGETS slsReceiver slsMultiReceiver slsFrameSynchronizer
         EXPORT "${TARGETS_EXPORT_NAME}"

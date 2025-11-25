@@ -25,15 +25,27 @@
 #include <sys/stat.h> // fstat
 #include <unistd.h>
 
-namespace sls {
-
-struct CtbConfig;
-// struct sharedDetector;
+// ********************** Defines for shared memory. **********************
+// WARNING! before chaning these search the codebase for their usage!
 
 #define SHM_IS_VALID_CHECK_VERSION 0x250820
+
+//Max shared memory name length in macOS is 31 characters
+#ifdef __APPLE__
+#define SHM_DETECTOR_PREFIX        "/sls_"
+#define SHM_MODULE_PREFIX          "_mod_"
+#else
 #define SHM_DETECTOR_PREFIX        "/slsDetectorPackage_detector_"
 #define SHM_MODULE_PREFIX          "_module_"
+#endif
+
 #define SHM_ENV_NAME               "SLSDETNAME"
+// ************************************************************************
+
+namespace sls {
+
+class CtbConfig;
+
 
 template <typename T, typename U> constexpr bool is_type() {
     return std::is_same_v<std::decay_t<U>, T>;
@@ -267,6 +279,11 @@ template <typename T> class SharedMemory {
             throw SharedMemoryError(msg);
         }
 
+        #ifdef __APPLE__
+        // On macOS, fstat returns the allocated size and not the requested size.
+        // This means we can't check for size since we always get for example 16384 bytes.
+        return;
+        #endif
         auto actual_size = static_cast<size_t>(sb.st_size);
         auto expected_size = sizeof(T);
         if (actual_size != expected_size) {

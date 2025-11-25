@@ -1205,6 +1205,26 @@ void setVLimit(int l) {
         vLimit = l;
 }
 
+int getBitOffsetFromDACIndex(enum DACINDEX ind) {
+    switch (ind) {
+    case D_PWR_IO:
+        return POWER_VIO_OFST;
+    case D_PWR_A:
+        return POWER_VCC_A_OFST;
+    case D_PWR_B:
+        return POWER_VCC_B_OFST;
+    case D_PWR_C:
+        return POWER_VCC_C_OFST;
+    case D_PWR_D:
+        return POWER_VCC_D_OFST;
+    default:
+        LOG(logERROR,
+            ("DAC index %d is not defined to get offset in ctrl register\n",
+             ind));
+        return -1;
+    }
+}
+
 int isPowerValid(enum DACINDEX ind, int val) {
     char *powerNames[] = {PWR_NAMES};
     int pwrIndex = (int)(ind - D_PWR_D);
@@ -1227,10 +1247,23 @@ int isPowerValid(enum DACINDEX ind, int val) {
 }
 
 int getPower(enum DACINDEX ind) {
+    // get bit offset in ctrl register
+    int bitOffset = getBitOffsetFromDACIndex(ind);
+    if (bitOffset == -1) {
+        return -1;
+    }
+
+    // powered enable off
+    {
+        uint32_t addr = CTRL_REG;
+        uint32_t mask = (1 << bitOffset);
+        if (!(bus_r(addr) & mask))
+            return 0;
+    }
+
     char *powerNames[] = {PWR_NAMES};
     int pwrIndex = (int)(ind - D_PWR_D);
 
-    // check dac value
     // not set yet
     if (dacValues[ind] == -1) {
         LOG(logERROR,
@@ -1240,7 +1273,8 @@ int getPower(enum DACINDEX ind) {
 
     // dac powered off
     if (dacValues[ind] == LTC2620_D_GetPowerDownValue()) {
-        LOG(logWARNING, ("Power V%s is powered down\n", powerNames[pwrIndex]));
+        LOG(logWARNING, ("Power V%s enabled, but voltage is at minimum or 0.\n",
+                         powerNames[pwrIndex]));
         return LTC2620_D_GetPowerDownValue();
     }
 
@@ -1254,26 +1288,43 @@ int getPower(enum DACINDEX ind) {
 }
 
 void setPower(enum DACINDEX ind, int val) {
+    // validate index and get bit offset in ctrl register
+    int bitOffset = getBitOffsetFromDACIndex(ind);
+    if (bitOffset == -1) {
+        return;
+    }
+    uint32_t addr = CTRL_REG;
+    uint32_t mask = (1 << bitOffset);
+
+    if (val == -1)
+        return;
+
     char *powerNames[] = {PWR_NAMES};
     int pwrIndex = (int)(ind - D_PWR_D);
+    LOG(logINFO, ("Setting Power V%s to %d mV\n", powerNames[pwrIndex], val));
 
-    // power down dac
-    if (val == LTC2620_D_GetPowerDownValue()) {
-        LOG(logINFO, ("\tPowering down V%d\n", powerNames[pwrIndex]));
-        setDAC(ind, LTC2620_D_GetPowerDownValue(), 0);
+    // validate value (already checked at tcp (funcs.c))
+    if (!isPowerValid(ind, val)) {
+        LOG(logERROR, ("Invalid power value for V%s: %d mV\n",
+                       powerNames[pwrIndex], val));
+        return;
     }
 
-    // set dac
-    else if (val >= 0) {
-        LOG(logINFO,
-            ("Setting Power V%s to %d mV\n", powerNames[pwrIndex], val));
+    // Switch off power enable
+    LOG(logDEBUG1, ("Switching off power enable\n"));
+    bus_w(addr, bus_r(addr) & ~(mask));
 
-        // validate value (already checked at tcp (funcs.c))
-        if (!isPowerValid(ind, val)) {
-            return;
-        }
+    // power down dac
+    LOG(logINFO, ("\tPowering down V%d\n", powerNames[pwrIndex]));
+    setDAC(ind, LTC2620_D_GetPowerDownValue(), 0);
 
-        // convert voltage to dac
+    //(power off is anyway done with power enable)
+    if (val == 0)
+        val = LTC2620_D_GetPowerDownValue();
+
+    // convert voltage to dac (power off is anyway done with power enable)
+    if (val != LTC2620_D_GetPowerDownValue()) {
+
         int dacval = -1;
         if (ConvertToDifferentRange(
                 POWER_RGLTR_MIN, POWER_RGLTR_MAX, LTC2620_D_GetMaxInput(),
@@ -1290,6 +1341,12 @@ void setPower(enum DACINDEX ind, int val) {
         LOG(logINFO, ("Setting Power V%s: %d mV (%d dac)\n",
                       powerNames[pwrIndex], val, dacval));
         setDAC(ind, dacval, 0);
+
+        // if valid, enable power
+        if (dacval >= 0) {
+            LOG(logDEBUG1, ("Switching on power enable\n"));
+            bus_w(addr, bus_r(addr) | mask);
+        }
     }
 }
 

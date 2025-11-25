@@ -24,6 +24,16 @@ include(cmake/SlsAddFlag.cmake)
 include(cmake/helpers.cmake)
 
 
+find_package(Threads REQUIRED)
+
+# POSIX threads are required for the moment but we use CMake to find them
+# Once migrated to std::thread this can be removed
+if(NOT CMAKE_USE_PTHREADS_INIT)
+    message(FATAL_ERROR "A POSIX threads (pthread) implementation is required, but was not found.")
+endif()
+
+
+option(SLS_USE_SYSTEM_ZMQ "Use system installed libzmq" OFF)
 
 # Using FetchContent to get libzmq
 include(FetchContent)
@@ -50,50 +60,110 @@ if(NOT PATCH_EXECUTABLE)
     message(FATAL_ERROR "The 'patch' tool is required for patching lib zeromq. Please install it.")
 endif()
 
-if(SLS_FETCH_ZMQ_FROM_GITHUB)
-    # Opt in to pull down a zmq version from github instead of
-    # using the bundled version
-    FetchContent_Declare(
-        libzmq
-        GIT_REPOSITORY https://github.com/zeromq/libzmq.git
-        GIT_TAG        v${SLS_LIBZMQ_VERSION}
-        PATCH_COMMAND ${CMAKE_COMMAND} -E chdir <SOURCE_DIR> patch -p1 < ${CMAKE_CURRENT_SOURCE_DIR}/libs/libzmq/libzmq_cmake_version.patch
-        UPDATE_DISCONNECTED 1
-    )
+if(SLS_USE_SYSTEM_ZMQ)
+    # find_package(ZeroMQ REQUIRED)
+    # 1) Try a CMake package config if available (vcpkg, Homebrew, source builds)
+    #    Many installs export either ZeroMQ::libzmq or libzmq.
+    find_package(ZeroMQ QUIET CONFIG)
+
+    set(ZEROMQ_TARGET "")
+
+    if (TARGET ZeroMQ::libzmq)
+        set(ZEROMQ_TARGET ZeroMQ::libzmq)
+        message(STATUS "Found target: ${ZEROMQ_TARGET} version: ${ZeroMQ_VERSION}")
+    elseif (TARGET libzmq)
+        set(ZEROMQ_TARGET libzmq)
+        message(STATUS "Found target: ${ZEROMQ_TARGET} version: ${ZeroMQ_VERSION}")
+    elseif (TARGET ZeroMQ::ZeroMQ) # rare older naming
+        set(ZEROMQ_TARGET ZeroMQ::ZeroMQ)
+        message(STATUS "Found target: ${ZEROMQ_TARGET} version: ${ZeroMQ_VERSION}")
+    endif()
+
+    # 2) Fallback: use pkg-config hints + manual find_* to create an imported target
+    if (NOT ZEROMQ_TARGET)
+        find_package(PkgConfig QUIET)
+        if (PkgConfig_FOUND)
+            pkg_check_modules(PC_ZeroMQ QUIET libzmq)
+        endif()
+
+        find_path(ZEROMQ_INCLUDE_DIR
+            NAMES zmq.h
+            HINTS ${PC_ZeroMQ_INCLUDE_DIRS}
+        )
+
+        find_library(ZEROMQ_LIBRARY
+            NAMES zmq libzmq
+            HINTS ${PC_ZeroMQ_LIBRARY_DIRS}
+        )
+
+        if (ZEROMQ_INCLUDE_DIR AND ZEROMQ_LIBRARY)
+            add_library(libzmq UNKNOWN IMPORTED)
+            set_target_properties(libzmq PROPERTIES
+            IMPORTED_LOCATION "${ZEROMQ_LIBRARY}"
+            INTERFACE_INCLUDE_DIRECTORIES "${ZEROMQ_INCLUDE_DIR}"
+            )
+            set(ZEROMQ_TARGET libzmq)
+        endif()
+        message(STATUS "ZeroMQ version (pkg-config): ${PC_ZeroMQ_VERSION}")
+        
+    endif()
+
+    # 3) Error out if still not found, with a helpful message
+    if (NOT ZEROMQ_TARGET)
+        message(FATAL_ERROR "ZeroMQ (libzmq) not found. Please install ZeroMQ development files.")
+    endif()
+
+# Use it
+# target_link_libraries(your_target PRIVATE ${ZEROMQ_TARGET})
+
+    message(STATUS "Using system installed libzmq: ${ZeroMQ_LIBRARIES}")
+    message(STATUS "ZeroMQ target: ${ZEROMQ_TARGET}")
+    message(STATUS "ZeroMQ include dirs: ${ZeroMQ_INCLUDE_DIRS}")
 else()
-    # Standard behaviour use libzmq included in this repo (libs/libzmq)
-    FetchContent_Declare(
-        libzmq
-        URL ${CMAKE_CURRENT_SOURCE_DIR}/libs/libzmq/libzmq-${SLS_LIBZMQ_VERSION}.tar.gz
-        URL_HASH MD5=cc20b769ac10afa352e5ed2769bb23b3
-        PATCH_COMMAND ${CMAKE_COMMAND} -E chdir <SOURCE_DIR> patch -p1 < ${CMAKE_CURRENT_SOURCE_DIR}/libs/libzmq/libzmq_cmake_version.patch
-        UPDATE_DISCONNECTED 1
-    )
+    if(SLS_FETCH_ZMQ_FROM_GITHUB)
+        # Opt in to pull down a zmq version from github instead of
+        # using the bundled version
+        FetchContent_Declare(
+            libzmq
+            GIT_REPOSITORY https://github.com/zeromq/libzmq.git
+            GIT_TAG        v${SLS_LIBZMQ_VERSION}
+            PATCH_COMMAND ${CMAKE_COMMAND} -E chdir <SOURCE_DIR> patch -p1 < ${CMAKE_CURRENT_SOURCE_DIR}/libs/libzmq/libzmq_cmake_version.patch
+            UPDATE_DISCONNECTED 1
+        )
+    else()
+        # Standard behaviour use libzmq included in this repo (libs/libzmq)
+        FetchContent_Declare(
+            libzmq
+            URL ${CMAKE_CURRENT_SOURCE_DIR}/libs/libzmq/libzmq-${SLS_LIBZMQ_VERSION}.tar.gz
+            URL_HASH MD5=cc20b769ac10afa352e5ed2769bb23b3
+            PATCH_COMMAND ${CMAKE_COMMAND} -E chdir <SOURCE_DIR> patch -p1 < ${CMAKE_CURRENT_SOURCE_DIR}/libs/libzmq/libzmq_cmake_version.patch
+            UPDATE_DISCONNECTED 1
+        )
+    endif()
+
+
+    # Disable unwanted options from libzmq
+    set(BUILD_TESTS OFF CACHE BOOL "Switch off libzmq test build")
+    set(BUILD_SHARED OFF CACHE BOOL "Switch off libzmq shared libs")
+    set(WITH_PERF_TOOL OFF CACHE BOOL "")
+    set(ENABLE_CPACK OFF CACHE BOOL "")
+    set(ENABLE_CLANG OFF CACHE BOOL "")
+    set(ENABLE_CURVE OFF CACHE BOOL "")
+    set(ENABLE_DRAFTS OFF CACHE BOOL "")
+    set(ENABLE_PRECOMPILED OFF CACHE BOOL "")
+    set(WITH_DOC OFF CACHE BOOL "")
+    set(WITH_DOCS OFF CACHE BOOL "")
+
+
+    # Using GetProperties and Populate to be able to exclude zmq
+    # from install (not possible with FetchContent_MakeAvailable(libzmq))
+    FetchContent_GetProperties(libzmq)
+    if(NOT libzmq_POPULATED)
+    FetchContent_Populate(libzmq)
+    add_subdirectory(${libzmq_SOURCE_DIR} ${libzmq_BINARY_DIR} EXCLUDE_FROM_ALL)
+    endif()
+
 endif()
-
-# Disable unwanted options from libzmq
-set(BUILD_TESTS OFF CACHE BOOL "Switch off libzmq test build")
-set(BUILD_SHARED OFF CACHE BOOL "Switch off libzmq shared libs")
-set(WITH_PERF_TOOL OFF CACHE BOOL "")
-set(ENABLE_CPACK OFF CACHE BOOL "")
-set(ENABLE_CLANG OFF CACHE BOOL "")
-set(ENABLE_CURVE OFF CACHE BOOL "")
-set(ENABLE_DRAFTS OFF CACHE BOOL "")
-set(ENABLE_PRECOMPILED OFF CACHE BOOL "")
-set(WITH_DOC OFF CACHE BOOL "")
-set(WITH_DOCS OFF CACHE BOOL "")
-
- 
-
-# Using GetProperties and Populate to be able to exclude zmq
-# from install (not possible with FetchContent_MakeAvailable(libzmq))
-FetchContent_GetProperties(libzmq)
-if(NOT libzmq_POPULATED)
-  FetchContent_Populate(libzmq)
-  add_subdirectory(${libzmq_SOURCE_DIR} ${libzmq_BINARY_DIR} EXCLUDE_FROM_ALL)
-endif()
-
-
 
 include(GNUInstallDirs)
 
@@ -122,7 +192,7 @@ endif()
 
 
 option(SLS_USE_HDF5 "HDF5 File format" OFF)
-option(SLS_BUILD_SHARED_LIBRARIES "Build shared libaries" ON)
+option(SLS_BUILD_SHARED_LIBRARIES "Build shared libaries" OFF)
 option(SLS_USE_TEXTCLIENT "Text Client" ON)
 option(SLS_USE_DETECTOR "Detector libs" ON)
 option(SLS_USE_RECEIVER "Receiver" ON)
@@ -271,6 +341,9 @@ if (NOT TARGET slsProjectCSettings)
                                                 -Wno-format-truncation
                                     )
     sls_disable_c_warning("-Wstringop-truncation")
+    target_link_libraries(slsProjectCSettings INTERFACE
+        Threads::Threads
+    )
 endif()
 
 

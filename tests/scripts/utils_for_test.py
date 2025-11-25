@@ -67,8 +67,9 @@ def checkIfProcessRunning(processName):
 
     #res1 = subprocess.getoutput(cmd)
     #Log(LogLevel.INFO, f"cmd: {res1}")
-    res = subprocess.getoutput(f"pgrep -f {processName} | xargs -r -I{{}} cat /proc/{{}}/cmdline")
-    Log(LogLevel.INFO, f"cmd: {res}")
+    #res = subprocess.getoutput(f"pgrep -f {processName} | xargs -r -I{{}} cat /proc/{{}}/cmdline")
+    #Log(LogLevel.INFO, f"cmd: {res}")
+    res = subprocess.getoutput(f"pgrep -f {processName}")
     return res.strip().splitlines()
 
 
@@ -83,7 +84,8 @@ def killProcess(name, fp):
                 if p.returncode != 0 and bool(checkIfProcessRunning(name)):
                     raise RuntimeException(f"Could not kill {name} with pid {pid}")
             except Exception as e:
-                raise RuntimeException(f"Failed to kill process {name} pid:{pid}. Error: {str(e)}") from e
+                Log(LogLevel.ERROR, f"Failed to kill process {name} pid:{pid}. Error: {str(e)}", fp)
+                #raise RuntimeException(f"Failed to kill process {name} pid:{pid}. Error: {str(e)}") from e
     #else:
     #    Log(LogLevel.INFO, 'process not running : ' + name)
 

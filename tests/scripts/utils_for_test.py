@@ -311,7 +311,7 @@ def ParseArguments(description, default_num_mods=1, markers=False, general_tests
         
 
     if general_tests_option:
-        parser.add_argument('-g', '--general_tests', action='store_true',
+        parser.add_argument('-g', '--general_tests', action='store_false',
                         help = 'Enable general tests (no value needed)')
         
     args = parser.parse_args()

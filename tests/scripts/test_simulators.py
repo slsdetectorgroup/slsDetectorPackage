@@ -82,3 +82,5 @@ if __name__ == '__main__':
                 traceback.print_exc(file=fp_error)
             cleanup(fp)
             Log(LogLevel.ERROR, f'Tests Failed.')
+            raise e
+            

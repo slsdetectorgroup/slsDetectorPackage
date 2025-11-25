@@ -59,12 +59,14 @@ class RuntimeException (Exception):
 
 def checkIfProcessRunning(processName):
     cmd = f"pgrep -f {processName}"
+    Log(LogLevel.INFO, f"mycmd: {cmd}")
     res = subprocess.getoutput(cmd)
     return res.strip().splitlines()
 
 
 def killProcess(name, fp):
     pids = checkIfProcessRunning(name)
+    Log(LogLevel.INFO, f"my pids: {pids}")
     if pids:
         Log(LogLevel.INFO, f"Killing '{name}' processes with PIDs: {', '.join(pids)}", fp)
         for pid in pids:

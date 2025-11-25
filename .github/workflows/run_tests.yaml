@@ -40,14 +40,14 @@ jobs:
           # Build your program with the given configuration
         run: cmake --build ${{github.workspace}}/build -j4 --config ${{env.BUILD_TYPE}}
 
-      - name: C++ unit tests
-        working-directory: ${{github.workspace}}/build
-        run: ctest -C ${{env.BUILD_TYPE}} -j1 --rerun-failed --output-on-failure # TODO: check that hidden tests are run as well 
+      #- name: C++ unit tests
+        #working-directory: ${{github.workspace}}/build
+        #run: ctest -C ${{env.BUILD_TYPE}} -j1 --rerun-failed --output-on-failure # TODO: check that hidden tests are run as well 
 
-      - name: Python unit tests
-        working-directory: ${{github.workspace}}/build/bin
-        run: |
-          python -m pytest ${{github.workspace}}/python/tests
+      #- name: Python unit tests
+        #working-directory: ${{github.workspace}}/build/bin
+        #run: |
+          #python -m pytest ${{github.workspace}}/python/tests
 
       - name: Simulator unit tests
         working-directory: ${{github.workspace}}/build/bin

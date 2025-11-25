@@ -60,6 +60,7 @@ def startCmdTestsForAll(args, fp):
             cmd = ['tests', '--abort', args.markers, '-s']
 
             Log(LogLevel.INFOBLUE, f'Starting Cmd Tests for {server}')
+            checkIfProcessRunning('DetectorServer_virtual', fp)
             cleanup(fp)
             startDetectorVirtualServer(name=server, num_mods=num_mods, fp=fp)
             startReceiver(num_mods, fp)

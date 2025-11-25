@@ -17,14 +17,14 @@ jobs:
     # You can convert this to a matrix build if you need cross-platform coverage.
     # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
     runs-on: ubuntu-latest
-    name: Configure and build using cmake
+    name: Run all Tests
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: 3.12
           cache: 'pip'
-      - run: pip install pytest numpy
+      - run: pip install pytest numpy colorama
 
       - uses: awalsh128/cache-apt-pkgs-action@latest
         with:
@@ -47,7 +47,7 @@ jobs:
       - name: Python unit tests
         working-directory: ${{github.workspace}}/build/bin
         run: |
-          python -m pytest ${{github.workspace}}/python/test
+          python -m pytest ${{github.workspace}}/python/tests
 
       - name: Simulator unit tests
         working-directory: ${{github.workspace}}/build/bin

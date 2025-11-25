@@ -59,12 +59,13 @@ class RuntimeException (Exception):
 
 def checkIfProcessRunning(processName):
     #cmd = f"pgrep -f {processName}"
-    cmd = F"ps aux | grep {processName}"
+    #cmd = F"ps aux | grep {processName}"
+    #res = subprocess.getoutput(cmd)
+    #Log(LogLevel.INFO, f"mycmd: {res}")
+    #cmd = f"pgrep -f {processName}"
+    cmd = f"pgrep -f {processName} | xargs -r ps -p {} -o pid,ppid,cmd"
     res = subprocess.getoutput(cmd)
-    Log(LogLevel.INFO, f"mycmd: {res}")
-    cmd = f"pgrep -f {processName}"
-    res2 = subprocess.getoutput(cmd)
-    Log(LogLevel.INFO, f"cmd: {res2}")
+    Log(LogLevel.INFO, f"cmd: {res}")
     return res.strip().splitlines()
 
 

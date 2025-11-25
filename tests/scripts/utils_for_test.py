@@ -256,7 +256,7 @@ def loadBasicSettings(name, d, fp):
     except Exception as e:
         raise RuntimeException(f'Could not load config for {name}. Error: {str(e)}') from e
     
-def ParseArguments(description, default_num_mods=1, markers=False, general_tests_option=False):
+def ParseArguments(description, default_num_mods=1, markers=False, general_tests_option=False, specific_test=False):
     parser = argparse.ArgumentParser(description)
 
     default_settings_path = Path(__file__).resolve().parents[2] / "settingsdir"
@@ -271,9 +271,15 @@ def ParseArguments(description, default_num_mods=1, markers=False, general_tests
                         help='Number of frames to test with')
     parser.add_argument('-s', '--servers', nargs='*',
                         help='Detector servers to run')
+    
     if markers:
         parser.add_argument('-m', '--markers', nargs='?', default ='[.cmdcall]',
-                        help = 'Markers to use for cmd tests, default: [.cmdcall]')
+                        help = 'Markers to use for for tests options are [.cmdcall], [.integration], default: [.cmdcall]')
+        
+    if specific_test: 
+        parser.add_argument("-t", "--test", nargs="?", default = None, help= "Add name of test suite for specific tests")
+        # TODO: maybe None not a good default argument
+        
 
     if general_tests_option:
         parser.add_argument('-g', '--general_tests', action='store_true',

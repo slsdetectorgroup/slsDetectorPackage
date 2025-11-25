@@ -94,8 +94,8 @@ def cleanSharedmemory(fp):
     Log(LogLevel.INFO, 'Cleaning up shared memory', fp)
     try:
         p = subprocess.run(['sls_detector_get', 'free'], stdout=fp, stderr=fp)
-    except:
-        raise RuntimeException('Could not free shared memory')
+    except Exception as e:
+        raise RuntimeException(f'Could not free shared memory: {str(e)}')
 
 
 def cleanup(fp):

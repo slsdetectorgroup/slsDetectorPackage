@@ -52,6 +52,6 @@ jobs:
       - name: Simulator unit tests
         working-directory: ${{github.workspace}}/build/bin
         run: |
-            python ${{github.workspace}}/build/bin/test_simulator.py
+            python ${{github.workspace}}/build/bin/test_simulators.py
             python ${{github.workspace}}/build/bin/test_roi.py
             python ${{github.workspace}}/build/bin/test_frame_synchronizer.py

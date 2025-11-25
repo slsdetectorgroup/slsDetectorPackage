@@ -169,7 +169,7 @@ def runProcessWithLogFile(name, cmd, fp, log_file_name):
 def startDetectorVirtualServer(name :str, num_mods, fp):
     for i in range(num_mods):
         port_no = SERVER_START_PORTNO + (i * 2)
-        cmd = [name + 'DetectorServer_virtual', '-p', str(port_no)]
+        cmd = [str(build_dir / (name + 'DetectorServer_virtual')), '-p', str(port_no)]
         startProcessInBackgroundWithLogFile(cmd, fp, "/tmp/virtual_det_" + name + "_" + str(i) + ".txt")
         match name:
             case 'jungfrau':
@@ -207,9 +207,9 @@ def connectToVirtualServers(name, num_mods, ctb_object=False):
 
 def startReceiver(num_mods, fp):
     if num_mods == 1:
-        cmd = ['slsReceiver']
+        cmd = [str(build_dir / 'slsReceiver')]
     else:
-        cmd = ['slsMultiReceiver', str(DEFAULT_TCP_RX_PORTNO), str(num_mods)]
+        cmd = [str(build_dir / 'slsMultiReceiver'), str(DEFAULT_TCP_RX_PORTNO), str(num_mods)]
         # in 10.0.0
         #cmd = ['slsMultiReceiver', '-p', str(DEFAULT_TCP_RX_PORTNO), '-n', str(num_mods)]
     startProcessInBackground(cmd, fp)

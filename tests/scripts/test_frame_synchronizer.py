@@ -9,6 +9,7 @@ import traceback, json
 
 from slsdet import Detector
 from slsdet.defines import DEFAULT_TCP_RX_PORTNO
+from slsdet import build_dir
 
 from utils_for_test import (
     Log,
@@ -42,7 +43,7 @@ def startFrameSynchronizerPullSocket(name, fp):
 
 
 def startFrameSynchronizer(num_mods, fp):
-    cmd = ['slsFrameSynchronizer', str(DEFAULT_TCP_RX_PORTNO), str(num_mods)]
+    cmd = [str(build_dir / 'slsFrameSynchronizer'), str(DEFAULT_TCP_RX_PORTNO), str(num_mods)]
     # in 10.0.0
     #cmd = ['slsFrameSynchronizer', '-p', str(DEFAULT_TCP_RX_PORTNO), '-n', str(num_mods)]
     startProcessInBackground(cmd, fp)

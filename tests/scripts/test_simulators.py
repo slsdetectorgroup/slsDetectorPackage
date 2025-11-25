@@ -17,6 +17,7 @@ from utils_for_test import (
     killProcess,
     cleanup,
     cleanSharedmemory,
+    startReceiver,
     startProcessInBackground,
     runProcessWithLogFile,
     startDetectorVirtualServer,
@@ -30,17 +31,6 @@ LOG_PREFIX_FNAME = '/tmp/slsDetectorPackage_virtual_test'
 MAIN_LOG_FNAME = LOG_PREFIX_FNAME + '_log.txt'
 GENERAL_TESTS_LOG_FNAME = LOG_PREFIX_FNAME + '_results_general.txt'
 CMD_TEST_LOG_PREFIX_FNAME = LOG_PREFIX_FNAME + '_results_cmd_'
-
-
-def startReceiver(num_mods, fp):
-    if num_mods == 1:
-        cmd = ['slsReceiver']
-    else:
-        cmd = ['slsMultiReceiver', str(DEFAULT_TCP_RX_PORTNO), str(num_mods)]
-        # in 10.0.0
-        #cmd = ['slsMultiReceiver', '-p', str(DEFAULT_TCP_RX_PORTNO), '-n', str(num_mods)]
-    startProcessInBackground(cmd, fp)
-    time.sleep(1)
 
 def startGeneralTests(fp):
     fname = GENERAL_TESTS_LOG_FNAME

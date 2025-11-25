@@ -16,6 +16,7 @@ SERVER_START_PORTNO=1900
 
 init(autoreset=True)
 
+build_dir = Path(__file__).resolve().parents[2] / "build" / "bin"
 
 class LogLevel(Enum):
     INFO = 0
@@ -93,7 +94,7 @@ def killProcess(name, fp):
 def cleanSharedmemory(fp):
     Log(LogLevel.INFO, 'Cleaning up shared memory', fp)
     try:
-        p = subprocess.run(['sls_detector_get', 'free'], stdout=fp, stderr=fp)
+        p = subprocess.run([build_dir / 'sls_detector_get', 'free'], stdout=fp, stderr=fp)
     except Exception as e:
         raise RuntimeException(f'Could not free shared memory: {str(e)}')
 

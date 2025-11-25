@@ -23,7 +23,8 @@ from utils_for_test import (
     connectToVirtualServers,
     loadBasicSettings,
     loadConfig, 
-    runProcessWithLogFile
+    runProcessWithLogFile,
+    build_dir
 )
 
 LOG_PREFIX_FNAME = '/tmp/slsDetectorPackage_virtual_roi_test'
@@ -56,7 +57,7 @@ def startTestsForAll(fp):
                 loadBasicSettings(name=server, d=d, fp=fp)
 
                 fname = ROI_TEST_FNAME + server + '.txt'
-                cmd = ['tests', 'rx_roi', '--abort', '-s']
+                cmd = [str(build_dir / 'tests'), 'rx_roi', '--abort', '-s']
                 runProcessWithLogFile('Roi Tests for ' + server, cmd, fp, fname)
                 Log(LogLevel.INFO, '\n')
             except Exception as e:

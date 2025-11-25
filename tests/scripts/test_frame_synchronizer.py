@@ -9,7 +9,6 @@ import traceback, json
 
 from slsdet import Detector
 from slsdet.defines import DEFAULT_TCP_RX_PORTNO
-from slsdet import build_dir
 
 from utils_for_test import (
     Log,
@@ -25,7 +24,8 @@ from utils_for_test import (
     startDetectorVirtualServer,
     loadConfig,
     loadBasicSettings,
-    ParseArguments
+    ParseArguments, 
+    build_dir
 )
 
 LOG_PREFIX_FNAME = '/tmp/slsFrameSynchronizer_test'

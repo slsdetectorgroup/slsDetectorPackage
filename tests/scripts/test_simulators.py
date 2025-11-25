@@ -9,6 +9,7 @@ import sys, subprocess, time, traceback
 from slsdet import Detector
 from slsdet.defines import DEFAULT_TCP_RX_PORTNO
 
+
 from utils_for_test import (
     Log,
     LogLevel,
@@ -23,7 +24,8 @@ from utils_for_test import (
     startDetectorVirtualServer,
     loadConfig,
     loadBasicSettings,
-    ParseArguments
+    ParseArguments, 
+    build_dir
 )
 
 
@@ -34,7 +36,7 @@ CMD_TEST_LOG_PREFIX_FNAME = LOG_PREFIX_FNAME + '_results_cmd_'
 
 def startGeneralTests(fp):
     fname = GENERAL_TESTS_LOG_FNAME
-    cmd = ['tests', '--abort', '-s']
+    cmd = [str(build_dir / 'tests'), '--abort', '-s']
     try:
         cleanup(fp)
         runProcessWithLogFile('General Tests', cmd, fp, fname)
@@ -47,7 +49,7 @@ def startCmdTestsForAll(args, fp):
         try:
             num_mods = 2 if server == 'eiger' else 1
             fname = CMD_TEST_LOG_PREFIX_FNAME + server + '.txt'
-            cmd = ['tests', '--abort', args.markers, '-s']
+            cmd = [str(build_dir / 'tests'), '--abort', args.markers, '-s']
 
             Log(LogLevel.INFOBLUE, f'Starting Cmd Tests for {server}')
             cleanup(fp)

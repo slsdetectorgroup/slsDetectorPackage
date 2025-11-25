@@ -63,9 +63,11 @@ def checkIfProcessRunning(processName):
     #res = subprocess.getoutput(cmd)
     #Log(LogLevel.INFO, f"mycmd: {res}")
     #cmd = f"pgrep -f {processName}"
-    cmd = f"pgrep -f {processName} | xargs -r ps -p {} -o pid,ppid,cmd"
-    res = subprocess.getoutput(cmd)
-    Log(LogLevel.INFO, f"cmd: {res}")
+    cmd = f"pgrep -f {processName} | xargs -r -I{{}} ps -p {{}} -o pid,ppid,cmd"
+
+    res1 = subprocess.getoutput(cmd)
+    Log(LogLevel.INFO, f"cmd: {res1}")
+    res = subprocess.getoutput(f"pgrep -f {processName}")
     return res.strip().splitlines()
 
 

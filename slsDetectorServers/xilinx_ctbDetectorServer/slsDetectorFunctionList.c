@@ -10,6 +10,7 @@
 
 #include "LTC2620_Driver.h"
 #include "XILINX_PLL.h"
+#include "XILINX_FMC.h"
 
 #include "loadPattern.h"
 #ifdef VIRTUAL
@@ -405,6 +406,10 @@ void setupDetector() {
 
     LTC2620_D_SetDefines(DAC_MIN_MV, DAC_MAX_MV, DAC_DRIVER_FILE_NAME, NDAC,
                          NPWR, DAC_POWERDOWN_DRIVER_FILE_NAME);
+    
+    // power LTC2620 before talking to it:
+    XILINX_FMC_enable_all();
+
     LOG(logINFOBLUE, ("Powering down all dacs\n"));
     for (int idac = 0; idac < NDAC; ++idac) {
         setDAC(idac, LTC2620_D_GetPowerDownValue(), 0);
@@ -579,6 +584,7 @@ int powerChip(int on, char *mess) {
     } else {
         LOG(logINFOBLUE, ("Powering chip: off\n"));
         bus_w(addr, bus_r(addr) & ~mask);
+        XILINX_FMC_disable_all();
 
         chipConfigured = 0;
 

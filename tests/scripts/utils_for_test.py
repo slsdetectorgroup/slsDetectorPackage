@@ -16,11 +16,8 @@ SERVER_START_PORTNO=1900
 
 init(autoreset=True)
 
-<<<<<<< HEAD
 build_dir = Path(__file__).resolve().parents[2] / "build" / "bin"
 
-=======
->>>>>>> 8e7921ae457a268ee6675435f215fb161c9ee1da
 class LogLevel(Enum):
     INFO = 0
     INFORED = 1
@@ -210,24 +207,14 @@ def connectToVirtualServers(name, num_mods, ctb_object=False):
 
 def startReceiver(num_mods, fp):
     if num_mods == 1:
-<<<<<<< HEAD
         cmd = [str(build_dir / 'slsReceiver')]
     else:
         cmd = [str(build_dir / 'slsMultiReceiver'), str(DEFAULT_TCP_RX_PORTNO), str(num_mods)]
-=======
-        cmd = ['slsReceiver']
-    else:
-        cmd = ['slsMultiReceiver', str(DEFAULT_TCP_RX_PORTNO), str(num_mods)]
->>>>>>> 8e7921ae457a268ee6675435f215fb161c9ee1da
         # in 10.0.0
         #cmd = ['slsMultiReceiver', '-p', str(DEFAULT_TCP_RX_PORTNO), '-n', str(num_mods)]
     startProcessInBackground(cmd, fp)
     time.sleep(1)
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 8e7921ae457a268ee6675435f215fb161c9ee1da
 def loadConfig(name, rx_hostname = 'localhost', settingsdir = None, log_file_fp = None, num_mods = 1, num_frames = 1, num_interfaces = 1):
     Log(LogLevel.INFO, 'Loading config')
     Log(LogLevel.INFO, 'Loading config', log_file_fp)
@@ -242,9 +229,7 @@ def loadConfig(name, rx_hostname = 'localhost', settingsdir = None, log_file_fp 
             d.udp_dstport2 = DEFAULT_UDP_DST_PORTNO + 1
 
         d.rx_hostname = rx_hostname
-
         d.udp_dstip = 'auto'
-
         if name != "eiger":
             d.udp_srcip = 'auto'
 
@@ -262,10 +247,7 @@ def loadConfig(name, rx_hostname = 'localhost', settingsdir = None, log_file_fp 
             d.trimen = [4500, 5400, 6400] if name == 'eiger' else [4000, 6000, 8000, 12000]
             d.setThresholdEnergy(4500, detectorSettings.STANDARD) 
         
-<<<<<<< HEAD
 
-=======
->>>>>>> 8e7921ae457a268ee6675435f215fb161c9ee1da
         d.frames = num_frames
       
     except Exception as e:
@@ -330,6 +312,7 @@ def ParseArguments(description, default_num_mods=2, specific_tests=False, genera
                         help = 'Enable general tests (no value needed)')
         
     args = parser.parse_args()
+
 
     # Set default server list if not provided
     if args.servers is None:

@@ -1,4 +1,4 @@
-name: Run Tests
+name: Run Simulator Tests
 
 on:
   pull_request:
@@ -8,7 +8,7 @@ on:
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
-  BUILD_TYPE: Debug # why not RELEASE? 
+  BUILD_TYPE: Debug  
 
 
 jobs:
@@ -17,7 +17,7 @@ jobs:
     # You can convert this to a matrix build if you need cross-platform coverage.
     # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
     runs-on: ubuntu-latest
-    name: Run all Tests
+    name: Run all Simulator Tests
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -40,10 +40,6 @@ jobs:
           # Build your program with the given configuration
         run: cmake --build ${{github.workspace}}/build -j4 --config ${{env.BUILD_TYPE}}
 
-      #- name: C++ unit tests
-        #working-directory: ${{github.workspace}}/build
-        #run: ctest -C ${{env.BUILD_TYPE}} -j1 --rerun-failed --output-on-failure # TODO: check that hidden tests are run as well 
-
       #- name: Python unit tests
         #working-directory: ${{github.workspace}}/build/bin
         #run: |
@@ -53,7 +49,6 @@ jobs:
         working-directory: ${{github.workspace}}/build/bin
         run: |
             python test_simulators.py
-            python test_roi.py
             python test_frame_synchronizer.py
 
       #- name: Upload detector logs

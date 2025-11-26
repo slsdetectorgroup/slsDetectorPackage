@@ -263,36 +263,7 @@ against any of the libSls*.so libraries, you can enable this by passing
 Added SLS_USE_SYSTEM_ZMQ option (default OFF) to use the libzmq of the host
 instead of the one included in our repo. 
 
-<<<<<<< HEAD:RELEASE.txt
 Experimental support for building the detector client (including python bindings) on macOS
-=======
-1.1 Compilation Changes
-========================
-
-
-1.2 New or Changed Features
-============================
-
-    Python
-    -------
-
-    * receiver ROI can be set from Python using command ``rx_roi``(it supports any sequence of four or two (for mythen3 and gotthard) ints e.g. a tuple (xmin, xmax, ymin, ymax) or a sequence of such for multiple ROIS)
-    * one can clear all ROI's from Python using command ``rx_clearroi`` 
-
-
-1.2.1 Breaking API
-===================
-
-
-1.2.2 Resolved or Changed Features
-===================================
-
-
-
-1.2.3 New Features
-===================
-
->>>>>>> c8d82909f (Code Review):RELEASE.md
 
 2  On-board Detector Server Compatibility
 ==========================================

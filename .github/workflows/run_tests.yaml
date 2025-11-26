@@ -40,10 +40,10 @@ jobs:
           # Build your program with the given configuration
         run: cmake --build ${{github.workspace}}/build -j4 --config ${{env.BUILD_TYPE}}
 
-      #- name: Python unit tests
-        #working-directory: ${{github.workspace}}/build/bin
-        #run: |
-          #python -m pytest ${{github.workspace}}/python/tests
+      - name: Python unit tests with simulators
+        working-directory: ${{github.workspace}}/build/bin
+        run: |
+          pytest -m withdetectorsimulators ${{github.workspace}}/python/tests --with-detector-simulators 
 
       - name: Simulator unit tests
         working-directory: ${{github.workspace}}/build/bin

@@ -48,7 +48,6 @@ def startTestsForAll(args, fp, advanced_test_settings=None):
     fname_template = LOG_PREFIX_FNAME + "_{}_{}.txt"
     
     for server in args.servers:
-<<<<<<< HEAD
         for ninterfaces in range(1, 2): # always test both
             if ninterfaces == 2 and server != 'jungfrau' and server != 'moench':
                 continue
@@ -67,22 +66,6 @@ def startTestsForAll(args, fp, advanced_test_settings=None):
                 runProcessWithLogFile('Tests (' + args.tests + ') for ' + server, cmd, fp, fname)
             except Exception as e:
                 raise RuntimeException(f'Tests (' + args.tests + ') failed for {server}.') from e
-=======
-        try:
-            num_mods = 2 if server == 'eiger' else 1
-            fname = CMD_TEST_LOG_PREFIX_FNAME + server + '.txt'
-            cmd = ['tests', '--abort', args.markers, '-s']
-
-            Log(LogLevel.INFOBLUE, f'Starting Cmd Tests for {server}')
-            cleanup(fp)
-            startDetectorVirtualServer(name=server, num_mods=num_mods, fp=fp)
-            startReceiver(num_mods, fp)
-            d = loadConfig(name=server, rx_hostname=args.rx_hostname, settingsdir=args.settingspath, log_file_fp=fp, num_mods=num_mods)
-            loadBasicSettings(name=server, d=d, fp=fp)
-            runProcessWithLogFile('Cmd Tests (' + args.markers + ') for ' + server, cmd, fp, fname)
-        except Exception as e:
-            raise RuntimeException(f'Cmd Tests failed for {server}.') from e
->>>>>>> 8e7921ae457a268ee6675435f215fb161c9ee1da
 
     Log(LogLevel.INFOGREEN, 'Passed all tests for all detectors \n' + str(args.servers))
 

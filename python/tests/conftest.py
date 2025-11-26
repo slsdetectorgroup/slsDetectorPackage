@@ -10,8 +10,6 @@ scripts_dir = current_dir / "tests" / "scripts"
 
 sys.path.append(str(scripts_dir))
 
-print(sys.path)
-
 from utils_for_test import (
     Log,
     LogLevel,
@@ -20,6 +18,8 @@ from utils_for_test import (
     startDetectorVirtualServer,
     loadConfig, 
     loadBasicSettings,
+    connectToVirtualServers,
+    DEFAULT_UDP_DST_PORTNO,
 )
 
 def pytest_addoption(parser):
@@ -39,47 +39,46 @@ def pytest_collection_modifyitems(config, items):
             item.add_marker(skip)
 
 #helper fixture for servers
-@pytest.fixture
-def servers(request):
+@pytest.fixture(scope='module') 
+def setup_parameters(request): # only setup once per module if same parameters used for the scopes
     try:
-        return request.param  # comes from @pytest.mark.parametrize(..., indirect=True)
+        servers, nmods = request.param  # comes from @pytest.mark.parametrize(..., indirect=True)
+        return servers, nmods
     except AttributeError:
         # fallback default if the test did not parametrize
-        return ['eiger', 'jungfrau', 'mythen3', 'gotthard2', 'ctb', 'moench', 'xilinx_ctb']
-    return request.param
-
-@pytest.fixture
-def test_with_simulators(servers):
+        return (['eiger', 'jungfrau', 'mythen3', 'gotthard2', 'ctb', 'moench', 'xilinx_ctb'], 2)
+    
+@pytest.fixture(scope='module')
+def test_with_simulators(setup_parameters):
     """ Fixture to automatically setup virtual detector servers for testing. """
 
-    LOG_PREFIX_FNAME = '/tmp/slsDetectorPackage_virtual_PythonAPI_test'
-    MAIN_LOG_FNAME = LOG_PREFIX_FNAME + '_log.txt'
+    fp = sys.stdout 
 
-    with open(MAIN_LOG_FNAME, 'w') as fp:
-        try:
-            nmods = 2
-            for server in servers:
-                for ninterfaces in range(1,2):
-                    if ninterfaces == 2 and server != 'jungfrau' and server != 'moench':
-                        continue
+    servers, nmods = setup_parameters
+    print("servers:", servers)
+    print("nmods:", nmods)
+    try:
+        for server in servers:
+            for ninterfaces in range(1,2):
+                if ninterfaces == 2 and server != 'jungfrau' and server != 'moench':
+                    continue
                         
-                    msg = f'Starting Python API Tests for {server}'
+                msg = f'Starting Python API Tests for {server}'
 
-                    if server == 'jungfrau' or server == 'moench':
-                        msg += f' with {ninterfaces} interfaces'
+                if server == 'jungfrau' or server == 'moench':
+                    msg += f' with {ninterfaces} interfaces'
 
-                    Log(LogLevel.INFOBLUE, msg, fp)
-                    cleanup(fp)
-                    startDetectorVirtualServer(server, nmods, fp)
-                    startReceiver(nmods, fp)
-                    d = loadConfig(name=server, log_file_fp=fp, num_mods=nmods, num_frames=1, num_interfaces=ninterfaces)
-                    loadBasicSettings(name=server, d=d, fp=fp)
-                    yield # run test 
-            cleanup(fp) # teardown 
-        except Exception as e:
-            with open(MAIN_LOG_FNAME, 'a') as fp_error:
-                traceback.print_exc(file=fp_error)
-                Log(LogLevel.ERROR, f'Tests Failed.', fp)
-            cleanup(fp)
+                Log(LogLevel.INFOBLUE, msg, fp)
+                cleanup(fp)
+                startDetectorVirtualServer(server, nmods, fp)
+                startReceiver(nmods, fp)
+                d = loadConfig(name=server, log_file_fp=fp, num_mods=nmods, num_frames=1, num_interfaces=ninterfaces)
+                #loadBasicSettings(name=server, d=d, fp=fp)
+                yield # run test 
+        cleanup(fp) # teardown 
+    except Exception as e:
+        traceback.print_exc(file=fp)
+        Log(LogLevel.ERROR, f'Tests Failed.', fp)
+        cleanup(fp)
             
 

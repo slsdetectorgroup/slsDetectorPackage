@@ -255,6 +255,8 @@ def loadConfig(name, rx_hostname = 'localhost', settingsdir = None, log_file_fp 
     
     return d
 
+
+
 # for easy acquire
 def loadBasicSettings(name, d, fp):
     Log(LogLevel.INFO, 'Loading basic settings for ' + name)
@@ -285,7 +287,7 @@ def loadBasicSettings(name, d, fp):
     except Exception as e:
         raise RuntimeException(f'Could not load config for {name}. Error: {str(e)}') from e
     
-def ParseArguments(description, default_num_mods=1, markers=False, general_tests_option=False, specific_test=False):
+def ParseArguments(description, default_num_mods=2, specific_tests=False, general_tests_option=False):
     parser = argparse.ArgumentParser(description)
 
     default_settings_path = Path(__file__).resolve().parents[2] / "settingsdir"
@@ -301,17 +303,12 @@ def ParseArguments(description, default_num_mods=1, markers=False, general_tests
     parser.add_argument('-s', '--servers', nargs='*',
                         help='Detector servers to run')
     
-    if markers:
-        parser.add_argument('-m', '--markers', nargs='?', default ='[.cmdcall]',
-                        help = 'Markers to use for for tests options are [.cmdcall], [.integration], default: [.cmdcall]')
+    if specific_tests:
+        parser.add_argument('-t', '--tests', nargs='?', default ='[.cmdcall]',
+                        help = 'Test markers or specific test name to use for tests, default: [.cmdcall]')
         
-    if specific_test: 
-        parser.add_argument("-t", "--test", nargs="?", default = None, help= "Add name of test suite for specific tests")
-        # TODO: maybe None not a good default argument
-        
-
     if general_tests_option:
-        parser.add_argument('-g', '--general_tests', action='store_false',
+        parser.add_argument('-g', '--general_tests', action='store_true',
                         help = 'Enable general tests (no value needed)')
         
     args = parser.parse_args()
@@ -336,8 +333,8 @@ def ParseArguments(description, default_num_mods=1, markers=False, general_tests
         f"num_mods: '{args.num_mods}'\n"
         f"num_frames: '{args.num_frames}'"
     )
-    if markers:
-        msg += f"\nmarkers: '{args.markers}'"
+    if specific_tests:
+        msg += f"\ntests: '{args.tests}'"
 
     if general_tests_option:
         msg += f"\ngeneral_tests: '{args.general_tests}'"

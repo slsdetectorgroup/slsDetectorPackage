@@ -42,8 +42,8 @@ jobs:
 
       - name: Python unit tests with simulators
         working-directory: ${{github.workspace}}/build/bin
-        run: |
-          pytest -m withdetectorsimulators ${{github.workspace}}/python/tests --with-detector-simulators 
+        #run: pytest -m withdetectorsimulators ${{github.workspace}}/python/tests --with-detector-simulators 
+        run: pytest -m ${{github.workspace}}/python/tests 
 
       - name: Simulator unit tests
         working-directory: ${{github.workspace}}/build/bin

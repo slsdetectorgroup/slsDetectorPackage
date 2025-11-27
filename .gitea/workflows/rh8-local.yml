@@ -17,7 +17,10 @@ jobs:
 
       - name: Build library 
         run: |
+            source /home/gitea_runner/.bashrc
+            conda activate det
             mkdir build && cd build
+            conda activate det
             cmake .. -DSLS_USE_PYTHON=ON
             make -j 2 
             cd ../pyctbgui

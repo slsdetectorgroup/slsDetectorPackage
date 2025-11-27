@@ -1,3 +1,4 @@
+import slsdet 
 from slsdet.bits import clearbit, clearbit_arr, setbit, setbit_arr
 import numpy as np
 

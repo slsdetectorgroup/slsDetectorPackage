@@ -2,6 +2,8 @@ name: Build on local RHEL9
 
 on:
   push:
+    branches:
+      - developer
   workflow_dispatch:
 
 permissions:

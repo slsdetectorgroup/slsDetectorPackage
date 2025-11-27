@@ -27,4 +27,4 @@ jobs:
         if: gitea.ref == 'refs/heads/developer'
         run: |
             sftp -r gitea_runner@mpc2935:/slsDetectorSoftware/RH8 <<< $'put build/bin'
-            sftp -r gitea_runner@mpc2935:/slsDetectorSoftware/RH9 <<< $'put pyctbgui'
+            sftp -r gitea_runner@mpc2935:/slsDetectorSoftware/RH8 <<< $'put pyctbgui'

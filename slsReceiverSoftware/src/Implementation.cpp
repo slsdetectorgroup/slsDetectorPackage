@@ -813,8 +813,9 @@ void Implementation::startReadout() {
                     << "waiting for all packets, previousValue:"
                     << previousValue
                     << " totalPacketsReceived: " << totalPacketsReceived;
-                /* TODO! Need to find optimal time **/
-                std::this_thread::sleep_for(std::chrono::milliseconds(5));
+                /* TODO! Need to find optimal time - xilinx and jungfrau need
+                 * more time */
+                std::this_thread::sleep_for(std::chrono::milliseconds(20));
                 previousValue = totalPacketsReceived;
                 totalPacketsReceived = 0;
                 for (const auto &it : listener)

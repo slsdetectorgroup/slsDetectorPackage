@@ -83,8 +83,6 @@ if __name__ == '__main__':
     if args.num_mods > 2:
         raise RuntimeException(f'Cannot support multiple modules at the moment (except Eiger).')
     
-    print("no_log_file: ", args.no_log_file)
-
     with optional_file(MAIN_LOG_FNAME if not args.no_log_file else None, 'w') as fp:  
         try:
             if args.general_tests:

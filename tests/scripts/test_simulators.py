@@ -11,6 +11,7 @@ Pass --servers <server1> <server2> ... to run tests only for specific detector s
 '''
 import argparse
 import sys, subprocess, time, traceback
+from contextlib import contextmanager
 
 from slsdet import Detector
 from slsdet.defines import DEFAULT_TCP_RX_PORTNO
@@ -21,13 +22,16 @@ from utils_for_test import (
     LogLevel,
     RuntimeException,
     cleanup,
+    runProcess,
     startReceiver,
     runProcessWithLogFile,
+    runProcess, 
     startDetectorVirtualServer,
     loadConfig,
     loadBasicSettings,
     ParseArguments, 
-    build_dir
+    build_dir,
+    optional_file
 )
 
 LOG_PREFIX_FNAME = '/tmp/slsDetectorPackage_virtual_test'
@@ -52,7 +56,7 @@ def startTestsForAll(args, fp, advanced_test_settings=None):
             if ninterfaces == 2 and server != 'jungfrau' and server != 'moench':
                 continue
             try:
-                fname = fname_template.format(args.tests, server)
+                fname = fname_template.format(args.tests, server) if not args.no_log_file else None
                 cmd = [str(build_dir / 'tests'), '--abort', args.tests, '-s']
         
                 Log(LogLevel.INFOBLUE, f'Starting {args.tests} Tests for {server}')
@@ -63,9 +67,13 @@ def startTestsForAll(args, fp, advanced_test_settings=None):
                 loadBasicSettings(name=server, d=d, fp=fp)
                 if advanced_test_settings is not None:
                     advanced_test_settings(name=server, detector=d, log_file_fp=fp) # special settings for specific tests 
-                runProcessWithLogFile('Tests (' + args.tests + ') for ' + server, cmd, fp, fname)
+        
+                if args.no_log_file:
+                    runProcess('Tests (' + args.tests + ') for ' + server, cmd, fp)
+                else:
+                    runProcessWithLogFile('Tests (' + args.tests + ') for ' + server, cmd, fp, fname)
             except Exception as e:
-                raise RuntimeException(f'Tests (' + args.tests + ') failed for {server}.') from e
+                raise RuntimeException(f'Tests (' + args.tests + ') failed for ' + server + '.') from e
 
     Log(LogLevel.INFOGREEN, 'Passed all tests for all detectors \n' + str(args.servers))
 
@@ -74,18 +82,17 @@ if __name__ == '__main__':
     args = ParseArguments(description='Automated tests with the virtual detector servers', default_num_mods=2, specific_tests=True, general_tests_option=True)
     if args.num_mods > 2:
         raise RuntimeException(f'Cannot support multiple modules at the moment (except Eiger).')
+    
+    print("no_log_file: ", args.no_log_file)
 
-    Log(LogLevel.INFOBLUE, '\nLog File: ' + MAIN_LOG_FNAME + '\n') 
-
-    with open(MAIN_LOG_FNAME, 'w') as fp:  
+    with optional_file(MAIN_LOG_FNAME if not args.no_log_file else None, 'w') as fp:  
         try:
             if args.general_tests:
                 startGeneralTests(fp)
             startTestsForAll(args, fp)
             cleanup(fp)
         except Exception as e:
-            with open(MAIN_LOG_FNAME, 'a') as fp_error:
-                traceback.print_exc(file=fp_error)
+            traceback.print_exc(file=fp)
             cleanup(fp)
             Log(LogLevel.ERROR, f'Tests Failed.')
             raise e

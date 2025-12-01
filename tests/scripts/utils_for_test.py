@@ -9,6 +9,7 @@ import sys, subprocess, time, argparse
 from enum import Enum
 from colorama import Fore, Style, init
 from datetime import timedelta
+from contextlib import contextmanager
 
 from slsdet import Detector, Ctb, detectorSettings, burstMode
 from slsdet.defines import DEFAULT_TCP_RX_PORTNO, DEFAULT_UDP_DST_PORTNO
@@ -56,6 +57,18 @@ class RuntimeException (Exception):
     def __init__ (self, message):
         Log(LogLevel.ERROR, message)
         super().__init__(message)
+
+
+@contextmanager
+def optional_file(file_path=None, mode='w'):
+    if file_path:
+        f = open(file_path, mode)
+        try:
+            yield f
+        finally:
+            f.close()
+    else:
+        yield sys.stdout
 
 
 def checkIfProcessRunning(processName):
@@ -145,11 +158,16 @@ def checkLogForErrors(fp, log_file_path: str):
 
 
 def runProcessWithLogFile(name, cmd, fp, log_file_name):
-    Log(LogLevel.INFOBLUE, 'Running ' +  name + '. Log: ' +  log_file_name)
-    Log(LogLevel.INFOBLUE, 'Running ' +  name + '. Log: ' +  log_file_name, fp)
+    
+    info_text = 'Running ' +  name + '.'
+    if log_file_name:
+        info_text += ' Log: ' +  log_file_name
+
+    Log(LogLevel.INFOBLUE, info_text)
+    Log(LogLevel.INFOBLUE, info_text, fp)
     Log(LogLevel.INFOBLUE, 'Cmd: ' + ' '.join(cmd), fp)
     try:
-        with open(log_file_name, 'w') as log_fp:
+        with optional_file(log_file_name, 'w') as log_fp:
             subprocess.run(cmd, stdout=log_fp, stderr=log_fp, check=True, text=True)
     except subprocess.CalledProcessError as e:
         pass    
@@ -157,13 +175,45 @@ def runProcessWithLogFile(name, cmd, fp, log_file_name):
         Log(LogLevel.ERROR, f'Failed to run {name}:{str(e)}', fp)
         raise RuntimeException(f'Failed to run {name}:{str(e)}')
     
-    with open (log_file_name, 'r') as f:
+    with optional_file(log_file_name, 'r') as f:
         for line in f:
             if "FAILED" in line:
                 raise RuntimeException(f'{line}')
 
     Log(LogLevel.INFOGREEN, name + ' successful!\n')
     Log(LogLevel.INFOGREEN, name + ' successful!\n', fp)
+
+def runProcess(name, cmd, fp): 
+    Log(LogLevel.INFOBLUE, 'Running ' +  name + '.')
+    Log(LogLevel.INFOBLUE, 'Running ' +  name + '.', fp)
+    Log(LogLevel.INFOBLUE, 'Cmd: ' + ' '.join(cmd), fp)
+    try: 
+        subprocess.run(cmd, check=True, text=True, capture_output=True)
+    except subprocess.CalledProcessError as e:
+        lines = e.stdout.splitlines()
+        failure_messages = []
+        failure_block = False;
+        failure_message = [] 
+        for line in lines: 
+            if "FAILED" in line: 
+                failure_message.append(line)
+                failure_block = True
+            elif failure_block and "PASSED" in line:
+                failure_block = False
+                failure_messages.append(failure_message)
+                failure_message = []
+            elif failure_block:
+                failure_message.append(line)
+
+        Log(LogLevel.ERROR, f"Test failed:\n" + "\n".join(failure_message), fp)
+        raise 
+    except Exception as e:
+        Log(LogLevel.ERROR, f'Failed to run {name}:{str(e)}', fp)
+        raise RuntimeException(f'Failed to run {name}:{str(e)}')
+    
+    Log(LogLevel.INFOGREEN, name + ' successful!\n')
+    Log(LogLevel.INFOGREEN, name + ' successful!\n', fp)
+
 
 
 def startDetectorVirtualServer(name :str, num_mods, fp):
@@ -302,6 +352,8 @@ def ParseArguments(description, default_num_mods=2, specific_tests=False, genera
                         help='Number of frames to test with')
     parser.add_argument('-s', '--servers', nargs='*',
                         help='Detector servers to run')
+    parser.add_argument('-nlf', '--no-log-file', action='store_true',
+                        help='Dont write output to log file')
     
     if specific_tests:
         parser.add_argument('-t', '--tests', nargs='?', default ='[.cmdcall]',

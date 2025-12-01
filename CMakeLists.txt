@@ -40,7 +40,7 @@ include(FetchContent)
 option(SLS_FETCH_ZMQ_FROM_GITHUB "Fetch zmq from github" OFF)
 option(SLS_FETCH_PYBIND11_FROM_GITHUB "Fetch pybind11 from github" OFF)
 
-
+set(LOG_MAX_REPORTING_LEVEL "set logging level" sls::logINFO)
 
 # Allow FetchContent_Populate to be called with a single argument
 # otherwise deprecated warning is issued

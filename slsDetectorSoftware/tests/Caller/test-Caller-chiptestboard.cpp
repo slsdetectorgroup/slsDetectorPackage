@@ -1058,7 +1058,6 @@ TEST_CASE("v_abcd", "[.cmdcall]") {
             for (int i = 0; i != det.size(); ++i) {
                 det.setPower(indices[i], prev_val[i], {i});
             }
-
         } else {
             REQUIRE_THROWS(caller.call(cmds[i], {}, -1, GET));
         }

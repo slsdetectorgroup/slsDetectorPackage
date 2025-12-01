@@ -72,17 +72,6 @@ def optional_file(file_path=None, mode='w'):
 
 
 def checkIfProcessRunning(processName):
-    #cmd = f"pgrep -f {processName}"
-    #cmd = F"ps aux | grep {processName}"
-    #res = subprocess.getoutput(cmd)
-    #Log(LogLevel.INFO, f"mycmd: {res}")
-    #cmd = f"pgrep -f {processName}"
-    #cmd = f"pgrep -f {processName} | xargs -r -I{{}} ps -p {{}} -o pid,ppid,cmd"
-
-    #res1 = subprocess.getoutput(cmd)
-    #Log(LogLevel.INFO, f"cmd: {res1}")
-    #res = subprocess.getoutput(f"pgrep -f {processName} | xargs -r -I{{}} cat /proc/{{}}/cmdline")
-    #Log(LogLevel.INFO, f"cmd: {res}")
     res = subprocess.getoutput(f"pgrep -f {processName}")
     return res.strip().splitlines()
 

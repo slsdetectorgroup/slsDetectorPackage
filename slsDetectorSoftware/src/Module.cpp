@@ -2568,17 +2568,15 @@ std::vector<int> Module::getReceiverDbitList() const {
 
 void Module::setReceiverDbitList(std::vector<int> list) {
     LOG(logDEBUG1) << "Setting Receiver Dbit List";
-    if (list.size() > 64) {
-        throw RuntimeError("Dbit list size cannot be greater than 64\n");
-    }
+
     for (auto &it : list) {
         if (it < 0 || it > 63) {
             throw RuntimeError("Dbit list value must be between 0 and 63\n");
         }
     }
-    std::sort(begin(list), end(list));
-    auto last = std::unique(begin(list), end(list));
-    list.erase(last, list.end());
+    auto r = stableRemoveDuplicates(list);
+    if(r)
+        LOG(logWARNING) << "Removed duplicated from receiver dbit list";
 
     StaticVector<int, MAX_RX_DBIT> arg = list;
     sendToReceiver(F_SET_RECEIVER_DBIT_LIST, arg, nullptr);

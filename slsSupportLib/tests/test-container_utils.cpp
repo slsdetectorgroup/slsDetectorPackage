@@ -153,16 +153,45 @@ TEST_CASE("check for duplicates in vector of pairs") {
     REQUIRE(hasDuplicates(vec) == true);
 }
 
-TEST_CASE("remove duplicates from vector") {
+TEST_CASE("sorts the vector and remove duplicates") {
     std::vector<int> v{5, 6, 5, 3};
     auto r = removeDuplicates(v);
     CHECK(r == true); // did indeed remove elements
     CHECK(v == std::vector<int>{3, 5, 6});
 }
 
+TEST_CASE("remove duplicates but keep order") {
+    std::vector<int> v{5, 6, 5, 3};
+    auto r = stableRemoveDuplicates(v);
+    CHECK(r == true); // did indeed remove elements
+    CHECK(v == std::vector<int>{5, 6, 3});
+}
+
+TEST_CASE("remove duplicates but keep order, all elements the same ") {
+    std::vector<char> v{'c', 'c', 'c', 'c', 'c', 'c'};
+    auto r = stableRemoveDuplicates(v);
+    CHECK(r == true); // did indeed remove elements
+    CHECK(v == std::vector<char>{'c'});
+}
+
+TEST_CASE("remove duplicates but keep order, pattern ") {
+    std::vector<int> v{8,1,2,8,8,3,2};
+    auto r = stableRemoveDuplicates(v);
+    CHECK(r == true); // did indeed remove elements
+    CHECK(v == std::vector<int>{8,1,2,3});
+}
+
+
 TEST_CASE("remove duplicated empty vector") {
     std::vector<int> v;
     auto r = removeDuplicates(v);
+    CHECK(r == false); // no elements to remove
+    CHECK(v == std::vector<int>{});
+}
+
+TEST_CASE("remove duplicated empty vector using stable version") {
+    std::vector<int> v;
+    auto r = stableRemoveDuplicates(v);
     CHECK(r == false); // no elements to remove
     CHECK(v == std::vector<int>{});
 }

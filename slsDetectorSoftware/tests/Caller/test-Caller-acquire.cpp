@@ -16,8 +16,11 @@ namespace sls {
 using test::GET;
 using test::PUT;
 
+// disable for jungfrau as it requires higher maximum receive buffer size
+//  sysctl net.core.rmem_max=$((100*1024*1024))
+//  sysctl net.core.rmem_default=$((100*1024*1024))
 TEST_CASE("jungfrau_or_moench_acquire_check_file_size",
-          "[.cmdcall][.cmdacquire]") {
+          "[.cmdcall][.cmdacquire][.disable_jungfrau]") {
 
     Detector det;
     Caller caller(&det);
@@ -150,7 +153,11 @@ void test_ctb_file_size_with_acquire(Detector &det, Caller &caller,
                                                   expected_image_size));
 }
 
-TEST_CASE("ctb_acquire_check_file_size", "[.cmdcall][.cmdacquire]") {
+// disable for jungfrau as it requires higher maximum receive buffer size
+//  sysctl net.core.rmem_max=$((100*1024*1024))
+//  sysctl net.core.rmem_default=$((100*1024*1024))
+TEST_CASE("ctb_acquire_check_file_size",
+          "[.cmdcall][.cmdacquire][.disable_xilinx_ctb]") {
     Detector det;
     Caller caller(&det);
     auto det_type =

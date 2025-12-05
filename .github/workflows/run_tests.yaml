@@ -47,7 +47,7 @@ jobs:
       - name: Simulator unit tests
         working-directory: ${{github.workspace}}/build/bin
         run: |
-            python test_simulators.py -nlf
+            python test_simulators.py -nlf --disable_jungfrau --disable_xilinx_ctb
             python test_frame_synchronizer.py -nlf
 
       #- name: Upload detector logs

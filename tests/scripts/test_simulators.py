@@ -50,14 +50,24 @@ def startGeneralTests(fp):
 def startTestsForAll(args, fp, advanced_test_settings=None):
 
     fname_template = LOG_PREFIX_FNAME + "_{}_{}.txt"
+
     
+    test_filter = args.tests
+    if args.disable_xilinx_ctb:
+        test_filter += " ~[disable_xilinx_ctb]"
+    if args.disable_jungfrau: 
+        test_filter += " ~[disable_jungfrau]"
+
+    cmd = [str(build_dir / 'tests'), '--abort', test_filter, '-s'] 
+
     for server in args.servers:
         for ninterfaces in range(1, 2): # always test both
             if ninterfaces == 2 and server != 'jungfrau' and server != 'moench':
                 continue
             try:
                 fname = fname_template.format(args.tests, server) if not args.no_log_file else None
-                cmd = [str(build_dir / 'tests'), '--abort', args.tests, '-s']
+
+                
         
                 Log(LogLevel.INFOBLUE, f'Starting {args.tests} Tests for {server}')
                 cleanup(fp)

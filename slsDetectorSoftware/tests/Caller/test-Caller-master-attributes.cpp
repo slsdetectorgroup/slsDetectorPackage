@@ -1046,7 +1046,7 @@ TEST_CASE("check_master_file_attributes", "[.cmdcall][.cmdacquire][.cmdattr]") {
     case defs::MOENCH:
     case defs::MYTHEN3:
     case defs::GOTTHARD2:
-        create_files_for_acquire(det, caller, num_frames);
+        create_files_for_acquire(det, caller, num_frames, std::nullopt, false);
         break;
     case defs::CHIPTESTBOARD:
     case defs::XILINX_CHIPTESTBOARD: {

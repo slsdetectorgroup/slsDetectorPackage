@@ -159,8 +159,10 @@ def runProcessWithLogFile(name, cmd, fp, log_file_name):
         with optional_file(log_file_name, 'w') as log_fp:
             subprocess.run(cmd, stdout=log_fp, stderr=log_fp, check=True, text=True)
     except subprocess.CalledProcessError as e:
+        print("error: ", str(e))
         pass    
     except Exception as e:
+        print("something else failed")
         Log(LogLevel.ERROR, f'Failed to run {name}:{str(e)}', fp)
         raise RuntimeException(f'Failed to run {name}:{str(e)}')
     
@@ -343,6 +345,10 @@ def ParseArguments(description, default_num_mods=2, specific_tests=False, genera
                         help='Detector servers to run')
     parser.add_argument('-nlf', '--no-log-file', action='store_true',
                         help='Dont write output to log file')
+    
+    parser.add_argument("-d_xilinx_ctb", "--disable_xilinx_ctb", action="store_true", help="Disable all tests with hidden tag [.disable_xilinx_ctb]")
+
+    parser.add_argument("-d_jungfrau", "--disable_jungfrau", action="store_true", help="Disable all tests with hidden tag [.disable_jungfrau]")
     
     if specific_tests:
         parser.add_argument('-t', '--tests', nargs='?', default ='[.cmdcall]',

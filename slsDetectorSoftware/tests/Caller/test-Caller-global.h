@@ -94,7 +94,8 @@ void test_acquire_with_receiver(Caller &caller, const Detector &det);
 
 void create_files_for_acquire(
     Detector &det, Caller &caller, int64_t num_frames = 1,
-    const std::optional<testCtbAcquireInfo> &test_info = std::nullopt);
+    const std::optional<testCtbAcquireInfo> &test_info = std::nullopt,
+    bool check_num_frames = true);
 
 testCtbAcquireInfo get_ctb_config_state(const Detector &det);
 void set_ctb_config_state(Detector &det,

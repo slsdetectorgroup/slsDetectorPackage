@@ -5,7 +5,6 @@
 #include "sls/Detector.h"
 #include "sls/ToString.h"
 #include "sls/network_utils.h"
-#include "sls/bit_utils.h"
 #include "sls/sls_detector_defs.h"
 #include "sls/TimeHelper.h"
 #include "sls/bit_utils.h"

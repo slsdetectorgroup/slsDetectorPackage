@@ -40,8 +40,6 @@ include(FetchContent)
 option(SLS_FETCH_ZMQ_FROM_GITHUB "Fetch zmq from github" OFF)
 option(SLS_FETCH_PYBIND11_FROM_GITHUB "Fetch pybind11 from github" OFF)
 
-set(LOG_MAX_REPORTING_LEVEL "set logging level" sls::logINFO)
-
 # Allow FetchContent_Populate to be called with a single argument
 # otherwise deprecated warning is issued
 # Note: From cmake 3.28 we can pass EXCLUDE_FROM_ALL to FetchContent_Declare
@@ -291,6 +289,11 @@ if(NOT TARGET slsProjectOptions)
     add_library(slsProjectOptions INTERFACE)
    target_compile_features(slsProjectOptions INTERFACE cxx_std_17)
 endif()
+
+set(LOG_MAX_REPORTING_LEVEL sls::logINFO CACHE STRING "set logging level")
+target_compile_definitions(slsProjectOptions
+    INTERFACE LOG_MAX_REPORTING_LEVEL=${LOG_MAX_REPORTING_LEVEL}
+)
 
 if (NOT TARGET slsProjectWarnings)
     add_library(slsProjectWarnings INTERFACE)

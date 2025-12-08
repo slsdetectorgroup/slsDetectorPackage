@@ -1056,6 +1056,8 @@ TEST_CASE("v_abcd", "[.cmdcall]") {
                 REQUIRE(oss2.str() == cmds[i] + " 1200\n");
             }
             for (int i = 0; i != det.size(); ++i) {
+                // TODO: indices should be independant of detector size? is i
+                // the correct index?
                 det.setPower(indices[i], prev_val[i], {i});
             }
         } else {

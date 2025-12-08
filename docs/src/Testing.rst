@@ -31,6 +31,8 @@ If a test fails in the github or gitea actions hide the test by adding the tag `
 
 If a test requires virtual detector mark them with the hidden tag ``[.cmdcall]``.
 
+If you want to disable tests for a specific detector add the hidden tag ``[.disable_<detector_name>]`` to the test case.
+
 If you want to run tests requiring detector simulators run them as follows: 
 
 .. code-block:: console
@@ -44,6 +46,13 @@ If you want to run them for a specific virtual detector or a specific test use t
 .. code-block:: console
     cd build
     python bin/test_simulators.py --servers <detector_name> --test <test_name>
+
+You can run all tests requiring simulators but the disabled one for a specific detector e.g. marked with tag ``[.disable_<detector_name>]`` by adding the option ``--disable_<detector_name>``
+
+.. code-block:: console
+    cd build
+    python bin/test_simulators.py --servers <detector_name> --test <test_name> --disable_jungfrau
+
 
 
 Pytest Tests

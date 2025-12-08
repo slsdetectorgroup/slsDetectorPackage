@@ -347,8 +347,13 @@ def ParseArguments(description, default_num_mods=2, specific_tests=False, genera
                         help='Dont write output to log file')
     
     parser.add_argument("-d_xilinx_ctb", "--disable_xilinx_ctb", action="store_true", help="Disable all tests with hidden tag [.disable_xilinx_ctb]")
-
     parser.add_argument("-d_jungfrau", "--disable_jungfrau", action="store_true", help="Disable all tests with hidden tag [.disable_jungfrau]")
+    parser.add_argument("-d_eiger", "--disable_eiger", action="store_true", help="Disable all tests with hidden tag [.disable_eiger]")
+    parser.add_argument("-d_moench", "--disable_moench", action="store_true", help="Disable all tests with hidden tag [.disable_moench]")
+    parser.add_argument("-d_gotthard2", "--disable_gotthard2", action="store_true", help="Disable all tests with hidden tag [.disable_gotthard2]")
+    parser.add_argument("-d_mythen3", "--disable_mythen3", action="store_true", help="Disable all tests with hidden tag [.disable_mythen3]")
+    parser.add_argument("-d_ctb", "--disable_ctb", action="store_true", help="Disable all tests with hidden tag [.disable_ctb]")
+
     
     if specific_tests:
         parser.add_argument('-t', '--tests', nargs='?', default ='[.cmdcall]',

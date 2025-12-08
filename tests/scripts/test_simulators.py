@@ -57,18 +57,26 @@ def startTestsForAll(args, fp, advanced_test_settings=None):
         test_filter += " ~[disable_xilinx_ctb]"
     if args.disable_jungfrau: 
         test_filter += " ~[disable_jungfrau]"
+    if args.disable_ctb: 
+        test_filter += " ~[disable_ctb]"
+    if args.disable_moench: 
+        test_filter += " ~[disable_moench]"
+    if args.disable_mythen3: 
+        test_filter += " ~[disable_mythen3]"
+    if args.disable_gotthard2: 
+        test_filter += " ~[disable_gotthard2]"
+    if args.disable_eiger: 
+        test_filter += " ~[disable_eiger]"
 
     cmd = [str(build_dir / 'tests'), '--abort', test_filter, '-s'] 
 
     for server in args.servers:
-        for ninterfaces in range(1, 2): # always test both
+        for ninterfaces in [1,2]: # always test both
             if ninterfaces == 2 and server != 'jungfrau' and server != 'moench':
                 continue
             try:
                 fname = fname_template.format(args.tests, server) if not args.no_log_file else None
 
-                
-        
                 Log(LogLevel.INFOBLUE, f'Starting {args.tests} Tests for {server}')
                 cleanup(fp)
                 startDetectorVirtualServer(name=server, num_mods=args.num_mods, fp=fp)

@@ -1820,10 +1820,10 @@ class Detector(CppDetectorApi):
         self.setRegisterDefinition(name, addr)
 
 
-    def define_bit(self, name, addr, bitnr):
+    def define_bit(self, name, addr, bit):
         addr = RegisterAddress(addr)
-        bitnr = BitAddress(addr, bitnr)
-        self.setBitDefinition(name, bitnr)
+        bit = BitAddress(addr, bit)
+        self.setBitDefinition(name, bit)
 
     def setBit(self, bit_or_addr, number=None):
 

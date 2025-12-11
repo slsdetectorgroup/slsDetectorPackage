@@ -76,10 +76,8 @@ class Caller {
 
     std::string bitoperations(int action);
     RegisterAddress parseAddress(const std::string &saddr) const;
-    bool parseValidate() const;
-    BitPosition parseBitPosition(const bool validate) const;
-    std::pair<RegisterAddress, RegisterValue>
-    parseRegAddressAndValue(const bool validate) const;
+    bool parseValidate();
+    BitPosition parseBitPosition() const;
 
     FunctionMap functions{
         {"list", &Caller::list},

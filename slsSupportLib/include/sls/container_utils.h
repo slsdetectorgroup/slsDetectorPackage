@@ -181,19 +181,17 @@ typename std::enable_if<is_container<T>::value, bool>::type
 stableRemoveDuplicates(T &c) {
     auto containerSize = c.size();
     std::set<typename T::value_type> seen;
-    c.erase(
-        std::remove_if(c.begin(), c.end(),
-            [&](const typename T::value_type& val) {
-                return !seen.insert(val).second;  // erase if already seen
-            }),
-        c.end()
-    );
+    c.erase(std::remove_if(
+                c.begin(), c.end(),
+                [&](const typename T::value_type &val) {
+                    return !seen.insert(val).second; // erase if already seen
+                }),
+            c.end());
     if (c.size() != containerSize) {
         return true;
     }
     return false;
 }
-
 
 } // namespace sls
 

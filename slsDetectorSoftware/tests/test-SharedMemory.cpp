@@ -39,14 +39,12 @@ void freeShm(const int dindex, const int mIndex) {
 
 constexpr int shm_id = 10;
 
-//macOS does not expose shm in the filesystem
+// macOS does not expose shm in the filesystem
 #ifndef __APPLE__
 
 const std::string file_path =
     std::string("/dev/shm/slsDetectorPackage_detector_") +
     std::to_string(shm_id);
-
-
 
 TEST_CASE("Free obsolete (without isValid)", "[detector][shm]") {
 
@@ -106,8 +104,8 @@ TEST_CASE("Create SharedMemory read and write", "[detector][shm]") {
 
     const char *env_p = std::getenv(SHM_ENV_NAME);
     std::string env_name = env_p ? ("_" + std::string(env_p)) : "";
-    CHECK(shm.getName() == std::string(SHM_DETECTOR_PREFIX) +
-                               std::to_string(shm_id) + env_name);
+    CHECK(shm.getName() ==
+          std::string(SHM_DETECTOR_PREFIX) + std::to_string(shm_id) + env_name);
     shm()->x = 3;
     shm()->y = 5.7;
     strcpy_safe(shm()->mess, "Some string");
@@ -180,8 +178,8 @@ TEST_CASE("Move SharedMemory", "[detector][shm]") {
     std::string env_name = env_p ? ("_" + std::string(env_p)) : "";
 
     SharedMemory<Data> shm(shm_id, -1);
-    CHECK(shm.getName() == std::string(SHM_DETECTOR_PREFIX) +
-                               std::to_string(shm_id) + env_name);
+    CHECK(shm.getName() ==
+          std::string(SHM_DETECTOR_PREFIX) + std::to_string(shm_id) + env_name);
     shm.createSharedMemory();
     shm()->x = 9;
 
@@ -191,8 +189,8 @@ TEST_CASE("Move SharedMemory", "[detector][shm]") {
     CHECK(shm2()->x == 9);
     REQUIRE_THROWS(
         shm()); // trying to access should throw instead of returning a nullptr
-    CHECK(shm2.getName() == std::string(SHM_DETECTOR_PREFIX) +
-                                std::to_string(shm_id) + env_name);
+    CHECK(shm2.getName() ==
+          std::string(SHM_DETECTOR_PREFIX) + std::to_string(shm_id) + env_name);
     shm2.removeSharedMemory();
 }
 
@@ -243,7 +241,8 @@ TEST_CASE("Create create a shared memory with a tag when SLSDETNAME is set") {
     setenv(SHM_ENV_NAME, "myprefix", 1);
 
     SharedMemory<Data> shm(0, -1, "ctbdacs");
-    REQUIRE(shm.getName() == std::string(SHM_DETECTOR_PREFIX) + "0_myprefix_ctbdacs");
+    REQUIRE(shm.getName() ==
+            std::string(SHM_DETECTOR_PREFIX) + "0_myprefix_ctbdacs");
 
     // Clean up after us
     if (old_slsdetname.empty())

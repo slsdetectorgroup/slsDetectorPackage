@@ -1629,37 +1629,30 @@ std::string Caller::definelist(int action) {
 std::string Caller::reg(int action) {
     std::ostringstream os;
     if (action == defs::HELP_ACTION) {
-        os << "[address] [32 bit "
-              "value][(optional)--validate]\n\t[Mythen3][Gotthard2] "
-              "Reads/writes to a 32 bit register in hex. Advanced "
-              "Function!\n\tGoes to stop server. Hence, can be called while "
-              "calling blocking acquire().\n\t\t Use --validate to force "
-              "validation when writing to it.\n\t[Eiger] +0x100 for only left, "
-              "+0x200 for only right.\n\t\t[Ctb][Xilinx_Ctb] Address can also "
-              "be a user-defined name that was set previously using the define "
-              "command. Value can be a user-defined bit name as well or "
-              "combined with '|' without spaces eg. 'test_bit|run_bit' .When "
-              "using bit names, avoid register name/ address as the bit name "
-              "is tied to a specific register already.\n"
-              "\n\n\teg."
-              "\n\tsls_detector_get reg test_reg"
-              "\n\tsls_detector_put reg test_bit"
-              "\n\tsls_detector_put reg test_reg 0xFF --validate"
-              "\n\tsls_detector_put reg 0x200 0xFFF"
-              "\n\tsls_detector_put reg 'test_bit|test_bit2'# use quotes with "
-              "pipe"
+        os << "[address] [32 bit value][(optional)--validate]"
+              "\n\tReads/writes to a 32 bit register in hex."
+              "\n\tAdvanced Function!\n\tGoes to stop server. Hence, can be "
+              "called while calling blocking acquire()."
+              "\n\t\t Use --validate to enforce validation when writing to "
+              "register."
+              "\n\t[Eiger] +0x100 for only left, +0x200 for only right."
+              "\n\t[Ctb][Xilinx_Ctb] Address can also be a user-defined name "
+              "that was set previously using the define command."
+              "\n\t\teg."
+              "\n\t\tsls_detector_put reg 0x200 0xFFF --validate"
+              "\n\t\tsls_detector_get reg test_reg"
+              "\n\t\tsls_detector_put reg test_reg 0xFF"
            << '\n';
     } else {
         if (action == defs::PUT_ACTION) {
-            auto validate = parseValidate();
-            auto [addr, val] = parseRegAddressAndValue(validate);
-            det->writeRegister(addr, val, validate, std::vector<int>{det_id});
-            if (args.size() ==
-                1) { /* || args[0].find('|') == std::string::npos) {*/
-                os << ToString(args) << '\n';
-            } else {
-                os << args[0] << " " << val.str() << '\n';
+            if (args.size() < 2 || args.size() > 3) {
+                WrongNumberOfParameters(2);
             }
+            auto validate = parseValidate();
+            auto addr = parseAddress(args[0]);
+            auto val = RegisterValue(StringTo<uint32_t>(args[1]));
+            det->writeRegister(addr, val, validate, std::vector<int>{det_id});
+            os << addr.str() << " " << val.str() << '\n';
         } else if (action == defs::GET_ACTION) {
             if (args.size() != 1) {
                 WrongNumberOfParameters(1);
@@ -1716,7 +1709,7 @@ std::string Caller::bitoperations(int action) {
         }
 
         auto validate = parseValidate();
-        auto bitPosition = parseBitPosition(validate);
+        auto bitPosition = parseBitPosition();
         if (action == defs::GET_ACTION) {
             if (cmd == "setbit" || cmd == "clearbit")
                 throw RuntimeError("Cannot get");
@@ -1753,7 +1746,7 @@ RegisterAddress Caller::parseAddress(const std::string &saddr) const {
     return det->getRegisterDefinition(saddr);
 }
 
-bool Caller::parseValidate() const {
+bool Caller::parseValidate() {
     auto it = std::find(args.begin(), args.end(), "--validate");
     bool validate = (it != args.end());
 
@@ -1775,15 +1768,13 @@ bool Caller::parseValidate() const {
         if (it != args.end() - 1) {
             throw RuntimeError("'--validate' should be the last argument.");
         }
+        args.pop_back();
     }
     return validate;
 }
 
-BitPosition Caller::parseBitPosition(const bool validate) const {
+BitPosition Caller::parseBitPosition() const {
     int argsSize = args.size();
-    if (validate) {
-        argsSize -= 1; // last arg is --validate
-    }
     std::string addr_or_bitname = args[0];
 
     // bit name
@@ -1807,74 +1798,6 @@ BitPosition Caller::parseBitPosition(const bool validate) const {
     } else {
         throw RuntimeError("Command " + cmd +
                            " expected (1-4) parameter/s but got " +
-                           std::to_string(args.size()) + "\n");
-    }
-}
-
-std::pair<RegisterAddress, RegisterValue>
-Caller::parseRegAddressAndValue(const bool validate) const {
-    int argsSize = args.size();
-    if (validate) {
-        argsSize -= 1; // last arg is --validate
-    }
-
-    // address and value
-    if (argsSize == 2) {
-        std::string saddr = args[0];
-        std::string sval = args[1];
-        if (!is_hex_or_dec_uint(sval)) {
-            throw RuntimeError(
-                "If " + sval +
-                " is a bit name, use only one argument to specify it.");
-        }
-        return std::make_pair(parseAddress(saddr), RegisterValue(sval));
-    }
-    // parse bit name (or concatenation of them)
-    else if (argsSize == 1) {
-        std::string sbitNames = args[0];
-        auto det_type = det->getDetectorType().squash();
-        if (det_type != defs::XILINX_CHIPTESTBOARD &&
-            det_type != defs::CHIPTESTBOARD) {
-            throw RuntimeError("Could not parse reg value " + sbitNames +
-                               ". User defined bit definitions only supported "
-                               "for ctb and xilinx_ctb. Use an actual hard "
-                               "coded value for this detector.");
-        }
-
-        // if args0 does not have '|', then get bit definition directly
-        if (sbitNames.find('|') == std::string::npos) {
-            BitPosition pos1 = det->getBitDefinition(sbitNames);
-            auto val = RegisterValue(1u << pos1.bitPosition());
-            return std::make_pair(pos1.address(), val);
-        }
-
-        // else parse concatenation of bit names with pipe
-        RegisterAddress addr;
-        RegisterValue val;
-        std::stringstream ss(sbitNames);
-        std::string token;
-        while (std::getline(ss, token, '|')) {
-            if (token.empty())
-                continue;
-
-            BitPosition pos1 = det->getBitDefinition(token);
-            // if address not set, set it in retval[0]
-            if (addr == 0) {
-                addr = pos1.address();
-            } else if (addr != pos1.address()) {
-                throw RuntimeError(
-                    "Bit names provided are tied to different register "
-                    "addresses: [" +
-                    addr.str() + " " + pos1.address().str() +
-                    "]. Cannot write to different registers at the same time.");
-            }
-            int bit_pos = pos1.bitPosition();
-            val |= (1u << bit_pos);
-        }
-        return std::make_pair(addr, val);
-    } else {
-        throw RuntimeError("Command " + cmd +
-                           " expected 1-2 parameter/s but got " +
                            std::to_string(args.size()) + "\n");
     }
 }

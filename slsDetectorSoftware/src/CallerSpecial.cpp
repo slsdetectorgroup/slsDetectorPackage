@@ -1654,7 +1654,8 @@ std::string Caller::reg(int action) {
             auto validate = parseValidate();
             auto [addr, val] = parseRegAddressAndValue(validate);
             det->writeRegister(addr, val, validate, std::vector<int>{det_id});
-            if (args.size() == 1 || args[0].find('|') == std::string::npos) {
+            if (args.size() ==
+                1) { /* || args[0].find('|') == std::string::npos) {*/
                 os << ToString(args) << '\n';
             } else {
                 os << args[0] << " " << val.str() << '\n';

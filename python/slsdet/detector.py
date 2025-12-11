@@ -1826,7 +1826,6 @@ class Detector(CppDetectorApi):
         self.setBitDefinition(name, bit)
 
     def setBit(self, bit_or_addr, number=None):
-
         #Old usage passing two ints
         if isinstance(bit_or_addr, int):
             return super().setBit(bit_or_addr, number)
@@ -1836,14 +1835,26 @@ class Detector(CppDetectorApi):
             bit_or_addr = self.getBitDefinition(bit_or_addr)
         return super().setBit(bit_or_addr)
         
+    def clearBit(self, bit_or_addr, number=None):
+        #Old usage passing two ints
+        if isinstance(bit_or_addr, int):
+            return super().clearBit(bit_or_addr, number)
 
+        #New usage with str or BitAddress
+        if isinstance(bit_or_addr, str):
+            bit_or_addr = self.getBitDefinition(bit_or_addr)
+        return super().clearBit(bit_or_addr)
 
-        
+    @element
+    def getBit(self, bit_or_addr, number=None):
+        #Old usage passing two ints
+        if isinstance(bit_or_addr, int):
+            return super().getBit(bit_or_addr, number)
 
-
-        
-
- 
+        #New usage with str or BitAddress
+        if isinstance(bit_or_addr, str):
+            bit_or_addr = self.getBitDefinition(bit_or_addr)
+        return super().getBit(bit_or_addr)     
 
 
     @property

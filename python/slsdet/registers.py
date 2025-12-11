@@ -2,11 +2,13 @@
 # Copyright (C) 2021 Contributors to the SLS Detector Package
 
 from ._slsdet import RegisterValue, RegisterAddress
+from .utils import element
 
 class Register:
     def __init__(self, detector):
         self._detector = detector
 
+    @element
     def __getitem__(self, key):
         if isinstance(key, str):
             key = self._detector.getRegisterDefinition(key)

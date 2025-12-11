@@ -1814,6 +1814,37 @@ class Detector(CppDetectorApi):
         [Eiger] Address is +0x100 for only left, +0x200 for only right.
         """
         return self._register
+    
+    def define_reg(self, name, addr):
+        addr = RegisterAddress(addr)
+        self.setRegisterDefinition(name, addr)
+
+
+    def define_bit(self, name, addr, bitnr):
+        addr = RegisterAddress(addr)
+        bitnr = BitAddress(addr, bitnr)
+        self.setBitDefinition(name, bitnr)
+
+    def setBit(self, bit_or_addr, number=None):
+
+        #Old usage passing two ints
+        if isinstance(bit_or_addr, int):
+            return super().setBit(bit_or_addr, number)
+
+        #New usage with str or BitAddress
+        if isinstance(bit_or_addr, str):
+            bit_or_addr = self.getBitDefinition(bit_or_addr)
+        return super().setBit(bit_or_addr)
+        
+
+
+        
+
+
+        
+
+ 
+
 
     @property
     def slowadc(self):

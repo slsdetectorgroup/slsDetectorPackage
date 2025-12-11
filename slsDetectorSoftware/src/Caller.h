@@ -403,7 +403,7 @@ class Caller {
     std::string bitoperations(int action);
     RegisterAddress parseAddress(const std::string &saddr) const;
     bool parseValidate();
-    BitPosition parseBitPosition() const;
+    BitAddress parseBitAddress() const;
 
     FunctionMap functions{
         {"list", &Caller::list},

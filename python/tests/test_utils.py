@@ -8,7 +8,7 @@ Testing functions from utils.py
 
 import pytest
 from slsdet.utils import *
-from slsdet import IpAddr, MacAddr, DurationWrapper, RegisterAddress, RegisterValue, BitPosition
+from slsdet import IpAddr, MacAddr, DurationWrapper, RegisterAddress, RegisterValue, BitAddress
 import datetime as dt
 import pathlib
 from pathlib import Path
@@ -251,8 +251,8 @@ def test_make_bit_pos_from_dict():
     }
     res = make_bit_position(arg)
     assert res == {
-        0: BitPosition(RegisterAddress("0x0"), 2), 
-        1: BitPosition(RegisterAddress("0x305"), 23)
+        0: BitAddress(RegisterAddress("0x0"), 2), 
+        1: BitAddress(RegisterAddress("0x305"), 23)
     }
     assert res[0].str() == "[0x0, 2]"
     assert res[1].str() == "[0x305, 23]"
@@ -263,13 +263,13 @@ def test_make_bit_pos_from_list():
         (RegisterAddress(0), 2), 
         (RegisterAddress(0x305), 23)
     ]
-    expected = [BitPosition(*a) for a in arg]
+    expected = [BitAddress(*a) for a in arg]
     assert make_bit_position(arg) == expected
 
 
 def test_make_bit_pos_from_tuple():
     arg = (RegisterAddress(0x305), 23)
-    expected = BitPosition(*arg)
+    expected = BitAddress(*arg)
     assert make_bit_position(arg) == expected
 
 

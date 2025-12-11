@@ -16,14 +16,14 @@ RegisterAddress::RegisterAddress(const std::string &address) {
 
 std::string RegisterAddress::str() const { return ToStringHex(addr_); }
 
-BitPosition::BitPosition(RegisterAddress address, int bitPosition)
+BitAddress::BitAddress(RegisterAddress address, int bitPosition)
     : addr_(address), bitPos_(bitPosition) {
     if (bitPosition < 0 || bitPosition > 31) {
         throw RuntimeError("Bit position must be between 0 and 31.");
     }
 }
 
-std::string BitPosition::str() const {
+std::string BitAddress::str() const {
     std::ostringstream os;
     os << '[' << addr_.str() << ", " << ToString(bitPos_) << ']';
     return os.str();
@@ -44,7 +44,7 @@ std::ostream &operator<<(std::ostream &os, const RegisterAddress &r) {
     return os;
 }
 
-std::ostream &operator<<(std::ostream &os, const BitPosition &r) {
+std::ostream &operator<<(std::ostream &os, const BitAddress &r) {
     os << r.str();
     return os;
 }

@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 /*
-This file contains Python bindings for the RegisterAddr, BitPosition and RegisterValue
-classes.
+This file contains Python bindings for the RegisterAddr, BitAddress and
+RegisterValue classes.
 */
 #include "py_headers.h"
 #include "sls/bit_utils.h"
 
 namespace py = pybind11;
 
+using sls::BitAddress;
 using sls::RegisterAddress;
 using sls::RegisterValue;
-using sls::BitPosition;
 
 void init_bit(py::module &m) {
 
@@ -26,15 +26,15 @@ void init_bit(py::module &m) {
         .def(py::self == py::self)
         .def(py::self != py::self);
 
-    py::class_<BitPosition>(m, "BitPosition")
+    py::class_<BitAddress>(m, "BitAddress")
         .def(py::init())
         .def(py::init<RegisterAddress, int>())
-        .def("__repr__", &BitPosition::str)
-        .def("str", &BitPosition::str)
-        .def("address", &BitPosition::address)
-        .def("bitPosition", &BitPosition::bitPosition)
-        .def("setAddress", &BitPosition::setAddress)
-        .def("setBitPosition", &BitPosition::setBitPosition)
+        .def("__repr__", &BitAddress::str)
+        .def("str", &BitAddress::str)
+        .def("address", &BitAddress::address)
+        .def("bitPosition", &BitAddress::bitPosition)
+        .def("setAddress", &BitAddress::setAddress)
+        .def("setBitPosition", &BitAddress::setBitPosition)
         .def(py::self == py::self)
         .def(py::self != py::self);
 

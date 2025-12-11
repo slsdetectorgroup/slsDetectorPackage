@@ -2122,7 +2122,7 @@ int DetectorImpl::getBitDefinitionsCount() const {
 }
 
 void DetectorImpl::setBitDefinition(const std::string &name,
-                                    BitPosition bitPos) {
+                                    BitAddress bitPos) {
     if (!isChipTestBoard())
         throw RuntimeError("Bit Definitions only for CTB");
     ctb_shm()->setBitName(name, bitPos);
@@ -2134,19 +2134,19 @@ bool DetectorImpl::hasBitDefinition(const std::string &name) const {
     return ctb_shm()->hasBitName(name);
 }
 
-bool DetectorImpl::hasBitDefinition(BitPosition bitPos) const {
+bool DetectorImpl::hasBitDefinition(BitAddress bitPos) const {
     if (!isChipTestBoard())
         throw RuntimeError("Bit Definitions only for CTB");
-    return ctb_shm()->hasBitPosition(bitPos);
+    return ctb_shm()->hasBitAddress(bitPos);
 }
 
-BitPosition DetectorImpl::getBitDefinition(const std::string &name) const {
+BitAddress DetectorImpl::getBitDefinition(const std::string &name) const {
     if (!isChipTestBoard())
         throw RuntimeError("Bit Definitions only for CTB");
-    return ctb_shm()->getBitPosition(name);
+    return ctb_shm()->getBitAddress(name);
 }
 
-std::string DetectorImpl::getBitDefinition(BitPosition bitPos) const {
+std::string DetectorImpl::getBitDefinition(BitAddress bitPos) const {
     if (!isChipTestBoard())
         throw RuntimeError("Bit Definitions only for CTB");
     return ctb_shm()->getBitName(bitPos);
@@ -2159,13 +2159,13 @@ void DetectorImpl::clearBitDefinitions() {
 }
 
 void DetectorImpl::setBitDefinitions(
-    const std::map<std::string, BitPosition> &list) {
+    const std::map<std::string, BitAddress> &list) {
     if (!isChipTestBoard())
         throw RuntimeError("Bit Definitions only for CTB");
     ctb_shm()->setBitNames(list);
 }
 
-std::map<std::string, BitPosition> DetectorImpl::getBitDefinitions() const {
+std::map<std::string, BitAddress> DetectorImpl::getBitDefinitions() const {
     if (!isChipTestBoard())
         throw RuntimeError("Bit Definitions only for CTB");
     return ctb_shm()->getBitNames();

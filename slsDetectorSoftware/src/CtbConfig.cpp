@@ -302,34 +302,33 @@ std::map<std::string, RegisterAddress> CtbConfig::getRegisterNames() const {
 
 int CtbConfig::getBitNamesCount() const { return num_bits; }
 
-void CtbConfig::setBitName(const std::string &name, BitPosition bitPos) {
-    addEntry<BitDefinition, BitPosition>(name, bitPos, bits, num_bits, max_bits,
-                                         "bit");
+void CtbConfig::setBitName(const std::string &name, BitAddress bitPos) {
+    addEntry<BitDefinition, BitAddress>(name, bitPos, bits, num_bits, max_bits,
+                                        "bit");
 }
 
 bool CtbConfig::hasBitName(const std::string &name) const {
-    return lookupEntryByName<BitDefinition, BitPosition>(name, bits, num_bits)
+    return lookupEntryByName<BitDefinition, BitAddress>(name, bits, num_bits)
         .has_value();
 }
 
-bool CtbConfig::hasBitPosition(BitPosition bitPos) const {
-    return lookupEntryByValue<BitDefinition, BitPosition>(bitPos, bits,
-                                                          num_bits)
+bool CtbConfig::hasBitAddress(BitAddress bitPos) const {
+    return lookupEntryByValue<BitDefinition, BitAddress>(bitPos, bits, num_bits)
         .has_value();
 }
 
-BitPosition CtbConfig::getBitPosition(const std::string &name) const {
+BitAddress CtbConfig::getBitAddress(const std::string &name) const {
     auto val =
-        lookupEntryByName<BitDefinition, BitPosition>(name, bits, num_bits);
+        lookupEntryByName<BitDefinition, BitAddress>(name, bits, num_bits);
     if (!val.has_value()) {
         throw RuntimeError("No bit definition found for name: " + name);
     }
     return val.value();
 }
 
-std::string CtbConfig::getBitName(BitPosition bitPos) const {
+std::string CtbConfig::getBitName(BitAddress bitPos) const {
     auto val =
-        lookupEntryByValue<BitDefinition, BitPosition>(bitPos, bits, num_bits);
+        lookupEntryByValue<BitDefinition, BitAddress>(bitPos, bits, num_bits);
     if (!val.has_value()) {
         throw RuntimeError("No bit definition found for bit position: " +
                            bitPos.str());
@@ -342,7 +341,7 @@ void CtbConfig::clearBitNames() {
     num_bits = 0;
 }
 
-void CtbConfig::setBitNames(const std::map<std::string, BitPosition> &list) {
+void CtbConfig::setBitNames(const std::map<std::string, BitAddress> &list) {
     if (list.size() >= max_bits) {
         throw RuntimeError("Bit names need to be of size less than " +
                            std::to_string(max_bits));
@@ -353,8 +352,8 @@ void CtbConfig::setBitNames(const std::map<std::string, BitPosition> &list) {
     }
 }
 
-std::map<std::string, BitPosition> CtbConfig::getBitNames() const {
-    std::map<std::string, BitPosition> names;
+std::map<std::string, BitAddress> CtbConfig::getBitNames() const {
+    std::map<std::string, BitAddress> names;
     for (size_t i = 0; i != num_bits; ++i)
         names[bits[i].name()] = bits[i].value();
     return names;

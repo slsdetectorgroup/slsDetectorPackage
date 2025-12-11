@@ -40,11 +40,11 @@ class RegisterDefinition {
 class BitDefinition {
   private:
     char name_[CTB_NAME_LENGTH]{};
-    BitPosition bitPos_;
+    BitAddress bitPos_;
 
   public:
     BitDefinition() noexcept = default;
-    BitDefinition(const std::string &name, BitPosition bitPos)
+    BitDefinition(const std::string &name, BitAddress bitPos)
         : bitPos_(bitPos) {
         if (name.empty()) {
             throw sls::RuntimeError("Bit name cannot be empty.");
@@ -53,8 +53,8 @@ class BitDefinition {
     }
 
     std::string name() const noexcept { return name_; }
-    BitPosition value() const noexcept { return bitPos_; }
-    void setValue(BitPosition bitPos) noexcept { bitPos_ = bitPos; }
+    BitAddress value() const noexcept { return bitPos_; }
+    void setValue(BitAddress bitPos) noexcept { bitPos_ = bitPos; }
 };
 
 class CtbConfig {
@@ -222,14 +222,14 @@ class CtbConfig {
     std::map<std::string, RegisterAddress> getRegisterNames() const;
 
     int getBitNamesCount() const;
-    void setBitName(const std::string &name, BitPosition bitPos);
+    void setBitName(const std::string &name, BitAddress bitPos);
     bool hasBitName(const std::string &name) const;
-    bool hasBitPosition(BitPosition bitPos) const;
-    BitPosition getBitPosition(const std::string &name) const;
-    std::string getBitName(BitPosition bitPos) const;
+    bool hasBitAddress(BitAddress bitPos) const;
+    BitAddress getBitAddress(const std::string &name) const;
+    std::string getBitName(BitAddress bitPos) const;
     void clearBitNames();
-    void setBitNames(const std::map<std::string, BitPosition> &list);
-    std::map<std::string, BitPosition> getBitNames() const;
+    void setBitNames(const std::map<std::string, BitAddress> &list);
+    std::map<std::string, BitAddress> getBitNames() const;
 };
 
 } // namespace sls

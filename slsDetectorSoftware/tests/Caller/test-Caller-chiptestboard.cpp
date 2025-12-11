@@ -1408,7 +1408,7 @@ TEST_CASE("define", "[.cmdcall]") {
 
         // bits
         std::string bit_name = "TEST_BIT";
-        BitPosition pos(addr, 1); //=> reg_name => becomes 2 later
+        BitAddress pos(addr, 1); //=> reg_name => becomes 2 later
         auto bit_pos = pos.bitPosition();
         auto bit_pos_str = std::to_string(bit_pos);
         auto bit_addr = pos.address();
@@ -1416,7 +1416,7 @@ TEST_CASE("define", "[.cmdcall]") {
 
         // for second bit same addr
         std::string bit_name2 = "TEST_BIT2";
-        BitPosition pos2(addr, 4); // => reg_name
+        BitAddress pos2(addr, 4); // => reg_name
         auto bit_pos2 = pos2.bitPosition();
         auto bit_pos_str2 = std::to_string(bit_pos2);
         auto bit_addr2 = pos2.address();
@@ -1424,7 +1424,7 @@ TEST_CASE("define", "[.cmdcall]") {
 
         // for another addr
         std::string bit_name3 = "TEST_BIT3";
-        BitPosition pos3(addr2, 5); // => reg_name2
+        BitAddress pos3(addr2, 5); // => reg_name2
         auto bit_pos3 = pos3.bitPosition();
         auto bit_pos_str3 = std::to_string(bit_pos3);
         auto bit_addr3 = pos3.address();

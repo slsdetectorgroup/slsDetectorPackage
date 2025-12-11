@@ -144,8 +144,8 @@ def make_mac(arg):
 def make_register_address(arg):
     return _make(arg, _slsdet.RegisterAddress)
 
-def make_bit_position(arg):
-    return _make(arg, _slsdet.BitPosition)
+def make_bit_address(arg):
+    return _make(arg, _slsdet.BitAddress)
 
 def make_register_value(arg):
     return _make(arg, _slsdet.RegisterValue)
@@ -162,8 +162,8 @@ def _make(arg, transform):
     elif isinstance(arg, list):
         return [_make(a, transform) for a in arg]
     elif isinstance(arg, tuple):
-        # special case for BitPosition
-        if transform is _slsdet.BitPosition:
+        # special case for BitAddress
+        if transform is _slsdet.BitAddress:
             addr, bit = arg
             if isinstance(addr, int):
                 addr = _slsdet.RegisterAddress(addr)

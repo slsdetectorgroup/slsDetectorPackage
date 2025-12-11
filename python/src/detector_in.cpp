@@ -13,14 +13,14 @@
 #include <chrono>
 namespace py = pybind11;
 void init_det(py::module &m) {
+    using sls::BitAddress;
     using sls::defs;
     using sls::Detector;
     using sls::ns;
     using sls::Positions;
-    using sls::Result;
     using sls::RegisterAddress;
     using sls::RegisterValue;
-    using sls::BitPosition;
+    using sls::Result;
 
     m.def("freeSharedMemory", (void (*)(const int, const int)) &sls::freeSharedMemory, py::arg() = 0, py::arg() = -1);
 

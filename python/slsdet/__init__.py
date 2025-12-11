@@ -28,7 +28,7 @@ from .defines import *
 IpAddr = _slsdet.IpAddr
 MacAddr = _slsdet.MacAddr
 RegisterAddress = _slsdet.RegisterAddress
-BitPosition = _slsdet.BitPosition
+BitAddress = _slsdet.BitAddress
 RegisterValue = _slsdet.RegisterValue
 scanParameters = _slsdet.scanParameters
 currentSrcParameters = _slsdet.currentSrcParameters

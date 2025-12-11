@@ -91,7 +91,7 @@ TEST_CASE("Convert RegisterValue using classes ", "[support][bit_utils]") {
     }
 }
 
-TEST_CASE("Convert BitPosition using classes ", "[support][bit_utils]") {
+TEST_CASE("Convert BitAddress using classes ", "[support][bit_utils]") {
     std::vector<RegisterAddress> vec_addr{
         RegisterAddress(0x305), RegisterAddress(0xffffffffu),
         RegisterAddress(0x0), RegisterAddress(0x34550987),
@@ -103,13 +103,13 @@ TEST_CASE("Convert BitPosition using classes ", "[support][bit_utils]") {
     };
 
     for (size_t i = 0; i != vec_addr.size(); ++i) {
-        auto reg0 = BitPosition(vec_addr[i], vec_bitpos[i]);
+        auto reg0 = BitAddress(vec_addr[i], vec_bitpos[i]);
 
-        BitPosition reg1;
+        BitAddress reg1;
         reg1.setAddress(vec_addr[i]);
         reg1.setBitPosition(vec_bitpos[i]);
 
-        auto reg2 = BitPosition(vec_addr[0], vec_bitpos[0]);
+        auto reg2 = BitAddress(vec_addr[0], vec_bitpos[0]);
 
         CHECK(reg0 == reg1);
         if (i != 0)
@@ -159,10 +159,10 @@ TEST_CASE("Strange input throws", "[support][bit_utils]") {
         REQUIRE(std::string(e.what()) == "Value must be an integer value.");
     }
 
-    REQUIRE_THROWS(BitPosition(RegisterAddress(0x305), 32));
+    REQUIRE_THROWS(BitAddress(RegisterAddress(0x305), 32));
     // ensure correct exception message
     try {
-        BitPosition(RegisterAddress(0x305), 32);
+        BitAddress(RegisterAddress(0x305), 32);
     } catch (const std::exception &e) {
         REQUIRE(std::string(e.what()) ==
                 "Bit position must be between 0 and 31.");

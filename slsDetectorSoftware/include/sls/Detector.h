@@ -1870,28 +1870,28 @@ class Detector {
     int getBitDefinitionsCount() const;
 
     /** [CTB][Xilinx CTB] */
-    void setBitDefinition(const std::string &name, BitPosition bitPos);
+    void setBitDefinition(const std::string &name, BitAddress addr);
 
     /** [CTB][Xilinx CTB] */
     bool hasBitDefinition(const std::string &name) const;
 
     /** [CTB][Xilinx CTB] */
-    bool hasBitDefinition(BitPosition bitPos) const;
+    bool hasBitDefinition(BitAddress addr) const;
 
     /** [CTB][Xilinx CTB] returns bit position and address */
-    BitPosition getBitDefinition(const std::string &name) const;
+    BitAddress getBitDefinition(const std::string &name) const;
 
     /** [CTB][Xilinx CTB] */
-    std::string getBitDefinition(BitPosition bitPos) const;
+    std::string getBitDefinition(BitAddress addr) const;
 
     /** [CTB][Xilinx CTB] */
     void clearBitDefinitions();
 
     /** [CTB][Xilinx CTB] */
-    void setBitDefinitions(const std::map<std::string, BitPosition> &list);
+    void setBitDefinitions(const std::map<std::string, BitAddress> &list);
 
     /** [CTB][Xilinx CTB] */
-    std::map<std::string, BitPosition> getBitDefinitions() const;
+    std::map<std::string, BitAddress> getBitDefinitions() const;
 
     ///@}
 
@@ -2130,21 +2130,20 @@ class Detector {
     /** Advanced user Function! \n
      * [Ctb][Xilinx_Ctb] Bit position can be picked up from a custom name using
      * getBitDefinition that was set up prior using setBitDefinition. */
-    void setBit(BitPosition bitPos, bool validate = false, Positions pos = {});
+    void setBit(BitAddress addr, bool validate = false, Positions pos = {});
 
     /** Advanced user Function! */
-    [[deprecated("Use the overload taking BitPosition instead of uint32_t and "
+    [[deprecated("Use the overload taking BitAddress instead of uint32_t and "
                  "int")]] void
     setBit(uint32_t addr, int bitnr, bool validate = false, Positions pos = {});
 
     /** Advanced user Function! \n
      * [Ctb][Xilinx_Ctb] Bit position can be picked up from a custom name using
      * getBitDefinition that was set up prior using setBitDefinition. */
-    void clearBit(BitPosition bitPos, bool validate = false,
-                  Positions pos = {});
+    void clearBit(BitAddress addr, bool validate = false, Positions pos = {});
 
     /** Advanced user Function! */
-    [[deprecated("Use the overload taking BitPosition instead of uint32_t and "
+    [[deprecated("Use the overload taking BitAddress instead of uint32_t and "
                  "int")]] void
     clearBit(uint32_t addr, int bitnr, bool validate = false,
              Positions pos = {});
@@ -2152,10 +2151,10 @@ class Detector {
     /** Advanced user Function!  \n
      * [Ctb][Xilinx_Ctb] Bit position can be picked up from a custom name using
      * getBitDefinition that was set up prior using setBitDefinition. */
-    Result<int> getBit(BitPosition bitPos, Positions pos = {}) const;
+    Result<int> getBit(BitAddress addr, Positions pos = {}) const;
 
     /** Advanced user Function! */
-    [[deprecated("Use the overload taking BitPosition instead of uint32_t and "
+    [[deprecated("Use the overload taking BitAddress instead of uint32_t and "
                  "int")]] Result<int>
     getBit(uint32_t addr, int bitnr, Positions pos = {}) const;
 

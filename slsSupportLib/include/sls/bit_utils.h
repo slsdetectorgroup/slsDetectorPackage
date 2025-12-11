@@ -3,7 +3,7 @@
 #pragma once
 
 #include <bitset>
-#include <stdint.h>
+#include <cstdint>
 #include <vector>
 namespace sls {
 template <typename T> std::vector<int> getSetBits(T val) {
@@ -26,7 +26,7 @@ class RegisterAddress {
 
   public:
     constexpr RegisterAddress() noexcept = default;
-    explicit RegisterAddress(uint32_t address) : addr_(address) {}
+    constexpr explicit RegisterAddress(uint32_t address) : addr_(address) {}
     explicit RegisterAddress(const std::string &address);
 
     std::string str() const;
@@ -38,30 +38,30 @@ class RegisterAddress {
     constexpr bool operator!=(const RegisterAddress &other) const {
         return (addr_ != other.addr_);
     }
-} __attribute__((packed));
+};
 
-class BitPosition {
+class BitAddress {
   private:
     RegisterAddress addr_{0};
     int bitPos_{0};
 
   public:
-    constexpr BitPosition() noexcept = default;
-    BitPosition(RegisterAddress address, int bitPosition);
+    constexpr BitAddress() noexcept = default;
+    BitAddress(RegisterAddress address, int bitPosition);
     std::string str() const;
 
     RegisterAddress address() const noexcept { return addr_; }
     int bitPosition() const noexcept { return bitPos_; }
     void setAddress(RegisterAddress address) noexcept { addr_ = address; }
-    void setBitPosition(int bitPosition) noexcept { bitPos_ = bitPosition; }
+    void setBitPosition(int bitPos) noexcept { bitPos_ = bitPos; }
 
-    constexpr bool operator==(const BitPosition &other) const {
+    constexpr bool operator==(const BitAddress &other) const {
         return (addr_ == other.addr_ && bitPos_ == other.bitPos_);
     }
-    constexpr bool operator!=(const BitPosition &other) const {
+    constexpr bool operator!=(const BitAddress &other) const {
         return !(*this == other && bitPos_ == other.bitPos_);
     }
-} __attribute__((packed));
+};
 
 class RegisterValue {
   private:
@@ -88,7 +88,7 @@ class RegisterValue {
 } __attribute__((packed));
 
 std::ostream &operator<<(std::ostream &os, const RegisterAddress &r);
-std::ostream &operator<<(std::ostream &os, const BitPosition &r);
+std::ostream &operator<<(std::ostream &os, const BitAddress &r);
 std::ostream &operator<<(std::ostream &os, const RegisterValue &r);
 
 } // namespace sls

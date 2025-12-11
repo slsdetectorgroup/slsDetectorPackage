@@ -1538,7 +1538,7 @@ std::string Caller::define(int action) {
             // get name from position and address
             else if (args.size() == 3) {
                 auto pos =
-                    BitPosition(parseAddress(args[1]), StringTo<int>(args[2]));
+                    BitAddress(parseAddress(args[1]), StringTo<int>(args[2]));
                 try {
                     auto t = det->getBitDefinition(pos);
                     os << t << '\n';
@@ -1565,7 +1565,7 @@ std::string Caller::define(int action) {
                 throw RuntimeError("Bit position must be an integer value.");
             }
             auto pos =
-                BitPosition(parseAddress(args[2]), StringTo<int>(args[3]));
+                BitAddress(parseAddress(args[2]), StringTo<int>(args[3]));
             det->setBitDefinition(args[1], pos);
             os << ToString(args) << '\n';
         }
@@ -1709,20 +1709,20 @@ std::string Caller::bitoperations(int action) {
         }
 
         auto validate = parseValidate();
-        auto bitPosition = parseBitPosition();
+        auto BitAddress = parseBitAddress();
         if (action == defs::GET_ACTION) {
             if (cmd == "setbit" || cmd == "clearbit")
                 throw RuntimeError("Cannot get");
 
-            auto t = det->getBit(bitPosition, std::vector<int>{det_id});
+            auto t = det->getBit(BitAddress, std::vector<int>{det_id});
             os << OutString(t) << '\n';
         } else {
             if (cmd == "getbit")
                 throw RuntimeError("Cannot put");
             if (cmd == "setbit")
-                det->setBit(bitPosition, validate, std::vector<int>{det_id});
+                det->setBit(BitAddress, validate, std::vector<int>{det_id});
             else if (cmd == "clearbit")
-                det->clearBit(bitPosition, validate, std::vector<int>{det_id});
+                det->clearBit(BitAddress, validate, std::vector<int>{det_id});
             else
                 throw RuntimeError("Unknown command");
             os << ToString(args) << "\n";
@@ -1773,7 +1773,7 @@ bool Caller::parseValidate() {
     return validate;
 }
 
-BitPosition Caller::parseBitPosition() const {
+BitAddress Caller::parseBitAddress() const {
     int argsSize = args.size();
     std::string addr_or_bitname = args[0];
 
@@ -1793,8 +1793,8 @@ BitPosition Caller::parseBitPosition() const {
     // address and bit position
     else if (argsSize == 2) {
         std::string bit_pos = args[1];
-        return BitPosition(parseAddress(addr_or_bitname),
-                           StringTo<int>(bit_pos));
+        return BitAddress(parseAddress(addr_or_bitname),
+                          StringTo<int>(bit_pos));
     } else {
         throw RuntimeError("Command " + cmd +
                            " expected (1-4) parameter/s but got " +

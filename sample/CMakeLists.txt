@@ -4,8 +4,16 @@ add_executable(using_logger using_logger.cpp)
 target_link_libraries(using_logger 
     slsSupportShared
 )  
-
 set_target_properties(using_logger PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+)
+
+
+add_executable(using_registers using_registers.cpp)
+target_link_libraries(using_registers 
+    slsDetectorShared
+)  
+set_target_properties(using_registers PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 

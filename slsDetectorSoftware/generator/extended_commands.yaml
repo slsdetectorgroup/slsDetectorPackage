@@ -1097,6 +1097,18 @@ clearbit:
       args:
       - arg_types:
         - std::string
+        argc: 1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+      - arg_types:
+        - std::string
         - std::string
         argc: 2
         cast_input: []
@@ -2463,13 +2475,25 @@ defaultpattern:
     \ to go back to initial settings."
   infer_action: true
   template: true
-define:
+define_bit:
   actions:
     GET:
       args:
       - arg_types:
         - std::string
+        argc: 1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: true
+      - arg_types:
         - std::string
+        - int
         argc: 2
         cast_input: []
         check_det_id: false
@@ -2496,12 +2520,12 @@ define:
         output: []
         require_det_id: false
         store_result_in_t: false
-  command_name: define
-  function_alias: define
+  command_name: define_bit
+  function_alias: define_bit
   help: ''
   infer_action: true
   is_description: true
-definelist:
+define_reg:
   actions:
     GET:
       args:
@@ -2517,8 +2541,63 @@ definelist:
         output: []
         require_det_id: false
         store_result_in_t: true
-  command_name: definelist
-  function_alias: definelist
+    PUT:
+      args:
+      - arg_types:
+        - std::string
+        - int
+        argc: 2
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+  command_name: define_reg
+  function_alias: define_reg
+  help: ''
+  infer_action: true
+  is_description: true
+definelist_bit:
+  actions:
+    GET:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: true
+  command_name: definelist_bit
+  function_alias: definelist_bit
+  help: ''
+  infer_action: true
+  is_description: true
+definelist_reg:
+  actions:
+    GET:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: true
+  command_name: definelist_reg
+  function_alias: definelist_reg
   help: ''
   infer_action: true
   is_description: true
@@ -4727,6 +4806,18 @@ getbit:
   actions:
     GET:
       args:
+      - arg_types:
+        - std::string
+        argc: 1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: true
       - arg_types:
         - std::string
         - std::string
@@ -9551,6 +9642,18 @@ setbit:
   actions:
     PUT:
       args:
+      - arg_types:
+        - std::string
+        argc: 1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
       - arg_types:
         - std::string
         - std::string

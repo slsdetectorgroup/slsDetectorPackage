@@ -1330,7 +1330,85 @@ TEST_CASE("led", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("define", "[.cmdcall]") {
+TEST_CASE("define_reg", "[.cmdcall]") {
+    Detector det;
+    Caller caller(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
+
+        auto prev_reg_defines = det.getRegisterDefinitions();
+        auto prev_bit_defines = det.getBitDefinitions();
+        det.clearRegisterDefinitions();
+        det.clearBitDefinitions();
+
+        {
+            // invalid puts
+            // missing arg
+            REQUIRE_THROWS(caller.call("define_reg", {}, -1, GET));
+            // missing arg
+            REQUIRE_THROWS(caller.call("define_reg", {"TEST_REG"}, -1, PUT));
+            // invalid module id
+            REQUIRE_THROWS(
+                caller.call("define_reg", {"TEST_REG", "0x201"}, 0, PUT));
+
+            // valid put
+            REQUIRE_NOTHROW(
+                caller.call("define_reg", {"TEST_REG", "0x200"}, -1, PUT));
+            // modify reg
+            REQUIRE_NOTHROW(
+                caller.call("define_reg", {"TEST_REG", "0x201"}, -1, PUT));
+            REQUIRE_NOTHROW(
+                caller.call("define_reg", {"TEST_REG2", "0x202"}, -1, PUT));
+
+            // invalid puts
+            // existing reg addr
+            REQUIRE_THROWS(
+                caller.call("define_reg", {"TEST_REG3", "0x201"}, -1, PUT));
+
+            // valid gets
+            {
+                // get by name
+                std::ostringstream oss;
+                REQUIRE_NOTHROW(
+                    caller.call("define_reg", {"TEST_REG"}, -1, GET, oss));
+                REQUIRE(oss.str() == "define_reg 0x201\n");
+            }
+            {
+                // get by addr
+                std::ostringstream oss;
+                REQUIRE_NOTHROW(
+                    caller.call("define_reg", {"0x201"}, -1, GET, oss));
+                REQUIRE(oss.str() == "define_reg TEST_REG\n");
+            }
+
+            // invalid gets
+            // doesnt exist
+            REQUIRE_THROWS(caller.call("define_reg", {"TEST_REG3"}, -1, GET));
+            REQUIRE_THROWS(caller.call("define_reg", {"0x203"}, -1, GET));
+            // ensure correct exception message
+            try {
+                caller.call("define_reg", {"0x203"}, -1, GET);
+            } catch (const std::exception &e) {
+                REQUIRE(std::string(e.what()) ==
+                        "No register definition found for address: 0x203");
+            }
+        }
+        det.clearRegisterDefinitions();
+        det.clearBitDefinitions();
+
+        det.setRegisterDefinitions(prev_reg_defines);
+        det.setBitDefinitions(prev_bit_defines);
+
+    } else {
+        REQUIRE_THROWS(
+            caller.call("define_reg", {"TEST_REG", "0x200"}, -1, PUT));
+        REQUIRE_THROWS(caller.call("define_reg", {"TEST_REG"}, -1, GET));
+    }
+}
+
+TEST_CASE("define_bit", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1341,240 +1419,240 @@ TEST_CASE("define", "[.cmdcall]") {
         auto prev_reg_defines = det.getRegisterDefinitions();
         auto prev_bit_defines = det.getBitDefinitions();
 
-        // registers
-        RegisterAddress addr(0x201);
-        std::string addr_str = addr.str();
-        std::string reg_name = "TEST_REG";
-
-        RegisterAddress addr2(0x202);
-        std::string addr_str2 = addr2.str();
-        std::string reg_name2 = "TEST_REG2";
-
-        // for negative testing (not defined)
-        RegisterAddress addr3(0x203);
-        std::string addr_str3 = addr3.str();
-        std::string reg_name3 = "TEST_REG3";
+        det.clearRegisterDefinitions();
+        det.clearBitDefinitions();
+        det.setRegisterDefinition("TEST_REG", RegisterAddress(0x201));
+        det.setRegisterDefinition("TEST_REG2", RegisterAddress(0x202));
 
         {
             // invalid puts
+            // skipped register
             REQUIRE_THROWS(
-                caller.call("define", {}, -1, GET)); // no mode or args
-            REQUIRE_THROWS(
-                caller.call("define", {reg_name}, -1, GET)); // no mode get
-            REQUIRE_THROWS(caller.call("define", {reg_name, addr_str}, -1,
-                                       PUT)); // skipped mode put
-            REQUIRE_THROWS(caller.call("define", {"addr", reg_name, addr_str},
-                                       0, PUT)); // invalid module id
-            REQUIRE_THROWS(caller.call("define", {"reg", reg_name, addr_str},
-                                       -1, PUT)); // invalid mode
-
-            // valid put
-            REQUIRE_NOTHROW(
-                caller.call("define", {"addr", reg_name, addr_str}, -1, PUT));
-            REQUIRE_NOTHROW(caller.call("define",
-                                        {"addr", reg_name2, addr_str2}, -1,
-                                        PUT)); // second addr
-
-            // valid gets
-            {
-                // get by name
-                std::ostringstream oss;
-                REQUIRE_NOTHROW(
-                    caller.call("define", {"addr", reg_name}, -1, GET, oss));
-                REQUIRE(oss.str() == "define " + addr_str + "\n");
-            }
-            {
-                // get by addr
-                std::ostringstream oss;
-                REQUIRE_NOTHROW(
-                    caller.call("define", {"addr", addr_str}, -1, GET, oss));
-                REQUIRE(oss.str() == "define " + reg_name + "\n");
-            }
-
-            // invalid gets
-            REQUIRE_THROWS(caller.call("define", {"addr", reg_name3}, -1,
-                                       GET)); // doesnt exist
-            REQUIRE_THROWS(caller.call("define", {"addr", addr_str3}, -1,
-                                       GET)); // doesnt exist
-            // ensure correct exception message
-            try {
-                caller.call("define", {"addr", addr_str3}, -1, GET);
-            } catch (const std::exception &e) {
-                REQUIRE(std::string(e.what()) ==
-                        "No register definition found for address: " +
-                            addr_str3);
-            }
-        }
-
-        // bits
-        std::string bit_name = "TEST_BIT";
-        BitAddress pos(addr, 1); //=> reg_name => becomes 2 later
-        auto bit_pos = pos.bitPosition();
-        auto bit_pos_str = std::to_string(bit_pos);
-        auto bit_addr = pos.address();
-        auto bit_addr_str = bit_addr.str();
-
-        // for second bit same addr
-        std::string bit_name2 = "TEST_BIT2";
-        BitAddress pos2(addr, 4); // => reg_name
-        auto bit_pos2 = pos2.bitPosition();
-        auto bit_pos_str2 = std::to_string(bit_pos2);
-        auto bit_addr2 = pos2.address();
-        auto bit_addr_str2 = bit_addr2.str();
-
-        // for another addr
-        std::string bit_name3 = "TEST_BIT3";
-        BitAddress pos3(addr2, 5); // => reg_name2
-        auto bit_pos3 = pos3.bitPosition();
-        auto bit_pos_str3 = std::to_string(bit_pos3);
-        auto bit_addr3 = pos3.address();
-        auto bit_addr_str3 = bit_addr3.str();
-
-        {
-            // invalid puts
-            REQUIRE_THROWS(caller.call("define", {"bit", bit_name, bit_pos_str},
-                                       -1, PUT)); // skipped register
+                caller.call("define_bit", {"TEST_BIT", "1"}, -1, PUT));
+            // named register doesnt exist
             REQUIRE_THROWS(caller.call(
-                "define", {"bit", bit_name, "RANDOM_REG", bit_pos_str}, -1,
-                PUT)); // named register doesnt exist
-            REQUIRE_THROWS(caller.call("define",
-                                       {"bit", bit_name, reg_name, "32"}, -1,
-                                       PUT)); // invalid bit position
+                "define_bit", {"TEST_BIT", "RANDOM_REG", "1"}, -1, PUT));
+            // invalid bit position
+            REQUIRE_THROWS(
+                caller.call("define", {"TEST_BIT", "TEST_REG", "32"}, -1, PUT));
 
             // valid puts
             REQUIRE_NOTHROW(caller.call(
-                "define", {"bit", bit_name, reg_name, bit_pos_str}, -1, PUT));
+                "define_bit", {"TEST_BIT", "TEST_REG2", "1"}, -1, PUT));
+            // modify reg
             REQUIRE_NOTHROW(caller.call(
-                "define", {"bit", bit_name3, reg_name2, bit_pos_str3}, -1,
-                PUT)); // bit from another addr
+                "define_bit", {"TEST_BIT", "TEST_REG", "1"}, -1, PUT));
+
             // modify position
-            pos.setBitPosition(2);
-            bit_pos = pos.bitPosition();
-            bit_pos_str = std::to_string(bit_pos);
-            REQUIRE_NOTHROW(
-                caller.call("define", {"bit", bit_name, reg_name, bit_pos_str},
-                            -1, PUT)); // modify first bit
             REQUIRE_NOTHROW(caller.call(
-                "define", {"bit", bit_name2, reg_name, bit_pos_str2}, -1,
-                PUT)); // add another bit to first addr
+                "define_bit", {"TEST_BIT", "TEST_REG", "2"}, -1, PUT));
+            // another bit to same reg
+            REQUIRE_NOTHROW(caller.call(
+                "define_bit", {"TEST_BIT2", "TEST_REG", "4"}, -1, PUT));
+            // bit to a different reg
+            REQUIRE_NOTHROW(caller.call(
+                "define_bit", {"TEST_BIT3", "TEST_REG2", "3"}, -1, PUT));
 
             // valid gets
             {
                 // get by name
                 std::ostringstream oss;
                 REQUIRE_NOTHROW(
-                    caller.call("define", {"bit", bit_name}, -1, GET, oss));
-                REQUIRE(oss.str() ==
-                        "define [" + reg_name + ", " + bit_pos_str + "]\n");
+                    caller.call("define_bit", {"TEST_BIT"}, -1, GET, oss));
+                REQUIRE(oss.str() == "define_bit [TEST_REG, 2]\n");
             }
             {
                 // get by addr+pos name
                 std::ostringstream oss;
-                REQUIRE_NOTHROW(caller.call(
-                    "define", {"bit", reg_name, bit_pos_str}, -1, GET, oss));
-                REQUIRE(oss.str() == "define " + bit_name + "\n");
+                REQUIRE_NOTHROW(
+                    caller.call("define_bit", {"TEST_REG", "2"}, -1, GET, oss));
+                REQUIRE(oss.str() == "define_bit TEST_BIT\n");
             }
             {
                 // get by addr val + pos
                 std::ostringstream oss;
-                REQUIRE_NOTHROW(caller.call("define",
-                                            {"bit", bit_addr_str, bit_pos_str},
-                                            -1, GET, oss));
-                REQUIRE(oss.str() == "define " + bit_name + "\n");
+                REQUIRE_NOTHROW(
+                    caller.call("define_bit", {"0x201", "2"}, -1, GET, oss));
+                REQUIRE(oss.str() == "define_bit TEST_BIT\n");
             }
 
             // invalid gets
-            REQUIRE_THROWS(caller.call("define",
-                                       {"bit", reg_name, bit_pos_str3}, -1,
-                                       GET)); // bit doesnt exist
-            REQUIRE_THROWS(caller.call("define",
-                                       {"bit", reg_name3, bit_pos_str2}, -1,
-                                       GET)); // addr doesnt exist
+            // bit doesnt exist
+            REQUIRE_THROWS(
+                caller.call("define_bit", {"TEST_REG", "3"}, -1, GET));
+            // addr doesnt exist
+            REQUIRE_THROWS(
+                caller.call("define_bit", {"TEST_REG3", "2"}, -1, GET));
             // ensure correct exception message
             try {
-                caller.call("define", {"bit", reg_name, bit_pos_str3}, -1, GET);
+                caller.call("define_bit", {"TEST_REG", "3"}, -1, GET);
             } catch (const std::exception &e) {
                 REQUIRE(std::string(e.what()) ==
-                        "No bit definition found for bit position: [" +
-                            addr_str + ", " + bit_pos_str3 +
-                            "] and addr = " + reg_name);
+                        "No bit definition found for bit position: [0x201, 3] "
+                        "and addr = TEST_REG");
             }
         }
+        det.clearRegisterDefinitions();
+        det.clearBitDefinitions();
 
-        // using the defines
+        det.setRegisterDefinitions(prev_reg_defines);
+        det.setBitDefinitions(prev_bit_defines);
+
+    } else {
+        REQUIRE_THROWS(
+            caller.call("define_bit", {"TEST_BIT", "0x200", "2"}, -1, PUT));
+        REQUIRE_THROWS(caller.call("define_bit", {"0x200", "2"}, -1, GET));
+    }
+}
+
+TEST_CASE("using define for reg, setbit, getbit and clearbit", "[.cmdcall]") {
+    Detector det;
+    Caller caller(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
+
         if (det.isVirtualDetectorServer().tsquash(
                 "inconsistent virtual values")) {
-            auto prev_val_addr = det.readRegister(addr);
-            auto prev_val_addr2 = det.readRegister(addr2);
-            auto prev_val_addr3 = det.readRegister(addr3);
+
+            auto prev_reg_defines = det.getRegisterDefinitions();
+            auto prev_bit_defines = det.getBitDefinitions();
+
+            det.clearRegisterDefinitions();
+            det.clearBitDefinitions();
+            det.setRegisterDefinition("TEST_REG", RegisterAddress(0x201));
+            det.setRegisterDefinition("TEST_REG2", RegisterAddress(0x202));
+            det.setBitDefinition("TEST_BIT",
+                                 BitAddress(RegisterAddress(0x201), 2));
+            det.setBitDefinition("TEST_BIT2",
+                                 BitAddress(RegisterAddress(0x201), 4));
+            det.setBitDefinition("TEST_BIT3",
+                                 BitAddress(RegisterAddress(0x202), 3));
+
+            auto prev_val_addr = det.readRegister(RegisterAddress(0x201));
+            auto prev_val_addr2 = det.readRegister(RegisterAddress(0x202));
 
             // invalid puts
-            REQUIRE_THROWS(caller.call("reg", {reg_name, bit_name}, -1, PUT));
+            // doesnt exist addr
             REQUIRE_THROWS(
-                caller.call("clearbit", {reg_name, bit_name}, -1, PUT));
+                caller.call("reg", {"RANDOM_REG", "0xf00"}, -1, PUT));
             REQUIRE_THROWS(
-                caller.call("setbit", {reg_name, bit_name}, -1, PUT));
+                caller.call("clearbit", {"RANDOM_REG", "TEST_BIT"}, -1, PUT));
             REQUIRE_THROWS(
-                caller.call("getbit", {reg_name, bit_name}, -1, GET));
+                caller.call("setbit", {"RANDOM_REG", "TEST_BIT"}, -1, PUT));
+            REQUIRE_THROWS(
+                caller.call("getbit", {"RANDOM_REG", "TEST_BIT"}, -1, GET));
+            // using bit name for reg (only hardcoded values allowed)
+            REQUIRE_THROWS(
+                caller.call("reg", {"TEST_REG", "TEST_BIT"}, -1, PUT));
+            // using bit name and reg (only bit names or both reg and bit
+            // hardcoded allowed)
+            REQUIRE_THROWS(
+                caller.call("clearbit", {"TEST_REG", "TEST_BIT"}, -1, PUT));
+            REQUIRE_THROWS(
+                caller.call("setbit", {"TEST_REG", "TEST_BIT"}, -1, PUT));
+            REQUIRE_THROWS(
+                caller.call("getbit", {"TEST_REG", "TEST_BIT"}, -1, GET));
 
             // valid puts and gets
             {
                 // reg hard coded value of 0
                 std::ostringstream oss;
-                REQUIRE_NOTHROW(caller.call("reg", {reg_name, "0x0"}, -1, PUT));
-                REQUIRE_NOTHROW(caller.call("reg", {reg_name}, -1, GET, oss));
+                REQUIRE_NOTHROW(
+                    caller.call("reg", {"TEST_REG", "0x0"}, -1, PUT));
+                REQUIRE_NOTHROW(caller.call("reg", {"TEST_REG"}, -1, GET, oss));
                 REQUIRE(oss.str() == "reg 0x0\n");
             }
             {
                 // reg hard coded value
                 std::ostringstream oss;
                 REQUIRE_NOTHROW(
-                    caller.call("reg", {reg_name, "0x10"}, -1, PUT));
-                REQUIRE_NOTHROW(caller.call("reg", {reg_name}, -1, GET, oss));
+                    caller.call("reg", {"TEST_REG", "0x10"}, -1, PUT));
+                REQUIRE_NOTHROW(caller.call("reg", {"TEST_REG"}, -1, GET, oss));
                 REQUIRE(oss.str() == "reg 0x10\n");
             }
             {
                 // set bit
                 std::ostringstream oss;
-                REQUIRE_NOTHROW(caller.call("setbit", {bit_name}, -1, PUT));
-                REQUIRE_NOTHROW(caller.call("reg", {reg_name}, -1, GET, oss));
-                int val = (1 << bit_pos) | (1 << bit_pos2);
-                std::string s_val = ToStringHex(val);
-                REQUIRE(oss.str() == "reg " + s_val + "\n");
+                REQUIRE_NOTHROW(caller.call("setbit", {"TEST_BIT"}, -1, PUT));
+                REQUIRE_NOTHROW(
+                    caller.call("setbit", {"TEST_REG", "2"}, -1, PUT));
+                REQUIRE_NOTHROW(caller.call("reg", {"TEST_REG"}, -1, GET, oss));
+                REQUIRE(oss.str() == "reg 0x14\n");
             }
             {
                 // get bit
-                std::ostringstream oss;
+                std::ostringstream oss, oss2;
                 REQUIRE_NOTHROW(
-                    caller.call("getbit", {bit_name}, -1, GET, oss));
+                    caller.call("getbit", {"TEST_REG", "2"}, -1, GET, oss));
                 REQUIRE(oss.str() == "getbit 1\n");
+                REQUIRE_NOTHROW(
+                    caller.call("getbit", {"TEST_BIT"}, -1, GET, oss2));
+                REQUIRE(oss2.str() == "getbit 1\n");
             }
             {
                 // clear bit
                 std::ostringstream oss;
-                REQUIRE_NOTHROW(caller.call("clearbit", {bit_name}, -1, PUT));
-                REQUIRE_NOTHROW(caller.call("reg", {reg_name}, -1, GET, oss));
-                uint32_t val = (1 << bit_pos2);
-                std::string s_val = ToStringHex(val);
-                REQUIRE(oss.str() == "reg " + s_val + "\n");
+                REQUIRE_NOTHROW(caller.call("clearbit", {"TEST_BIT"}, -1, PUT));
+                REQUIRE_NOTHROW(
+                    caller.call("clearbit", {"TEST_REG", "2"}, -1, PUT));
+                REQUIRE_NOTHROW(caller.call("reg", {"TEST_REG"}, -1, GET, oss));
+                REQUIRE(oss.str() == "reg 0x10\n");
             }
             for (int i = 0; i != det.size(); ++i) {
-                det.writeRegister(addr, prev_val_addr[i], false, {i});
-                det.writeRegister(addr2, prev_val_addr2[i], false, {i});
-                det.writeRegister(addr3, prev_val_addr3[i], false, {i});
+                det.writeRegister(RegisterAddress(0x201),
+                                  RegisterValue(prev_val_addr[i]), false, {i});
+                det.writeRegister(RegisterAddress(0x202),
+                                  RegisterValue(prev_val_addr2[i]), false, {i});
             }
+            det.clearRegisterDefinitions();
+            det.clearBitDefinitions();
+
+            det.setRegisterDefinitions(prev_reg_defines);
+            det.setBitDefinitions(prev_bit_defines);
         }
-        det.setRegisterDefinitions(prev_reg_defines);
-        det.setBitDefinitions(prev_bit_defines);
 
     } else {
-        REQUIRE_THROWS(
-            caller.call("define", {"addr", "TEST_REG", "0x200"}, -1, PUT));
-        REQUIRE_THROWS(caller.call("reg", {"addr", "TEST_REG"}, -1, GET));
+        REQUIRE_THROWS(caller.call("reg", {"TEST_REG", "0x200"}, -1, PUT));
+        REQUIRE_THROWS(caller.call("reg", {"TEST_REG"}, -1, GET));
     }
 }
 
-TEST_CASE("definelist", "[.cmdcall]") {
+TEST_CASE("definelist_reg", "[.cmdcall]") {
+    Detector det;
+    Caller caller(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
+
+        auto prev_reg_defines = det.getRegisterDefinitions();
+
+        det.clearRegisterDefinitions();
+        det.clearBitDefinitions();
+        det.setRegisterDefinition("TEST_REG", RegisterAddress(0x201));
+        det.setRegisterDefinition("TEST_REG2", RegisterAddress(0x202));
+
+        // invalid
+        // cannot put
+        REQUIRE_THROWS(
+            caller.call("definelist_reg", {"TEST_REG", "0x201"}, -1, PUT));
+        // too many args
+        REQUIRE_THROWS(caller.call("definelist_reg", {"TEST_MACRO"}, -1, GET));
+
+        // valid
+        REQUIRE_NOTHROW(caller.call("definelist_reg", {}, -1, GET));
+        det.clearRegisterDefinitions();
+        det.clearBitDefinitions();
+
+        det.setRegisterDefinitions(prev_reg_defines);
+    } else {
+        REQUIRE_THROWS(caller.call("definelist_reg", {}, -1, GET));
+    }
+}
+
+TEST_CASE("definelist_bit", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1585,18 +1663,32 @@ TEST_CASE("definelist", "[.cmdcall]") {
         auto prev_reg_defines = det.getRegisterDefinitions();
         auto prev_bit_defines = det.getBitDefinitions();
 
-        REQUIRE_THROWS(caller.call("definelist", {}, -1, GET));
-        REQUIRE_THROWS(
-            caller.call("definelist", {"addr", "TEST_MACRO"}, -1, GET));
+        det.clearRegisterDefinitions();
+        det.clearBitDefinitions();
+        det.setRegisterDefinition("TEST_REG", RegisterAddress(0x201));
+        det.setRegisterDefinition("TEST_REG2", RegisterAddress(0x202));
+        det.setBitDefinition("TEST_BIT", BitAddress(RegisterAddress(0x201), 2));
+        det.setBitDefinition("TEST_BIT2",
+                             BitAddress(RegisterAddress(0x201), 4));
+        det.setBitDefinition("TEST_BIT3",
+                             BitAddress(RegisterAddress(0x202), 3));
 
-        REQUIRE_NOTHROW(caller.call("definelist", {"addr"}, -1, GET));
-        REQUIRE_NOTHROW(caller.call("definelist", {"bit"}, -1, GET));
+        // invalid
+        // cannot put
+        REQUIRE_THROWS(
+            caller.call("definelist_bit", {"TEST_BIT", "0x201", "2"}, -1, PUT));
+        // too many args
+        REQUIRE_THROWS(caller.call("definelist_bit", {"TEST_BIT"}, -1, GET));
+
+        // valid
+        REQUIRE_NOTHROW(caller.call("definelist_bit", {}, -1, GET));
+        det.clearRegisterDefinitions();
+        det.clearBitDefinitions();
 
         det.setRegisterDefinitions(prev_reg_defines);
         det.setBitDefinitions(prev_bit_defines);
     } else {
-        REQUIRE_THROWS(caller.call("definelist", {"addr"}, -1, GET));
-        REQUIRE_THROWS(caller.call("definelist", {"bit"}, -1, GET));
+        REQUIRE_THROWS(caller.call("definelist_bit", {}, -1, GET));
     }
 }
 

@@ -2761,23 +2761,40 @@ sleep:
             - argc: 2
               arg_types: [ int, special::time_unit ]
 
-define:
-    is_description: true
-    actions:
-        GET:
-          argc: 2
-          arg_types: [ std::string, std::string ]
-        PUT:
-          argc: 3
-          arg_types: [ std::string, std::string, int ]
-
-
-definelist:
+define_reg:
     is_description: true
     actions:
         GET:
           argc: 1
           arg_types: [ std::string ]
+        PUT:
+          argc: 2
+          arg_types: [ std::string, int ]
+
+define_bit:
+    is_description: true
+    actions:
+        GET:
+          args:
+            - argc: 1
+              arg_types: [ std::string ]
+            - argc: 2
+              arg_types: [ std::string, int ]
+        PUT:
+          argc: 3
+          arg_types: [ std::string, std::string, int ]
+
+definelist_reg:
+    is_description: true
+    actions:
+        GET:
+          argc: 0
+
+definelist_bit:
+    is_description: true
+    actions:
+        GET:
+          argc: 0
 
 reg:
     is_description: true
@@ -2797,8 +2814,11 @@ getbit:
     is_description: true
     actions:
         GET:
-          argc: 2
-          arg_types: [ std::string, std::string ]
+          args:
+            - argc: 1
+              arg_types: [ std::string ]
+            - argc: 2
+              arg_types: [ std::string, std::string ]
 
 
 setbit:
@@ -2806,6 +2826,8 @@ setbit:
     actions:
         PUT:
           args:
+            - argc: 1
+              arg_types: [ std::string ]
             - argc: 2
               arg_types: [ std::string, std::string ]
             - argc: 3
@@ -2816,6 +2838,8 @@ clearbit:
     actions:
         PUT:
           args:
+            - argc: 1
+              arg_types: [ std::string ]
             - argc: 2
               arg_types: [ std::string, std::string ]
             - argc: 3

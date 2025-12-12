@@ -2784,56 +2784,78 @@ void Detector::setUpdateMode(const bool updatemode, Positions pos) {
     }
 }
 
-Result<uint32_t> Detector::readRegister(uint32_t addr, Positions pos) const {
-    return pimpl->Parallel(&Module::readRegister, pos, addr);
-}
-
-void Detector::writeRegister(uint32_t addr, uint32_t val, bool validate,
-                             Positions pos) {
-    pimpl->Parallel(&Module::writeRegister, pos, addr, val, validate);
-}
-
-void Detector::setBit(uint32_t addr, int bitnr, bool validate, Positions pos) {
-    pimpl->Parallel(&Module::setBit, pos, addr, bitnr, validate);
-}
-
-void Detector::clearBit(uint32_t addr, int bitnr, bool validate,
-                        Positions pos) {
-    pimpl->Parallel(&Module::clearBit, pos, addr, bitnr, validate);
-}
-
-Result<int> Detector::getBit(uint32_t addr, int bitnr, Positions pos) const {
-    return pimpl->Parallel(&Module::getBit, pos, addr, bitnr);
-}
-
 Result<RegisterValue> Detector::readRegister(RegisterAddress addr,
                                              Positions pos) const {
-    auto t = pimpl->Parallel(&Module::readRegister, pos, addr);
-    Result<RegisterValue> res;
-    for (const auto &val : t) {
-        res.push_back(RegisterValue(val));
-    }
-    return res;
+    return pimpl->readRegister(addr, pos);
 }
 
 void Detector::writeRegister(RegisterAddress addr, RegisterValue val,
                              bool validate, Positions pos) {
-    pimpl->Parallel(&Module::writeRegister, pos, addr, val, validate);
+    pimpl->writeRegister(addr, val, validate, pos);
 }
 
 void Detector::setBit(BitAddress addr, bool validate, Positions pos) {
-    pimpl->Parallel(&Module::setBit, pos, addr.address(), addr.bitPosition(),
-                    validate);
+    pimpl->setBit(addr, validate, pos);
 }
 
 void Detector::clearBit(BitAddress addr, bool validate, Positions pos) {
-    pimpl->Parallel(&Module::clearBit, pos, addr.address(), addr.bitPosition(),
-                    validate);
+    pimpl->clearBit(addr, validate, pos);
 }
 
 Result<int> Detector::getBit(BitAddress addr, Positions pos) const {
-    return pimpl->Parallel(&Module::getBit, pos, addr.address(),
-                           addr.bitPosition());
+    return pimpl->getBit(addr, pos);
+}
+
+Result<RegisterValue> Detector::readRegister(const std::string &reg_name,
+                                             Positions pos) const {
+    return pimpl->readRegister(reg_name, pos);
+}
+
+void Detector::writeRegister(const std::string &reg_name, RegisterValue val,
+                             bool validate, Positions pos) {
+    pimpl->writeRegister(reg_name, val, validate, pos);
+}
+
+void Detector::setBit(const std::string &bit_name, bool validate,
+                      Positions pos) {
+    pimpl->setBit(bit_name, validate, pos);
+}
+
+void Detector::clearBit(const std::string &bit_name, bool validate,
+                        Positions pos) {
+    pimpl->clearBit(bit_name, validate, pos);
+}
+
+Result<int> Detector::getBit(const std::string &bit_name, Positions pos) const {
+    return pimpl->getBit(bit_name, pos);
+}
+
+Result<uint32_t> Detector::readRegister(uint32_t addr, Positions pos) const {
+    auto t = pimpl->readRegister(RegisterAddress(addr), pos);
+    Result<uint32_t> res;
+    for (const auto &val : t) {
+        res.push_back(val);
+    }
+    return res;
+}
+
+void Detector::writeRegister(uint32_t addr, uint32_t val, bool validate,
+                             Positions pos) {
+    pimpl->writeRegister(RegisterAddress(addr), RegisterValue(val), validate,
+                         pos);
+}
+
+void Detector::setBit(uint32_t addr, int bitnr, bool validate, Positions pos) {
+    pimpl->setBit(BitAddress(RegisterAddress(addr), bitnr), validate, pos);
+}
+
+void Detector::clearBit(uint32_t addr, int bitnr, bool validate,
+                        Positions pos) {
+    pimpl->clearBit(BitAddress(RegisterAddress(addr), bitnr), validate, pos);
+}
+
+Result<int> Detector::getBit(uint32_t addr, int bitnr, Positions pos) const {
+    return pimpl->getBit(BitAddress(RegisterAddress(addr), bitnr), pos);
 }
 
 void Detector::executeFirmwareTest(Positions pos) {

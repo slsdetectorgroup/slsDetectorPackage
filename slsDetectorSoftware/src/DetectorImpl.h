@@ -353,6 +353,22 @@ class DetectorImpl : public virtual slsDetectorDefs {
     void setBitDefinitions(const std::map<std::string, BitAddress> &list);
     std::map<std::string, BitAddress> getBitDefinitions() const;
 
+    Result<RegisterValue> readRegister(const std::string &reg_name,
+                                       Positions pos) const;
+    void writeRegister(const std::string &reg_name, RegisterValue val,
+                       bool validate, Positions pos);
+    void setBit(const std::string &bit_name, bool validate, Positions pos);
+    void clearBit(const std::string &bit_name, bool validate, Positions pos);
+    Result<int> getBit(const std::string &bit_name, Positions pos) const;
+
+    Result<RegisterValue> readRegister(RegisterAddress addr,
+                                       Positions pos = {}) const;
+    void writeRegister(RegisterAddress addr, RegisterValue val,
+                       bool validate = false, Positions pos = {});
+    void setBit(BitAddress addr, bool validate = false, Positions pos = {});
+    void clearBit(BitAddress addr, bool validate = false, Positions pos = {});
+    Result<int> getBit(BitAddress addr, Positions pos = {}) const;
+
   private:
     /**
      * Creates/open shared memory, initializes detector structure and members

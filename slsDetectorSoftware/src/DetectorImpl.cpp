@@ -2171,4 +2171,76 @@ std::map<std::string, BitAddress> DetectorImpl::getBitDefinitions() const {
     return ctb_shm()->getBitNames();
 }
 
+Result<RegisterValue> DetectorImpl::readRegister(const std::string &reg_name,
+                                                 Positions pos) const {
+    if (!isChipTestBoard()) {
+        throw RuntimeError("Register Definitions only for CTB. Use hard coded "
+                           "values instead.");
+    }
+    auto addr = getRegisterDefinition(reg_name);
+    return readRegister(addr, pos);
+}
+
+void DetectorImpl::writeRegister(const std::string &reg_name, RegisterValue val,
+                                 bool validate, Positions pos) {
+    if (!isChipTestBoard()) {
+        throw RuntimeError("Register Definitions only for CTB. Use hard coded "
+                           "values instead.");
+    }
+    auto addr = getRegisterDefinition(reg_name);
+    writeRegister(addr, val, validate, pos);
+}
+
+void DetectorImpl::setBit(const std::string &bit_name, bool validate,
+                          Positions pos) {
+    if (!isChipTestBoard()) {
+        throw RuntimeError(
+            "Bit Definitions only for CTB. Use hard coded values instead.");
+    }
+    auto addr = getBitDefinition(bit_name);
+    setBit(addr, validate, pos);
+}
+
+void DetectorImpl::clearBit(const std::string &bit_name, bool validate,
+                            Positions pos) {
+    if (!isChipTestBoard()) {
+        throw RuntimeError(
+            "Bit Definitions only for CTB. Use hard coded values instead.");
+    }
+    auto addr = getBitDefinition(bit_name);
+    clearBit(addr, validate, pos);
+}
+
+Result<int> DetectorImpl::getBit(const std::string &bit_name,
+                                 Positions pos) const {
+    if (!isChipTestBoard()) {
+        throw RuntimeError(
+            "Bit Definitions only for CTB. Use hard coded values instead.");
+    }
+    auto addr = getBitDefinition(bit_name);
+    return getBit(addr, pos);
+}
+
+Result<RegisterValue> DetectorImpl::readRegister(RegisterAddress addr,
+                                                 Positions pos) const {
+    return Parallel(&Module::readRegister, pos, addr);
+}
+
+void DetectorImpl::writeRegister(RegisterAddress addr, RegisterValue val,
+                                 bool validate, Positions pos) {
+    Parallel(&Module::writeRegister, pos, addr, val, validate);
+}
+
+void DetectorImpl::setBit(BitAddress addr, bool validate, Positions pos) {
+    Parallel(&Module::setBit, pos, addr, validate);
+}
+
+void DetectorImpl::clearBit(BitAddress addr, bool validate, Positions pos) {
+    Parallel(&Module::clearBit, pos, addr, validate);
+}
+
+Result<int> DetectorImpl::getBit(BitAddress addr, Positions pos) const {
+    return Parallel(&Module::getBit, pos, addr);
+}
+
 } // namespace sls

@@ -59,7 +59,7 @@ class BitAddress {
         return (addr_ == other.addr_ && bitPos_ == other.bitPos_);
     }
     constexpr bool operator!=(const BitAddress &other) const {
-        return !(*this == other && bitPos_ == other.bitPos_);
+        return !(*this == other);
     }
 };
 

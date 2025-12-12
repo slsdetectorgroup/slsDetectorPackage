@@ -64,7 +64,8 @@ class DataProcessorTest : public DataProcessor {
  * num_transceiver_bytes = 2 both bytes have a value of 125
  * num_digital_bytes is variable and is defined by number of samples
  * default num sample is 5
- * all bytes in digital data take a value of 255
+ * all bytes in digital data take a value of 0xFF (alternating bits between 0,
+ * 1)
  */
 class DataProcessorTestFixture {
   public:
@@ -106,7 +107,7 @@ class DataProcessorTestFixture {
                                                  num_random_offset_bytes);
     }
 
-    void set_data() {
+    void set_data(const std::bitset<8> pattern = 0xFF) {
         delete[] data;
         uint64_t max_bytes_per_bit =
             num_samples % 8 == 0 ? num_samples / 8 : num_samples / 8 + 1;
@@ -118,7 +119,8 @@ class DataProcessorTestFixture {
         memset(data, dummy_value, num_analog_bytes); // set to dummy value
         memset(data + num_analog_bytes, 0,
                num_random_offset_bytes); // set to zero
-        memset(data + num_analog_bytes + num_random_offset_bytes, 0xFF,
+        memset(data + num_analog_bytes + num_random_offset_bytes,
+               static_cast<uint8_t>(pattern.to_ulong()),
                num_digital_bytes); // all digital bits are one
         memset(data + num_digital_bytes + num_analog_bytes +
                    num_random_offset_bytes,
@@ -170,7 +172,7 @@ TEST_CASE_METHOD(DataProcessorTestFixture, "Remove Trailing Bits",
 TEST_CASE_METHOD(DataProcessorTestFixture, "Reorder all",
                  "[dataprocessor][reorder]") {
     // parameters: num_samples, expected_num_digital_bytes,
-    // expected_digital_part
+    // expected_digital_part_for_each_bit
     auto parameters = GENERATE(
         std::make_tuple(5, 64, std::vector<uint8_t>{0b00011111}),
         std::make_tuple(10, 2 * 64, std::vector<uint8_t>{0xFF, 0b00000011}),
@@ -264,11 +266,13 @@ TEST_CASE_METHOD(DataProcessorTestFixture, "Arrange bitlist with reorder false",
     // expected_digital_part
     auto parameters = GENERATE(
         std::make_tuple(5, std::vector<int>{1, 4, 5}, 5,
-                        std::vector<uint8_t>{0b00000111}),
+                        std::vector<uint8_t>{0b00000010}),
+        std::make_tuple(5, std::vector<int>{1, 5, 4}, 5,
+                        std::vector<uint8_t>{0b00000100}),
         std::make_tuple(5, std::vector<int>{1, 5, 3, 7, 8, 50, 42, 60, 39}, 10,
-                        std::vector<uint8_t>{0xFF, 0b00000001}),
+                        std::vector<uint8_t>{0b11110000, 0b00000000}),
         std::make_tuple(5, std::vector<int>{1, 5, 3, 7, 8, 50, 42, 60}, 5,
-                        std::vector<uint8_t>{0xFF}));
+                        std::vector<uint8_t>{0b11110000}));
 
     size_t num_samples, expected_num_digital_bytes;
     std::vector<uint8_t> expected_digital_part;
@@ -281,7 +285,7 @@ TEST_CASE_METHOD(DataProcessorTestFixture, "Arrange bitlist with reorder false",
     generaldata->SetCtbDbitReorder(false);
 
     set_num_samples(num_samples);
-    set_data();
+    set_data(0b01010101); // set digital data to 0x55 to have alternating bits
 
     size_t expected_size =
         num_analog_bytes + num_transceiver_bytes + expected_num_digital_bytes;
@@ -316,11 +320,15 @@ TEST_CASE_METHOD(DataProcessorTestFixture, "Arrange bitlist with reorder true",
     // expected_digital_part
     auto parameters = GENERATE(
         std::make_tuple(5, std::vector<int>{1, 4, 5}, 3,
-                        std::vector<uint8_t>{0b00011111}),
+                        std::vector<uint8_t>{0x00, 0b00011111, 0x00}),
+        std::make_tuple(5, std::vector<int>{1, 5, 4}, 3,
+                        std::vector<uint8_t>{0x00, 0x00, 0b00011111}),
         std::make_tuple(10, std::vector<int>{1, 4, 5}, 6,
-                        std::vector<uint8_t>{0xFF, 0b00000011}),
+                        std::vector<uint8_t>{0x00, 0x00, 0b11111111, 0b00000011,
+                                             0x00, 0x00}),
         std::make_tuple(8, std::vector<int>{1, 5, 3, 7, 8, 50, 42, 60, 39}, 9,
-                        std::vector<uint8_t>{0xFF}));
+                        std::vector<uint8_t>{0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF,
+                                             0xFF, 0xFF, 0x00}));
 
     size_t num_samples, expected_num_digital_bytes;
     std::vector<uint8_t> expected_digital_part;
@@ -333,7 +341,7 @@ TEST_CASE_METHOD(DataProcessorTestFixture, "Arrange bitlist with reorder true",
     generaldata->SetCtbDbitReorder(true);
 
     set_num_samples(num_samples);
-    set_data();
+    set_data(0b01010101);
 
     size_t expected_size =
         num_analog_bytes + num_transceiver_bytes + expected_num_digital_bytes;
@@ -343,11 +351,8 @@ TEST_CASE_METHOD(DataProcessorTestFixture, "Arrange bitlist with reorder true",
 
     memset(expected_data, dummy_value, num_analog_bytes);
 
-    for (size_t sample = 0; sample < bitlist.size(); ++sample) {
-        memcpy(expected_data + num_analog_bytes +
-                   expected_digital_part.size() * sample,
-               expected_digital_part.data(), expected_digital_part.size());
-    }
+    memcpy(expected_data + num_analog_bytes, expected_digital_part.data(),
+           expected_digital_part.size());
 
     memset(expected_data + expected_num_digital_bytes + num_analog_bytes,
            dummy_value, num_transceiver_bytes);

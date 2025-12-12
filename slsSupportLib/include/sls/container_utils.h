@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <memory>
 #include <numeric>
+#include <set>
 #include <sstream>
 #include <string>
 #include <type_traits>
@@ -155,6 +156,10 @@ template <typename Container> bool hasDuplicates(Container c) {
     return pos != c.end(); // if we found something there are duplicates
 }
 
+/**
+ * @brief Sorts the container and removes duplicated elements
+ * returns true if elements were removed otherwiese false
+ */
 template <typename T>
 typename std::enable_if<is_container<T>::value, bool>::type
 removeDuplicates(T &c) {
@@ -166,6 +171,29 @@ removeDuplicates(T &c) {
     }
     return false;
 }
+
+/**
+ * @brief Removed duplicated entries while preserving the oder
+ * returns true if elements were removed otherwiese false
+ */
+template <typename T>
+typename std::enable_if<is_container<T>::value, bool>::type
+stableRemoveDuplicates(T &c) {
+    auto containerSize = c.size();
+    std::set<typename T::value_type> seen;
+    c.erase(
+        std::remove_if(c.begin(), c.end(),
+            [&](const typename T::value_type& val) {
+                return !seen.insert(val).second;  // erase if already seen
+            }),
+        c.end()
+    );
+    if (c.size() != containerSize) {
+        return true;
+    }
+    return false;
+}
+
 
 } // namespace sls
 

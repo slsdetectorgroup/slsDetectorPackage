@@ -29,9 +29,9 @@ If a test fails in the github or gitea actions hide the test by adding the tag `
         REQUIRE(1 == 2);
     }
 
-If a test requires virtual detector mark them with the hidden tag ``[.cmdcall]``.
+If a test requires a detector mark them with the hidden tag ``[.detectorintegration]``.
 
-If you want to disable tests for a specific detector add the hidden tag ``[.disable_<detector_name>]`` to the test case.
+If you want to disable a specific test for a specific detector add the hidden tag ``[.disable_<detector_name>]`` to the test case.
 
 If you want to run tests requiring detector simulators run them as follows: 
 
@@ -40,19 +40,22 @@ If you want to run tests requiring detector simulators run them as follows:
     cd build 
     python bin/test_simulators.py 
 
-This runs all tests marked with the tag ``[.cmdcall]`` for all detector simulators.
+This runs all tests marked with the tag ``[.detectorintegration]`` for all detector simulators.
 If you want to run them for a specific virtual detector or a specific test use the following command:
 
 .. code-block:: console
     cd build
     python bin/test_simulators.py --servers <detector_name> --test <test_name>
 
-You can run all tests requiring simulators but the disabled one for a specific detector e.g. marked with tag ``[.disable_<detector_name>]`` by adding the option ``--disable_<detector_name>``
+You can run all tests requiring a detector but the disabled one for a specific detector by adding the option ``--disable_<detector_name>``. 
 
 .. code-block:: console
     cd build
     python bin/test_simulators.py --servers <detector_name> --test <test_name> --disable_jungfrau
 
+Note that this still runs all the tests for the virtual jungfrau detector except for the ones marked with the tag ``[.disable_jungfrau]``. 
+
+You can additionally run all the tests not requiring detectors using the script ``bin/test_simulators.py`` by passing the option ``--general_tests``. 
 
 
 Pytest Tests
@@ -67,13 +70,13 @@ To run the python tests use the following commands:
     export PYTHONPATH=$PWD/bin 
     python -m pytest ../python/tests/ 
 
-If a test requires a virtual detector mark them with the pytest marker ``@pytest.mark.withdetectorsimulators``.
+If a test requires a detector mark them with the pytest marker ``@pytest.mark.detectorintegration``.
 
 To run only tests requiring virtual detectors use the following command:
 
 .. code-block:: console
     #in build
-    python -m pytest -m withdetectorsimulators ../python/tests/
+    python -m pytest -m detectorintegration ../python/tests/
 
 There is a helper test fixture in ``slsDetectorSoftware/python/tests/conftest.py`` called ``test_with_simulators`` that sets up virtual detectors and yields the test for all detectors. 
 
@@ -83,7 +86,7 @@ Example usage:
 
     import pytest
 
-    @pytest.mark.withdetectorsimulators
+    @pytest.mark.detectorintegration
     def test_example_with_simulator(test_with_simulators):
         # your test code here
 
@@ -95,7 +98,7 @@ Example usage:
 
     import pytest
 
-    @pytest.mark.withdetectorsimulators
+    @pytest.mark.detectorintegration
     @pytest.mark.parametrize("setup_parameters", [(["<my_detector>"], <num_modules>)], indirect=True)
     def test_example_with_specific_simulators(test_with_simulators, setup_parameters):
         # your test code here

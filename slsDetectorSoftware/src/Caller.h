@@ -3,7 +3,7 @@
 #include "CmdParser.h"
 #include "HelpDacs.h"
 #include "sls/Detector.h"
-
+#include "sls/bit_utils.h"
 #include <iostream>
 #include <string>
 #include <vector>

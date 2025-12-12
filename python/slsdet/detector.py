@@ -1814,6 +1814,109 @@ class Detector(CppDetectorApi):
         [Eiger] Address is +0x100 for only left, +0x200 for only right.
         """
         return self._register
+    
+    def define_reg(self, name, addr):
+        """
+        [Ctb] Define a name for a register to be used later with reg.
+
+        Example
+        --------
+
+        d.define_reg('myreg',addr=0x6)
+        """
+        addr = RegisterAddress(addr)
+        self.setRegisterDefinition(name, addr)
+
+
+    def define_bit(self, name, addr, bit):
+        """
+        [Ctb] Define a name for a bit in a register to be used later with setBit/clearBit/getBit
+
+        Example
+        --------
+
+        d.define_bit('mybit',addr=0x6, bit=7)
+        """
+        addr = RegisterAddress(addr)
+        bit = BitAddress(addr, bit)
+        self.setBitDefinition(name, bit)
+
+    def setBit(self, bit_or_addr, number=None):
+        """
+        Set a bit in a register
+        [Ctb] Can use a named bit address
+
+        Example
+        --------
+        d.setBit(0x5, 3)
+        
+        #Ctb
+        d.setBit('mybit')
+
+        myreg = RegisterAddress(0x5)
+        mybit = BitAddress(myreg, 5) 
+        d.setBit(mybit)
+        """
+        #Old usage passing two ints
+        if isinstance(bit_or_addr, int):
+            return super().setBit(bit_or_addr, number)
+
+        #New usage with str or BitAddress
+        if isinstance(bit_or_addr, str):
+            bit_or_addr = self.getBitDefinition(bit_or_addr)
+        return super().setBit(bit_or_addr)
+        
+    def clearBit(self, bit_or_addr, number=None):
+        """
+        Clear a bit in a register
+        [Ctb] Can use a named bit address
+
+        Example
+        --------
+        d.clearBit(0x5, 3)
+        
+        #Ctb
+        d.clearBit('mybit')
+
+        myreg = RegisterAddress(0x5)
+        mybit = BitAddress(myreg, 5) 
+        d.clearBit(mybit)
+        """
+        #Old usage passing two ints
+        if isinstance(bit_or_addr, int):
+            return super().clearBit(bit_or_addr, number)
+
+        #New usage with str or BitAddress
+        if isinstance(bit_or_addr, str):
+            bit_or_addr = self.getBitDefinition(bit_or_addr)
+        return super().clearBit(bit_or_addr)
+
+    @element
+    def getBit(self, bit_or_addr, number=None):
+        """
+        Get a bit from a register
+        [Ctb] Can use a named bit address
+
+        Example
+        --------
+        d.getBit(0x5, 3)
+        
+        #Ctb
+        d.getBit('mybit')
+
+        myreg = RegisterAddress(0x5)
+        mybit = BitAddress(myreg, 5) 
+        d.getBit(mybit)
+        """
+        #Old usage passing two ints
+        if isinstance(bit_or_addr, int):
+            return super().getBit(bit_or_addr, number)
+
+        #New usage with str or BitAddress
+        if isinstance(bit_or_addr, str):
+            bit_or_addr = self.getBitDefinition(bit_or_addr)
+        return super().getBit(bit_or_addr)     
+
 
     @property
     def slowadc(self):

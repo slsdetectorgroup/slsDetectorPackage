@@ -1,13 +1,28 @@
 # SPDX-License-Identifier: LGPL-3.0-or-other
 # Copyright (C) 2021 Contributors to the SLS Detector Package
+
+from ._slsdet import RegisterValue, RegisterAddress
+from .utils import element
+
 class Register:
     def __init__(self, detector):
         self._detector = detector
 
+    @element
     def __getitem__(self, key):
+        if isinstance(key, str):
+            key = self._detector.getRegisterDefinition(key)
         return self._detector.readRegister(key)
 
     def __setitem__(self, key, value):
+        if isinstance(key, str):
+            key = self._detector.getRegisterDefinition(key)
+        elif isinstance(key, int):
+            key = RegisterAddress(key)
+
+        if isinstance(value, int):
+            value = RegisterValue(value)
+
         self._detector.writeRegister(key, value, False)
 
 class Adc_register:

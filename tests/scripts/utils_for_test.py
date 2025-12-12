@@ -356,8 +356,8 @@ def ParseArguments(description, default_num_mods=2, specific_tests=False, genera
 
     
     if specific_tests:
-        parser.add_argument('-t', '--tests', nargs='?', default ='[.cmdcall]',
-                        help = 'Test markers or specific test name to use for tests, default: [.cmdcall]')
+        parser.add_argument('-t', '--tests', nargs='?', default ='[.detectorintegration]',
+                        help = 'Test markers or specific test name to use for tests, default: [.detectorintegration]')
         
     if general_tests_option:
         parser.add_argument('-g', '--general_tests', action='store_true',

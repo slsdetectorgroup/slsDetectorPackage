@@ -3,7 +3,7 @@
 '''
 This file is used to start up simulators, receivers and run all the tests on them and finally kill the simulators and receivers.
 
-It can be used to run all catch tests with tag [.cmdcall]. 
+It can be used to run all catch tests with tag [.detectorintegration]. 
 
 Pass --tests <testname> to run specific tests only or --tesst <testtag> to run all tests with that specific tag.
 

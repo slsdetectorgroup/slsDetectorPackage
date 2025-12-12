@@ -1032,7 +1032,8 @@ void open_hdf5_file(const std::string &file_path) {
 }
 #endif
 
-TEST_CASE("check_master_file_attributes", "[.cmdcall][.cmdacquire][.cmdattr]") {
+TEST_CASE("check_master_file_attributes",
+          "[.detectorintegration][.cmdacquire][.cmdattr]") {
 
     Detector det;
     Caller caller(&det);

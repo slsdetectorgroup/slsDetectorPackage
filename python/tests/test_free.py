@@ -55,7 +55,7 @@ def setup_simulator(det_config):
     cleanup(fp)
 
 
-@pytest.mark.withdetectorsimulators
+@pytest.mark.detectorintegration
 def test_exptime_after_free_should_raise(setup_simulator):
     Log(LogLevel.INFOBLUE, f'\nRunning test_exptime_after_free_should_raise')
 
@@ -77,7 +77,7 @@ def free_and_create_shm():
     k = Ctb() # opens existing shm if it exists
     k.hostname = f"localhost:{SERVER_START_PORTNO}" # free and recreate shm, maps to local shm struct
 
-@pytest.mark.withdetectorsimulators
+@pytest.mark.detectorintegration
 def test_exptime_after_not_passing_var_should_raise(setup_simulator):
     Log(LogLevel.INFOBLUE, f'\nRunning test_exptime_after_not_passing_var_should_raise')
 
@@ -101,7 +101,7 @@ def free_and_create_shm_passing_ctb_var(k):
     k = Ctb() # opens existing shm if it exists (disregards k as its new Ctb only local to this function)
     k.hostname = f"localhost:{SERVER_START_PORTNO}" # free and recreate shm, maps to local shm struct
 
-@pytest.mark.withdetectorsimulators
+@pytest.mark.detectorintegration
 def test_exptime_after_passing_ctb_var_should_raise(setup_simulator):
     Log(LogLevel.INFOBLUE, f'\nRunning test_exptime_after_passing_ctb_var_should_raise')
 
@@ -124,7 +124,7 @@ def free_and_create_shm_returning_ctb():
     k.hostname = f"localhost:{SERVER_START_PORTNO}" # free and recreate shm, maps to local shm struct
     return k
 
-@pytest.mark.withdetectorsimulators
+@pytest.mark.detectorintegration
 def test_exptime_after_returning_ctb_should_raise(setup_simulator):
     Log(LogLevel.INFOBLUE, f'\nRunning test_exptime_after_returning_ctb_should_raise')
 
@@ -147,7 +147,7 @@ def test_exptime_after_returning_ctb_should_raise(setup_simulator):
     Log(LogLevel.INFOGREEN, f"✅ Test passed, exception was: {exc_info.value}")
     assert str(exc_info.value) == "Shared memory is invalid or freed. Close resources before access."
 
-@pytest.mark.withdetectorsimulators
+@pytest.mark.detectorintegration
 def test_hostname_twice_acess_old_should_raise(setup_simulator):
     Log(LogLevel.INFOBLUE, f'\nRunning test_hostname_twice_acess_old_should_raise')
 

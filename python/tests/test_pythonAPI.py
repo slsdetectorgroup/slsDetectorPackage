@@ -5,7 +5,7 @@ from conftest import test_with_simulators
 
 from slsdet import Detector
 
-@pytest.mark.withdetectorsimulators
+@pytest.mark.detectorintegration
 @pytest.mark.parametrize("setup_parameters", [(["moench"], 2)], indirect=True)
 def test_rx_ROI_moench(test_with_simulators, setup_parameters):
     """ Test setting and getting rx_ROI property of Detector class for moench. """
@@ -28,7 +28,7 @@ def test_rx_ROI_moench(test_with_simulators, setup_parameters):
     roi = d.rx_roi
     assert roi == [(-1,-1,-1,-1)] 
 
-@pytest.mark.withdetectorsimulators
+@pytest.mark.detectorintegration
 @pytest.mark.parametrize("setup_parameters", [(["mythen3"], 1)], indirect=True)
 def test_rx_ROI_mythen(test_with_simulators, setup_parameters):
     """ Test setting and getting rx_ROI property of Detector class for mythen. """

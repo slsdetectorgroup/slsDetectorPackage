@@ -24,18 +24,18 @@ from utils_for_test import (
 
 def pytest_addoption(parser):
     parser.addoption(
-        "--with-detector-simulators", action="store_true", default=False, help="Run tests that require detector simulators"
+        "--detector-integration", action="store_true", default=False, help="Run tests that require detectors"
     )
 
 def pytest_configure(config):
-    config.addinivalue_line("markers", "withdetectorsimulators: mark test as needing detector simulators to run")
+    config.addinivalue_line("markers", "detectorintegration: mark test as needing detectors to run")
 
 def pytest_collection_modifyitems(config, items):
-    if config.getoption("--with-detector-simulators"):
+    if config.getoption("--detector-integration"):
         return
-    skip = pytest.mark.skip(reason="need --with-detector-simulators option to run")
+    skip = pytest.mark.skip(reason="need --detector-integration option to run")
     for item in items:
-        if "withdetectorsimulators" in item.keywords:
+        if "detectorintegration" in item.keywords:
             item.add_marker(skip)
 
 #helper fixture for servers

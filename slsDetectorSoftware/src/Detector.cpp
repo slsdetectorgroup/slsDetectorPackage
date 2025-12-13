@@ -2526,12 +2526,13 @@ bool Detector::hasRegisterDefinition(RegisterAddress addr) const {
     return pimpl->hasRegisterDefinition(addr);
 }
 
-RegisterAddress Detector::getRegisterDefinition(const std::string &name) const {
-    return pimpl->getRegisterDefinition(name);
+RegisterAddress
+Detector::getRegisterDefinitionAddress(const std::string &name) const {
+    return pimpl->getRegisterDefinitionAddress(name);
 }
 
-std::string Detector::getRegisterDefinition(RegisterAddress addr) const {
-    return pimpl->getRegisterDefinition(addr);
+std::string Detector::getRegisterDefinitionName(RegisterAddress addr) const {
+    return pimpl->getRegisterDefinitionName(addr);
 }
 
 void Detector::clearRegisterDefinitions() { pimpl->clearRegisterDefinitions(); }
@@ -2562,12 +2563,12 @@ bool Detector::hasBitDefinition(BitAddress addr) const {
     return pimpl->hasBitDefinition(addr);
 }
 
-BitAddress Detector::getBitDefinition(const std::string &name) const {
-    return pimpl->getBitDefinition(name);
+BitAddress Detector::getBitDefinitionAddress(const std::string &name) const {
+    return pimpl->getBitDefinitionAddress(name);
 }
 
-std::string Detector::getBitDefinition(BitAddress addr) const {
-    return pimpl->getBitDefinition(addr);
+std::string Detector::getBitDefinitionName(BitAddress addr) const {
+    return pimpl->getBitDefinitionName(addr);
 }
 
 void Detector::clearBitDefinitions() { pimpl->clearBitDefinitions(); }

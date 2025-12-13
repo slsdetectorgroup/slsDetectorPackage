@@ -1479,12 +1479,12 @@ std::string Caller::define_reg(int action) {
         // get name from address
         if (is_hex_or_dec_uint(args[0])) {
             auto addr = RegisterAddress(args[0]);
-            auto t = det->getRegisterDefinition(addr);
+            auto t = det->getRegisterDefinitionName(addr);
             os << t << '\n';
         }
         // get address from name
         else {
-            auto t = det->getRegisterDefinition(args[0]);
+            auto t = det->getRegisterDefinitionAddress(args[0]);
             os << t.str() << '\n';
         }
     } else if (action == defs::PUT_ACTION) {
@@ -1544,10 +1544,10 @@ std::string Caller::define_bit(int action) {
     if (action == defs::GET_ACTION) {
         // get position from name
         if (args.size() == 1) {
-            auto t = det->getBitDefinition(args[0]);
+            auto t = det->getBitDefinitionAddress(args[0]);
             bool found_addr = det->hasRegisterDefinition(t.address());
             if (found_addr) {
-                os << '[' << det->getRegisterDefinition(t.address()) << ", "
+                os << '[' << det->getRegisterDefinitionName(t.address()) << ", "
                    << std::to_string(t.bitPosition()) << "]\n";
             } else {
                 os << t.str() << '\n';
@@ -1558,7 +1558,7 @@ std::string Caller::define_bit(int action) {
             auto pos =
                 BitAddress(parseAddress(args[0]), StringTo<int>(args[1]));
             try {
-                auto t = det->getBitDefinition(pos);
+                auto t = det->getBitDefinitionName(pos);
                 os << t << '\n';
             } catch (const RuntimeError &e) {
                 std::string err_str = e.what();
@@ -1638,8 +1638,8 @@ std::string Caller::definelist_bit(int action) {
             os << key << ": ";
             bool found_addr = det->hasRegisterDefinition(val.address());
             if (found_addr) {
-                os << '[' << det->getRegisterDefinition(val.address()) << ", "
-                   << std::to_string(val.bitPosition()) << "]";
+                os << '[' << det->getRegisterDefinitionName(val.address())
+                   << ", " << std::to_string(val.bitPosition()) << "]";
             } else {
                 os << val.str();
             }
@@ -1772,7 +1772,7 @@ RegisterAddress Caller::parseAddress(const std::string &saddr) const {
             ". User defined register definitions only supported for ctb and "
             "xilinx_ctb. Use an actual hard coded address for this detector.");
     }
-    return det->getRegisterDefinition(saddr);
+    return det->getRegisterDefinitionAddress(saddr);
 }
 
 bool Caller::parseValidate() {
@@ -1816,7 +1816,7 @@ BitAddress Caller::parseBitAddress() const {
                                "for ctb and xilinx_ctb. Use an actual hard "
                                "coded bit position for this detector.");
         }
-        return det->getBitDefinition(addr_or_bitname);
+        return det->getBitDefinitionAddress(addr_or_bitname);
     }
 
     // address and bit position

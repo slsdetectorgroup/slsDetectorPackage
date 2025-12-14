@@ -815,7 +815,7 @@ void Implementation::startReadout() {
                     << " totalPacketsReceived: " << totalPacketsReceived;
                 /* TODO! Need to find optimal time - xilinx and jungfrau need
                  * more time */
-                std::this_thread::sleep_for(std::chrono::milliseconds(20));
+                std::this_thread::sleep_for(std::chrono::milliseconds(5));
                 previousValue = totalPacketsReceived;
                 totalPacketsReceived = 0;
                 for (const auto &it : listener)

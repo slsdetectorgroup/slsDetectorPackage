@@ -156,7 +156,7 @@ void test_ctb_file_size_with_acquire(Detector &det, Caller &caller,
                                                   expected_image_size));
 }
 
-// disable for jungfrau as it requires higher maximum receive buffer size
+// disable for xilinx_ctb as it requires higher maximum receive buffer size
 //  sysctl net.core.rmem_max=$((100*1024*1024))
 //  sysctl net.core.rmem_default=$((100*1024*1024))
 TEST_CASE("ctb_acquire_check_file_size",

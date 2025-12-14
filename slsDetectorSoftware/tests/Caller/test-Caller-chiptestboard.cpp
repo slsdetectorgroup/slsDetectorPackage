@@ -1055,10 +1055,8 @@ TEST_CASE("v_abcd", "[.detectorintegration]") {
                 caller.call(cmds[i], {}, -1, GET, oss2);
                 REQUIRE(oss2.str() == cmds[i] + " 1200\n");
             }
-            for (int i = 0; i != det.size(); ++i) {
-                // TODO: indices should be independant of detector size? is i
-                // the correct index?
-                det.setPower(indices[i], prev_val[i], {i});
+            for (int nmodules = 0; nmodules != det.size(); ++i) {
+                det.setPower(indices[i], prev_val[i], {nmodules});
             }
         } else {
             REQUIRE_THROWS(caller.call(cmds[i], {}, -1, GET));

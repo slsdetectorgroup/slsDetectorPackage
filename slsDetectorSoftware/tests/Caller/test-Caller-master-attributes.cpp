@@ -1042,12 +1042,14 @@ TEST_CASE("check_master_file_attributes",
 
     int64_t num_frames = 1;
     switch (det_type) {
-    case defs::EIGER:
     case defs::JUNGFRAU:
+        create_files_for_acquire(det, caller, num_frames, std::nullopt, false);
+        break;
+    case defs::EIGER:
     case defs::MOENCH:
     case defs::MYTHEN3:
     case defs::GOTTHARD2:
-        create_files_for_acquire(det, caller, num_frames, std::nullopt, false);
+        create_files_for_acquire(det, caller, num_frames, std::nullopt);
         break;
     case defs::CHIPTESTBOARD:
     case defs::XILINX_CHIPTESTBOARD: {

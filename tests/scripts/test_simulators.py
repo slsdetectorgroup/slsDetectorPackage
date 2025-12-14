@@ -70,16 +70,21 @@ def startTestsForAll(args, fp, advanced_test_settings=None):
 
     cmd = [str(build_dir / 'tests'), '--abort', test_filter, '-s'] 
 
+    num_mods = args.num_mods 
+
     for server in args.servers:
         for ninterfaces in [1,2]: # always test both
             if ninterfaces == 2 and server != 'jungfrau' and server != 'moench':
                 continue
+
+            if server == "eiger": 
+                num_mods = 2*args.num_mods # top bottom half module 
             try:
                 fname = fname_template.format(args.tests, server) if not args.no_log_file else None
 
                 Log(LogLevel.INFOBLUE, f'Starting {args.tests} Tests for {server}')
                 cleanup(fp)
-                startDetectorVirtualServer(name=server, num_mods=args.num_mods, fp=fp)
+                startDetectorVirtualServer(name=server, num_mods=num_mods, fp=fp)
                 startReceiver(args.num_mods, fp)
                 d = loadConfig(name=server, rx_hostname=args.rx_hostname, settingsdir=args.settingspath, log_file_fp=fp, num_mods=args.num_mods, num_interfaces=ninterfaces)
                 loadBasicSettings(name=server, d=d, fp=fp)

@@ -250,11 +250,11 @@ TEST_CASE("Finding a bit value", "[.reg]") {
     REQUIRE_THROWS(c.getBitAddress("bit"));
 
     std::map<std::string, BitAddress> list = {
-        {"bit1", pos}, {"bit1", pos1}, {"bit2", pos2}};
+        {"bit0", pos}, {"bit1", pos1}, {"bit2", pos2}};
     REQUIRE_NOTHROW(c.setBitNames(list));
 
     // find
-    REQUIRE(c.getBitAddress("bit3") == pos2);
+    REQUIRE(c.getBitAddress("bit2") == pos2);
     REQUIRE(c.getBitName(pos1) == "bit1");
 }
 

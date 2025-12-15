@@ -2835,7 +2835,7 @@ Result<uint32_t> Detector::readRegister(uint32_t addr, Positions pos) const {
     auto t = pimpl->readRegister(RegisterAddress(addr), pos);
     Result<uint32_t> res;
     for (const auto &val : t) {
-        res.push_back(val);
+        res.push_back(val.value());
     }
     return res;
 }

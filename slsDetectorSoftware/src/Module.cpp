@@ -2916,32 +2916,29 @@ void Module::setUpdateMode(const bool updatemode) {
 }
 
 RegisterValue Module::readRegister(RegisterAddress addr) const {
-    return sendToDetectorStop<RegisterValue>(F_READ_REGISTER, addr);
+    return sendToDetectorStop<RegisterValue>(F_READ_REGISTER, addr.value());
 }
 
 void Module::writeRegister(RegisterAddress addr, RegisterValue val,
                            bool validate) {
-    uint32_t args[]{addr, val, static_cast<uint32_t>(validate)};
+    uint32_t args[]{addr.value(), val.value(), static_cast<uint32_t>(validate)};
     return sendToDetectorStop(F_WRITE_REGISTER, args, nullptr);
 }
 
 void Module::setBit(BitAddress bitAddr, bool validate) {
-    uint32_t args[] = {bitAddr.address(),
-                       static_cast<uint32_t>(bitAddr.bitPosition()),
+    uint32_t args[] = {bitAddr.address().value(), bitAddr.bitPosition(),
                        static_cast<uint32_t>(validate)};
     sendToDetectorStop(F_SET_BIT, args, nullptr);
 }
 
 void Module::clearBit(BitAddress bitAddr, bool validate) {
-    uint32_t args[] = {bitAddr.address(),
-                       static_cast<uint32_t>(bitAddr.bitPosition()),
+    uint32_t args[] = {bitAddr.address().value(), bitAddr.bitPosition(),
                        static_cast<uint32_t>(validate)};
     sendToDetectorStop(F_CLEAR_BIT, args, nullptr);
 }
 
 int Module::getBit(BitAddress bitAddr) const {
-    uint32_t args[2] = {bitAddr.address(),
-                        static_cast<uint32_t>(bitAddr.bitPosition())};
+    uint32_t args[2] = {bitAddr.address().value(), bitAddr.bitPosition()};
     return sendToDetectorStop<int>(F_GET_BIT, args);
 }
 

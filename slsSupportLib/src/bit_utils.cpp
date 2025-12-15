@@ -6,15 +6,14 @@
 
 namespace sls {
 
-RegisterAddress::RegisterAddress(const std::string &address) {
-    if (!is_hex_or_dec_uint(address)) {
+RegisterAddress::RegisterAddress(const std::string &value) {
+    if (!is_hex_or_dec_uint(value)) {
         throw RuntimeError("Address must be an integer value.");
     }
-    uint32_t addr = StringTo<uint32_t>(address);
-    addr_ = addr;
+    value_ = StringTo<uint32_t>(value);
 }
 
-std::string RegisterAddress::str() const { return ToStringHex(addr_); }
+std::string RegisterAddress::str() const { return ToStringHex(value_); }
 
 BitAddress::BitAddress(RegisterAddress address, uint32_t bitPosition)
     : addr_(address) {
@@ -47,8 +46,7 @@ RegisterValue::RegisterValue(const std::string &value) {
     if (!is_hex_or_dec_uint(value)) {
         throw RuntimeError("Value must be an integer value.");
     }
-    uint32_t val = StringTo<uint32_t>(value);
-    value_ = val;
+    value_ = StringTo<uint32_t>(value);
 }
 
 std::string RegisterValue::str() const { return ToStringHex(value_); }

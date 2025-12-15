@@ -22,21 +22,20 @@ template <typename T> std::vector<int> getSetBits(T val) {
 
 class RegisterAddress {
   private:
-    uint32_t addr_{0};
+    uint32_t value_{0};
 
   public:
     constexpr RegisterAddress() noexcept = default;
-    constexpr explicit RegisterAddress(uint32_t address) : addr_(address) {}
-    explicit RegisterAddress(const std::string &address);
-
+    constexpr explicit RegisterAddress(uint32_t value) : value_(value) {}
+    explicit RegisterAddress(const std::string &value);
     std::string str() const;
-    operator uint32_t() const noexcept { return addr_; }
+    uint32_t value() const noexcept { return value_; }
 
     constexpr bool operator==(const RegisterAddress &other) const {
-        return (addr_ == other.addr_);
+        return (value_ == other.value_);
     }
     constexpr bool operator!=(const RegisterAddress &other) const {
-        return (addr_ != other.addr_);
+        return (value_ != other.value_);
     }
 };
 
@@ -50,7 +49,6 @@ class BitAddress {
     BitAddress(RegisterAddress address, uint32_t bitPosition);
     BitAddress(const std::string &address, const std::string &bitPosition);
     std::string str() const;
-
     RegisterAddress address() const noexcept { return addr_; }
     uint32_t bitPosition() const noexcept { return bitPos_; }
 
@@ -72,19 +70,26 @@ class RegisterValue {
     explicit RegisterValue(const std::string &value);
 
     std::string str() const;
-    operator uint32_t() const noexcept { return value_; }
+    uint32_t value() const noexcept { return value_; }
 
     RegisterValue &operator|=(uint32_t rhs) noexcept {
         value_ |= rhs;
         return *this;
     }
+
+    RegisterValue operator|(uint32_t rhs) const noexcept {
+        RegisterValue tmp(*this);
+        tmp |= rhs;
+        return tmp;
+    }
+
     constexpr bool operator==(const RegisterValue &other) const noexcept {
         return value_ == other.value_;
     }
     constexpr bool operator!=(const RegisterValue &other) const noexcept {
         return value_ != other.value_;
     }
-} __attribute__((packed));
+};
 
 std::ostream &operator<<(std::ostream &os, const RegisterAddress &r);
 std::ostream &operator<<(std::ostream &os, const BitAddress &r);

@@ -57,12 +57,10 @@ TEST_CASE("Convert RegisterAddress using classes ", "[support][.bit_utils]") {
         CHECK(reg0 == reg1);
         if (i != 0)
             CHECK(reg2 != reg1);
-        CHECK(reg0 == vec_addr[i]);
-        CHECK(reg1 == vec_addr[i]);
+        CHECK(reg0.value() == vec_addr[i]);
+        CHECK(reg1.value() == vec_addr[i]);
         CHECK(reg0.str() == vec_ans[i]);
         CHECK(reg1.str() == vec_ans[i]);
-        CHECK(static_cast<uint32_t>(reg0) == vec_addr[i]);
-        CHECK(static_cast<uint32_t>(reg1) == vec_addr[i]);
     }
 }
 
@@ -80,13 +78,11 @@ TEST_CASE("Convert RegisterValue using classes ", "[support][.bit_utils]") {
         CHECK(reg0 == reg1);
         if (i != 0)
             CHECK(reg2 != reg1);
-        CHECK(reg0 == vec_addr[i]);
-        CHECK(reg1 == vec_addr[i]);
+        CHECK(reg0.value() == vec_addr[i]);
+        CHECK(reg1.value() == vec_addr[i]);
         CHECK(reg0.str() == vec_ans[i]);
         CHECK(reg1.str() == vec_ans[i]);
-        CHECK(static_cast<uint32_t>(reg0) == vec_addr[i]);
-        CHECK(static_cast<uint32_t>(reg1) == vec_addr[i]);
-        CHECK((reg0 | 0xffffffffu) == 0xffffffffu);
+        CHECK((reg0 | 0xffffffffu) == RegisterValue(0xffffffffu));
         CHECK((reg0 | 0x0) == reg0);
     }
 }
@@ -188,17 +184,6 @@ TEST_CASE("Strange input throws", "[support][.bit_utils]") {
     } catch (const std::exception &e) {
         REQUIRE(std::string(e.what()) == "Value must be an integer value.");
     }
-}
-
-TEST_CASE("Implicitly convert to uint for sending over network",
-          "[support][.bit_utils]") {
-    RegisterAddress addr{0x305};
-    uint64_t a = addr;
-    CHECK(a == 0x305);
-
-    RegisterValue addr1{0x305};
-    uint64_t a1 = addr1;
-    CHECK(a1 == 0x305);
 }
 
 } // namespace sls

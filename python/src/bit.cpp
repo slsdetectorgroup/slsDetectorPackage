@@ -22,7 +22,7 @@ void init_bit(py::module &m) {
         .def(py::init<const RegisterAddress &>())
         .def("__repr__", &RegisterAddress::str)
         .def("str", &RegisterAddress::str)
-        .def("uint32", [](const RegisterAddress &v) { return static_cast<uint32_t>(v); })
+        .def("value", &RegisterAddress::value)
         .def(py::self == py::self)
         .def(py::self != py::self);
 
@@ -44,9 +44,12 @@ void init_bit(py::module &m) {
         .def(py::init<const RegisterValue &>())
         .def("__repr__", &RegisterValue::str)
         .def("str", &RegisterValue::str)
-        .def("uint32", [](const RegisterValue &v) { return static_cast<uint32_t>(v); })
+        .def("value", &RegisterValue::value)
         .def(py::self == py::self)
         .def(py::self != py::self)
+        .def("__or__", [](const RegisterValue& v, uint32_t rhs) {
+            return v | rhs;
+        })
         .def("__ior__", [](RegisterValue &v, uint32_t rhs) -> RegisterValue& {
             v |= rhs;
             return v;

@@ -96,6 +96,8 @@ TEST_CASE("Convert BitAddress using classes", "[support][.bit_utils]") {
         RegisterAddress(0x305), RegisterAddress(0xffffffffu),
         RegisterAddress(0x0), RegisterAddress(0x34550987),
         RegisterAddress(0x1fff1fff)};
+    std::vector<std::string> vec_addr_str{"0x305", "0xffffffff", "0x0",
+                                          "0x34550987", "0x1fff1fff"};
     std::vector<uint32_t> vec_bitpos{0, 15, 31, 7, 23};
     std::vector<std::string> vec_bitpos_str{"0", "15", "31", "7", "23"};
     std::vector<std::string> vec_ans{
@@ -106,9 +108,8 @@ TEST_CASE("Convert BitAddress using classes", "[support][.bit_utils]") {
     for (size_t i = 0; i != vec_addr.size(); ++i) {
         auto reg0 = BitAddress(vec_addr[i], vec_bitpos[i]);
 
-        BitAddress reg1;
-        reg1.setAddress(vec_addr[i]);
-        reg1.setBitPosition(vec_bitpos_str[i]);
+        BitAddress reg1(vec_addr_str[i], vec_bitpos_str[i]);
+        CHECK(reg1.address() == vec_addr[i]);
         CHECK(reg1.bitPosition() == vec_bitpos[i]);
 
         auto reg2 = BitAddress(vec_addr[0], vec_bitpos[0]);
@@ -138,7 +139,7 @@ TEST_CASE("Output operator gives same result as string",
         CHECK(os.str() == addr.str());
     }
     {
-        BitAddress addr(RegisterAddress("0x3456af"), 15);
+        BitAddress addr("0x3456af", "15");
         std::ostringstream os;
         os << addr;
         CHECK(os.str() == "[0x3456af, 15]");
@@ -162,11 +163,10 @@ TEST_CASE("Strange input throws", "[support][.bit_utils]") {
         REQUIRE(std::string(e.what()) == "Address must be an integer value.");
     }
 
-    BitAddress bitAddr(RegisterAddress(0x305), 0);
-    REQUIRE_THROWS(bitAddr.setBitPosition("hej"));
+    REQUIRE_THROWS(BitAddress("0x305", "hej"));
     // ensure correct exception message
     try {
-        bitAddr.setBitPosition("hej");
+        BitAddress("0x305", "hej");
     } catch (const std::exception &e) {
         REQUIRE(std::string(e.what()) ==
                 "Bit position must be an integer value.");

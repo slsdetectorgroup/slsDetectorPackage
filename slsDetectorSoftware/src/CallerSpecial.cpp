@@ -1555,10 +1555,10 @@ std::string Caller::define_bit(int action) {
         }
         // get name from position and address
         else if (args.size() == 2) {
-            auto pos =
-                BitAddress(parseAddress(args[0]), StringTo<uint32_t>(args[1]));
+            auto reg = parseAddress(args[0]);
+            BitAddress addr(reg.str(), args[1]);
             try {
-                auto t = det->getBitDefinitionName(pos);
+                auto t = det->getBitDefinitionName(addr);
                 os << t << '\n';
             } catch (const RuntimeError &e) {
                 std::string err_str = e.what();
@@ -1581,9 +1581,9 @@ std::string Caller::define_bit(int action) {
             throw RuntimeError("Bit position must be an integer value.");
         }
         auto name = args[0];
-        auto bit =
-            BitAddress(parseAddress(args[1]), StringTo<uint32_t>(args[2]));
-        det->setBitDefinition(name, bit);
+        auto reg = parseAddress(args[1]);
+        BitAddress addr(reg.str(), args[2]);
+        det->setBitDefinition(name, addr);
         os << ToString(args) << '\n';
     } else {
         throw RuntimeError("Unknown action");
@@ -1680,7 +1680,7 @@ std::string Caller::reg(int action) {
             }
             auto validate = parseValidate();
             auto addr = parseAddress(args[0]);
-            auto val = RegisterValue(StringTo<uint32_t>(args[1]));
+            auto val = RegisterValue(args[1]);
             det->writeRegister(addr, val, validate, std::vector<int>{det_id});
             os << addr.str() << " " << val.str() << '\n';
         } else if (action == defs::GET_ACTION) {
@@ -1822,9 +1822,8 @@ BitAddress Caller::parseBitAddress() const {
 
     // address and bit position
     else if (argsSize == 2) {
-        std::string bit_pos = args[1];
-        return BitAddress(parseAddress(addr_or_bitname),
-                          StringTo<uint32_t>(bit_pos));
+        auto reg = parseAddress(addr_or_bitname);
+        return BitAddress(reg.str(), args[1]);
     } else {
         throw RuntimeError("Command " + cmd +
                            " expected (1-4) parameter/s but got " +

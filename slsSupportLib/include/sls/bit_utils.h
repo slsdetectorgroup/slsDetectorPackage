@@ -48,16 +48,11 @@ class BitAddress {
   public:
     constexpr BitAddress() noexcept = default;
     BitAddress(RegisterAddress address, uint32_t bitPosition);
+    BitAddress(const std::string &address, const std::string &bitPosition);
     std::string str() const;
 
     RegisterAddress address() const noexcept { return addr_; }
     uint32_t bitPosition() const noexcept { return bitPos_; }
-
-    void setBitPosition(uint32_t bitPos);
-    void setBitPosition(const std::string &bitPos);
-
-    void setAddress(RegisterAddress address) noexcept { addr_ = address; }
-    void setAddress(const std::string &address);
 
     constexpr bool operator==(const BitAddress &other) const {
         return (addr_ == other.addr_ && bitPos_ == other.bitPos_);

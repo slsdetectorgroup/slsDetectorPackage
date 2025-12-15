@@ -47,11 +47,14 @@ void init_bit(py::module &m) {
         .def("value", &RegisterValue::value)
         .def(py::self == py::self)
         .def(py::self != py::self)
-        .def("__or__", [](const RegisterValue& v, uint32_t rhs) {
-            return v | rhs;
+        .def("__or__", [](const RegisterValue &lhs, const RegisterValue &rhs) {
+            return lhs | rhs;
         })
-        .def("__ior__", [](RegisterValue &v, uint32_t rhs) -> RegisterValue& {
-            v |= rhs;
-            return v;
+        .def("__or__", [](const RegisterValue& lhs, uint32_t rhs) {
+            return lhs | rhs;
+        })
+        .def("__ior__", [](RegisterValue &lhs, uint32_t rhs) -> RegisterValue& {
+            lhs |= rhs;
+            return lhs;
         }, py::return_value_policy::reference_internal);
 }

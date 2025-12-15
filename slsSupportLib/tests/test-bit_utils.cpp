@@ -84,6 +84,7 @@ TEST_CASE("Convert RegisterValue using classes ", "[support][.bit_utils]") {
         CHECK(reg1.str() == vec_ans[i]);
         CHECK((reg0 | 0xffffffffu) == RegisterValue(0xffffffffu));
         CHECK((reg0 | 0x0) == reg0);
+        CHECK((reg0 | reg1) == reg0);
     }
 }
 

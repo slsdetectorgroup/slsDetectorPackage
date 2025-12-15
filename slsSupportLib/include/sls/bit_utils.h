@@ -29,7 +29,7 @@ class RegisterAddress {
     constexpr explicit RegisterAddress(uint32_t value) : value_(value) {}
     explicit RegisterAddress(const std::string &value);
     std::string str() const;
-    uint32_t value() const noexcept { return value_; }
+    constexpr uint32_t value() const noexcept { return value_; }
 
     constexpr bool operator==(const RegisterAddress &other) const {
         return (value_ == other.value_);
@@ -49,8 +49,8 @@ class BitAddress {
     BitAddress(RegisterAddress address, uint32_t bitPosition);
     BitAddress(const std::string &address, const std::string &bitPosition);
     std::string str() const;
-    RegisterAddress address() const noexcept { return addr_; }
-    uint32_t bitPosition() const noexcept { return bitPos_; }
+    constexpr RegisterAddress address() const noexcept { return addr_; }
+    constexpr uint32_t bitPosition() const noexcept { return bitPos_; }
 
     constexpr bool operator==(const BitAddress &other) const {
         return (addr_ == other.addr_ && bitPos_ == other.bitPos_);
@@ -70,14 +70,25 @@ class RegisterValue {
     explicit RegisterValue(const std::string &value);
 
     std::string str() const;
-    uint32_t value() const noexcept { return value_; }
+    constexpr uint32_t value() const noexcept { return value_; }
 
-    RegisterValue &operator|=(uint32_t rhs) noexcept {
+    constexpr RegisterValue &operator|=(const RegisterValue &rhs) noexcept {
+        value_ |= rhs.value();
+        return *this;
+    }
+
+    constexpr RegisterValue operator|(const RegisterValue &rhs) const noexcept {
+        RegisterValue tmp(*this);
+        tmp |= rhs;
+        return tmp;
+    }
+
+    constexpr RegisterValue &operator|=(uint32_t rhs) noexcept {
         value_ |= rhs;
         return *this;
     }
 
-    RegisterValue operator|(uint32_t rhs) const noexcept {
+    constexpr RegisterValue operator|(uint32_t rhs) const noexcept {
         RegisterValue tmp(*this);
         tmp |= rhs;
         return tmp;

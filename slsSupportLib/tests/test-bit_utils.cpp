@@ -43,7 +43,7 @@ TEST_CASE("Get set bits from 523") {
     REQUIRE(vec == std::vector<int>{0, 1, 3, 9});
 }
 
-TEST_CASE("Convert RegisterAddress using classes ", "[support][bit_utils]") {
+TEST_CASE("Convert RegisterAddress using classes ", "[support][.bit_utils]") {
     std::vector<uint32_t> vec_addr{0x305, 0xffffffff, 0x0, 0x34550987,
                                    0x1fff1fff};
     std::vector<std::string> vec_ans{"0x305", "0xffffffff", "0x0", "0x34550987",
@@ -66,7 +66,7 @@ TEST_CASE("Convert RegisterAddress using classes ", "[support][bit_utils]") {
     }
 }
 
-TEST_CASE("Convert RegisterValue using classes ", "[support][bit_utils]") {
+TEST_CASE("Convert RegisterValue using classes ", "[support][.bit_utils]") {
     std::vector<uint32_t> vec_addr{0x305, 0xffffffff, 0x0, 500254562,
                                    0x1fff1fff};
     std::vector<std::string> vec_ans{"0x305", "0xffffffff", "0x0", "0x1dd14762",
@@ -91,12 +91,13 @@ TEST_CASE("Convert RegisterValue using classes ", "[support][bit_utils]") {
     }
 }
 
-TEST_CASE("Convert BitAddress using classes ", "[support][bit_utils]") {
+TEST_CASE("Convert BitAddress using classes", "[support][.bit_utils]") {
     std::vector<RegisterAddress> vec_addr{
         RegisterAddress(0x305), RegisterAddress(0xffffffffu),
         RegisterAddress(0x0), RegisterAddress(0x34550987),
         RegisterAddress(0x1fff1fff)};
-    std::vector<int> vec_bitpos{0, 15, 31, 7, 23};
+    std::vector<uint32_t> vec_bitpos{0, 15, 31, 7, 23};
+    std::vector<std::string> vec_bitpos_str{"0", "15", "31", "7", "23"};
     std::vector<std::string> vec_ans{
         "[0x305, 0]",      "[0xffffffff, 15]", "[0x0, 31]",
         "[0x34550987, 7]", "[0x1fff1fff, 23]",
@@ -107,7 +108,8 @@ TEST_CASE("Convert BitAddress using classes ", "[support][bit_utils]") {
 
         BitAddress reg1;
         reg1.setAddress(vec_addr[i]);
-        reg1.setBitPosition(vec_bitpos[i]);
+        reg1.setBitPosition(vec_bitpos_str[i]);
+        CHECK(reg1.bitPosition() == vec_bitpos[i]);
 
         auto reg2 = BitAddress(vec_addr[0], vec_bitpos[0]);
 
@@ -118,6 +120,8 @@ TEST_CASE("Convert BitAddress using classes ", "[support][bit_utils]") {
         CHECK(reg1.address() == vec_addr[i]);
         CHECK(reg0.bitPosition() == vec_bitpos[i]);
         CHECK(reg1.bitPosition() == vec_bitpos[i]);
+        CHECK(std::to_string(reg0.bitPosition()) == vec_bitpos_str[i]);
+        CHECK(std::to_string(reg1.bitPosition()) == vec_bitpos_str[i]);
 
         CHECK(reg0.str() == vec_ans[i]);
         CHECK(reg1.str() == vec_ans[i]);
@@ -125,12 +129,19 @@ TEST_CASE("Convert BitAddress using classes ", "[support][bit_utils]") {
 }
 
 TEST_CASE("Output operator gives same result as string",
-          "[support][bit_utils]") {
+          "[support][.bit_utils]") {
     {
         RegisterAddress addr{"0x3456af"};
         std::ostringstream os;
         os << addr;
         CHECK(os.str() == "0x3456af");
+        CHECK(os.str() == addr.str());
+    }
+    {
+        BitAddress addr(RegisterAddress("0x3456af"), 15);
+        std::ostringstream os;
+        os << addr;
+        CHECK(os.str() == "[0x3456af, 15]");
         CHECK(os.str() == addr.str());
     }
     {
@@ -142,7 +153,7 @@ TEST_CASE("Output operator gives same result as string",
     }
 }
 
-TEST_CASE("Strange input throws", "[support][bit_utils]") {
+TEST_CASE("Strange input throws", "[support][.bit_utils]") {
     REQUIRE_THROWS(RegisterAddress("hej"));
     // ensure correct exception message
     try {
@@ -151,12 +162,14 @@ TEST_CASE("Strange input throws", "[support][bit_utils]") {
         REQUIRE(std::string(e.what()) == "Address must be an integer value.");
     }
 
-    REQUIRE_THROWS(RegisterValue("hej"));
+    BitAddress bitAddr(RegisterAddress(0x305), 0);
+    REQUIRE_THROWS(bitAddr.setBitPosition("hej"));
     // ensure correct exception message
     try {
-        RegisterValue("hej");
+        bitAddr.setBitPosition("hej");
     } catch (const std::exception &e) {
-        REQUIRE(std::string(e.what()) == "Value must be an integer value.");
+        REQUIRE(std::string(e.what()) ==
+                "Bit position must be an integer value.");
     }
 
     REQUIRE_THROWS(BitAddress(RegisterAddress(0x305), 32));
@@ -167,10 +180,18 @@ TEST_CASE("Strange input throws", "[support][bit_utils]") {
         REQUIRE(std::string(e.what()) ==
                 "Bit position must be between 0 and 31.");
     }
+
+    REQUIRE_THROWS(RegisterValue("hej"));
+    // ensure correct exception message
+    try {
+        RegisterValue("hej");
+    } catch (const std::exception &e) {
+        REQUIRE(std::string(e.what()) == "Value must be an integer value.");
+    }
 }
 
 TEST_CASE("Implicitly convert to uint for sending over network",
-          "[support][bit_utils]") {
+          "[support][.bit_utils]") {
     RegisterAddress addr{0x305};
     uint64_t a = addr;
     CHECK(a == 0x305);

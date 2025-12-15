@@ -43,17 +43,21 @@ class RegisterAddress {
 class BitAddress {
   private:
     RegisterAddress addr_{0};
-    int bitPos_{0};
+    uint32_t bitPos_{0};
 
   public:
     constexpr BitAddress() noexcept = default;
-    BitAddress(RegisterAddress address, int bitPosition);
+    BitAddress(RegisterAddress address, uint32_t bitPosition);
     std::string str() const;
 
     RegisterAddress address() const noexcept { return addr_; }
-    int bitPosition() const noexcept { return bitPos_; }
+    uint32_t bitPosition() const noexcept { return bitPos_; }
+
+    void setBitPosition(uint32_t bitPos);
+    void setBitPosition(const std::string &bitPos);
+
     void setAddress(RegisterAddress address) noexcept { addr_ = address; }
-    void setBitPosition(int bitPos) noexcept { bitPos_ = bitPos; }
+    void setAddress(const std::string &address);
 
     constexpr bool operator==(const BitAddress &other) const {
         return (addr_ == other.addr_ && bitPos_ == other.bitPos_);

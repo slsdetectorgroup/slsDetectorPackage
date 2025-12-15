@@ -28,13 +28,19 @@ void init_bit(py::module &m) {
 
     py::class_<BitAddress>(m, "BitAddress")
         .def(py::init())
-        .def(py::init<RegisterAddress, int>())
+        .def(py::init<RegisterAddress, uint32_t>())
         .def("__repr__", &BitAddress::str)
         .def("str", &BitAddress::str)
         .def("address", &BitAddress::address)
         .def("bitPosition", &BitAddress::bitPosition)
-        .def("setAddress", &BitAddress::setAddress)
-        .def("setBitPosition", &BitAddress::setBitPosition)
+        .def("setBitPosition",
+            static_cast<void (BitAddress::*)(uint32_t)>(&BitAddress::setBitPosition))
+        .def("setBitPositionStr",
+            static_cast<void (BitAddress::*)(const std::string&)>(&BitAddress::setBitPosition))
+        .def("setAddress",
+            static_cast<void (BitAddress::*)(RegisterAddress)>(&BitAddress::setAddress))
+        .def("setAddressStr",
+            static_cast<void (BitAddress::*)(const std::string&)>(&BitAddress::setAddress))
         .def(py::self == py::self)
         .def(py::self != py::self);
 

@@ -16,11 +16,28 @@ RegisterAddress::RegisterAddress(const std::string &address) {
 
 std::string RegisterAddress::str() const { return ToStringHex(addr_); }
 
-BitAddress::BitAddress(RegisterAddress address, int bitPosition)
-    : addr_(address), bitPos_(bitPosition) {
-    if (bitPosition < 0 || bitPosition > 31) {
+BitAddress::BitAddress(RegisterAddress address, uint32_t bitPosition)
+    : addr_(address) {
+    setBitPosition(bitPosition);
+}
+
+void BitAddress::setBitPosition(uint32_t bitPos) {
+    if (bitPos > 31) {
         throw RuntimeError("Bit position must be between 0 and 31.");
     }
+    bitPos_ = bitPos;
+}
+
+void BitAddress::setBitPosition(const std::string &bitPos) {
+    if (!is_hex_or_dec_uint(bitPos)) {
+        throw RuntimeError("Bit position must be an integer value.");
+    }
+    uint32_t pos = StringTo<uint32_t>(bitPos);
+    setBitPosition(pos);
+}
+
+void BitAddress::setAddress(const std::string &address) {
+    addr_ = RegisterAddress(address);
 }
 
 std::string BitAddress::str() const {

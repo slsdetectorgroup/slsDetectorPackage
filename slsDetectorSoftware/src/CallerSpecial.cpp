@@ -1556,7 +1556,7 @@ std::string Caller::define_bit(int action) {
         // get name from position and address
         else if (args.size() == 2) {
             auto pos =
-                BitAddress(parseAddress(args[0]), StringTo<int>(args[1]));
+                BitAddress(parseAddress(args[0]), StringTo<uint32_t>(args[1]));
             try {
                 auto t = det->getBitDefinitionName(pos);
                 os << t << '\n';
@@ -1581,7 +1581,8 @@ std::string Caller::define_bit(int action) {
             throw RuntimeError("Bit position must be an integer value.");
         }
         auto name = args[0];
-        auto bit = BitAddress(parseAddress(args[1]), StringTo<int>(args[2]));
+        auto bit =
+            BitAddress(parseAddress(args[1]), StringTo<uint32_t>(args[2]));
         det->setBitDefinition(name, bit);
         os << ToString(args) << '\n';
     } else {
@@ -1823,7 +1824,7 @@ BitAddress Caller::parseBitAddress() const {
     else if (argsSize == 2) {
         std::string bit_pos = args[1];
         return BitAddress(parseAddress(addr_or_bitname),
-                          StringTo<int>(bit_pos));
+                          StringTo<uint32_t>(bit_pos));
     } else {
         throw RuntimeError("Command " + cmd +
                            " expected (1-4) parameter/s but got " +

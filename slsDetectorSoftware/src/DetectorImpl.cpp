@@ -80,10 +80,10 @@ void DetectorImpl::initSharedMemory() {
         }
         if (ctb_shm.exists()) {
             ctb_shm.openSharedMemory(true);
-            if (ctb_shm()->shmversion != CTB_SHMVERSION) {
+            if (ctb_shm()->shmversion != CtbConfig::SHM_VERSION) {
                 LOG(logERROR)
                     << "CTB shared memory version mismatch (expected 0x"
-                    << std::hex << CTB_SHMVERSION << " but got 0x"
+                    << std::hex << CtbConfig::SHM_VERSION << " but got 0x"
                     << ctb_shm()->shmversion << std::dec
                     << ". Free Shared memory to continue.";
                 ctb_shm.unmapSharedMemory();

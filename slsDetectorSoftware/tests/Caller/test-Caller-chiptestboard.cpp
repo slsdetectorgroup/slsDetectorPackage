@@ -1330,7 +1330,7 @@ TEST_CASE("led", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("define_reg", "[.cmdcall]") {
+TEST_CASE("define_reg", "[.cmdcall][.definecmds]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1408,7 +1408,7 @@ TEST_CASE("define_reg", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("define_bit", "[.cmdcall]") {
+TEST_CASE("define_bit", "[.cmdcall][.definecmds]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1505,7 +1505,8 @@ TEST_CASE("define_bit", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("using define for reg, setbit, getbit and clearbit", "[.cmdcall]") {
+TEST_CASE("using define for reg, setbit, getbit and clearbit",
+          "[.cmdcall][.definecmds]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1619,7 +1620,7 @@ TEST_CASE("using define for reg, setbit, getbit and clearbit", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("definelist_reg", "[.cmdcall]") {
+TEST_CASE("definelist_reg", "[.cmdcall][.definecmds]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1652,7 +1653,7 @@ TEST_CASE("definelist_reg", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("definelist_bit", "[.cmdcall]") {
+TEST_CASE("definelist_bit", "[.cmdcall][.definecmds]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();

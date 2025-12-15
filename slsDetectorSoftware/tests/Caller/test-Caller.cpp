@@ -3267,7 +3267,7 @@ TEST_CASE("update", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("reg", "[.cmdcall]") {
+TEST_CASE("reg", "[.cmdcall][.definecmds]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -3326,7 +3326,7 @@ TEST_CASE("adcreg", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("setbit", "[.cmdcall]") {
+TEST_CASE("setbit", "[.cmdcall][.definecmds]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -3356,7 +3356,7 @@ TEST_CASE("setbit", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("clearbit", "[.cmdcall]") {
+TEST_CASE("clearbit", "[.cmdcall][.definecmds]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -3386,7 +3386,7 @@ TEST_CASE("clearbit", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("getbit", "[.cmdcall]") {
+TEST_CASE("getbit", "[.cmdcall][.definecmds]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();

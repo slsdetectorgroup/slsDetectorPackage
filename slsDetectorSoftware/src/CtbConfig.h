@@ -12,10 +12,7 @@
 
 namespace sls {
 
-#define CTB_SHMAPIVERSION 0x251031
-#define CTB_SHMVERSION    0x251031
-
-#define CTB_NAME_LENGTH 32
+inline constexpr size_t CTB_NAME_LENGTH = 32;
 
 class RegisterDefinition {
   private:
@@ -60,9 +57,11 @@ class BitDefinition {
 class CtbConfig {
   public:
     /** fixed pattern */
-    int shmversion{CTB_SHMVERSION};
+    static constexpr int SHM_VERSION = 0x251215;
+    int shmversion{SHM_VERSION};
     bool isValid{true}; // false if freed to block access from python or c++ api
                         /** end of fixed pattern */
+
   private:
     static constexpr const char *shm_tag_ = "ctbdacs";
     static constexpr size_t name_length = CTB_NAME_LENGTH;

@@ -93,7 +93,7 @@ void DataProcessor::SetNumberofTotalFrames(uint64_t value) {
 
 void DataProcessor::SetAdditionalJsonHeader(
     const std::map<std::string, std::string> &json) {
-    std::lock_guard<std::mutex> lock(additionalJsonMutex);
+    std::lock_guard<std::mutex> const lock(additionalJsonMutex);
     additionalJsonHeader = json;
     isAdditionalJsonUpdated = true;
 }
@@ -254,7 +254,7 @@ std::string DataProcessor::CreateMasterFile(
 
     attr->framesInFile = numFramesCaught;
 
-    std::unique_ptr<File> masterFile{nullptr};
+    std::unique_ptr<File> const masterFile{nullptr};
     switch (fileFormatType) {
 #ifdef HDF5C
     case HDF5:
@@ -325,11 +325,11 @@ void DataProcessor::StopProcessing(char *buf) {
 void DataProcessor::ProcessAnImage(sls_receiver_header &header, size_t &size,
                                    size_t &firstImageIndex, char *data) {
 
-    uint64_t fnum = header.detHeader.frameNumber;
+    uint64_t const fnum = header.detHeader.frameNumber;
     LOG(logDEBUG1) << "DataProcessing " << index << ": fnum:" << fnum;
     currentFrameIndex = fnum;
     numFramesCaught++;
-    uint32_t nump = header.detHeader.packetNumber;
+    uint32_t const nump = header.detHeader.packetNumber;
 
     if (!startedFlag) {
         RecordFirstIndex(fnum);
@@ -390,16 +390,16 @@ void DataProcessor::ProcessAnImage(sls_receiver_header &header, size_t &size,
         // callbacks
         if (rawDataReadyCallBack != nullptr) {
 
-            uint64_t frameIndex = fnum - firstIndex;
+            uint64_t const frameIndex = fnum - firstIndex;
             // update local copy only if it was updated (to prevent locking each
             // time)
             if (isAdditionalJsonUpdated) {
-                std::lock_guard<std::mutex> lock(additionalJsonMutex);
+                std::lock_guard<std::mutex> const lock(additionalJsonMutex);
                 localAdditionalJsonHeader = additionalJsonHeader;
                 isAdditionalJsonUpdated = false;
             }
 
-            dataCallbackHeader callbackHeader = {
+            dataCallbackHeader const callbackHeader = {
                 udpPortNumber,
                 {static_cast<int>(generalData->nPixelsX),
                  static_cast<int>(generalData->nPixelsY)},
@@ -446,7 +446,7 @@ bool DataProcessor::CheckTimer() {
 
     auto elapsed_s = (end.tv_sec - timerbegin.tv_sec) +
                      (end.tv_nsec - timerbegin.tv_nsec) / 1e9;
-    double timer_s = streamingTimerInMs / 1e3;
+    double const timer_s = streamingTimerInMs / 1e3;
 
     LOG(logDEBUG1) << index << " Timer elapsed time:" << elapsed_s
                    << " seconds";
@@ -480,7 +480,7 @@ void DataProcessor::registerCallBackRawDataReady(
 void DataProcessor::PadMissingPackets(sls_receiver_header header, char *data) {
     LOG(logDEBUG) << index << ": Padding Missing Packets";
 
-    uint32_t pperFrame = generalData->packetsPerFrame;
+    uint32_t const pperFrame = generalData->packetsPerFrame;
 
     uint32_t nmissing = pperFrame - header.detHeader.packetNumber;
     sls_bitset pmask = header.packetsMask;
@@ -489,7 +489,7 @@ void DataProcessor::PadMissingPackets(sls_receiver_header header, char *data) {
     if (generalData->detType == GOTTHARD2 && index != 0) {
         dsize = generalData->vetoDataSize;
     }
-    uint32_t corrected_dsize =
+    uint32_t const corrected_dsize =
         dsize - ((pperFrame * dsize) - generalData->imageSize);
     LOG(logDEBUG1) << "bitmask: " << pmask.to_string();
 
@@ -571,7 +571,7 @@ void DataProcessor::ArrangeDbitData(size_t &size, char *data) {
     const auto ctbDbitList = generalData->ctbDbitList;
 
     // TODO! (Erik) Refactor and add tests
-    int ctbDigitalDataBytes = nDigitalDataBytes - ctbDbitOffset;
+    int const ctbDigitalDataBytes = nDigitalDataBytes - ctbDbitOffset;
 
     // no digital data
     if (ctbDigitalDataBytes == 0) {
@@ -618,13 +618,13 @@ void DataProcessor::ArrangeDbitData(size_t &size, char *data) {
                 ++dest;
             }
 
-            uint8_t byte_index = bi / 8;
+            uint8_t const byte_index = bi / 8;
 
             // loop through the frame digital data
             for (auto *ptr = source + byte_index;
                  ptr < (source + 8 * numDigitalSamples); ptr += 8) {
                 // get selected bit from each 8 bit
-                uint8_t bit = (*ptr >> bi % 8) & 1;
+                uint8_t const bit = (*ptr >> bi % 8) & 1;
                 *dest |= bit << bitoffset; // stored as least significant
                 ++bitoffset;
                 // extract destination in 8 bit batches
@@ -648,9 +648,9 @@ void DataProcessor::ArrangeDbitData(size_t &size, char *data) {
             // loop through digital bit enable vector
             for (auto bi : ctbDbitList) {
                 // get selected bit from each 64 bit
-                uint8_t byte_index = bi / 8;
+                uint8_t const byte_index = bi / 8;
 
-                uint8_t bit = (*(ptr + byte_index) >> (bi % 8)) & 1;
+                uint8_t const bit = (*(ptr + byte_index) >> (bi % 8)) & 1;
                 *dest |= bit << bitoffset;
                 ++bitoffset;
                 // extract destination in 8 bit batches
@@ -684,12 +684,12 @@ void DataProcessor::ArrangeDbitData(size_t &size, char *data) {
 
 void DataProcessor::CropImage(size_t &size, char *data) {
     LOG(logDEBUG1) << "Cropping Image to ROI " << ToString(portRoi);
-    int nPixelsX = generalData->nPixelsX;
-    int xmin = portRoi.xmin;
-    int xmax = portRoi.xmax;
+    int const nPixelsX = generalData->nPixelsX;
+    int const xmin = portRoi.xmin;
+    int const xmax = portRoi.xmax;
     int ymin = portRoi.ymin;
-    int ymax = portRoi.ymax;
-    int xwidth = xmax - xmin + 1;
+    int const ymax = portRoi.ymax;
+    int const xwidth = xmax - xmin + 1;
     int ywidth = ymax - ymin + 1;
     if (ymin == -1 || ymax == -1) {
         ywidth = 1;
@@ -697,11 +697,11 @@ void DataProcessor::CropImage(size_t &size, char *data) {
     }
 
     // calculate total roi size
-    double bytesPerPixel = generalData->dynamicRange / 8.00;
-    int startOffset = (int)((nPixelsX * ymin + xmin) * bytesPerPixel);
+    double const bytesPerPixel = generalData->dynamicRange / 8.00;
+    int const startOffset = (int)((nPixelsX * ymin + xmin) * bytesPerPixel);
 
     // write size into memory
-    std::size_t roiImageSize = xwidth * ywidth * bytesPerPixel;
+    std::size_t const roiImageSize = xwidth * ywidth * bytesPerPixel;
     LOG(logDEBUG) << "roiImageSize:" << roiImageSize;
     size = roiImageSize;
 

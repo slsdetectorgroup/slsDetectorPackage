@@ -15,7 +15,7 @@ void init_pattern(py::module &m) {
 
     patternParameters.def(py::init());
     patternParameters.def("numpy_view", [](py::object &obj) {
-        pat &o = obj.cast<pat &>();
+        pat  const&o = obj.cast<pat &>();
         return py::array_t<pat>(1, &o, obj);
     });
 

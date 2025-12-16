@@ -756,7 +756,7 @@ void MasterAttributes::WriteHDF5Version(H5::H5File *fd) {
 #endif
 
 void MasterAttributes::WriteBinaryTimestamp(writer *w) {
-    time_t t = std::time(nullptr);
+    time_t const t = std::time(nullptr);
     std::string sTime(ctime(&t));
     std::replace(sTime.begin(), sTime.end(), '\n', '\0');
     WriteBinary(w, N_TIMESTAMP.data(), sTime);

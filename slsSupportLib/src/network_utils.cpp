@@ -115,7 +115,7 @@ IpAddr HostnameToIp(const char *hostname) {
         throw RuntimeError("Could not convert hostname (" +
                            std::string(hostname) + ") to ip");
     }
-    uint32_t ip = ((sockaddr_in *)result->ai_addr)->sin_addr.s_addr;
+    uint32_t const ip = ((sockaddr_in *)result->ai_addr)->sin_addr.s_addr;
     freeaddrinfo(result);
     return IpAddr(ip);
 }
@@ -189,7 +189,7 @@ MacAddr InterfaceNameToMac(const std::string &inf) {
     const int mac_len = sizeof(mac);
     memset(mac, 0, mac_len);
 
-    int sock = socket(PF_INET, SOCK_STREAM, 0);
+    int const sock = socket(PF_INET, SOCK_STREAM, 0);
     strncpy(ifr.ifr_name, inf.c_str(), sizeof(ifr.ifr_name) - 1);
     ifr.ifr_name[sizeof(ifr.ifr_name) - 1] = '\0';
 

@@ -22,9 +22,9 @@ void test_valid_port_caller(const std::string &command,
     if (arg.empty())
         arg.push_back("0");
 
-    int test_values[3] = {77797, -1, 0};
+    int const test_values[3] = {77797, -1, 0};
     for (int i = 0; i != 3; ++i) {
-        int port_number = test_values[i];
+        int const port_number = test_values[i];
         arg[arg.size() - 1] = std::to_string(port_number);
         REQUIRE_THROWS(caller.call(command, arg, detector_id, action));
         /*REQUIRE_THROWS_WITH(proxy.Call(command, arguments, detector_id,
@@ -72,7 +72,7 @@ void test_onchip_dac_caller(defs::dacIndex index, const std::string &dacname,
     REQUIRE_THROWS(
         caller.call(dacname, {"-1", "0x400"}, -1, PUT)); // max val is 0x3ff
 
-    int chipIndex = -1; // for now, it is -1 only
+    int const chipIndex = -1; // for now, it is -1 only
     auto prev_val = det.getOnChipDAC(index, chipIndex);
     auto dacValueStr = ToStringHex(dacvalue);
     auto chipIndexStr = std::to_string(chipIndex);
@@ -115,10 +115,10 @@ void test_acquire_binary_file_size(const testFileInfo &file_info,
                                    uint64_t num_frames_to_acquire,
                                    uint64_t expected_image_size) {
     assert(file_info.file_format == defs::BINARY);
-    std::string fname = file_info.file_path + "/" + file_info.file_prefix +
+    std::string const fname = file_info.file_path + "/" + file_info.file_prefix +
                         "_d0_f0_" + std::to_string(file_info.file_acq_index) +
                         ".raw";
-    uint64_t expected_file_size =
+    uint64_t const expected_file_size =
         num_frames_to_acquire *
         (expected_image_size + sizeof(defs::sls_receiver_header));
     auto actual_file_size = std::filesystem::file_size(fname);
@@ -136,7 +136,7 @@ void test_acquire_with_receiver(Caller &caller, const Detector &det) {
     REQUIRE_NOTHROW(caller.call("start", {}, -1, PUT));
     bool idle = false;
     while (!idle) {
-        std::ostringstream oss;
+        std::ostringstream const oss;
         REQUIRE_NOTHROW(caller.call("status", {}, -1, GET));
         auto statusList = det.getDetectorStatus();
         if (statusList.any(defs::ERROR)) {
@@ -154,7 +154,7 @@ void create_files_for_acquire(
     const std::optional<testCtbAcquireInfo> &test_info) {
 
     // save previous state
-    testFileInfo prev_file_info = get_file_state(det);
+    testFileInfo const prev_file_info = get_file_state(det);
     auto prev_num_frames = det.getNumberOfFrames().tsquash(
         "Inconsistent number of frames to acquire");
     std::optional<testCtbAcquireInfo> prev_ctb_config_info{};
@@ -163,7 +163,7 @@ void create_files_for_acquire(
     }
 
     // set state for acquire
-    testFileInfo test_file_info;
+    testFileInfo const test_file_info;
     set_file_state(det, test_file_info);
     det.setNumberOfFrames(num_frames);
     if (test_info) {
@@ -265,10 +265,10 @@ calculate_ctb_image_size(const testCtbAcquireInfo &test_info,
     inputs.dbitList = test_info.dbit_list;
 
     auto out = computeCtbImageSize(inputs);
-    uint64_t image_size =
+    uint64_t const image_size =
         out.nAnalogBytes + out.nDigitalBytes + out.nTransceiverBytes;
     LOG(logDEBUG1) << "Expected image size: " << image_size;
-    int npixelx = out.nPixelsX;
+    int const npixelx = out.nPixelsX;
     LOG(logDEBUG1) << "Expected number of pixels in x: " << npixelx;
     return std::make_pair(image_size, npixelx);
 }

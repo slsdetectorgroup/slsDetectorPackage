@@ -114,8 +114,8 @@ TEST_CASE("patword", "[.cmdcall]") {
 
     if (det_type == defs::CHIPTESTBOARD ||
         det_type == defs::XILINX_CHIPTESTBOARD || det_type == defs::MYTHEN3) {
-        int addr = 0x23;
-        std::string saddr = ToStringHex(addr, 4);
+        int const addr = 0x23;
+        std::string const saddr = ToStringHex(addr, 4);
         auto prev_val = det.getPatternWord(addr);
         {
             std::ostringstream oss;
@@ -189,9 +189,9 @@ TEST_CASE("patloop", "[.cmdcall]") {
                 continue;
             }
             auto prev_val = det.getPatternLoopAddresses(iLoop);
-            std::string sLoop = ToString(iLoop);
+            std::string const sLoop = ToString(iLoop);
             if (iLoop < 3) {
-                std::string deprecatedCmd = "patloop" + sLoop;
+                std::string const deprecatedCmd = "patloop" + sLoop;
                 { // deprecated
                     std::ostringstream oss;
                     caller.call(deprecatedCmd, {"0x20", "0x5c"}, -1, PUT, oss);
@@ -238,9 +238,9 @@ TEST_CASE("patnloop", "[.cmdcall]") {
                 continue;
             }
             auto prev_val = det.getPatternLoopCycles(iLoop);
-            std::string sLoop = ToString(iLoop);
+            std::string const sLoop = ToString(iLoop);
             if (iLoop < 3) {
-                std::string deprecatedCmd = "patnloop" + sLoop;
+                std::string const deprecatedCmd = "patnloop" + sLoop;
                 { // deprecated
                     std::ostringstream oss;
                     caller.call(deprecatedCmd, {"5"}, -1, PUT, oss);
@@ -284,9 +284,9 @@ TEST_CASE("patwait", "[.cmdcall]") {
                 continue;
             }
             auto prev_val = det.getPatternWaitAddr(iLoop);
-            std::string sLoop = ToString(iLoop);
+            std::string const sLoop = ToString(iLoop);
             if (iLoop < 3) {
-                std::string deprecatedCmd = "patwait" + sLoop;
+                std::string const deprecatedCmd = "patwait" + sLoop;
                 { // deprecated
                     std::ostringstream oss;
                     caller.call(deprecatedCmd, {"0x5c"}, -1, PUT, oss);
@@ -330,9 +330,9 @@ TEST_CASE("patwaittime", "[.cmdcall]") {
                 continue;
             }
             auto prev_val = det.getPatternWaitClocks(iLoop);
-            std::string sLoop = ToString(iLoop);
+            std::string const sLoop = ToString(iLoop);
             if (iLoop < 3) {
-                std::string deprecatedCmd = "patwaittime" + sLoop;
+                std::string const deprecatedCmd = "patwaittime" + sLoop;
                 { // deprecated
                     std::ostringstream oss;
                     caller.call(deprecatedCmd, {"8589936640"}, -1, PUT, oss);

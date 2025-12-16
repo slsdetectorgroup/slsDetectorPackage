@@ -48,7 +48,7 @@ void DataSocket::setFnum(const int fnum) { fnum_ = fnum; }
 
 int DataSocket::Receive(void *buffer, size_t size) {
     // TODO!(Erik) Add sleep? how many reties?
-    int bytes_expected = static_cast<int>(size); // signed size
+    int const bytes_expected = static_cast<int>(size); // signed size
     int bytes_read = 0;
     while (bytes_read < bytes_expected) {
         auto this_read =
@@ -79,7 +79,7 @@ std::string DataSocket::Receive(size_t length) {
 }
 int DataSocket::Send(const void *buffer, size_t size) {
     int bytes_sent = 0;
-    int data_size = static_cast<int>(size); // signed size
+    int const data_size = static_cast<int>(size); // signed size
     while (bytes_sent < (data_size)) {
         auto this_send = ::write(getSocketId(), buffer, size);
         if (this_send <= 0)

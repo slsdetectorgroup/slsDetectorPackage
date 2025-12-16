@@ -22,7 +22,7 @@ TEST_CASE("Get size of file with data") {
     constexpr size_t n_bytes = 137;
     std::vector<char> data(n_bytes);
     char fname[] = "temfile_XXXXXX";
-    int fh = mkstemp(fname);
+    int const fh = mkstemp(fname);
     write(fh, data.data(), n_bytes);
 
     std::ifstream ifs(fname);
@@ -32,11 +32,11 @@ TEST_CASE("Get size of file with data") {
 }
 
 TEST_CASE("Channel file reading") {
-    std::string fname =
+    std::string const fname =
         getAbsolutePathFromCurrentProcess(TEST_FILE_NAME_BAD_CHANNELS);
     std::vector<int> list;
     REQUIRE_NOTHROW(list = getChannelsFromFile(fname));
-    std::vector<int> expected = {0, 12, 15, 40, 41, 42, 43, 44, 1279};
+    std::vector<int> const expected = {0, 12, 15, 40, 41, 42, 43, 44, 1279};
     REQUIRE(list == expected);
 }
 

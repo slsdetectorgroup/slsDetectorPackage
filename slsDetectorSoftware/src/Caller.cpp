@@ -1093,7 +1093,7 @@ std::string Caller::blockingtrigger(int action) {
         }
 
         if (args.size() == 0) {
-            bool block = true;
+            bool const block = true;
         }
 
     }
@@ -1107,7 +1107,7 @@ std::string Caller::blockingtrigger(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 0) {
-            bool block = true;
+            bool const block = true;
             if (det_id != -1) {
                 throw RuntimeError(
                     "Cannot execute blockingtrigger at module level");
@@ -1153,7 +1153,7 @@ std::string Caller::burstperiod(int action) {
         if (args.size() == 1) {
             try {
                 std::string tmp_time(args[0]);
-                std::string unit = RemoveUnit(tmp_time);
+                std::string const unit = RemoveUnit(tmp_time);
                 auto converted_time = StringTo<time::ns>(tmp_time, unit);
             } catch (...) {
                 throw RuntimeError("Could not convert argument to time::ns");
@@ -1192,7 +1192,7 @@ std::string Caller::burstperiod(int action) {
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 1) {
             std::string tmp_time(args[0]);
-            std::string unit = RemoveUnit(tmp_time);
+            std::string const unit = RemoveUnit(tmp_time);
             auto converted_time = StringTo<time::ns>(tmp_time, unit);
             det->setBurstPeriod(converted_time, std::vector<int>{det_id});
             os << args[0] << '\n';
@@ -1648,7 +1648,7 @@ std::string Caller::clkdiv(int action) {
         }
 
         if (args.size() == 1) {
-            defs::detectorType type =
+            defs::detectorType const type =
                 det->getDetectorType().squash(defs::GENERIC);
             ;
             try {
@@ -1666,7 +1666,7 @@ std::string Caller::clkdiv(int action) {
         }
 
         if (args.size() == 2) {
-            defs::detectorType type =
+            defs::detectorType const type =
                 det->getDetectorType().squash(defs::GENERIC);
             ;
             try {
@@ -1692,7 +1692,7 @@ std::string Caller::clkdiv(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
-            defs::detectorType type =
+            defs::detectorType const type =
                 det->getDetectorType().squash(defs::GENERIC);
             ;
             if (type != defs::GOTTHARD2 && type != defs::MYTHEN3) {
@@ -1706,7 +1706,7 @@ std::string Caller::clkdiv(int action) {
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 2) {
-            defs::detectorType type =
+            defs::detectorType const type =
                 det->getDetectorType().squash(defs::GENERIC);
             ;
             if (type != defs::GOTTHARD2 && type != defs::MYTHEN3) {
@@ -1742,7 +1742,7 @@ std::string Caller::clkfreq(int action) {
         }
 
         if (args.size() == 1) {
-            defs::detectorType type =
+            defs::detectorType const type =
                 det->getDetectorType().squash(defs::GENERIC);
             ;
             try {
@@ -1763,7 +1763,7 @@ std::string Caller::clkfreq(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
-            defs::detectorType type =
+            defs::detectorType const type =
                 det->getDetectorType().squash(defs::GENERIC);
             ;
             if (type != defs::GOTTHARD2 && type != defs::MYTHEN3) {
@@ -1798,7 +1798,7 @@ std::string Caller::clkphase(int action) {
         }
 
         if (args.size() == 1) {
-            defs::detectorType type =
+            defs::detectorType const type =
                 det->getDetectorType().squash(defs::GENERIC);
             ;
             try {
@@ -1809,7 +1809,7 @@ std::string Caller::clkphase(int action) {
         }
 
         if (args.size() == 2) {
-            defs::detectorType type =
+            defs::detectorType const type =
                 det->getDetectorType().squash(defs::GENERIC);
             ;
             try {
@@ -1827,7 +1827,7 @@ std::string Caller::clkphase(int action) {
         }
 
         if (args.size() == 2) {
-            defs::detectorType type =
+            defs::detectorType const type =
                 det->getDetectorType().squash(defs::GENERIC);
             ;
             try {
@@ -1843,7 +1843,7 @@ std::string Caller::clkphase(int action) {
         }
 
         if (args.size() == 3) {
-            defs::detectorType type =
+            defs::detectorType const type =
                 det->getDetectorType().squash(defs::GENERIC);
             ;
             try {
@@ -1869,7 +1869,7 @@ std::string Caller::clkphase(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
-            defs::detectorType type =
+            defs::detectorType const type =
                 det->getDetectorType().squash(defs::GENERIC);
             ;
             if (type != defs::GOTTHARD2 && type != defs::MYTHEN3) {
@@ -1882,7 +1882,7 @@ std::string Caller::clkphase(int action) {
         }
 
         if (args.size() == 2) {
-            defs::detectorType type =
+            defs::detectorType const type =
                 det->getDetectorType().squash(defs::GENERIC);
             ;
             if (type != defs::GOTTHARD2 && type != defs::MYTHEN3) {
@@ -1902,7 +1902,7 @@ std::string Caller::clkphase(int action) {
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 2) {
-            defs::detectorType type =
+            defs::detectorType const type =
                 det->getDetectorType().squash(defs::GENERIC);
             ;
             if (type != defs::GOTTHARD2 && type != defs::MYTHEN3) {
@@ -1916,7 +1916,7 @@ std::string Caller::clkphase(int action) {
         }
 
         if (args.size() == 3) {
-            defs::detectorType type =
+            defs::detectorType const type =
                 det->getDetectorType().squash(defs::GENERIC);
             ;
             if (type != defs::GOTTHARD2 && type != defs::MYTHEN3) {
@@ -2096,7 +2096,7 @@ std::string Caller::compdisabletime(int action) {
         if (args.size() == 1) {
             try {
                 std::string tmp_time(args[0]);
-                std::string unit = RemoveUnit(tmp_time);
+                std::string const unit = RemoveUnit(tmp_time);
                 auto converted_time = StringTo<time::ns>(tmp_time, unit);
             } catch (...) {
                 throw RuntimeError("Could not convert argument to time::ns");
@@ -2135,7 +2135,7 @@ std::string Caller::compdisabletime(int action) {
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 1) {
             std::string tmp_time(args[0]);
-            std::string unit = RemoveUnit(tmp_time);
+            std::string const unit = RemoveUnit(tmp_time);
             auto converted_time = StringTo<time::ns>(tmp_time, unit);
             det->setComparatorDisableTime(converted_time,
                                           std::vector<int>{det_id});
@@ -2338,7 +2338,7 @@ std::string Caller::dac(int action) {
         }
 
         if (args.size() == 1) {
-            defs::dacIndex dacIndex =
+            defs::dacIndex const dacIndex =
                 ((det->getDetectorType().squash() == defs::CHIPTESTBOARD ||
                   det->getDetectorType().squash() ==
                       defs::XILINX_CHIPTESTBOARD) &&
@@ -2353,7 +2353,7 @@ std::string Caller::dac(int action) {
         }
 
         if (args.size() == 2) {
-            defs::dacIndex dacIndex =
+            defs::dacIndex const dacIndex =
                 ((det->getDetectorType().squash() == defs::CHIPTESTBOARD ||
                   det->getDetectorType().squash() ==
                       defs::XILINX_CHIPTESTBOARD) &&
@@ -2375,7 +2375,7 @@ std::string Caller::dac(int action) {
         }
 
         if (args.size() == 2) {
-            defs::dacIndex dacIndex =
+            defs::dacIndex const dacIndex =
                 ((det->getDetectorType().squash() == defs::CHIPTESTBOARD ||
                   det->getDetectorType().squash() ==
                       defs::XILINX_CHIPTESTBOARD) &&
@@ -2395,7 +2395,7 @@ std::string Caller::dac(int action) {
         }
 
         if (args.size() == 3) {
-            defs::dacIndex dacIndex =
+            defs::dacIndex const dacIndex =
                 ((det->getDetectorType().squash() == defs::CHIPTESTBOARD ||
                   det->getDetectorType().squash() ==
                       defs::XILINX_CHIPTESTBOARD) &&
@@ -2425,7 +2425,7 @@ std::string Caller::dac(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
-            defs::dacIndex dacIndex =
+            defs::dacIndex const dacIndex =
                 ((det->getDetectorType().squash() == defs::CHIPTESTBOARD ||
                   det->getDetectorType().squash() ==
                       defs::XILINX_CHIPTESTBOARD) &&
@@ -2445,7 +2445,7 @@ std::string Caller::dac(int action) {
         }
 
         if (args.size() == 2) {
-            defs::dacIndex dacIndex =
+            defs::dacIndex const dacIndex =
                 ((det->getDetectorType().squash() == defs::CHIPTESTBOARD ||
                   det->getDetectorType().squash() ==
                       defs::XILINX_CHIPTESTBOARD) &&
@@ -2471,7 +2471,7 @@ std::string Caller::dac(int action) {
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 2) {
-            defs::dacIndex dacIndex =
+            defs::dacIndex const dacIndex =
                 ((det->getDetectorType().squash() == defs::CHIPTESTBOARD ||
                   det->getDetectorType().squash() ==
                       defs::XILINX_CHIPTESTBOARD) &&
@@ -2492,7 +2492,7 @@ std::string Caller::dac(int action) {
         }
 
         if (args.size() == 3) {
-            defs::dacIndex dacIndex =
+            defs::dacIndex const dacIndex =
                 ((det->getDetectorType().squash() == defs::CHIPTESTBOARD ||
                   det->getDetectorType().squash() ==
                       defs::XILINX_CHIPTESTBOARD) &&
@@ -2534,7 +2534,7 @@ std::string Caller::dacindex(int action) {
         }
 
         if (args.size() == 1) {
-            defs::dacIndex index = defs::DAC_0;
+            defs::dacIndex const index = defs::DAC_0;
         }
 
     }
@@ -2548,7 +2548,7 @@ std::string Caller::dacindex(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
-            defs::dacIndex index = defs::DAC_0;
+            defs::dacIndex const index = defs::DAC_0;
             if (det->getDetectorType().squash(defs::GENERIC) !=
                     defs::CHIPTESTBOARD &&
                 det->getDetectorType().squash(defs::GENERIC) !=
@@ -2661,7 +2661,7 @@ std::string Caller::dacname(int action) {
         }
 
         if (args.size() == 1) {
-            defs::dacIndex index = defs::DAC_0;
+            defs::dacIndex const index = defs::DAC_0;
         }
 
     }
@@ -2672,7 +2672,7 @@ std::string Caller::dacname(int action) {
         }
 
         if (args.size() == 2) {
-            defs::dacIndex index = defs::DAC_0;
+            defs::dacIndex const index = defs::DAC_0;
         }
 
     }
@@ -2686,7 +2686,7 @@ std::string Caller::dacname(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
-            defs::dacIndex index = defs::DAC_0;
+            defs::dacIndex const index = defs::DAC_0;
             if (det->getDetectorType().squash(defs::GENERIC) !=
                     defs::CHIPTESTBOARD &&
                 det->getDetectorType().squash(defs::GENERIC) !=
@@ -2704,7 +2704,7 @@ std::string Caller::dacname(int action) {
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 2) {
-            defs::dacIndex index = defs::DAC_0;
+            defs::dacIndex const index = defs::DAC_0;
             if (det->getDetectorType().squash(defs::GENERIC) !=
                     defs::CHIPTESTBOARD &&
                 det->getDetectorType().squash(defs::GENERIC) !=
@@ -3255,7 +3255,7 @@ std::string Caller::delay(int action) {
         if (args.size() == 1) {
             try {
                 std::string tmp_time(args[0]);
-                std::string unit = RemoveUnit(tmp_time);
+                std::string const unit = RemoveUnit(tmp_time);
                 auto converted_time = StringTo<time::ns>(tmp_time, unit);
             } catch (...) {
                 throw RuntimeError("Could not convert argument to time::ns");
@@ -3294,7 +3294,7 @@ std::string Caller::delay(int action) {
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 1) {
             std::string tmp_time(args[0]);
-            std::string unit = RemoveUnit(tmp_time);
+            std::string const unit = RemoveUnit(tmp_time);
             auto converted_time = StringTo<time::ns>(tmp_time, unit);
             det->setDelayAfterTrigger(converted_time, std::vector<int>{det_id});
             os << args[0] << '\n';
@@ -3771,7 +3771,7 @@ std::string Caller::exptime(int action) {
         if (args.size() == 1) {
             try {
                 std::string tmp_time(args[0]);
-                std::string unit = RemoveUnit(tmp_time);
+                std::string const unit = RemoveUnit(tmp_time);
                 auto converted_time = StringTo<time::ns>(tmp_time, unit);
             } catch (...) {
                 throw RuntimeError("Could not convert argument to time::ns");
@@ -3827,7 +3827,7 @@ std::string Caller::exptime(int action) {
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 1) {
             std::string tmp_time(args[0]);
-            std::string unit = RemoveUnit(tmp_time);
+            std::string const unit = RemoveUnit(tmp_time);
             auto converted_time = StringTo<time::ns>(tmp_time, unit);
             det->setExptime(converted_time, std::vector<int>{det_id});
             os << args[0] << '\n';
@@ -3861,11 +3861,11 @@ std::string Caller::exptime1(int action) {
         }
 
         if (args.size() == 0) {
-            int gateIndex = 0;
+            int const gateIndex = 0;
         }
 
         if (args.size() == 1) {
-            int gateIndex = 0;
+            int const gateIndex = 0;
         }
 
     }
@@ -3876,10 +3876,10 @@ std::string Caller::exptime1(int action) {
         }
 
         if (args.size() == 1) {
-            int gateIndex = 0;
+            int const gateIndex = 0;
             try {
                 std::string tmp_time(args[0]);
-                std::string unit = RemoveUnit(tmp_time);
+                std::string const unit = RemoveUnit(tmp_time);
                 auto converted_time = StringTo<time::ns>(tmp_time, unit);
             } catch (...) {
                 throw RuntimeError("Could not convert argument to time::ns");
@@ -3887,7 +3887,7 @@ std::string Caller::exptime1(int action) {
         }
 
         if (args.size() == 2) {
-            int gateIndex = 0;
+            int const gateIndex = 0;
             try {
                 StringTo<time::ns>(args[0], args[1]);
             } catch (...) {
@@ -3906,13 +3906,13 @@ std::string Caller::exptime1(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 0) {
-            int gateIndex = 0;
+            int const gateIndex = 0;
             auto t = det->getExptime(gateIndex, std::vector<int>{det_id});
             os << OutString(t) << '\n';
         }
 
         if (args.size() == 1) {
-            int gateIndex = 0;
+            int const gateIndex = 0;
             auto t = det->getExptime(gateIndex, std::vector<int>{det_id});
             os << OutString(t, args[0]) << '\n';
         }
@@ -3920,9 +3920,9 @@ std::string Caller::exptime1(int action) {
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 1) {
-            int gateIndex = 0;
+            int const gateIndex = 0;
             std::string tmp_time(args[0]);
-            std::string unit = RemoveUnit(tmp_time);
+            std::string const unit = RemoveUnit(tmp_time);
             auto converted_time = StringTo<time::ns>(tmp_time, unit);
             det->setExptime(gateIndex, converted_time,
                             std::vector<int>{det_id});
@@ -3930,7 +3930,7 @@ std::string Caller::exptime1(int action) {
         }
 
         if (args.size() == 2) {
-            int gateIndex = 0;
+            int const gateIndex = 0;
             auto converted_time = StringTo<time::ns>(args[0], args[1]);
             det->setExptime(gateIndex, converted_time,
                             std::vector<int>{det_id});
@@ -3959,11 +3959,11 @@ std::string Caller::exptime2(int action) {
         }
 
         if (args.size() == 0) {
-            int gateIndex = 1;
+            int const gateIndex = 1;
         }
 
         if (args.size() == 1) {
-            int gateIndex = 1;
+            int const gateIndex = 1;
         }
 
     }
@@ -3974,10 +3974,10 @@ std::string Caller::exptime2(int action) {
         }
 
         if (args.size() == 1) {
-            int gateIndex = 1;
+            int const gateIndex = 1;
             try {
                 std::string tmp_time(args[0]);
-                std::string unit = RemoveUnit(tmp_time);
+                std::string const unit = RemoveUnit(tmp_time);
                 auto converted_time = StringTo<time::ns>(tmp_time, unit);
             } catch (...) {
                 throw RuntimeError("Could not convert argument to time::ns");
@@ -3985,7 +3985,7 @@ std::string Caller::exptime2(int action) {
         }
 
         if (args.size() == 2) {
-            int gateIndex = 1;
+            int const gateIndex = 1;
             try {
                 StringTo<time::ns>(args[0], args[1]);
             } catch (...) {
@@ -4004,13 +4004,13 @@ std::string Caller::exptime2(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 0) {
-            int gateIndex = 1;
+            int const gateIndex = 1;
             auto t = det->getExptime(gateIndex, std::vector<int>{det_id});
             os << OutString(t) << '\n';
         }
 
         if (args.size() == 1) {
-            int gateIndex = 1;
+            int const gateIndex = 1;
             auto t = det->getExptime(gateIndex, std::vector<int>{det_id});
             os << OutString(t, args[0]) << '\n';
         }
@@ -4018,9 +4018,9 @@ std::string Caller::exptime2(int action) {
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 1) {
-            int gateIndex = 1;
+            int const gateIndex = 1;
             std::string tmp_time(args[0]);
-            std::string unit = RemoveUnit(tmp_time);
+            std::string const unit = RemoveUnit(tmp_time);
             auto converted_time = StringTo<time::ns>(tmp_time, unit);
             det->setExptime(gateIndex, converted_time,
                             std::vector<int>{det_id});
@@ -4028,7 +4028,7 @@ std::string Caller::exptime2(int action) {
         }
 
         if (args.size() == 2) {
-            int gateIndex = 1;
+            int const gateIndex = 1;
             auto converted_time = StringTo<time::ns>(args[0], args[1]);
             det->setExptime(gateIndex, converted_time,
                             std::vector<int>{det_id});
@@ -4057,11 +4057,11 @@ std::string Caller::exptime3(int action) {
         }
 
         if (args.size() == 0) {
-            int gateIndex = 2;
+            int const gateIndex = 2;
         }
 
         if (args.size() == 1) {
-            int gateIndex = 2;
+            int const gateIndex = 2;
         }
 
     }
@@ -4072,10 +4072,10 @@ std::string Caller::exptime3(int action) {
         }
 
         if (args.size() == 1) {
-            int gateIndex = 2;
+            int const gateIndex = 2;
             try {
                 std::string tmp_time(args[0]);
-                std::string unit = RemoveUnit(tmp_time);
+                std::string const unit = RemoveUnit(tmp_time);
                 auto converted_time = StringTo<time::ns>(tmp_time, unit);
             } catch (...) {
                 throw RuntimeError("Could not convert argument to time::ns");
@@ -4083,7 +4083,7 @@ std::string Caller::exptime3(int action) {
         }
 
         if (args.size() == 2) {
-            int gateIndex = 2;
+            int const gateIndex = 2;
             try {
                 StringTo<time::ns>(args[0], args[1]);
             } catch (...) {
@@ -4102,13 +4102,13 @@ std::string Caller::exptime3(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 0) {
-            int gateIndex = 2;
+            int const gateIndex = 2;
             auto t = det->getExptime(gateIndex, std::vector<int>{det_id});
             os << OutString(t) << '\n';
         }
 
         if (args.size() == 1) {
-            int gateIndex = 2;
+            int const gateIndex = 2;
             auto t = det->getExptime(gateIndex, std::vector<int>{det_id});
             os << OutString(t, args[0]) << '\n';
         }
@@ -4116,9 +4116,9 @@ std::string Caller::exptime3(int action) {
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 1) {
-            int gateIndex = 2;
+            int const gateIndex = 2;
             std::string tmp_time(args[0]);
-            std::string unit = RemoveUnit(tmp_time);
+            std::string const unit = RemoveUnit(tmp_time);
             auto converted_time = StringTo<time::ns>(tmp_time, unit);
             det->setExptime(gateIndex, converted_time,
                             std::vector<int>{det_id});
@@ -4126,7 +4126,7 @@ std::string Caller::exptime3(int action) {
         }
 
         if (args.size() == 2) {
-            int gateIndex = 2;
+            int const gateIndex = 2;
             auto converted_time = StringTo<time::ns>(args[0], args[1]);
             det->setExptime(gateIndex, converted_time,
                             std::vector<int>{det_id});
@@ -5536,10 +5536,10 @@ std::string Caller::gatedelay(int action) {
         }
 
         if (args.size() == 1) {
-            int gateIndex = -1;
+            int const gateIndex = -1;
             try {
                 std::string tmp_time(args[0]);
-                std::string unit = RemoveUnit(tmp_time);
+                std::string const unit = RemoveUnit(tmp_time);
                 auto converted_time = StringTo<time::ns>(tmp_time, unit);
             } catch (...) {
                 throw RuntimeError("Could not convert argument to time::ns");
@@ -5547,7 +5547,7 @@ std::string Caller::gatedelay(int action) {
         }
 
         if (args.size() == 2) {
-            int gateIndex = -1;
+            int const gateIndex = -1;
             try {
                 StringTo<time::ns>(args[0], args[1]);
             } catch (...) {
@@ -5578,9 +5578,9 @@ std::string Caller::gatedelay(int action) {
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 1) {
-            int gateIndex = -1;
+            int const gateIndex = -1;
             std::string tmp_time(args[0]);
-            std::string unit = RemoveUnit(tmp_time);
+            std::string const unit = RemoveUnit(tmp_time);
             auto converted_time = StringTo<time::ns>(tmp_time, unit);
             det->setGateDelay(gateIndex, converted_time,
                               std::vector<int>{det_id});
@@ -5588,7 +5588,7 @@ std::string Caller::gatedelay(int action) {
         }
 
         if (args.size() == 2) {
-            int gateIndex = -1;
+            int const gateIndex = -1;
             auto converted_time = StringTo<time::ns>(args[0], args[1]);
             det->setGateDelay(gateIndex, converted_time,
                               std::vector<int>{det_id});
@@ -5617,11 +5617,11 @@ std::string Caller::gatedelay1(int action) {
         }
 
         if (args.size() == 0) {
-            int gateIndex = 0;
+            int const gateIndex = 0;
         }
 
         if (args.size() == 1) {
-            int gateIndex = 0;
+            int const gateIndex = 0;
         }
 
     }
@@ -5632,10 +5632,10 @@ std::string Caller::gatedelay1(int action) {
         }
 
         if (args.size() == 1) {
-            int gateIndex = 0;
+            int const gateIndex = 0;
             try {
                 std::string tmp_time(args[0]);
-                std::string unit = RemoveUnit(tmp_time);
+                std::string const unit = RemoveUnit(tmp_time);
                 auto converted_time = StringTo<time::ns>(tmp_time, unit);
             } catch (...) {
                 throw RuntimeError("Could not convert argument to time::ns");
@@ -5643,7 +5643,7 @@ std::string Caller::gatedelay1(int action) {
         }
 
         if (args.size() == 2) {
-            int gateIndex = 0;
+            int const gateIndex = 0;
             try {
                 StringTo<time::ns>(args[0], args[1]);
             } catch (...) {
@@ -5662,13 +5662,13 @@ std::string Caller::gatedelay1(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 0) {
-            int gateIndex = 0;
+            int const gateIndex = 0;
             auto t = det->getGateDelay(gateIndex, std::vector<int>{det_id});
             os << OutString(t) << '\n';
         }
 
         if (args.size() == 1) {
-            int gateIndex = 0;
+            int const gateIndex = 0;
             auto t = det->getGateDelay(gateIndex, std::vector<int>{det_id});
             os << OutString(t, args[0]) << '\n';
         }
@@ -5676,9 +5676,9 @@ std::string Caller::gatedelay1(int action) {
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 1) {
-            int gateIndex = 0;
+            int const gateIndex = 0;
             std::string tmp_time(args[0]);
-            std::string unit = RemoveUnit(tmp_time);
+            std::string const unit = RemoveUnit(tmp_time);
             auto converted_time = StringTo<time::ns>(tmp_time, unit);
             det->setGateDelay(gateIndex, converted_time,
                               std::vector<int>{det_id});
@@ -5686,7 +5686,7 @@ std::string Caller::gatedelay1(int action) {
         }
 
         if (args.size() == 2) {
-            int gateIndex = 0;
+            int const gateIndex = 0;
             auto converted_time = StringTo<time::ns>(args[0], args[1]);
             det->setGateDelay(gateIndex, converted_time,
                               std::vector<int>{det_id});
@@ -5715,11 +5715,11 @@ std::string Caller::gatedelay2(int action) {
         }
 
         if (args.size() == 0) {
-            int gateIndex = 1;
+            int const gateIndex = 1;
         }
 
         if (args.size() == 1) {
-            int gateIndex = 1;
+            int const gateIndex = 1;
         }
 
     }
@@ -5730,10 +5730,10 @@ std::string Caller::gatedelay2(int action) {
         }
 
         if (args.size() == 1) {
-            int gateIndex = 1;
+            int const gateIndex = 1;
             try {
                 std::string tmp_time(args[0]);
-                std::string unit = RemoveUnit(tmp_time);
+                std::string const unit = RemoveUnit(tmp_time);
                 auto converted_time = StringTo<time::ns>(tmp_time, unit);
             } catch (...) {
                 throw RuntimeError("Could not convert argument to time::ns");
@@ -5741,7 +5741,7 @@ std::string Caller::gatedelay2(int action) {
         }
 
         if (args.size() == 2) {
-            int gateIndex = 1;
+            int const gateIndex = 1;
             try {
                 StringTo<time::ns>(args[0], args[1]);
             } catch (...) {
@@ -5760,13 +5760,13 @@ std::string Caller::gatedelay2(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 0) {
-            int gateIndex = 1;
+            int const gateIndex = 1;
             auto t = det->getGateDelay(gateIndex, std::vector<int>{det_id});
             os << OutString(t) << '\n';
         }
 
         if (args.size() == 1) {
-            int gateIndex = 1;
+            int const gateIndex = 1;
             auto t = det->getGateDelay(gateIndex, std::vector<int>{det_id});
             os << OutString(t, args[0]) << '\n';
         }
@@ -5774,9 +5774,9 @@ std::string Caller::gatedelay2(int action) {
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 1) {
-            int gateIndex = 1;
+            int const gateIndex = 1;
             std::string tmp_time(args[0]);
-            std::string unit = RemoveUnit(tmp_time);
+            std::string const unit = RemoveUnit(tmp_time);
             auto converted_time = StringTo<time::ns>(tmp_time, unit);
             det->setGateDelay(gateIndex, converted_time,
                               std::vector<int>{det_id});
@@ -5784,7 +5784,7 @@ std::string Caller::gatedelay2(int action) {
         }
 
         if (args.size() == 2) {
-            int gateIndex = 1;
+            int const gateIndex = 1;
             auto converted_time = StringTo<time::ns>(args[0], args[1]);
             det->setGateDelay(gateIndex, converted_time,
                               std::vector<int>{det_id});
@@ -5813,11 +5813,11 @@ std::string Caller::gatedelay3(int action) {
         }
 
         if (args.size() == 0) {
-            int gateIndex = 2;
+            int const gateIndex = 2;
         }
 
         if (args.size() == 1) {
-            int gateIndex = 2;
+            int const gateIndex = 2;
         }
 
     }
@@ -5828,10 +5828,10 @@ std::string Caller::gatedelay3(int action) {
         }
 
         if (args.size() == 1) {
-            int gateIndex = 2;
+            int const gateIndex = 2;
             try {
                 std::string tmp_time(args[0]);
-                std::string unit = RemoveUnit(tmp_time);
+                std::string const unit = RemoveUnit(tmp_time);
                 auto converted_time = StringTo<time::ns>(tmp_time, unit);
             } catch (...) {
                 throw RuntimeError("Could not convert argument to time::ns");
@@ -5839,7 +5839,7 @@ std::string Caller::gatedelay3(int action) {
         }
 
         if (args.size() == 2) {
-            int gateIndex = 2;
+            int const gateIndex = 2;
             try {
                 StringTo<time::ns>(args[0], args[1]);
             } catch (...) {
@@ -5858,13 +5858,13 @@ std::string Caller::gatedelay3(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 0) {
-            int gateIndex = 2;
+            int const gateIndex = 2;
             auto t = det->getGateDelay(gateIndex, std::vector<int>{det_id});
             os << OutString(t) << '\n';
         }
 
         if (args.size() == 1) {
-            int gateIndex = 2;
+            int const gateIndex = 2;
             auto t = det->getGateDelay(gateIndex, std::vector<int>{det_id});
             os << OutString(t, args[0]) << '\n';
         }
@@ -5872,9 +5872,9 @@ std::string Caller::gatedelay3(int action) {
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 1) {
-            int gateIndex = 2;
+            int const gateIndex = 2;
             std::string tmp_time(args[0]);
-            std::string unit = RemoveUnit(tmp_time);
+            std::string const unit = RemoveUnit(tmp_time);
             auto converted_time = StringTo<time::ns>(tmp_time, unit);
             det->setGateDelay(gateIndex, converted_time,
                               std::vector<int>{det_id});
@@ -5882,7 +5882,7 @@ std::string Caller::gatedelay3(int action) {
         }
 
         if (args.size() == 2) {
-            int gateIndex = 2;
+            int const gateIndex = 2;
             auto converted_time = StringTo<time::ns>(args[0], args[1]);
             det->setGateDelay(gateIndex, converted_time,
                               std::vector<int>{det_id});
@@ -6961,7 +6961,7 @@ std::string Caller::maxclkphaseshift(int action) {
         }
 
         if (args.size() == 1) {
-            defs::detectorType type =
+            defs::detectorType const type =
                 det->getDetectorType().squash(defs::GENERIC);
             ;
             try {
@@ -6982,7 +6982,7 @@ std::string Caller::maxclkphaseshift(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
-            defs::detectorType type =
+            defs::detectorType const type =
                 det->getDetectorType().squash(defs::GENERIC);
             ;
             if (type != defs::GOTTHARD2 && type != defs::MYTHEN3) {
@@ -7779,7 +7779,7 @@ std::string Caller::patloop(int action) {
         }
 
         if (args.size() == 1) {
-            int level = StringTo<int>(args[0]);
+            int const level = StringTo<int>(args[0]);
         }
 
     }
@@ -7790,9 +7790,9 @@ std::string Caller::patloop(int action) {
         }
 
         if (args.size() == 3) {
-            int level = StringTo<int>(args[0]);
-            int start = StringTo<int>(args[1]);
-            int stop = StringTo<int>(args[2]);
+            int const level = StringTo<int>(args[0]);
+            int const start = StringTo<int>(args[1]);
+            int const stop = StringTo<int>(args[2]);
         }
 
     }
@@ -7806,7 +7806,7 @@ std::string Caller::patloop(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
-            int level = StringTo<int>(args[0]);
+            int const level = StringTo<int>(args[0]);
             auto t =
                 det->getPatternLoopAddresses(level, std::vector<int>{det_id});
             os << level << ' ' << OutStringHex(t, 4) << '\n';
@@ -7815,9 +7815,9 @@ std::string Caller::patloop(int action) {
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 3) {
-            int level = StringTo<int>(args[0]);
-            int start = StringTo<int>(args[1]);
-            int stop = StringTo<int>(args[2]);
+            int const level = StringTo<int>(args[0]);
+            int const start = StringTo<int>(args[1]);
+            int const stop = StringTo<int>(args[2]);
             det->setPatternLoopAddresses(level, start, stop,
                                          std::vector<int>{det_id});
             os << level << ' ' << '[' << ToStringHex(start, 4) << ", "
@@ -7847,7 +7847,7 @@ std::string Caller::patloop0(int action) {
         }
 
         if (args.size() == 1) {
-            int level = StringTo<int>(args[0]);
+            int const level = StringTo<int>(args[0]);
         }
 
     }
@@ -7858,9 +7858,9 @@ std::string Caller::patloop0(int action) {
         }
 
         if (args.size() == 3) {
-            int level = StringTo<int>(args[0]);
-            int start = StringTo<int>(args[1]);
-            int stop = StringTo<int>(args[2]);
+            int const level = StringTo<int>(args[0]);
+            int const start = StringTo<int>(args[1]);
+            int const stop = StringTo<int>(args[2]);
         }
 
     }
@@ -7874,7 +7874,7 @@ std::string Caller::patloop0(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
-            int level = StringTo<int>(args[0]);
+            int const level = StringTo<int>(args[0]);
             auto t =
                 det->getPatternLoopAddresses(level, std::vector<int>{det_id});
             os << OutStringHex(t, 4) << '\n';
@@ -7883,9 +7883,9 @@ std::string Caller::patloop0(int action) {
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 3) {
-            int level = StringTo<int>(args[0]);
-            int start = StringTo<int>(args[1]);
-            int stop = StringTo<int>(args[2]);
+            int const level = StringTo<int>(args[0]);
+            int const start = StringTo<int>(args[1]);
+            int const stop = StringTo<int>(args[2]);
             det->setPatternLoopAddresses(level, start, stop,
                                          std::vector<int>{det_id});
             os << '[' << ToStringHex(start, 4) << ", " << ToStringHex(stop, 4)
@@ -7915,7 +7915,7 @@ std::string Caller::patloop1(int action) {
         }
 
         if (args.size() == 1) {
-            int level = StringTo<int>(args[0]);
+            int const level = StringTo<int>(args[0]);
         }
 
     }
@@ -7926,9 +7926,9 @@ std::string Caller::patloop1(int action) {
         }
 
         if (args.size() == 3) {
-            int level = StringTo<int>(args[0]);
-            int start = StringTo<int>(args[1]);
-            int stop = StringTo<int>(args[2]);
+            int const level = StringTo<int>(args[0]);
+            int const start = StringTo<int>(args[1]);
+            int const stop = StringTo<int>(args[2]);
         }
 
     }
@@ -7942,7 +7942,7 @@ std::string Caller::patloop1(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
-            int level = StringTo<int>(args[0]);
+            int const level = StringTo<int>(args[0]);
             auto t =
                 det->getPatternLoopAddresses(level, std::vector<int>{det_id});
             os << OutStringHex(t, 4) << '\n';
@@ -7951,9 +7951,9 @@ std::string Caller::patloop1(int action) {
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 3) {
-            int level = StringTo<int>(args[0]);
-            int start = StringTo<int>(args[1]);
-            int stop = StringTo<int>(args[2]);
+            int const level = StringTo<int>(args[0]);
+            int const start = StringTo<int>(args[1]);
+            int const stop = StringTo<int>(args[2]);
             det->setPatternLoopAddresses(level, start, stop,
                                          std::vector<int>{det_id});
             os << '[' << ToStringHex(start, 4) << ", " << ToStringHex(stop, 4)
@@ -7983,7 +7983,7 @@ std::string Caller::patloop2(int action) {
         }
 
         if (args.size() == 1) {
-            int level = StringTo<int>(args[0]);
+            int const level = StringTo<int>(args[0]);
         }
 
     }
@@ -7994,9 +7994,9 @@ std::string Caller::patloop2(int action) {
         }
 
         if (args.size() == 3) {
-            int level = StringTo<int>(args[0]);
-            int start = StringTo<int>(args[1]);
-            int stop = StringTo<int>(args[2]);
+            int const level = StringTo<int>(args[0]);
+            int const start = StringTo<int>(args[1]);
+            int const stop = StringTo<int>(args[2]);
         }
 
     }
@@ -8010,7 +8010,7 @@ std::string Caller::patloop2(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
-            int level = StringTo<int>(args[0]);
+            int const level = StringTo<int>(args[0]);
             auto t =
                 det->getPatternLoopAddresses(level, std::vector<int>{det_id});
             os << OutStringHex(t, 4) << '\n';
@@ -8019,9 +8019,9 @@ std::string Caller::patloop2(int action) {
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 3) {
-            int level = StringTo<int>(args[0]);
-            int start = StringTo<int>(args[1]);
-            int stop = StringTo<int>(args[2]);
+            int const level = StringTo<int>(args[0]);
+            int const start = StringTo<int>(args[1]);
+            int const stop = StringTo<int>(args[2]);
             det->setPatternLoopAddresses(level, start, stop,
                                          std::vector<int>{det_id});
             os << '[' << ToStringHex(start, 4) << ", " << ToStringHex(stop, 4)
@@ -8114,7 +8114,7 @@ std::string Caller::patnloop(int action) {
         }
 
         if (args.size() == 1) {
-            int level = StringTo<int>(args[0]);
+            int const level = StringTo<int>(args[0]);
         }
 
     }
@@ -8125,8 +8125,8 @@ std::string Caller::patnloop(int action) {
         }
 
         if (args.size() == 2) {
-            int level = StringTo<int>(args[0]);
-            int nloops = StringTo<int>(args[1]);
+            int const level = StringTo<int>(args[0]);
+            int const nloops = StringTo<int>(args[1]);
         }
 
     }
@@ -8140,7 +8140,7 @@ std::string Caller::patnloop(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
-            int level = StringTo<int>(args[0]);
+            int const level = StringTo<int>(args[0]);
             auto t = det->getPatternLoopCycles(level, std::vector<int>{det_id});
             os << level << ' ' << OutString(t) << '\n';
         }
@@ -8148,8 +8148,8 @@ std::string Caller::patnloop(int action) {
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 2) {
-            int level = StringTo<int>(args[0]);
-            int nloops = StringTo<int>(args[1]);
+            int const level = StringTo<int>(args[0]);
+            int const nloops = StringTo<int>(args[1]);
             det->setPatternLoopCycles(level, nloops, std::vector<int>{det_id});
             os << level << ' ' << nloops << '\n';
         }
@@ -8177,7 +8177,7 @@ std::string Caller::patnloop0(int action) {
         }
 
         if (args.size() == 1) {
-            int level = StringTo<int>(args[0]);
+            int const level = StringTo<int>(args[0]);
         }
 
     }
@@ -8188,8 +8188,8 @@ std::string Caller::patnloop0(int action) {
         }
 
         if (args.size() == 2) {
-            int level = StringTo<int>(args[0]);
-            int nloops = StringTo<int>(args[1]);
+            int const level = StringTo<int>(args[0]);
+            int const nloops = StringTo<int>(args[1]);
         }
 
     }
@@ -8203,7 +8203,7 @@ std::string Caller::patnloop0(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
-            int level = StringTo<int>(args[0]);
+            int const level = StringTo<int>(args[0]);
             auto t = det->getPatternLoopCycles(level, std::vector<int>{det_id});
             os << OutString(t) << '\n';
         }
@@ -8211,8 +8211,8 @@ std::string Caller::patnloop0(int action) {
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 2) {
-            int level = StringTo<int>(args[0]);
-            int nloops = StringTo<int>(args[1]);
+            int const level = StringTo<int>(args[0]);
+            int const nloops = StringTo<int>(args[1]);
             det->setPatternLoopCycles(level, nloops, std::vector<int>{det_id});
             os << nloops << '\n';
         }
@@ -8240,7 +8240,7 @@ std::string Caller::patnloop1(int action) {
         }
 
         if (args.size() == 1) {
-            int level = StringTo<int>(args[0]);
+            int const level = StringTo<int>(args[0]);
         }
 
     }
@@ -8251,8 +8251,8 @@ std::string Caller::patnloop1(int action) {
         }
 
         if (args.size() == 2) {
-            int level = StringTo<int>(args[0]);
-            int nloops = StringTo<int>(args[1]);
+            int const level = StringTo<int>(args[0]);
+            int const nloops = StringTo<int>(args[1]);
         }
 
     }
@@ -8266,7 +8266,7 @@ std::string Caller::patnloop1(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
-            int level = StringTo<int>(args[0]);
+            int const level = StringTo<int>(args[0]);
             auto t = det->getPatternLoopCycles(level, std::vector<int>{det_id});
             os << OutString(t) << '\n';
         }
@@ -8274,8 +8274,8 @@ std::string Caller::patnloop1(int action) {
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 2) {
-            int level = StringTo<int>(args[0]);
-            int nloops = StringTo<int>(args[1]);
+            int const level = StringTo<int>(args[0]);
+            int const nloops = StringTo<int>(args[1]);
             det->setPatternLoopCycles(level, nloops, std::vector<int>{det_id});
             os << nloops << '\n';
         }
@@ -8303,7 +8303,7 @@ std::string Caller::patnloop2(int action) {
         }
 
         if (args.size() == 1) {
-            int level = StringTo<int>(args[0]);
+            int const level = StringTo<int>(args[0]);
         }
 
     }
@@ -8314,8 +8314,8 @@ std::string Caller::patnloop2(int action) {
         }
 
         if (args.size() == 2) {
-            int level = StringTo<int>(args[0]);
-            int nloops = StringTo<int>(args[1]);
+            int const level = StringTo<int>(args[0]);
+            int const nloops = StringTo<int>(args[1]);
         }
 
     }
@@ -8329,7 +8329,7 @@ std::string Caller::patnloop2(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
-            int level = StringTo<int>(args[0]);
+            int const level = StringTo<int>(args[0]);
             auto t = det->getPatternLoopCycles(level, std::vector<int>{det_id});
             os << OutString(t) << '\n';
         }
@@ -8337,8 +8337,8 @@ std::string Caller::patnloop2(int action) {
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 2) {
-            int level = StringTo<int>(args[0]);
-            int nloops = StringTo<int>(args[1]);
+            int const level = StringTo<int>(args[0]);
+            int const nloops = StringTo<int>(args[1]);
             det->setPatternLoopCycles(level, nloops, std::vector<int>{det_id});
             os << nloops << '\n';
         }
@@ -8507,7 +8507,7 @@ std::string Caller::patwait(int action) {
         }
 
         if (args.size() == 1) {
-            int level = StringTo<int>(args[0]);
+            int const level = StringTo<int>(args[0]);
         }
 
     }
@@ -8518,8 +8518,8 @@ std::string Caller::patwait(int action) {
         }
 
         if (args.size() == 2) {
-            int level = StringTo<int>(args[0]);
-            int addr = StringTo<int>(args[1]);
+            int const level = StringTo<int>(args[0]);
+            int const addr = StringTo<int>(args[1]);
         }
 
     }
@@ -8533,7 +8533,7 @@ std::string Caller::patwait(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
-            int level = StringTo<int>(args[0]);
+            int const level = StringTo<int>(args[0]);
             auto t = det->getPatternWaitAddr(level, std::vector<int>{det_id});
             os << level << ' ' << OutStringHex(t, 4) << '\n';
         }
@@ -8541,8 +8541,8 @@ std::string Caller::patwait(int action) {
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 2) {
-            int level = StringTo<int>(args[0]);
-            int addr = StringTo<int>(args[1]);
+            int const level = StringTo<int>(args[0]);
+            int const addr = StringTo<int>(args[1]);
             det->setPatternWaitAddr(level, addr, std::vector<int>{det_id});
             os << level << ' ' << ToStringHex(addr, 4) << '\n';
         }
@@ -8570,7 +8570,7 @@ std::string Caller::patwait0(int action) {
         }
 
         if (args.size() == 1) {
-            int level = StringTo<int>(args[0]);
+            int const level = StringTo<int>(args[0]);
         }
 
     }
@@ -8581,8 +8581,8 @@ std::string Caller::patwait0(int action) {
         }
 
         if (args.size() == 2) {
-            int level = StringTo<int>(args[0]);
-            int addr = StringTo<int>(args[1]);
+            int const level = StringTo<int>(args[0]);
+            int const addr = StringTo<int>(args[1]);
         }
 
     }
@@ -8596,7 +8596,7 @@ std::string Caller::patwait0(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
-            int level = StringTo<int>(args[0]);
+            int const level = StringTo<int>(args[0]);
             auto t = det->getPatternWaitAddr(level, std::vector<int>{det_id});
             os << OutStringHex(t, 4) << '\n';
         }
@@ -8604,8 +8604,8 @@ std::string Caller::patwait0(int action) {
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 2) {
-            int level = StringTo<int>(args[0]);
-            int addr = StringTo<int>(args[1]);
+            int const level = StringTo<int>(args[0]);
+            int const addr = StringTo<int>(args[1]);
             det->setPatternWaitAddr(level, addr, std::vector<int>{det_id});
             os << ToStringHex(addr, 4) << '\n';
         }
@@ -8633,7 +8633,7 @@ std::string Caller::patwait1(int action) {
         }
 
         if (args.size() == 1) {
-            int level = StringTo<int>(args[0]);
+            int const level = StringTo<int>(args[0]);
         }
 
     }
@@ -8644,8 +8644,8 @@ std::string Caller::patwait1(int action) {
         }
 
         if (args.size() == 2) {
-            int level = StringTo<int>(args[0]);
-            int addr = StringTo<int>(args[1]);
+            int const level = StringTo<int>(args[0]);
+            int const addr = StringTo<int>(args[1]);
         }
 
     }
@@ -8659,7 +8659,7 @@ std::string Caller::patwait1(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
-            int level = StringTo<int>(args[0]);
+            int const level = StringTo<int>(args[0]);
             auto t = det->getPatternWaitAddr(level, std::vector<int>{det_id});
             os << OutStringHex(t, 4) << '\n';
         }
@@ -8667,8 +8667,8 @@ std::string Caller::patwait1(int action) {
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 2) {
-            int level = StringTo<int>(args[0]);
-            int addr = StringTo<int>(args[1]);
+            int const level = StringTo<int>(args[0]);
+            int const addr = StringTo<int>(args[1]);
             det->setPatternWaitAddr(level, addr, std::vector<int>{det_id});
             os << ToStringHex(addr, 4) << '\n';
         }
@@ -8696,7 +8696,7 @@ std::string Caller::patwait2(int action) {
         }
 
         if (args.size() == 1) {
-            int level = StringTo<int>(args[0]);
+            int const level = StringTo<int>(args[0]);
         }
 
     }
@@ -8707,8 +8707,8 @@ std::string Caller::patwait2(int action) {
         }
 
         if (args.size() == 2) {
-            int level = StringTo<int>(args[0]);
-            int addr = StringTo<int>(args[1]);
+            int const level = StringTo<int>(args[0]);
+            int const addr = StringTo<int>(args[1]);
         }
 
     }
@@ -8722,7 +8722,7 @@ std::string Caller::patwait2(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
-            int level = StringTo<int>(args[0]);
+            int const level = StringTo<int>(args[0]);
             auto t = det->getPatternWaitAddr(level, std::vector<int>{det_id});
             os << OutStringHex(t, 4) << '\n';
         }
@@ -8730,8 +8730,8 @@ std::string Caller::patwait2(int action) {
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 2) {
-            int level = StringTo<int>(args[0]);
-            int addr = StringTo<int>(args[1]);
+            int const level = StringTo<int>(args[0]);
+            int const addr = StringTo<int>(args[1]);
             det->setPatternWaitAddr(level, addr, std::vector<int>{det_id});
             os << ToStringHex(addr, 4) << '\n';
         }
@@ -8929,7 +8929,7 @@ std::string Caller::period(int action) {
         if (args.size() == 1) {
             try {
                 std::string tmp_time(args[0]);
-                std::string unit = RemoveUnit(tmp_time);
+                std::string const unit = RemoveUnit(tmp_time);
                 auto converted_time = StringTo<time::ns>(tmp_time, unit);
             } catch (...) {
                 throw RuntimeError("Could not convert argument to time::ns");
@@ -8968,7 +8968,7 @@ std::string Caller::period(int action) {
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 1) {
             std::string tmp_time(args[0]);
-            std::string unit = RemoveUnit(tmp_time);
+            std::string const unit = RemoveUnit(tmp_time);
             auto converted_time = StringTo<time::ns>(tmp_time, unit);
             det->setPeriod(converted_time, std::vector<int>{det_id});
             os << args[0] << '\n';
@@ -9240,7 +9240,7 @@ std::string Caller::powerindex(int action) {
         }
 
         if (args.size() == 1) {
-            defs::dacIndex index = defs::V_POWER_A;
+            defs::dacIndex const index = defs::V_POWER_A;
         }
 
     }
@@ -9254,7 +9254,7 @@ std::string Caller::powerindex(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
-            defs::dacIndex index = defs::V_POWER_A;
+            defs::dacIndex const index = defs::V_POWER_A;
             if (det->getDetectorType().squash(defs::GENERIC) !=
                     defs::CHIPTESTBOARD &&
                 det->getDetectorType().squash(defs::GENERIC) !=
@@ -9366,7 +9366,7 @@ std::string Caller::powername(int action) {
         }
 
         if (args.size() == 1) {
-            defs::dacIndex index = defs::V_POWER_A;
+            defs::dacIndex const index = defs::V_POWER_A;
         }
 
     }
@@ -9377,7 +9377,7 @@ std::string Caller::powername(int action) {
         }
 
         if (args.size() == 2) {
-            defs::dacIndex index = defs::V_POWER_A;
+            defs::dacIndex const index = defs::V_POWER_A;
         }
 
     }
@@ -9391,7 +9391,7 @@ std::string Caller::powername(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
-            defs::dacIndex index = defs::V_POWER_A;
+            defs::dacIndex const index = defs::V_POWER_A;
             if (det->getDetectorType().squash(defs::GENERIC) !=
                     defs::CHIPTESTBOARD &&
                 det->getDetectorType().squash(defs::GENERIC) !=
@@ -9409,7 +9409,7 @@ std::string Caller::powername(int action) {
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 2) {
-            defs::dacIndex index = defs::V_POWER_A;
+            defs::dacIndex const index = defs::V_POWER_A;
             if (det->getDetectorType().squash(defs::GENERIC) !=
                     defs::CHIPTESTBOARD &&
                 det->getDetectorType().squash(defs::GENERIC) !=
@@ -9461,7 +9461,7 @@ std::string Caller::powervalues(int action) {
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 0) {
 
-            std::string suffix = " mV";
+            std::string const suffix = " mV";
             auto t = det->getPowerList();
 
             auto names = det->getPowerNames();
@@ -9571,7 +9571,7 @@ std::string Caller::pulse(int action) {
         }
 
         if (args.size() == 3) {
-            defs::xy c =
+            defs::xy const c =
                 defs::xy(StringTo<int>(args[1]), StringTo<int>(args[2]));
             try {
                 StringTo<int>(args[0]);
@@ -9591,7 +9591,7 @@ std::string Caller::pulse(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 3) {
-            defs::xy c =
+            defs::xy const c =
                 defs::xy(StringTo<int>(args[1]), StringTo<int>(args[2]));
             auto arg0 = StringTo<int>(args[0]);
             det->pulsePixel(arg0, c, std::vector<int>{det_id});
@@ -9665,7 +9665,7 @@ std::string Caller::pulsenmove(int action) {
         }
 
         if (args.size() == 3) {
-            defs::xy c =
+            defs::xy const c =
                 defs::xy(StringTo<int>(args[1]), StringTo<int>(args[2]));
             try {
                 StringTo<int>(args[0]);
@@ -9685,7 +9685,7 @@ std::string Caller::pulsenmove(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 3) {
-            defs::xy c =
+            defs::xy const c =
                 defs::xy(StringTo<int>(args[1]), StringTo<int>(args[2]));
             auto arg0 = StringTo<int>(args[0]);
             det->pulsePixelNMove(arg0, c, std::vector<int>{det_id});
@@ -12180,7 +12180,7 @@ std::string Caller::scan(int action) {
         if (args.size() == 5) {
             try {
                 std::string tmp_time(args[4]);
-                std::string unit = RemoveUnit(tmp_time);
+                std::string const unit = RemoveUnit(tmp_time);
                 auto t = StringTo<time::ns>(tmp_time, unit);
             } catch (...) {
                 throw RuntimeError("Could not convert argument to time::ns");
@@ -12228,7 +12228,7 @@ std::string Caller::scan(int action) {
 
         if (args.size() == 5) {
             std::string tmp_time(args[4]);
-            std::string unit = RemoveUnit(tmp_time);
+            std::string const unit = RemoveUnit(tmp_time);
             auto t = StringTo<time::ns>(tmp_time, unit);
             if (det_id != -1) {
                 throw RuntimeError("Cannot execute scan at module level");
@@ -12871,7 +12871,7 @@ std::string Caller::slowadcindex(int action) {
         }
 
         if (args.size() == 1) {
-            defs::dacIndex index = defs::SLOW_ADC0;
+            defs::dacIndex const index = defs::SLOW_ADC0;
         }
 
     }
@@ -12885,7 +12885,7 @@ std::string Caller::slowadcindex(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
-            defs::dacIndex index = defs::SLOW_ADC0;
+            defs::dacIndex const index = defs::SLOW_ADC0;
             if (det->getDetectorType().squash(defs::GENERIC) !=
                     defs::CHIPTESTBOARD &&
                 det->getDetectorType().squash(defs::GENERIC) !=
@@ -12999,7 +12999,7 @@ std::string Caller::slowadcname(int action) {
         }
 
         if (args.size() == 1) {
-            defs::dacIndex index = defs::SLOW_ADC0;
+            defs::dacIndex const index = defs::SLOW_ADC0;
         }
 
     }
@@ -13010,7 +13010,7 @@ std::string Caller::slowadcname(int action) {
         }
 
         if (args.size() == 2) {
-            defs::dacIndex index = defs::SLOW_ADC0;
+            defs::dacIndex const index = defs::SLOW_ADC0;
         }
 
     }
@@ -13024,7 +13024,7 @@ std::string Caller::slowadcname(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
-            defs::dacIndex index = defs::SLOW_ADC0;
+            defs::dacIndex const index = defs::SLOW_ADC0;
             if (det->getDetectorType().squash(defs::GENERIC) !=
                     defs::CHIPTESTBOARD &&
                 det->getDetectorType().squash(defs::GENERIC) !=
@@ -13043,7 +13043,7 @@ std::string Caller::slowadcname(int action) {
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 2) {
-            defs::dacIndex index = defs::SLOW_ADC0;
+            defs::dacIndex const index = defs::SLOW_ADC0;
             if (det->getDetectorType().squash(defs::GENERIC) !=
                     defs::CHIPTESTBOARD &&
                 det->getDetectorType().squash(defs::GENERIC) !=
@@ -13096,7 +13096,7 @@ std::string Caller::slowadcvalues(int action) {
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 0) {
 
-            std::string suffix = " uV";
+            std::string const suffix = " uV";
             auto t = det->getSlowADCList();
 
             auto names = det->getSlowADCNames();
@@ -13350,7 +13350,7 @@ std::string Caller::storagecell_delay(int action) {
         if (args.size() == 1) {
             try {
                 std::string tmp_time(args[0]);
-                std::string unit = RemoveUnit(tmp_time);
+                std::string const unit = RemoveUnit(tmp_time);
                 auto converted_time = StringTo<time::ns>(tmp_time, unit);
             } catch (...) {
                 throw RuntimeError("Could not convert argument to time::ns");
@@ -13389,7 +13389,7 @@ std::string Caller::storagecell_delay(int action) {
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 1) {
             std::string tmp_time(args[0]);
-            std::string unit = RemoveUnit(tmp_time);
+            std::string const unit = RemoveUnit(tmp_time);
             auto converted_time = StringTo<time::ns>(tmp_time, unit);
             det->setStorageCellDelay(converted_time, std::vector<int>{det_id});
             os << args[0] << '\n';
@@ -13500,7 +13500,7 @@ std::string Caller::subdeadtime(int action) {
         if (args.size() == 1) {
             try {
                 std::string tmp_time(args[0]);
-                std::string unit = RemoveUnit(tmp_time);
+                std::string const unit = RemoveUnit(tmp_time);
                 auto converted_time = StringTo<time::ns>(tmp_time, unit);
             } catch (...) {
                 throw RuntimeError("Could not convert argument to time::ns");
@@ -13539,7 +13539,7 @@ std::string Caller::subdeadtime(int action) {
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 1) {
             std::string tmp_time(args[0]);
-            std::string unit = RemoveUnit(tmp_time);
+            std::string const unit = RemoveUnit(tmp_time);
             auto converted_time = StringTo<time::ns>(tmp_time, unit);
             det->setSubDeadTime(converted_time, std::vector<int>{det_id});
             os << args[0] << '\n';
@@ -13588,7 +13588,7 @@ std::string Caller::subexptime(int action) {
         if (args.size() == 1) {
             try {
                 std::string tmp_time(args[0]);
-                std::string unit = RemoveUnit(tmp_time);
+                std::string const unit = RemoveUnit(tmp_time);
                 auto converted_time = StringTo<time::ns>(tmp_time, unit);
             } catch (...) {
                 throw RuntimeError("Could not convert argument to time::ns");
@@ -13627,7 +13627,7 @@ std::string Caller::subexptime(int action) {
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 1) {
             std::string tmp_time(args[0]);
-            std::string unit = RemoveUnit(tmp_time);
+            std::string const unit = RemoveUnit(tmp_time);
             auto converted_time = StringTo<time::ns>(tmp_time, unit);
             det->setSubExptime(converted_time, std::vector<int>{det_id});
             os << args[0] << '\n';
@@ -14404,7 +14404,7 @@ std::string Caller::tempvalues(int action) {
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 0) {
 
-            std::string suffix = " °C";
+            std::string const suffix = " °C";
             auto t = det->getTemperatureList();
             os << '[';
             if (t.size() > 0) {
@@ -14864,7 +14864,7 @@ std::string Caller::trigger(int action) {
         }
 
         if (args.size() == 0) {
-            bool block = false;
+            bool const block = false;
         }
 
     }
@@ -14878,7 +14878,7 @@ std::string Caller::trigger(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 0) {
-            bool block = false;
+            bool const block = false;
             if (det_id != -1) {
                 throw RuntimeError("Cannot execute trigger at module level");
             }
@@ -17290,7 +17290,7 @@ std::string Caller::vetoalg(int action) {
         }
 
         if (args.size() == 1) {
-            defs::streamingInterface interface =
+            defs::streamingInterface const interface =
                 StringTo<defs::streamingInterface>(args[0]);
         }
 
@@ -17302,8 +17302,8 @@ std::string Caller::vetoalg(int action) {
         }
 
         if (args.size() == 2) {
-            defs::vetoAlgorithm alg = StringTo<defs::vetoAlgorithm>(args[0]);
-            defs::streamingInterface interface =
+            defs::vetoAlgorithm const alg = StringTo<defs::vetoAlgorithm>(args[0]);
+            defs::streamingInterface const interface =
                 StringTo<defs::streamingInterface>(args[1]);
         }
 
@@ -17318,7 +17318,7 @@ std::string Caller::vetoalg(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
-            defs::streamingInterface interface =
+            defs::streamingInterface const interface =
                 StringTo<defs::streamingInterface>(args[0]);
             if (interface == defs::streamingInterface::NONE) {
                 throw RuntimeError(
@@ -17331,8 +17331,8 @@ std::string Caller::vetoalg(int action) {
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 2) {
-            defs::vetoAlgorithm alg = StringTo<defs::vetoAlgorithm>(args[0]);
-            defs::streamingInterface interface =
+            defs::vetoAlgorithm const alg = StringTo<defs::vetoAlgorithm>(args[0]);
+            defs::streamingInterface const interface =
                 StringTo<defs::streamingInterface>(args[1]);
             if (interface == defs::streamingInterface::NONE) {
                 throw RuntimeError(

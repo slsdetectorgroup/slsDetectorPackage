@@ -102,7 +102,7 @@ std::string Caller::list(int action) {
 /* Network Configuration (Detector<->Receiver) */
 
 IpAddr Caller::getDstIpFromAuto() {
-    std::string rxHostname =
+    std::string const rxHostname =
         det->getRxHostname(std::vector<int>{det_id}).squash("none");
     // Hostname could be ip try to decode otherwise look up the hostname
     auto val = IpAddr{rxHostname};
@@ -113,7 +113,7 @@ IpAddr Caller::getDstIpFromAuto() {
 }
 
 IpAddr Caller::getSrcIpFromAuto() {
-    std::string hostname =
+    std::string const hostname =
         det->getHostname(std::vector<int>{det_id}).squash("none");
     // Hostname could be ip try to decode otherwise look up the hostname
     auto val = IpAddr{hostname};
@@ -128,9 +128,9 @@ UdpDestination Caller::getUdpEntry() {
     udpDestination.entry = rx_id;
 
     for (auto it : args) {
-        size_t pos = it.find('=');
-        std::string key = it.substr(0, pos);
-        std::string value = it.substr(pos + 1);
+        size_t const pos = it.find('=');
+        std::string const key = it.substr(0, pos);
+        std::string const value = it.substr(pos + 1);
         if (key == "ip") {
             if (value == "auto") {
                 auto val = getDstIpFromAuto();
@@ -177,7 +177,7 @@ int Caller::GetLevelAndInsertIntoArgs(std::string levelSeparatedCommand) {
         LOG(logWARNING) << "This command is deprecated and will be removed. "
                            "Please migrate to "
                         << levelSeparatedCommand;
-        int level = cmd[cmd.find_first_of("012")] - '0';
+        int const level = cmd[cmd.find_first_of("012")] - '0';
         args.insert(args.begin(), std::to_string(level));
         return true;
     }
@@ -295,8 +295,8 @@ std::string Caller::versions(int action) {
         bool receiver = false;
         std::string vReceiver = "Unknown";
 
-        std::string vRelease = det->getPackageVersion();
-        std::string vClient = det->getClientVersion();
+        std::string const vRelease = det->getPackageVersion();
+        std::string const vClient = det->getClientVersion();
 
         if (det->size() != 0) {
             // shared memory has detectors
@@ -382,7 +382,7 @@ std::string Caller::threshold(int action) {
         if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
-        defs::detectorType type = det->getDetectorType().squash();
+        defs::detectorType const type = det->getDetectorType().squash();
         if (type == defs::EIGER) {
             auto t = det->getThresholdEnergy(std::vector<int>{det_id});
             os << OutString(t) << '\n';
@@ -393,7 +393,7 @@ std::string Caller::threshold(int action) {
             throw RuntimeError("Not implemented for this detector\n");
         }
     } else if (action == defs::PUT_ACTION) {
-        defs::detectorType type = det->getDetectorType().squash();
+        defs::detectorType const type = det->getDetectorType().squash();
         if (type == defs::EIGER && args.size() != 1 && args.size() != 2) {
             WrongNumberOfParameters(1);
         }
@@ -401,7 +401,7 @@ std::string Caller::threshold(int action) {
             WrongNumberOfParameters(1);
         }
 
-        bool trimbits = (cmd == "thresholdnotb") ? false : true;
+        bool const trimbits = (cmd == "thresholdnotb") ? false : true;
         std::array<int, 3> energy = {StringTo<int>(args[0]), 0, 0};
         energy[1] = energy[0];
         energy[2] = energy[0];
@@ -708,7 +708,7 @@ std::string Caller::rx_hostname(int action) {
     return os.str();
 }
 std::string Caller::rx_zmqip(int action) {
-    std::string helpMessage =
+    std::string const helpMessage =
         "\n\t[deprecated] The receiver zmq socket (publisher) will "
         "listen to all interfaces ('tcp://0.0.0.0:[port]'to all interfaces "
         "(from v9.0.0). This command does nothing and will be removed "
@@ -729,7 +729,7 @@ std::string Caller::rx_zmqip(int action) {
 
 std::string Caller::rx_roi(int action) {
     std::ostringstream os;
-    std::string helpMessage =
+    std::string const helpMessage =
         std::string("[xmin] [xmax] [ymin] [ymax]\n") +
         "\tDefines a single region of interest (ROI) in the receiver.\n"
         "\tFor example, to set a single ROI: 0 100 20 30\n\n"
@@ -771,7 +771,7 @@ std::string Caller::rx_roi(int action) {
         }
         // Support multiple args with bracketed ROIs, or single arg with
         // semicolon-separated vector in quotes
-        bool isVectorInput =
+        bool const isVectorInput =
             std::all_of(args.begin(), args.end(), [](const std::string &a) {
                 return a.find('[') != std::string::npos &&
                        a.find(']') != std::string::npos;
@@ -870,7 +870,7 @@ std::string Caller::ratecorr(int action) {
         if (args.size() != 1) {
             WrongNumberOfParameters(1);
         }
-        int tau = StringTo<int>(args[0]);
+        int const tau = StringTo<int>(args[0]);
         if (tau == -1) {
             det->setDefaultRateCorrection(std::vector<int>{det_id});
             auto t = det->getRateCorrection(std::vector<int>{det_id});
@@ -905,7 +905,7 @@ std::string Caller::burstmode(int action) {
             }
             defs::burstMode t;
             try {
-                int ival = StringTo<int>(args[0]);
+                int const ival = StringTo<int>(args[0]);
                 switch (ival) {
                 case 0:
                     t = defs::BURST_INTERNAL;
@@ -1001,7 +1001,7 @@ std::string Caller::counters(int action) {
         // convert vector to counter enable mask
         uint32_t mask = 0;
         for (size_t i = 0; i < args.size(); ++i) {
-            int val = StringTo<int>(args[i]);
+            int const val = StringTo<int>(args[i]);
             // already enabled earlier
             if (mask & (1 << val)) {
                 std::ostringstream oss;
@@ -1036,9 +1036,9 @@ std::string Caller::samples(int action) {
             auto d = det->getNumberOfDigitalSamples(std::vector<int>{det_id});
             auto t =
                 det->getNumberOfTransceiverSamples(std::vector<int>{det_id});
-            int as = a.squash(-1);
-            int ds = d.squash(-1);
-            int ts = t.squash(-1);
+            int const as = a.squash(-1);
+            int const ds = d.squash(-1);
+            int const ts = t.squash(-1);
             if (as == -1 || ds == -1 || ts == -1 || as != ds ||
                 as != ts) { // check if a == d?
                 throw RuntimeError(
@@ -1077,7 +1077,7 @@ std::string Caller::slowadc(int action) {
         if (args.size() != 1) {
             WrongNumberOfParameters(0);
         }
-        int nchan = StringTo<int>(args[0]);
+        int const nchan = StringTo<int>(args[0]);
         if (nchan < 0 || nchan > 7) {
             throw RuntimeError("Unknown adc argument " + args[0]);
         }
@@ -1109,7 +1109,7 @@ std::string Caller::patwaittime(int action) {
     }
 
     // parse level
-    bool deprecated_cmd = GetLevelAndInsertIntoArgs("patwaittime");
+    bool const deprecated_cmd = GetLevelAndInsertIntoArgs("patwaittime");
     int level = 0;
     try {
         if (args.size() > 0)
@@ -1141,7 +1141,7 @@ std::string Caller::patwaittime(int action) {
         // clocks (all digits)
         if (args.size() == 2 &&
             std::all_of(args[1].begin(), args[1].end(), ::isdigit)) {
-            uint64_t waittime = StringTo<uint64_t>(args[1]);
+            uint64_t const waittime = StringTo<uint64_t>(args[1]);
             det->setPatternWaitClocks(level, waittime,
                                       std::vector<int>{det_id});
             os << waittime << '\n';
@@ -1152,7 +1152,7 @@ std::string Caller::patwaittime(int action) {
             try {
                 if (args.size() == 2) {
                     std::string tmp_time(args[1]);
-                    std::string unit = RemoveUnit(tmp_time);
+                    std::string const unit = RemoveUnit(tmp_time);
                     converted_time = StringTo<time::ns>(tmp_time, unit);
                 } else {
                     converted_time = StringTo<time::ns>(args[1], args[2]);
@@ -1205,7 +1205,7 @@ std::string Caller::rx_dbitlist(int action) {
         }
         // 'none' option already covered as t is empty by default
         else if (args[0] != "none") {
-            unsigned int ntrim = args.size();
+            unsigned int const ntrim = args.size();
             t.resize(ntrim);
             for (unsigned int i = 0; i < ntrim; ++i) {
                 t[i] = StringTo<int>(args[i]);
@@ -1421,7 +1421,7 @@ std::string Caller::sleep(int action) {
         try {
             if (args.size() == 1) {
                 std::string tmp_time(args[0]);
-                std::string unit = RemoveUnit(tmp_time);
+                std::string const unit = RemoveUnit(tmp_time);
                 converted_time = StringTo<time::ns>(tmp_time, unit);
             } else {
                 converted_time = StringTo<time::ns>(args[0], args[1]);

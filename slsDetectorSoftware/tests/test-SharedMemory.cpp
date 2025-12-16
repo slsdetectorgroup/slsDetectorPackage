@@ -105,7 +105,7 @@ TEST_CASE("Create SharedMemory read and write", "[detector][shm]") {
     shm.createSharedMemory();
 
     const char *env_p = std::getenv(SHM_ENV_NAME);
-    std::string env_name = env_p ? ("_" + std::string(env_p)) : "";
+    std::string const env_name = env_p ? ("_" + std::string(env_p)) : "";
     CHECK(shm.getName() == std::string(SHM_DETECTOR_PREFIX) +
                                std::to_string(shm_id) + env_name);
     shm()->x = 3;
@@ -177,7 +177,7 @@ TEST_CASE("Open two shared memories to the same place", "[detector][shm]") {
 
 TEST_CASE("Move SharedMemory", "[detector][shm]") {
     const char *env_p = std::getenv(SHM_ENV_NAME);
-    std::string env_name = env_p ? ("_" + std::string(env_p)) : "";
+    std::string const env_name = env_p ? ("_" + std::string(env_p)) : "";
 
     SharedMemory<Data> shm(shm_id, -1);
     CHECK(shm.getName() == std::string(SHM_DETECTOR_PREFIX) +
@@ -198,7 +198,7 @@ TEST_CASE("Move SharedMemory", "[detector][shm]") {
 
 TEST_CASE("Create several shared memories", "[detector][shm]") {
     const char *env_p = std::getenv(SHM_ENV_NAME);
-    std::string env_name = env_p ? ("_" + std::string(env_p)) : "";
+    std::string const env_name = env_p ? ("_" + std::string(env_p)) : "";
 
     constexpr int N = 5;
     std::vector<SharedMemory<Data>> v;
@@ -225,9 +225,9 @@ TEST_CASE("Create several shared memories", "[detector][shm]") {
 
 TEST_CASE("Create create a shared memory with a tag") {
     const char *env_p = std::getenv(SHM_ENV_NAME);
-    std::string env_name = env_p ? ("_" + std::string(env_p)) : "";
+    std::string const env_name = env_p ? ("_" + std::string(env_p)) : "";
 
-    SharedMemory<Data> shm(0, -1, "ctbdacs");
+    SharedMemory<Data> const shm(0, -1, "ctbdacs");
     REQUIRE(shm.getName() ==
             std::string(SHM_DETECTOR_PREFIX) + "0" + env_name + "_ctbdacs");
 }
@@ -242,7 +242,7 @@ TEST_CASE("Create create a shared memory with a tag when SLSDETNAME is set") {
     unsetenv(SHM_ENV_NAME);
     setenv(SHM_ENV_NAME, "myprefix", 1);
 
-    SharedMemory<Data> shm(0, -1, "ctbdacs");
+    SharedMemory<Data> const shm(0, -1, "ctbdacs");
     REQUIRE(shm.getName() == std::string(SHM_DETECTOR_PREFIX) + "0_myprefix_ctbdacs");
 
     // Clean up after us

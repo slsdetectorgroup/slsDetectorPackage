@@ -24,7 +24,7 @@ ClientSocket::ClientSocket(std::string stype, const std::string &host,
     hints.ai_flags |= AI_CANONNAME;
 
     if (getaddrinfo(host.c_str(), nullptr, &hints, &result) != 0) {
-        std::string msg = "ClientSocket cannot decode host:" + host +
+        std::string const msg = "ClientSocket cannot decode host:" + host +
                           " on port " + std::to_string(port) + "\n";
         throw SocketError(msg);
     }
@@ -40,7 +40,7 @@ ClientSocket::ClientSocket(std::string stype, const std::string &host,
     if (::connect(getSocketId(), (struct sockaddr *)&serverAddr,
                   sizeof(serverAddr)) != 0) {
         freeaddrinfo(result);
-        std::string msg = "ClientSocket: Cannot connect to " + socketType +
+        std::string const msg = "ClientSocket: Cannot connect to " + socketType +
                           ":" + host + " on port " + std::to_string(port) +
                           "\n";
         throw SocketError(msg);
@@ -54,7 +54,7 @@ ClientSocket::ClientSocket(std::string sType, struct sockaddr_in addr)
     if (::connect(getSocketId(), (struct sockaddr *)&addr, sizeof(addr)) != 0) {
         char address[INET_ADDRSTRLEN];
         inet_ntop(AF_INET, &addr.sin_addr, address, INET_ADDRSTRLEN);
-        std::string msg = "ClientSocket: Cannot connect to " + socketType +
+        std::string const msg = "ClientSocket: Cannot connect to " + socketType +
                           ":" + address + " on port " +
                           std::to_string(addr.sin_port) + "\n";
         throw SocketError(msg);
@@ -77,7 +77,7 @@ void ClientSocket::readReply(int &ret, void *retval, size_t retval_size) {
     try {
         Receive(&ret, sizeof(ret));
         if (ret == slsDetectorDefs::FAIL) {
-            std::string mess = readErrorMessage();
+            std::string const mess = readErrorMessage();
             // Do we need to know hostname here?
             // In that case save it???
             if (socketType == "Receiver") {

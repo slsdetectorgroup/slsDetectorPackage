@@ -9,7 +9,7 @@
 namespace sls {
 
 TEST_CASE("Equality of an empty vector", "[support]") {
-    std::vector<int> v;
+    std::vector<int> const v;
     REQUIRE(v.empty());
     REQUIRE_FALSE(allEqual(v));
     REQUIRE_FALSE(allEqualWithTol(v, 2));
@@ -19,7 +19,7 @@ TEST_CASE("Equality of an empty vector", "[support]") {
 }
 
 TEST_CASE("Equality of a vector with one element", "[support]") {
-    std::vector<int> v{5};
+    std::vector<int> const v{5};
     REQUIRE(v.size() == 1);
     REQUIRE(allEqual(v));
     REQUIRE(allEqualWithTol(v, 1));
@@ -55,7 +55,7 @@ TEST_CASE("A larger vector of the same elements", "[support]") {
 }
 
 TEST_CASE("A vector of double with different values", "[support]") {
-    std::vector<double> v{1.2, 2., 4.2, 4, 1.1};
+    std::vector<double> const v{1.2, 2., 4.2, 4, 1.1};
 
     REQUIRE(allEqual(v) == false);
     REQUIRE(allEqualWithTol(v, 0.3) == false);
@@ -63,19 +63,19 @@ TEST_CASE("A vector of double with different values", "[support]") {
 }
 
 TEST_CASE("Sum of empty vector", "[support]") {
-    std::vector<float> v;
+    std::vector<float> const v;
     REQUIRE(sum(v) == Approx(0));
 }
 
 TEST_CASE("Sum of vector", "[support]") {
-    std::vector<double> v{1.2, 2., 4.2, 4, 1.13};
+    std::vector<double> const v{1.2, 2., 4.2, 4, 1.13};
     REQUIRE(sum(v) == Approx(12.53));
 }
 
 TEST_CASE("Minus one if different", "[support]") {
     std::vector<double> v;
     REQUIRE(v.empty());
-    double d = -1;
+    double const d = -1;
     REQUIRE(minusOneIfDifferent(v) == d);
 
     SECTION("single element") {
@@ -102,11 +102,11 @@ TEST_CASE("minus one does not have side effects", "[support]") {
 TEST_CASE("Compare a vector containing two vectors", "[support]") {
 
     std::vector<std::vector<int>> a{{0, 1, 2, 3, 4, 5}, {0, 1, 2, 3, 4, 5}};
-    std::vector<std::vector<int>> b{{0, 1, 2, 3, 4, 5}, {0, 1, 2, 3, 3, 5}};
-    std::vector<std::vector<int>> c{{0, 1, 2, 3, 4}, {0, 1, 2, 3, 3, 5}};
+    std::vector<std::vector<int>> const b{{0, 1, 2, 3, 4, 5}, {0, 1, 2, 3, 3, 5}};
+    std::vector<std::vector<int>> const c{{0, 1, 2, 3, 4}, {0, 1, 2, 3, 3, 5}};
     std::vector<std::vector<int>> d{
         {0, 1, 2, 3, 4}, {0, 1, 2, 3, 4}, {0, 1, 2, 3, 4}};
-    std::vector<int> e{0, 1, 2, 3, 4, 5};
+    std::vector<int> const e{0, 1, 2, 3, 4, 5};
 
     CHECK(minusOneIfDifferent(a) == a[0]);
     CHECK(minusOneIfDifferent(a) == e);
@@ -116,9 +116,9 @@ TEST_CASE("Compare a vector containing two vectors", "[support]") {
 }
 
 TEST_CASE("vector of bool", "[support]") {
-    std::vector<bool> a{true, true, true};
-    std::vector<bool> b{false, false, false};
-    std::vector<bool> c{true, false, true};
+    std::vector<bool> const a{true, true, true};
+    std::vector<bool> const b{false, false, false};
+    std::vector<bool> const c{true, false, true};
 
     CHECK(minusOneIfDifferent(a) == 1);
     CHECK(minusOneIfDifferent(b) == 0);
@@ -127,17 +127,17 @@ TEST_CASE("vector of bool", "[support]") {
 
 TEST_CASE("compare a vector of arrays", "[support]") {
 
-    std::vector<std::array<uint64_t, 3>> vec0{{5, 6, 8}, {5, 6, 8}, {5, 6, 8}};
+    std::vector<std::array<uint64_t, 3>> const vec0{{5, 6, 8}, {5, 6, 8}, {5, 6, 8}};
     CHECK(minusOneIfDifferent(vec0) == std::array<uint64_t, 3>{5, 6, 8});
 
     std::array<uint64_t, 3> arr;
     arr.fill(-1);
-    std::vector<std::array<uint64_t, 3>> vec1{{5, 90, 8}, {5, 6, 8}, {5, 6, 8}};
+    std::vector<std::array<uint64_t, 3>> const vec1{{5, 90, 8}, {5, 6, 8}, {5, 6, 8}};
     CHECK(minusOneIfDifferent(vec1) == arr);
 }
 
 TEST_CASE("check if vector has duplicates") {
-    std::vector<int> vec{1, 0, 2, 5, 3, 1, 8, 6};
+    std::vector<int> const vec{1, 0, 2, 5, 3, 1, 8, 6};
     REQUIRE(hasDuplicates(vec) == true);
 }
 

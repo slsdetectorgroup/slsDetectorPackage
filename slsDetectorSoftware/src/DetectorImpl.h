@@ -90,7 +90,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
         }
         std::vector<std::future<RT>> futures;
         futures.reserve(positions.size());
-        for (size_t i : positions) {
+        for (const size_t i : positions) {
             if (i >= modules.size())
                 throw RuntimeError("Module out of range");
             futures.push_back(std::async(std::launch::async, somefunc,
@@ -118,7 +118,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
         }
         std::vector<std::future<RT>> futures;
         futures.reserve(positions.size());
-        for (size_t i : positions) {
+        for (const size_t i : positions) {
             if (i >= modules.size())
                 throw RuntimeError("Module out of range");
             futures.push_back(std::async(std::launch::async, somefunc,
@@ -145,7 +145,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
         }
         std::vector<std::future<void>> futures;
         futures.reserve(positions.size());
-        for (size_t i : positions) {
+        for (const size_t i : positions) {
             if (i >= modules.size())
                 throw RuntimeError("Module out of range");
             futures.push_back(std::async(std::launch::async, somefunc,
@@ -170,7 +170,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
         }
         std::vector<std::future<void>> futures;
         futures.reserve(positions.size());
-        for (size_t i : positions) {
+        for (const size_t i : positions) {
             if (i >= modules.size())
                 throw RuntimeError("Module out of range");
             futures.push_back(std::async(std::launch::async, somefunc,

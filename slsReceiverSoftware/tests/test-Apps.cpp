@@ -14,19 +14,19 @@ template <typename T, typename U> constexpr bool is_type() {
 }
 
 TEST_CASE("CommandLineOption construction", "[detector]") {
-    CommandLineOptions s(AppType::SingleReceiver);
+    CommandLineOptions const s(AppType::SingleReceiver);
     REQUIRE(s.getTypeString() == "slsReceiver");
     REQUIRE(s.getVersion() ==
             std::string("slsReceiver Version: ") + APIRECEIVER);
     REQUIRE_NOTHROW(s.getHelpMessage());
 
-    CommandLineOptions m(AppType::MultiReceiver);
+    CommandLineOptions const m(AppType::MultiReceiver);
     REQUIRE(m.getTypeString() == "slsMultiReceiver");
     REQUIRE(m.getVersion() ==
             std::string("slsMultiReceiver Version: ") + APIRECEIVER);
     REQUIRE_NOTHROW(m.getHelpMessage());
 
-    CommandLineOptions f(AppType::FrameSynchronizer);
+    CommandLineOptions const f(AppType::FrameSynchronizer);
     REQUIRE(f.getTypeString() == "slsFrameSynchronizer");
     REQUIRE(f.getVersion() ==
             std::string("slsFrameSynchronizer Version: ") + APIRECEIVER);
@@ -49,7 +49,7 @@ TEST_CASE("Parse Help", "[detector]") {
 }
 
 TEST_CASE("Validate common options", "[detector]") {
-    std::string uidStr = std::to_string(getuid());
+    std::string const uidStr = std::to_string(getuid());
 
     for (auto app : {AppType::SingleReceiver, AppType::MultiReceiver,
                      AppType::FrameSynchronizer}) {
@@ -65,7 +65,7 @@ TEST_CASE("Validate common options", "[detector]") {
 }
 
 TEST_CASE("Validate specific options", "[detector]") {
-    std::string uidStr = std::to_string(getuid());
+    std::string const uidStr = std::to_string(getuid());
 
     CommandLineOptions s(AppType::SingleReceiver);
     REQUIRE_NOTHROW(s.parse({"", "-t", "1955"}));
@@ -141,9 +141,9 @@ TEST_CASE("Parse version and help", "[detector]") {
 // TODO: fails on gitea CI due to uid issue, fix later
 TEST_CASE("Parse port and uid", "[.failsongitea][detector]") {
     uid_t uid = getuid();
-    std::string uidStr = std::to_string(uid);
-    uid_t invalidUid = uid + 1000;
-    std::string invalidUidStr = std::to_string(invalidUid);
+    std::string const uidStr = std::to_string(uid);
+    uid_t const invalidUid = uid + 1000;
+    std::string const invalidUidStr = std::to_string(invalidUid);
 
     for (auto app : {AppType::SingleReceiver, AppType::MultiReceiver,
                      AppType::FrameSynchronizer}) {

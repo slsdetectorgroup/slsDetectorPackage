@@ -193,10 +193,10 @@ void Listener::DeleteUDPSocket() {
 void Listener::CreateDummySocketForUDPSocketBufferSize(int s, int &actualSize) {
     // custom setup (s != 0)
     // default setup at startup (s = 0)
-    int size = (s == 0 ? generalData->udpSocketBufferSize : s);
+    int const size = (s == 0 ? generalData->udpSocketBufferSize : s);
     LOG(logINFO) << "Testing UDP Socket Buffer size " << size
                  << " with test port " << udpPortNumber;
-    int previousSize = generalData->udpSocketBufferSize;
+    int const previousSize = generalData->udpSocketBufferSize;
     generalData->udpSocketBufferSize = size;
 
     if (disabledPort) {
@@ -217,7 +217,7 @@ void Listener::CreateDummySocketForUDPSocketBufferSize(int s, int &actualSize) {
         std::string ip;
         if (eth.length() > 0)
             ip = InterfaceNameToIp(eth).str();
-        UdpRxSocket g(udpPortNumber, packetSize,
+        UdpRxSocket const g(udpPortNumber, packetSize,
                       (ip.empty() ? nullptr : ip.c_str()),
                       generalData->udpSocketBufferSize);
 
@@ -268,7 +268,7 @@ void Listener::ThreadExecution() {
 
     // reset header and size and get data
     memset(memImage, 0, IMAGE_STRUCTURE_HEADER_SIZE);
-    int rc = ListenToAnImage(memImage->header, memImage->data);
+    int const rc = ListenToAnImage(memImage->header, memImage->data);
 
     // end of acquisition or discarding image
     if (rc <= 0) {
@@ -320,9 +320,9 @@ uint32_t Listener::ListenToAnImage(sls_receiver_header &dstHeader,
         hsize = generalData->vetoHsize;
         standardHeader = false;
     }
-    uint32_t pperFrame = generalData->packetsPerFrame;
+    uint32_t const pperFrame = generalData->packetsPerFrame;
     bool isHeaderEmpty = true;
-    uint32_t corrected_dsize = dsize - ((pperFrame * dsize) - imageSize);
+    uint32_t const corrected_dsize = dsize - ((pperFrame * dsize) - imageSize);
     sls_detector_header *srcDetHeader = nullptr;
 
     // carry over packet
@@ -516,9 +516,9 @@ void Listener::PrintFifoStatistics() {
                    << " packetsperframe:" << generalData->packetsPerFrame;
 
     // calculate packet loss
-    int64_t totalP = numFramesStatistic * (generalData->packetsPerFrame);
-    int64_t loss = totalP - numPacketsStatistic;
-    int lossPercent = ((double)loss / (double)totalP) * 100.00;
+    int64_t const totalP = numFramesStatistic * (generalData->packetsPerFrame);
+    int64_t const loss = totalP - numPacketsStatistic;
+    int const lossPercent = ((double)loss / (double)totalP) * 100.00;
     numPacketsStatistic = 0;
     numFramesStatistic = 0;
 

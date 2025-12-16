@@ -85,7 +85,7 @@ int main(int argc, char **argv) {
         double b = 18.3;
         float c = -1.2;
         auto socket = sls::ClientSocket("test", hostname, port);
-        int s = socket.SendAll(sls::func_id::combined, a, b, c);
+        int const s = socket.SendAll(sls::func_id::combined, a, b, c);
         std::cout << "send all: " << s << "\n";
     }
 }

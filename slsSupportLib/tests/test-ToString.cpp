@@ -59,7 +59,7 @@ TEST_CASE("conversion from duration to string", "[support]") {
 }
 
 TEST_CASE("Convert vector of time", "[support]") {
-    std::vector<ns> vec{ns(150), us(10), ns(600)};
+    std::vector<ns> const vec{ns(150), us(10), ns(600)};
     REQUIRE(ToString(vec) == "[150ns, 10us, 600ns]");
     REQUIRE(ToString(vec, "ns") == "[150ns, 10000ns, 600ns]");
 }
@@ -93,26 +93,26 @@ TEST_CASE("Vector of double", "[support]") {
 }
 
 TEST_CASE("Array") {
-    std::array<int, 3> arr{1, 2, 3};
+    std::array<int, 3> const arr{1, 2, 3};
     REQUIRE(ToString(arr) == "[1, 2, 3]");
 }
 
 TEST_CASE("Convert types with str method") {
-    IpAddr addr;
+    IpAddr const addr;
     REQUIRE(ToString(addr) == "0.0.0.0");
     REQUIRE(ToString(IpAddr{}) == "0.0.0.0");
 }
 
 TEST_CASE("String to string", "[support]") {
-    std::string s = "hej";
+    std::string const s = "hej";
     REQUIRE(ToString(s) == "hej");
 }
 
 TEST_CASE("vector of strings") {
-    std::vector<std::string> vec{"5", "s"};
+    std::vector<std::string> const vec{"5", "s"};
     REQUIRE(ToString(vec) == "[5, s]");
 
-    std::vector<std::string> vec2{"some", "strange", "words", "75"};
+    std::vector<std::string> const vec2{"some", "strange", "words", "75"};
     REQUIRE(ToString(vec2) == "[some, strange, words, 75]");
 }
 
@@ -150,7 +150,7 @@ TEST_CASE("string to detectorType") {
 
 TEST_CASE("vec") {
     using rs = slsDetectorDefs::runStatus;
-    std::vector<rs> vec{rs::ERROR, rs::IDLE};
+    std::vector<rs> const vec{rs::ERROR, rs::IDLE};
     REQUIRE(ToString(vec) == "[error, idle]");
 }
 
@@ -232,25 +232,25 @@ TEST_CASE("Detector type") {
 }
 
 TEST_CASE("Formatting slsDetectorDefs::ROI") {
-    slsDetectorDefs::ROI roi(5, 159);
+    slsDetectorDefs::ROI const roi(5, 159);
     REQUIRE(ToString(roi) == "[5, 159]");
-    slsDetectorDefs::ROI roi1(5, 159, 6, 170);
+    slsDetectorDefs::ROI const roi1(5, 159, 6, 170);
     REQUIRE(ToString(roi1) == "[5, 159, 6, 170]");
 }
 
 TEST_CASE("Streaming of slsDetectorDefs::ROI") {
     using namespace sls;
-    slsDetectorDefs::ROI roi(-10, 1);
+    slsDetectorDefs::ROI const roi(-10, 1);
     std::ostringstream oss, oss1;
     oss << roi;
     REQUIRE(oss.str() == "[-10, 1]");
-    slsDetectorDefs::ROI roi1(-10, 1, 5, 11);
+    slsDetectorDefs::ROI const roi1(-10, 1, 5, 11);
     oss1 << roi1;
     REQUIRE(oss1.str() == "[-10, 1, 5, 11]");
 }
 
 TEST_CASE("std::array") {
-    std::array<int, 3> arr{4, 6, 7};
+    std::array<int, 3> const arr{4, 6, 7};
     REQUIRE(ToString(arr) == "[4, 6, 7]");
 }
 
@@ -267,14 +267,14 @@ TEST_CASE("dac index to string") {
 }
 
 TEST_CASE("convert vector of strings to dac index") {
-    std::vector<std::string> dacs{"vcassh", "vth2", "vrshaper"};
-    std::vector<defs::dacIndex> daci{defs::VCASSH, defs::VTH2, defs::VRSHAPER};
+    std::vector<std::string> const dacs{"vcassh", "vth2", "vrshaper"};
+    std::vector<defs::dacIndex> const daci{defs::VCASSH, defs::VTH2, defs::VRSHAPER};
     auto r = StringTo<defs::dacIndex>(dacs);
     REQUIRE(r == daci);
 }
 
 TEST_CASE("vector of dac index to string") {
-    std::vector<defs::dacIndex> daci{defs::VCASSH, defs::VTH2, defs::VRSHAPER};
+    std::vector<defs::dacIndex> const daci{defs::VCASSH, defs::VTH2, defs::VRSHAPER};
     auto r = ToString(daci);
     REQUIRE(r == "[vcassh, vth2, vrshaper]");
 }
@@ -284,7 +284,7 @@ TEST_CASE("int or uin64_t to a string in hex") {
     REQUIRE(ToStringHex(65535, 8) == "0x0000ffff");
     REQUIRE(ToStringHex(8927748192) == "0x21422a060");
     REQUIRE(ToStringHex(8927748192, 16) == "0x000000021422a060");
-    std::vector<int> temp{244, 65535, 1638582};
+    std::vector<int> const temp{244, 65535, 1638582};
     auto r = ToStringHex(temp);
     REQUIRE(r == "[0xf4, 0xffff, 0x1900b6]");
     r = ToStringHex(temp, 8);
@@ -294,20 +294,20 @@ TEST_CASE("int or uin64_t to a string in hex") {
 TEST_CASE("Streaming of slsDetectorDefs::scanParameters") {
     using namespace sls;
     {
-        defs::scanParameters t{};
+        defs::scanParameters const t{};
         std::ostringstream oss;
         oss << t;
         REQUIRE(oss.str() == "[disabled]");
     }
     {
-        defs::scanParameters t{defs::VTH2, 500, 1500, 500};
+        defs::scanParameters const t{defs::VTH2, 500, 1500, 500};
         std::ostringstream oss;
         oss << t;
         REQUIRE(oss.str() == "[enabled\ndac vth2\nstart 500\nstop 1500\nstep "
                              "500\nsettleTime 1ms\n]");
     }
     {
-        defs::scanParameters t{defs::VTH2, 500, 1500, 500,
+        defs::scanParameters const t{defs::VTH2, 500, 1500, 500,
                                std::chrono::milliseconds{500}};
         std::ostringstream oss;
         oss << t;
@@ -317,17 +317,17 @@ TEST_CASE("Streaming of slsDetectorDefs::scanParameters") {
 }
 
 TEST_CASE("Printing c style arrays of int") {
-    int arr[]{3, 5};
+    int const arr[]{3, 5};
     REQUIRE(ToString(arr) == "[3, 5]");
 }
 
 TEST_CASE("Printing c style arrays of uint8") {
-    uint8_t arr[]{1, 2, 3, 4, 5};
+    uint8_t const arr[]{1, 2, 3, 4, 5};
     REQUIRE(ToString(arr) == "[1, 2, 3, 4, 5]");
 }
 
 TEST_CASE("Printing c style arrays of double") {
-    double arr[]{3.4, 5.3, 6.2};
+    double const arr[]{3.4, 5.3, 6.2};
     REQUIRE(ToString(arr) == "[3.4, 5.3, 6.2]");
 }
 

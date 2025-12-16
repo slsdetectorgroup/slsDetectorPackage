@@ -154,7 +154,7 @@ template <typename T> class SharedMemory {
     std::string getName() const { return name; }
 
     bool exists() {
-        int tempfd = shm_open(name.c_str(), O_RDWR, 0);
+        const int tempfd = shm_open(name.c_str(), O_RDWR, 0);
         if ((tempfd < 0) && (errno == ENOENT)) {
             return false;
         }
@@ -163,7 +163,7 @@ template <typename T> class SharedMemory {
     }
 
     void createSharedMemory() {
-        int fd = shm_open(name.c_str(), O_CREAT | O_TRUNC | O_EXCL | O_RDWR,
+        const int fd = shm_open(name.c_str(), O_CREAT | O_TRUNC | O_EXCL | O_RDWR,
                           S_IRUSR | S_IWUSR);
         if (fd < 0) {
             std::string msg =
@@ -184,9 +184,9 @@ template <typename T> class SharedMemory {
     }
 
     void openSharedMemory(bool verifySize) {
-        int fd = shm_open(name.c_str(), O_RDWR, 0);
+        const int fd = shm_open(name.c_str(), O_RDWR, 0);
         if (fd < 0) {
-            std::string msg = "Open existing shared memory " + name +
+            const std::string msg = "Open existing shared memory " + name +
                               " failed: " + strerror(errno);
             throw SharedMemoryError(msg);
         }
@@ -198,7 +198,7 @@ template <typename T> class SharedMemory {
     void unmapSharedMemory() {
         if (shared_struct != nullptr) {
             if (munmap(shared_struct, sizeof(T)) < 0) {
-                std::string msg = "Unmapping shared memory " + name +
+                const std::string msg = "Unmapping shared memory " + name +
                                   " failed: " + strerror(errno);
                 throw SharedMemoryError(msg);
             }
@@ -213,7 +213,7 @@ template <typename T> class SharedMemory {
             // silent exit if shm did not exist anyway
             if (errno == ENOENT)
                 return;
-            std::string msg =
+            const std::string msg =
                 "Free Shared Memory " + name + " Failed: " + strerror(errno);
             throw SharedMemoryError(msg);
         }
@@ -244,7 +244,7 @@ template <typename T> class SharedMemory {
 
         std::string shm_name = ss.str();
         if (shm_name.length() > NAME_MAX_LENGTH) {
-            std::string msg =
+            const std::string msg =
                 "Shared memory initialization failed. " + shm_name + " has " +
                 std::to_string(shm_name.length()) + " characters. \n" +
                 "Maximum is " + std::to_string(NAME_MAX_LENGTH) +
@@ -262,7 +262,7 @@ template <typename T> class SharedMemory {
             mmap(nullptr, sizeof(T), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
         close(fd);
         if (addr == MAP_FAILED) {
-            std::string msg =
+            const std::string msg =
                 "Mapping shared memory " + name + " failed: " + strerror(errno);
             throw SharedMemoryError(msg);
         }
@@ -272,7 +272,7 @@ template <typename T> class SharedMemory {
     void checkSize(int fd) {
         struct stat sb;
         if (fstat(fd, &sb) < 0) {
-            std::string msg = "Could not verify existing shared memory " +
+            const std::string msg = "Could not verify existing shared memory " +
                               name + " size match " +
                               "(could not fstat): " + strerror(errno);
             close(fd);
@@ -287,7 +287,7 @@ template <typename T> class SharedMemory {
         auto actual_size = static_cast<size_t>(sb.st_size);
         auto expected_size = sizeof(T);
         if (actual_size != expected_size) {
-            std::string msg =
+            const std::string msg =
                 "Existing shared memory " + name + " size does not match. " +
                 "Expected " + std::to_string(expected_size) + ", found " +
                 std::to_string(actual_size) +

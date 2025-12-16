@@ -614,7 +614,7 @@ std::string ToString(const defs::portPosition s) {
 
 std::string ToString(const defs::streamingInterface s) {
     std::ostringstream os;
-    std::string rs;
+    std::string const rs;
     switch (s) {
     case defs::streamingInterface::NONE:
         return std::string("none");
@@ -1128,8 +1128,8 @@ template <> defs::collectionMode StringTo(const std::string &s) {
 }
 
 template <> uint8_t StringTo(const std::string &s) {
-    int base = s.find("0x") != std::string::npos ? 16 : 10;
-    int value = std::stoi(s, nullptr, base);
+    int const base = s.find("0x") != std::string::npos ? 16 : 10;
+    int const value = std::stoi(s, nullptr, base);
     if (value < std::numeric_limits<uint8_t>::min() ||
         value > std::numeric_limits<uint8_t>::max()) {
         throw RuntimeError("Cannot scan uint8_t from string '" + s +
@@ -1139,8 +1139,8 @@ template <> uint8_t StringTo(const std::string &s) {
 }
 
 template <> uint16_t StringTo(const std::string &s) {
-    int base = s.find("0x") != std::string::npos ? 16 : 10;
-    int value = std::stoi(s, nullptr, base);
+    int const base = s.find("0x") != std::string::npos ? 16 : 10;
+    int const value = std::stoi(s, nullptr, base);
     if (value < std::numeric_limits<uint16_t>::min() ||
         value > std::numeric_limits<uint16_t>::max()) {
         throw RuntimeError("Cannot scan uint16_t from string '" + s +
@@ -1150,22 +1150,22 @@ template <> uint16_t StringTo(const std::string &s) {
 }
 
 template <> uint32_t StringTo(const std::string &s) {
-    int base = s.find("0x") != std::string::npos ? 16 : 10;
+    int const base = s.find("0x") != std::string::npos ? 16 : 10;
     return std::stoul(s, nullptr, base);
 }
 
 template <> uint64_t StringTo(const std::string &s) {
-    int base = s.find("0x") != std::string::npos ? 16 : 10;
+    int const base = s.find("0x") != std::string::npos ? 16 : 10;
     return std::stoull(s, nullptr, base);
 }
 
 template <> int StringTo(const std::string &s) {
-    int base = s.find("0x") != std::string::npos ? 16 : 10;
+    int const base = s.find("0x") != std::string::npos ? 16 : 10;
     return std::stoi(s, nullptr, base);
 }
 
 template <> bool StringTo(const std::string &s) {
-    int i = std::stoi(s, nullptr, 10);
+    int const i = std::stoi(s, nullptr, 10);
     switch (i) {
     case 0:
         return false;
@@ -1177,7 +1177,7 @@ template <> bool StringTo(const std::string &s) {
 }
 
 template <> int64_t StringTo(const std::string &s) {
-    int base = s.find("0x") != std::string::npos ? 16 : 10;
+    int const base = s.find("0x") != std::string::npos ? 16 : 10;
     return std::stol(s, nullptr, base);
 }
 

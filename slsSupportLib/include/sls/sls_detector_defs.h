@@ -788,9 +788,9 @@ typedef struct {
 
     explicit sls_detector_module(slsDetectorDefs::detectorType type)
         : sls_detector_module() {
-        detParameters parameters{type};
-        int nch = parameters.nChanX * parameters.nChanY;
-        int nc = parameters.nChipX * parameters.nChipY;
+        const detParameters parameters{type}; //used to initialize
+        const int nch = parameters.nChanX * parameters.nChanY;
+        const int nc = parameters.nChipX * parameters.nChipY;
         ndac = parameters.nDacs;
         nchip = nc;
         nchan = nch * nc;

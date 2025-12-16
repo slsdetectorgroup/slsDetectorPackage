@@ -38,7 +38,7 @@ void Arping::SetInterfacesAndIps(const int index, const std::string &interface,
     // create commands to arping
     std::ostringstream os;
     os << "arping -c 1 -U -I " << interface << " " << ip;
-    std::string cmd = os.str();
+    std::string const cmd = os.str();
     commands[index] = cmd;
 }
 
@@ -84,7 +84,7 @@ void Arping::StopProcess() {
 
 void Arping::ProcessExecution() {
     while (true) {
-        std::string error = ExecuteCommands();
+        std::string const error = ExecuteCommands();
         // just print (was already tested at Process start)
         if (!error.empty()) {
             LOG(logERROR) << error;
@@ -101,7 +101,7 @@ void Arping::TestForErrors() {
             "Could not arping. Interface not set up in arping Process");
     }
     // test if arping commands throw an error
-    std::string error = ExecuteCommands();
+    std::string const error = ExecuteCommands();
     if (!error.empty()) {
         throw RuntimeError(error);
     }

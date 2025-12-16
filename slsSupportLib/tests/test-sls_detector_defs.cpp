@@ -8,7 +8,7 @@ namespace sls {
 using dt = slsDetectorDefs::detectorType;
 
 TEST_CASE("sls_detector_module default construction", "[support][new]") {
-    sls_detector_module m;
+    sls_detector_module const m;
     CHECK(m.serialnumber == 0);
     CHECK(m.nchan == 0);
     CHECK(m.nchip == 0);
@@ -24,7 +24,7 @@ TEST_CASE("sls_detector_module default construction", "[support][new]") {
 }
 
 TEST_CASE("sls_detector_module from type", "[support]") {
-    sls_detector_module m(dt::EIGER);
+    sls_detector_module const m(dt::EIGER);
     CHECK(m.serialnumber == 0);
     CHECK(m.nchan == 256 * 256 * 4);
     CHECK(m.nchip == 4);
@@ -60,7 +60,7 @@ TEST_CASE("assign module", "[support]") {
 }
 
 TEST_CASE("default construct scanParameters") {
-    slsDetectorDefs::scanParameters p;
+    slsDetectorDefs::scanParameters const p;
     CHECK(p.dacSettleTime_ns == 0);
     CHECK(p.dacInd == slsDetectorDefs::DAC_0);
     CHECK(p.enable == 0);
@@ -71,7 +71,7 @@ TEST_CASE("default construct scanParameters") {
 
 TEST_CASE("compare two scanParameters") {
     slsDetectorDefs::scanParameters p0;
-    slsDetectorDefs::scanParameters p1;
+    slsDetectorDefs::scanParameters const p1;
 
     CHECK(p0 == p1);
 

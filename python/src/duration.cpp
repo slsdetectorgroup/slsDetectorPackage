@@ -24,7 +24,7 @@ void init_duration(py::module &m) {
     m.def(
         "test_return_DurationWrapper",
         []() {
-            DurationWrapper t(1.3);
+            DurationWrapper const t(1.3);
             return t;
         },
         R"(

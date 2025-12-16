@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
     try {
         if (action == -1) {
             action = inferAction.infer(parser);
-            std::string actionString =
+            std::string const actionString =
                 (action == slsDetectorDefs::GET_ACTION) ? "GET" : "PUT";
             std::cout << "inferred action: " << actionString << std::endl;
         }

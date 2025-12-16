@@ -15,9 +15,9 @@ TEST_CASE("StaticVector is a container") {
 }
 
 TEST_CASE("Comparing StaticVector containers") {
-    StaticVector<int, 5> a{0, 1, 2};
-    StaticVector<int, 5> b{0, 1, 2};
-    StaticVector<int, 5> c{0, 1, 2, 4};
+    StaticVector<int, 5> const a{0, 1, 2};
+    StaticVector<int, 5> const b{0, 1, 2};
+    StaticVector<int, 5> const c{0, 1, 2, 4};
 
     REQUIRE(a == b);
     REQUIRE_FALSE(a != b);
@@ -29,9 +29,9 @@ TEST_CASE("Comparing StaticVector containers") {
 }
 
 TEST_CASE("Compare array and fixed capacity container") {
-    std::array<int, 3> arr{1, 2, 3};
-    std::array<int, 3> arr2{1, 7, 3};
-    StaticVector<int, 7> fcc{1, 2, 3};
+    std::array<int, 3> const arr{1, 2, 3};
+    std::array<int, 3> const arr2{1, 7, 3};
+    StaticVector<int, 7> const fcc{1, 2, 3};
     REQUIRE(fcc == arr);
     REQUIRE(arr == fcc);
     REQUIRE_FALSE(fcc != arr);
@@ -41,9 +41,9 @@ TEST_CASE("Compare array and fixed capacity container") {
 }
 
 TEST_CASE("Compare vector and fixed capacity container") {
-    std::vector<int> vec{1, 2, 3};
-    std::vector<int> vec2{10, 2, 3};
-    StaticVector<int, 7> fcc{1, 2, 3};
+    std::vector<int> const vec{1, 2, 3};
+    std::vector<int> const vec2{10, 2, 3};
+    StaticVector<int, 7> const fcc{1, 2, 3};
     REQUIRE(fcc == vec);
     REQUIRE(vec == fcc);
     REQUIRE_FALSE(fcc != vec);
@@ -53,46 +53,46 @@ TEST_CASE("Compare vector and fixed capacity container") {
 }
 
 TEST_CASE("Construct from vector") {
-    std::vector<int> vec{1, 2, 3};
-    StaticVector<int, 5> fcc{vec};
+    std::vector<int> const vec{1, 2, 3};
+    StaticVector<int, 5> const fcc{vec};
     REQUIRE(fcc == vec);
 }
 
 TEST_CASE("Copy construct from vector") {
-    std::vector<int> vec{1, 2, 3};
-    StaticVector<int, 5> fcc = vec;
+    std::vector<int> const vec{1, 2, 3};
+    StaticVector<int, 5> const fcc = vec;
     REQUIRE(fcc == vec);
 }
 
 TEST_CASE("Copy assignment from vector") {
-    std::vector<int> vec{1, 2, 3};
+    std::vector<int> const vec{1, 2, 3};
     StaticVector<int, 5> fcc;
     fcc = vec;
     REQUIRE(fcc == vec);
 }
 
 TEST_CASE("Construct from array") {
-    std::array<int, 3> arr{1, 2, 3};
-    StaticVector<int, 5> fcc{arr};
+    std::array<int, 3> const arr{1, 2, 3};
+    StaticVector<int, 5> const fcc{arr};
     REQUIRE(fcc == arr);
 }
 
 TEST_CASE("Copy assign from array") {
-    std::array<int, 3> arr{1, 2, 3};
+    std::array<int, 3> const arr{1, 2, 3};
     StaticVector<int, 5> fcc;
     fcc = arr;
     REQUIRE(fcc == arr);
 }
 
 TEST_CASE("Copy construct from array") {
-    std::array<int, 3> arr{1, 2, 3};
-    StaticVector<int, 5> fcc = arr;
+    std::array<int, 3> const arr{1, 2, 3};
+    StaticVector<int, 5> const fcc = arr;
     REQUIRE(fcc == arr);
 }
 
 TEST_CASE("Construct from a smaller StaticVector") {
-    StaticVector<int, 3> sv{1, 2, 3};
-    StaticVector<int, 5> sv2{sv};
+    StaticVector<int, 3> const sv{1, 2, 3};
+    StaticVector<int, 5> const sv2{sv};
     REQUIRE(sv == sv2);
 }
 
@@ -183,7 +183,7 @@ SCENARIO("StaticVectors can be sized and resized", "[support]") {
     }
 
     GIVEN("An std::vector of size 3") {
-        std::vector<int> standard_vector{5, 2, 1};
+        std::vector<int> const standard_vector{5, 2, 1};
         WHEN("we construct a fixed capacity container from it") {
             StaticVector<int, 5> vec(standard_vector);
             THEN("size and data matches") {
@@ -202,7 +202,7 @@ SCENARIO("StaticVectors can be sized and resized", "[support]") {
 SCENARIO("Comparison of StaticVectors", "[support]") {
     GIVEN("Two containers containers that are equal at the start") {
         StaticVector<int, 5> a{0, 1, 2};
-        StaticVector<int, 5> b{0, 1, 2};
+        StaticVector<int, 5> const b{0, 1, 2};
         REQUIRE(a == b);
         REQUIRE_FALSE(a != b);
 
@@ -211,7 +211,7 @@ SCENARIO("Comparison of StaticVectors", "[support]") {
             THEN("they are not equal anymore") { REQUIRE(a != b); }
         }
         WHEN("Compared to a StaticVector with different capacity") {
-            StaticVector<int, 8> c{0, 1, 2};
+            StaticVector<int, 8> const c{0, 1, 2};
             THEN("The comparison still holds") {
                 REQUIRE(a == c);
                 REQUIRE_FALSE(a != c);
@@ -316,7 +316,7 @@ SCENARIO("Converting to vector", "[support]") {
     GIVEN("a StaticVector") {
         StaticVector<int, 5> a{1, 2, 3};
         WHEN("Converted into a vector") {
-            std::vector<int> b(a);
+            std::vector<int> const b(a);
             THEN("Data and size matches") {
                 REQUIRE(a == b);
                 REQUIRE(a.size() == b.size());

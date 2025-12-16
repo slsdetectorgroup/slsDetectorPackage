@@ -25,21 +25,21 @@ class detectorData {
     ~detectorData(){};
 
     int64_t getChannel(int i) {
-        int off = dynamicRange / 8;
+        const int off = dynamicRange / 8;
         if (off == 1) {
-            char val = *(data + i);
+            const char val = *(data + i);
             return val;
         }
         if (off == 2) {
-            int16_t val = *((int16_t *)(data + i * off));
+            const int16_t val = *((int16_t *)(data + i * off));
             return val;
         }
         if (off == 4) {
-            int32_t val = *((int32_t *)(data + i * off));
+            const int32_t val = *((int32_t *)(data + i * off));
             return val;
         }
         if (off == 8) {
-            int64_t val = *((int64_t *)(data + i * off));
+            const int64_t val = *((int64_t *)(data + i * off));
             return val;
         }
         return -1;

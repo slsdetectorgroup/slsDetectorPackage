@@ -52,7 +52,7 @@ int readDataFile(std::ifstream &infile, short int *data, int nch, int offset) {
 int readDataFile(std::string fname, short int *data, int nch) {
     std::ifstream infile;
     int iline = 0;
-    std::string str;
+    std::string const str;
     infile.open(fname.c_str(), std::ios_base::in);
     if (infile.is_open()) {
         iline = readDataFile(infile, data, nch, 0);
@@ -80,7 +80,7 @@ std::vector<char> readBinaryFile(const std::string &fname,
     }
 
     // get file size to print progress
-    ssize_t filesize = getFileSize(fp, errorPrefix);
+    ssize_t const filesize = getFileSize(fp, errorPrefix);
 
     std::vector<char> buffer(filesize, 0);
     if ((ssize_t)fread(buffer.data(), sizeof(char), filesize, fp) != filesize) {
@@ -142,14 +142,14 @@ void mkdir_p(const std::string &path, std::string dir) {
 int getFileSize(std::ifstream &ifs) {
     auto current_pos = ifs.tellg();
     ifs.seekg(0, std::ios::end);
-    int file_size = ifs.tellg();
+    int const file_size = ifs.tellg();
     ifs.seekg(current_pos);
     return file_size;
 }
 
 std::string getFileNameFromFilePath(const std::string &fpath) {
     std::string fname(fpath);
-    std::size_t slashPos = fpath.rfind('/');
+    std::size_t const slashPos = fpath.rfind('/');
     if (slashPos != std::string::npos) {
         fname = fpath.substr(slashPos + 1, fpath.size() - 1);
     }
@@ -161,7 +161,7 @@ ssize_t getFileSize(FILE *fd, const std::string &prependErrorString) {
         throw RuntimeError(prependErrorString +
                            std::string(" (Seek error in src file)"));
     }
-    size_t fileSize = ftell(fd);
+    size_t const fileSize = ftell(fd);
     if (fileSize <= 0) {
         throw RuntimeError(
             prependErrorString +
@@ -181,7 +181,7 @@ getChannelsFromStringList(const std::vector<std::string> list) {
             begin(line), end(line), [](char c) { return (c == ','); }, ' ');
 
         // split line (delim space)
-        std::vector<std::string> vec = split(line, ' ');
+        std::vector<std::string> const vec = split(line, ' ');
 
         // for every channel separated by space
         for (auto it : vec) {
@@ -189,8 +189,8 @@ getChannelsFromStringList(const std::vector<std::string> list) {
             auto result = it.find(':');
             if (result != std::string::npos) {
                 try {
-                    int istart = StringTo<int>(it.substr(0, result));
-                    int istop = StringTo<int>(
+                    int const istart = StringTo<int>(it.substr(0, result));
+                    int const istop = StringTo<int>(
                         it.substr(result + 1, it.length() - result - 1));
                     LOG(logDEBUG1) << "istart:" << istart << " istop:" << istop;
                     std::vector<int> range(istop - istart);
@@ -275,7 +275,7 @@ std::string getAbsolutePathFromCurrentProcess(const std::string &fname) {
     #else
 
 
-    ssize_t len = readlink("/proc/self/exe", path.data(), PATH_MAX - 1);
+    ssize_t const len = readlink("/proc/self/exe", path.data(), PATH_MAX - 1);
     if (len < 0) {
         throw RuntimeError("Could not get absolute path for " + fname);
     }

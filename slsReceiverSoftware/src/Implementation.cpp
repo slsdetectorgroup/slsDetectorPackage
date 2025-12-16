@@ -238,9 +238,9 @@ const slsDetectorDefs::xy Implementation::GetPortGeometry() const {
 }
 
 void Implementation::setDetectorSize(const slsDetectorDefs::xy size) {
-    xy portGeometry = GetPortGeometry();
+    xy const portGeometry = GetPortGeometry();
 
-    std::string log_message = "Detector Size (ports): (";
+    std::string const log_message = "Detector Size (ports): (";
     numModules = size;
     numPorts.x = portGeometry.x * numModules.x;
     numPorts.y = portGeometry.y * numModules.y;
@@ -262,7 +262,7 @@ void Implementation::setModulePositionId(const int id) {
     LOG(logINFO) << "Module Position Id:" << modulePos;
 
     // update zmq port
-    xy portGeometry = GetPortGeometry();
+    xy const portGeometry = GetPortGeometry();
     streamingPort = DEFAULT_ZMQ_RX_PORTNO + modulePos * portGeometry.x;
 
     assert(numModules.y != 0);
@@ -285,14 +285,14 @@ void Implementation::setModulePositionId(const int id) {
 
 void Implementation::setRow(const int value) {
     for (unsigned int i = 0; i < listener.size(); ++i) {
-        int col = listener[i]->GetHardCodedPosition().second;
+        int const col = listener[i]->GetHardCodedPosition().second;
         listener[i]->SetHardCodedPosition(value, col);
     }
 }
 
 void Implementation::setColumn(const int value) {
     for (unsigned int i = 0; i < listener.size(); ++i) {
-        int row = listener[i]->GetHardCodedPosition().first;
+        int const row = listener[i]->GetHardCodedPosition().first;
         listener[i]->SetHardCodedPosition(row, value);
     }
 }
@@ -405,16 +405,16 @@ std::vector<slsDetectorDefs::ROI> Implementation::getPortROIs() const {
 }
 
 void Implementation::ResetRois() {
-    int numports = generalData->numUDPInterfaces;
-    std::vector<ROI> rois(numports);
-    std::vector<ROI> multiRoi(1);
+    int const numports = generalData->numUDPInterfaces;
+    std::vector<ROI> const rois(numports);
+    std::vector<ROI> const multiRoi(1);
     setPortROIs(rois);
     setMultiROIMetadata(multiRoi);
 }
 
 void Implementation::setPortROIs(const std::vector<defs::ROI> &args) {
-    int nx = static_cast<int>(generalData->nPixelsX);
-    int ny = static_cast<int>(generalData->nPixelsY);
+    int const nx = static_cast<int>(generalData->nPixelsX);
+    int const ny = static_cast<int>(generalData->nPixelsY);
     // validate rois
     for (auto &it : args) {
         if (it.completeRoi() || it.noRoi()) {
@@ -614,7 +614,7 @@ double Implementation::getProgress() const {
 std::vector<int64_t> Implementation::getNumMissingPackets() const {
     std::vector<int64_t> mp(generalData->numUDPInterfaces);
     for (int i = 0; i < generalData->numUDPInterfaces; ++i) {
-        int np = generalData->packetsPerFrame;
+        int const np = generalData->packetsPerFrame;
         uint64_t totnp = np;
         // ReadNRows
         if (readNRows != (int)generalData->maxRowsPerReadout) {
@@ -646,7 +646,7 @@ void Implementation::startReceiver() {
             for (size_t i = 0; i != listener.size(); ++i) {
                 udpPort.push_back(udpPortNum[i]);
             }
-            startCallbackHeader callbackHeader = {
+            startCallbackHeader const callbackHeader = {
                 udpPort,
                 generalData->dynamicRange,
                 numPorts,
@@ -731,7 +731,7 @@ void Implementation::stopReceiver() {
         // print summary
         uint64_t tot = 0;
         for (int i = 0; i < generalData->numUDPInterfaces; i++) {
-            int nf = listener[i]->GetNumCompleteFramesCaught();
+            int const nf = listener[i]->GetNumCompleteFramesCaught();
             tot += nf;
             std::string mpMessage = std::to_string(mp[i]);
             if (mp[i] < 0) {
@@ -756,7 +756,7 @@ void Implementation::stopReceiver() {
                 summary = os.str();
             }
 
-            TLogLevel lev = ((mp[i]) > 0) ? logINFORED : logINFOGREEN;
+            TLogLevel const lev = ((mp[i]) > 0) ? logINFORED : logINFOGREEN;
             LOG(lev) << "Summary of Port " << udpPortNum[i] << " (" << eth[i]
                      << ')' << summary;
         }
@@ -774,7 +774,7 @@ void Implementation::stopReceiver() {
                     lastFrameIndexCaught.push_back(
                         listener[i]->GetLastFrameIndexCaught());
                 }
-                endCallbackHeader callHeader = {udpPort, completeFramesCaught,
+                endCallbackHeader const callHeader = {udpPort, completeFramesCaught,
                                                 lastFrameIndexCaught};
                 acquisitionFinishedCallBack(callHeader, pAcquisitionFinished);
             } catch (const std::exception &e) {
@@ -852,7 +852,7 @@ void Implementation::ResetParametersforNewAcquisition() {
     if (dataStreamEnable) {
         std::ostringstream os;
         os << filePath << '/' << fileName;
-        std::string fnametostream = os.str();
+        std::string const fnametostream = os.str();
         for (const auto &it : dataStreamer)
             it->ResetParametersforNewAcquisition(fnametostream);
     }
@@ -884,7 +884,7 @@ void Implementation::SetupWriter() {
             std::ostringstream os;
             os << filePath << "/" << fileName << "_d"
                << (modulePos * generalData->numUDPInterfaces + i);
-            std::string fileNamePrefix = os.str();
+            std::string const fileNamePrefix = os.str();
             dataProcessor[i]->CreateFirstFiles(fileNamePrefix, fileIndex,
                                                overwriteEnable, silentMode,
                                                detectorDataStream[i]);
@@ -919,8 +919,8 @@ void Implementation::StartMasterWriter() {
             // complete ROI (for each port TODO?)
             if (multiRoiMetadata.size() == 1 &&
                 multiRoiMetadata[0].completeRoi()) {
-                int nTotalPixelsX = (generalData->nPixelsX * numPorts.x);
-                int nTotalPixelsY = (generalData->nPixelsY * numPorts.y);
+                int const nTotalPixelsX = (generalData->nPixelsX * numPorts.x);
+                int const nTotalPixelsY = (generalData->nPixelsY * numPorts.y);
                 if (nTotalPixelsY == 1) {
                     masterAttributes.rois.push_back(ROI{0, nTotalPixelsX - 1});
                 } else {
@@ -1180,7 +1180,7 @@ int Implementation::getUDPSocketBufferSize() const {
 }
 
 void Implementation::setUDPSocketBufferSize(const int s) {
-    size_t listSize = listener.size();
+    size_t const listSize = listener.size();
     if ((generalData->detType == JUNGFRAU || generalData->detType == MOENCH ||
          generalData->detType == GOTTHARD2) &&
         (int)listSize != generalData->numUDPInterfaces) {
@@ -1572,7 +1572,7 @@ void Implementation::setCounterMask(const uint32_t i) {
         SetupFifoStructure();
     }
     LOG(logINFO) << "Counter mask: " << ToStringHex(generalData->counterMask);
-    int ncounters = __builtin_popcount(generalData->counterMask);
+    int const ncounters = __builtin_popcount(generalData->counterMask);
     LOG(logINFO) << "Number of counters: " << ncounters;
 }
 
@@ -1661,13 +1661,13 @@ void Implementation::setActivate(bool enable) {
 }
 
 bool Implementation::getDetectorDataStream(const portPosition port) const {
-    int index = (port == LEFT ? 0 : 1);
+    int const index = (port == LEFT ? 0 : 1);
     return detectorDataStream[index];
 }
 
 void Implementation::setDetectorDataStream(const portPosition port,
                                            const bool enable) {
-    int index = (port == LEFT ? 0 : 1);
+    int const index = (port == LEFT ? 0 : 1);
     detectorDataStream10GbE[index] = enable;
     LOG(logINFO) << "Detector 10GbE datastream (" << ToString(port)
                  << " Port): " << ToString(detectorDataStream10GbE[index]);

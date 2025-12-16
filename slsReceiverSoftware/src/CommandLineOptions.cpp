@@ -21,7 +21,7 @@ ParsedOptions CommandLineOptions::parse(const std::vector<std::string> &args) {
     for (const auto &arg : args) {
         argv.push_back(const_cast<char *>(arg.c_str()));
     }
-    int argc = static_cast<int>(argv.size());
+    int const argc = static_cast<int>(argv.size());
     return parse(argc, argv.data());
 }
 
@@ -76,7 +76,7 @@ ParsedOptions CommandLineOptions::parse(int argc, char *argv[]) {
         }
 
         // parse deprecated arguments
-        std::vector<std::string> args(argv, argv + argc);
+        std::vector<std::string> const args(argv, argv + argc);
         auto [p, n, o] = ParseDeprecated(args);
         // set options
         base.port = p;
@@ -251,7 +251,7 @@ void CommandLineOptions::handleAppSpecificOption(int opt, const char *optarg,
 std::tuple<uint16_t, uint16_t, bool>
 CommandLineOptions::ParseDeprecated(const std::vector<std::string> &args) {
 
-    size_t nargs = args.size();
+    size_t const nargs = args.size();
     if (nargs != 1 && nargs != 3 && nargs != 4) {
         throw sls::RuntimeError("Invalid number of arguments.");
     }
@@ -266,8 +266,8 @@ CommandLineOptions::ParseDeprecated(const std::vector<std::string> &args) {
     }
 
     // parse deprecated arguments
-    uint16_t p = parsePort(args[1].c_str());
-    uint16_t n = parseNumReceivers(args[2].c_str());
+    uint16_t const p = parsePort(args[1].c_str());
+    uint16_t const n = parseNumReceivers(args[2].c_str());
     bool o = false;
     if (nargs == 4) {
         try {

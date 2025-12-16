@@ -13,7 +13,7 @@ TEST_CASE("Result looks and behaves like a standard container") {
 }
 
 TEST_CASE("Default construction is possible and gives an empty result") {
-    Result<int> res;
+    Result<int> const res;
     REQUIRE(res.size() == 0);
     REQUIRE(res.empty() == true);
 }
@@ -38,7 +38,7 @@ TEST_CASE("Like vector it can be constructed from size and value") {
 }
 
 TEST_CASE("Result can be iterated using modern syntax") {
-    Result<int> res{0, 1, 2, 3, 4, 5};
+    Result<int> const res{0, 1, 2, 3, 4, 5};
 
     int i = 0;
     for (const auto &r : res)
@@ -46,28 +46,28 @@ TEST_CASE("Result can be iterated using modern syntax") {
 }
 
 TEST_CASE("Calling squash on an empty Result produces default value") {
-    Result<double> res;
+    Result<double> const res;
     REQUIRE(res.squash() == 0.);
 
-    Result<unsigned> res2;
+    Result<unsigned> const res2;
     REQUIRE(res2.squash() == 0u);
 
-    Result<std::string> res3;
+    Result<std::string> const res3;
     REQUIRE(res3.squash() == "");
 }
 
 TEST_CASE("When equal squash gives the front value") {
-    Result<int> res{3, 3, 3};
+    Result<int> const res{3, 3, 3};
     REQUIRE(res.squash() == 3);
 }
 
 TEST_CASE("When elements are not equal squash gives default value") {
-    Result<int> res{3, 3, 3, 5};
+    Result<int> const res{3, 3, 3, 5};
     REQUIRE(res.squash() == 0);
 }
 
 TEST_CASE("String compare with squash") {
-    Result<std::string> res{"hej", "hej", "hej"};
+    Result<std::string> const res{"hej", "hej", "hej"};
     REQUIRE(res.squash() == "hej");
 }
 
@@ -113,13 +113,13 @@ TEST_CASE("Check if elements are equal") {
 
 TEST_CASE("Result can be converted to std::vector") {
     Result<short> res{1, 2, 3, 4, 5};
-    std::vector<short> vec{1, 2, 3, 4, 5};
-    std::vector<short> vec2 = res;
+    std::vector<short> const vec{1, 2, 3, 4, 5};
+    std::vector<short> const vec2 = res;
     REQUIRE(vec2 == vec);
 }
 
 TEST_CASE("Result can be printed using <<") {
-    Result<int> res{1, 2, 3};
+    Result<int> const res{1, 2, 3};
     std::ostringstream os;
     os << res;
     REQUIRE(os.str() == "[1, 2, 3]");
@@ -139,8 +139,8 @@ TEST_CASE("Convert from Result<int> to Result<ns>") {
 
 TEST_CASE("Result of vectors") {
     using VecVec = std::vector<std::vector<int>>;
-    VecVec vecvec{{1, 2, 3}, {4, 5, 6}};
-    Result<VecVec> res{vecvec};
+    VecVec const vecvec{{1, 2, 3}, {4, 5, 6}};
+    Result<VecVec> const res{vecvec};
 }
 
 TEST_CASE("Free function begin end") {
@@ -159,30 +159,30 @@ TEST_CASE("Sorting a Result") {
 }
 
 TEST_CASE("Printing Result<std::string>") {
-    Result<std::string> res{"ein", "zwei", "drei"};
+    Result<std::string> const res{"ein", "zwei", "drei"};
     std::ostringstream os;
     os << res;
     REQUIRE(os.str() == "[ein, zwei, drei]");
 }
 
 TEST_CASE("Printing Result<int>") {
-    Result<int> res{1, 2, 3};
+    Result<int> const res{1, 2, 3};
     std::ostringstream os;
     os << res;
     REQUIRE(os.str() == "[1, 2, 3]");
 }
 
 TEST_CASE("String conversions") {
-    Result<int> res{1, 2, 3};
+    Result<int> const res{1, 2, 3};
     REQUIRE(ToString(res) == "[1, 2, 3]");
 
-    Result<std::string> res2{"one", "two", "three"};
+    Result<std::string> const res2{"one", "two", "three"};
     REQUIRE(ToString(res2) == "[one, two, three]");
 
     using Smap = std::map<std::string, std::string>;
     Smap m;
     m["one"] = "1";
-    Result<Smap> res3{m, m, m};
+    Result<Smap> const res3{m, m, m};
     REQUIRE(res3.size() == 3);
     REQUIRE(ToString(res3) == "[{one: 1}, {one: 1}, {one: 1}]");
 
@@ -191,25 +191,25 @@ TEST_CASE("String conversions") {
     m2["two"] = "2";
     m2["three"] = "3";
 
-    Result<Smap> res4{m, m2, m};
+    Result<Smap> const res4{m, m2, m};
     REQUIRE(ToString(res4) ==
             "[{one: 1}, {one: 1, three: 3, two: 2}, {one: 1}]");
 }
 
 TEST_CASE("Any element is equal") {
-    Result<int> r{1, 2, 3, 4, 5};
+    Result<int> const r{1, 2, 3, 4, 5};
     REQUIRE(r.any(3));
     REQUIRE_FALSE(r.any(9));
 }
 
 TEST_CASE("Result contains only the specified elements") {
-    Result<int> r{1, 1, 1};
+    Result<int> const r{1, 1, 1};
     REQUIRE(r.contains_only(1));
     REQUIRE(r.contains_only(1, 1));
 }
 
 TEST_CASE("Only with multiple values") {
-    Result<int> r{1, 1, 2, 1, 2, 1, 1};
+    Result<int> const r{1, 1, 2, 1, 2, 1, 1};
     REQUIRE_FALSE(r.contains_only(1));
     REQUIRE_FALSE(r.contains_only(2));
     REQUIRE(r.contains_only(1, 2));

@@ -114,14 +114,14 @@ size_t Pattern::load(const std::string &fname) {
                 it, std::istream_iterator<std::string>());
 
             std::string cmd = args[0];
-            int nargs = args.size() - 1;
+            int const nargs = args.size() - 1;
 
             if (cmd == "patword") {
                 if (nargs != 2) {
                     throw RuntimeError("Invalid arguments for " +
                                        ToString(args));
                 }
-                uint32_t addr = StringTo<uint32_t>(args[1]);
+                uint32_t const addr = StringTo<uint32_t>(args[1]);
                 if (addr >= MAX_PATTERN_LENGTH) {
                     throw RuntimeError("Invalid address for " + ToString(args));
                 }
@@ -162,8 +162,8 @@ size_t Pattern::load(const std::string &fname) {
                     throw RuntimeError("Invalid Pattern level. Options 0-" +
                                        std::to_string(MAX_PATTERN_LEVELS - 1));
                 }
-                int loop1 = StringTo<uint32_t>(args[iArg++]);
-                int loop2 = StringTo<uint32_t>(args[iArg++]);
+                int const loop1 = StringTo<uint32_t>(args[iArg++]);
+                int const loop2 = StringTo<uint32_t>(args[iArg++]);
                 pat->startloop[level] = loop1;
                 pat->stoploop[level] = loop2;
             } else if (cmd == "patnloop0" || cmd == "patnloop1" ||

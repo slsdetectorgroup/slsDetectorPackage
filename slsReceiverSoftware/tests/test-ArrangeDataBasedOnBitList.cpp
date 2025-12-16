@@ -109,9 +109,9 @@ class DataProcessorTestFixture {
 
     void set_data(const std::bitset<8> pattern = 0xFF) {
         delete[] data;
-        uint64_t max_bytes_per_bit =
+        uint64_t const max_bytes_per_bit =
             num_samples % 8 == 0 ? num_samples / 8 : num_samples / 8 + 1;
-        uint64_t reserved_size =
+        uint64_t const reserved_size =
             get_size() - num_digital_bytes + max_bytes_per_bit * 64;
         data = new char[reserved_size];
 
@@ -148,7 +148,7 @@ TEST_CASE_METHOD(DataProcessorTestFixture, "Remove Trailing Bits",
 
     generaldata->SetCtbDbitOffset(num_random_offset_bytes);
 
-    size_t expected_size = get_size() - num_random_offset_bytes;
+    size_t const expected_size = get_size() - num_random_offset_bytes;
 
     char *expected_data = new char[expected_size];
     memset(expected_data, dummy_value, num_analog_bytes); // set to 125
@@ -287,7 +287,7 @@ TEST_CASE_METHOD(DataProcessorTestFixture, "Arrange bitlist with reorder false",
     set_num_samples(num_samples);
     set_data(0b01010101); // set digital data to 0x55 to have alternating bits
 
-    size_t expected_size =
+    size_t const expected_size =
         num_analog_bytes + num_transceiver_bytes + expected_num_digital_bytes;
 
     // create expected data
@@ -343,7 +343,7 @@ TEST_CASE_METHOD(DataProcessorTestFixture, "Arrange bitlist with reorder true",
     set_num_samples(num_samples);
     set_data(0b01010101);
 
-    size_t expected_size =
+    size_t const expected_size =
         num_analog_bytes + num_transceiver_bytes + expected_num_digital_bytes;
 
     // create expected data
@@ -371,8 +371,8 @@ TEST_CASE_METHOD(DataProcessorTestFixture,
                  "Arrange bitlist and remove trailing bits",
                  "[.dataprocessor][.retrievebitlist]") {
 
-    size_t num_random_offset_bytes = 3;
-    std::vector<int> bitlist{1, 4, 5};
+    size_t const num_random_offset_bytes = 3;
+    std::vector<int> const bitlist{1, 4, 5};
 
     set_random_offset_bytes(num_random_offset_bytes);
     set_data();
@@ -386,7 +386,7 @@ TEST_CASE_METHOD(DataProcessorTestFixture,
     std::vector<uint8_t> expected_digital_part{0b00000111};
     const size_t expected_num_digital_bytes = 5;
 
-    size_t expected_size =
+    size_t const expected_size =
         num_analog_bytes + num_transceiver_bytes + expected_num_digital_bytes;
 
     // create expected data

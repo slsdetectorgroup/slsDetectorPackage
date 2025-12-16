@@ -9,7 +9,7 @@
 #include "sls/sls_detector_defs.h"
 namespace py = pybind11;
 void init_enums(py::module &m) {
-    py::class_<slsDetectorDefs> Defs(m, "slsDetectorDefs");
+    py::class_<slsDetectorDefs> const Defs(m, "slsDetectorDefs");
     py::class_<slsDetectorDefs::xy> xy(m, "xy");
     xy.def(py::init());
     xy.def(py::init<int, int>());

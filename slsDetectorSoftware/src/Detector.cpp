@@ -128,7 +128,7 @@ Detector &Detector::operator=(Detector &&other) noexcept = default;
 // Configuration
 
 void Detector::loadConfig(const std::string &fname) {
-    int shm_id = getShmId();
+    const int shm_id = getShmId();
     freeSharedMemory(shm_id);
     pimpl = make_unique<DetectorImpl>(shm_id);
     LOG(logINFO) << "Loading configuration file: " << fname;
@@ -205,7 +205,7 @@ int Detector::getShmId() const { return pimpl->getDetectorIndex(); }
 std::string Detector::getPackageVersion() const { return SLS_DET_VERSION; }
 
 std::string Detector::getClientVersion() const {
-    Version v(APILIB);
+    const Version v(APILIB);
     return v.concise();
 }
 
@@ -266,7 +266,7 @@ defs::xy Detector::getPortPerModuleGeometry() const {
 
 Result<defs::xy> Detector::getPortSize(Positions pos) const {
     Result<defs::xy> res = pimpl->Parallel(&Module::getNumberOfChannels, pos);
-    defs::xy portGeometry = getPortPerModuleGeometry();
+    const defs::xy portGeometry = getPortPerModuleGeometry();
     if ((portGeometry.x != 1 && portGeometry.x != 2) ||
         (portGeometry.y != 1 && portGeometry.y != 2)) {
         throw RuntimeError(
@@ -346,9 +346,9 @@ Detector::getAllThresholdEnergy(Positions pos) const {
 void Detector::setThresholdEnergy(int threshold_ev,
                                   defs::detectorSettings settings,
                                   bool trimbits, Positions pos) {
-    defs::detectorType type = getDetectorType().squash();
+    const defs::detectorType type = getDetectorType().squash();
     if (type == defs::MYTHEN3) {
-        std::array<int, 3> energy = {threshold_ev, threshold_ev, threshold_ev};
+        const std::array<int, 3> energy = {threshold_ev, threshold_ev, threshold_ev};
         setThresholdEnergy(energy, settings, trimbits, pos);
         return;
     }
@@ -753,7 +753,6 @@ void Detector::setImageTestMode(int value, Positions pos) {
 }
 
 std::vector<defs::dacIndex> Detector::getTemperatureList() const {
-    std::vector<defs::dacIndex> retval;
     switch (getDetectorType().squash()) {
     case defs::CHIPTESTBOARD:
         return std::vector<defs::dacIndex>{defs::SLOW_ADC_TEMP};
@@ -1096,9 +1095,9 @@ void Detector::setNumberofUDPInterfaces_(int n, Positions pos) {
     if (!size()) {
         throw RuntimeError("No modules added.");
     }
-    bool previouslyClientStreaming = pimpl->getDataStreamingToClient();
-    uint16_t clientStartingPort = getClientZmqPort({0}).squash(0);
-    bool useReceiver = getUseReceiverFlag().squash(false);
+    const bool previouslyClientStreaming = pimpl->getDataStreamingToClient();
+    const uint16_t clientStartingPort = getClientZmqPort({0}).squash(0);
+    const bool useReceiver = getUseReceiverFlag().squash(false);
     bool previouslyReceiverStreaming = false;
     uint16_t rxStartingPort = 0;
     if (useReceiver) {
@@ -1564,7 +1563,7 @@ Result<uint16_t> Detector::getRxZmqPort(Positions pos) const {
 }
 
 void Detector::setRxZmqPort(uint16_t port, int module_id) {
-    bool previouslyReceiverStreaming =
+    const bool previouslyReceiverStreaming =
         getRxZmqDataStream(std::vector<int>{module_id}).squash(false);
     if (module_id == -1) {
         std::vector<uint16_t> port_list = getValidPortNumbers(port);
@@ -1587,7 +1586,7 @@ Result<uint16_t> Detector::getClientZmqPort(Positions pos) const {
 }
 
 void Detector::setClientZmqPort(uint16_t port, int module_id) {
-    bool previouslyClientStreaming = pimpl->getDataStreamingToClient();
+    const bool previouslyClientStreaming = pimpl->getDataStreamingToClient();
     if (module_id == -1) {
         std::vector<uint16_t> port_list = getValidPortNumbers(port);
         for (int idet = 0; idet < size(); ++idet) {
@@ -1609,7 +1608,7 @@ Result<IpAddr> Detector::getClientZmqIp(Positions pos) const {
 }
 
 void Detector::setClientZmqIp(const IpAddr ip, Positions pos) {
-    bool previouslyClientStreaming = pimpl->getDataStreamingToClient();
+    const bool previouslyClientStreaming = pimpl->getDataStreamingToClient();
     pimpl->Parallel(&Module::setClientStreamingIP, pos, ip);
     if (previouslyClientStreaming) {
         pimpl->setDataStreamingToClient(false);
@@ -1628,7 +1627,7 @@ Result<int> Detector::getRxZmqHwm(Positions pos) const {
 }
 
 void Detector::setRxZmqHwm(const int limit) {
-    bool previouslyReceiverStreaming = getRxZmqDataStream().squash(false);
+    const bool previouslyReceiverStreaming = getRxZmqDataStream().squash(false);
     pimpl->Parallel(&Module::setReceiverStreamingHwm, {}, limit);
     if (previouslyReceiverStreaming) {
         setRxZmqDataStream(false, {});
@@ -1994,15 +1993,15 @@ Result<defs::streamingInterface> Detector::getVetoStream(Positions pos) const {
 void Detector::setVetoStream(defs::streamingInterface interface,
                              Positions pos) {
     // 3gbe
-    bool LOW_LATENCY_LINK =
+    const bool LOW_LATENCY_LINK =
         ((interface & defs::streamingInterface::LOW_LATENCY_LINK) ==
          defs::streamingInterface::LOW_LATENCY_LINK);
     pimpl->Parallel(&Module::setVetoStream, pos, LOW_LATENCY_LINK);
 
     // 10gbe (debugging interface) opens 2nd udp interface in receiver
-    int old_numinterfaces = getNumberofUDPInterfaces(pos).tsquash(
+    const int old_numinterfaces = getNumberofUDPInterfaces(pos).tsquash(
         "retrieved inconsistent number of udp interfaces");
-    int numinterfaces =
+    const int numinterfaces =
         (((interface & defs::streamingInterface::ETHERNET_10GB) ==
           defs::streamingInterface::ETHERNET_10GB)
              ? 2
@@ -2730,7 +2729,7 @@ void Detector::programFPGA(const std::string &fname,
                            const bool forceDeleteNormalFile, Positions pos) {
     LOG(logINFO) << "Updating Firmware...";
     LOG(logINFO) << "Hardware Version: " << getHardwareVersion();
-    std::vector<char> buffer = pimpl->readProgrammingFile(fname);
+    const std::vector<char> buffer = pimpl->readProgrammingFile(fname);
     pimpl->Parallel(&Module::programFPGA, pos, buffer, forceDeleteNormalFile);
     rebootController(pos);
 }
@@ -2741,8 +2740,8 @@ void Detector::resetFPGA(Positions pos) {
 
 void Detector::updateDetectorServer(const std::string &fname, Positions pos) {
     LOG(logINFO) << "Updating Detector Server (no tftp)...";
-    std::vector<char> buffer = readBinaryFile(fname, "Update Detector Server");
-    std::string filename = getFileNameFromFilePath(fname);
+    const std::vector<char> buffer = readBinaryFile(fname, "Update Detector Server");
+    const std::string filename = getFileNameFromFilePath(fname);
     pimpl->Parallel(&Module::updateDetectorServer, pos, buffer, filename);
     if (getDetectorType().squash() != defs::EIGER) {
         rebootController(pos);
@@ -2751,7 +2750,7 @@ void Detector::updateDetectorServer(const std::string &fname, Positions pos) {
 
 void Detector::updateKernel(const std::string &fname, Positions pos) {
     LOG(logINFO) << "Updating Kernel...";
-    std::vector<char> buffer = readBinaryFile(fname, "Update Kernel");
+    const std::vector<char> buffer = readBinaryFile(fname, "Update Kernel");
     pimpl->Parallel(&Module::updateKernel, pos, buffer);
     rebootController(pos);
 }
@@ -2765,8 +2764,8 @@ void Detector::updateFirmwareAndServer(const std::string &sname,
                                        Positions pos) {
     LOG(logINFO) << "Updating Firmware and Detector Server (no tftp)...";
     LOG(logINFO) << "Updating Detector Server (no tftp)...";
-    std::vector<char> buffer = readBinaryFile(sname, "Update Detector Server");
-    std::string filename = getFileNameFromFilePath(sname);
+    const std::vector<char> buffer = readBinaryFile(sname, "Update Detector Server");
+    const std::string filename = getFileNameFromFilePath(sname);
     pimpl->Parallel(&Module::updateDetectorServer, pos, buffer, filename);
     programFPGA(fname, false, pos);
 }
@@ -2882,7 +2881,7 @@ Result<ns> Detector::getMeasurementTime(Positions pos) const {
 }
 
 std::vector<uint16_t> Detector::getValidPortNumbers(uint16_t start_port) {
-    int num_sockets_per_detector = getNumberofUDPInterfaces({}).tsquash(
+    const int num_sockets_per_detector = getNumberofUDPInterfaces({}).tsquash(
         "Number of UDP Interfaces is not consistent among modules");
 
     validatePortRange(start_port, size() * num_sockets_per_detector);
@@ -2890,7 +2889,7 @@ std::vector<uint16_t> Detector::getValidPortNumbers(uint16_t start_port) {
     std::vector<uint16_t> res;
     res.reserve(size());
     for (int idet = 0; idet < size(); ++idet) {
-        uint16_t port = start_port + (idet * num_sockets_per_detector);
+        const uint16_t port = start_port + (idet * num_sockets_per_detector);
         res.push_back(port);
     }
     return res;

@@ -20,7 +20,7 @@ TEST_CASE("Copy construct pattern") {
 }
 
 TEST_CASE("Compare patterns") {
-    Pattern p;
+    Pattern const p;
     Pattern p1;
     REQUIRE(p == p1);
 

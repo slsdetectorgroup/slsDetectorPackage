@@ -57,14 +57,14 @@ std::string ClientInterface::getReceiverVersion() { return APIRECEIVER; }
 /***callback functions***/
 void ClientInterface::registerCallBackStartAcquisition(
     void (*func)(const startCallbackHeader, void *), void *arg) {
-    std::lock_guard<std::mutex> lock(callbackMutex);
+    std::lock_guard<std::mutex> const lock(callbackMutex);
     startAcquisitionCallBack = func;
     pStartAcquisition = arg;
 }
 
 void ClientInterface::registerCallBackAcquisitionFinished(
     void (*func)(const endCallbackHeader, void *), void *arg) {
-    std::lock_guard<std::mutex> lock(callbackMutex);
+    std::lock_guard<std::mutex> const lock(callbackMutex);
     acquisitionFinishedCallBack = func;
     pAcquisitionFinished = arg;
 }
@@ -73,7 +73,7 @@ void ClientInterface::registerCallBackRawDataReady(
     void (*func)(sls_receiver_header &, dataCallbackHeader, char *, size_t &,
                  void *),
     void *arg) {
-    std::lock_guard<std::mutex> lock(callbackMutex);
+    std::lock_guard<std::mutex> const lock(callbackMutex);
     rawDataReadyCallBack = func;
     pRawDataReady = arg;
 }
@@ -338,15 +338,15 @@ int ClientInterface::setup_receiver(Interface &socket) {
         // udp setup
         // update retvals only if detmac is not the same as in detector
         if (arg.udp_dstip != 0) {
-            MacAddr r = setUdpIp(IpAddr(arg.udp_dstip));
-            MacAddr detMac{arg.udp_dstmac};
+            MacAddr const r = setUdpIp(IpAddr(arg.udp_dstip));
+            MacAddr const detMac{arg.udp_dstmac};
             if (detMac != r) {
                 retvals[0] = r;
             }
         }
         if (arg.udp_dstip2 != 0) {
-            MacAddr r = setUdpIp2(IpAddr(arg.udp_dstip2));
-            MacAddr detMac{arg.udp_dstmac2};
+            MacAddr const r = setUdpIp2(IpAddr(arg.udp_dstip2));
+            MacAddr const detMac{arg.udp_dstmac2};
             if (detMac != r) {
                 retvals[1] = r;
             }
@@ -467,7 +467,7 @@ void ClientInterface::setDetectorType(detectorType arg) {
     }
     // callbacks after (in setdetectortype, the object is reinitialized)
     {
-        std::lock_guard<std::mutex> lock(callbackMutex);
+        std::lock_guard<std::mutex> const lock(callbackMutex);
         if (startAcquisitionCallBack != nullptr)
             impl()->registerCallBackStartAcquisition(startAcquisitionCallBack,
                                                      pStartAcquisition);
@@ -586,8 +586,8 @@ int ClientInterface::set_num_digital_samples(Interface &socket) {
 int ClientInterface::set_exptime(Interface &socket) {
     int64_t args[2]{-1, -1};
     socket.Receive(args);
-    int gateIndex = static_cast<int>(args[0]);
-    ns value = std::chrono::nanoseconds(args[1]);
+    int const gateIndex = static_cast<int>(args[0]);
+    ns const value = std::chrono::nanoseconds(args[1]);
     LOG(logDEBUG1) << "Setting exptime to " << ToString(value)
                    << " (gateIndex: " << gateIndex << ")";
     switch (gateIndex) {
@@ -635,7 +635,7 @@ int ClientInterface::set_period(Interface &socket) {
 int ClientInterface::set_subexptime(Interface &socket) {
     auto value = std::chrono::nanoseconds(socket.Receive<int64_t>());
     LOG(logDEBUG1) << "Setting period to " << ToString(value);
-    ns subdeadtime = impl()->getSubPeriod() - impl()->getSubExpTime();
+    ns const subdeadtime = impl()->getSubPeriod() - impl()->getSubExpTime();
     impl()->setSubExpTime(value);
     impl()->setSubPeriod(impl()->getSubExpTime() + subdeadtime);
     return socket.Send(OK);
@@ -780,7 +780,7 @@ int ClientInterface::get_file_dir(Interface &socket) {
 }
 
 int ClientInterface::set_file_name(Interface &socket) {
-    std::string fname = socket.Receive(MAX_STR_LENGTH);
+    std::string const fname = socket.Receive(MAX_STR_LENGTH);
     if (fname.empty()) {
         throw RuntimeError("Cannot set empty file name");
     }
@@ -1115,7 +1115,7 @@ int ClientInterface::set_additional_json_header(Interface &socket) {
 }
 
 int ClientInterface::get_additional_json_header(Interface &socket) {
-    std::map<std::string, std::string> json = impl()->getAdditionalJsonHeader();
+    std::map<std::string, std::string> const json = impl()->getAdditionalJsonHeader();
     LOG(logDEBUG1) << "additional json header:" << ToString(json);
     std::ostringstream oss;
     for (auto &it : json) {
@@ -1319,7 +1319,7 @@ int ClientInterface::set_quad_type(Interface &socket) {
                                std::string(e.what()) + ']');
         }
     }
-    int retval = impl()->getQuad() ? 1 : 0;
+    int const retval = impl()->getQuad() ? 1 : 0;
     validate(quadEnable, retval, "set quad", DEC);
     LOG(logDEBUG1) << "quad retval:" << retval;
     return socket.Send(OK);
@@ -1336,7 +1336,7 @@ int ClientInterface::set_read_n_rows(Interface &socket) {
         LOG(logDEBUG1) << "Setting number of rows:" << arg;
         impl()->setReadNRows(arg);
     }
-    int retval = impl()->getReadNRows();
+    int const retval = impl()->getReadNRows();
     validate(arg, retval, "set number of rows", DEC);
     LOG(logDEBUG1) << "read number of rows:" << retval;
     return socket.Send(OK);
@@ -1516,7 +1516,7 @@ int ClientInterface::set_additional_json_parameter(Interface &socket) {
 }
 
 int ClientInterface::get_additional_json_parameter(Interface &socket) {
-    std::string key = socket.Receive(SHORT_STR_LENGTH);
+    std::string const key = socket.Receive(SHORT_STR_LENGTH);
     std::string value = impl()->getAdditionalJsonParameter(key);
     value.resize(SHORT_STR_LENGTH);
     return socket.sendResult(value);
@@ -1541,7 +1541,7 @@ int ClientInterface::set_num_gates(Interface &socket) {
 int ClientInterface::set_gate_delay(Interface &socket) {
     int64_t args[2]{-1, -1};
     socket.Receive(args);
-    int gateIndex = static_cast<int>(args[0]);
+    int const gateIndex = static_cast<int>(args[0]);
     auto value = std::chrono::nanoseconds(args[1]);
     LOG(logDEBUG1) << "Setting gate delay to " << ToString(value)
                    << " (gateIndex: " << gateIndex << ")";
@@ -1657,7 +1657,7 @@ int ClientInterface::set_all_threshold(Interface &socket) {
 int ClientInterface::set_detector_datastream(Interface &socket) {
     int args[2]{-1, -1};
     socket.Receive(args);
-    portPosition port = static_cast<portPosition>(args[0]);
+    portPosition const port = static_cast<portPosition>(args[0]);
     switch (port) {
     case LEFT:
     case RIGHT:
@@ -1665,7 +1665,7 @@ int ClientInterface::set_detector_datastream(Interface &socket) {
     default:
         throw RuntimeError("Invalid port type");
     }
-    bool enable = static_cast<int>(args[1]);
+    bool const enable = static_cast<int>(args[1]);
     LOG(logDEBUG1) << "Setting datastream (" << ToString(port) << ") to "
                    << ToString(enable);
     if (detType != EIGER)

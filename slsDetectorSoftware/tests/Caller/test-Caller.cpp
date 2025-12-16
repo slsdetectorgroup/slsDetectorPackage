@@ -24,7 +24,7 @@ TEST_CASE("Calling help doesn't throw or cause segfault") {
     // Dont add [.cmdcall] tag this should run with normal tests
     Caller caller(nullptr);
     std::ostringstream os;
-    for (std::string cmd : caller.getAllCommands())
+    for (std::string const& cmd : caller.getAllCommands())
         REQUIRE_NOTHROW(
             caller.call(cmd, {}, -1, slsDetectorDefs::HELP_ACTION, os));
 }
@@ -291,7 +291,7 @@ TEST_CASE("threshold", "[.cmdcall]") {
         auto prev_energies =
             det.getTrimEnergies().tsquash("inconsistent trim energies to test");
         if (!prev_energies.empty()) {
-            std::string senergy = std::to_string(prev_energies[0]);
+            std::string const senergy = std::to_string(prev_energies[0]);
             std::ostringstream oss1, oss2;
             caller.call("threshold", {senergy, "standard"}, -1, PUT, oss1);
             REQUIRE(oss1.str() == "threshold [" + senergy + ", standard]\n");
@@ -319,15 +319,15 @@ TEST_CASE("threshold", "[.cmdcall]") {
         auto prev_energies =
             det.getTrimEnergies().tsquash("inconsistent trim energies to test");
         if (!prev_energies.empty()) {
-            std::string senergy = std::to_string(prev_energies[0]);
+            std::string const senergy = std::to_string(prev_energies[0]);
             std::ostringstream oss1, oss2;
             caller.call("threshold", {senergy, "standard"}, -1, PUT, oss1);
             REQUIRE(oss1.str() == "threshold [" + senergy + ", standard]\n");
             caller.call("threshold", {}, -1, GET, oss2);
             REQUIRE(oss2.str() == "threshold [" + senergy + ", " + senergy +
                                       ", " + senergy + "]\n");
-            std::string senergy2 = std::to_string(prev_energies[1]);
-            std::string senergy3 = std::to_string(prev_energies[2]);
+            std::string const senergy2 = std::to_string(prev_energies[1]);
+            std::string const senergy3 = std::to_string(prev_energies[2]);
             std::ostringstream oss3, oss4;
             caller.call("threshold", {senergy, senergy2, senergy3, "standard"},
                         -1, PUT, oss3);
@@ -370,7 +370,7 @@ TEST_CASE("thresholdnotb", "[.cmdcall]") {
         auto prev_energies =
             det.getTrimEnergies().tsquash("inconsistent trim energies to test");
         if (!prev_energies.empty()) {
-            std::string senergy = std::to_string(prev_energies[0]);
+            std::string const senergy = std::to_string(prev_energies[0]);
             std::ostringstream oss1, oss2;
             caller.call("thresholdnotb", {senergy, "standard"}, -1, PUT, oss1);
             REQUIRE(oss1.str() ==
@@ -398,7 +398,7 @@ TEST_CASE("thresholdnotb", "[.cmdcall]") {
         auto prev_energies =
             det.getTrimEnergies().tsquash("inconsistent trim energies to test");
         if (!prev_energies.empty()) {
-            std::string senergy = std::to_string(prev_energies[0]);
+            std::string const senergy = std::to_string(prev_energies[0]);
             std::ostringstream oss1, oss2;
             caller.call("thresholdnotb", {senergy, "standard"}, -1, PUT, oss1);
             REQUIRE(oss1.str() ==
@@ -406,8 +406,8 @@ TEST_CASE("thresholdnotb", "[.cmdcall]") {
             caller.call("threshold", {}, -1, GET, oss2);
             REQUIRE(oss2.str() == "threshold [" + senergy + ", " + senergy +
                                       ", " + senergy + "]\n");
-            std::string senergy2 = std::to_string(prev_energies[1]);
-            std::string senergy3 = std::to_string(prev_energies[2]);
+            std::string const senergy2 = std::to_string(prev_energies[1]);
+            std::string const senergy3 = std::to_string(prev_energies[2]);
             std::ostringstream oss3, oss4;
             caller.call("thresholdnotb",
                         {senergy, senergy2, senergy3, "standard"}, -1, PUT,
@@ -528,8 +528,8 @@ TEST_CASE("gappixels", "[.cmdcall]") {
     if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH)
         gapPixelTest = true;
     else if (det_type == defs::EIGER) {
-        bool quad = det.getQuad().squash(false);
-        bool fullModule = (det.getModuleGeometry().y % 2 == 0);
+        bool const quad = det.getQuad().squash(false);
+        bool const fullModule = (det.getModuleGeometry().y % 2 == 0);
         if (quad || fullModule) {
             gapPixelTest = true;
         }
@@ -658,9 +658,9 @@ TEST_CASE("badchannels", "[.cmdcall]") {
 
         REQUIRE_THROWS(caller.call("badchannels", {}, -1, GET));
 
-        std::string fname_put =
+        std::string const fname_put =
             getAbsolutePathFromCurrentProcess(TEST_FILE_NAME_BAD_CHANNELS);
-        std::string fname_get = "/tmp/sls_test_channels.txt";
+        std::string const fname_get = "/tmp/sls_test_channels.txt";
 
         REQUIRE_NOTHROW(caller.call("badchannels", {fname_put}, 0, PUT));
         REQUIRE_NOTHROW(caller.call("badchannels", {fname_get}, 0, GET));
@@ -976,7 +976,7 @@ TEST_CASE("dr", "[.cmdcall]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::EIGER) {
         auto dr = det.getDynamicRange().squash();
-        std::array<int, 4> vals{4, 8, 16, 32};
+        std::array<int, 4> const vals{4, 8, 16, 32};
         for (const auto val : vals) {
             std::ostringstream oss1, oss2;
             caller.call("dr", {std::to_string(val)}, -1, PUT, oss1);
@@ -988,7 +988,7 @@ TEST_CASE("dr", "[.cmdcall]") {
     } else if (det_type == defs::MYTHEN3) {
         auto dr = det.getDynamicRange().squash();
         // not updated in firmware to support dr 1
-        std::array<int, 3> vals{8, 16, 32};
+        std::array<int, 3> const vals{8, 16, 32};
         for (const auto val : vals) {
             std::ostringstream oss1, oss2;
             caller.call("dr", {std::to_string(val)}, -1, PUT, oss1);
@@ -1542,7 +1542,7 @@ TEST_CASE("powerchip", "[.cmdcall]") {
                 "Inconsistent virtual detector "
                 "server to test powerchip command")) {
             det.setPowerChip(1);
-            int hv = det.getHighVoltage().tsquash(
+            int const hv = det.getHighVoltage().tsquash(
                 "Inconsistent high voltage to test "
                 "powerchip command");
 
@@ -1976,7 +1976,7 @@ TEST_CASE("temp_adc", "[.cmdcall]") {
         REQUIRE_NOTHROW(caller.call("temp_adc", {}, -1, GET));
         std::ostringstream oss;
         REQUIRE_NOTHROW(caller.call("temp_adc", {}, 0, GET, oss));
-        std::string s = (oss.str()).erase(0, strlen("temp_adc "));
+        std::string const s = (oss.str()).erase(0, strlen("temp_adc "));
         REQUIRE(std::stoi(s) != -1);
     } else {
         REQUIRE_THROWS(caller.call("temp_adc", {}, -1, GET));
@@ -1991,7 +1991,7 @@ TEST_CASE("temp_fpga", "[.cmdcall]") {
         REQUIRE_NOTHROW(caller.call("temp_fpga", {}, -1, GET));
         std::ostringstream oss;
         REQUIRE_NOTHROW(caller.call("temp_fpga", {}, 0, GET, oss));
-        std::string s = (oss.str()).erase(0, strlen("temp_fpga "));
+        std::string const s = (oss.str()).erase(0, strlen("temp_fpga "));
         REQUIRE(std::stoi(s) != -1);
     } else {
         REQUIRE_THROWS(caller.call("temp_fpga", {}, -1, GET));
@@ -2075,7 +2075,7 @@ TEST_CASE("defaultdac", "[.cmdcall]") {
             }
         }
         if (det_type == defs::JUNGFRAU) {
-            std::vector<defs::dacIndex> daclist = {
+            std::vector<defs::dacIndex> const daclist = {
                 defs::VREF_PRECH, defs::VREF_DS, defs::VREF_COMP};
             for (auto it : daclist) {
                 auto dacname = ToString(it);
@@ -2955,7 +2955,7 @@ TEST_CASE("txdelay_frame", "[.cmdcall]") {
             det_type == defs::MYTHEN3) {
             val = 5;
         }
-        std::string sval = std::to_string(val);
+        std::string const sval = std::to_string(val);
         {
             std::ostringstream oss1, oss2;
             caller.call("txdelay_frame", {sval}, -1, PUT, oss1);
@@ -2983,8 +2983,8 @@ TEST_CASE("txdelay", "[.cmdcall]") {
              det_type == defs::MYTHEN3) &&
             (det.size() < 2)) {
             REQUIRE_THROWS(caller.call("txdelay", {}, -1, GET));
-            int val = 5;
-            std::string sval = std::to_string(val);
+            int const val = 5;
+            std::string const sval = std::to_string(val);
             {
                 std::ostringstream oss1;
                 caller.call("txdelay", {sval}, -1, PUT, oss1);
@@ -3006,7 +3006,7 @@ TEST_CASE("txdelay", "[.cmdcall]") {
                 det_type == defs::MYTHEN3) {
                 val = 5;
             }
-            std::string sval = std::to_string(val);
+            std::string const sval = std::to_string(val);
             {
                 std::ostringstream oss1, oss2;
                 caller.call("txdelay", {sval}, -1, PUT, oss1);
@@ -3279,7 +3279,7 @@ TEST_CASE("reg", "[.cmdcall]") {
         if (det_type == defs::GOTTHARD2) {
             addr = 0x298;
         }
-        std::string saddr = ToStringHex(addr);
+        std::string const saddr = ToStringHex(addr);
         auto prev_val = det.readRegister(addr);
         {
             std::ostringstream oss1, oss2;
@@ -3338,7 +3338,7 @@ TEST_CASE("setbit", "[.cmdcall]") {
         if (det_type == defs::GOTTHARD2) {
             addr = 0x298;
         }
-        std::string saddr = ToStringHex(addr);
+        std::string const saddr = ToStringHex(addr);
         auto prev_val = det.readRegister(addr);
         {
             std::ostringstream oss1, oss2, oss3;
@@ -3368,7 +3368,7 @@ TEST_CASE("clearbit", "[.cmdcall]") {
         if (det_type == defs::GOTTHARD2) {
             addr = 0x298;
         }
-        std::string saddr = ToStringHex(addr);
+        std::string const saddr = ToStringHex(addr);
         auto prev_val = det.readRegister(addr);
         {
             std::ostringstream oss1, oss2, oss3;
@@ -3398,7 +3398,7 @@ TEST_CASE("getbit", "[.cmdcall]") {
         if (det_type == defs::GOTTHARD2) {
             addr = 0x298;
         }
-        std::string saddr = ToStringHex(addr);
+        std::string const saddr = ToStringHex(addr);
         auto prev_val = det.readRegister(addr);
         {
             std::ostringstream oss1, oss2;

@@ -48,7 +48,7 @@ void DataStreamer::SetNumberofTotalFrames(uint64_t value) {
 
 void DataStreamer::SetAdditionalJsonHeader(
     const std::map<std::string, std::string> &json) {
-    std::lock_guard<std::mutex> lock(additionalJsonMutex);
+    std::lock_guard<std::mutex> const lock(additionalJsonMutex);
     additionalJsonHeader = json;
     isAdditionalJsonUpdated = true;
 }
@@ -77,7 +77,7 @@ void DataStreamer::RecordFirstIndex(uint64_t fnum, size_t firstImageIndex) {
 }
 
 void DataStreamer::CreateZmqSockets(uint16_t port, int hwm) {
-    uint16_t portnum = port + index;
+    uint16_t const portnum = port + index;
     try {
         zmqSocket = new ZmqSocket(portnum);
 
@@ -149,7 +149,7 @@ void DataStreamer::StopProcessing(char *buf) {
 void DataStreamer::ProcessAnImage(sls_detector_header header, size_t size,
                                   char *data) {
 
-    uint64_t fnum = header.frameNumber;
+    uint64_t const fnum = header.frameNumber;
     LOG(logDEBUG1) << "DataStreamer " << index << ": fnum:" << fnum;
 
     if (!SendDataHeader(header, size, generalData->nPixelsX,
@@ -177,8 +177,8 @@ int DataStreamer::SendDataHeader(sls_detector_header header, uint32_t size,
     zHeader.data = true;
     zHeader.jsonversion = SLS_DETECTOR_JSON_HEADER_VERSION;
 
-    uint64_t frameIndex = header.frameNumber - firstIndex;
-    uint64_t acquisitionIndex = header.frameNumber;
+    uint64_t const frameIndex = header.frameNumber - firstIndex;
+    uint64_t const acquisitionIndex = header.frameNumber;
 
     zHeader.dynamicRange = generalData->dynamicRange;
     zHeader.fileIndex = fileIndex;
@@ -212,7 +212,7 @@ int DataStreamer::SendDataHeader(sls_detector_header header, uint32_t size,
 
     // update local copy only if it was updated (to prevent locking each time)
     if (isAdditionalJsonUpdated) {
-        std::lock_guard<std::mutex> lock(additionalJsonMutex);
+        std::lock_guard<std::mutex> const lock(additionalJsonMutex);
         localAdditionalJsonHeader = additionalJsonHeader;
         isAdditionalJsonUpdated = false;
     }

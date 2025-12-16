@@ -86,7 +86,7 @@ std::string Module::getControlServerLongVersion() const {
     }
     // throw with old server version (sends 8 bytes)
     catch (RuntimeError &e) {
-        std::string emsg = std::string(e.what());
+        std::string const emsg = std::string(e.what());
         if (emsg.find(F_GET_SERVER_VERSION) && emsg.find("8 bytes")) {
             throwDeprecatedServerVersion();
         }
@@ -95,7 +95,7 @@ std::string Module::getControlServerLongVersion() const {
 }
 
 void Module::throwDeprecatedServerVersion() const {
-    uint64_t res = sendToDetectorStop<int64_t>(F_GET_SERVER_VERSION);
+    uint64_t const res = sendToDetectorStop<int64_t>(F_GET_SERVER_VERSION);
     std::cout << std::endl;
     std::ostringstream os;
     os << "Detector Server (Control) version (0x" << std::hex << res
@@ -110,7 +110,7 @@ std::string Module::getStopServerLongVersion() const {
 }
 
 std::string Module::getDetectorServerVersion() const {
-    Version v(getControlServerLongVersion());
+    Version const v(getControlServerLongVersion());
     return v.concise();
 }
 
@@ -139,7 +139,7 @@ std::string Module::getReceiverLongVersion() const {
 }
 
 std::string Module::getReceiverSoftwareVersion() const {
-    Version v(getReceiverLongVersion());
+    Version const v(getReceiverLongVersion());
     return v.concise();
 }
 
@@ -183,7 +183,7 @@ slsDetectorDefs::xy Module::getNumberOfChannels() const {
 
 void Module::updateNumberOfModule(slsDetectorDefs::xy det) {
     shm()->numberOfModule = det;
-    int args[2] = {shm()->numberOfModule.y, moduleIndex};
+    int const args[2] = {shm()->numberOfModule.y, moduleIndex};
     sendToDetector(F_SET_POSITION, args, nullptr);
 }
 
@@ -218,14 +218,14 @@ void Module::setThresholdEnergy(int e_eV, detectorSettings isettings,
         throw RuntimeError("This energy " + std::to_string(e_eV) +
                            " not defined for this module!");
     }
-    bool interpolate =
+    bool const interpolate =
         std::all_of(shm()->trimEnergies.begin(), shm()->trimEnergies.end(),
                     [e_eV](const int &e) { return e != e_eV; });
 
     sls_detector_module myMod{shm()->detType};
 
     if (!interpolate) {
-        std::string settingsfname = getTrimbitFilename(isettings, e_eV);
+        std::string const settingsfname = getTrimbitFilename(isettings, e_eV);
         LOG(logDEBUG1) << "Settings File is " << settingsfname;
         myMod = readSettingsFile(settingsfname, trimbits);
     } else {
@@ -238,8 +238,8 @@ void Module::setThresholdEnergy(int e_eV, detectorSettings isettings,
                 break;
             }
         }
-        std::string settingsfname1 = getTrimbitFilename(isettings, trim1);
-        std::string settingsfname2 = getTrimbitFilename(isettings, trim2);
+        std::string const settingsfname1 = getTrimbitFilename(isettings, trim1);
+        std::string const settingsfname2 = getTrimbitFilename(isettings, trim2);
         LOG(logDEBUG1) << "Settings Files are " << settingsfname1 << " and "
                        << settingsfname2;
         auto myMod1 = readSettingsFile(settingsfname1, trimbits);
@@ -291,17 +291,17 @@ void Module::setAllThresholdEnergy(std::array<int, 3> e_eV,
     std::vector<sls_detector_module> myMods;
     for (size_t i = 0; i < energy.size(); ++i) {
         if (energy[i] == -1) {
-            sls_detector_module mod = getModule();
+            sls_detector_module const mod = getModule();
             myMods.push_back(mod);
             continue;
         }
 
-        sls_detector_module mod{shm()->detType};
+        sls_detector_module const mod{shm()->detType};
         myMods.push_back(mod);
 
         // don't interpolate
         if (shm()->trimEnergies.anyEqualTo(energy[i])) {
-            std::string settingsfname =
+            std::string const settingsfname =
                 getTrimbitFilename(isettings, energy[i]);
             LOG(logDEBUG1) << "Settings File is " << settingsfname;
             myMods[i] = readSettingsFile(settingsfname, trimbits);
@@ -335,8 +335,8 @@ void Module::setAllThresholdEnergy(std::array<int, 3> e_eV,
             LOG(logINFO) << "e_eV:" << energy[i] << " [" << trim1 << ", "
                          << trim2 << "]";
 
-            std::string settingsfname1 = getTrimbitFilename(isettings, trim1);
-            std::string settingsfname2 = getTrimbitFilename(isettings, trim2);
+            std::string const settingsfname1 = getTrimbitFilename(isettings, trim1);
+            std::string const settingsfname2 = getTrimbitFilename(isettings, trim2);
             LOG(logDEBUG1) << "Settings Files are " << settingsfname1 << " and "
                            << settingsfname2;
             auto myMod1 = readSettingsFile(settingsfname1, trimbits);
@@ -755,17 +755,17 @@ int Module::getClockDivider(int clkIndex) const {
 }
 
 void Module::setClockDivider(int clkIndex, int value) {
-    int args[]{clkIndex, value};
+    int const args[]{clkIndex, value};
     sendToDetector(F_SET_CLOCK_DIVIDER, args, nullptr);
 }
 
 int Module::getClockPhase(int clkIndex, bool inDegrees) const {
-    int args[]{clkIndex, static_cast<int>(inDegrees)};
+    int const args[]{clkIndex, static_cast<int>(inDegrees)};
     return sendToDetector<int>(F_GET_CLOCK_PHASE, args);
 }
 
 void Module::setClockPhase(int clkIndex, int value, bool inDegrees) {
-    int args[]{clkIndex, value, static_cast<int>(inDegrees)};
+    int const args[]{clkIndex, value, static_cast<int>(inDegrees)};
     sendToDetector(F_SET_CLOCK_PHASE, args, nullptr);
 }
 
@@ -778,22 +778,22 @@ int Module::getClockFrequency(int clkIndex) const {
 }
 
 void Module::setClockFrequency(int clkIndex, int value) {
-    int args[]{clkIndex, value};
+    int const args[]{clkIndex, value};
     sendToDetector(F_SET_CLOCK_FREQUENCY, args, nullptr);
 }
 
 int Module::getDAC(dacIndex index, bool mV) const {
-    int args[]{static_cast<int>(index), static_cast<int>(mV), GET_FLAG};
+    int const args[]{static_cast<int>(index), static_cast<int>(mV), GET_FLAG};
     return sendToDetector<int>(F_SET_DAC, args);
 }
 int Module::getDefaultDac(slsDetectorDefs::dacIndex index,
                           slsDetectorDefs::detectorSettings sett) {
-    int args[]{static_cast<int>(index), static_cast<int>(sett)};
+    int const args[]{static_cast<int>(index), static_cast<int>(sett)};
     return sendToDetector<int>(F_GET_DEFAULT_DAC, args);
 }
 void Module::setDefaultDac(slsDetectorDefs::dacIndex index, int defaultValue,
                            defs::detectorSettings sett) {
-    int args[]{static_cast<int>(index), static_cast<int>(sett), defaultValue};
+    int const args[]{static_cast<int>(index), static_cast<int>(sett), defaultValue};
     return sendToDetector(F_SET_DEFAULT_DAC, args, nullptr);
 }
 
@@ -803,7 +803,7 @@ void Module::resetToDefaultDacs(const bool hardReset) {
 }
 
 void Module::setDAC(int val, dacIndex index, bool mV) {
-    int args[]{static_cast<int>(index), static_cast<int>(mV), val};
+    int const args[]{static_cast<int>(index), static_cast<int>(mV), val};
     sendToDetector<int>(F_SET_DAC, args);
 }
 
@@ -844,13 +844,13 @@ int Module::getADC(dacIndex index) const {
 }
 
 int Module::getOnChipDAC(slsDetectorDefs::dacIndex index, int chipIndex) const {
-    int args[]{static_cast<int>(index), chipIndex};
+    int const args[]{static_cast<int>(index), chipIndex};
     return sendToDetector<int>(F_GET_ON_CHIP_DAC, args);
 }
 
 void Module::setOnChipDAC(slsDetectorDefs::dacIndex index, int chipIndex,
                           int value) {
-    int args[]{static_cast<int>(index), chipIndex, value};
+    int const args[]{static_cast<int>(index), chipIndex, value};
     sendToDetector(F_SET_ON_CHIP_DAC, args, nullptr);
 }
 
@@ -861,7 +861,7 @@ Module::getExternalSignalFlags(int signalIndex) const {
 }
 
 void Module::setExternalSignalFlags(int signalIndex, externalSignalFlag type) {
-    int args[]{signalIndex, static_cast<int>(type)};
+    int const args[]{signalIndex, static_cast<int>(type)};
     sendToDetector(F_SET_EXTERNAL_SIGNAL_FLAG, args, nullptr);
 }
 
@@ -1483,7 +1483,7 @@ void Module::setPartialFramesPadding(bool padding) {
 }
 
 int Module::getReceiverUDPSocketBufferSize() const {
-    int arg = GET_FLAG;
+    int const arg = GET_FLAG;
     return sendToReceiver<int>(F_RECEIVER_UDP_SOCK_BUF_SIZE, arg);
 }
 
@@ -1809,7 +1809,7 @@ int64_t Module::getRateCorrection() const {
 }
 
 void Module::setDefaultRateCorrection() {
-    int64_t arg = -1;
+    int64_t const arg = -1;
     sendToDetector(F_SET_RATE_CORRECT, arg, nullptr);
 }
 
@@ -1860,7 +1860,7 @@ bool Module::getActivate() const {
 }
 
 void Module::setActivate(const bool enable) {
-    int arg = static_cast<int>(enable);
+    int const arg = static_cast<int>(enable);
     auto retval = sendToDetector<int>(F_ACTIVATE, arg);
     sendToDetectorStop<int>(F_ACTIVATE, arg);
     if (shm()->useReceiverFlag) {
@@ -1894,7 +1894,7 @@ void Module::pulseChip(int n_pulses) {
 bool Module::getQuad() const { return sendToDetector<int>(F_GET_QUAD) != 0; }
 
 void Module::setQuad(const bool enable) {
-    int value = enable ? 1 : 0;
+    int const value = enable ? 1 : 0;
     sendToDetector(F_SET_QUAD, value, nullptr);
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_SET_RECEIVER_QUAD, value, nullptr);
@@ -1906,7 +1906,7 @@ bool Module::getDataStream(const portPosition port) const {
 }
 
 void Module::setDataStream(const portPosition port, const bool enable) {
-    int args[]{static_cast<int>(port), static_cast<int>(enable)};
+    int const args[]{static_cast<int>(port), static_cast<int>(enable)};
     sendToDetector(F_SET_DATASTREAM, args, nullptr);
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_RECEIVER_SET_DATASTREAM, args, nullptr);
@@ -2076,7 +2076,7 @@ std::array<int, 2> Module::getInjectChannel() const {
 
 void Module::setInjectChannel(const int offsetChannel,
                               const int incrementChannel) {
-    int args[]{offsetChannel, incrementChannel};
+    int const args[]{offsetChannel, incrementChannel};
     sendToDetector(F_SET_INJECT_CHANNEL, args, nullptr);
 }
 
@@ -2331,18 +2331,18 @@ slsDetectorDefs::vetoAlgorithm Module::getVetoAlgorithm(
 void Module::setVetoAlgorithm(
     const slsDetectorDefs::vetoAlgorithm alg,
     const slsDetectorDefs::streamingInterface interface) {
-    int args[]{static_cast<int>(alg), static_cast<int>(interface)};
+    int const args[]{static_cast<int>(alg), static_cast<int>(interface)};
     sendToDetector(F_SET_VETO_ALGORITHM, args, nullptr);
 }
 
 int Module::getADCConfiguration(const int chipIndex, const int adcIndex) const {
-    int args[]{chipIndex, adcIndex};
+    int const args[]{chipIndex, adcIndex};
     return sendToDetector<int>(F_GET_ADC_CONFIGURATION, args);
 }
 
 void Module::setADCConfiguration(const int chipIndex, const int adcIndex,
                                  int value) {
-    int args[]{chipIndex, adcIndex, value};
+    int const args[]{chipIndex, adcIndex, value};
     sendToDetector(F_SET_ADC_CONFIGURATION, args, nullptr);
 }
 
@@ -2417,7 +2417,7 @@ bool Module::getInterpolation() const {
 
 void Module::setInterpolation(const bool enable) {
     sendToDetector(F_SET_INTERPOLATION, static_cast<int>(enable), nullptr);
-    int mask = getCounterMask();
+    int const mask = getCounterMask();
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_RECEIVER_SET_COUNTER_MASK, mask, nullptr);
     }
@@ -2578,7 +2578,7 @@ void Module::setReceiverDbitList(std::vector<int> list) {
     if(r)
         LOG(logWARNING) << "Removed duplicated from receiver dbit list";
 
-    StaticVector<int, MAX_RX_DBIT> arg = list;
+    StaticVector<int, MAX_RX_DBIT> const arg = list;
     sendToReceiver(F_SET_RECEIVER_DBIT_LIST, arg, nullptr);
 }
 
@@ -2600,7 +2600,7 @@ void Module::setReceiverDbitReorder(bool reorder) {
 }
 
 void Module::setDigitalIODelay(uint64_t pinMask, int delay) {
-    uint64_t args[]{pinMask, static_cast<uint64_t>(delay)};
+    uint64_t const args[]{pinMask, static_cast<uint64_t>(delay)};
     sendToDetector(F_DIGITAL_IO_DELAY, args, nullptr);
 }
 
@@ -2657,57 +2657,57 @@ void Module::setPatternIOControl(uint64_t word) {
 }
 
 uint64_t Module::getPatternWord(int addr) const {
-    uint64_t args[]{static_cast<uint64_t>(addr),
+    uint64_t const args[]{static_cast<uint64_t>(addr),
                     static_cast<uint64_t>(GET_FLAG)};
     return sendToDetector<uint64_t>(F_SET_PATTERN_WORD, args);
 }
 
 void Module::setPatternWord(int addr, uint64_t word) {
-    uint64_t args[]{static_cast<uint64_t>(addr), word};
+    uint64_t const args[]{static_cast<uint64_t>(addr), word};
     sendToDetector<uint64_t>(F_SET_PATTERN_WORD, args);
 }
 
 std::array<int, 2> Module::getPatternLoopAddresses(int level) const {
-    int args[]{level, GET_FLAG, GET_FLAG};
+    int const args[]{level, GET_FLAG, GET_FLAG};
     std::array<int, 2> retvals{};
     sendToDetector(F_SET_PATTERN_LOOP_ADDRESSES, args, retvals);
     return retvals;
 }
 
 void Module::setPatternLoopAddresses(int level, int start, int stop) {
-    int args[]{level, start, stop};
+    int const args[]{level, start, stop};
     std::array<int, 2> retvals{};
     sendToDetector(F_SET_PATTERN_LOOP_ADDRESSES, args, retvals);
 }
 
 int Module::getPatternLoopCycles(int level) const {
-    int args[]{level, GET_FLAG};
+    int const args[]{level, GET_FLAG};
     return sendToDetector<int>(F_SET_PATTERN_LOOP_CYCLES, args);
 }
 
 void Module::setPatternLoopCycles(int level, int n) {
-    int args[]{level, n};
+    int const args[]{level, n};
     sendToDetector<int>(F_SET_PATTERN_LOOP_CYCLES, args);
 }
 
 int Module::getPatternWaitAddr(int level) const {
-    int args[]{level, GET_FLAG};
+    int const args[]{level, GET_FLAG};
     return sendToDetector<int>(F_SET_PATTERN_WAIT_ADDR, args);
 }
 
 void Module::setPatternWaitAddr(int level, int addr) {
-    int args[]{level, addr};
+    int const args[]{level, addr};
     sendToDetector<int>(F_SET_PATTERN_WAIT_ADDR, args);
 }
 
 uint64_t Module::getPatternWaitClocks(int level) const {
-    uint64_t args[]{static_cast<uint64_t>(level),
+    uint64_t const args[]{static_cast<uint64_t>(level),
                     static_cast<uint64_t>(GET_FLAG)};
     return sendToDetector<uint64_t>(F_SET_PATTERN_WAIT_CLOCKS, args);
 }
 
 void Module::setPatternWaitClocks(int level, uint64_t t) {
-    uint64_t args[]{static_cast<uint64_t>(level), t};
+    uint64_t const args[]{static_cast<uint64_t>(level), t};
     sendToDetector<uint64_t>(F_SET_PATTERN_WAIT_CLOCKS, args);
 }
 
@@ -2715,7 +2715,7 @@ uint64_t Module::getPatternWaitInterval(int level) const {
     return sendToDetector<uint64_t>(F_GET_PATTERN_WAIT_INTERVAL, level);
 }
 void Module::setPatternWaitInterval(int level, uint64_t t) {
-    uint64_t args[]{static_cast<uint64_t>(level), t};
+    uint64_t const args[]{static_cast<uint64_t>(level), t};
     sendToDetector(F_SET_PATTERN_WAIT_INTERVAL, args, nullptr);
 }
 
@@ -2919,24 +2919,24 @@ uint32_t Module::readRegister(uint32_t addr) const {
 }
 
 void Module::writeRegister(uint32_t addr, uint32_t val, bool validate) {
-    uint32_t args[]{addr, val, static_cast<uint32_t>(validate)};
+    uint32_t const args[]{addr, val, static_cast<uint32_t>(validate)};
     return sendToDetectorStop(F_WRITE_REGISTER, args, nullptr);
 }
 
 void Module::setBit(uint32_t addr, int n, bool validate) {
-    uint32_t args[] = {addr, static_cast<uint32_t>(n),
+    uint32_t const args[] = {addr, static_cast<uint32_t>(n),
                        static_cast<uint32_t>(validate)};
     sendToDetectorStop(F_SET_BIT, args, nullptr);
 }
 
 void Module::clearBit(uint32_t addr, int n, bool validate) {
-    uint32_t args[] = {addr, static_cast<uint32_t>(n),
+    uint32_t const args[] = {addr, static_cast<uint32_t>(n),
                        static_cast<uint32_t>(validate)};
     sendToDetectorStop(F_CLEAR_BIT, args, nullptr);
 }
 
 int Module::getBit(uint32_t addr, int n) {
-    uint32_t args[2] = {addr, static_cast<uint32_t>(n)};
+    uint32_t const args[2] = {addr, static_cast<uint32_t>(n)};
     return sendToDetectorStop<int>(F_GET_BIT, args);
 }
 
@@ -2945,7 +2945,7 @@ void Module::executeFirmwareTest() { sendToDetector(F_SET_FIRMWARE_TEST); }
 void Module::executeBusTest() { sendToDetector(F_SET_BUS_TEST); }
 
 void Module::writeAdcRegister(uint32_t addr, uint32_t val) {
-    uint32_t args[]{addr, val};
+    uint32_t const args[]{addr, val};
     sendToDetector(F_WRITE_ADC_REG, args, nullptr);
 }
 
@@ -3449,7 +3449,7 @@ void Module::initializeModuleStructure(detectorType type) {
     shm()->stoppedFlag = false;
 
     // get the Module parameters based on type
-    detParameters parameters{type};
+    detParameters const parameters{type};
     shm()->nChan.x = parameters.nChanX;
     shm()->nChan.y = parameters.nChanY;
     shm()->nChip.x = parameters.nChipX;
@@ -3463,12 +3463,12 @@ void Module::initialDetectorServerChecks() {
 }
 
 void Module::checkDetectorVersionCompatibility() {
-    std::string detServers[2] = {getControlServerLongVersion(),
+    std::string const detServers[2] = {getControlServerLongVersion(),
                                  getStopServerLongVersion()};
     for (int i = 0; i != 2; ++i) {
         // det and client (sem. versioning)
-        Version det(detServers[i]);
-        Version client(APILIB);
+        Version const det(detServers[i]);
+        Version const client(APILIB);
         if (det.hasSemanticVersioning() && client.hasSemanticVersioning()) {
             if (!det.isBackwardCompatible(client)) {
                 std::ostringstream oss;
@@ -3482,7 +3482,7 @@ void Module::checkDetectorVersionCompatibility() {
         }
         // comparing dates(exact match to expected)
         else {
-            Version expectedDetector(getDetectorAPI());
+            Version const expectedDetector(getDetectorAPI());
             if (det != expectedDetector) {
                 std::ostringstream oss;
                 oss << "Detector (" << (i == 0 ? "Control" : "Stop")
@@ -3521,8 +3521,8 @@ const std::string Module::getDetectorAPI() const {
 
 void Module::checkReceiverVersionCompatibility() {
     // rxr and client (sem. versioning)
-    Version rxr(getReceiverLongVersion());
-    Version client(APILIB);
+    Version const rxr(getReceiverLongVersion());
+    Version const client(APILIB);
     if (rxr.hasSemanticVersioning() && client.hasSemanticVersioning()) {
         if (!rxr.isBackwardCompatible(client)) {
             std::ostringstream oss;
@@ -3535,7 +3535,7 @@ void Module::checkReceiverVersionCompatibility() {
     }
     // comparing dates(exact match to expected)
     else {
-        Version expectedReceiver(APIRECEIVER);
+        Version const expectedReceiver(APIRECEIVER);
         if (rxr != expectedReceiver) {
             std::ostringstream oss;
             oss << "Receiver version (" << rxr.getDate()
@@ -3666,7 +3666,7 @@ void Module::sendModule(sls_detector_module *myMod, ClientSocket &client) {
     ts += n;
     LOG(level) << "channels sent. " << n << " bytes";
 
-    int expectedBytesSent = sizeof(sls_detector_module) - sizeof(myMod->dacs) -
+    int const expectedBytesSent = sizeof(sls_detector_module) - sizeof(myMod->dacs) -
                             sizeof(myMod->chanregs) +
                             (myMod->ndac * sizeof(int)) +
                             (myMod->nchan * sizeof(int));
@@ -3732,7 +3732,7 @@ sls_detector_module Module::interpolateTrim(sls_detector_module *a,
             "Interpolation of Trim values not implemented for this detector!");
     }
 
-    sls_detector_module myMod{shm()->detType};
+    sls_detector_module const myMod{shm()->detType};
 
     // create copy and interpolate dac lists
     std::vector<int> dacs_to_copy, dacs_to_interpolate;
@@ -3878,7 +3878,7 @@ sls_detector_module Module::readSettingsFile(const std::string &fname,
 
     // mythen3 (dacs, trimbits)
     else if (shm()->detType == MYTHEN3) {
-        int expected_size = sizeof(int) * myMod.ndac +
+        int const expected_size = sizeof(int) * myMod.ndac +
                             sizeof(int) * myMod.nchan + sizeof(myMod.reg);
         if (file_size != expected_size) {
             throw RuntimeError("The size of the settings file: " + fname +
@@ -3957,7 +3957,7 @@ void Module::sendProgram(bool blackfin, std::vector<char> buffer,
     client.Send(filesize);
 
     // send checksum
-    std::string checksum = md5_calculate_checksum(buffer.data(), filesize);
+    std::string const checksum = md5_calculate_checksum(buffer.data(), filesize);
     LOG(logDEBUG1) << "Checksum:" << checksum;
     char cChecksum[MAX_STR_LENGTH] = {0};
     strcpy(cChecksum, checksum.c_str());

@@ -198,11 +198,11 @@ void DetectorImpl::setHostname(const std::vector<std::string> &name) {
 void DetectorImpl::addModule(const std::string &name) {
     LOG(logINFO) << "Adding module " << name;
     auto host = verifyUniqueDetHost(name);
-    std::string hostname = host.first;
-    uint16_t port = host.second;
+    std::string const hostname = host.first;
+    uint16_t const port = host.second;
 
     // get type by connecting
-    detectorType type = Module::getTypeFromDetector(hostname, port);
+    detectorType const type = Module::getTypeFromDetector(hostname, port);
 
     // gotthard2 cannot have more than 2 modules (50um=1, 25um=2
     if (type == GOTTHARD2 && modules.size() > 2) {
@@ -227,7 +227,7 @@ void DetectorImpl::addModule(const std::string &name) {
     modules[pos]->updateNumberofUDPInterfaces();
 
     // update zmq port in case numudpinterfaces changed
-    int numInterfaces = modules[pos]->getNumberofUDPInterfacesFromShm();
+    int const numInterfaces = modules[pos]->getNumberofUDPInterfacesFromShm();
     modules[pos]->setClientStreamingPort(DEFAULT_ZMQ_CL_PORTNO +
                                          pos * numInterfaces);
 }
@@ -245,7 +245,7 @@ void DetectorImpl::updateDetectorSize() {
     int nModx = 0, nMody = 0;
     // 1d, add modules along x axis
     if (modSize.y == 1) {
-        int detSizeX = shm()->numberOfChannels.x;
+        int const detSizeX = shm()->numberOfChannels.x;
         int maxChanX = modSize.x * size();
         // user given detsizex used only within max value
         if (detSizeX > 1 && detSizeX <= maxChanX) {
@@ -271,7 +271,7 @@ void DetectorImpl::updateDetectorSize() {
     }
     // 2d, add modules along y axis (due to eiger top/bottom)
     else {
-        int detSizeY = shm()->numberOfChannels.y;
+        int const detSizeY = shm()->numberOfChannels.y;
         int maxChanY = modSize.y * size();
         // user given detsizey used only within max value
         if (detSizeY > 1 && detSizeY <= maxChanY) {
@@ -467,7 +467,7 @@ void DetectorImpl::createReceivingDataSockets() {
     if (shm()->detType == GOTTHARD2) {
         numUDPInterfaces = 1;
     }
-    size_t numSockets = modules.size() * numUDPInterfaces;
+    size_t const numSockets = modules.size() * numUDPInterfaces;
 
     for (size_t iSocket = 0; iSocket < numSockets; ++iSocket) {
         uint32_t portnum =
@@ -481,7 +481,7 @@ void DetectorImpl::createReceivingDataSockets() {
                                            .c_str(),
                                        portnum));
             // set high water mark
-            int hwm = shm()->zmqHwm;
+            int const hwm = shm()->zmqHwm;
             if (hwm >= 0) {
                 zmqSocket[iSocket]->SetReceiveHighWaterMark(hwm);
                 // need not reconnect. cannot be connected (detector idle)
@@ -504,7 +504,7 @@ void DetectorImpl::createReceivingDataSockets() {
 
 void DetectorImpl::readFrameFromReceiver() {
 
-    bool gapPixels = shm()->gapPixels;
+    bool const gapPixels = shm()->gapPixels;
     LOG(logDEBUG) << "Gap pixels: " << gapPixels;
     int nX = 0;
     int nY = 0;
@@ -644,10 +644,10 @@ void DetectorImpl::readFrameFromReceiver() {
 
                 // creating multi image
                 {
-                    uint32_t xoffset = coordX * nPixelsX * bytesPerPixel;
-                    uint32_t yoffset = coordY * nPixelsY;
+                    uint32_t const xoffset = coordX * nPixelsX * bytesPerPixel;
+                    uint32_t const yoffset = coordY * nPixelsY;
                     uint32_t singledetrowoffset = nPixelsX * bytesPerPixel;
-                    uint32_t rowoffset = nX * singledetrowoffset;
+                    uint32_t const rowoffset = nX * singledetrowoffset;
                     if (shm()->detType == CHIPTESTBOARD ||
                         shm()->detType == defs::XILINX_CHIPTESTBOARD) {
                         singledetrowoffset = size;
@@ -694,7 +694,7 @@ void DetectorImpl::readFrameFromReceiver() {
             int nDetActualPixelsY = nDetPixelsY;
 
             if (gapPixels) {
-                int n = insertGapPixels(multiframe.get(), multigappixels,
+                int const n = insertGapPixels(multiframe.get(), multigappixels,
                                         quadEnable, dynamicRange,
                                         nDetActualPixelsX, nDetActualPixelsY);
                 callbackImage = multigappixels;
@@ -742,38 +742,38 @@ int DetectorImpl::insertGapPixels(char *image, char *&gpImage, bool quadEnable,
                   << "\n\t quadEnable: " << quadEnable << "\n\t dr: " << dr;
 
     // inter module gap pixels
-    int modGapPixelsx = 8;
-    int modGapPixelsy = 36;
+    int const modGapPixelsx = 8;
+    int const modGapPixelsy = 36;
     // inter chip gap pixels
-    int chipGapPixelsx = 2;
-    int chipGapPixelsy = 2;
+    int const chipGapPixelsx = 2;
+    int const chipGapPixelsy = 2;
     // number of pixels in a chip
-    int nChipPixelsx = 256;
-    int nChipPixelsy = 256;
+    int const nChipPixelsx = 256;
+    int const nChipPixelsy = 256;
     // 1 module
     // number of chips in a module
     int nMod1Chipx = 4;
-    int nMod1Chipy = 2;
+    int const nMod1Chipy = 2;
     if (quadEnable) {
         nMod1Chipx = 2;
     }
     // number of pixels in a module
-    int nMod1Pixelsx = nChipPixelsx * nMod1Chipx;
-    int nMod1Pixelsy = nChipPixelsy * nMod1Chipy;
+    int const nMod1Pixelsx = nChipPixelsx * nMod1Chipx;
+    int const nMod1Pixelsy = nChipPixelsy * nMod1Chipy;
     // number of gap pixels in a module
-    int nMod1GapPixelsx = (nMod1Chipx - 1) * chipGapPixelsx;
-    int nMod1GapPixelsy = (nMod1Chipy - 1) * chipGapPixelsy;
+    int const nMod1GapPixelsx = (nMod1Chipx - 1) * chipGapPixelsx;
+    int const nMod1GapPixelsy = (nMod1Chipy - 1) * chipGapPixelsy;
     // total number of modules
-    int nModx = nPixelsx / nMod1Pixelsx;
-    int nMody = nPixelsy / nMod1Pixelsy;
+    int const nModx = nPixelsx / nMod1Pixelsx;
+    int const nMody = nPixelsy / nMod1Pixelsy;
 
     // check if not full modules
     // (setting gap pixels and then adding half module or disabling quad)
     if (nPixelsy / nMod1Pixelsy == 0) {
         LOG(logERROR) << "Gap pixels can only be enabled with full modules. "
                          "Sending dummy data without gap pixels.\n";
-        double bytesPerPixel = (double)dr / 8.00;
-        int imagesize = nPixelsy * nPixelsx * bytesPerPixel;
+        double const bytesPerPixel = (double)dr / 8.00;
+        int const imagesize = nPixelsy * nPixelsx * bytesPerPixel;
         if (gpImage == nullptr) {
             gpImage = new char[imagesize];
         }
@@ -782,28 +782,28 @@ int DetectorImpl::insertGapPixels(char *image, char *&gpImage, bool quadEnable,
     }
 
     // total number of pixels
-    int nTotx =
+    int const nTotx =
         nPixelsx + (nMod1GapPixelsx * nModx) + (modGapPixelsx * (nModx - 1));
-    int nToty =
+    int const nToty =
         nPixelsy + (nMod1GapPixelsy * nMody) + (modGapPixelsy * (nMody - 1));
     // total number of chips
-    int nChipx = nPixelsx / nChipPixelsx;
-    int nChipy = nPixelsy / nChipPixelsy;
+    int const nChipx = nPixelsx / nChipPixelsx;
+    int const nChipy = nPixelsy / nChipPixelsy;
 
-    double bytesPerPixel = (double)dr / 8.00;
-    int imagesize = nTotx * nToty * bytesPerPixel;
+    double const bytesPerPixel = (double)dr / 8.00;
+    int const imagesize = nTotx * nToty * bytesPerPixel;
 
-    int nChipBytesx = nChipPixelsx * bytesPerPixel;         // 1 chip bytes in x
-    int nChipGapBytesx = chipGapPixelsx * bytesPerPixel;    // 2 pixel bytes
-    int nModGapBytesx = modGapPixelsx * bytesPerPixel;      // 8 pixel bytes
-    int nChipBytesy = nChipPixelsy * nTotx * bytesPerPixel; // 1 chip bytes in y
-    int nChipGapBytesy = chipGapPixelsy * nTotx * bytesPerPixel; // 2 lines
-    int nModGapBytesy = modGapPixelsy * nTotx *
+    int const nChipBytesx = nChipPixelsx * bytesPerPixel;         // 1 chip bytes in x
+    int const nChipGapBytesx = chipGapPixelsx * bytesPerPixel;    // 2 pixel bytes
+    int const nModGapBytesx = modGapPixelsx * bytesPerPixel;      // 8 pixel bytes
+    int const nChipBytesy = nChipPixelsy * nTotx * bytesPerPixel; // 1 chip bytes in y
+    int const nChipGapBytesy = chipGapPixelsy * nTotx * bytesPerPixel; // 2 lines
+    int const nModGapBytesy = modGapPixelsy * nTotx *
                         bytesPerPixel; // 36 lines
                                        // 4 bit mode, its 1 byte (because for 4
                                        // bit mode, we handle 1 byte at a time)
-    int pixel1 = (int)(ceil(bytesPerPixel));
-    int row1Bytes = nTotx * bytesPerPixel;
+    int const pixel1 = (int)(ceil(bytesPerPixel));
+    int const row1Bytes = nTotx * bytesPerPixel;
     int nMod1TotPixelsx = nMod1Pixelsx + nMod1GapPixelsx;
     if (dr == 4) {
         nMod1TotPixelsx /= 2;
@@ -811,7 +811,7 @@ int DetectorImpl::insertGapPixels(char *image, char *&gpImage, bool quadEnable,
     // eiger requires inter chip gap pixels are halved
     // jungfrau/moench prefers same inter chip gap pixels as the boundary pixels
     int divisionValue = 2;
-    slsDetectorDefs::detectorType detType = shm()->detType;
+    slsDetectorDefs::detectorType const detType = shm()->detType;
     if (detType == JUNGFRAU || detType == MOENCH) {
         divisionValue = 1;
     }
@@ -1053,7 +1053,7 @@ int DetectorImpl::getClientStreamingHwm() const {
     for (auto &it : zmqSocket) {
         result.push_back(it->GetReceiveHighWaterMark());
     }
-    int res = result.tsquash("Inconsistent zmq receive hwm values");
+    int const res = result.tsquash("Inconsistent zmq receive hwm values");
     return res;
 }
 
@@ -1110,7 +1110,7 @@ int DetectorImpl::acquire() {
         struct timespec begin, end;
         clock_gettime(CLOCK_REALTIME, &begin);
 
-        bool receiver = Parallel(&Module::getUseReceiverFlag, {}).squash(false);
+        bool const receiver = Parallel(&Module::getUseReceiverFlag, {}).squash(false);
 
         if (dataReady == nullptr) {
             setJoinThreadFlag(false);
@@ -1172,7 +1172,7 @@ int DetectorImpl::acquire() {
 
             // progress
             auto a = Parallel(&Module::getReceiverProgress, {});
-            double progress = (*std::max_element(a.begin(), a.end()));
+            double const progress = (*std::max_element(a.begin(), a.end()));
 
             // callback
             acquisition_finished(progress, static_cast<int>(status),
@@ -1340,7 +1340,7 @@ void DetectorImpl::processData(bool receiver) {
                     }
                 }
                 // get and print progress
-                double temp =
+                double const temp =
                     (double)Parallel(&Module::getReceiverProgress, {0})
                         .squash();
                 if (temp != progress) {
@@ -1365,12 +1365,12 @@ void DetectorImpl::processData(bool receiver) {
 }
 
 bool DetectorImpl::getJoinThreadFlag() const {
-    std::lock_guard<std::mutex> lock(mp);
+    std::lock_guard<std::mutex> const lock(mp);
     return jointhread;
 }
 
 void DetectorImpl::setJoinThreadFlag(bool value) {
-    std::lock_guard<std::mutex> lock(mp);
+    std::lock_guard<std::mutex> const lock(mp);
     jointhread = value;
 }
 
@@ -1430,11 +1430,11 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
     }
 
     // get srcSize to print progress
-    ssize_t srcSize = getFileSize(src, "Program FPGA");
+    ssize_t const srcSize = getFileSize(src, "Program FPGA");
 
     // create temp destination file
     char destfname[] = "/tmp/SLS_DET_MCB.XXXXXX";
-    int dst = mkstemp(destfname); // create temporary file and open it in r/w
+    int const dst = mkstemp(destfname); // create temporary file and open it in r/w
     if (dst == -1) {
         fclose(src);
         throw RuntimeError(std::string("Could not create destination file "
@@ -1466,7 +1466,7 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
         int oldProgress = 0;
         while (!feof(src)) {
             // print progress
-            int progress = (int)(((double)(dstFilePos) / srcSize) * 100);
+            int const progress = (int)(((double)(dstFilePos) / srcSize) * 100);
             if (oldProgress != progress) {
                 printf("%d%%\r", progress);
                 fflush(stdout);
@@ -1477,7 +1477,7 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
                 break;
             }
             // read source
-            int s = fgetc(src);
+            int const s = fgetc(src);
             if (s < 0) {
                 break;
             }
@@ -1547,13 +1547,13 @@ DetectorImpl::verifyUniqueDetHost(const std::string &name) {
     // extract port
     // C++17 could be auto [hostname, port] = ParseHostPort(name);
     auto res = ParseHostPort(name);
-    std::string hostname = res.first;
+    std::string const hostname = res.first;
     uint16_t port = res.second;
     if (port == 0) {
         port = DEFAULT_TCP_CNTRL_PORTNO;
     }
 
-    int detSize = size();
+    int const detSize = size();
     // mod not yet added
     std::vector<std::pair<std::string, uint16_t>> hosts(detSize + 1);
     hosts[detSize].first = hostname;
@@ -1573,8 +1573,8 @@ DetectorImpl::verifyUniqueRxHost(const std::string &name,
     // extract port
     // C++17 could be auto [hostname, port] = ParseHostPort(name);
     auto res = ParseHostPort(name);
-    std::string hostname = res.first;
-    uint16_t port = res.second;
+    std::string const hostname = res.first;
+    uint16_t const port = res.second;
 
     // hostname and port for given positions
     if (positions.empty() || (positions.size() == 1 && positions[0] == -1)) {
@@ -1669,7 +1669,7 @@ void DetectorImpl::validateROIs(const std::vector<defs::ROI> &rois) {
         if (roi.noRoi()) {
             throw RuntimeError("Invalid Roi of size 0. Roi: " + ToString(roi));
         }
-        bool is2D = (modules[0]->getNumberOfChannels().y > 1 ? true : false);
+        bool const is2D = (modules[0]->getNumberOfChannels().y > 1 ? true : false);
         if (roi.completeRoi()) {
             std::ostringstream oss;
             oss << "Did you mean the clear roi command (API: clearRxROI, cmd: "
@@ -1730,9 +1730,9 @@ defs::xy DetectorImpl::getPortGeometry() const {
 }
 
 defs::xy DetectorImpl::calculatePosition(int moduleIndex) const {
-    int maxYMods = shm()->numberOfModules.y;
-    int y = (moduleIndex % maxYMods);
-    int x = (moduleIndex / maxYMods);
+    int const maxYMods = shm()->numberOfModules.y;
+    int const y = (moduleIndex % maxYMods);
+    int const x = (moduleIndex / maxYMods);
     return defs::xy{x, y};
 }
 
@@ -1771,13 +1771,13 @@ void DetectorImpl::convertGlobalRoiToPortLevel(
         defs::ROI portRoi = moduleRoi;
         // Recalculate port ROI boundaries (split vertically or horizontally)
         if (portGeometry.x == 2) {
-            int midX = (moduleRoi.xmin + moduleRoi.xmax) / 2;
+            int const midX = (moduleRoi.xmin + moduleRoi.xmax) / 2;
             if (port == 0)
                 portRoi.xmax = midX;
             else
                 portRoi.xmin = midX + 1;
         } else if (portGeometry.y == 2) {
-            int midY = (moduleRoi.ymin + moduleRoi.ymax) / 2;
+            int const midY = (moduleRoi.ymin + moduleRoi.ymax) / 2;
             if (port == 0)
                 portRoi.ymax = midY;
             else
@@ -1823,7 +1823,7 @@ void DetectorImpl::setRxROI(const std::vector<defs::ROI> &args) {
     }
 
     validateROIs(args);
-    int nPortsPerModule =
+    int const nPortsPerModule =
         Parallel(&Module::getNumberofUDPInterfacesFromShm, {})
             .tsquash("Inconsistent number of udp ports set up per module");
 
@@ -1845,7 +1845,7 @@ void DetectorImpl::setRxROI(const std::vector<defs::ROI> &args) {
 }
 
 void DetectorImpl::clearRxROI() {
-    int nPortsPerModule =
+    int const nPortsPerModule =
         Parallel(&Module::getNumberofUDPInterfacesFromShm, {})
             .tsquash("Inconsistent number of udp ports set up per module");
     for (size_t iModule = 0; iModule < modules.size(); ++iModule) {
@@ -1890,7 +1890,7 @@ void DetectorImpl::getBadChannels(const std::string &fname,
 }
 
 void DetectorImpl::setBadChannels(const std::string &fname, Positions pos) {
-    std::vector<int> list = sls::getChannelsFromFile(fname);
+    std::vector<int> const list = sls::getChannelsFromFile(fname);
     if (list.empty()) {
         throw RuntimeError("Bad channel file is empty.");
     }
@@ -1913,8 +1913,8 @@ void DetectorImpl::setBadChannels(const std::vector<int> list, Positions pos) {
                                    std::to_string(badchannel) +
                                    " out of bounds.");
             }
-            int ch = badchannel % nchan;
-            size_t imod = badchannel / nchan;
+            int const ch = badchannel % nchan;
+            size_t const imod = badchannel / nchan;
             if (imod >= modules.size()) {
                 throw RuntimeError("Invalid bad channel list. " +
                                    std::to_string(badchannel) +

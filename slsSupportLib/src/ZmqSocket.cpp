@@ -305,8 +305,8 @@ int ZmqSocket::SendHeader(int index, zmqHeader header) {
     oss << ", \"rx_roi\":[" << header.rx_roi[0] << ", " << header.rx_roi[1]
         << ", " << header.rx_roi[2] << ", " << header.rx_roi[3] << "]";
     oss << "}\n";
-    std::string message = oss.str();
-    int length = message.length();
+    std::string const message = oss.str();
+    int const length = message.length();
 #ifdef ZMQ_DETAIL
     // if(!index)
     LOG(logINFOBLUE) << index << " : Streamer: buf: " << message;
@@ -436,7 +436,7 @@ int ZmqSocket::ParseHeader(const int index, int length, char *buff,
 int ZmqSocket::ReceiveData(const int index, char *buf, const int size) {
     zmq_msg_t message;
     zmq_msg_init(&message);
-    int length = ReceiveMessage(index, message);
+    int const length = ReceiveMessage(index, message);
     if (length == size) {
         memcpy(buf, (char *)zmq_msg_data(&message), size);
     } else if (length < size) {
@@ -453,7 +453,7 @@ int ZmqSocket::ReceiveData(const int index, char *buf, const int size) {
 }
 
 int ZmqSocket::ReceiveMessage(const int index, zmq_msg_t &message) {
-    int length = zmq_msg_recv(&message, sockfd.socketDescriptor, 0);
+    int const length = zmq_msg_recv(&message, sockfd.socketDescriptor, 0);
     if (length == -1) {
         PrintError();
         LOG(logERROR) << "Could not read header for socket " << index;

@@ -76,7 +76,7 @@ void GetData(slsDetectorDefs::sls_receiver_header &header,
              slsDetectorDefs::dataCallbackHeader callbackHeader,
              char *dataPointer, size_t &imageSize, void *objectPointer) {
 
-    slsDetectorDefs::sls_detector_header detectorHeader = header.detHeader;
+    slsDetectorDefs::sls_detector_header const detectorHeader = header.detHeader;
 
     PRINT_IN_COLOR(
         (callbackHeader.udpPort % 10),
@@ -169,7 +169,7 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < m.numReceivers; ++i) {
 
         /**	- fork process to create child process */
-        pid_t pid = fork();
+        pid_t const pid = fork();
 
         /**	- if fork failed, raise SIGINT and properly destroy all child
          * processes */
@@ -185,7 +185,7 @@ int main(int argc, char *argv[]) {
                 << "Child process " << i << " [ Tid: " << gettid() << ']';
 
             try {
-                uint16_t port = m.port + i;
+                uint16_t const port = m.port + i;
                 sls::Receiver receiver(port);
 
                 /**	- register callbacks. remember to set file write enable
@@ -236,7 +236,7 @@ int main(int argc, char *argv[]) {
     /** - Parent process waits for all child processes to exit */
     for (;;) {
         int status;
-        pid_t childPid = waitpid(-1, &status, 0);
+        pid_t const childPid = waitpid(-1, &status, 0);
 
         // no child closed
         if (childPid == -1) {

@@ -30,7 +30,7 @@ TEST_CASE("rx_version", "[.cmdcall][.rx]") {
     Caller caller(&det);
     std::ostringstream oss;
     caller.call("rx_version", {}, -1, GET, oss);
-    sls::Version v(APIRECEIVER);
+    sls::Version const v(APIRECEIVER);
     std::ostringstream vs;
     vs << "rx_version " << v.concise() << '\n';
     REQUIRE(oss.str() == vs.str());
@@ -365,9 +365,9 @@ TEST_CASE("rx_padding", "[.cmdcall][.rx]") {
 TEST_CASE("rx_udpsocksize", "[.cmdcall][.rx]") {
     Detector det;
     Caller caller(&det);
-    int64_t prev_val = det.getRxUDPSocketBufferSize().tsquash(
+    int64_t const prev_val = det.getRxUDPSocketBufferSize().tsquash(
         "Need same udp socket buffer size to test");
-    std::string s_new_val = std::to_string(prev_val);
+    std::string const s_new_val = std::to_string(prev_val);
     /*std::string s_new_val = std::to_string(prev_val - 1000);
     { Need permissions
         std::ostringstream oss;
@@ -389,14 +389,14 @@ TEST_CASE("rx_realudpsocksize", "[.cmdcall][.rx]") {
     {
         std::ostringstream oss;
         caller.call("rx_udpsocksize", {}, -1, GET, oss);
-        std::string s = (oss.str()).erase(0, strlen("rx_udpsocksize "));
+        std::string const s = (oss.str()).erase(0, strlen("rx_udpsocksize "));
         val = std::stol(s);
     }
     {
         std::ostringstream oss;
         caller.call("rx_realudpsocksize", {}, -1, GET, oss);
-        std::string s = (oss.str()).erase(0, strlen("rx_realudpsocksize "));
-        uint64_t rval = std::stol(s);
+        std::string const s = (oss.str()).erase(0, strlen("rx_realudpsocksize "));
+        uint64_t const rval = std::stol(s);
         REQUIRE(rval >= val * 2);
     }
 }
@@ -476,10 +476,10 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
         REQUIRE_THROWS(caller.call("rx_roi", {"5", "10"}, -1, PUT));
     } else {
         auto prev_val = det.getRxROI();
-        defs::xy detsize = det.getDetectorSize();
+        defs::xy const detsize = det.getDetectorSize();
         auto portSize = det.getPortSize()[0];
-        int delta = 50;
-        int numinterfaces = det.getNumberofUDPInterfaces().tsquash(
+        int const delta = 50;
+        int const numinterfaces = det.getNumberofUDPInterfaces().tsquash(
             "inconsistent number of interfaces");
 
         // 1d
@@ -757,11 +757,11 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
         // TODO: check roi in master file
         {
             REQUIRE_NOTHROW(create_files_for_acquire(det, caller));
-            testFileInfo file_info;
-            std::string master_file_prefix =
+            testFileInfo const file_info;
+            std::string const master_file_prefix =
                 file_info.getMasterFileNamePrefix();
 
-            std::string fname = master_file_prefix + ".json";
+            std::string const fname = master_file_prefix + ".json";
             REQUIRE(std::filesystem::exists(fname) == true);
 #ifdef HDF5C
             fname = master_file_prefix + ".h5";

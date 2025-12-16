@@ -30,7 +30,7 @@ TEST_CASE("Test output") {
     Logger::ReportingLevel() = logERROR;
 
     // Redirect std::clog to local buffer
-    std::ostringstream local;
+    std::ostringstream const local;
     auto clog_buff = std::clog.rdbuf();
     std::clog.rdbuf(local.rdbuf());
 

@@ -36,7 +36,7 @@ TEST_CASE("copy a long string") {
 #endif
 
 TEST_CASE("split a string with end delimiter") {
-    std::string s("abra+kadabra+");
+    std::string const s("abra+kadabra+");
     auto r = split(s, '+');
     REQUIRE(r.size() == 2);
     REQUIRE(r[0] == "abra");
@@ -44,7 +44,7 @@ TEST_CASE("split a string with end delimiter") {
 }
 
 TEST_CASE("split a string without end delimiter") {
-    std::string s("abra+kadabra+filibom");
+    std::string const s("abra+kadabra+filibom");
     auto r = split(s, '+');
     REQUIRE(r.size() == 3);
     REQUIRE(r[0] == "abra");
@@ -109,7 +109,7 @@ TEST_CASE("replace --help") {
 }
 
 TEST_CASE("port host") {
-    std::string hostport = "localhost:1954";
+    std::string const hostport = "localhost:1954";
     auto res = ParseHostPort(hostport);
     REQUIRE(res.first == "localhost");
     REQUIRE(res.second == 1954);
@@ -117,7 +117,7 @@ TEST_CASE("port host") {
 
 TEST_CASE("port missing") {
     // TODO! is this the intended result?
-    std::string host = "localhost";
+    std::string const host = "localhost";
     auto res = ParseHostPort(host);
     REQUIRE(res.first == "localhost");
     REQUIRE(res.second == 0);

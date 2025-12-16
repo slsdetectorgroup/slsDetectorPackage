@@ -183,7 +183,7 @@ void read_from_json(const Document &doc, const std::string &name,
     }
     int index = 0;
     for (const auto &item : json_values) {
-        std::string sval = item.GetString();
+        std::string const sval = item.GetString();
         retval[index++] = StringTo<sls::ns>(sval);
     }
 }
@@ -330,7 +330,7 @@ void test_master_file_version(const Detector &det,
     // different values for json and hdf5
     // hdf5 version in atttribute and not dataset
     double retval{};
-    std::string name = MasterAttributes::N_VERSION.data();
+    std::string const name = MasterAttributes::N_VERSION.data();
     if (doc.has_value()) {
         const auto &d = *doc;
         REQUIRE(d.HasMember(MasterAttributes::N_VERSION.data()));
@@ -381,14 +381,14 @@ void test_master_file_image_size(const Detector &det,
 
     auto det_type =
         det.getDetectorType().tsquash("Inconsistent detector types to test");
-    int bytes_per_pixel = det.getDynamicRange().squash() / 8;
-    detParameters par(det_type);
+    int const bytes_per_pixel = det.getDynamicRange().squash() / 8;
+    detParameters const par(det_type);
 
     int image_size = 0;
     switch (det_type) {
 
     case defs::EIGER: {
-        int num_chips = (par.nChipX / 2);
+        int const num_chips = (par.nChipX / 2);
         image_size = par.nChanX * par.nChanY * num_chips * bytes_per_pixel;
     } break;
 
@@ -402,9 +402,9 @@ void test_master_file_image_size(const Detector &det,
     } break;
 
     case defs::MYTHEN3: {
-        int counter_mask = det.getCounterMask().squash();
-        int num_counters = __builtin_popcount(counter_mask);
-        int num_channels_per_counter = par.nChanX / MAX_NUM_COUNTERS;
+        int const counter_mask = det.getCounterMask().squash();
+        int const num_counters = __builtin_popcount(counter_mask);
+        int const num_channels_per_counter = par.nChanX / MAX_NUM_COUNTERS;
         image_size = num_channels_per_counter * num_counters * par.nChipX *
                      bytes_per_pixel;
     } break;
@@ -415,7 +415,7 @@ void test_master_file_image_size(const Detector &det,
 
     case defs::CHIPTESTBOARD:
     case defs::XILINX_CHIPTESTBOARD: {
-        testCtbAcquireInfo test_info{};
+        testCtbAcquireInfo const test_info{};
         image_size = calculate_ctb_image_size(
                          test_info, (det_type == defs::XILINX_CHIPTESTBOARD))
                          .first;
@@ -439,14 +439,14 @@ void test_master_file_det_size(const Detector &det,
     // m3 assumes all counters enabled when getting num channels from client
     // TODO: in future, remove assumption
     if (det_type == defs::MYTHEN3) {
-        int nchan = portSize.x / MAX_NUM_COUNTERS;
+        int const nchan = portSize.x / MAX_NUM_COUNTERS;
         auto counter_mask = det.getCounterMask().tsquash(
             "Inconsistent counter mask for Mythen3 detector");
-        int num_counters = __builtin_popcount(counter_mask);
+        int const num_counters = __builtin_popcount(counter_mask);
         portSize.x = nchan * num_counters;
     } else if (det_type == defs::CHIPTESTBOARD ||
                det_type == defs::XILINX_CHIPTESTBOARD) {
-        testCtbAcquireInfo test_info{};
+        testCtbAcquireInfo const test_info{};
         portSize.x = calculate_ctb_image_size(
                          test_info, det_type == defs::XILINX_CHIPTESTBOARD)
                          .second;
@@ -534,7 +534,7 @@ void test_master_file_total_frames(const Detector &det,
             det.getNumberOfAdditionalStorageCells().tsquash(
                 "Inconsistent number of additional storage cells");
     }
-    uint64_t total_frames =
+    uint64_t const total_frames =
         numFrames * repeats * (int64_t)(numAdditionalStorageCells + 1);
 
     REQUIRE_NOTHROW(check_master_file<uint64_t>(
@@ -549,14 +549,14 @@ void test_master_file_rois(const Detector &det,
         det.getDetectorType().tsquash("Inconsistent detector types to test");
     // compensate for m3 channel size and counter mask mess
     if (det_type == defs::MYTHEN3) {
-        int nchan = detsize.x / MAX_NUM_COUNTERS;
+        int const nchan = detsize.x / MAX_NUM_COUNTERS;
         auto counter_mask = det.getCounterMask().tsquash(
             "Inconsistent counter mask for Mythen3 detector");
-        int num_counters = __builtin_popcount(counter_mask);
+        int const num_counters = __builtin_popcount(counter_mask);
         detsize.x = nchan * num_counters;
     }
     // replace -1 for complete ROI
-    bool is2D = (detsize.y > 1);
+    bool const is2D = (detsize.y > 1);
     for (auto &roi : rois) {
         if (roi.completeRoi()) {
             roi.xmin = 0;
@@ -751,7 +751,7 @@ void test_master_file_burst_mode(const Detector &det,
 
 void test_master_file_adc_mask(const Detector &det,
                                const std::optional<Document> &doc) {
-    testCtbAcquireInfo test_ctb_config{};
+    testCtbAcquireInfo const test_ctb_config{};
     auto adc_mask = test_ctb_config.adc_enable_10g;
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::CHIPTESTBOARD) {
@@ -766,7 +766,7 @@ void test_master_file_adc_mask(const Detector &det,
 
 void test_master_file_analog_flag(const Detector &det,
                                   const std::optional<Document> &doc) {
-    testCtbAcquireInfo test_info{};
+    testCtbAcquireInfo const test_info{};
     auto romode = test_info.readout_mode;
     auto analog = static_cast<int>(
         (romode == defs::ANALOG_ONLY || romode == defs::ANALOG_AND_DIGITAL));
@@ -777,7 +777,7 @@ void test_master_file_analog_flag(const Detector &det,
 
 void test_master_file_analog_samples(const Detector &det,
                                      const std::optional<Document> &doc) {
-    testCtbAcquireInfo test_info{};
+    testCtbAcquireInfo const test_info{};
     auto analog_samples = test_info.num_adc_samples;
 
     REQUIRE_NOTHROW(check_master_file<int>(
@@ -786,7 +786,7 @@ void test_master_file_analog_samples(const Detector &det,
 
 void test_master_file_digital_flag(const Detector &det,
                                    const std::optional<Document> &doc) {
-    testCtbAcquireInfo test_info{};
+    testCtbAcquireInfo const test_info{};
     auto romode = test_info.readout_mode;
     auto digital = static_cast<int>(romode == defs::DIGITAL_ONLY ||
                                     romode == defs::ANALOG_AND_DIGITAL ||
@@ -798,7 +798,7 @@ void test_master_file_digital_flag(const Detector &det,
 
 void test_master_file_digital_samples(const Detector &det,
                                       const std::optional<Document> &doc) {
-    testCtbAcquireInfo test_info{};
+    testCtbAcquireInfo const test_info{};
     auto digital_samples = test_info.num_dbit_samples;
 
     REQUIRE_NOTHROW(check_master_file<int>(
@@ -807,7 +807,7 @@ void test_master_file_digital_samples(const Detector &det,
 
 void test_master_file_dbit_offset(const Detector &det,
                                   const std::optional<Document> &doc) {
-    testCtbAcquireInfo test_info{};
+    testCtbAcquireInfo const test_info{};
     auto dbit_offset = test_info.dbit_offset;
 
     REQUIRE_NOTHROW(check_master_file<int>(
@@ -816,7 +816,7 @@ void test_master_file_dbit_offset(const Detector &det,
 
 void test_master_file_dbit_reorder(const Detector &det,
                                    const std::optional<Document> &doc) {
-    testCtbAcquireInfo test_info{};
+    testCtbAcquireInfo const test_info{};
     auto dbit_reorder = test_info.dbit_reorder;
 
     REQUIRE_NOTHROW(check_master_file<int>(
@@ -825,7 +825,7 @@ void test_master_file_dbit_reorder(const Detector &det,
 
 void test_master_file_dbit_bitset(const Detector &det,
                                   const std::optional<Document> &doc) {
-    testCtbAcquireInfo test_info{};
+    testCtbAcquireInfo const test_info{};
     uint64_t dbit_bitset = 0;
     for (auto &i : test_info.dbit_list) {
         dbit_bitset |= (static_cast<uint64_t>(1) << i);
@@ -837,7 +837,7 @@ void test_master_file_dbit_bitset(const Detector &det,
 
 void test_master_file_transceiver_mask(const Detector &det,
                                        const std::optional<Document> &doc) {
-    testCtbAcquireInfo test_info{};
+    testCtbAcquireInfo const test_info{};
     auto trans_mask = test_info.transceiver_mask;
 
     REQUIRE_NOTHROW(check_master_file<int>(
@@ -846,7 +846,7 @@ void test_master_file_transceiver_mask(const Detector &det,
 
 void test_master_file_transceiver_flag(const Detector &det,
                                        const std::optional<Document> &doc) {
-    testCtbAcquireInfo test_info{};
+    testCtbAcquireInfo const test_info{};
     auto romode = test_info.readout_mode;
     auto trans = static_cast<int>(romode == defs::DIGITAL_AND_TRANSCEIVER ||
                                   romode == defs::TRANSCEIVER_ONLY);
@@ -857,7 +857,7 @@ void test_master_file_transceiver_flag(const Detector &det,
 
 void test_master_file_transceiver_samples(const Detector &det,
                                           const std::optional<Document> &doc) {
-    testCtbAcquireInfo test_info{};
+    testCtbAcquireInfo const test_info{};
     auto trans_samples = test_info.num_trans_samples;
     REQUIRE_NOTHROW(check_master_file<int>(
         doc, MasterAttributes::N_TRANSCEIVER_SAMPLES.data(), trans_samples));
@@ -1005,17 +1005,17 @@ Document parse_binary_master_attributes(std::string file_path) {
     REQUIRE(file.is_open());
     std::stringstream buffer;
     buffer << file.rdbuf();
-    std::string json_str = buffer.str();
+    std::string const json_str = buffer.str();
 
     Document doc;
-    ParseResult result = doc.Parse(json_str.c_str());
+    ParseResult const result = doc.Parse(json_str.c_str());
     if (result == 0) {
         std::cout << "JSON parse error: " << GetParseError_En(result.Code())
                   << " (at offset " << result.Offset() << ")" << std::endl;
 
         // Optional: Show problematic snippet
-        size_t offset = result.Offset();
-        std::string context =
+        size_t const offset = result.Offset();
+        std::string const context =
             json_str.substr(std::max(0, (int)offset - 20), 40);
         std::cout << "Context around error: \"" << context << "\"" << std::endl;
     }
@@ -1039,7 +1039,7 @@ TEST_CASE("check_master_file_attributes", "[.cmdcall][.cmdacquire][.cmdattr]") {
     auto det_type =
         det.getDetectorType().tsquash("Inconsistent detector types to test");
 
-    int64_t num_frames = 1;
+    int64_t const num_frames = 1;
     switch (det_type) {
     case defs::EIGER:
     case defs::JUNGFRAU:
@@ -1057,11 +1057,11 @@ TEST_CASE("check_master_file_attributes", "[.cmdcall][.cmdacquire][.cmdattr]") {
         throw sls::RuntimeError("Unsupported detector type for this test");
     }
 
-    testFileInfo file_info;
-    std::string master_file_prefix = file_info.getMasterFileNamePrefix();
+    testFileInfo const file_info;
+    std::string const master_file_prefix = file_info.getMasterFileNamePrefix();
 
     // binary
-    std::string fname =
+    std::string const fname =
         master_file_prefix + ".json"; // /tmp/sls_test_master_0.json
     auto doc = std::make_optional(parse_binary_master_attributes(fname));
     test_master_file_metadata(det, doc);

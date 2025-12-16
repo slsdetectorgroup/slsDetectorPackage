@@ -47,7 +47,7 @@ ServerInterface ServerSocket::accept() {
     lastClient = thisClient; // update from previous connection
     struct sockaddr_in clientAddr;
     socklen_t addr_size = sizeof clientAddr;
-    int newSocket =
+    int const newSocket =
         ::accept(getSocketId(), (struct sockaddr *)&clientAddr, &addr_size);
     if (newSocket == -1) {
         throw SocketError("Server ERROR: socket accept failed\n");

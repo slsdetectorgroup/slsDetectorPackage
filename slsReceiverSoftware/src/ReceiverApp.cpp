@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
     sem_init(&semaphore, 1, 0);
 
     try {
-        sls::Receiver r(o.port);
+        sls::Receiver const r(o.port);
         LOG(sls::logINFO) << "[ Press \'Ctrl+c\' to exit ]";
         sem_wait(&semaphore);
         sem_destroy(&semaphore);

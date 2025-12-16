@@ -580,9 +580,9 @@ TEST_CASE("pedestalmode", "[.cmdcall]") {
             REQUIRE(oss.str() == "pedestalmode [disabled]\n");
         }
 
-        uint8_t pedestalFrames = 50;
-        uint16_t pedestalLoops = 100;
-        int64_t expNumFrames = pedestalFrames * pedestalLoops * 2;
+        uint8_t const pedestalFrames = 50;
+        uint16_t const pedestalLoops = 100;
+        int64_t const expNumFrames = pedestalFrames * pedestalLoops * 2;
         auto origFrames = det.getNumberOfFrames().squash(-1);
         auto origTriggers = det.getNumberOfTriggers().squash(-1);
 

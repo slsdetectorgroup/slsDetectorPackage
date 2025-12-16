@@ -14,7 +14,7 @@ TEST_CASE("Default construction") {
                       (2 * sizeof(int) + (18 + 32 + 64 + 5 + 8) * 20),
                   "Size of CtbConfig does not match ");
 
-    CtbConfig c;
+    CtbConfig const c;
     auto dacnames = c.getDacNames();
     REQUIRE(dacnames.size() == 18);
     REQUIRE(dacnames[0] == "DAC0");
@@ -81,7 +81,7 @@ TEST_CASE("Copy a CTB config") {
 TEST_CASE("Move CtbConfig ") {
     CtbConfig c1;
     c1.setDacName(3, "yetanothername");
-    CtbConfig c2(std::move(c1));
+    CtbConfig const c2(std::move(c1));
     REQUIRE(c2.getDacName(3) == "yetanothername");
 }
 

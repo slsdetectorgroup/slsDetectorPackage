@@ -33,12 +33,12 @@ TEST_CASE("Convert mac address using classes", "[support]") {
 }
 
 TEST_CASE("Hex representation of MAC", "[support]") {
-    MacAddr m{346856806822};
+    MacAddr const m{346856806822};
     CHECK(m.hex() == "0050c246d9a6");
     CHECK(m.str() == "00:50:c2:46:d9:a6");
     CHECK_FALSE(m == 7);
 
-    MacAddr m2{"00:50:c2:46:d9:c4"};
+    MacAddr const m2{"00:50:c2:46:d9:c4"};
     CHECK(m2 == 346856806852);
     CHECK(m2.hex() == "0050c246d9c4");
     CHECK(m2.str() == "00:50:c2:46:d9:c4");
@@ -79,12 +79,12 @@ TEST_CASE("Strange input gives 0", "[support]") {
 }
 
 TEST_CASE("Convert to uint for sending over network", "[support]") {
-    MacAddr addr{346856806822};
-    uint64_t a = addr.uint64();
+    MacAddr const addr{346856806822};
+    uint64_t const a = addr.uint64();
     CHECK(a == 346856806822);
 
-    IpAddr addr2{"129.129.205.242"};
-    uint32_t b = addr2.uint32();
+    IpAddr const addr2{"129.129.205.242"};
+    uint32_t const b = addr2.uint32();
     CHECK(b == 4073554305);
 }
 
@@ -93,7 +93,7 @@ TEST_CASE("Hostname lookup failed throws", "[support]") {
 }
 
 TEST_CASE("IP Output operator gives same result as string", "[support]") {
-    IpAddr addr{"129.129.205.242"};
+    IpAddr const addr{"129.129.205.242"};
     std::ostringstream os;
     os << addr;
     CHECK(os.str() == "129.129.205.242");
@@ -101,7 +101,7 @@ TEST_CASE("IP Output operator gives same result as string", "[support]") {
 }
 
 TEST_CASE("MAC Output operator gives same result as string", "[support]") {
-    MacAddr addr{"00:50:c2:46:d9:a6"};
+    MacAddr const addr{"00:50:c2:46:d9:a6"};
     std::ostringstream os;
     os << addr;
     CHECK(os.str() == "00:50:c2:46:d9:a6");
@@ -109,15 +109,15 @@ TEST_CASE("MAC Output operator gives same result as string", "[support]") {
 }
 
 TEST_CASE("Copy construct a MacAddr") {
-    MacAddr addr{"00:50:c2:46:d9:a6"};
-    MacAddr addr2(addr);
+    MacAddr const addr{"00:50:c2:46:d9:a6"};
+    MacAddr const addr2(addr);
     CHECK(addr == addr2);
 }
 
 TEST_CASE("udp dst struct basic properties") {
     static_assert(sizeof(UdpDestination) == 32,
                   "udpDestination struct size does not match");
-    UdpDestination dst{};
+    UdpDestination const dst{};
     REQUIRE(dst.entry == 0);
     REQUIRE(dst.port == 0);
     REQUIRE(dst.port2 == 0);

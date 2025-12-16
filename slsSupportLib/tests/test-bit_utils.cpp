@@ -31,7 +31,7 @@ TEST_CASE("Get set bits from 3") {
 }
 
 TEST_CASE("All bits set") {
-    uint8_t val = -1;
+    uint8_t const val = -1;
     auto vec = getSetBits(val);
     REQUIRE(vec == std::vector<int>{0, 1, 2, 3, 4, 5, 6, 7});
 }

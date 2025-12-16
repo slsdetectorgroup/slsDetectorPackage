@@ -35,7 +35,7 @@ int open_socket(int port) {
     if (getaddrinfo(host, portname.c_str(), &hints, &res)) {
         throw RuntimeError("Failed at getaddrinfo with " + std::string(host));
     }
-    int fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+    int const fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
     if (fd == -1) {
         throw RuntimeError("Failed to create UDP RX socket");
     }
@@ -50,7 +50,7 @@ int open_socket(int port) {
 TEST_CASE("Get packet size returns the packet size we set in the constructor") {
     constexpr int port = 50001;
     constexpr ssize_t packet_size = 8000;
-    UdpRxSocket s{port, packet_size};
+    UdpRxSocket const s{port, packet_size};
     CHECK(s.getPacketSize() == packet_size);
 }
 
@@ -58,12 +58,12 @@ TEST_CASE("Receive data from a vector") {
     constexpr int port = 50001;
     std::vector<int> data_to_send{4, 5, 3, 2, 5, 7, 2, 3};
     std::vector<int> data_received(data_to_send.size());
-    ssize_t packet_size =
+    ssize_t const packet_size =
         sizeof(decltype(data_to_send)::value_type) * data_to_send.size();
 
     UdpRxSocket udpsock{port, packet_size};
 
-    int fd = open_socket(port);
+    int const fd = open_socket(port);
     auto n = write(fd, data_to_send.data(), packet_size);
     CHECK(n == packet_size);
 

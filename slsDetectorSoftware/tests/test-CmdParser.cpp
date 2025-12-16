@@ -15,7 +15,7 @@ using vs = std::vector<std::string>;
 
 SCENARIO("Construction", "[support]") {
     GIVEN("A default constructed CmdParser") {
-        CmdParser p;
+        CmdParser const p;
         THEN("The state of the object is valid") {
             REQUIRE(p.detector_id() == -1);
             REQUIRE(p.multi_id() == 0);
@@ -31,7 +31,7 @@ SCENARIO("Parsing a string with the command line parser", "[support]") {
     GIVEN("A CmdParser") {
         CmdParser p;
         WHEN("Parsing an empty string") {
-            std::string s;
+            std::string const s;
             p.Parse(s);
             THEN("command and arguments are empty") {
                 REQUIRE(p.detector_id() == -1);
@@ -42,7 +42,7 @@ SCENARIO("Parsing a string with the command line parser", "[support]") {
             }
         }
         WHEN("Parsing a string with a single command") {
-            std::string s = "vrf";
+            std::string const s = "vrf";
             p.Parse(s);
             THEN("command is assigned and id's remain default") {
                 REQUIRE(p.command() == "vrf");
@@ -53,7 +53,7 @@ SCENARIO("Parsing a string with the command line parser", "[support]") {
             }
         }
         WHEN("Parsing a string with command and value") {
-            std::string s = "vthreshold 1500";
+            std::string const s = "vthreshold 1500";
             p.Parse(s);
             THEN("cmd and value are assigned and id's remain default") {
                 REQUIRE(p.command() == "vthreshold");
@@ -98,7 +98,7 @@ SCENARIO("Parsing a string with the command line parser", "[support]") {
         }
 
         WHEN("Parsing string with cmd and multiple arguments") {
-            std::string s = "trimen 5000 6000 7000";
+            std::string const s = "trimen 5000 6000 7000";
             p.Parse(s);
             THEN("cmd and args are correct") {
                 REQUIRE(p.command() == "trimen");
@@ -115,7 +115,7 @@ SCENARIO("Parsing strings with -h or --help", "[support]") {
     GIVEN("A parser") {
         CmdParser p;
         WHEN("Parsing a string with a command and help ") {
-            std::string s = "-h list";
+            std::string const s = "-h list";
 
             THEN("the command is correct and isHelp is set") {
                 p.Parse(s);
@@ -128,7 +128,7 @@ SCENARIO("Parsing strings with -h or --help", "[support]") {
             }
         }
         WHEN("Parsing a string with -h at a different position") {
-            std::string s = "list -h something";
+            std::string const s = "list -h something";
             THEN("its also done right") {
                 p.Parse(s);
                 REQUIRE(p.isHelp());
@@ -138,7 +138,7 @@ SCENARIO("Parsing strings with -h or --help", "[support]") {
             }
         }
         WHEN("Parsing a string with -help at a different position") {
-            std::string s = "list --help something";
+            std::string const s = "list --help something";
             THEN("its also done right") {
                 p.Parse(s);
                 REQUIRE(p.isHelp());
@@ -186,7 +186,7 @@ TEST_CASE("Parse with no arguments results in no command and default id",
           "[support]") {
     // build up argc and argv
     // first argument is the command used to call the binary
-    int argc = 1;
+    int const argc = 1;
     const char *const argv[]{"call"};
     CmdParser p;
     p.Parse(argc, argv);
@@ -200,7 +200,7 @@ TEST_CASE("Parse with no arguments results in no command and default id",
 TEST_CASE(
     "Parse a command without client id and detector id results in default",
     "[support]") {
-    int argc = 2;
+    int const argc = 2;
     const char *const argv[]{"caller", "vrf"};
     CmdParser p;
     p.Parse(argc, argv);
@@ -213,7 +213,7 @@ TEST_CASE(
 
 TEST_CASE("Parse a command with value but without client or detector id",
           "[support]") {
-    int argc = 3;
+    int const argc = 3;
     const char *const argv[]{"caller", "vrf", "3000"};
     CmdParser p;
     p.Parse(argc, argv);
@@ -226,7 +226,7 @@ TEST_CASE("Parse a command with value but without client or detector id",
 }
 
 TEST_CASE("Decodes position") {
-    int argc = 2;
+    int const argc = 2;
     const char *const argv[]{"caller", "7:vrf"};
 
     CmdParser p;
@@ -239,7 +239,7 @@ TEST_CASE("Decodes position") {
 }
 
 TEST_CASE("Decodes double digit position", "[support]") {
-    int argc = 2;
+    int const argc = 2;
     const char *const argv[]{"caller", "73:vcmp"};
     CmdParser p;
     p.Parse(argc, argv);
@@ -251,7 +251,7 @@ TEST_CASE("Decodes double digit position", "[support]") {
 }
 
 TEST_CASE("Decodes position and id", "[support]") {
-    int argc = 2;
+    int const argc = 2;
     const char *const argv[]{"caller", "5-8:vrf"};
     CmdParser p;
     p.Parse(argc, argv);
@@ -263,7 +263,7 @@ TEST_CASE("Decodes position and id", "[support]") {
 }
 
 TEST_CASE("Double digit id", "[support]") {
-    int argc = 2;
+    int const argc = 2;
     const char *const argv[]{"caller", "56-8:vrf"};
     CmdParser p;
     p.Parse(argc, argv);

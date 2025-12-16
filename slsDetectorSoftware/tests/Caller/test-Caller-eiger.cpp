@@ -27,7 +27,7 @@ TEST_CASE("temp_fpgaext", "[.cmdcall]") {
         REQUIRE_NOTHROW(caller.call("temp_fpgaext", {}, -1, GET));
         std::ostringstream oss;
         REQUIRE_NOTHROW(caller.call("temp_fpgaext", {}, 0, GET, oss));
-        std::string s = (oss.str()).erase(0, strlen("temp_fpgaext "));
+        std::string const s = (oss.str()).erase(0, strlen("temp_fpgaext "));
         REQUIRE(std::stoi(s) != -1);
     } else {
         REQUIRE_THROWS(caller.call("temp_fpgaext", {}, -1, GET));
@@ -42,7 +42,7 @@ TEST_CASE("temp_10ge", "[.cmdcall]") {
         REQUIRE_NOTHROW(caller.call("temp_10ge", {}, -1, GET));
         std::ostringstream oss;
         REQUIRE_NOTHROW(caller.call("temp_10ge", {}, 0, GET, oss));
-        std::string s = (oss.str()).erase(0, strlen("temp_10ge "));
+        std::string const s = (oss.str()).erase(0, strlen("temp_10ge "));
         REQUIRE(std::stoi(s) != -1);
     } else {
         REQUIRE_THROWS(caller.call("temp_10ge", {}, -1, GET));
@@ -57,7 +57,7 @@ TEST_CASE("temp_dcdc", "[.cmdcall]") {
         REQUIRE_NOTHROW(caller.call("temp_dcdc", {}, -1, GET));
         std::ostringstream oss;
         REQUIRE_NOTHROW(caller.call("temp_dcdc", {}, 0, GET, oss));
-        std::string s = (oss.str()).erase(0, strlen("temp_dcdc "));
+        std::string const s = (oss.str()).erase(0, strlen("temp_dcdc "));
         REQUIRE(std::stoi(s) != -1);
     } else {
         REQUIRE_THROWS(caller.call("temp_dcdc", {}, -1, GET));
@@ -72,7 +72,7 @@ TEST_CASE("temp_sodl", "[.cmdcall]") {
         REQUIRE_NOTHROW(caller.call("temp_sodl", {}, -1, GET));
         std::ostringstream oss;
         REQUIRE_NOTHROW(caller.call("temp_sodl", {}, 0, GET, oss));
-        std::string s = (oss.str()).erase(0, strlen("temp_sodl "));
+        std::string const s = (oss.str()).erase(0, strlen("temp_sodl "));
         REQUIRE(std::stoi(s) != -1);
     } else {
         REQUIRE_THROWS(caller.call("temp_sodl", {}, -1, GET));
@@ -87,7 +87,7 @@ TEST_CASE("temp_sodr", "[.cmdcall]") {
         REQUIRE_NOTHROW(caller.call("temp_sodr", {}, -1, GET));
         std::ostringstream oss;
         REQUIRE_NOTHROW(caller.call("temp_sodr", {}, 0, GET, oss));
-        std::string s = (oss.str()).erase(0, strlen("temp_sodr "));
+        std::string const s = (oss.str()).erase(0, strlen("temp_sodr "));
         REQUIRE(std::stoi(s) != -1);
     } else {
         REQUIRE_THROWS(caller.call("temp_sodr", {}, -1, GET));
@@ -102,7 +102,7 @@ TEST_CASE("temp_fpgafl", "[.cmdcall]") {
         REQUIRE_NOTHROW(caller.call("temp_fpgafl", {}, -1, GET));
         std::ostringstream oss;
         REQUIRE_NOTHROW(caller.call("temp_fpgafl", {}, 0, GET, oss));
-        std::string s = (oss.str()).erase(0, strlen("temp_fpgafl "));
+        std::string const s = (oss.str()).erase(0, strlen("temp_fpgafl "));
         REQUIRE(std::stoi(s) != -1);
     } else {
         REQUIRE_THROWS(caller.call("temp_fpgafl", {}, -1, GET));
@@ -117,7 +117,7 @@ TEST_CASE("temp_fpgafr", "[.cmdcall]") {
         REQUIRE_NOTHROW(caller.call("temp_fpgafr", {}, -1, GET));
         std::ostringstream oss;
         REQUIRE_NOTHROW(caller.call("temp_fpgafr", {}, 0, GET, oss));
-        std::string s = (oss.str()).erase(0, strlen("temp_fpgafr "));
+        std::string const s = (oss.str()).erase(0, strlen("temp_fpgafr "));
         REQUIRE(std::stoi(s) != -1);
     } else {
         REQUIRE_THROWS(caller.call("temp_fpgafr", {}, -1, GET));
@@ -421,7 +421,7 @@ TEST_CASE("measuredperiod", "[.cmdcall]") {
         } else {
             s = st.erase(0, strlen("measuredperiod "));
         }
-        double val = std::stod(s);
+        double const val = std::stod(s);
         // REQUIRE(val >= 1.0);
         REQUIRE(val < 2.0);
         for (int i = 0; i != det.size(); ++i) {
@@ -460,7 +460,7 @@ TEST_CASE("measuredsubperiod", "[.cmdcall]") {
         } else {
             s = st.erase(0, strlen("measuredsubperiod "));
         }
-        double val = std::stod(s);
+        double const val = std::stod(s);
         REQUIRE(val >= 0);
         REQUIRE(val < 1000);
         for (int i = 0; i != det.size(); ++i) {

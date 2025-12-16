@@ -11,7 +11,7 @@ TEST_CASE("check if version is semantic", "[.version]") {
         GENERATE(std::make_tuple("developer 0x250512", false),
                  std::make_tuple("0.0.0 0x250512", false));
 
-    Version version(version_string);
+    Version const version(version_string);
 
     CHECK(version.hasSemanticVersioning() == has_semantic_version);
 }

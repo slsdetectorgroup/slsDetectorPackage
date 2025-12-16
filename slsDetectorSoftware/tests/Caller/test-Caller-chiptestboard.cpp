@@ -26,8 +26,8 @@ TEST_CASE("dacname", "[.cmdcall]") {
 
     if (det_type == defs::CHIPTESTBOARD ||
         det_type == defs::XILINX_CHIPTESTBOARD) {
-        defs::dacIndex ind = static_cast<defs::dacIndex>(2);
-        std::string str_dac_index = "2";
+        defs::dacIndex const ind = static_cast<defs::dacIndex>(2);
+        std::string const str_dac_index = "2";
         auto prev = det.getDacName(ind);
 
         // 1 arg throw
@@ -61,8 +61,8 @@ TEST_CASE("dacindex", "[.cmdcall]") {
 
     if (det_type == defs::CHIPTESTBOARD ||
         det_type == defs::XILINX_CHIPTESTBOARD) {
-        defs::dacIndex ind = static_cast<defs::dacIndex>(2);
-        std::string str_dac_index = "2";
+        defs::dacIndex const ind = static_cast<defs::dacIndex>(2);
+        std::string const str_dac_index = "2";
 
         // 1 arg throw
         REQUIRE_THROWS(caller.call("dacindex", {"2", "2"}, -1, PUT));
@@ -120,8 +120,8 @@ TEST_CASE("adcname", "[.cmdcall]") {
 
     if (det_type == defs::CHIPTESTBOARD ||
         det_type == defs::XILINX_CHIPTESTBOARD) {
-        int ind = 2;
-        std::string str_adc_index = "2";
+        int const ind = 2;
+        std::string const str_adc_index = "2";
         auto prev = det.getAdcName(ind);
 
         // 1 arg throw
@@ -155,8 +155,8 @@ TEST_CASE("adcindex", "[.cmdcall]") {
 
     if (det_type == defs::CHIPTESTBOARD ||
         det_type == defs::XILINX_CHIPTESTBOARD) {
-        int ind = 2;
-        std::string str_adc_index = "2";
+        int const ind = 2;
+        std::string const str_adc_index = "2";
 
         // 1 arg throw
         REQUIRE_THROWS(caller.call("adcindex", {"2", "2"}, -1, PUT));
@@ -214,8 +214,8 @@ TEST_CASE("signalname", "[.cmdcall]") {
 
     if (det_type == defs::CHIPTESTBOARD ||
         det_type == defs::XILINX_CHIPTESTBOARD) {
-        int ind = 2;
-        std::string str_signal_index = "2";
+        int const ind = 2;
+        std::string const str_signal_index = "2";
         auto prev = det.getSignalName(ind);
 
         // 1 arg throw
@@ -249,8 +249,8 @@ TEST_CASE("signalindex", "[.cmdcall]") {
 
     if (det_type == defs::CHIPTESTBOARD ||
         det_type == defs::XILINX_CHIPTESTBOARD) {
-        int ind = 2;
-        std::string str_signal_index = "2";
+        int const ind = 2;
+        std::string const str_signal_index = "2";
 
         // 1 arg throw
         REQUIRE_THROWS(caller.call("signalindex", {"2", "2"}, -1, PUT));
@@ -309,8 +309,8 @@ TEST_CASE("powername", "[.cmdcall]") {
 
     if (det_type == defs::CHIPTESTBOARD ||
         det_type == defs::XILINX_CHIPTESTBOARD) {
-        defs::dacIndex ind = static_cast<defs::dacIndex>(2 + defs::V_POWER_A);
-        std::string str_power_index = "2";
+        defs::dacIndex const ind = static_cast<defs::dacIndex>(2 + defs::V_POWER_A);
+        std::string const str_power_index = "2";
         auto prev = det.getPowerName(ind);
 
         // 1 arg throw
@@ -344,8 +344,8 @@ TEST_CASE("powerindex", "[.cmdcall]") {
 
     if (det_type == defs::CHIPTESTBOARD ||
         det_type == defs::XILINX_CHIPTESTBOARD) {
-        defs::dacIndex ind = static_cast<defs::dacIndex>(2 + defs::V_POWER_A);
-        std::string str_power_index = "2";
+        defs::dacIndex const ind = static_cast<defs::dacIndex>(2 + defs::V_POWER_A);
+        std::string const str_power_index = "2";
 
         // 1 arg throw
         REQUIRE_THROWS(caller.call("powerindex", {"2", "2"}, -1, PUT));
@@ -430,8 +430,8 @@ TEST_CASE("slowadcname", "[.cmdcall]") {
 
     if (det_type == defs::CHIPTESTBOARD ||
         det_type == defs::XILINX_CHIPTESTBOARD) {
-        defs::dacIndex ind = static_cast<defs::dacIndex>(2 + defs::SLOW_ADC0);
-        std::string str_slowadc_index = "2";
+        defs::dacIndex const ind = static_cast<defs::dacIndex>(2 + defs::SLOW_ADC0);
+        std::string const str_slowadc_index = "2";
         auto prev = det.getSlowADCName(ind);
 
         // 1 arg throw
@@ -466,8 +466,8 @@ TEST_CASE("slowadcindex", "[.cmdcall]") {
 
     if (det_type == defs::CHIPTESTBOARD ||
         det_type == defs::XILINX_CHIPTESTBOARD) {
-        defs::dacIndex ind = static_cast<defs::dacIndex>(2 + defs::SLOW_ADC0);
-        std::string str_slowadc_index = "2";
+        defs::dacIndex const ind = static_cast<defs::dacIndex>(2 + defs::SLOW_ADC0);
+        std::string const str_slowadc_index = "2";
 
         // 1 arg throw
         REQUIRE_THROWS(caller.call("slowadcindex", {"2", "2"}, -1, PUT));

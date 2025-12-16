@@ -41,13 +41,13 @@ void Fifo::CreateFifos(size_t fifoItemSize) {
     fifoFree = new CircularFifo<char>(fifoDepth);
     fifoStream = new CircularFifo<char>(fifoDepth);
     // allocate memory
-    size_t mem_len = fifoItemSize * (size_t)fifoDepth * sizeof(char);
+    size_t const mem_len = fifoItemSize * (size_t)fifoDepth * sizeof(char);
     memory = (char *)malloc(mem_len);
     if (memory == nullptr) {
         throw RuntimeError("Could not allocate memory for fifos");
     }
     memset(memory, 0, mem_len);
-    int pagesize = getpagesize();
+    int const pagesize = getpagesize();
     for (size_t i = 0; i < mem_len; i += pagesize) {
         strcpy(memory + i, "memory");
     }
@@ -84,14 +84,14 @@ void Fifo::DestroyFifos() {
 void Fifo::FreeAddress(char *&address) { fifoFree->push(address); }
 
 void Fifo::GetNewAddress(char *&address) {
-    int temp = fifoFree->getDataValue();
+    int const temp = fifoFree->getDataValue();
     if (temp < status_fifoFree)
         status_fifoFree = temp;
     fifoFree->pop(address);
 }
 
 void Fifo::PushAddress(char *&address) {
-    int temp = fifoBound->getDataValue();
+    int const temp = fifoBound->getDataValue();
     if (temp > status_fifoBound)
         status_fifoBound = temp;
     while (!fifoBound->push(address))
@@ -108,13 +108,13 @@ void Fifo::PushAddressToStream(char *&address) { fifoStream->push(address); }
 void Fifo::PopAddressToStream(char *&address) { fifoStream->pop(address); }
 
 int Fifo::GetMaxLevelForFifoBound() {
-    int temp = status_fifoBound;
+    int const temp = status_fifoBound;
     status_fifoBound = 0;
     return temp;
 }
 
 int Fifo::GetMinLevelForFifoFree() {
-    int temp = status_fifoFree;
+    int const temp = status_fifoFree;
     status_fifoFree = fifoDepth;
     return temp;
 }

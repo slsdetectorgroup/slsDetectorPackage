@@ -10,7 +10,7 @@ namespace sls {
 using dt = slsDetectorDefs::detectorType;
 TEST_CASE("Construction with a defined detector type") {
     freeSharedMemory(0, 0); // clean up to start test
-    Module m(dt::EIGER);
+    Module const m(dt::EIGER);
     REQUIRE(m.getDetectorType() == dt::EIGER);
     freeSharedMemory(0, 0); // clean up
     SharedMemory<sharedModule> moduleShm(0, 0);
@@ -19,10 +19,10 @@ TEST_CASE("Construction with a defined detector type") {
 
 TEST_CASE("Read back detector type from shm") {
     // Create specific detector in order to create shm
-    Module m(dt::JUNGFRAU);
+    Module const m(dt::JUNGFRAU);
 
     // New detector that reads type from shm
-    Module m2;
+    Module const m2;
     REQUIRE(m2.getDetectorType() == dt::JUNGFRAU);
 
     // Now both objects point to the same shm so we can only
@@ -33,7 +33,7 @@ TEST_CASE("Read back detector type from shm") {
 }
 
 TEST_CASE("Is shm fixed pattern shm compatible") {
-    Module m(dt::JUNGFRAU);
+    Module const m(dt::JUNGFRAU);
 
     // Should be true since we just created the shm
     REQUIRE(m.isFixedPatternSharedMemoryCompatible() == true);
@@ -53,7 +53,7 @@ TEST_CASE("Is shm fixed pattern shm compatible") {
 }
 
 TEST_CASE("Get default control port") {
-    Module m(dt::MYTHEN3);
+    Module const m(dt::MYTHEN3);
     REQUIRE(m.getControlPort() == 1952);
     freeSharedMemory(0, 0);
     SharedMemory<sharedModule> moduleShm(0, 0);
@@ -61,7 +61,7 @@ TEST_CASE("Get default control port") {
 }
 
 TEST_CASE("Get default stop port") {
-    Module m(dt::GOTTHARD2);
+    Module const m(dt::GOTTHARD2);
     REQUIRE(m.getStopPort() == 1953);
     freeSharedMemory(0, 0);
     SharedMemory<sharedModule> moduleShm(0, 0);
@@ -69,7 +69,7 @@ TEST_CASE("Get default stop port") {
 }
 
 TEST_CASE("Get default receiver TCP port") {
-    Module m(dt::MYTHEN3);
+    Module const m(dt::MYTHEN3);
     REQUIRE(m.getReceiverPort() == 1954);
     freeSharedMemory(0, 0);
     SharedMemory<sharedModule> moduleShm(0, 0);

@@ -28,8 +28,9 @@ Checks:          '*,
                     -modernize-use-trailing-return-type,
                     -llvmlibc-*'
 
-HeaderFilterRegex: \.h
-AnalyzeTemporaryDtors: false
+# HeaderFilterRegex: \.h
+HeaderFilterRegex: '^(?!.*([/\\])libs([/\\])).*'
+#AnalyzeTemporaryDtors: false
 FormatStyle:     none
 CheckOptions:
   - { key: readability-identifier-naming.NamespaceCase,       value: lower_case }

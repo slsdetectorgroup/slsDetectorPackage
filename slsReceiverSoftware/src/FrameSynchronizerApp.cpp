@@ -65,7 +65,7 @@ FrameStatus *global_frame_status = nullptr;
 
 void cleanup() {
     if (global_frame_status) {
-        std::lock_guard<std::mutex> lock(global_frame_status->mtx);
+        std::lock_guard<std::mutex> const lock(global_frame_status->mtx);
         for (auto &outer_pair : global_frame_status->frames) {
             for (auto &inner_pair : outer_pair.second) {
                 for (zmq_msg_t *msg : inner_pair.second) {
@@ -146,11 +146,11 @@ std::set<uint64_t> get_valid_fnums(const PortFrameMap &port_frame_map) {
 }
 
 int zmq_send_multipart(void *socket, const ZmqMsgList &messages) {
-    size_t num_messages = messages.size();
+    size_t const num_messages = messages.size();
     for (size_t i = 0; i != num_messages; ++i) {
         zmq_msg_t *msg = messages[i];
         // determine flags: ZMQ_SNDMORE for all messages except the last
-        int flags = (i == num_messages - 1) ? 0 : ZMQ_SNDMORE;
+        int const flags = (i == num_messages - 1) ? 0 : ZMQ_SNDMORE;
         if (zmq_msg_send(msg, socket, flags) == -1) {
             LOG(sls::logERROR)
                 << "Error sending message: " << zmq_strerror(zmq_errno());
@@ -164,7 +164,7 @@ void Correlate(FrameStatus *stat) {
     void *context = zmq_ctx_new();
 
     void *socket = zmq_socket(context, ZMQ_PUSH);
-    int rc = zmq_bind(socket, "tcp://*:5555");
+    int const rc = zmq_bind(socket, "tcp://*:5555");
     if (rc != 0) {
         LOG(sls::logERROR) << "failed to bind";
     }
@@ -172,7 +172,7 @@ void Correlate(FrameStatus *stat) {
     while (true) {
         sem_wait(&(stat->available));
         {
-            std::lock_guard<std::mutex> lock(stat->mtx);
+            std::lock_guard<std::mutex> const lock(stat->mtx);
 
             if (stat->terminate) {
                 break;
@@ -304,10 +304,10 @@ void StartAcquisitionCallback(
     }
     oss << "}\n";
 
-    std::string message = oss.str();
+    std::string const message = oss.str();
     LOG(sls::logDEBUG) << "Start Acquisition message:" << std::endl << message;
 
-    int length = message.length();
+    int const length = message.length();
     char *hdata = new char[length];
     memcpy(hdata, message.c_str(), length);
     zmq_msg_t *hmsg = new zmq_msg_t;
@@ -316,7 +316,7 @@ void StartAcquisitionCallback(
     // push zmq msg into stat to be processed
     FrameStatus *stat = static_cast<FrameStatus *>(objectPointer);
     {
-        std::lock_guard<std::mutex> lock(stat->mtx);
+        std::lock_guard<std::mutex> const lock(stat->mtx);
         stat->headers.push_back(hmsg);
         stat->starting = true;
         // clean up old frames
@@ -355,8 +355,8 @@ void AcquisitionFinishedCallback(
         << sls::ToString(callbackHeader.completeFrames)
         << ", \"lastFrameIndex\":"
         << sls::ToString(callbackHeader.lastFrameIndex) << "}\n";
-    std::string message = oss.str();
-    int length = message.length();
+    std::string const message = oss.str();
+    int const length = message.length();
     LOG(sls::logDEBUG) << "Acquisition Finished message:" << std::endl
                        << message;
 
@@ -368,7 +368,7 @@ void AcquisitionFinishedCallback(
     // push zmq msg into stat to be processed
     FrameStatus *stat = static_cast<FrameStatus *>(objectPointer);
     {
-        std::lock_guard<std::mutex> lock(stat->mtx);
+        std::lock_guard<std::mutex> const lock(stat->mtx);
         stat->ends.push_back(hmsg);
     }
     sem_post(&stat->available);
@@ -379,7 +379,7 @@ void GetDataCallback(slsDetectorDefs::sls_receiver_header &header,
                      char *dataPointer, size_t &imageSize,
                      void *objectPointer) {
 
-    slsDetectorDefs::sls_detector_header detectorHeader = header.detHeader;
+    slsDetectorDefs::sls_detector_header const detectorHeader = header.detHeader;
 
     if (printHeadersLevel < sls::logDEBUG) {
         // print in different color for each udp port
@@ -468,11 +468,11 @@ void GetDataCallback(slsDetectorDefs::sls_receiver_header &header,
         oss << " } ";
     }
     oss << "}\n";
-    std::string message = oss.str();
+    std::string const message = oss.str();
     LOG(sls::logDEBUG) << "Data message:" << std::endl << message;
 
     // creating header part of data packet
-    int length = message.length();
+    int const length = message.length();
     char *hdata = new char[length];
     memcpy(hdata, message.c_str(), length);
     zmq_msg_t *hmsg = new zmq_msg_t;
@@ -486,7 +486,7 @@ void GetDataCallback(slsDetectorDefs::sls_receiver_header &header,
     // push both parts into stat to be processed
     FrameStatus *stat = static_cast<FrameStatus *>(objectPointer);
     {
-        std::lock_guard<std::mutex> lock(stat->mtx);
+        std::lock_guard<std::mutex> const lock(stat->mtx);
         stat->frames[callbackHeader.udpPort][header.detHeader.frameNumber]
             .push_back(hmsg);
         stat->frames[callbackHeader.udpPort][header.detHeader.frameNumber]
@@ -544,7 +544,7 @@ int main(int argc, char *argv[]) {
 
     std::exception_ptr threadException = nullptr;
     for (int i = 0; i != f.numReceivers; ++i) {
-        uint16_t port = f.port + i;
+        uint16_t const port = f.port + i;
         sem_t *semaphore = &semaphores[i];
         threads.emplace_back(
             [i, semaphore, port, user_data, &threadException]() {
@@ -581,7 +581,7 @@ int main(int argc, char *argv[]) {
     cleanup();
 
     {
-        std::lock_guard<std::mutex> lock(stat.mtx);
+        std::lock_guard<std::mutex> const lock(stat.mtx);
         stat.terminate = true;
         sem_post(&stat.available);
     }

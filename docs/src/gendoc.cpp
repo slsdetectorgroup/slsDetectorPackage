@@ -19,7 +19,7 @@ std::string replace_all(const std::string &src, const std::string &from,
                         const std::string &to) {
 
     std::string results;
-    std::string::const_iterator end = src.end();
+    std::string::const_iterator const end = src.end();
     std::string::const_iterator current = src.begin();
     std::string::const_iterator next =
         std::search(current, end, from.begin(), from.end());

@@ -509,11 +509,11 @@ TEST_CASE("interpolation", "[.cmdcall]") {
         auto prev_mask = det.getCounterMask();
         auto prev_vth3DacVal = det.getDAC(defs::VTH3, 0, {});
 
-        int disabledDacValue = 2800;
+        int const disabledDacValue = 2800;
         auto fixedVth3DacVal = 1000;
         det.setDAC(defs::VTH3, fixedVth3DacVal, 0, {});
         // mask with counter 3 disabled and enabled(to test vth3)
-        uint32_t fixedMask[2] = {0x2, 0x4};
+        uint32_t const fixedMask[2] = {0x2, 0x4};
         for (int i = 0; i != 2; ++i) {
             det.setCounterMask(fixedMask[i]);
             {
@@ -532,7 +532,7 @@ TEST_CASE("interpolation", "[.cmdcall]") {
                 REQUIRE(oss.str() == "interpolation 0\n");
                 REQUIRE(det.getCounterMask().tsquash(
                             "inconsistent counter mask") == fixedMask[i]);
-                int expectedVth3DacVal =
+                int const expectedVth3DacVal =
                     (fixedMask[i] & 0x4 ? fixedVth3DacVal : disabledDacValue);
                 REQUIRE(det.getDAC(defs::VTH3, 0, {0})
                             .tsquash("inconsistent vth3 dac value") ==
@@ -566,13 +566,13 @@ TEST_CASE("pumpprobe", "[.cmdcall]") {
         auto prev_vth2DacVal = det.getDAC(defs::VTH2, 0, {});
         auto prev_vth3DacVal = det.getDAC(defs::VTH3, 0, {});
 
-        int disabledDacValue = 2800;
+        int const disabledDacValue = 2800;
         auto fixedVthDacVal = 1000;
         det.setDAC(defs::VTH1, fixedVthDacVal, 0, {});
         det.setDAC(defs::VTH2, fixedVthDacVal, 0, {});
         det.setDAC(defs::VTH3, fixedVthDacVal, 0, {});
         // mask with counter 2 disabled and enabled(to test vth2)
-        uint32_t fixedMask[2] = {0x4, 0x3};
+        uint32_t const fixedMask[2] = {0x4, 0x3};
         for (int i = 0; i != 2; ++i) {
             std::cout << "i:" << i << std::endl;
             det.setCounterMask(fixedMask[i]);

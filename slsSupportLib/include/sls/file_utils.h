@@ -16,6 +16,7 @@ namespace sls {
  * @param nch number of channels
  * @param offset start channel value
  */
+[[deprecated]]
 int readDataFile(std::ifstream &infile, short int *data, int nch,
                  int offset = 0);
 
@@ -23,6 +24,7 @@ int readDataFile(std::ifstream &infile, short int *data, int nch,
  * @param data array of data value
  * @param nch number of channels
  */
+[[deprecated]]
 int readDataFile(std::string fname, short int *data, int nch);
 
 std::vector<char> readBinaryFile(const std::string &fname,
@@ -33,6 +35,7 @@ std::vector<char> readBinaryFile(const std::string &fname,
  * @param data array of data values
  * @param offset start channel number
  */
+[[deprecated]]
 int writeDataFile(std::ofstream &outfile, int nch, short int *data,
                   int offset = 0);
 
@@ -40,6 +43,7 @@ int writeDataFile(std::ofstream &outfile, int nch, short int *data,
  * @param nch number of channels
  * @param data array of data values
  */
+[[deprecated]]
 int writeDataFile(std::string fname, int nch, short int *data);
 
 // mkdir -p path implemented by recursive calls

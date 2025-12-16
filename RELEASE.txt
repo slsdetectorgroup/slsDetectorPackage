@@ -37,6 +37,8 @@ Experimental support for building the detector client (including python bindings
 
 ``rx_dbitlist`` keeps the order of the passed bit list 
 
+Marked unused functions readDataFile/writeDataFile deprecated in file_utils.h
+
 2  On-board Detector Server Compatibility
 ==========================================
 

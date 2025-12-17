@@ -1030,37 +1030,41 @@ TEST_CASE("v_abcd", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    std::vector<std::string> cmds{"v_a", "v_b", "v_c", "v_d"};
-    std::vector<defs::dacIndex> indices{defs::V_POWER_A, defs::V_POWER_B,
-                                        defs::V_POWER_C, defs::V_POWER_D};
-
     if (det.isVirtualDetectorServer().tsquash("Inconsistent virtual servers")) {
-        cmds.push_back("v_io");
-        indices.push_back(defs::V_POWER_IO);
-    }
 
-    for (size_t i = 0; i < cmds.size(); ++i) {
-        if (det_type == defs::CHIPTESTBOARD ||
-            det_type == defs::XILINX_CHIPTESTBOARD) {
-            auto prev_val = det.getPower(indices[i]);
-            {
-                std::ostringstream oss;
-                caller.call(cmds[i], {"0"}, -1, PUT, oss);
-                REQUIRE(oss.str() == cmds[i] + " 0\n");
-            }
-            {
-                std::ostringstream oss1, oss2;
-                caller.call(cmds[i], {"1200"}, -1, PUT, oss1);
-                REQUIRE(oss1.str() == cmds[i] + " 1200\n");
-                caller.call(cmds[i], {}, -1, GET, oss2);
-                REQUIRE(oss2.str() == cmds[i] + " 1200\n");
-            }
-            for (int i = 0; i != det.size(); ++i) {
-                det.setPower(indices[i], prev_val[i], {i});
-            }
+        std::vector<std::string> cmds{"v_a", "v_b", "v_c", "v_d", "v_io"};
+        std::vector<defs::dacIndex> indices{defs::V_POWER_A, defs::V_POWER_B,
+                                            defs::V_POWER_C, defs::V_POWER_D,
+                                            defs::V_POWER_IO};
 
-        } else {
-            REQUIRE_THROWS(caller.call(cmds[i], {}, -1, GET));
+        for (size_t i = 0; i < cmds.size(); ++i) {
+            if (det_type == defs::CHIPTESTBOARD ||
+                det_type == defs::XILINX_CHIPTESTBOARD) {
+                auto prev_val = det.getPower(indices[i]);
+                {
+                    std::ostringstream oss;
+                    caller.call(cmds[i], {"0"}, -1, PUT, oss);
+                    REQUIRE(oss.str() == cmds[i] + " 0\n");
+                }
+                {
+                    std::ostringstream oss1, oss2;
+                    caller.call(cmds[i], {"1200"}, -1, PUT, oss1);
+                    REQUIRE(oss1.str() == cmds[i] + " 1200\n");
+                    caller.call(cmds[i], {}, -1, GET, oss2);
+                    REQUIRE(oss2.str() == cmds[i] + " 1200\n");
+                }
+                for (int i = 0; i != det.size(); ++i) {
+                    if (det_type == defs::XILINX_CHIPTESTBOARD &&
+                        prev_val[i] == -100) {
+                        prev_val[i] = 0;
+                        continue;
+                    }
+                    det.setPower(indices[i], prev_val[i], {i});
+                }
+
+            } else {
+                REQUIRE_THROWS(caller.call(cmds[i], {}, -1, GET));
+            }
         }
     }
 }

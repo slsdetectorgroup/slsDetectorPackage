@@ -14,8 +14,7 @@ namespace sls {
 template <size_t N>
 struct FixedString {
     char data_[N]{};
-    constexpr FixedString() noexcept = default;
-    //TODO? add const char* overload?
+    constexpr FixedString() noexcept { memset(data_, 0, N); }
     FixedString(const char (&s)[N]) {
         if (N <= 1) {
             throw std::runtime_error("FixedString cannot be empty");

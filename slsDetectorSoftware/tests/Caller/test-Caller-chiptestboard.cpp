@@ -1391,8 +1391,8 @@ TEST_CASE("define_reg", "[.cmdcall][.definecmds]") {
             try {
                 caller.call("define_reg", {"0x203"}, -1, GET);
             } catch (const std::exception &e) {
-                REQUIRE(std::string(e.what()) ==
-                        "No register definition found for address: 0x203");
+                REQUIRE(std::string(e.what()).find(
+                            "No entry found for value") != std::string::npos);
             }
         }
         det.clearRegisterDefinitions();
@@ -1487,9 +1487,8 @@ TEST_CASE("define_bit", "[.cmdcall][.definecmds]") {
             try {
                 caller.call("define_bit", {"TEST_REG", "3"}, -1, GET);
             } catch (const std::exception &e) {
-                REQUIRE(std::string(e.what()) ==
-                        "No bit definition found for bit position: [0x201, 3] "
-                        "and addr = TEST_REG");
+                REQUIRE(std::string(e.what()).find(
+                            "No entry found for value") != std::string::npos);
             }
         }
         det.clearRegisterDefinitions();

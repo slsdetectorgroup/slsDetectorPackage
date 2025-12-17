@@ -28,335 +28,284 @@ CtbConfig::CtbConfig() {
     for (size_t i = 0; i != num_slowADCs; ++i) {
         setSlowADCName(i, "SLOWADC" + ToString(i));
     }
-}
-
-void CtbConfig::check_dac_index(size_t i) const {
-    if (i >= num_dacs) {
-        std::ostringstream oss;
-        oss << "Invalid DAC index. Options: 0 - " << num_dacs;
-        throw RuntimeError(oss.str());
-    }
-}
-
-void CtbConfig::check_adc_index(size_t i) const {
-    if (i >= num_adcs) {
-        std::ostringstream oss;
-        oss << "Invalid ADC index. Options: 0 - " << num_adcs;
-        throw RuntimeError(oss.str());
-    }
-}
-
-void CtbConfig::check_signal_index(size_t i) const {
-    if (i >= num_signals) {
-        std::ostringstream oss;
-        oss << "Invalid Signal index. Options: 0 - " << num_signals;
-        throw RuntimeError(oss.str());
-    }
-}
-
-void CtbConfig::check_power_index(size_t i) const {
-    if (i >= num_powers) {
-        std::ostringstream oss;
-        oss << "Invalid Power index. Options: 0 - " << num_powers
-            << " or V_POWER_A - V_POWER_IO";
-        throw RuntimeError(oss.str());
-    }
-}
-
-void CtbConfig::check_slow_adc_index(size_t i) const {
-    if (i >= num_slowADCs) {
-        std::ostringstream oss;
-        oss << "Invalid Slow ADC index. Options: 0 - " << num_slowADCs
-            << " or SLOW_ADC0 - SLOW_ADC7";
-        throw RuntimeError(oss.str());
-    }
-}
-
-void CtbConfig::check_size(const std::string &name) const {
-
-    if (name.empty())
-        throw RuntimeError("Name needs to be at least one character");
-
-    // name_length -1 to account for \0 termination
-    if (!(name.size() < (name_length - 1))) {
-        std::ostringstream oss;
-        oss << "Length of name needs to be less than " << name_length - 1
-            << " chars";
-        throw RuntimeError(oss.str());
-    }
-}
-
-void CtbConfig::setDacName(size_t index, const std::string &name) {
-    check_dac_index(index);
-    check_size(name);
-    char *dst = &dacnames[index * name_length];
-    memset(dst, '\0', name_length);
-    memcpy(dst, &name[0], name.size());
-}
-
-void CtbConfig::setDacNames(const std::vector<std::string> &names) {
-    if (names.size() != num_dacs) {
-        throw RuntimeError("Dac names need to be of size " +
-                           std::to_string(num_dacs));
-    }
-    for (size_t i = 0; i != num_dacs; ++i) {
-        setDacName(i, names[i]);
-    }
-}
-
-std::string CtbConfig::getDacName(size_t index) const {
-    check_dac_index(index);
-    return dacnames + index * name_length;
-}
-
-std::vector<std::string> CtbConfig::getDacNames() const {
-    std::vector<std::string> names;
-    for (size_t i = 0; i != num_dacs; ++i)
-        names.push_back(getDacName(i));
-    return names;
-}
-
-void CtbConfig::setAdcName(size_t index, const std::string &name) {
-    check_adc_index(index);
-    check_size(name);
-    char *dst = &adcnames[index * name_length];
-    memset(dst, '\0', name_length);
-    memcpy(dst, &name[0], name.size());
-}
-
-void CtbConfig::setAdcNames(const std::vector<std::string> &names) {
-    if (names.size() != num_adcs) {
-        throw RuntimeError("Adc names need to be of size " +
-                           std::to_string(num_adcs));
-    }
-    for (size_t i = 0; i != num_adcs; ++i) {
-        setAdcName(i, names[i]);
-    }
-}
-
-std::string CtbConfig::getAdcName(size_t index) const {
-    check_adc_index(index);
-    return adcnames + index * name_length;
-}
-
-std::vector<std::string> CtbConfig::getAdcNames() const {
-    std::vector<std::string> names;
-    for (size_t i = 0; i != num_adcs; ++i)
-        names.push_back(getAdcName(i));
-    return names;
-}
-
-void CtbConfig::setSignalName(size_t index, const std::string &name) {
-    check_signal_index(index);
-    check_size(name);
-    char *dst = &signalnames[index * name_length];
-    memset(dst, '\0', name_length);
-    memcpy(dst, &name[0], name.size());
-}
-
-void CtbConfig::setSignalNames(const std::vector<std::string> &names) {
-    if (names.size() != num_signals) {
-        throw RuntimeError("Signal names need to be of size " +
-                           std::to_string(num_signals));
-    }
-    for (size_t i = 0; i != num_signals; ++i) {
-        setSignalName(i, names[i]);
-    }
-}
-
-std::string CtbConfig::getSignalName(size_t index) const {
-    check_signal_index(index);
-    return signalnames + index * name_length;
-}
-
-std::vector<std::string> CtbConfig::getSignalNames() const {
-    std::vector<std::string> names;
-    for (size_t i = 0; i != num_signals; ++i)
-        names.push_back(getSignalName(i));
-    return names;
-}
-
-void CtbConfig::setPowerName(size_t index, const std::string &name) {
-    check_power_index(index);
-    check_size(name);
-    char *dst = &powernames[index * name_length];
-    memset(dst, '\0', name_length);
-    memcpy(dst, &name[0], name.size());
-}
-
-void CtbConfig::setPowerNames(const std::vector<std::string> &names) {
-    if (names.size() != num_powers) {
-        throw RuntimeError("Power names need to be of size " +
-                           std::to_string(num_powers));
-    }
-    for (size_t i = 0; i != num_powers; ++i) {
-        setPowerName(i, names[i]);
-    }
-}
-
-std::string CtbConfig::getPowerName(size_t index) const {
-    check_power_index(index);
-    return powernames + index * name_length;
-}
-
-std::vector<std::string> CtbConfig::getPowerNames() const {
-    std::vector<std::string> names;
-    for (size_t i = 0; i != num_powers; ++i)
-        names.push_back(getPowerName(i));
-    return names;
-}
-
-void CtbConfig::setSlowADCName(size_t index, const std::string &name) {
-    check_slow_adc_index(index);
-    check_size(name);
-    char *dst = &slowADCnames[index * name_length];
-    memset(dst, '\0', name_length);
-    memcpy(dst, &name[0], name.size());
-}
-
-void CtbConfig::setSlowADCNames(const std::vector<std::string> &names) {
-    if (names.size() != num_slowADCs) {
-        throw RuntimeError("Slow ADC names need to be of size " +
-                           std::to_string(num_slowADCs));
-    }
-    for (size_t i = 0; i != num_slowADCs; ++i) {
-        setSlowADCName(i, names[i]);
-    }
-}
-
-std::string CtbConfig::getSlowADCName(size_t index) const {
-    check_slow_adc_index(index);
-    return slowADCnames + index * name_length;
-}
-
-std::vector<std::string> CtbConfig::getSlowADCNames() const {
-    std::vector<std::string> names;
-    for (size_t i = 0; i != num_slowADCs; ++i)
-        names.push_back(getSlowADCName(i));
-    return names;
+    registers.clear();
+    bits.clear();
 }
 
 const char *CtbConfig::shm_tag() { return shm_tag_; }
 
-int CtbConfig::getRegisterNamesCount() const { return num_regs; }
-
-void CtbConfig::setRegisterName(const std::string &name, RegisterAddress addr) {
-    addEntry<RegisterDefinition, RegisterAddress>(
-        name, addr, registers, num_regs, max_regs, "register");
+void CtbConfig::check_index(size_t index, size_t max, const std::string &name,
+                            const std::string &suffix) const {
+    if (index >= max) {
+        std::ostringstream oss;
+        oss << "Invalid " << name << " index. Options: 0 - " << max;
+        if (!suffix.empty()) {
+            oss << " " << suffix;
+        }
+        throw RuntimeError(oss.str());
+    }
 }
 
+void CtbConfig::set_name(const std::string &name, char dst[][name_length],
+                         size_t index) {
+    if (name.empty())
+        throw RuntimeError("Name needs to be at least one character");
+
+    strcpy_checked<name_length>(dst[index], name);
+}
+
+void CtbConfig::setNames(const std::vector<std::string> &names,
+                         size_t expected_size,
+                         void (CtbConfig::*setNameFunc)(size_t,
+                                                        const std::string &)) {
+    if (names.size() != expected_size) {
+        throw RuntimeError("Name list need to be of size " +
+                           std::to_string(expected_size));
+    }
+    for (size_t i = 0; i != expected_size; ++i) {
+        (this->*setNameFunc)(i, names[i]);
+    }
+}
+
+std::vector<std::string>
+CtbConfig::getNames(size_t expected_size,
+                    std::string (CtbConfig::*getNameFunc)(size_t) const) const {
+    std::vector<std::string> result;
+    result.reserve(expected_size);
+    for (size_t i = 0; i != expected_size; ++i) {
+        result.push_back((this->*getNameFunc)(i));
+    }
+    return result;
+}
+
+void CtbConfig::setDacName(size_t index, const std::string &name) {
+    check_index(index, num_dacs, "DAC");
+    set_name(name, dacnames, index);
+}
+
+void CtbConfig::setDacNames(const std::vector<std::string> &names) {
+    setNames(names, num_dacs, &CtbConfig::setDacName);
+}
+
+std::string CtbConfig::getDacName(size_t index) const {
+    check_index(index, num_dacs, "DAC");
+    return dacnames[index];
+}
+
+std::vector<std::string> CtbConfig::getDacNames() const {
+    return getNames(num_dacs, &CtbConfig::getDacName);
+}
+
+void CtbConfig::setAdcName(size_t index, const std::string &name) {
+    check_index(index, num_adcs, "ADC");
+    set_name(name, adcnames, index);
+}
+
+void CtbConfig::setAdcNames(const std::vector<std::string> &names) {
+    setNames(names, num_adcs, &CtbConfig::setAdcName);
+}
+
+std::string CtbConfig::getAdcName(size_t index) const {
+    check_index(index, num_adcs, "ADC");
+    return adcnames[index];
+}
+
+std::vector<std::string> CtbConfig::getAdcNames() const {
+    return getNames(num_adcs, &CtbConfig::getAdcName);
+}
+
+void CtbConfig::setSignalName(size_t index, const std::string &name) {
+    check_index(index, num_signals, "Signal");
+    set_name(name, signalnames, index);
+}
+
+void CtbConfig::setSignalNames(const std::vector<std::string> &names) {
+    setNames(names, num_signals, &CtbConfig::setSignalName);
+}
+
+std::string CtbConfig::getSignalName(size_t index) const {
+    check_index(index, num_signals, "Signal");
+    return signalnames[index];
+}
+
+std::vector<std::string> CtbConfig::getSignalNames() const {
+    return getNames(num_signals, &CtbConfig::getSignalName);
+}
+
+void CtbConfig::setPowerName(size_t index, const std::string &name) {
+    check_index(index, num_powers, "Power");
+    set_name(name, powernames, index);
+}
+
+void CtbConfig::setPowerNames(const std::vector<std::string> &names) {
+    setNames(names, num_powers, &CtbConfig::setPowerName);
+}
+
+std::string CtbConfig::getPowerName(size_t index) const {
+    check_index(index, num_powers, "Power");
+    return powernames[index];
+}
+
+std::vector<std::string> CtbConfig::getPowerNames() const {
+    return getNames(num_powers, &CtbConfig::getPowerName);
+}
+
+void CtbConfig::setSlowADCName(size_t index, const std::string &name) {
+    check_index(index, num_slowADCs, "Slow ADC", "or SLOW_ADC0 - SLOW_ADC7");
+    set_name(name, slowADCnames, index);
+}
+
+void CtbConfig::setSlowADCNames(const std::vector<std::string> &names) {
+    setNames(names, num_slowADCs, &CtbConfig::setSlowADCName);
+}
+
+std::string CtbConfig::getSlowADCName(size_t index) const {
+    check_index(index, num_slowADCs, "Slow ADC", "or SLOW_ADC0 - SLOW_ADC7");
+    return slowADCnames[index];
+}
+
+std::vector<std::string> CtbConfig::getSlowADCNames() const {
+    return getNames(num_slowADCs, &CtbConfig::getSlowADCName);
+}
+
+int CtbConfig::getRegisterNamesCount() const { return registers.size(); }
+
 bool CtbConfig::hasRegisterName(const std::string &name) const {
-    return lookupEntryByName<RegisterDefinition, RegisterAddress>(
-               name, registers, num_regs)
-        .has_value();
+    auto fixed_name = FixedString<name_length>(name);
+    return registers.containsKey(fixed_name);
 }
 
 bool CtbConfig::hasRegisterAddress(RegisterAddress addr) const {
-    return lookupEntryByValue<RegisterDefinition, RegisterAddress>(
-               addr, registers, num_regs)
-        .has_value();
+    return registers.hasValue(addr);
+}
+
+void CtbConfig::clearRegisterNames() { registers.clear(); }
+
+void CtbConfig::setRegisterName(const std::string &name, RegisterAddress addr) {
+    try {
+        auto fixed_name = FixedString<name_length>(name);
+        registers.addKeyOrSetValue(fixed_name, addr);
+    } catch (const std::runtime_error &e) {
+        std::ostringstream oss;
+        oss << e.what();
+        if (strstr(e.what(), "Maximum capacity reached")) {
+            oss << ". Clear shared memory and try again.";
+        }
+        throw RuntimeError("Could not set register name '" + name +
+                           "': " + oss.str());
+    }
 }
 
 RegisterAddress CtbConfig::getRegisterAddress(const std::string &name) const {
-    auto val = lookupEntryByName<RegisterDefinition, RegisterAddress>(
-        name, registers, num_regs);
-    if (!val.has_value()) {
-        throw RuntimeError("No register definition found for name: " + name);
+    try {
+        auto fixed_name = FixedString<name_length>(name);
+        return registers.getValue(fixed_name);
+    } catch (const std::runtime_error &e) {
+        throw RuntimeError("Could not get register address for name '" + name +
+                           "': " + std::string(e.what()));
     }
-    return val.value();
 }
 
 std::string CtbConfig::getRegisterName(RegisterAddress addr) const {
-    auto val = lookupEntryByValue<RegisterDefinition, RegisterAddress>(
-        addr, registers, num_regs);
-    if (!val.has_value()) {
-        throw RuntimeError("No register definition found for address: " +
-                           addr.str());
+    try {
+        return registers.getKey(addr).str();
+    } catch (const std::runtime_error &e) {
+        throw RuntimeError("Could not get register name for address '" +
+                           addr.str() + "': " + std::string(e.what()));
     }
-    return val.value();
-}
-
-void CtbConfig::clearRegisterNames() {
-    memset(registers, 0, sizeof(registers));
-    num_regs = 0;
 }
 
 void CtbConfig::setRegisterNames(
     const std::map<std::string, RegisterAddress> &list) {
-    if (list.size() >= max_regs) {
-        throw RuntimeError("Register names need to be of size less than " +
-                           std::to_string(max_regs));
-    }
-    clearRegisterNames();
-    for (const auto &[name, value] : list) {
-        setRegisterName(name, value);
+    try {
+        std::map<FixedString<name_length>, RegisterAddress> fixed_list;
+        for (const auto &[name, value] : list) {
+            auto fixed_name = FixedString<name_length>(name);
+            fixed_list[fixed_name] = value;
+        }
+        registers.setMap(fixed_list);
+    } catch (const std::runtime_error &e) {
+        throw RuntimeError("Could not set register names: " +
+                           std::string(e.what()));
     }
 }
 
 std::map<std::string, RegisterAddress> CtbConfig::getRegisterNames() const {
-    std::map<std::string, RegisterAddress> names;
-    for (size_t i = 0; i != num_regs; ++i)
-        names[registers[i].name()] = registers[i].value();
-    return names;
+    auto fixed_result = registers.getMap();
+    std::map<std::string, RegisterAddress> result;
+    for (const auto &[fixed_name, value] : fixed_result) {
+        result[fixed_name.str()] = value;
+    }
+    return result;
 }
 
-int CtbConfig::getBitNamesCount() const { return num_bits; }
-
-void CtbConfig::setBitName(const std::string &name, BitAddress bitPos) {
-    addEntry<BitDefinition, BitAddress>(name, bitPos, bits, num_bits, max_bits,
-                                        "bit");
-}
+int CtbConfig::getBitNamesCount() const { return bits.size(); }
 
 bool CtbConfig::hasBitName(const std::string &name) const {
-    return lookupEntryByName<BitDefinition, BitAddress>(name, bits, num_bits)
-        .has_value();
+    auto fixed_name = FixedString<name_length>(name);
+    return bits.containsKey(fixed_name);
 }
 
 bool CtbConfig::hasBitAddress(BitAddress bitPos) const {
-    return lookupEntryByValue<BitDefinition, BitAddress>(bitPos, bits, num_bits)
-        .has_value();
+    return bits.hasValue(bitPos);
+}
+
+void CtbConfig::clearBitNames() { bits.clear(); }
+
+void CtbConfig::setBitName(const std::string &name, BitAddress bitPos) {
+    try {
+        auto fixed_name = FixedString<name_length>(name);
+        bits.addKeyOrSetValue(fixed_name, bitPos);
+    } catch (const std::runtime_error &e) {
+        std::ostringstream oss;
+        oss << e.what();
+        if (strstr(e.what(), "Maximum capacity reached")) {
+            oss << ". Clear shared memory and try again.";
+        }
+        throw RuntimeError("Could not set bit name '" + name +
+                           "': " + oss.str());
+    }
 }
 
 BitAddress CtbConfig::getBitAddress(const std::string &name) const {
-    auto val =
-        lookupEntryByName<BitDefinition, BitAddress>(name, bits, num_bits);
-    if (!val.has_value()) {
-        throw RuntimeError("No bit definition found for name: " + name);
+    try {
+        auto fixed_name = FixedString<name_length>(name);
+        return bits.getValue(fixed_name);
+    } catch (const std::runtime_error &e) {
+        throw RuntimeError("Could not get bit address for name '" + name +
+                           "': " + std::string(e.what()));
     }
-    return val.value();
 }
 
 std::string CtbConfig::getBitName(BitAddress bitPos) const {
-    auto val =
-        lookupEntryByValue<BitDefinition, BitAddress>(bitPos, bits, num_bits);
-    if (!val.has_value()) {
-        throw RuntimeError("No bit definition found for bit position: " +
-                           bitPos.str());
+    try {
+        return bits.getKey(bitPos).str();
+    } catch (const std::runtime_error &e) {
+        throw RuntimeError("Could not get bit name for address '" +
+                           bitPos.str() + "': " + std::string(e.what()));
     }
-    return val.value();
-}
-
-void CtbConfig::clearBitNames() {
-    memset(bits, 0, sizeof(bits));
-    num_bits = 0;
 }
 
 void CtbConfig::setBitNames(const std::map<std::string, BitAddress> &list) {
-    if (list.size() >= max_bits) {
-        throw RuntimeError("Bit names need to be of size less than " +
-                           std::to_string(max_bits));
-    }
-    clearBitNames();
-    for (const auto &[name, value] : list) {
-        setBitName(name, value);
+    try {
+        std::map<FixedString<name_length>, BitAddress> fixed_list;
+        for (const auto &[name, value] : list) {
+            auto fixed_name = FixedString<name_length>(name);
+            fixed_list[fixed_name] = value;
+        }
+        bits.setMap(fixed_list);
+    } catch (const std::runtime_error &e) {
+        throw RuntimeError("Could not set bit names: " + std::string(e.what()));
     }
 }
 
 std::map<std::string, BitAddress> CtbConfig::getBitNames() const {
-    std::map<std::string, BitAddress> names;
-    for (size_t i = 0; i != num_bits; ++i)
-        names[bits[i].name()] = bits[i].value();
-    return names;
+    auto fixed_result = bits.getMap();
+    std::map<std::string, BitAddress> result;
+    for (const auto &[fixed_name, value] : fixed_result) {
+        result[fixed_name.str()] = value;
+    }
+    return result;
 }
 
 } // namespace sls

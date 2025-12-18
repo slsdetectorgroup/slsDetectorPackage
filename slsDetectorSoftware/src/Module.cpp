@@ -2575,8 +2575,9 @@ void Module::setReceiverDbitList(std::vector<int> list) {
         }
     }
     auto r = stableRemoveDuplicates(list);
-    if(r)
+    if (r) {
         LOG(logWARNING) << "Removed duplicated from receiver dbit list";
+    }
 
     StaticVector<int, MAX_RX_DBIT> arg = list;
     sendToReceiver(F_SET_RECEIVER_DBIT_LIST, arg, nullptr);

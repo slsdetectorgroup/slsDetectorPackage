@@ -1852,6 +1852,10 @@ void init_det(py::module &m) {
                        (bool (Detector::*)(sls::BitAddress) const) &
                            Detector::hasBitDefinition,
                        py::arg());
+    CppDetectorApi.def("toRegisterNameBitString",
+                       (std::string(Detector::*)(sls::BitAddress) const) &
+                           Detector::toRegisterNameBitString,
+                       py::arg());
     CppDetectorApi.def(
         "getBitDefinitionAddress",
         (sls::BitAddress(Detector::*)(const std::string &) const) &

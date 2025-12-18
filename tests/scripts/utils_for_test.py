@@ -266,7 +266,7 @@ def loadConfig(name, rx_hostname = 'localhost', settingsdir = None, log_file_fp 
             d.numinterfaces = num_interfaces
 
         d.udp_dstport = DEFAULT_UDP_DST_PORTNO
-        if name == 'eiger' or name == 'jungfrau' or name == 'moench':
+        if name == 'eiger' or num_interfaces == 2: 
             d.udp_dstport2 = DEFAULT_UDP_DST_PORTNO + 1
 
         d.rx_hostname = rx_hostname
@@ -274,7 +274,7 @@ def loadConfig(name, rx_hostname = 'localhost', settingsdir = None, log_file_fp 
         if name != "eiger":
             d.udp_srcip = 'auto'
 
-        if name == "jungfrau" or name == "moench":  
+        if num_interfaces == 2: 
             d.udp_dstip2 = 'auto'
 
         if name == "jungfrau" or name == "moench" or name == "xilinx_ctb":

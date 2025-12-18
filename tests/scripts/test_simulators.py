@@ -78,13 +78,15 @@ def startTestsForAll(args, fp, advanced_test_settings=None):
                 continue
 
             if server == "eiger": 
-                num_mods = 2*args.num_mods # top bottom half module 
+                num_mods = 2*args.num_mods # top and bottom half module 
             try:
                 fname = fname_template.format(args.tests, server) if not args.no_log_file else None
 
                 Log(LogLevel.INFOBLUE, f'Starting {args.tests} Tests for {server}')
                 cleanup(fp)
-                startDetectorVirtualServer(name=server, num_mods=num_mods, fp=fp)
+                
+                print("no log file: ", args.no_log_file)
+                startDetectorVirtualServer(name=server, num_mods=num_mods, fp=fp, no_log_file=args.no_log_file)
                 startReceiver(args.num_mods, fp)
                 d = loadConfig(name=server, rx_hostname=args.rx_hostname, settingsdir=args.settingspath, log_file_fp=fp, num_mods=args.num_mods, num_interfaces=ninterfaces)
                 loadBasicSettings(name=server, d=d, fp=fp)

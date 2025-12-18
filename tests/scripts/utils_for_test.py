@@ -121,10 +121,11 @@ def startProcessInBackground(cmd, fp):
 
 
 def startProcessInBackgroundWithLogFile(cmd, fp, log_file_name: str):
-    Log(LogLevel.INFOBLUE, 'Starting up ' +  ' '.join(cmd) + '. Log: ' +  log_file_name)
-    Log(LogLevel.INFOBLUE, 'Starting up ' +  ' '.join(cmd) + '. Log: ' +  log_file_name, fp)
+    if log_file_name: 
+        Log(LogLevel.INFOBLUE, 'Starting up ' +  ' '.join(cmd) + '. Log: ' +  log_file_name)
+        Log(LogLevel.INFOBLUE, 'Starting up ' +  ' '.join(cmd) + '. Log: ' +  log_file_name, fp)
     try:
-        with open(log_file_name, 'w') as log_fp:
+        with optional_file(log_file_name, 'w') as log_fp:
             subprocess.Popen(cmd, stdout=log_fp, stderr=log_fp, text=True)
     except Exception as e:
         raise RuntimeException(f'Failed to start {cmd}:{str(e)}') from e
@@ -207,11 +208,14 @@ def runProcess(name, cmd, fp):
 
 
 
-def startDetectorVirtualServer(name :str, num_mods, fp):
+def startDetectorVirtualServer(name :str, num_mods, fp, no_log_file = False):
     for i in range(num_mods):
         port_no = SERVER_START_PORTNO + (i * 2)
         cmd = [str(build_dir / (name + 'DetectorServer_virtual')), '-p', str(port_no)]
-        startProcessInBackgroundWithLogFile(cmd, fp, "/tmp/virtual_det_" + name + "_" + str(i) + ".txt")
+        if no_log_file: 
+            startProcessInBackgroundWithLogFile(cmd, fp, None)
+        else: 
+            startProcessInBackgroundWithLogFile(cmd, fp, "/tmp/virtual_det_" + name + "_" + str(i) + ".txt")
         match name:
             case 'jungfrau':
                 time.sleep(7)

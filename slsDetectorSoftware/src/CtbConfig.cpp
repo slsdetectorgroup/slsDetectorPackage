@@ -280,10 +280,10 @@ BitAddress CtbConfig::getBitAddress(const std::string &name) const {
 std::string CtbConfig::toRegisterNameBitString(BitAddress addr) const {
     std::ostringstream oss;
     if (registers.hasValue(addr.address())) {
-        oss << "'[" << registers.getKey(addr.address()).str() << ", "
-            << std::to_string(addr.bitPosition()) << "]' ";
+        oss << "[" << registers.getKey(addr.address()).str() << ", "
+            << std::to_string(addr.bitPosition()) << "]";
     } else {
-        oss << "'" << addr.str() << "' ";
+        oss << addr.str();
     }
     return oss.str();
 }
@@ -294,7 +294,7 @@ std::string CtbConfig::getBitName(BitAddress addr) const {
     } catch (const std::runtime_error &e) {
         std::ostringstream oss;
         oss << "Could not get bit name for bit address ";
-        oss << toRegisterNameBitString(addr);
+        oss << "'" << toRegisterNameBitString(addr) << "'";
         oss << ":" << e.what();
         throw RuntimeError(oss.str());
     }

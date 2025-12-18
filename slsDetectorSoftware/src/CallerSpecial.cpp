@@ -1473,12 +1473,12 @@ std::string Caller::define_reg(int action) {
         // get name from address
         if (is_hex_or_dec_uint(args[0])) {
             auto addr = parseRegisterAddress(args[0]);
-            auto t = det->getRegisterDefinitionName(addr);
+            auto t = det->getRegisterName(addr);
             os << t << '\n';
         }
         // get address from name
         else {
-            auto t = det->getRegisterDefinitionAddress(args[0]);
+            auto t = det->getRegisterAddress(args[0]);
             os << t.str() << '\n';
         }
     } else if (action == defs::PUT_ACTION) {
@@ -1532,13 +1532,13 @@ std::string Caller::define_bit(int action) {
     if (action == defs::GET_ACTION) {
         // get position from name
         if (args.size() == 1) {
-            auto t = det->getBitDefinitionAddress(args[0]);
+            auto t = det->getBitAddress(args[0]);
             os << det->toRegisterNameBitString(t) << '\n';
         }
         // get name from position and address
         else if (args.size() == 2) {
             auto addr = parseBitAddress(args[0], args[1]);
-            auto t = det->getBitDefinitionName(addr);
+            auto t = det->getBitName(addr);
             os << t << '\n';
 
         } else {
@@ -1780,7 +1780,7 @@ RegisterAddress Caller::getRegisterAddress(const std::string &saddr) const {
     if (is_hex_or_dec_uint(saddr)) {
         return parseRegisterAddress(saddr);
     }
-    return det->getRegisterDefinitionAddress(saddr);
+    return det->getRegisterAddress(saddr);
 }
 
 BitAddress Caller::getBitAddress() const {
@@ -1793,7 +1793,7 @@ BitAddress Caller::getBitAddress() const {
 
     // bit name
     if (args_size == 1) {
-        return det->getBitDefinitionAddress(args[0]);
+        return det->getBitAddress(args[0]);
     }
     throw RuntimeError("Invalid number of parameters for bit address.");
 }

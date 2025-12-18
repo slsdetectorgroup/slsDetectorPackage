@@ -2083,14 +2083,13 @@ bool DetectorImpl::hasRegisterDefinition(RegisterAddress addr) const {
 }
 
 RegisterAddress
-DetectorImpl::getRegisterDefinitionAddress(const std::string &name) const {
+DetectorImpl::getRegisterAddress(const std::string &name) const {
     if (!isChipTestBoard())
         throw RuntimeError("Register Definitions only for CTB");
     return ctb_shm()->getRegisterAddress(name);
 }
 
-std::string
-DetectorImpl::getRegisterDefinitionName(RegisterAddress addr) const {
+std::string DetectorImpl::getRegisterName(RegisterAddress addr) const {
     if (!isChipTestBoard())
         throw RuntimeError("Register Definitions only for CTB");
     return ctb_shm()->getRegisterName(addr);
@@ -2146,14 +2145,13 @@ std::string DetectorImpl::toRegisterNameBitString(BitAddress addr) const {
     return ctb_shm()->toRegisterNameBitString(addr);
 }
 
-BitAddress
-DetectorImpl::getBitDefinitionAddress(const std::string &name) const {
+BitAddress DetectorImpl::getBitAddress(const std::string &name) const {
     if (!isChipTestBoard())
         throw RuntimeError("Bit Definitions only for CTB");
     return ctb_shm()->getBitAddress(name);
 }
 
-std::string DetectorImpl::getBitDefinitionName(BitAddress addr) const {
+std::string DetectorImpl::getBitName(BitAddress addr) const {
     if (!isChipTestBoard())
         throw RuntimeError("Bit Definitions only for CTB");
     return ctb_shm()->getBitName(addr);
@@ -2184,7 +2182,7 @@ Result<RegisterValue> DetectorImpl::readRegister(const std::string &reg_name,
         throw RuntimeError("Register Definitions only for CTB. Use hard coded "
                            "values instead.");
     }
-    auto addr = getRegisterDefinitionAddress(reg_name);
+    auto addr = getRegisterAddress(reg_name);
     return readRegister(addr, pos);
 }
 
@@ -2194,7 +2192,7 @@ void DetectorImpl::writeRegister(const std::string &reg_name, RegisterValue val,
         throw RuntimeError("Register Definitions only for CTB. Use hard coded "
                            "values instead.");
     }
-    auto addr = getRegisterDefinitionAddress(reg_name);
+    auto addr = getRegisterAddress(reg_name);
     writeRegister(addr, val, validate, pos);
 }
 
@@ -2204,7 +2202,7 @@ void DetectorImpl::setBit(const std::string &bit_name, bool validate,
         throw RuntimeError(
             "Bit Definitions only for CTB. Use hard coded values instead.");
     }
-    auto addr = getBitDefinitionAddress(bit_name);
+    auto addr = getBitAddress(bit_name);
     setBit(addr, validate, pos);
 }
 
@@ -2214,7 +2212,7 @@ void DetectorImpl::clearBit(const std::string &bit_name, bool validate,
         throw RuntimeError(
             "Bit Definitions only for CTB. Use hard coded values instead.");
     }
-    auto addr = getBitDefinitionAddress(bit_name);
+    auto addr = getBitAddress(bit_name);
     clearBit(addr, validate, pos);
 }
 
@@ -2224,7 +2222,7 @@ Result<int> DetectorImpl::getBit(const std::string &bit_name,
         throw RuntimeError(
             "Bit Definitions only for CTB. Use hard coded values instead.");
     }
-    auto addr = getBitDefinitionAddress(bit_name);
+    auto addr = getBitAddress(bit_name);
     return getBit(addr, pos);
 }
 

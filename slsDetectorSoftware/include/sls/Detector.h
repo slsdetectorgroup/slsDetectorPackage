@@ -1851,10 +1851,10 @@ class Detector {
     bool hasRegisterDefinition(RegisterAddress addr) const;
 
     /** [CTB][Xilinx CTB] */
-    RegisterAddress getRegisterDefinitionAddress(const std::string &name) const;
+    RegisterAddress getRegisterAddress(const std::string &name) const;
 
     /** [CTB][Xilinx CTB] */
-    std::string getRegisterDefinitionName(RegisterAddress addr) const;
+    std::string getRegisterName(RegisterAddress addr) const;
 
     /** [CTB][Xilinx CTB] */
     void clearRegisterDefinitions();
@@ -1882,10 +1882,10 @@ class Detector {
     std::string toRegisterNameBitString(BitAddress addr) const;
 
     /** [CTB][Xilinx CTB] returns bit position and address */
-    BitAddress getBitDefinitionAddress(const std::string &name) const;
+    BitAddress getBitAddress(const std::string &name) const;
 
     /** [CTB][Xilinx CTB] */
-    std::string getBitDefinitionName(BitAddress addr) const;
+    std::string getBitName(BitAddress addr) const;
 
     /** [CTB][Xilinx CTB] */
     void clearBitDefinitions();

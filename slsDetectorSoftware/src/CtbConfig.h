@@ -91,10 +91,11 @@ class CtbConfig {
     int getBitNamesCount() const;
     void clearBitNames();
     bool hasBitName(const std::string &name) const;
-    bool hasBitAddress(BitAddress bitPos) const;
-    void setBitName(const std::string &name, BitAddress bitPos);
+    bool hasBitAddress(BitAddress addr) const;
+    std::string toRegisterNameBitString(BitAddress addr) const;
+    void setBitName(const std::string &name, BitAddress addr);
     BitAddress getBitAddress(const std::string &name) const;
-    std::string getBitName(BitAddress bitPos) const;
+    std::string getBitName(BitAddress addr) const;
     void setBitNames(const std::map<std::string, BitAddress> &list);
     std::map<std::string, BitAddress> getBitNames() const;
 };

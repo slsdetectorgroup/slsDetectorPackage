@@ -1462,12 +1462,6 @@ std::string Caller::define_reg(int action) {
            << '\n';
         return os.str();
     }
-    auto det_type = det->getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD &&
-        det_type != defs::CHIPTESTBOARD) {
-        throw RuntimeError(
-            "define_reg command only supported for ctb and xilinx_ctb");
-    }
     if (det_id != -1) {
         throw RuntimeError("Cannot use define at module level. Use the default "
                            "multi-module level");
@@ -1478,7 +1472,7 @@ std::string Caller::define_reg(int action) {
         }
         // get name from address
         if (is_hex_or_dec_uint(args[0])) {
-            auto addr = RegisterAddress(args[0]);
+            auto addr = parseRegisterAddress(args[0]);
             auto t = det->getRegisterDefinitionName(addr);
             os << t << '\n';
         }
@@ -1492,7 +1486,7 @@ std::string Caller::define_reg(int action) {
             WrongNumberOfParameters(2);
         }
         auto name = args[0];
-        auto addr = RegisterAddress(args[1]);
+        auto addr = parseRegisterAddress(args[1]);
         det->setRegisterDefinition(name, addr);
         os << "addr " << name << ' ' << addr.str() << '\n';
     } else {
@@ -1531,12 +1525,6 @@ std::string Caller::define_bit(int action) {
            << '\n';
         return os.str();
     }
-    auto det_type = det->getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD &&
-        det_type != defs::CHIPTESTBOARD) {
-        throw RuntimeError(
-            "define_bit command only supported for ctb and xilinx_ctb");
-    }
     if (det_id != -1) {
         throw RuntimeError("Cannot use define at module level. Use the default "
                            "multi-module level");
@@ -1545,31 +1533,14 @@ std::string Caller::define_bit(int action) {
         // get position from name
         if (args.size() == 1) {
             auto t = det->getBitDefinitionAddress(args[0]);
-            bool found_addr = det->hasRegisterDefinition(t.address());
-            if (found_addr) {
-                os << '[' << det->getRegisterDefinitionName(t.address()) << ", "
-                   << std::to_string(t.bitPosition()) << "]\n";
-            } else {
-                os << t.str() << '\n';
-            }
+            os << det->toRegisterNameBitString(t) << '\n';
         }
         // get name from position and address
         else if (args.size() == 2) {
-            auto reg = parseAddress(args[0]);
-            BitAddress addr(reg.str(), args[1]);
-            try {
-                auto t = det->getBitDefinitionName(addr);
-                os << t << '\n';
-            } catch (const RuntimeError &e) {
-                std::string err_str = e.what();
-                if (err_str.find("No bit definition found") !=
-                        std::string::npos &&
-                    !is_hex_or_dec_uint(args[0])) {
-                    err_str += " and addr = " + args[0];
-                    throw RuntimeError(err_str);
-                }
-                throw;
-            }
+            auto addr = parseBitAddress(args[0], args[1]);
+            auto t = det->getBitDefinitionName(addr);
+            os << t << '\n';
+
         } else {
             WrongNumberOfParameters(1);
         }
@@ -1581,8 +1552,7 @@ std::string Caller::define_bit(int action) {
             throw RuntimeError("Bit position must be an integer value.");
         }
         auto name = args[0];
-        auto reg = parseAddress(args[1]);
-        BitAddress addr(reg.str(), args[2]);
+        auto addr = parseBitAddress(args[1], args[2]);
         det->setBitDefinition(name, addr);
         os << ToString(args) << '\n';
     } else {
@@ -1600,12 +1570,6 @@ std::string Caller::definelist_reg(int action) {
     } else if (action == defs::PUT_ACTION) {
         throw RuntimeError("cannot put");
     } else if (action == defs::GET_ACTION) {
-        auto det_type = det->getDetectorType().squash();
-        if (det_type != defs::XILINX_CHIPTESTBOARD &&
-            det_type != defs::CHIPTESTBOARD) {
-            throw RuntimeError(
-                "definelist_reg command only supported for ctb and xilinx_ctb");
-        }
         if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
@@ -1624,12 +1588,6 @@ std::string Caller::definelist_bit(int action) {
     } else if (action == defs::PUT_ACTION) {
         throw RuntimeError("cannot put");
     } else if (action == defs::GET_ACTION) {
-        auto det_type = det->getDetectorType().squash();
-        if (det_type != defs::XILINX_CHIPTESTBOARD &&
-            det_type != defs::CHIPTESTBOARD) {
-            throw RuntimeError(
-                "definelist_bit command only supported for ctb and xilinx_ctb");
-        }
         if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
@@ -1637,13 +1595,7 @@ std::string Caller::definelist_bit(int action) {
         os << "\n[";
         for (const auto &[key, val] : t) {
             os << key << ": ";
-            bool found_addr = det->hasRegisterDefinition(val.address());
-            if (found_addr) {
-                os << '[' << det->getRegisterDefinitionName(val.address())
-                   << ", " << std::to_string(val.bitPosition()) << "]";
-            } else {
-                os << val.str();
-            }
+            os << det->toRegisterNameBitString(val);
             if (&key != &t.rbegin()->first) {
                 os << ", ";
             }
@@ -1679,15 +1631,15 @@ std::string Caller::reg(int action) {
                 WrongNumberOfParameters(2);
             }
             auto validate = parseValidate();
-            auto addr = parseAddress(args[0]);
-            auto val = RegisterValue(args[1]);
+            auto addr = getRegisterAddress(args[0]);
+            auto val = parseRegisterValue(args[1]);
             det->writeRegister(addr, val, validate, std::vector<int>{det_id});
             os << addr.str() << " " << val.str() << '\n';
         } else if (action == defs::GET_ACTION) {
             if (args.size() != 1) {
                 WrongNumberOfParameters(1);
             }
-            auto addr = parseAddress(args[0]);
+            auto addr = getRegisterAddress(args[0]);
             auto t = det->readRegister(addr, std::vector<int>{det_id});
             os << OutString(t) << '\n';
         } else {
@@ -1739,20 +1691,20 @@ std::string Caller::bitoperations(int action) {
         }
 
         auto validate = parseValidate();
-        auto BitAddress = parseBitAddress();
+        auto addr = getBitAddress();
         if (action == defs::GET_ACTION) {
             if (cmd == "setbit" || cmd == "clearbit")
                 throw RuntimeError("Cannot get");
 
-            auto t = det->getBit(BitAddress, std::vector<int>{det_id});
+            auto t = det->getBit(addr, std::vector<int>{det_id});
             os << OutString(t) << '\n';
         } else {
             if (cmd == "getbit")
                 throw RuntimeError("Cannot put");
             if (cmd == "setbit")
-                det->setBit(BitAddress, validate, std::vector<int>{det_id});
+                det->setBit(addr, validate, std::vector<int>{det_id});
             else if (cmd == "clearbit")
-                det->clearBit(BitAddress, validate, std::vector<int>{det_id});
+                det->clearBit(addr, validate, std::vector<int>{det_id});
             else
                 throw RuntimeError("Unknown command");
             os << ToString(args) << "\n";
@@ -1761,26 +1713,47 @@ std::string Caller::bitoperations(int action) {
     return os.str();
 }
 
-RegisterAddress Caller::parseAddress(const std::string &saddr) const {
-    if (is_hex_or_dec_uint(saddr)) {
-        return RegisterAddress(saddr);
+RegisterAddress Caller::parseRegisterAddress(const std::string &addr) const {
+    try {
+        return RegisterAddress(StringTo<uint32_t>(addr));
+    } catch (const std::exception &e) {
+        throw RuntimeError("Could not parse register address " + addr +
+                           ". Must be an integer value");
     }
-    auto det_type = det->getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD &&
-        det_type != defs::CHIPTESTBOARD) {
-        throw RuntimeError(
-            "Could not parse address " + saddr +
-            ". User defined register definitions only supported for ctb and "
-            "xilinx_ctb. Use an actual hard coded address for this detector.");
+}
+
+BitAddress Caller::parseBitAddress(const std::string &addr,
+                                   const std::string &bitPos) const {
+    auto address = getRegisterAddress(addr);
+    uint32_t bitPosition = 0;
+
+    // parse bit position
+    if (!is_hex_or_dec_uint(bitPos)) {
+        throw RuntimeError("Bit position must be an integer value.");
     }
-    return det->getRegisterDefinitionAddress(saddr);
+    try {
+        bitPosition = StringTo<uint32_t>(bitPos);
+    } catch (const std::exception &e) {
+        throw RuntimeError("Could not parse bit position " + bitPos +
+                           ". Must be an integer value");
+    }
+    return BitAddress(address, bitPosition);
+}
+
+RegisterValue Caller::parseRegisterValue(const std::string &addr) const {
+    try {
+        return RegisterValue(StringTo<uint32_t>(addr));
+    } catch (const std::exception &e) {
+        throw RuntimeError("Could not parse register value " + addr +
+                           ". Must be an integer value");
+    }
 }
 
 bool Caller::parseValidate() {
     auto it = std::find(args.begin(), args.end(), "--validate");
     bool validate = (it != args.end());
 
-    // throw for any -- options other than --validate
+    // invalid argument (--options), throw
     if (!validate) {
         auto invalid_it =
             std::find_if(args.begin(), args.end(), [](const auto &s) {
@@ -1793,7 +1766,7 @@ bool Caller::parseValidate() {
         }
     }
 
-    // --validate should be the last argument
+    // --validate should be the last argument (remove it from args)
     else {
         if (it != args.end() - 1) {
             throw RuntimeError("'--validate' should be the last argument.");
@@ -1803,32 +1776,26 @@ bool Caller::parseValidate() {
     return validate;
 }
 
-BitAddress Caller::parseBitAddress() const {
-    int argsSize = args.size();
-    std::string addr_or_bitname = args[0];
-
-    // bit name
-    if (argsSize == 1) {
-        auto det_type = det->getDetectorType().squash();
-        if (det_type != defs::XILINX_CHIPTESTBOARD &&
-            det_type != defs::CHIPTESTBOARD) {
-            throw RuntimeError("Could not parse bit name " + addr_or_bitname +
-                               ". User defined bit definitions only supported "
-                               "for ctb and xilinx_ctb. Use an actual hard "
-                               "coded bit position for this detector.");
-        }
-        return det->getBitDefinitionAddress(addr_or_bitname);
+RegisterAddress Caller::getRegisterAddress(const std::string &saddr) const {
+    if (is_hex_or_dec_uint(saddr)) {
+        return parseRegisterAddress(saddr);
     }
+    return det->getRegisterDefinitionAddress(saddr);
+}
+
+BitAddress Caller::getBitAddress() const {
+    int args_size = args.size();
 
     // address and bit position
-    else if (argsSize == 2) {
-        auto reg = parseAddress(addr_or_bitname);
-        return BitAddress(reg.str(), args[1]);
-    } else {
-        throw RuntimeError("Command " + cmd +
-                           " expected (1-4) parameter/s but got " +
-                           std::to_string(args.size()) + "\n");
+    if (args_size == 2) {
+        return parseBitAddress(args[0], args[1]);
     }
+
+    // bit name
+    if (args_size == 1) {
+        return det->getBitDefinitionAddress(args[0]);
+    }
+    throw RuntimeError("Invalid number of parameters for bit address.");
 }
 
 } // namespace sls

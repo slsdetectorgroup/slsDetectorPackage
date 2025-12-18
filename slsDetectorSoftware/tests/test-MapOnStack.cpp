@@ -1,5 +1,5 @@
-#include "catch.hpp"
 #include "MapOnStack.h"
+#include "catch.hpp"
 #include "sls/bit_utils.h"
 
 #include <string>

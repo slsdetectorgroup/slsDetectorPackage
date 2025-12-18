@@ -2563,6 +2563,10 @@ bool Detector::hasBitDefinition(BitAddress addr) const {
     return pimpl->hasBitDefinition(addr);
 }
 
+std::string Detector::toRegisterNameBitString(BitAddress addr) const {
+    return pimpl->toRegisterNameBitString(addr);
+}
+
 BitAddress Detector::getBitDefinitionAddress(const std::string &name) const {
     return pimpl->getBitDefinitionAddress(name);
 }

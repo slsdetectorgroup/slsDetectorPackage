@@ -17,7 +17,6 @@ void init_bit(py::module &m) {
 
     py::class_<RegisterAddress>(m, "RegisterAddress")
         .def(py::init())
-        .def(py::init<const std::string &>())
         .def(py::init<uint32_t>())
         .def(py::init<const RegisterAddress &>())
         .def("__repr__", &RegisterAddress::str)
@@ -29,7 +28,6 @@ void init_bit(py::module &m) {
     py::class_<BitAddress>(m, "BitAddress")
         .def(py::init())
         .def(py::init<RegisterAddress, uint32_t>())
-        .def(py::init<std::string, std::string>())
         .def("__repr__", &BitAddress::str)
         .def("str", &BitAddress::str)
         .def("address", &BitAddress::address)
@@ -39,7 +37,6 @@ void init_bit(py::module &m) {
 
     py::class_<RegisterValue>(m, "RegisterValue")
         .def(py::init<>())
-        .def(py::init<const std::string &>())
         .def(py::init<uint32_t>())
         .def(py::init<const RegisterValue &>())
         .def("__repr__", &RegisterValue::str)
@@ -47,14 +44,15 @@ void init_bit(py::module &m) {
         .def("value", &RegisterValue::value)
         .def(py::self == py::self)
         .def(py::self != py::self)
-        .def("__or__", [](const RegisterValue &lhs, const RegisterValue &rhs) {
-            return lhs | rhs;
-        })
-        .def("__or__", [](const RegisterValue& lhs, uint32_t rhs) {
-            return lhs | rhs;
-        })
-        .def("__ior__", [](RegisterValue &lhs, uint32_t rhs) -> RegisterValue& {
-            lhs |= rhs;
-            return lhs;
-        }, py::return_value_policy::reference_internal);
+        .def("__or__", [](const RegisterValue &lhs,
+                          const RegisterValue &rhs) { return lhs | rhs; })
+        .def("__or__",
+             [](const RegisterValue &lhs, uint32_t rhs) { return lhs | rhs; })
+        .def(
+            "__ior__",
+            [](RegisterValue &lhs, uint32_t rhs) -> RegisterValue & {
+                lhs |= rhs;
+                return lhs;
+            },
+            py::return_value_policy::reference_internal);
 }

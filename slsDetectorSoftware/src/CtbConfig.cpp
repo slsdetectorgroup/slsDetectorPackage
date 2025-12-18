@@ -246,16 +246,16 @@ bool CtbConfig::hasBitName(const std::string &name) const {
     return bits.containsKey(fixed_name);
 }
 
-bool CtbConfig::hasBitAddress(BitAddress bitPos) const {
-    return bits.hasValue(bitPos);
+bool CtbConfig::hasBitAddress(BitAddress addr) const {
+    return bits.hasValue(addr);
 }
 
 void CtbConfig::clearBitNames() { bits.clear(); }
 
-void CtbConfig::setBitName(const std::string &name, BitAddress bitPos) {
+void CtbConfig::setBitName(const std::string &name, BitAddress addr) {
     try {
         auto fixed_name = FixedString<name_length>(name);
-        bits.addKeyOrSetValue(fixed_name, bitPos);
+        bits.addKeyOrSetValue(fixed_name, addr);
     } catch (const std::runtime_error &e) {
         std::ostringstream oss;
         oss << e.what();
@@ -277,12 +277,26 @@ BitAddress CtbConfig::getBitAddress(const std::string &name) const {
     }
 }
 
-std::string CtbConfig::getBitName(BitAddress bitPos) const {
+std::string CtbConfig::toRegisterNameBitString(BitAddress addr) const {
+    std::ostringstream oss;
+    if (registers.hasValue(addr.address())) {
+        oss << "'[" << registers.getKey(addr.address()).str() << ", "
+            << std::to_string(addr.bitPosition()) << "]' ";
+    } else {
+        oss << "'" << addr.str() << "' ";
+    }
+    return oss.str();
+}
+
+std::string CtbConfig::getBitName(BitAddress addr) const {
     try {
-        return bits.getKey(bitPos).str();
+        return bits.getKey(addr).str();
     } catch (const std::runtime_error &e) {
-        throw RuntimeError("Could not get bit name for address '" +
-                           bitPos.str() + "': " + std::string(e.what()));
+        std::ostringstream oss;
+        oss << "Could not get bit name for bit address ";
+        oss << toRegisterNameBitString(addr);
+        oss << ":" << e.what();
+        throw RuntimeError(oss.str());
     }
 }
 

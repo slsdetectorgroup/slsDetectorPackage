@@ -2122,11 +2122,10 @@ int DetectorImpl::getBitDefinitionsCount() const {
     return ctb_shm()->getBitNamesCount();
 }
 
-void DetectorImpl::setBitDefinition(const std::string &name,
-                                    BitAddress bitPos) {
+void DetectorImpl::setBitDefinition(const std::string &name, BitAddress addr) {
     if (!isChipTestBoard())
         throw RuntimeError("Bit Definitions only for CTB");
-    ctb_shm()->setBitName(name, bitPos);
+    ctb_shm()->setBitName(name, addr);
 }
 
 bool DetectorImpl::hasBitDefinition(const std::string &name) const {
@@ -2135,10 +2134,16 @@ bool DetectorImpl::hasBitDefinition(const std::string &name) const {
     return ctb_shm()->hasBitName(name);
 }
 
-bool DetectorImpl::hasBitDefinition(BitAddress bitPos) const {
+bool DetectorImpl::hasBitDefinition(BitAddress addr) const {
     if (!isChipTestBoard())
         throw RuntimeError("Bit Definitions only for CTB");
-    return ctb_shm()->hasBitAddress(bitPos);
+    return ctb_shm()->hasBitAddress(addr);
+}
+
+std::string DetectorImpl::toRegisterNameBitString(BitAddress addr) const {
+    if (!isChipTestBoard())
+        throw RuntimeError("Bit Definitions only for CTB");
+    return ctb_shm()->toRegisterNameBitString(addr);
 }
 
 BitAddress
@@ -2148,10 +2153,10 @@ DetectorImpl::getBitDefinitionAddress(const std::string &name) const {
     return ctb_shm()->getBitAddress(name);
 }
 
-std::string DetectorImpl::getBitDefinitionName(BitAddress bitPos) const {
+std::string DetectorImpl::getBitDefinitionName(BitAddress addr) const {
     if (!isChipTestBoard())
         throw RuntimeError("Bit Definitions only for CTB");
-    return ctb_shm()->getBitName(bitPos);
+    return ctb_shm()->getBitName(addr);
 }
 
 void DetectorImpl::clearBitDefinitions() {

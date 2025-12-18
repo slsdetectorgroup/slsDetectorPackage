@@ -1878,6 +1878,9 @@ class Detector {
     /** [CTB][Xilinx CTB] */
     bool hasBitDefinition(BitAddress addr) const;
 
+    /** [CTB][Xilinx CTB] */
+    std::string toRegisterNameBitString(BitAddress addr) const;
+
     /** [CTB][Xilinx CTB] returns bit position and address */
     BitAddress getBitDefinitionAddress(const std::string &name) const;
 

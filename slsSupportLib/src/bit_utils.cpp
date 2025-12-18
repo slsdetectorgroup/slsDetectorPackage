@@ -6,13 +6,6 @@
 
 namespace sls {
 
-RegisterAddress::RegisterAddress(const std::string &value) {
-    if (!is_hex_or_dec_uint(value)) {
-        throw RuntimeError("Address must be an integer value.");
-    }
-    value_ = StringTo<uint32_t>(value);
-}
-
 std::string RegisterAddress::str() const { return ToStringHex(value_); }
 
 BitAddress::BitAddress(RegisterAddress address, uint32_t bitPosition)
@@ -23,30 +16,10 @@ BitAddress::BitAddress(RegisterAddress address, uint32_t bitPosition)
     bitPos_ = bitPosition;
 }
 
-BitAddress::BitAddress(const std::string &address,
-                       const std::string &bitPosition) {
-    addr_ = RegisterAddress(address);
-    if (!is_hex_or_dec_uint(bitPosition)) {
-        throw RuntimeError("Bit position must be an integer value.");
-    }
-    uint32_t bitPos = StringTo<uint32_t>(bitPosition);
-    if (bitPos > 31) {
-        throw RuntimeError("Bit position must be between 0 and 31.");
-    }
-    bitPos_ = bitPos;
-}
-
 std::string BitAddress::str() const {
     std::ostringstream os;
     os << '[' << addr_.str() << ", " << ToString(bitPos_) << ']';
     return os.str();
-}
-
-RegisterValue::RegisterValue(const std::string &value) {
-    if (!is_hex_or_dec_uint(value)) {
-        throw RuntimeError("Value must be an integer value.");
-    }
-    value_ = StringTo<uint32_t>(value);
 }
 
 std::string RegisterValue::str() const { return ToStringHex(value_); }

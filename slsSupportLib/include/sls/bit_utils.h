@@ -27,7 +27,6 @@ class RegisterAddress {
   public:
     constexpr RegisterAddress() noexcept = default;
     constexpr explicit RegisterAddress(uint32_t value) : value_(value) {}
-    explicit RegisterAddress(const std::string &value);
     std::string str() const;
     constexpr uint32_t value() const noexcept { return value_; }
 
@@ -47,7 +46,6 @@ class BitAddress {
   public:
     constexpr BitAddress() noexcept = default;
     BitAddress(RegisterAddress address, uint32_t bitPosition);
-    BitAddress(const std::string &address, const std::string &bitPosition);
     std::string str() const;
     constexpr RegisterAddress address() const noexcept { return addr_; }
     constexpr uint32_t bitPosition() const noexcept { return bitPos_; }
@@ -67,8 +65,6 @@ class RegisterValue {
   public:
     constexpr RegisterValue() noexcept = default;
     explicit constexpr RegisterValue(uint32_t value) noexcept : value_(value) {}
-    explicit RegisterValue(const std::string &value);
-
     std::string str() const;
     constexpr uint32_t value() const noexcept { return value_; }
 

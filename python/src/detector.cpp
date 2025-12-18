@@ -1816,13 +1816,13 @@ void init_det(py::module &m) {
                            Detector::hasRegisterDefinition,
                        py::arg());
     CppDetectorApi.def(
-        "getRegisterDefinitionAddress",
+        "getRegisterAddress",
         (sls::RegisterAddress(Detector::*)(const std::string &) const) &
-            Detector::getRegisterDefinitionAddress,
+            Detector::getRegisterAddress,
         py::arg());
-    CppDetectorApi.def("getRegisterDefinitionName",
+    CppDetectorApi.def("getRegisterName",
                        (std::string(Detector::*)(sls::RegisterAddress) const) &
-                           Detector::getRegisterDefinitionName,
+                           Detector::getRegisterName,
                        py::arg());
     CppDetectorApi.def("clearRegisterDefinitions",
                        (void (Detector::*)()) &
@@ -1857,13 +1857,13 @@ void init_det(py::module &m) {
                            Detector::toRegisterNameBitString,
                        py::arg());
     CppDetectorApi.def(
-        "getBitDefinitionAddress",
+        "getBitAddress",
         (sls::BitAddress(Detector::*)(const std::string &) const) &
-            Detector::getBitDefinitionAddress,
+            Detector::getBitAddress,
         py::arg());
-    CppDetectorApi.def("getBitDefinitionName",
+    CppDetectorApi.def("getBitName",
                        (std::string(Detector::*)(sls::BitAddress) const) &
-                           Detector::getBitDefinitionName,
+                           Detector::getBitName,
                        py::arg());
     CppDetectorApi.def("clearBitDefinitions",
                        (void (Detector::*)()) & Detector::clearBitDefinitions);

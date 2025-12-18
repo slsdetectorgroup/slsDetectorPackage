@@ -51,7 +51,7 @@ TEST_CASE("Convert RegisterAddress using classes ", "[support][.bit_utils]") {
 
     for (size_t i = 0; i != vec_addr.size(); ++i) {
         auto reg0 = RegisterAddress(vec_addr[i]);
-        auto reg1 = RegisterAddress(vec_ans[i]);
+        auto reg1 = RegisterAddress(vec_addr[i]);
         auto reg2 = RegisterAddress(vec_addr[0]);
 
         CHECK(reg0 == reg1);

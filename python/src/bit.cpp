@@ -19,7 +19,10 @@ void init_bit(py::module &m) {
         .def(py::init())
         .def(py::init<uint32_t>())
         .def(py::init<const RegisterAddress &>())
-        .def("__repr__", &RegisterAddress::str)
+        .def("__repr__",
+             [](const RegisterAddress &addr) {
+                 return "RegisterAddress(" + addr.str() + ")";
+             })
         .def("__str__", &RegisterAddress::str)
         .def("value", &RegisterAddress::value)
         .def(py::self == py::self)
@@ -28,7 +31,10 @@ void init_bit(py::module &m) {
     py::class_<BitAddress>(m, "BitAddress")
         .def(py::init())
         .def(py::init<RegisterAddress, uint32_t>())
-        .def("__repr__", &BitAddress::str)
+        .def("__repr__",
+             [](const BitAddress &addr) {
+                 return "BitAddress(" + addr.str() + ")";
+             })
         .def("__str__", &BitAddress::str)
         .def("address", &BitAddress::address)
         .def("bitPosition", &BitAddress::bitPosition)
@@ -39,7 +45,10 @@ void init_bit(py::module &m) {
         .def(py::init<>())
         .def(py::init<uint32_t>())
         .def(py::init<const RegisterValue &>())
-        .def("__repr__", &RegisterValue::str)
+        .def("__repr__",
+             [](const RegisterValue &val) {
+                 return "RegisterValue(" + val.str() + ")";
+             })
         .def("__str__", &RegisterValue::str)
         .def("value", &RegisterValue::value)
         .def(py::self == py::self)

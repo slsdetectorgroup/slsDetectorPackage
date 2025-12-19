@@ -80,9 +80,13 @@ def killProcess(name, fp):
 def cleanSharedmemory(fp):
     Log(LogLevel.INFO, 'Cleaning up shared memory', fp)
     try:
-        p = subprocess.run(['sls_detector_get', 'free'], stdout=fp, stderr=fp)
-    except:
-        raise RuntimeException('Could not free shared memory')
+        p = subprocess.run(['sls_detector_get', 'free'], stdout=fp, stderr=fp, check = False)
+    except FileNotFoundError:
+        # Binary not available (e.g. on CI) → ignore
+        Log(LogLevel.INFO, 'sls_detector_get not found, skipping shared memory cleanup', fp)
+    except Exception as e:
+        # Any other cleanup failure should NEVER fail tests
+        Log(LogLevel.WARN, f'Ignoring shared memory cleanup error: {e}', fp)
 
 
 def cleanup(fp):

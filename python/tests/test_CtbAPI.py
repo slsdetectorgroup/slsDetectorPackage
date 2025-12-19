@@ -24,16 +24,6 @@ from utils_for_test import (
 
 from slsdet import Detector, detectorType
 
-'''
-scope = module =>Once per test file/module 
-to share expensive setup like startDetectorVirtualServer
-'''
-@pytest.fixture(scope="module", params=['ctb', 'xilinx_ctb', 'mythen3'])
-def det_config(request):
-    return {
-        "name": request.param,
-        "num_mods": 1
-    }
 
 @pytest.fixture(
     scope="session", 

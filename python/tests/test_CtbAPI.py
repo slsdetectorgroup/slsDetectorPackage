@@ -35,34 +35,39 @@ def det_config(request):
         "num_mods": 1
     }
 
-@pytest.fixture(scope="module", autouse=True)
-def setup_simulator(det_config):
+@pytest.fixture(
+    scope="session", 
+    params=['ctb', 'xilinx_ctb', 'mythen3']
+)
+def simulator(request):
     """Fixture to start the detector server once and clean up at the end."""
+    det_name = request.param
+    num_mods = 1
     fp = sys.stdout
 
-    Log(LogLevel.INFOBLUE, f'---- {det_config["name"]} ----')
+    # set up: once per server
+    Log(LogLevel.INFOBLUE, f'---- {det_name} ----')
     cleanup(fp)
-    startDetectorVirtualServer(det_config["name"], det_config["num_mods"], fp)
+    startDetectorVirtualServer(det_name, num_mods, fp)
 
     Log(LogLevel.INFOBLUE, f'Waiting for server to start up and connect')
-    connectToVirtualServers(det_config["name"], det_config["num_mods"])
+    connectToVirtualServers(det_name, num_mods)
 
-
-    yield  # tests run here
+    yield det_name # tests run here
 
     cleanup(fp)
 
 
 
-def test_define_reg(setup_simulator, request):
+def test_define_reg(simulator, request):
     """ Test setting define_reg for ctb and xilinx_ctb."""
+    det_name = simulator
     from slsdet import RegisterAddress
 
-    # setup
     d = Detector()
     d.hostname = f"localhost:{SERVER_START_PORTNO}" 
 
-    if (d.type in [detectorType.CHIPTESTBOARD, detectorType.XILINX_CHIPTESTBOARD]):
+    if det_name in ['ctb', 'xilinx_ctb']:
         prev_reg_defs = d.getRegisterDefinitions()
         prev_bit_defs = d.getBitDefinitions()
         d.clearRegisterDefinitions()
@@ -114,15 +119,16 @@ def test_define_reg(setup_simulator, request):
     Log(LogLevel.INFOGREEN, f"✅ {request.node.name} passed")
 
 
-def test_define_bit(setup_simulator, request):
+def test_define_bit(simulator, request):
     """ Test setting define_bit for ctb and xilinx_ctb."""
+    det_name = simulator
     from slsdet import RegisterAddress, BitAddress
 
     # setup
     d = Detector()
     d.hostname = f"localhost:{SERVER_START_PORTNO}" 
 
-    if (d.type in [detectorType.CHIPTESTBOARD, detectorType.XILINX_CHIPTESTBOARD]):
+    if det_name in ['ctb', 'xilinx_ctb']:
         prev_reg_defs = d.getRegisterDefinitions()
         prev_bit_defs = d.getBitDefinitions()
         d.clearRegisterDefinitions()
@@ -205,15 +211,16 @@ def test_define_bit(setup_simulator, request):
 
 
 
-def test_using_defined_reg_and_bit(setup_simulator, request):
+def test_using_defined_reg_and_bit(simulator, request):
     """ Test using defined reg and bit define_bit for ctb and xilinx_ctb."""
+    det_name = simulator
     from slsdet import RegisterAddress, BitAddress, RegisterValue
 
     # setup
     d = Detector()
     d.hostname = f"localhost:{SERVER_START_PORTNO}" 
 
-    if (d.type in [detectorType.CHIPTESTBOARD, detectorType.XILINX_CHIPTESTBOARD]):
+    if det_name in ['ctb', 'xilinx_ctb']:
         prev_reg_defs = d.getRegisterDefinitions()
         prev_bit_defs = d.getBitDefinitions()
         d.clearRegisterDefinitions()
@@ -289,15 +296,16 @@ def test_using_defined_reg_and_bit(setup_simulator, request):
     Log(LogLevel.INFOGREEN, f"✅ {request.node.name} passed")
 
 
-def test_definelist_reg(setup_simulator, request):
+def test_definelist_reg(simulator, request):
     """ Test using definelist_reg for ctb and xilinx_ctb."""
+    det_name = simulator
     from slsdet import RegisterAddress, BitAddress, RegisterValue
 
     # setup
     d = Detector()
     d.hostname = f"localhost:{SERVER_START_PORTNO}" 
 
-    if (d.type in [detectorType.CHIPTESTBOARD, detectorType.XILINX_CHIPTESTBOARD]):
+    if det_name in ['ctb', 'xilinx_ctb']:
         prev_reg_defs = d.getRegisterDefinitions()
         prev_bit_defs = d.getBitDefinitions()
         d.clearRegisterDefinitions()
@@ -332,15 +340,16 @@ def test_definelist_reg(setup_simulator, request):
     Log(LogLevel.INFOGREEN, f"✅ {request.node.name} passed")
 
 
-def test_definelist_bit(setup_simulator, request):
+def test_definelist_bit(simulator, request):
     """ Test using definelist_bit for ctb and xilinx_ctb."""
+    det_name = simulator
     from slsdet import RegisterAddress, BitAddress, RegisterValue
 
     # setup
     d = Detector()
     d.hostname = f"localhost:{SERVER_START_PORTNO}" 
 
-    if (d.type in [detectorType.CHIPTESTBOARD, detectorType.XILINX_CHIPTESTBOARD]):
+    if det_name in ['ctb', 'xilinx_ctb']:
         prev_reg_defs = d.getRegisterDefinitions()
         prev_bit_defs = d.getBitDefinitions()
         d.clearRegisterDefinitions()

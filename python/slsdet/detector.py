@@ -1849,9 +1849,9 @@ class Detector(CppDetectorApi):
         # bitAddress
         if isinstance(addr, BitAddress):
             if bit_position is not None:
-                raise ValueError("If addr is BitAddress, bit position must be None")
+                raise ValueError("If addr is BitAddress, bit_position must be None")
             bitaddr = addr
-        # register name/address + bit position
+        # register name/address + bit_position
         else:
             if isinstance(addr, str):
                 addr = self.getRegisterAddress(addr)
@@ -1861,9 +1861,9 @@ class Detector(CppDetectorApi):
                 raise ValueError("addr must be str, int or RegisterAddress")
             
             if bit_position is None:
-                raise ValueError("bit position must be provided if addr is used.")
+                raise ValueError("bit_position must be provided if addr is used.")
             if not isinstance(bit_position, int):
-                raise ValueError("bit position must be int")
+                raise ValueError("bit_position must be int")
 
             bitaddr = BitAddress(addr, bit_position)
 
@@ -1883,8 +1883,12 @@ class Detector(CppDetectorApi):
             return BitAddress(bitname_or_addr, bit_position)
 
         # New usage with str or BitAddress
+        # str
         if isinstance(bitname_or_addr, str):
             bitname_or_addr = self.getBitAddress(bitname_or_addr)
+
+        if bit_position is not None:
+            raise ValueError("bit_position must be None when passing str or BitAddress")
 
         #must now be a BitAddress
         if not isinstance(bitname_or_addr, BitAddress):

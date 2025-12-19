@@ -141,15 +141,6 @@ def make_ip(arg):
 def make_mac(arg):
     return _make(arg, _slsdet.MacAddr)
 
-def make_register_address(arg):
-    return _make(arg, _slsdet.RegisterAddress)
-
-def make_bit_address(arg):
-    return _make(arg, _slsdet.BitAddress)
-
-def make_register_value(arg):
-    return _make(arg, _slsdet.RegisterValue)
-
 def make_path(arg):
     return _make(arg, Path)
 
@@ -162,17 +153,8 @@ def _make(arg, transform):
     elif isinstance(arg, list):
         return [_make(a, transform) for a in arg]
     elif isinstance(arg, tuple):
-        # special case for BitAddress
-        if transform is _slsdet.BitAddress:
-            addr, bit = arg
-            if isinstance(addr, int):
-                addr = _slsdet.RegisterAddress(addr)
-            return transform(addr, bit)
-        else:
-            # general case: recursively transform each element
-            return tuple(_make(a, transform) for a in arg)
+        return tuple(_make(a, transform) for a in arg)
     else:
-        # single element
         return transform(arg)
 
 

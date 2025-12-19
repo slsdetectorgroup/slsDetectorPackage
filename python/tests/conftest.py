@@ -46,8 +46,8 @@ def servers(request):
         return request.param  # comes from @pytest.mark.parametrize(..., indirect=True)
     except AttributeError:
         # fallback default if the test did not parametrize
-        return [['moench', 1]]
-    return request.param  # comes from @pytest.mark.parametrize(..., indirect=True)
+        return [['eiger', 1], ['jungfrau', 1], ['jungfrau', 2], ['mythen3',1], ['gotthard2',1], ['ctb',1], ['moench',1], ['moench',2],['xilinx_ctb',1]]
+    return request.param  
 
 @pytest.fixture() 
 def test_with_specific_simulator(servers):

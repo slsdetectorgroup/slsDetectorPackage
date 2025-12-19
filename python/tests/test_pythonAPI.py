@@ -13,7 +13,7 @@ detectorType = slsDetectorDefs.detectorType
 
 @pytest.mark.withdetectorsimulators
 def test_rx_ROI(test_with_simulators):
-     #Test rx_ROI property of Detector class. 
+    """ Test rx_ROI property of Detector class. """
 
     d = Detector()
     if d.type == detectorType.CHIPTESTBOARD or d.type == detectorType.XILINX_CHIPTESTBOARD:
@@ -29,6 +29,7 @@ def test_rx_ROI(test_with_simulators):
         d.rx_roi = [0,10, -1, -1]
 
         assert d.rx_roi == [(0,10,-1,-1)]
+        d.rx_clearroi()
     else: 
 
         d.rx_roi = (0, 10, 10, 20)
@@ -47,8 +48,7 @@ def test_rx_ROI(test_with_simulators):
 
         d.rx_clearroi() 
         roi = d.rx_roi
-        assert roi == [(-1,-1,-1,-1)] 
-
+        assert roi == [(-1,-1,-1,-1)]  
 
 @pytest.mark.withdetectorsimulators
 @pytest.mark.parametrize("servers", [["moench", 1]], indirect=True)
@@ -57,6 +57,13 @@ def test_type(test_with_specific_simulator):
     d = Detector()
     assert d.type == detectorType.MOENCH
 
+
+@pytest.mark.withdetectorsimulators
+@pytest.mark.parametrize("servers", [["moench", 1], ["jungfrau", 1]], indirect=True)
+def test_numinterfaces(test_with_specific_simulator):
+
+    d = Detector()
+    assert d.numinterfaces == 1
 
     
     

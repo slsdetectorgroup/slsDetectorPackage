@@ -1815,7 +1815,7 @@ class Detector(CppDetectorApi):
         """
         return self._register
     
-    def define_reg(self, name, addr):
+    def define_reg(self, *, name: str, addr):
         """
         [Ctb] Define a name for a register to be used later with reg.
 
@@ -1823,25 +1823,53 @@ class Detector(CppDetectorApi):
         --------
 
         d.define_reg('myreg',addr=0x6)
+        d.define_reg('myreg',addr=RegisterAddress(0x6))')
         """
-        addr = RegisterAddress(addr)
+        if isinstance(addr, int):
+            addr = RegisterAddress(addr)
+        elif not isinstance(addr, RegisterAddress):
+            raise ValueError("addr must int or RegisterAddress")
         self.setRegisterDefinition(name, addr)
 
 
-    def define_bit(self, name, addr, bit):
+    def define_bit(self, *, name: str, addr, bit_position:int=None):
         """
         [Ctb] Define a name for a bit in a register to be used later with setBit/clearBit/getBit
 
         Example
         --------
 
+        bit1 = BitAddress(RegisterAddress(0x6),7)
+        d.define_bit('mybit',addr=bit1)
         d.define_bit('mybit',addr=0x6, bit=7)
+        d.define_bit('mybit',addr=RegisterAddress(0x6), bit=7)
+        d.define_bit('mybit',addr='myreg', bit=7) #if myreg defined before
         """
-        addr = RegisterAddress(addr)
-        bit = BitAddress(addr, bit)
-        self.setBitDefinition(name, bit)
 
-    def setBit(self, bit_or_addr, number=None):
+        # bitAddress
+        if isinstance(addr, BitAddress):
+            if bit_position is not None:
+                raise ValueError("If addr is BitAddress, bit position must be None")
+            bitaddr = addr
+        # register name/address + bit position
+        else:
+            if isinstance(addr, str):
+                addr = self.getRegisterAddress(addr)
+            elif isinstance(addr, int):
+                addr = RegisterAddress(addr)
+            elif not isinstance(addr, RegisterAddress):
+                raise ValueError("addr must be str, int or RegisterAddress")
+            
+            if bit_position is None:
+                raise ValueError("bit position must be provided if addr is used.")
+            if not isinstance(bit_position, int):
+                raise ValueError("bit position must be int")
+
+            bitaddr = BitAddress(addr, bit_position)
+
+        self.setBitDefinition(name, bitaddr)
+
+    def setBit(self, bitname_or_addr, bit_position=None):
         """
         Set a bit in a register
         [Ctb] Can use a named bit address
@@ -1849,6 +1877,7 @@ class Detector(CppDetectorApi):
         Example
         --------
         d.setBit(0x5, 3)
+        d.setBit(RegisterAddress(0x5), 3)
         
         #Ctb
         d.setBit('mybit')
@@ -1857,14 +1886,19 @@ class Detector(CppDetectorApi):
         mybit = BitAddress(myreg, 5) 
         d.setBit(mybit)
         """
-        #Old usage passing two ints
-        if isinstance(bit_or_addr, int):
-            return super().setBit(bit_or_addr, number)
+        #Old usage passing two ints  or [RegisterAddress and int]
+        if isinstance(bitname_or_addr, (int, RegisterAddress)):
+            if bit_position is None:
+                raise ValueError("bit_position must be provided when passing int address")
+            if not isinstance(bit_position, int):
+                raise ValueError("bit_position must be int")
+            return super().setBit(bitname_or_addr, bit_position)
 
-        #New usage with str or BitAddress
-        if isinstance(bit_or_addr, str):
-            bit_or_addr = self.getBitDefinition(bit_or_addr)
-        return super().setBit(bit_or_addr)
+        # New usage with str or BitAddress
+        if isinstance(bitname_or_addr, str):
+            bitname_or_addr = self.getBitAddress(bitname_or_addr)
+        # BitAddress
+        return super().setBit(bitname_or_addr)
         
     def clearBit(self, bit_or_addr, number=None):
         """

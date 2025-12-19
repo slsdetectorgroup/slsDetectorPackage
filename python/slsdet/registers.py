@@ -11,12 +11,14 @@ class Register:
     @element
     def __getitem__(self, key):
         if isinstance(key, str):
-            key = self._detector.getRegisterDefinition(key)
+            key = self._detector.getRegisterAddress(key)
+        elif isinstance(key, int):
+            key = RegisterAddress(key)
         return self._detector.readRegister(key)
 
     def __setitem__(self, key, value):
         if isinstance(key, str):
-            key = self._detector.getRegisterDefinition(key)
+            key = self._detector.getRegisterAddress(key)
         elif isinstance(key, int):
             key = RegisterAddress(key)
 

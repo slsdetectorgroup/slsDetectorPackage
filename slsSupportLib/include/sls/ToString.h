@@ -11,6 +11,7 @@
 
 #include "sls/TimeHelper.h"
 #include "sls/TypeTraits.h"
+#include "sls/bit_utils.h"
 #include "sls/sls_detector_defs.h"
 #include "sls/sls_detector_exceptions.h"
 #include "sls/string_utils.h"
@@ -65,6 +66,7 @@ std::ostream &operator<<(std::ostream &os,
 std::string ToString(const slsDetectorDefs::pedestalParameters &r);
 std::ostream &operator<<(std::ostream &os,
                          const slsDetectorDefs::pedestalParameters &r);
+
 const std::string &ToString(const std::string &s);
 
 /** Convert std::chrono::duration with specified output unit */
@@ -324,6 +326,8 @@ template <> defs::gainMode StringTo(const std::string &s);
 template <> defs::polarity StringTo(const std::string &s);
 template <> defs::timingInfoDecoder StringTo(const std::string &s);
 template <> defs::collectionMode StringTo(const std::string &s);
+template <> RegisterAddress StringTo(const std::string &s);
+template <> RegisterValue StringTo(const std::string &s);
 
 template <> uint8_t StringTo(const std::string &s);
 template <> uint16_t StringTo(const std::string &s);

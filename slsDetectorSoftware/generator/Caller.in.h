@@ -74,6 +74,24 @@ class Caller {
     static void EmptyDataCallBack(detectorData *data, uint64_t frameIndex,
                                   uint32_t subFrameIndex, void *this_pointer);
 
+    std::string bitoperations(int action);
+
+    // parsing from args
+    // parse from string to RegisterAddress
+    RegisterAddress parseRegisterAddress(const std::string &addr) const;
+    // parse from 2 strings to BitAddress
+    BitAddress parseBitAddress(const std::string &addr,
+                               const std::string &bitPos) const;
+    // parse from string to RegisterValue
+    RegisterValue parseRegisterValue(const std::string &addr) const;
+    // parse validate flag from args and remove it from args
+    bool parseValidate();
+
+    // parses from args, but also gets addresses from shared memory if
+    // applicable
+    RegisterAddress getRegisterAddress(const std::string &saddr) const;
+    BitAddress getBitAddress() const;
+
     FunctionMap functions{
         {"list", &Caller::list},
 

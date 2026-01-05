@@ -7,15 +7,19 @@
 #include "sls/network_utils.h"
 #include "sls/sls_detector_defs.h"
 #include "sls/TimeHelper.h"
+#include "sls/bit_utils.h"
 
 #include <array>
 #include <chrono>
 namespace py = pybind11;
 void init_det(py::module &m) {
+    using sls::BitAddress;
     using sls::defs;
     using sls::Detector;
     using sls::ns;
     using sls::Positions;
+    using sls::RegisterAddress;
+    using sls::RegisterValue;
     using sls::Result;
 
     m.def("freeSharedMemory", (void (*)(const int, const int)) &sls::freeSharedMemory, py::arg() = 0, py::arg() = -1);

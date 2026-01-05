@@ -400,6 +400,10 @@ int InferAction::chipversion() {
 
 int InferAction::clearbit() {
 
+    if (args.size() == 1) {
+        return slsDetectorDefs::PUT_ACTION;
+    }
+
     if (args.size() == 2) {
         return slsDetectorDefs::PUT_ACTION;
     }
@@ -780,6 +784,66 @@ int InferAction::defaultpattern() {
 
     if (args.size() == 0) {
         return slsDetectorDefs::PUT_ACTION;
+    }
+
+    else {
+
+        throw RuntimeError("Could not infer action: Wrong number of arguments");
+    }
+}
+
+int InferAction::define_bit() {
+
+    if (args.size() == 1) {
+        return slsDetectorDefs::GET_ACTION;
+    }
+
+    if (args.size() == 2) {
+        return slsDetectorDefs::GET_ACTION;
+    }
+
+    if (args.size() == 3) {
+        return slsDetectorDefs::PUT_ACTION;
+    }
+
+    else {
+
+        throw RuntimeError("Could not infer action: Wrong number of arguments");
+    }
+}
+
+int InferAction::define_reg() {
+
+    if (args.size() == 1) {
+        return slsDetectorDefs::GET_ACTION;
+    }
+
+    if (args.size() == 2) {
+        return slsDetectorDefs::PUT_ACTION;
+    }
+
+    else {
+
+        throw RuntimeError("Could not infer action: Wrong number of arguments");
+    }
+}
+
+int InferAction::definelist_bit() {
+
+    if (args.size() == 0) {
+        return slsDetectorDefs::GET_ACTION;
+    }
+
+    else {
+
+        throw RuntimeError("Could not infer action: Wrong number of arguments");
+    }
+}
+
+int InferAction::definelist_reg() {
+
+    if (args.size() == 0) {
+        return slsDetectorDefs::GET_ACTION;
     }
 
     else {
@@ -1497,6 +1561,10 @@ int InferAction::gates() {
 }
 
 int InferAction::getbit() {
+
+    if (args.size() == 1) {
+        return slsDetectorDefs::GET_ACTION;
+    }
 
     if (args.size() == 2) {
         return slsDetectorDefs::GET_ACTION;
@@ -3054,6 +3122,10 @@ int InferAction::serialnumber() {
 }
 
 int InferAction::setbit() {
+
+    if (args.size() == 1) {
+        return slsDetectorDefs::PUT_ACTION;
+    }
 
     if (args.size() == 2) {
         return slsDetectorDefs::PUT_ACTION;

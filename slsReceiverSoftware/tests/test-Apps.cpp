@@ -149,12 +149,11 @@ TEST_CASE("Parse port and uid", "[.failsongitea][detector]") {
                      AppType::FrameSynchronizer}) {
         CommandLineOptions s(app);
 
-        // TODO! This test fails on gitea CI probably because the user can set the uid
-        // commenting it out for now. Revisit later.
-        // REQUIRE_THROWS(
+        // TODO! This test fails on gitea CI probably because the user can set
+        // the uid commenting it out for now. Revisit later. REQUIRE_THROWS(
         //     s.parse({"", "-p", "1234", "-u", invalidUidStr})); // invalid uid
 
-        REQUIRE_THROWS(s.parse({"", "-p", "500"}));            // invalid port
+        REQUIRE_THROWS(s.parse({"", "-p", "500"})); // invalid port
 
         auto opts = s.parse({"", "-p", "1234", "-u", uidStr});
         std::visit(

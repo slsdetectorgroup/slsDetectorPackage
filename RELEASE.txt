@@ -1,7 +1,7 @@
 SLS Detector Package Major Release x.x.x released on xx.xx.202x
 ===============================================================
 
-This document describes the differences between vx.x.x and vx.0.2   
+This document describes the differences between vx.x.x and v10.0.0  
 
 
 
@@ -34,6 +34,8 @@ Added SLS_USE_SYSTEM_ZMQ option (default OFF) to use the libzmq of the host
 instead of the one included in our repo. 
 
 Experimental support for building the detector client (including python bindings) on macOS
+
+``rx_dbitlist`` keeps the order of the passed bit list 
 
 2  On-board Detector Server Compatibility
 ==========================================

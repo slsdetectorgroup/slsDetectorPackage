@@ -942,6 +942,7 @@ void init_det(py::module &m) {
                        (void (Detector::*)(const std::vector<defs::ROI> &)) &
                            Detector::setRxROI,
                        py::arg());
+
     CppDetectorApi.def("clearRxROI",
                        (void (Detector::*)()) & Detector::clearRxROI);
     CppDetectorApi.def(

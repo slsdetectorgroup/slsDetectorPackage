@@ -407,7 +407,10 @@ void setupDetector() {
                          NPWR, DAC_POWERDOWN_DRIVER_FILE_NAME);
     
     // power LTC2620 before talking to it:
-    XILINX_FMC_enable_all();
+    initError = XILINX_FMC_enable_all(initErrorMessage, MAX_STR_LENGTH);
+    if (initError == FAIL) {
+        return;
+    }
 
     LOG(logINFOBLUE, ("Powering down all dacs\n"));
     for (int idac = 0; idac < NDAC; ++idac) {
@@ -583,10 +586,10 @@ int powerChip(int on, char *mess) {
     } else {
         LOG(logINFOBLUE, ("Powering chip: off\n"));
         bus_w(addr, bus_r(addr) & ~mask);
-        XILINX_FMC_disable_all();
-
         chipConfigured = 0;
-
+        if (FAIL == XILINX_FMC_disable_all(mess, MAX_STR_LENGTH)) {
+            return FAIL;
+        }
 #ifdef VIRTUAL
         setTransceiverAlignment(0);
 #endif

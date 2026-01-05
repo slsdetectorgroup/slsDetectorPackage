@@ -48,7 +48,7 @@ def simulator(request):
     cleanup(fp)
 
 
-
+@pytest.mark.withdetectorsimulators
 def test_define_reg(simulator, request):
     """ Test setting define_reg for ctb and xilinx_ctb."""
     det_name = simulator
@@ -109,6 +109,7 @@ def test_define_reg(simulator, request):
     Log(LogLevel.INFOGREEN, f"✅ {request.node.name} passed")
 
 
+@pytest.mark.withdetectorsimulators
 def test_define_bit(simulator, request):
     """ Test setting define_bit for ctb and xilinx_ctb."""
     det_name = simulator
@@ -200,7 +201,7 @@ def test_define_bit(simulator, request):
     Log(LogLevel.INFOGREEN, f"✅ {request.node.name} passed")
 
 
-
+@pytest.mark.withdetectorsimulators
 def test_using_defined_reg_and_bit(simulator, request):
     """ Test using defined reg and bit define_bit for ctb and xilinx_ctb."""
     det_name = simulator
@@ -286,6 +287,7 @@ def test_using_defined_reg_and_bit(simulator, request):
     Log(LogLevel.INFOGREEN, f"✅ {request.node.name} passed")
 
 
+@pytest.mark.withdetectorsimulators
 def test_definelist_reg(simulator, request):
     """ Test using definelist_reg for ctb and xilinx_ctb."""
     det_name = simulator
@@ -330,6 +332,7 @@ def test_definelist_reg(simulator, request):
     Log(LogLevel.INFOGREEN, f"✅ {request.node.name} passed")
 
 
+@pytest.mark.withdetectorsimulators
 def test_definelist_bit(simulator, request):
     """ Test using definelist_bit for ctb and xilinx_ctb."""
     det_name = simulator

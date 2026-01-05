@@ -11,7 +11,6 @@
 #include "LTC2620_Driver.h"
 #include "XILINX_PLL.h"
 #include "XILINX_FMC.h"
-
 #include "loadPattern.h"
 #ifdef VIRTUAL
 #include "communication_funcs_UDP.h"
@@ -258,17 +257,17 @@ int testFixedFPGAPattern() {
     LOG(logINFO, ("Testing FPGA Fixed Pattern:\n"));
 #ifndef VIRTUAL
     uint32_t val = bus_r(FIXEDPATTERNREG);
-    if (val == FIXEDPATTERNVAL) {
+    if (val == FIXEDPATTERNREG_PRESET) {
         LOG(logINFO, ("\tFixed pattern: successful match (0x%08x)\n", val));
     } else {
         LOG(logERROR,
             ("Fixed pattern does not match! Read 0x%08x, expected 0x%08x\n",
-             val, FIXEDPATTERNVAL));
+             val, FIXEDPATTERNREG_PRESET));
         return FAIL;
     }
 #endif
     LOG(logINFO,
-        ("\tSuccessfully read FPGA Fixed Pattern (0x%x)\n", FIXEDPATTERNVAL));
+        ("\tSuccessfully read FPGA Fixed Pattern (0x%x)\n", FIXEDPATTERNREG_PRESET));
     return OK;
 }
 

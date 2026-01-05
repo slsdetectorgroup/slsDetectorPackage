@@ -3,6 +3,7 @@
 #pragma once
 #include "sls/Pattern.h"
 #include "sls/Result.h"
+#include "sls/bit_utils.h"
 #include "sls/network_utils.h"
 #include "sls/sls_detector_defs.h"
 #include <chrono>
@@ -1837,6 +1838,64 @@ class Detector {
     /** [CTB][Xilinx CTB] */
     std::string getSlowADCName(const defs::dacIndex i) const;
 
+    /** [CTB][Xilinx CTB] */
+    int getRegisterDefinitionsCount() const;
+
+    /** [CTB][Xilinx CTB] */
+    void setRegisterDefinition(const std::string &name, RegisterAddress addr);
+
+    /** [CTB][Xilinx CTB] */
+    bool hasRegisterDefinition(const std::string &name) const;
+
+    /** [CTB][Xilinx CTB] */
+    bool hasRegisterDefinition(RegisterAddress addr) const;
+
+    /** [CTB][Xilinx CTB] */
+    RegisterAddress getRegisterAddress(const std::string &name) const;
+
+    /** [CTB][Xilinx CTB] */
+    std::string getRegisterName(RegisterAddress addr) const;
+
+    /** [CTB][Xilinx CTB] */
+    void clearRegisterDefinitions();
+
+    /** [CTB][Xilinx CTB] */
+    void
+    setRegisterDefinitions(const std::map<std::string, RegisterAddress> &list);
+
+    /** [CTB][Xilinx CTB] */
+    std::map<std::string, RegisterAddress> getRegisterDefinitions() const;
+
+    /** [CTB][Xilinx CTB] */
+    int getBitDefinitionsCount() const;
+
+    /** [CTB][Xilinx CTB] */
+    void setBitDefinition(const std::string &name, BitAddress addr);
+
+    /** [CTB][Xilinx CTB] */
+    bool hasBitDefinition(const std::string &name) const;
+
+    /** [CTB][Xilinx CTB] */
+    bool hasBitDefinition(BitAddress addr) const;
+
+    /** [CTB][Xilinx CTB] */
+    std::string toRegisterNameBitString(BitAddress addr) const;
+
+    /** [CTB][Xilinx CTB] returns bit position and address */
+    BitAddress getBitAddress(const std::string &name) const;
+
+    /** [CTB][Xilinx CTB] */
+    std::string getBitName(BitAddress addr) const;
+
+    /** [CTB][Xilinx CTB] */
+    void clearBitDefinitions();
+
+    /** [CTB][Xilinx CTB] */
+    void setBitDefinitions(const std::map<std::string, BitAddress> &list);
+
+    /** [CTB][Xilinx CTB] */
+    std::map<std::string, BitAddress> getBitDefinitions() const;
+
     ///@}
 
     /** @name Xilinx CTB Specific */
@@ -2045,26 +2104,71 @@ class Detector {
     /** Advanced user Function! \n
      * Goes to stop server. Hence, can be called while calling blocking
      * acquire(). \n [Eiger] Address is +0x100 for only left, +0x200 for only
-     * right. */
-    Result<uint32_t> readRegister(uint32_t addr, Positions pos = {}) const;
+     * right.*/
+    Result<RegisterValue> readRegister(RegisterAddress addr,
+                                       Positions pos = {}) const;
 
     /** Advanced user Function! \n
      * Goes to stop server. Hence, can be called while calling blocking
      * acquire(). \n [Eiger] Address is +0x100 for only left, +0x200 for only
-     * right. */
-    void writeRegister(uint32_t addr, uint32_t val, bool validate = false,
-                       Positions pos = {});
+     * right.*/
+    void writeRegister(RegisterAddress addr, RegisterValue val,
+                       bool validate = false, Positions pos = {});
 
-    /** Advanced user Function!  */
-    void setBit(uint32_t addr, int bitnr, bool validate = false,
+    /** Advanced user Function! */
+    void setBit(BitAddress addr, bool validate = false, Positions pos = {});
+
+    /** Advanced user Function!*/
+    void clearBit(BitAddress addr, bool validate = false, Positions pos = {});
+
+    /** Advanced user Function! */
+    Result<int> getBit(BitAddress addr, Positions pos = {}) const;
+
+    /** [CTB][Xilinx CTB] Advanced user Function! */
+    Result<RegisterValue> readRegister(const std::string &reg_name,
+                                       Positions pos = {}) const;
+
+    /** [CTB][Xilinx CTB] Advanced user Function! */
+    void writeRegister(const std::string &reg_name, RegisterValue val,
+                       bool validate = false, Positions pos = {});
+
+    /** [CTB][Xilinx CTB] Advanced user Function! */
+    void setBit(const std::string &bit_name, bool validate = false,
                 Positions pos = {});
 
-    /** Advanced user Function!  */
-    void clearBit(uint32_t addr, int bitnr, bool validate = false,
+    /** [CTB][Xilinx CTB] Advanced user Function! */
+    void clearBit(const std::string &bit_name, bool validate = false,
                   Positions pos = {});
 
-    /** Advanced user Function!  */
-    Result<int> getBit(uint32_t addr, int bitnr, Positions pos = {});
+    /** [CTB][Xilinx CTB] Advanced user Function! */
+    Result<int> getBit(const std::string &bit_name, Positions pos = {}) const;
+
+    /** Deprecated Advanced user Function! */
+    [[deprecated("Use the overload taking RegisterAddress instead of "
+                 "uint32_t")]] Result<uint32_t>
+    readRegister(uint32_t addr, Positions pos = {}) const;
+
+    /** Deprecated Advanced user Function! */
+    [[deprecated("Use the overload taking RegisterAddress and RegisterValue "
+                 "instead of uint32_t")]] void
+    writeRegister(uint32_t addr, uint32_t val, bool validate = false,
+                  Positions pos = {});
+
+    /** Deprecated Advanced user Function! */
+    [[deprecated("Use the overload taking BitAddress instead of uint32_t and "
+                 "int")]] void
+    setBit(uint32_t addr, int bitnr, bool validate = false, Positions pos = {});
+
+    /** Deprecated Advanced user Function! */
+    [[deprecated("Use the overload taking BitAddress instead of uint32_t and "
+                 "int")]] void
+    clearBit(uint32_t addr, int bitnr, bool validate = false,
+             Positions pos = {});
+
+    /** Deprecated Advanced user Function! */
+    [[deprecated("Use the overload taking BitAddress instead of uint32_t and "
+                 "int")]] Result<int>
+    getBit(uint32_t addr, int bitnr, Positions pos = {}) const;
 
     /** [Jungfrau][Moench][Mythen3][Gotthard2][CTB] Advanced user
      * Function! */

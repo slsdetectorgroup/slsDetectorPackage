@@ -20,6 +20,7 @@ void init_scan(py::module &);
 void init_source(py::module &);
 void init_duration(py::module &);
 void init_pedestal(py::module &);
+void init_bit(py::module &);
 
 PYBIND11_MODULE(_slsdet, m) {
     m.doc() = R"pbdoc(
@@ -40,6 +41,7 @@ PYBIND11_MODULE(_slsdet, m) {
     init_source(m);
     init_duration(m);
     init_pedestal(m);
+    init_bit(m);
     //  init_experimental(m);
 
     py::module io = m.def_submodule("io", "Submodule for io");

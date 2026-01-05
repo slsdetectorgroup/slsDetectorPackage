@@ -141,20 +141,19 @@ def make_ip(arg):
 def make_mac(arg):
     return _make(arg, _slsdet.MacAddr)
 
-
 def make_path(arg):
     return _make(arg, Path)
 
 
 def _make(arg, transform):
-    """Helper function for make_mac and make_ip special cases for
+    """Helper function for make_mac, make_ip and other special cases for
     dict, list and tuple. Otherwise just calls transform"""
     if isinstance(arg, dict):
-        return {key: transform(value) for key, value in arg.items()}
+        return {key: _make(value, transform) for key, value in arg.items()}
     elif isinstance(arg, list):
-        return [transform(a) for a in arg]
+        return [_make(a, transform) for a in arg]
     elif isinstance(arg, tuple):
-        return tuple(transform(a) for a in arg)
+        return tuple(_make(a, transform) for a in arg)
     else:
         return transform(arg)
 

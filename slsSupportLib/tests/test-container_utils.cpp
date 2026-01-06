@@ -175,12 +175,11 @@ TEST_CASE("remove duplicates but keep order, all elements the same ") {
 }
 
 TEST_CASE("remove duplicates but keep order, pattern ") {
-    std::vector<int> v{8,1,2,8,8,3,2};
+    std::vector<int> v{8, 1, 2, 8, 8, 3, 2};
     auto r = stableRemoveDuplicates(v);
     CHECK(r == true); // did indeed remove elements
-    CHECK(v == std::vector<int>{8,1,2,3});
+    CHECK(v == std::vector<int>{8, 1, 2, 3});
 }
-
 
 TEST_CASE("remove duplicated empty vector") {
     std::vector<int> v;

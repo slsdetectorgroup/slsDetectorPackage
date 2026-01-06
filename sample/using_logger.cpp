@@ -3,15 +3,23 @@
 #include "sls/logger.h"
 #include <iostream>
 #include <chrono>
+
+using sls::logINFO;
+using sls::logINFORED;
+using sls::logINFOBLUE;
+using sls::logINFOGREEN;
+using sls::logERROR;
+using sls::logWARNING;
+
+
 int main() {
 
     //compare old and new
     std::cout << "Compare output between old and new:\n";
     LOG(logINFO) << "Some info message";
     LOG(logERROR) << "This is an error";
-    LOG(logWARNING) << "While this is only a warning";    prefix="/afs/psi.ch/project/sls_det_software/dhanya_softwareDevelopment/mySoft/slsDetectorPackage/"
-    p=${file#"$prefix"}
-
+    LOG(logWARNING) << "While this is only a warning";
+    
     //Logging level can be configure at runtime
     std::cout << "\n\n";
     std::cout << "The default macro controlled level is: "

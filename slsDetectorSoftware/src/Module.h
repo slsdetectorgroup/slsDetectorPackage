@@ -5,6 +5,7 @@
 #include "sls/ClientSocket.h"
 #include "sls/Pattern.h"
 #include "sls/StaticVector.h"
+#include "sls/bit_utils.h"
 #include "sls/logger.h"
 #include "sls/network_utils.h"
 #include "sls/sls_detector_defs.h"
@@ -579,11 +580,11 @@ class Module : public virtual slsDetectorDefs {
     void rebootController();
     bool getUpdateMode() const;
     void setUpdateMode(const bool updatemode);
-    uint32_t readRegister(uint32_t addr) const;
-    void writeRegister(uint32_t addr, uint32_t val, bool validate);
-    void setBit(uint32_t addr, int n, bool validate);
-    void clearBit(uint32_t addr, int n, bool validate);
-    int getBit(uint32_t addr, int n);
+    RegisterValue readRegister(RegisterAddress addr) const;
+    void writeRegister(RegisterAddress addr, RegisterValue val, bool validate);
+    void setBit(BitAddress bitAddr, bool validate);
+    void clearBit(BitAddress bitAddr, bool validate);
+    int getBit(BitAddress bitAddr) const;
     void executeFirmwareTest();
     void executeBusTest();
     void writeAdcRegister(uint32_t addr, uint32_t val);

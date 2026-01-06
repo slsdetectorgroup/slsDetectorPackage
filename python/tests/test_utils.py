@@ -8,7 +8,7 @@ Testing functions from utils.py
 
 import pytest
 from slsdet.utils import *
-from slsdet import IpAddr, MacAddr, DurationWrapper
+from slsdet import IpAddr, MacAddr, DurationWrapper, RegisterAddress, RegisterValue, BitAddress
 import datetime as dt
 import pathlib
 from pathlib import Path
@@ -197,6 +197,7 @@ def test_make_mac_from_tuple():
     arg = ("84:a9:aa:24:32:88", "84:a9:3e:24:32:aa")
     assert make_mac(arg) == (MacAddr("84:a9:aa:24:32:88"),
                              MacAddr("84:a9:3e:24:32:aa"))
+
 
 
 def test_make_path_from_str():

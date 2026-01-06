@@ -179,8 +179,7 @@ IpAddr InterfaceNameToIp(const std::string &ifn) {
 MacAddr InterfaceNameToMac(const std::string &inf) {
 
 #ifdef __APPLE__
-    throw RuntimeError(
-        "InterfaceNameToMac not implemented on macOS yet");
+    throw RuntimeError("InterfaceNameToMac not implemented on macOS yet");
 #else
 
     // TODO! Copied from genericSocket needs to be refactored!

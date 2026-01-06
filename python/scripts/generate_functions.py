@@ -8,6 +8,7 @@ to be installed.
 When the Detector API is updated this file should be run
 manually.
 """
+import os
 from clang import cindex
 import subprocess
 import argparse
@@ -31,6 +32,24 @@ def red(msg):
 
 def green(msg):
     return f"{GREENC}{msg}{ENDC}"
+
+
+def find_libclang():
+    """Find libclang in the current Conda/Mamba environment."""
+    conda_prefix = os.environ.get("CONDA_PREFIX")
+    if conda_prefix:
+        lib_dir = os.path.join(conda_prefix, "lib")
+        # Look for libclang*.so files
+        for f in os.listdir(lib_dir):
+            if f.startswith("libclang") and f.endswith(".so"):
+                return os.path.join(lib_dir, f)
+
+    # fallback: system-wide search
+    path = ctypes.util.find_library("clang")
+    if path:
+        return path
+
+    raise FileNotFoundError("libclang not found in CONDA_PREFIX or system paths.")
 
 
 def check_libclang_version(required="12"):
@@ -201,7 +220,9 @@ if __name__ == "__main__":
         action="store_true",
     )
     cargs = parser.parse_args()
-
+    
+    libclang_path = find_libclang()
+    cindex.Config.set_library_file(libclang_path)
     check_libclang_version("12")
     check_clang_format_version(12)
     check_for_compile_commands_json(cargs.build_path)

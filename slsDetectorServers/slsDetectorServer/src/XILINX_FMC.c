@@ -30,7 +30,7 @@ static const char *fmc_files[] = {
 int XILINX_FMC_enable_all(char *error_message, int message_size) {
     LOG(logINFOBLUE, ("enable FMC power\n"));
 #ifdef VIRTUAL
-    return;
+    return 0;
 #endif
     char full_path[64];
     for (size_t i = 0; i < FMC_NUM_FILES; ++i) {
@@ -58,7 +58,7 @@ int XILINX_FMC_enable_all(char *error_message, int message_size) {
 int XILINX_FMC_disable_all(char *error_message, int message_size) {
     LOG(logINFOBLUE, ("disable FMC power\n"));
 #ifdef VIRTUAL
-    return;
+    return 0;
 #endif
     char full_path[64];
     for (size_t i = 0; i < FMC_NUM_FILES; ++i) {

@@ -9,8 +9,8 @@
 #include "sls/versionAPI.h"
 
 #include "LTC2620_Driver.h"
-#include "XILINX_PLL.h"
 #include "XILINX_FMC.h"
+#include "XILINX_PLL.h"
 #include "loadPattern.h"
 #ifdef VIRTUAL
 #include "communication_funcs_UDP.h"
@@ -266,8 +266,8 @@ int testFixedFPGAPattern() {
         return FAIL;
     }
 #endif
-    LOG(logINFO,
-        ("\tSuccessfully read FPGA Fixed Pattern (0x%x)\n", FIXEDPATTERNREG_PRESET));
+    LOG(logINFO, ("\tSuccessfully read FPGA Fixed Pattern (0x%x)\n",
+                  FIXEDPATTERNREG_PRESET));
     return OK;
 }
 
@@ -405,7 +405,7 @@ void setupDetector() {
 
     LTC2620_D_SetDefines(DAC_MIN_MV, DAC_MAX_MV, DAC_DRIVER_FILE_NAME, NDAC,
                          NPWR, DAC_POWERDOWN_DRIVER_FILE_NAME);
-    
+
     // power LTC2620 before talking to it:
     initError = XILINX_FMC_enable_all(initErrorMessage, MAX_STR_LENGTH);
     if (initError == FAIL) {

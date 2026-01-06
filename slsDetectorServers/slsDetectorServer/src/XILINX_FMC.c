@@ -27,24 +27,26 @@ static const char *fmc_files[] = {
 #define FMC_NUM_FILES (sizeof(fmc_files) / sizeof(fmc_files[0]))
 // clang-format on
 
-int XILINX_FMC_enable_all(char* error_message, int message_size) {
+int XILINX_FMC_enable_all(char *error_message, int message_size) {
     LOG(logINFOBLUE, ("enable FMC power\n"));
-    #ifdef VIRTUAL
-        return;
-    #endif
+#ifdef VIRTUAL
+    return;
+#endif
     char full_path[64];
     for (size_t i = 0; i < FMC_NUM_FILES; ++i) {
-        const char* file = fmc_files[i];
+        const char *file = fmc_files[i];
         snprintf(full_path, sizeof(full_path), "%s%s", FMC_BASE_PATH, file);
         FILE *fp = fopen(full_path, "w");
         if (fp == NULL) {
-            snprintf(error_message, message_size, "XILINX_FMC: Couuld not enable.\n");
+            snprintf(error_message, message_size,
+                     "XILINX_FMC: Couuld not enable.\n");
             LOG(logERROR, (error_message));
             return 1;
         }
 
-        if (fprintf(fp, "1\n") != 1) {
-            snprintf(error_message, message_size, "XILINX_FMC: Could not write enable.\n");
+        if (fprintf(fp, "1\n") != 2) {
+            snprintf(error_message, message_size,
+                     "XILINX_FMC: Could not write enable.\n");
             LOG(logERROR, (error_message));
             return 1;
         }
@@ -53,23 +55,25 @@ int XILINX_FMC_enable_all(char* error_message, int message_size) {
     return 0;
 }
 
-int XILINX_FMC_disable_all(char* error_message, int message_size) {
+int XILINX_FMC_disable_all(char *error_message, int message_size) {
     LOG(logINFOBLUE, ("disable FMC power\n"));
-    #ifdef VIRTUAL
-        return;
-    #endif
+#ifdef VIRTUAL
+    return;
+#endif
     char full_path[64];
     for (size_t i = 0; i < FMC_NUM_FILES; ++i) {
-        const char* file = fmc_files[i];
+        const char *file = fmc_files[i];
         snprintf(full_path, sizeof(full_path), "%s%s", FMC_BASE_PATH, file);
         FILE *fp = fopen(full_path, "w");
         if (fp == NULL) {
-            snprintf(error_message, message_size, "XILINX_FMC: Could not disable\n");
+            snprintf(error_message, message_size,
+                     "XILINX_FMC: Could not disable\n");
             LOG(logERROR, (error_message));
             return 1;
         }
-        if (fprintf(fp, "0\n") != 1) {
-            snprintf(error_message, message_size, "XILINX_FMC: Could not write disable.\n");
+        if (fprintf(fp, "0\n") != 2) {
+            snprintf(error_message, message_size,
+                     "XILINX_FMC: Could not write disable.\n");
             LOG(logERROR, (error_message));
             return 1;
         }

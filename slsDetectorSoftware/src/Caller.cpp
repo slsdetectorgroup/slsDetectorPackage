@@ -8496,7 +8496,7 @@ std::string Caller::patternstart(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << R"V0G0N(
-	[Mythen3][Xilinx Ctb] Starts Pattern )V0G0N"
+	[Mythen3][Ctb][Xilinx Ctb] Starts Pattern )V0G0N"
            << std::endl;
         return os.str();
     }

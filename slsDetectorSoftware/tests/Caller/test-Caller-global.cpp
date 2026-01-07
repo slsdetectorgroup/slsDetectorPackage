@@ -173,7 +173,7 @@ void create_files_for_acquire(
     // acquire and get num frames caught
     REQUIRE_NOTHROW(test_acquire_with_receiver(caller, det));
     // TODO: maybe there should not be REQUIRE statements in void function at
-    // all
+    // all, but traceback should be handled
     if (check_num_frames) {
         auto frames_caught = det.getFramesCaught().tsquash(
             "Inconsistent number of frames caught")[0];

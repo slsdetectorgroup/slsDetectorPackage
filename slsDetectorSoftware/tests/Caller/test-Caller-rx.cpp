@@ -756,8 +756,7 @@ TEST_CASE("rx_roi", "[.detectorintegration]") {
         // check master file creation
         // TODO: check roi in master file
         {
-            REQUIRE_NOTHROW(
-                create_files_for_acquire(det, caller, 1, std::nullopt, false));
+            REQUIRE_NOTHROW(create_files_for_acquire(det, caller));
             testFileInfo file_info;
             std::string master_file_prefix =
                 file_info.getMasterFileNamePrefix();

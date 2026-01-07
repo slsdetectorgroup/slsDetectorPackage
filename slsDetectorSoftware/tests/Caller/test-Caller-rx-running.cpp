@@ -147,8 +147,6 @@ TEST_CASE("numinterfaces - cant put if receiver is not idle",
 
         REQUIRE_THROWS(caller.call("numinterfaces", {"2"}, -1, PUT));
 
-        auto numinterfaces = det.getNumberofUDPInterfaces();
-
         // stop receiver
         REQUIRE_NOTHROW(caller.call("rx_stop", {}, -1, PUT));
 

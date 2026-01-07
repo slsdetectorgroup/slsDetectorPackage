@@ -29,11 +29,23 @@ If a test fails in the github or gitea actions hide the test by adding the tag `
         REQUIRE(1 == 2);
     }
 
-If a test requires a detector mark them with the hidden tag ``[.detectorintegration]``.
+If a test requires a detector mark them with the hidden tag ``[.detectorintegration]``. This only works if a configured simulator (or an actual configured detector) and receiver are already set up to run the tests.
 
-If you want to disable a specific test for a specific detector add the hidden tag ``[.disable_<detector_name>]`` to the test case.
+.. code-block:: console
 
-If you want to run tests requiring detector simulators run them as follows: 
+    tests "[.detectorintegration]"
+
+
+If you want to disable a specific test for a specific detector add the hidden tag ``[.disable_<detector_name>]`` to the test case. Please note that only some specific disable tests have been implemented so far.
+
+.. code-block:: console
+
+    tests "[.detectorintegration] ~[.disable_jungfrau]"
+
+Simulator Script: 
+-----------------
+
+One can also just run the following script, which will run your tests for all the detector types (simulators only) with a pre-determined configuration.
 
 .. code-block:: console
 
@@ -45,13 +57,13 @@ If you want to run them for a specific virtual detector or a specific test use t
 
 .. code-block:: console
     cd build
-    python bin/test_simulators.py --servers <detector_name> --test <test_name>
+    python bin/test_simulators.py --servers jungfrau --test "[.rx]"
 
-You can run all tests requiring a detector but the disabled one for a specific detector by adding the option ``--disable_<detector_name>``. 
+You can exclude a specific detector for tests that have this marker by adding the option ``~[.disable_<detector_name>]``. Again, we assume that this marker is added to the tests that you want to exclude. 
 
 .. code-block:: console
     cd build
-    python bin/test_simulators.py --servers <detector_name> --test <test_name> --disable_jungfrau
+    python bin/test_simulators.py --servers eiger jungfrau moench --test "[.detectorintegration] ~[.disable_jungfrau]"
 
 Note that this still runs all the tests for the virtual jungfrau detector except for the ones marked with the tag ``[.disable_jungfrau]``. 
 

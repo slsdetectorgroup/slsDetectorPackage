@@ -46,9 +46,11 @@ jobs:
 
       - name: Simulator unit tests
         working-directory: ${{github.workspace}}/build/bin
-        run: |
-            python test_simulators.py -nlf -t "[detectorintegration]~[disable_jungfrau]~[disable_xilinx_ctb]" -s eiger jungfrau mythen3 gotthard2 ctb moench
-            python test_frame_synchronizer.py -nlf
+        run: python test_simulators.py -nlf -t "[detectorintegration]~[disable_jungfrau]~[disable_xilinx_ctb]" -s eiger jungfrau mythen3 gotthard2 ctb moench
+
+      - name: Run frame synchronizer tests
+        working-directory: ${{ github.workspace }}/build/bin
+        run: python test_frame_synchronizer.py -nlf
 
       #- name: Upload detector logs
       #  uses: actions/upload-artifact@v4

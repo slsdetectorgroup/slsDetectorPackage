@@ -2768,6 +2768,90 @@ sleep:
             - argc: 2
               arg_types: [ int, special::time_unit ]
 
+define_reg:
+    is_description: true
+    actions:
+        GET:
+          argc: 1
+          arg_types: [ std::string ]
+        PUT:
+          argc: 2
+          arg_types: [ std::string, int ]
+
+define_bit:
+    is_description: true
+    actions:
+        GET:
+          args:
+            - argc: 1
+              arg_types: [ std::string ]
+            - argc: 2
+              arg_types: [ std::string, int ]
+        PUT:
+          argc: 3
+          arg_types: [ std::string, std::string, int ]
+
+definelist_reg:
+    is_description: true
+    actions:
+        GET:
+          argc: 0
+
+definelist_bit:
+    is_description: true
+    actions:
+        GET:
+          argc: 0
+
+reg:
+    is_description: true
+    actions:
+        GET:
+          argc: 1
+          arg_types: [ std::string]
+        PUT:
+          args:
+            - argc: 2
+              arg_types: [ uint32_t, uint32_t ]
+            - argc: 3
+              arg_types: [ uint32_t, uint32_t, special::validate ]
+
+
+getbit:
+    is_description: true
+    actions:
+        GET:
+          args:
+            - argc: 1
+              arg_types: [ std::string ]
+            - argc: 2
+              arg_types: [ std::string, std::string ]
+
+
+setbit:
+    is_description: true
+    actions:
+        PUT:
+          args:
+            - argc: 1
+              arg_types: [ std::string ]
+            - argc: 2
+              arg_types: [ std::string, std::string ]
+            - argc: 3
+              arg_types: [ std::string, std::string, special::validate ]
+
+clearbit:
+    is_description: true
+    actions:
+        PUT:
+          args:
+            - argc: 1
+              arg_types: [ std::string ]
+            - argc: 2
+              arg_types: [ std::string, std::string ]
+            - argc: 3
+              arg_types: [ std::string, std::string, special::validate ]
+
 
 ################# special commands ##########################
 
@@ -4179,36 +4263,6 @@ update:
       input_types: [ std::string, std::string ]
       output: [ '"successful"' ]
 
-reg:
-  help: "[address] [32 bit value][(optional)--validate]\n\t[Mythen3][Gotthard2] Reads/writes to a 32 bit register in hex. Advanced Function!\n\tGoes to stop server. Hence, can be called while calling blocking acquire().\n\t\t Use --validate to force validation when writing to it.\n\t[Eiger] +0x100 for only left, +0x200 for only right."
-  actions:
-    GET:
-      argc: 1
-      require_det_id: true
-      function: readRegister
-      input: [ 'args[0]' ]
-      input_types: [ uint32_t ]
-      cast_input: [ true ]
-      output: [ OutStringHex(t) ]
-    PUT:
-      require_det_id: true
-      function: writeRegister
-      output: [ '"["', 'args[0]', '", "', 'args[1]', '"]"' ]
-      args:
-        - argc: 2
-          input: [ 'args[0]', 'args[1]', '"0"' ]
-          input_types: [ uint32_t, uint32_t, bool ]
-          arg_types: [ uint32_t, uint32_t ]
-          cast_input: [ true, true, true ]
-        - argc: 3
-          arg_types: [ uint32_t, uint32_t, special::validate ]
-          exceptions:
-            - condition: 'args[2] != "--validate"'
-              message: '"Could not scan third argument. Did you mean --validate?"'
-          input: [ 'args[0]', 'args[1]', '"1"' ]
-          input_types: [ uint32_t, uint32_t, bool ]
-          cast_input: [ true, true, true ]
-
 adcreg:
   help: "[address] [value]\n\t[Jungfrau][Moench][Ctb] Writes to an adc register in hex. Advanced user Function!"
   actions:
@@ -4221,62 +4275,7 @@ adcreg:
       cast_input: [ true, true ]
       output: [ ToString(args) ]
 
-getbit:
-  help: "[reg address in hex] [bit index]\n\tGets bit in address."
-  actions:
-    GET:
-      argc: 2
-      exceptions:
-        - condition: 'StringTo<int>(args[1]) < 0 || StringTo<int>(args[1]) > 31'
-          message: '"Bit number out of range: " + args[1]'
-      require_det_id: true
-      function: getBit
-      input: [ 'args[0]', 'args[1]' ]
-      input_types: [ uint32_t, int ]
-      cast_input: [ true, true ]
-      output: [ OutString(t) ]
 
-Setbit:
-  template: true
-  actions:
-    PUT:
-      require_det_id: true
-      function: setBit
-      output: [ '"["', 'args[0]', '", "', 'args[1]', '"]"' ]    
-      args:
-        - argc: 2
-          exceptions:
-            - condition: 'StringTo<int>(args[1]) < 0 || StringTo<int>(args[1]) > 31'
-              message: '"Bit number out of range: " + args[1]'
-          input: [ 'args[0]', 'args[1]', '"0"' ]  
-          input_types: [ uint32_t, int, bool ]
-          arg_types: [ uint32_t, int ]
-          cast_input: [ true, true, true ]
-        - argc: 3
-          arg_types: [ uint32_t, int, special::validate ]
-          exceptions:
-            - condition: 'StringTo<int>(args[1]) < 0 || StringTo<int>(args[1]) > 31'
-              message: '"Bit number out of range: " + args[1]'
-            - condition: 'args[2] != "--validate"'
-              message: '"Could not scan third argument. Did you mean --validate?"'
-          input: [ 'args[0]', 'args[1]', '"1"' ]
-          input_types: [ uint32_t, int, bool ]
-          cast_input: [ true, true, true ]
-
-
-setbit:
-  inherit_actions: Setbit
-  help: "[reg address in hex] [bit index]\n\tSets bit in address.\n\tUse --validate to force validation."
-  actions:
-    PUT:
-      function: setBit
-
-clearbit:
-  inherit_actions: Setbit
-  help: "[reg address in hex] [bit index]\n\tClears bit in address.\n\tUse --validate to force validation."
-  actions:
-    PUT:
-      function: clearBit
 
 initialchecks:
   help: "[0, 1]\n\t[Mythen3][Gotthard2] Enable or disable intial compatibility and other checks at detector start up. It is enabled by default. Must come before 'hostname' command to take effect. Can be used to reprogram fpga when current firmware is incompatible.\n\tAdvanced User function!"

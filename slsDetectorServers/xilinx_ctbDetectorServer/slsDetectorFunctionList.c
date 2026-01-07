@@ -9,8 +9,8 @@
 #include "sls/versionAPI.h"
 
 #include "LTC2620_Driver.h"
+#include "XILINX_FMC.h"
 #include "XILINX_PLL.h"
-
 #include "loadPattern.h"
 #ifdef VIRTUAL
 #include "communication_funcs_UDP.h"
@@ -257,17 +257,17 @@ int testFixedFPGAPattern() {
     LOG(logINFO, ("Testing FPGA Fixed Pattern:\n"));
 #ifndef VIRTUAL
     uint32_t val = bus_r(FIXEDPATTERNREG);
-    if (val == FIXEDPATTERNVAL) {
+    if (val == FIXEDPATTERNREG_PRESET) {
         LOG(logINFO, ("\tFixed pattern: successful match (0x%08x)\n", val));
     } else {
         LOG(logERROR,
             ("Fixed pattern does not match! Read 0x%08x, expected 0x%08x\n",
-             val, FIXEDPATTERNVAL));
+             val, FIXEDPATTERNREG_PRESET));
         return FAIL;
     }
 #endif
-    LOG(logINFO,
-        ("\tSuccessfully read FPGA Fixed Pattern (0x%x)\n", FIXEDPATTERNVAL));
+    LOG(logINFO, ("\tSuccessfully read FPGA Fixed Pattern (0x%x)\n",
+                  FIXEDPATTERNREG_PRESET));
     return OK;
 }
 
@@ -405,6 +405,13 @@ void setupDetector() {
 
     LTC2620_D_SetDefines(DAC_MIN_MV, DAC_MAX_MV, DAC_DRIVER_FILE_NAME, NDAC,
                          NPWR, DAC_POWERDOWN_DRIVER_FILE_NAME);
+
+    // power LTC2620 before talking to it:
+    initError = XILINX_FMC_enable_all(initErrorMessage, MAX_STR_LENGTH);
+    if (initError == FAIL) {
+        return;
+    }
+
     LOG(logINFOBLUE, ("Powering down all dacs\n"));
     for (int idac = 0; idac < NDAC; ++idac) {
         setDAC(idac, LTC2620_D_GetPowerDownValue(), 0);
@@ -579,9 +586,10 @@ int powerChip(int on, char *mess) {
     } else {
         LOG(logINFOBLUE, ("Powering chip: off\n"));
         bus_w(addr, bus_r(addr) & ~mask);
-
         chipConfigured = 0;
-
+        if (FAIL == XILINX_FMC_disable_all(mess, MAX_STR_LENGTH)) {
+            return FAIL;
+        }
 #ifdef VIRTUAL
         setTransceiverAlignment(0);
 #endif

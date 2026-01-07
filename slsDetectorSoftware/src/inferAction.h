@@ -62,6 +62,10 @@ class InferAction {
     int dbitpipeline();
     int defaultdac();
     int defaultpattern();
+    int define_bit();
+    int define_reg();
+    int definelist_bit();
+    int definelist_reg();
     int delay();
     int delayl();
     int detectorserverversion();
@@ -395,6 +399,10 @@ class InferAction {
         {"dbitpipeline", &InferAction::dbitpipeline},
         {"defaultdac", &InferAction::defaultdac},
         {"defaultpattern", &InferAction::defaultpattern},
+        {"define_bit", &InferAction::define_bit},
+        {"define_reg", &InferAction::define_reg},
+        {"definelist_bit", &InferAction::definelist_bit},
+        {"definelist_reg", &InferAction::definelist_reg},
         {"delay", &InferAction::delay},
         {"delayl", &InferAction::delayl},
         {"detectorserverversion", &InferAction::detectorserverversion},

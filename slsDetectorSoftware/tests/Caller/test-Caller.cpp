@@ -3281,7 +3281,7 @@ TEST_CASE("update", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("reg", "[.cmdcall]") {
+TEST_CASE("reg", "[.cmdcall][.definecmds]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -3298,14 +3298,14 @@ TEST_CASE("reg", "[.cmdcall]") {
         {
             std::ostringstream oss1, oss2;
             caller.call("reg", {saddr, "0x6", "--validate"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "reg [" + saddr + ", 0x6]\n");
+            REQUIRE(oss1.str() == "reg " + saddr + " 0x6\n");
             caller.call("reg", {saddr}, -1, GET, oss2);
             REQUIRE(oss2.str() == "reg 0x6\n");
         }
         {
             std::ostringstream oss1, oss2;
             caller.call("reg", {saddr, "0x5"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "reg [" + saddr + ", 0x5]\n");
+            REQUIRE(oss1.str() == "reg " + saddr + " 0x5\n");
             caller.call("reg", {saddr}, -1, GET, oss2);
             REQUIRE(oss2.str() == "reg 0x5\n");
         }
@@ -3340,7 +3340,7 @@ TEST_CASE("adcreg", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("setbit", "[.cmdcall]") {
+TEST_CASE("setbit", "[.cmdcall][.definecmds]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -3370,7 +3370,7 @@ TEST_CASE("setbit", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("clearbit", "[.cmdcall]") {
+TEST_CASE("clearbit", "[.cmdcall][.definecmds]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -3400,7 +3400,7 @@ TEST_CASE("clearbit", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("getbit", "[.cmdcall]") {
+TEST_CASE("getbit", "[.cmdcall][.definecmds]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();

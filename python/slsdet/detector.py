@@ -3,6 +3,7 @@
 from ._slsdet import CppDetectorApi
 from ._slsdet import slsDetectorDefs
 from ._slsdet import IpAddr, MacAddr
+from ._slsdet import RegisterAddress, RegisterValue, BitAddress
 
 runStatus = slsDetectorDefs.runStatus
 timingMode = slsDetectorDefs.timingMode
@@ -24,6 +25,7 @@ import datetime as dt
 
 from functools import wraps
 from collections import namedtuple
+from collections.abc import Sequence
 import socket
 import numpy as np
 
@@ -328,6 +330,46 @@ class Detector(CppDetectorApi):
     def rx_arping(self, value):
         ut.set_using_dict(self.setRxArping, value)
 
+    @property
+    def rx_roi(self): 
+        """Gets the list of ROIs configured in the receiver. 
+
+        Note
+        -----
+        Each ROI is represented as a tuple of (x_start, y_start, x_end, y_end). \n
+        If no ROIs are configured, returns [[-1,-1,-1,-1]].
+        """
+        return self.getRxROI() #vector of Roi structs how represented? 
+    
+    @rx_roi.setter
+    def rx_roi(self, rois):
+        """
+        Sets the list of ROIs in the receiver.
+        Can only set multiple ROIs at multi module level without gap pixels. If more than 1 ROI per
+        UDP port, it will throw. Setting number of udp interfaces will clear the
+        roi. Cannot be set for CTB or Xilinx CTB.  
+
+        Note
+        -----
+        Each ROI should be represented as a sequence of 4 ints (x_start, y_start, x_end, y_end). \n
+        For mythen3 or gotthard2 pass a sequence of 2 ints (x_start, x_end) \n
+        For multiple ROI's pass a sequence of sequence \n
+        Example: [[0, 100, 50, 100], [260, 270, 50,100]] \n
+        """
+        # TODO: maybe better to accept py::object in setRxROI and handle there? 
+        if not isinstance(rois, Sequence):
+            raise TypeError(
+            "setRxROI failed: expected a tuple/list of ints x_min, x_max, y_min, y_max "
+            "or a sequence of such."
+        )
+        if(not isinstance(rois[0], Sequence)): 
+            self.setRxROI([rois])
+        else:
+            self.setRxROI(rois)
+
+    def rx_clearroi(self): 
+        """Clears all the ROIs configured in the receiver."""
+        self.clearRxROI()
 
     @property
     @element
@@ -1799,6 +1841,148 @@ class Detector(CppDetectorApi):
         [Eiger] Address is +0x100 for only left, +0x200 for only right.
         """
         return self._register
+    
+    def define_reg(self, *, name: str, addr):
+        """
+        [Ctb] Define a name for a register to be used later with reg.
+
+        Example
+        --------
+
+        d.define_reg('myreg',addr=0x6)
+        d.define_reg('myreg',addr=RegisterAddress(0x6))')
+        """
+        if isinstance(addr, int):
+            addr = RegisterAddress(addr)
+        elif not isinstance(addr, RegisterAddress):
+            raise ValueError("addr must int or RegisterAddress")
+        self.setRegisterDefinition(name, addr)
+
+
+    def define_bit(self, *, name: str, addr, bit_position:int=None):
+        """
+        [Ctb] Define a name for a bit in a register to be used later with setBit/clearBit/getBit
+
+        Example
+        --------
+
+        bit1 = BitAddress(RegisterAddress(0x6),7)
+        d.define_bit('mybit',addr=bit1)
+        d.define_bit('mybit',addr=0x6, bit=7)
+        d.define_bit('mybit',addr=RegisterAddress(0x6), bit=7)
+        d.define_bit('mybit',addr='myreg', bit=7) #if myreg defined before
+        """
+
+        # bitAddress
+        if isinstance(addr, BitAddress):
+            if bit_position is not None:
+                raise ValueError("If addr is BitAddress, bit_position must be None")
+            bitaddr = addr
+        # register name/address + bit_position
+        else:
+            if isinstance(addr, str):
+                addr = self.getRegisterAddress(addr)
+            elif isinstance(addr, int):
+                addr = RegisterAddress(addr)
+            elif not isinstance(addr, RegisterAddress):
+                raise ValueError("addr must be str, int or RegisterAddress")
+            
+            if bit_position is None:
+                raise ValueError("bit_position must be provided if addr is used.")
+            if not isinstance(bit_position, int):
+                raise ValueError("bit_position must be int")
+
+            bitaddr = BitAddress(addr, bit_position)
+
+        self.setBitDefinition(name, bitaddr)
+
+    def _resolve_bit_name_or_addr(self, bitname_or_addr, bit_position=None):
+        """
+        Internal function to resolve bit name or address arguments for setBit, clearBit and getBit
+        Returns a BitAddress
+        """
+        #Old usage passing two ints  or [RegisterAddress and int]
+        if isinstance(bitname_or_addr, (int, RegisterAddress)):
+            if bit_position is None:
+                raise ValueError("bit_position must be provided when passing int address")
+            if not isinstance(bit_position, int):
+                raise ValueError("bit_position must be int")
+            return BitAddress(bitname_or_addr, bit_position)
+
+        # New usage with str or BitAddress
+        # str
+        if isinstance(bitname_or_addr, str):
+            bitname_or_addr = self.getBitAddress(bitname_or_addr)
+
+        if bit_position is not None:
+            raise ValueError("bit_position must be None when passing str or BitAddress")
+
+        #must now be a BitAddress
+        if not isinstance(bitname_or_addr, BitAddress):
+            raise ValueError("bitname_or_addr must be str, BitAddress, int or RegisterAddress")
+
+        return bitname_or_addr
+        
+
+    def setBit(self, bitname_or_addr, bit_position=None):
+        """
+        Set a bit in a register
+        [Ctb] Can use a named bit address
+
+        Example
+        --------
+        d.setBit(0x5, 3)
+        d.setBit(RegisterAddress(0x5), 3)
+        
+        #Ctb
+        d.setBit('mybit')
+
+        myreg = RegisterAddress(0x5)
+        mybit = BitAddress(myreg, 5) 
+        d.setBit(mybit)
+        """
+        resolved = self._resolve_bit_name_or_addr(bitname_or_addr, bit_position)
+        return super().setBit(resolved)
+        
+    def clearBit(self, bitname_or_addr, bit_position=None):
+        """
+        Clear a bit in a register
+        [Ctb] Can use a named bit address
+
+        Example
+        --------
+        d.clearBit(0x5, 3)
+        
+        #Ctb
+        d.clearBit('mybit')
+
+        myreg = RegisterAddress(0x5)
+        mybit = BitAddress(myreg, 5) 
+        d.clearBit(mybit)
+        """
+        resolved = self._resolve_bit_name_or_addr(bitname_or_addr, bit_position)
+        return super().clearBit(resolved)
+
+    @element
+    def getBit(self, bitname_or_addr, bit_position=None):
+        """
+        Get a bit from a register
+        [Ctb] Can use a named bit address
+
+        Example
+        --------
+        d.getBit(0x5, 3)
+        
+        #Ctb
+        d.getBit('mybit')
+
+        myreg = RegisterAddress(0x5)
+        mybit = BitAddress(myreg, 5) 
+        d.getBit(mybit)
+        """
+        resolved = self._resolve_bit_name_or_addr(bitname_or_addr, bit_position)
+        return super().getBit(resolved)  
+
 
     @property
     def slowadc(self):

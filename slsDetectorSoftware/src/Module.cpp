@@ -2568,17 +2568,16 @@ std::vector<int> Module::getReceiverDbitList() const {
 
 void Module::setReceiverDbitList(std::vector<int> list) {
     LOG(logDEBUG1) << "Setting Receiver Dbit List";
-    if (list.size() > 64) {
-        throw RuntimeError("Dbit list size cannot be greater than 64\n");
-    }
+
     for (auto &it : list) {
         if (it < 0 || it > 63) {
             throw RuntimeError("Dbit list value must be between 0 and 63\n");
         }
     }
-    std::sort(begin(list), end(list));
-    auto last = std::unique(begin(list), end(list));
-    list.erase(last, list.end());
+    auto r = stableRemoveDuplicates(list);
+    if (r) {
+        LOG(logWARNING) << "Removed duplicated from receiver dbit list";
+    }
 
     StaticVector<int, MAX_RX_DBIT> arg = list;
     sendToReceiver(F_SET_RECEIVER_DBIT_LIST, arg, nullptr);
@@ -2916,29 +2915,30 @@ void Module::setUpdateMode(const bool updatemode) {
                  << "): Update Mode set to " << updatemode << "!";
 }
 
-uint32_t Module::readRegister(uint32_t addr) const {
-    return sendToDetectorStop<uint32_t>(F_READ_REGISTER, addr);
+RegisterValue Module::readRegister(RegisterAddress addr) const {
+    return sendToDetectorStop<RegisterValue>(F_READ_REGISTER, addr.value());
 }
 
-void Module::writeRegister(uint32_t addr, uint32_t val, bool validate) {
-    uint32_t args[]{addr, val, static_cast<uint32_t>(validate)};
+void Module::writeRegister(RegisterAddress addr, RegisterValue val,
+                           bool validate) {
+    uint32_t args[]{addr.value(), val.value(), static_cast<uint32_t>(validate)};
     return sendToDetectorStop(F_WRITE_REGISTER, args, nullptr);
 }
 
-void Module::setBit(uint32_t addr, int n, bool validate) {
-    uint32_t args[] = {addr, static_cast<uint32_t>(n),
+void Module::setBit(BitAddress bitAddr, bool validate) {
+    uint32_t args[] = {bitAddr.address().value(), bitAddr.bitPosition(),
                        static_cast<uint32_t>(validate)};
     sendToDetectorStop(F_SET_BIT, args, nullptr);
 }
 
-void Module::clearBit(uint32_t addr, int n, bool validate) {
-    uint32_t args[] = {addr, static_cast<uint32_t>(n),
+void Module::clearBit(BitAddress bitAddr, bool validate) {
+    uint32_t args[] = {bitAddr.address().value(), bitAddr.bitPosition(),
                        static_cast<uint32_t>(validate)};
     sendToDetectorStop(F_CLEAR_BIT, args, nullptr);
 }
 
-int Module::getBit(uint32_t addr, int n) {
-    uint32_t args[2] = {addr, static_cast<uint32_t>(n)};
+int Module::getBit(BitAddress bitAddr) const {
+    uint32_t args[2] = {bitAddr.address().value(), bitAddr.bitPosition()};
     return sendToDetectorStop<int>(F_GET_BIT, args);
 }
 

@@ -16,7 +16,6 @@ SERVER_START_PORTNO=1900
 
 init(autoreset=True)
 
-
 class LogLevel(Enum):
     INFO = 0
     INFORED = 1
@@ -64,26 +63,30 @@ def checkIfProcessRunning(processName):
 
 
 def killProcess(name, fp):
-    pids = checkIfProcessRunning(name)
-    if pids:
-        Log(LogLevel.INFO, f"Killing '{name}' processes with PIDs: {', '.join(pids)}", fp)
-        for pid in pids:
-            try:
-                p = subprocess.run(['kill', pid])
-                if p.returncode != 0 and bool(checkIfProcessRunning(name)):
-                    raise RuntimeException(f"Could not kill {name} with pid {pid}")
-            except Exception as e:
-                raise RuntimeException(f"Failed to kill process {name} pid:{pid}. Error: {str(e)}") from e
-    #else:
-    #    Log(LogLevel.INFO, 'process not running : ' + name)
+    '''
+    Kill all processes matching name.
+    Does not fail if process is already gone.
+    '''
+    Log(LogLevel.INFO, f"Attempting to kill '{name}' (if running)", fp)
+
+    # pkill returns:
+    # 0 -> process killed
+    # 1 -> no process found OK
+    subprocess.run(['pkill', '-f', name],
+                   stdout=subprocess.DEVNULL,
+                   stderr=subprocess.DEVNULL)
 
 
 def cleanSharedmemory(fp):
     Log(LogLevel.INFO, 'Cleaning up shared memory', fp)
     try:
-        p = subprocess.run(['sls_detector_get', 'free'], stdout=fp, stderr=fp)
-    except:
-        raise RuntimeException('Could not free shared memory')
+        p = subprocess.run(['sls_detector_get', 'free'], stdout=fp, stderr=fp, check = False)
+    except FileNotFoundError:
+        # Binary not available (e.g. on CI) → ignore
+        Log(LogLevel.INFO, 'sls_detector_get not found, skipping shared memory cleanup', fp)
+    except Exception as e:
+        # Any other cleanup failure should NEVER fail tests
+        Log(LogLevel.WARN, f'Ignoring shared memory cleanup error: {e}', fp)
 
 
 def cleanup(fp):
@@ -193,20 +196,39 @@ def connectToVirtualServers(name, num_mods, ctb_object=False):
 
     return d
 
+def startReceiver(num_mods, fp):
+    if num_mods == 1:
+        cmd = ['slsReceiver']
+    else:
+        cmd = ['slsMultiReceiver', str(DEFAULT_TCP_RX_PORTNO), str(num_mods)]
+        # in 10.0.0
+        #cmd = ['slsMultiReceiver', '-p', str(DEFAULT_TCP_RX_PORTNO), '-n', str(num_mods)]
+    startProcessInBackground(cmd, fp)
+    time.sleep(1)
 
-def loadConfig(name, rx_hostname, settingsdir, fp, num_mods = 1, num_frames = 1):
+
+def loadConfig(name, rx_hostname = 'localhost', settingsdir = None, log_file_fp = None, num_mods = 1, num_frames = 1, num_interfaces = 1):
     Log(LogLevel.INFO, 'Loading config')
-    Log(LogLevel.INFO, 'Loading config', fp)
+    Log(LogLevel.INFO, 'Loading config', log_file_fp)
     try:
         d = connectToVirtualServers(name, num_mods)
+
+        if name == 'jungfrau' or name == 'moench':
+            d.numinterfaces = num_interfaces
+
         d.udp_dstport = DEFAULT_UDP_DST_PORTNO
-        if name == 'eiger':
+        if name == 'eiger' or name == 'jungfrau' or name == 'moench':
             d.udp_dstport2 = DEFAULT_UDP_DST_PORTNO + 1
 
         d.rx_hostname = rx_hostname
+
         d.udp_dstip = 'auto'
+
         if name != "eiger":
             d.udp_srcip = 'auto'
+
+        if name == "jungfrau" or name == "moench":  
+            d.udp_dstip2 = 'auto'
 
         if name == "jungfrau" or name == "moench" or name == "xilinx_ctb":
             d.powerchip = 1
@@ -214,11 +236,11 @@ def loadConfig(name, rx_hostname, settingsdir, fp, num_mods = 1, num_frames = 1)
         if name == "xilinx_ctb":
             d.configureTransceiver()
 
-        if name == "eiger":
-            d.trimen = [4500, 5400, 6400]
-            d.settingspath = settingsdir + '/eiger/'
-            d.setThresholdEnergy(4500, detectorSettings.STANDARD)
-
+        if settingsdir is not None and name in ['eiger', 'mythen3']: 
+            d.settingspath = settingsdir + '/' + name + '/'
+            d.trimen = [4500, 5400, 6400] if name == 'eiger' else [4000, 6000, 8000, 12000]
+            d.setThresholdEnergy(4500, detectorSettings.STANDARD) 
+        
         d.frames = num_frames
       
     except Exception as e:

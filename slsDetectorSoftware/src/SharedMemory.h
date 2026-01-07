@@ -28,6 +28,8 @@
 // ********************** Defines for shared memory. **********************
 // WARNING! before chaning these search the codebase for their usage!
 
+// date when IsValid boolean introduced into every shm structure
+// (to look out for shm that still exists due to other mapped resources)
 #define SHM_IS_VALID_CHECK_VERSION 0x250820
 
 // Max shared memory name length in macOS is 31 characters
@@ -93,17 +95,16 @@ template <typename T> class SharedMemory {
             unmapSharedMemory();
     }
 
+    /** memory is valid if it has the IsValid flag and is true */
     bool memoryHasValidFlag() const {
         if (shared_struct == nullptr) {
             throw SharedMemoryError(
                 "Shared memory not mapped. Cannot check validity.");
         }
-        // CtbConfig did not have shmversion before, so exact value check
-        if constexpr (is_type<CtbConfig, T>()) {
-            if (shared_struct->shmversion == SHM_IS_VALID_CHECK_VERSION) {
-                return true;
-            }
-        } else if (shared_struct->shmversion >= SHM_IS_VALID_CHECK_VERSION) {
+        // CtbConfig also works (shmversion didnt exist prior, but it would read
+        // "20" = length size) so shmversion should always be >= isValid
+        // introduced date (0x250820)
+        if (shared_struct->shmversion >= SHM_IS_VALID_CHECK_VERSION) {
             return true;
         }
         return false;

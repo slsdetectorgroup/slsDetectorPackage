@@ -116,6 +116,7 @@ class InferAction {
     int im_d();
     int im_io();
     int imagetest();
+    int include();
     int initialchecks();
     int inj_ch();
     int interpolation();
@@ -449,6 +450,7 @@ class InferAction {
         {"im_d", &InferAction::im_d},
         {"im_io", &InferAction::im_io},
         {"imagetest", &InferAction::imagetest},
+        {"include", &InferAction::include},
         {"initialchecks", &InferAction::initialchecks},
         {"inj_ch", &InferAction::inj_ch},
         {"interpolation", &InferAction::interpolation},

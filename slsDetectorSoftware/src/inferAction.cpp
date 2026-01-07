@@ -1618,6 +1618,18 @@ int InferAction::imagetest() {
     }
 }
 
+int InferAction::include() {
+
+    if (args.size() == 1) {
+        return slsDetectorDefs::PUT_ACTION;
+    }
+
+    else {
+
+        throw RuntimeError("Could not infer action: Wrong number of arguments");
+    }
+}
+
 int InferAction::initialchecks() {
 
     if (args.size() == 0) {

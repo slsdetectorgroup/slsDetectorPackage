@@ -161,6 +161,7 @@ class Caller {
     std::string im_d(int action);
     std::string im_io(int action);
     std::string imagetest(int action);
+    std::string include(int action);
     std::string initialchecks(int action);
     std::string inj_ch(int action);
     std::string interpolation(int action);
@@ -506,6 +507,7 @@ class Caller {
         {"im_d", &Caller::im_d},
         {"im_io", &Caller::im_io},
         {"imagetest", &Caller::imagetest},
+        {"include", &Caller::include},
         {"initialchecks", &Caller::initialchecks},
         {"inj_ch", &Caller::inj_ch},
         {"interpolation", &Caller::interpolation},

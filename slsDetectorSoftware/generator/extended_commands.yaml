@@ -4986,6 +4986,32 @@ imagetest:
     \ pixel intensity incremented by 1. If 1, all pixels almost saturated."
   infer_action: true
   template: true
+include:
+  actions:
+    PUT:
+      args:
+      - arg_types:
+        - special::path
+        argc: 1
+        cast_input:
+        - false
+        check_det_id: true
+        convert_det_id: true
+        function: loadParameters
+        input:
+        - args[0]
+        input_types:
+        - std::string
+        output:
+        - args.front()
+        require_det_id: false
+        store_result_in_t: false
+  command_name: include
+  function_alias: include
+  help: "\n\tSets detector measurement parameters to those contained in fname. Set\
+    \ up per measurement. Same as parameters command."
+  infer_action: true
+  template: true
 initialchecks:
   actions:
     GET:

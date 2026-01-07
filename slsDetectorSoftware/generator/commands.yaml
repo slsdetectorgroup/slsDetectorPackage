@@ -1853,6 +1853,13 @@ parameters:
     PUT:
       function: loadParameters
 
+include:
+  inherit_actions: EXECUTE_SET_COMMAND_NOID_1ARG
+  help: "\n\tSets detector measurement parameters to those contained in fname. Set up per measurement. Same as parameters command."
+  actions:
+    PUT:
+      function: loadParameters
+
 savepattern:
   inherit_actions: EXECUTE_SET_COMMAND_NOID_1ARG
   help: "\n\t[Ctb][Mythen3][Xilinx Ctb] Saves pattern to file (ascii). \n\t[Ctb] Also executes pattern."

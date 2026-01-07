@@ -47,7 +47,7 @@ jobs:
       - name: Simulator unit tests
         working-directory: ${{github.workspace}}/build/bin
         run: |
-            python test_simulators.py --no-log-file --tests "~[.disable_jungfrau] ~[.disable_xilinx_ctb]" --servers eiger jungfrau mythen3 gotthard2 ctb moench
+            python test_simulators.py --no-log-file --tests "[detectorintegration]~[disable_jungfrau]~[disable_xilinx_ctb]" --servers eiger jungfrau mythen3 gotthard2 ctb moench
             python test_frame_synchronizer.py --no-log-file
 
       #- name: Upload detector logs

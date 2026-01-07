@@ -256,24 +256,22 @@ std::string getAbsolutePathFromCurrentProcess(const std::string &fname) {
         return fname;
     }
 
-    //in case PATH_MAX defines the longest possible path on linux and macOS
-    //use string instead of char array to avoid overflow
-    std::string path(PATH_MAX, '\0'); 
+    // in case PATH_MAX defines the longest possible path on linux and macOS
+    // use string instead of char array to avoid overflow
+    std::string path(PATH_MAX, '\0');
 
-
-    #if defined(__APPLE__)
+#if defined(__APPLE__)
     uint32_t size = PATH_MAX;
     if (_NSGetExecutablePath(path.data(), &size) != 0) {
         throw std::runtime_error("Failed to get executable path");
     }
     // Resolve any symlinks and .. components
-    std::string resolved(PATH_MAX, '\0'); 
+    std::string resolved(PATH_MAX, '\0');
     if (!realpath(path.data(), resolved.data())) {
         throw std::runtime_error("realpath failed for executable");
     }
     path = resolved;
-    #else
-
+#else
 
     ssize_t len = readlink("/proc/self/exe", path.data(), PATH_MAX - 1);
     if (len < 0) {
@@ -281,7 +279,7 @@ std::string getAbsolutePathFromCurrentProcess(const std::string &fname) {
     }
     path[len] = '\0';
 
-    #endif
+#endif
 
     // get dir path and attach file name
     std::string absPath = (std::string(dirname(path.data())) + '/' + fname);

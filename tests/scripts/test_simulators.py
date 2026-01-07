@@ -68,9 +68,9 @@ def startTestsForAll(args, fp):
                 fname = fname_template.format(args.tests, server) if not args.no_log_file else None
 
                 Log(LogLevel.INFOBLUE, f'Starting {args.tests} Tests for {server}')
+                if args.no_log_file:
+                    print("Log file disabled.")
                 cleanup(fp)
-                
-                print("no log file: ", args.no_log_file)
                 startDetectorVirtualServer(name=server, num_mods=num_mods, fp=fp, no_log_file=args.no_log_file)
                 startReceiver(args.num_mods, fp)
                 d = loadConfig(name=server, rx_hostname=args.rx_hostname, settingsdir=args.settingspath, log_file_fp=fp, num_mods=args.num_mods, num_interfaces=ninterfaces)

@@ -149,6 +149,33 @@ class Detector(CppDetectorApi):
             value = ut.make_string_path(value)
         self.loadParameters(value)
 
+
+    @property
+    def include(self):
+        """Sets detector measurement parameters to those contained in fname. 
+        Set up per measurement.
+        
+        Note 
+        -----
+        Equivalent to config, but does not free shared memory. Same as parameters command.
+
+        :getter: Not implemented
+        :setter: loads parameters file
+
+        Example
+        ---------
+
+        >>> d.include = 'path/to/file.par'
+        
+        """
+        return NotImplementedError("include is set only")
+
+    @include.setter
+    def include(self, value):
+        if isinstance(value, str):
+            value = ut.make_string_path(value)
+        self.loadParameters(value)
+
     @property
     def hostname(self):
         """Frees shared memory and sets hostname (or IP address) of all modules concatenated by + 

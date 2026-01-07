@@ -62,3 +62,5 @@ configure_file(scripts/test_frame_synchronizer.py ${CMAKE_BINARY_DIR}/bin/test_f
 configure_file(scripts/utils_for_test.py ${CMAKE_BINARY_DIR}/bin/utils_for_test.py COPYONLY)
 configure_file(scripts/test_roi.py ${CMAKE_BINARY_DIR}/bin/test_roi.py COPYONLY)
 configure_file(scripts/test_free.py ${CMAKE_BINARY_DIR}/bin/test_free.py COPYONLY)
+configure_file(scripts/test_commands.py ${CMAKE_BINARY_DIR}/bin/test_commands.py COPYONLY)
+

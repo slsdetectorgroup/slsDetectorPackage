@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: LGPL-3.0-or-other
 # Copyright (C) 2021 Contributors to the SLS Detector Package
+import pathlib
 from ._slsdet import CppDetectorApi
 from ._slsdet import slsDetectorDefs
 from ._slsdet import IpAddr, MacAddr
@@ -3584,9 +3585,13 @@ class Detector(CppDetectorApi):
         raise NotImplementedError("Pattern is set only")
 
     @pattern.setter
-    def pattern(self, fname):
-        fname = ut.make_string_path(fname)
-        ut.set_using_dict(self.setPattern, fname)
+    def pattern(self, name_or_pattern):
+        # If passed a file path, convert to string representation
+        # with the path expanded. Otherwise it's probably a sls::Pattern
+        # and we can pass it directly.
+        if isinstance(name_or_pattern, (pathlib.Path, str)):
+            name_or_pattern = ut.make_string_path(name_or_pattern)
+        ut.set_using_dict(self.setPattern, name_or_pattern)
 
     @property
     def patfname(self):

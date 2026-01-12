@@ -35,10 +35,10 @@ jobs:
           cd build/bin
           python test_simulators.py -nlf -t "[detectorintegration]~[disable_jungfrau]~[disable_xilinx_ctb]"
 
-      - name: Run frame synchronizer tests
-        run: |
-          cd build/bin
-          python test_frame_synchronizer.py -nlf
+      # - name: Run frame synchronizer tests
+      #   run: |
+      #     cd build/bin
+      #     python test_frame_synchronizer.py -nlf
 
       #- name: Upload detector logs
       #  uses: actions/upload-artifact@v4

@@ -23,19 +23,17 @@ jobs:
             - name: Install System Packages
               uses: awalsh128/cache-apt-pkgs-action@latest
               with:
-                packages: libhdf5-dev doxygen
+                packages: libhdf5-dev 
                 version: 1.0
 
             - name: Install Python Packages
               uses: conda-incubator/setup-miniconda@v3
               with:
                 python-version: ${{ matrix.python-version }}
+                environment-name: etc/gh-workflow-conda-env.yml
                 miniforge-version: latest
                 channels: conda-forge
                 conda-remove-defaults: "true"
-                cache-environment: true
-                packages: |
-                    sphinx
                
 
             - name: Build Documentation

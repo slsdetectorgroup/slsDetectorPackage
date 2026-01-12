@@ -1,0 +1,9 @@
+name: githib-workflow-environment 
+channels:
+  - conda-forge
+dependencies:
+  - doxygen
+  - sphinx
+  - breathe
+  - sphinx_rtd_theme
+  

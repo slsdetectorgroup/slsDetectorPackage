@@ -22,6 +22,7 @@ from utils_for_test import (
     loadConfig,
     loadBasicSettings,
     ParseArguments, 
+    build_dir
 )
 
 LOG_PREFIX_FNAME = '/tmp/slsFrameSynchronizer_test'
@@ -39,7 +40,7 @@ def startFrameSynchronizerPullSocket(name, fp):
 
 
 def startFrameSynchronizer(num_mods, fp):
-    cmd = ['slsFrameSynchronizer', str(DEFAULT_TCP_RX_PORTNO), str(num_mods)]
+    cmd = [str(build_dir / 'slsFrameSynchronizer'), str(DEFAULT_TCP_RX_PORTNO), str(num_mods)]
     # in 10.0.0
     #cmd = ['slsFrameSynchronizer', '-p', str(DEFAULT_TCP_RX_PORTNO), '-n', str(num_mods)]
     startProcessInBackground(cmd, fp)

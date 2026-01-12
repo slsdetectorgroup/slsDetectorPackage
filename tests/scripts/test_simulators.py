@@ -30,6 +30,7 @@ from utils_for_test import (
     loadConfig,
     loadBasicSettings,
     ParseArguments, 
+    build_dir,
     optional_file
 )
 
@@ -39,7 +40,7 @@ GENERAL_TESTS_LOG_FNAME = LOG_PREFIX_FNAME + '_results_general.txt'
 
 def startGeneralTests(fp):
     fname = GENERAL_TESTS_LOG_FNAME
-    cmd = ['tests', '--abort', '-s']
+    cmd = [str(build_dir / 'tests'), '--abort', '-s']
     try:
         cleanup(fp)
         runProcessWithLogFile('General Tests', cmd, fp, fname)
@@ -52,7 +53,7 @@ def startTestsForAll(args, fp):
 
     
     test_filter = args.tests
-    cmd = ['tests', '--abort', test_filter, '-s'] 
+    cmd = [str(build_dir / 'tests'), '--abort', test_filter, '-s'] 
 
     num_mods = args.num_mods 
 

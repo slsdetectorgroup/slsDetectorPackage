@@ -94,7 +94,7 @@ def killProcess(name, fp):
 def cleanSharedmemory(fp):
     Log(LogLevel.INFO, 'Cleaning up shared memory', fp)
     try:
-        p = subprocess.run(['sls_detector_get', 'free'], stdout=fp, stderr=fp)
+        p = subprocess.run([build_dir / 'sls_detector_get', 'free'], stdout=fp, stderr=fp)
     except Exception as e:
         raise RuntimeException(f'Could not free shared memory: {str(e)}')
 
@@ -210,7 +210,7 @@ def runProcess(name, cmd, fp):
 def startDetectorVirtualServer(name :str, num_mods, fp, no_log_file = False):
     for i in range(num_mods):
         port_no = SERVER_START_PORTNO + (i * 2)
-        cmd = [name + 'DetectorServer_virtual', '-p', str(port_no)]
+        cmd = [str(build_dir / (name + 'DetectorServer_virtual')), '-p', str(port_no)]
         if no_log_file: 
             startProcessInBackgroundWithLogFile(cmd, fp, None)
         else: 
@@ -251,9 +251,9 @@ def connectToVirtualServers(name, num_mods, ctb_object=False):
 
 def startReceiver(num_mods, fp):
     if num_mods == 1:
-        cmd = ['slsReceiver']
+        cmd = [str(build_dir / 'slsReceiver')]
     else:
-        cmd = ['slsMultiReceiver', str(DEFAULT_TCP_RX_PORTNO), str(num_mods)]
+        cmd = [str(build_dir / 'slsMultiReceiver'), str(DEFAULT_TCP_RX_PORTNO), str(num_mods)]
         # in 10.0.0
         #cmd = ['slsMultiReceiver', '-p', str(DEFAULT_TCP_RX_PORTNO), '-n', str(num_mods)]
     startProcessInBackground(cmd, fp)

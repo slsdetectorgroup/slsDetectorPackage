@@ -8,9 +8,13 @@ on:
 env: 
     BUILD_TYPE: RELEASE 
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
-    build:
+    build-and-deploy:
         strategy: 
             matrix:
                 patform: [ubuntu-latest]
@@ -47,21 +51,29 @@ jobs:
               uses: actions/upload-pages-artifact@v4
               with:
                 path: build/docs/html # maybe we need to upload images as well - so one can click on them? 
-               
-
-    deploy: 
-        environment: 
-            name: github-pages
-        needs: build
-        runs-on: ubuntu-latest 
-        steps: 
-            - name: Deploy to GitHub Pages
-              id: deployment
-              uses: actions/deploy-pages@v1
+        
+            - name: Checkout gh-pages
+              uses: actions/checkout@v4
               with:
-                branch: gh-pages                # visible branch for Pages
-                #folder: "v${{ github.ref_name }}" # deploy to version subfolder 
-                folder: "."
+                ref: gh-pages
+                path: gh-pages
+                
+            - name: Copy documentation to gh-pages # create folder structure 
+              run: cp build/docs/html/* gh-pages/
+              
+            - name: Commit and Push changes to gh-pages
+              run: |
+                cd gh-pages
+                git config --global user.name 'github-actions'
+                git config --global user.email 'github-actions@github.com'
+                git add .
+                git commit -m "Update Documentation"
+                git push origin gh-pages 
+            
+       
+
+
+
 
 
             

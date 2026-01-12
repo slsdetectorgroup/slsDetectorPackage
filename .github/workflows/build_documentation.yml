@@ -1,0 +1,53 @@
+name: Build and upload Documentation 
+
+on: 
+    workflow_dispatch: 
+    push: # Only for Testing change later 
+
+
+env: 
+    BUILD_TYPE: RELEASE 
+
+
+jobs:
+    build:
+        strategy: 
+            matrix:
+                patform: [ubuntu-latest]
+                python-version: ["3.12"]
+        runs-on: ${{ matrix.patform }}
+
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Build Documentation
+              run: |
+                mkdir build
+                cd build
+                cmake -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DSLS_BUILD_DOCS=ON --DSLS_USE_HDF5=ON -DSLS_USE_PYTHON=ON ..
+                make -j4 
+                make docs
+
+            - name: Upload Documentation Artifact
+              uses: actions/upload-pages-artifact@v4
+              with:
+                path: build/docs/html # maybe we need to upload images as well - so one can click on them? 
+               
+
+        deploy: 
+            environment: 
+                name: github-pages
+            needs: build
+            runs-on: ubuntu-latest 
+            steps: 
+                - name: Deploy to GitHub Pages
+                  id: deployment
+                  uses: actions/deploy-pages@v1
+                  with:
+                   branch: gh-pages                # visible branch for Pages
+                   #folder: "v${{ github.ref_name }}"  # deploy to version subfolder 
+                   folder: "."
+
+
+            
+

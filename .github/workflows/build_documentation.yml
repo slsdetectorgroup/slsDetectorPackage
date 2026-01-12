@@ -26,12 +26,13 @@ jobs:
                 packages: libhdf5-dev doxygen
                 version: 1.0
 
-            - name: Install Python Packages
+            - name: Setup Python
               uses: actions/setup-python@v5
               with:
                 python-version: 3.12
                 cache: 'pip'
-                run: pip install sphinx sphinx_rtd_theme breathe
+            - name: Install Python Packages
+              run: pip install sphinx sphinx_rtd_theme breathe
                
 
             - name: Build Documentation

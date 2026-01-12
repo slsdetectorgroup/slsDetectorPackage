@@ -59,7 +59,7 @@ jobs:
                 path: gh-pages
                 
             - name: Copy documentation to gh-pages # create folder structure 
-              run: cp build/docs/html/* gh-pages/
+              run: cp -r build/docs/html/. gh-pages/
               
             - name: Commit and Push changes to gh-pages
               run: |

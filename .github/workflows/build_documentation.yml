@@ -9,9 +9,9 @@ env:
     BUILD_TYPE: RELEASE 
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write  # Required to push to gh-pages branch
+  pages: write     # Required for GitHub Pages deployment
+  id-token: write  # Required for GitHub Pages deployment
 
 jobs:
     build-and-deploy:
@@ -27,6 +27,9 @@ jobs:
 
         steps:
             - uses: actions/checkout@v4
+              with:
+                fetch-depth: 0  # Fetch all history for proper git operations
+                token: ${{ secrets.GITHUB_TOKEN }}  # Use the default token
 
             - name: Install System Packages
               uses: awalsh128/cache-apt-pkgs-action@latest
@@ -76,13 +79,13 @@ jobs:
                 git push origin gh-pages 
               env: 
                 GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            
-       
 
 
 
 
 
-            
+
+
+
 
 

@@ -27,7 +27,8 @@ jobs:
           -DSLS_USE_PYTHON=On \
           -DPython_EXECUTABLE=/usr/bin/python3.13 \
           -DPython_INCLUDE_DIR=/usr/include/python3.13 \
-          -DPython_LIBRARY=/usr/lib64/libpython3.13.so #-DSLS_USE_HDF5=ON
+          -DPython_LIBRARY=/usr/lib64/libpython3.13.so \
+          -DSLS_USE_HDF5=ON
 
       - name: Build
           # Build your program with the given configuration

@@ -27,7 +27,7 @@ jobs:
 
       - name: Python unit tests with simulators
         run: |
-          cd python/tests
+          export PYTHONPATH=$PWD/build/bin:$PYTHONPATH
           python3.13 -m pytest -m detectorintegration python/tests --detector-integration 
 
       - name: Simulator unit tests

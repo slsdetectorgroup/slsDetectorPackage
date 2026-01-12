@@ -20,10 +20,23 @@ jobs:
         steps:
             - uses: actions/checkout@v4
 
-            - uses: awalsh128/cache-apt-pkgs-action@latest
+            - name: Install System Packages
+              uses: awalsh128/cache-apt-pkgs-action@latest
               with:
-                packages: libhdf5-dev 
+                packages: libhdf5-dev doxygen
                 version: 1.0
+
+            - name: Install Python Packages
+              uses: conda-incubator/setup-miniconda@v3
+              with:
+                python-version: ${{ matrix.python-version }}
+                miniforge-version: latest
+                channels: conda-forge
+                conda-remove-defaults: "true"
+                cache-environment: true
+                packages: |
+                    sphinx
+               
 
             - name: Build Documentation
               run: |

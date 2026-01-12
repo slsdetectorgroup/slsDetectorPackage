@@ -21,6 +21,10 @@ jobs:
                 python-version: ["3.12"]
         runs-on: ${{ matrix.patform }}
 
+        defaults:
+            run:
+                shell: "bash -l {0}"
+
         steps:
             - uses: actions/checkout@v4
 

@@ -28,12 +28,12 @@ jobs:
       - name: Python unit tests with simulators
         run: |
           cd python/tests
-          python -m pytest -m detectorintegration python/tests --detector-integration 
+          python3.13 -m pytest -m detectorintegration python/tests --detector-integration 
 
       - name: Simulator unit tests
         run: |
           cd build/bin
-          python test_simulators.py -nlf -t "[detectorintegration]~[disable_jungfrau]~[disable_xilinx_ctb]"
+          python3.13 test_simulators.py 
 
       # - name: Run frame synchronizer tests
       #   run: |

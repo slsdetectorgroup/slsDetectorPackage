@@ -34,20 +34,21 @@ jobs:
                 path: build/docs/html # maybe we need to upload images as well - so one can click on them? 
                
 
-        deploy: 
-            environment: 
-                name: github-pages
-            needs: build
-            runs-on: ubuntu-latest 
-            steps: 
-                - name: Deploy to GitHub Pages
-                  id: deployment
-                  uses: actions/deploy-pages@v1
-                  with:
-                   branch: gh-pages                # visible branch for Pages
-                   #folder: "v${{ github.ref_name }}"  # deploy to version subfolder 
-                   folder: "."
+    deploy: 
+        environment: 
+            name: github-pages
+        needs: build
+        runs-on: ubuntu-latest 
+        steps: 
+            - name: Deploy to GitHub Pages
+              id: deployment
+              uses: actions/deploy-pages@v1
+              with:
+                branch: gh-pages                # visible branch for Pages
+                #folder: "v${{ github.ref_name }}" # deploy to version subfolder 
+                folder: "."
 
 
             
+
 

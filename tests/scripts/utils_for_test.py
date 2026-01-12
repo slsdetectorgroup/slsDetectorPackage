@@ -17,7 +17,8 @@ SERVER_START_PORTNO=1900
 
 init(autoreset=True)
 
-build_dir = Path(__file__).resolve().parents[2] / "build" / "bin"
+build_dir = ""
+#Path(__file__).resolve().parents[2] / "build" / "bin"
 
 class LogLevel(Enum):
     INFO = 0

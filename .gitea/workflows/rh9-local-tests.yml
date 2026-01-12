@@ -1,0 +1,60 @@
+name: Run Simulator Tests on local RHEL9
+
+on:
+  push:
+    branches:
+      - developer
+      - main
+      - 'dev/*'
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Debug  
+
+
+jobs:
+  build:
+    runs-on: "detectors-software-RH9"
+    name: Run all Simulator Tests
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+          cache: 'pip'
+      - run: pip install pytest numpy colorama
+
+      - uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: libhdf5-dev 
+          version: 1.0
+
+      - name: Configure CMake
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Debug -DSLS_USE_TESTS=ON -DSLS_USE_SIMULATOR=ON -DSLS_USE_PYTHON=On -DPython_EXECUTABLE=/usr/bin/python3.13 -DPython_INCLUDE_DIR=/usr/include/python3.13 -DPython_LIBRARY=/usr/lib64/libpython3.13.so #-DSLS_USE_HDF5=ON
+
+      - name: Build
+          # Build your program with the given configuration
+        run: cmake --build build -j4 --config Debug
+
+      - name: Python unit tests with simulators
+        run: |
+          cd build/bin
+          python -m pytest -m detectorintegration python/tests --detector-integration 
+
+      - name: Simulator unit tests
+        run: |
+          cd build/bin
+          python test_simulators.py -nlf -t "[detectorintegration]~[disable_jungfrau]~[disable_xilinx_ctb]"
+
+      - name: Run frame synchronizer tests
+        run: |
+          cd build/bin
+          python test_frame_synchronizer.py -nlf
+
+      #- name: Upload detector logs
+      #  uses: actions/upload-artifact@v4
+      #  with:
+      #    name: detector-logs
+      #    path: |
+      #      /tmp/*.txt
+      

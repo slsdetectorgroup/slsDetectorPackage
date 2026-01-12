@@ -27,7 +27,7 @@ jobs:
 
       - name: Python unit tests with simulators
         run: |
-          cd build/bin
+          cd python/tests
           python -m pytest -m detectorintegration python/tests --detector-integration 
 
       - name: Simulator unit tests

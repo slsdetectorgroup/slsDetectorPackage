@@ -3,6 +3,10 @@ name: Build and upload Documentation
 on: 
     workflow_dispatch: 
     push: # Only for Testing change later 
+    pull_request:
+        branches:
+            - developer
+            - main
     release:
         types:
             - published
@@ -83,18 +87,21 @@ jobs:
                 ref: gh-pages
                 path: gh-pages
                 
+            
             - name: Copy documentation and Release notes to versioned folder
+              # if: github.event_name == 'release' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
               run: |
                 VERSION="${{ steps.version.outputs.version }}"
                 mkdir -p "gh-pages/${VERSION}"
                 cp -r build/docs/html/. "gh-pages/${VERSION}/"
                 cp build/docs/main_index/index.html "gh-pages/index.html"
+                cp build/docs/main_index/index.html gh-pages/_sources/index.html.txt
                 if [ "${{ github.event_name }}" == "release" ]; then
                   cp  RELEASE.md "gh-pages/releases/RELEASE_v${VERSION}.md" 
-                fi
-            # TODO: need to update txt to md and backtrack? 
+                fi 
               
             - name: Commit and Push changes to gh-pages
+              # if: github.event_name == 'release' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
               run: |
                 cd gh-pages
                 git config --global user.name 'github-actions'

@@ -66,7 +66,7 @@
       <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
       <li class="breadcrumb-item active">Welcome to slsDetectorPackage's documentation!</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/index.html.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -101,7 +101,7 @@
 {% for v in versions %}
 {# Check if version >= 10.0.0 for .md vs .txt #}
 {% set version_parts = v["version"].split('.') | map('int') | list %}
-{% set is_new_format = (version_parts[0] > 10) or (version_parts[0] == 10 and version_parts[1] >= 0 and version_parts[2] >= 0) %}
+{% set is_new_format = (version_parts[0] > 10) or (version_parts[0] == 10 and version_parts[1] > 0 and version_parts[2] > 0) %}
 {% set release_ext = '.md' if is_new_format else '.txt' %}
 <tr class="row-{{ 'even' if loop.index is even else 'odd' }}">
   <td><p><a class="reference external" href="https://github.com/slsdetectorgroup/slsDetectorPackage/releases/tag/{{ v["version"] }}">{{ v["version"] }}</a></p></td>
@@ -132,7 +132,7 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="https://slsdetectorgroup.github.io/devdoc/{{ versions[0]["version"] }}/index.html" class="btn btn-neutral float-right" title="{{ versions[0]["version"] }}" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="https://slsdetectorgroup.github.io/slsDetectorPackage/{{ versions[0]["version"] }}/index.html" class="btn btn-neutral float-right" title="{{ versions[0]["version"] }}" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

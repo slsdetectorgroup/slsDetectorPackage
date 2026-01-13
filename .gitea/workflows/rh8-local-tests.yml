@@ -43,13 +43,15 @@ jobs:
           export PYTHONPATH=$PWD/build/bin:$PYTHONPATH
           export SLSDETNAME=gitea_runner_tests
           python -m pytest -m detectorintegration python/tests --detector-integration 
+          python -m pytest python/tests
+
 
       - name: Simulator unit tests
         run: |
           source /home/gitea_runner/.bashrc
           conda activate det
           cd build/bin
-          python test_simulators.py 
+          python test_simulators.py -g
 
       # - name: Run frame synchronizer tests
       #   run: |

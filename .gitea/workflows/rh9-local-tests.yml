@@ -39,11 +39,12 @@ jobs:
           export PYTHONPATH=$PWD/build/bin:$PYTHONPATH
           export SLSDETNAME=gitea_runner_tests
           python3.13 -m pytest -m detectorintegration python/tests --detector-integration 
+          python3.13 -m pytest python/tests 
 
       - name: Simulator unit tests
         run: |
           cd build/bin
-          python3.13 test_simulators.py 
+          python3.13 test_simulators.py -g
 
       # - name: Run frame synchronizer tests
       #   run: |

@@ -46,15 +46,7 @@ jobs:
           cd build/bin
           python3.13 test_simulators.py -g
 
-      # - name: Run frame synchronizer tests
-      #   run: |
-      #     cd build/bin
-      #     python test_frame_synchronizer.py -nlf
-
-      #- name: Upload detector logs
-      #  uses: actions/upload-artifact@v4
-      #  with:
-      #    name: detector-logs
-      #    path: |
-      #      /tmp/*.txt
-      
+      - name: Run frame synchronizer tests
+        run: |
+          cd build/bin
+          python3.13 test_frame_synchronizer.py

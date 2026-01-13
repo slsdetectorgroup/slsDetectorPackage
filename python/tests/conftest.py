@@ -1,3 +1,4 @@
+from http import server
 import pytest
 import sys
 import traceback
@@ -37,6 +38,35 @@ def pytest_collection_modifyitems(config, items):
     for item in items:
         if "detectorintegration" in item.keywords:
             item.add_marker(skip)
+
+
+
+@pytest.fixture(
+    scope="session", 
+    params=['eiger', 'jungfrau', 'mythen3', 'gotthard2', 'ctb', 'moench', 'xilinx_ctb']
+)
+def session_simulator(request):
+    """Fixture to start the detector server once and clean up at the end."""
+    det_type = request.param
+    num_mods = 1
+    num_interfaces = 1
+    fp = sys.stdout
+
+    # set up: once per server
+    Log(LogLevel.INFOBLUE, f'---- {det_type} ----')
+    cleanup(fp)
+    startDetectorVirtualServer(det_type, num_mods, fp)
+    startReceiver(num_mods, fp)
+
+    Log(LogLevel.INFOBLUE, f'Waiting for server to start up and connect')
+    #d = connectToVirtualServers(det_type, num_mods)
+    d = loadConfig(name=det_type, log_file_fp=fp, num_mods=num_mods, num_frames=1, num_interfaces=num_interfaces)
+    loadBasicSettings(name=det_type, d=d, fp=fp)
+
+    yield det_type, d # tests run here
+
+    cleanup(fp)
+
 
 #helper fixture for servers
 @pytest.fixture(scope='module') 

@@ -5,6 +5,11 @@ from conftest import test_with_simulators
 
 from slsdet import Detector
 
+from utils_for_test import (
+    Log,
+    LogLevel,
+)
+
 @pytest.mark.detectorintegration
 @pytest.mark.parametrize("setup_parameters", [(["moench"], 2)], indirect=True)
 def test_rx_ROI_moench(test_with_simulators, setup_parameters):
@@ -44,5 +49,3 @@ def test_rx_ROI_mythen(test_with_simulators, setup_parameters):
 
     assert d.rx_roi == [(0,10,-1,-1)]
     
-
-

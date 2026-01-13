@@ -1,0 +1,351 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulators &mdash; slsDetectorPackage 10.0.0  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/css/extra.css?v=2be88464" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Default Values" href="serverdefaults.html" />
+    <link rel="prev" title="Upgrade" href="serverupgrade.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            slsDetectorPackage 10.0.0
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Installation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="consuming.html">Consuming slsDetectorPackage</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">how to</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="softwarearchitecture.html">Software Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configcommands.html">Setup Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick_start_guide.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dataformat.html">Detector Image Size and Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="multidet.html">Using multiple detectors</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">C++ API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="detector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="result.html">Result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="receiver_api.html">Receiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pygettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pydetector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyenums.html">Enums</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyexamples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyPatternGenerator.html">PatternGenerator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pattern.html">Pattern</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Command line</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="commandline.html">Command line interface</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="container_utils.html">ContainerUtils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="type_traits.html">TypeTraits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ToString.html">ToString</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Firmware</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="firmware.html">Firmware Upgrade</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector Server</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="servers.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverupgrade.html">Upgrade</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Simulators</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#compilation">Compilation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#binaries">Binaries</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#arguments">Arguments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#client">Client</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#sample-config-file">Sample Config file</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#receivers">Receivers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#gui">Gui</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#limitations">Limitations</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="serverdefaults.html">Default Values</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector UDP Header</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="udpheader.html">Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udpconfig.html">Config file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udpdetspec.html">Detector Specific Fields</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiver.html">In-built Receiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="receivers.html">Custom Receiver</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver Files</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="fileformat.html">File format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiverheaderformat.html">SLS Receiver Header Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dataformat.html">Detector Image Size and Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="masterfileattributes.html">Master File Attributes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="binaryfileformat.html">Binary File Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hdf5fileformat.html">HDF5 File Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver ZMQ Stream</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="zmqjsonheaderformat.html">ZMQ: Json Header Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Troubleshooting</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">slsDetectorPackage 10.0.0</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Simulators</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/virtualserver.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="simulators">
+<span id="virtual-detector-servers"></span><h1>Simulators<a class="headerlink" href="#simulators" title="Link to this heading"></a></h1>
+<section id="compilation">
+<h2>Compilation<a class="headerlink" href="#compilation" title="Link to this heading"></a></h2>
+<ul>
+<li><dl>
+<dt>Using CMake, turn on the option</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">SLS_USE_SIMULATOR</span><span class="o">=</span>ON
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>Using cmk.sh script,</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./cmk.sh<span class="w"> </span>-bsj9<span class="w"> </span><span class="c1"># option -s is for simulator</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+</ul>
+<section id="binaries">
+<h3>Binaries<a class="headerlink" href="#binaries" title="Link to this heading"></a></h3>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>eigerDetectorServer_virtual
+jungfrauDetectorServer_virtual
+gotthard2DetectorServer_virtual
+mythen3DetectorServer_virtual
+moenchDetectorServer_virtual
+ctbDetectorServer_virtual
+</pre></div>
+</div>
+</div></blockquote>
+</section>
+</section>
+<section id="arguments">
+<h2>Arguments<a class="headerlink" href="#arguments" title="Link to this heading"></a></h2>
+<p>The arguments are the same as the <a class="reference internal" href="servers.html#detector-server-arguments"><span class="std std-ref">normal server arguments</span></a>.</p>
+<dl>
+<dt>When using multiple modules, use different ports for each virtual server.</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># will start control server at port 1912 and stop server at port 1913</span>
+jungfrauDetectorServer<span class="w"> </span>--port<span class="w"> </span><span class="m">1912</span><span class="w"> </span><span class="p">&amp;</span>
+
+<span class="c1"># will start second control server at port 1914 and stop server at port 1915</span>
+jungfrauDetectorServer<span class="w"> </span>--port<span class="w"> </span><span class="m">1914</span><span class="w"> </span><span class="p">&amp;</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</section>
+<section id="client">
+<h2>Client<a class="headerlink" href="#client" title="Link to this heading"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># hostname should include the port (if not default)</span>
+sls_detector_put<span class="w"> </span>hostname<span class="w"> </span>localhost:1912+localhost:1914+
+
+<span class="c1"># or use virtual command, instead of hostname</span>
+<span class="c1"># connects to 2 servers at localhost</span>
+<span class="c1"># (control servers: 1912, 1914; stop servers: 1913, 1915)</span>
+sls_detector_put<span class="w"> </span>virtual<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="m">1912</span>
+</pre></div>
+</div>
+<p>Use the same in the config file.
+Detector API has a method ‘isVirtualDetectorServer’ to check if on-board detector server is virtual.</p>
+<section id="sample-config-file">
+<h3>Sample Config file<a class="headerlink" href="#sample-config-file" title="Link to this heading"></a></h3>
+<p>There are sample config files for each detector in slsDetectorPackage/examples folder.</p>
+<dl>
+<dt>For a Single Module (Basic)</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>hostname<span class="w"> </span>localhost
+rx_hostname<span class="w"> </span>localhost
+udp_dstip<span class="w"> </span>auto
+</pre></div>
+</div>
+</dd>
+<dt>For a Single Module (With Options)</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># connects to control port 1912</span>
+hostname<span class="w"> </span>localhost:1912+
+
+<span class="c1"># connects to receiver at ports 2012</span>
+rx_hostname<span class="w"> </span>mpc1922:2012+
+
+<span class="c1"># sets destination udp ports (not needed, default is 50001)</span>
+udp_dstport<span class="w"> </span><span class="m">50012</span>
+
+<span class="c1"># source udp ips must be same subnet at destintaion udp ips</span>
+<span class="c1"># takes the same ip as hostname</span>
+udp_srcip<span class="w"> </span>auto
+
+<span class="c1"># destination udp ip picked up from rx_hostname (if auto)</span>
+udp_dstip<span class="w"> </span>auto
+
+<span class="c1"># set file path</span>
+fpath<span class="w"> </span>/tmp
+</pre></div>
+</div>
+</dd>
+<dt>For Multiple Modules</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># connects to control ports 1912, 1914 and stop ports 1913, 1915</span>
+virtual<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="m">1912</span>
+<span class="c1"># or hostname localhost:1912+localhost:1914+</span>
+
+<span class="c1"># increasing receiver tcp ports (multi detector command)</span>
+rx_tcpport<span class="w"> </span><span class="m">2012</span>
+
+<span class="c1"># connects to reciever at port 2012 and 2013</span>
+rx_hostname<span class="w"> </span>mpc1922
+
+<span class="c1"># sets increasing destination udp ports</span>
+udp_dstport<span class="w"> </span><span class="m">50012</span>
+
+<span class="c1"># source udp ips must be same subnet at destintaion udp ips</span>
+<span class="m">0</span>:udp_srcip<span class="w"> </span><span class="m">192</span>.168.1.112
+<span class="m">1</span>:udp_srcip<span class="w"> </span><span class="m">192</span>.168.1.114
+
+<span class="c1"># destination udp ip picked up from rx_hostname (if auto)</span>
+udp_dstip<span class="w"> </span>auto
+
+<span class="c1"># set file path</span>
+fpath<span class="w"> </span>/tmp
+</pre></div>
+</div>
+</dd>
+</dl>
+</section>
+</section>
+<section id="receivers">
+<h2>Receivers<a class="headerlink" href="#receivers" title="Link to this heading"></a></h2>
+<p>Same as if you would use an actual detector</p>
+<dl>
+<dt>For a Single Module</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>slsReceiver<span class="w"> </span>-t2012
+</pre></div>
+</div>
+</dd>
+<dt>For Multiple Modules</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># slsMultiReceiver [starting port] [number of receivers] [print each frame header for debugging]</span>
+slsMultiReceiver<span class="w"> </span><span class="m">2012</span><span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="m">0</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</section>
+<section id="gui">
+<h2>Gui<a class="headerlink" href="#gui" title="Link to this heading"></a></h2>
+<div class="line-block">
+<div class="line">Same as if you would use an actual detector.</div>
+<div class="line">Compile with SLS_USE_GUI=ON in cmake or -g option in cmk.sh script.</div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>slsDetectorGui
+</pre></div>
+</div>
+</section>
+<section id="limitations">
+<h2>Limitations<a class="headerlink" href="#limitations" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p>Data coming out of virtual server is fake.</p></li>
+<li><p>A stop will stop the virtual acquisition only at the start of every new frame.</p></li>
+<li><p>Triggers are counted as number of virtual frames. trigger command to send a software trigger (Mythen3 &amp; Eiger) is not implemented in virtual server.</p></li>
+<li><p>firmware version and serial number will give 0.</p></li>
+</ol>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="serverupgrade.html" class="btn btn-neutral float-left" title="Upgrade" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="serverdefaults.html" class="btn btn-neutral float-right" title="Default Values" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, PSD Detector Group.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,234 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Config file &mdash; slsDetectorPackage 10.0.0  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/css/extra.css?v=2be88464" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Detector Specific Fields" href="udpdetspec.html" />
+    <link rel="prev" title="Format" href="udpheader.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            slsDetectorPackage 10.0.0
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Installation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="consuming.html">Consuming slsDetectorPackage</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">how to</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="softwarearchitecture.html">Software Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configcommands.html">Setup Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick_start_guide.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dataformat.html">Detector Image Size and Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="multidet.html">Using multiple detectors</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">C++ API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="detector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="result.html">Result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="receiver_api.html">Receiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pygettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pydetector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyenums.html">Enums</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyexamples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyPatternGenerator.html">PatternGenerator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pattern.html">Pattern</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Command line</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="commandline.html">Command line interface</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="container_utils.html">ContainerUtils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="type_traits.html">TypeTraits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ToString.html">ToString</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Firmware</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="firmware.html">Firmware Upgrade</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="servers.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverupgrade.html">Upgrade</a></li>
+<li class="toctree-l1"><a class="reference internal" href="virtualserver.html">Simulators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverdefaults.html">Default Values</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector UDP Header</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="udpheader.html">Format</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Config file</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#source-port">Source Port</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#udp-srcip-source-ip">udp_srcip - Source IP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#udp-srcmac-source-mac">udp_srcmac - Source MAC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#udp-dstport-desintation-port">udp_dstport - Desintation Port</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#udp-dstip-destination-ip">udp_dstip - Destination IP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#udp-dstmac-destination-mac">udp_dstmac - Destination MAC</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="udpdetspec.html">Detector Specific Fields</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiver.html">In-built Receiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="receivers.html">Custom Receiver</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver Files</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="fileformat.html">File format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiverheaderformat.html">SLS Receiver Header Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dataformat.html">Detector Image Size and Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="masterfileattributes.html">Master File Attributes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="binaryfileformat.html">Binary File Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hdf5fileformat.html">HDF5 File Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver ZMQ Stream</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="zmqjsonheaderformat.html">ZMQ: Json Header Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Troubleshooting</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">slsDetectorPackage 10.0.0</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Config file</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/udpconfig.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="config-file">
+<span id="detector-udp-header-config"></span><h1>Config file<a class="headerlink" href="#config-file" title="Link to this heading"></a></h1>
+<p>Commands to configure the UDP in the config file:</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>These command are recommended to be placed before “rx_hostname” if it is used.</p>
+</div>
+<section id="source-port">
+<h2>Source Port<a class="headerlink" href="#source-port" title="Link to this heading"></a></h2>
+<blockquote>
+<div><p>Hardcoded in detector server, starting at 32410.</p>
+</div></blockquote>
+</section>
+<section id="udp-srcip-source-ip">
+<h2>udp_srcip - Source IP<a class="headerlink" href="#udp-srcip-source-ip" title="Link to this heading"></a></h2>
+<blockquote>
+<div><p>IP address of detector UDP interface to send packets from. Do not use for Eiger 1Gb interface (uses its hardware IP). For others, must be in the same subnet as <strong>udp_dstip</strong>.</p>
+</div></blockquote>
+</section>
+<section id="udp-srcmac-source-mac">
+<h2>udp_srcmac - Source MAC<a class="headerlink" href="#udp-srcmac-source-mac" title="Link to this heading"></a></h2>
+<blockquote>
+<div><p>MAC address of detector UDP interface to send packets from. Do not use for Eiger (uses hardware mac). For others, it is not necessary, but can help for switch and debugging to put unique values for each module.</p>
+</div></blockquote>
+</section>
+<section id="udp-dstport-desintation-port">
+<h2>udp_dstport - Desintation Port<a class="headerlink" href="#udp-dstport-desintation-port" title="Link to this heading"></a></h2>
+<blockquote>
+<div><p>Port in receiver pc to listen to packets from the detector.</p>
+</div></blockquote>
+</section>
+<section id="udp-dstip-destination-ip">
+<h2>udp_dstip - Destination IP<a class="headerlink" href="#udp-dstip-destination-ip" title="Link to this heading"></a></h2>
+<blockquote>
+<div><p>IP address of interface in receiver pc to listen to packets from detector. If <strong>auto</strong> is used (only when using slsReceiver/ slsMultiReceiver), the IP of <strong>rx_hostname</strong> is picked up.</p>
+</div></blockquote>
+</section>
+<section id="udp-dstmac-destination-mac">
+<h2>udp_dstmac - Destination MAC<a class="headerlink" href="#udp-dstmac-destination-mac" title="Link to this heading"></a></h2>
+<blockquote>
+<div><p>MAC address of interface in receiver pc to list to packets from detector. Only required when using custom receiver, else slsReceiver/slsMultiReceiver picks it up from <strong>udp_dstip</strong>.</p>
+</div></blockquote>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="udpheader.html" class="btn btn-neutral float-left" title="Format" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="udpdetspec.html" class="btn btn-neutral float-right" title="Detector Specific Fields" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, PSD Detector Group.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

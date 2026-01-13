@@ -1,0 +1,305 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Software Architecture &mdash; slsDetectorPackage 10.0.0  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/css/extra.css?v=2be88464" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Setup Commands" href="configcommands.html" />
+    <link rel="prev" title="Consuming slsDetectorPackage" href="consuming.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            slsDetectorPackage 10.0.0
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Installation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="consuming.html">Consuming slsDetectorPackage</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">how to</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Software Architecture</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module">Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#upgrade">Upgrade</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#receiver">Receiver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#client">Client</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="configcommands.html">Setup Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick_start_guide.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dataformat.html">Detector Image Size and Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="multidet.html">Using multiple detectors</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">C++ API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="detector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="result.html">Result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="receiver_api.html">Receiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pygettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pydetector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyenums.html">Enums</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyexamples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyPatternGenerator.html">PatternGenerator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pattern.html">Pattern</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Command line</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="commandline.html">Command line interface</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="container_utils.html">ContainerUtils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="type_traits.html">TypeTraits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ToString.html">ToString</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Firmware</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="firmware.html">Firmware Upgrade</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="servers.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverupgrade.html">Upgrade</a></li>
+<li class="toctree-l1"><a class="reference internal" href="virtualserver.html">Simulators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverdefaults.html">Default Values</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector UDP Header</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="udpheader.html">Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udpconfig.html">Config file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udpdetspec.html">Detector Specific Fields</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiver.html">In-built Receiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="receivers.html">Custom Receiver</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver Files</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="fileformat.html">File format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiverheaderformat.html">SLS Receiver Header Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dataformat.html">Detector Image Size and Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="masterfileattributes.html">Master File Attributes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="binaryfileformat.html">Binary File Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hdf5fileformat.html">HDF5 File Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver ZMQ Stream</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="zmqjsonheaderformat.html">ZMQ: Json Header Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Troubleshooting</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">slsDetectorPackage 10.0.0</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Software Architecture</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/softwarearchitecture.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="software-architecture">
+<span id="id1"></span><h1>Software Architecture<a class="headerlink" href="#software-architecture" title="Link to this heading"></a></h1>
+<section id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Link to this heading"></a></h2>
+<figure class="align-center" id="id2">
+<a class="reference external image-reference" href="_images/System_communication_architecture.png"><img alt="System communication architecture" src="_images/System_communication_architecture.png" style="width: 700px;" />
+</a>
+<figcaption>
+<p><span class="caption-text">Software Communication Architecture</span><a class="headerlink" href="#id2" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<p><strong>Detector</strong></p>
+<p>A detector can consist of a single module or multiple modules combined.</p>
+<p><strong>Module</strong></p>
+<p>Each module sends its data via UDP over distinct ports. Since UDP does not provide acknowledgements, data is transmitted as fast as possible, which can lead to packet loss if the network is not properly configured, among other causes. A single image streamed out could be split into multiple UDP packets and each module can have one or two UDP ports to transmit in parallel different physical sections of the image.</p>
+<p><strong>Receiver</strong></p>
+<p>UDP data is received by one or more receivers—either built-in or custom. In the diagram above, there is one built-in receiver per module (1:1). For example, a detector with two modules (two hostnames) will have two built-in receivers. Each receiver could listen to one or two UDP ports (depending on the module it listens to). For each UDP port, the receiver reassembles these packets into sub-images and optionally saved to file.</p>
+<p><strong>ZMQ</strong></p>
+<p>Each UDP port in the receiver can also stream out independently sub-images via ZMQ (core: TCP/IP).</p>
+<ul class="simple">
+<li><p>Directly to the GUI for display.</p></li>
+<li><p>To an external processing chain for post-processing and optional storage, which can in turn stream the processed data back to the GUI.</p></li>
+</ul>
+<p><strong>Client</strong></p>
+<p>A single client can configure and control individual modules and receivers, or multiple of them in parallel. This communication is handled over TCP/IP, ensuring acknowledgements.</p>
+<p>It can also listen to multiple ZMQ sockets from the Receiver(s) or the external processing chain to assemble the full image for GUI display or Client call backs.</p>
+<p>Next, each component is examined in detail.</p>
+</section>
+<section id="module">
+<h2>Module<a class="headerlink" href="#module" title="Link to this heading"></a></h2>
+<figure class="align-center" id="id3">
+<a class="reference external image-reference" href="_images/Module_architecture.png"><img alt="Module architecture" src="_images/Module_architecture.png" style="width: 700px;" />
+</a>
+<figcaption>
+<p><span class="caption-text">Module Architecture</span><a class="headerlink" href="#id3" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<p><strong>Detector Server</strong></p>
+<p>The module contains an onboard CPU (type depends on the detector — e.g., Nios for Mythen3, Blackfin for Jungfrau). The detector server and detector configuration files are stored here, with the server compiled in C using the CPU-specific compiler. Running the binary starts a Control Server and a Stop Server. Client control/configuration requests go to the Control Server via the TCP control port, while stop/status requests go to the Stop Server via the TCP stop port as the Control Server may be busy with an acquisition. For more details see <a class="reference internal" href="servers.html#detector-servers"><span class="std std-ref">detector server</span></a> and <a class="reference internal" href="virtualserver.html#virtual-detector-servers"><span class="std std-ref">detector simulators</span></a> to play around with.</p>
+<p><strong>Firmware</strong></p>
+<p>The module also includes an FPGA with VHDL firmware (file format depends on the detector — e.g., Mythen3 uses .rbf, Jungfrau uses .pof). Client requests trigger register read/write operations in the FPGA, which manages chip readout and processing. Data from the chips is sent through a UDP generator in the FPGA and output as UDP packets via the UDP port. A single image may be split across multiple packets. A module could have 1 or 2 UDP ports to transmit in parallel different physical sections of the image.</p>
+<section id="upgrade">
+<h3>Upgrade<a class="headerlink" href="#upgrade" title="Link to this heading"></a></h3>
+<figure class="align-center" id="id4">
+<a class="reference external image-reference" href="_images/Soft_upgrade_components.png"><img alt="Software Upgrade Components" src="_images/Soft_upgrade_components.png" style="width: 700px;" />
+</a>
+<figcaption>
+<p><span class="caption-text">Software Upgrade Components</span><a class="headerlink" href="#id4" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<p>There are mainly three components to the soft upgrade:</p>
+<ul class="simple">
+<li><p>Detector Server upgrade: The server running on the module.</p></li>
+<li><p>Firmware upgrade: The VHDL code running on the FPGA.</p></li>
+<li><p>slsDetectorPackage upgrade: The client code running on the host PC to control the module(s) and receiver(s) if any.</p></li>
+</ul>
+<p>Please use the <a class="reference external" href="commandline.html#term-update">update command</a> when updating both the server and firmware simulataneously and <a class="reference external" href="commandline.html#term-programfpga-fname.pof-fname.rbf-full-path-opitonal-force-delete-normal-file">programfpga command</a> when only updating the firmware. See <a class="reference internal" href="firmware.html#firmware-upgrade"><span class="std std-ref">firmware upgrade</span></a> for details.</p>
+<p>When only updating the detector server, use the <a class="reference external" href="commandline.html#term-updatedetectorserver-server_name-with-full-path">updatedetectorserver command</a> command. See <a class="reference internal" href="serverupgrade.html#detector-server-upgrade"><span class="std std-ref">detector server upgrade</span></a> for details.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Compatibility</strong></p>
+<p>When updating anything on the module via the client (server or firmware), the server and client will have to be compatible (same major version). If not, the client and server will not communicate properly.</p>
+<p>Since they are ideally compatible before the upgrade, upgrade the server and firmware first, then the slsDetectorPackage.</p>
+</div>
+</section>
+</section>
+<section id="receiver">
+<h2>Receiver<a class="headerlink" href="#receiver" title="Link to this heading"></a></h2>
+<figure class="align-center" id="id5">
+<a class="reference external image-reference" href="_images/Receiver_architecture.png"><img alt="Receiver Architecture" src="_images/Receiver_architecture.png" />
+</a>
+<figcaption>
+<p><span class="caption-text">Receiver Architecture</span><a class="headerlink" href="#id5" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<p>The receiver mainly consists of:</p>
+<ul class="simple">
+<li><p>A TCP server that listens to client TCP requests for configuration and control.</p></li>
+<li><p>One or 2 listeners that listen to a UDP port each, reassembling the UDP packets into sub-images in memory.</p></li>
+<li><p>One or 2 data processors that processes the sub-images with optional callbacks for online processing and file writing.</p></li>
+<li><p>One or 2 data streamers that stream the processed sub-images to the GUI or external processing chain via ZMQ.</p></li>
+</ul>
+<p>Few characteristics of the receiver:</p>
+<ul class="simple">
+<li><p>It can be run on the same host as the client or on a different host.</p></li>
+<li><p>There is a receiver process for every module and a file for every UDP port.</p></li>
+<li><p>Each receiver process is independent and asynchronized for performance. So are the UDP ports.</p></li>
+</ul>
+</section>
+<section id="client">
+<h2>Client<a class="headerlink" href="#client" title="Link to this heading"></a></h2>
+<figure class="align-center" id="id6">
+<a class="reference external image-reference" href="_images/Client_architecture.png"><img alt="Client Architecture" src="_images/Client_architecture.png" />
+</a>
+<figcaption>
+<p><span class="caption-text">Client Architecture</span><a class="headerlink" href="#id6" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<p>Users can control the detector and receivers through four interfaces:</p>
+<ul class="simple">
+<li><p>their C++ API,</p></li>
+<li><p>their Python API,</p></li>
+<li><p>the command-line interface, or</p></li>
+<li><p>the Qt-based GUI.</p></li>
+</ul>
+<p>Regardless of the interface, each ultimately invokes our Detector class—either directly (CLI and GUI) or through our C++/Python libraries (when using their APIs). The Detector class then calls the appropriate module functions, either for a specific module or in parallel for all modules. Each module object sends requests over TCP to its corresponding module and, if needed, to the receiver.</p>
+<p><strong>Shared Memory</strong></p>
+<p>As the command-line interface is supported, shared memory is used to store essential information such as the module hostname and TCP port, or the receiver hostname and TCP port. This ensures the system knows which components to communicate with, without requiring the user to re-enter this information for every command-line call.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Only the client maintains shared memory. Care must be taken when multiple users operate from the same PC. See <a class="reference internal" href="multidet.html#using-multiple-detectors"><span class="std std-ref">multi detector and user section</span></a> for more details.</p>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="consuming.html" class="btn btn-neutral float-left" title="Consuming slsDetectorPackage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="configcommands.html" class="btn btn-neutral float-right" title="Setup Commands" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, PSD Detector Group.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

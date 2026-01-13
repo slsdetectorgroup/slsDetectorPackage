@@ -1,0 +1,263 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>File format &mdash; slsDetectorPackage 10.0.0  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/css/extra.css?v=2be88464" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="SLS Receiver Header Format" href="slsreceiverheaderformat.html" />
+    <link rel="prev" title="Custom Receiver" href="receivers.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            slsDetectorPackage 10.0.0
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Installation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="consuming.html">Consuming slsDetectorPackage</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">how to</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="softwarearchitecture.html">Software Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configcommands.html">Setup Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick_start_guide.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dataformat.html">Detector Image Size and Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="multidet.html">Using multiple detectors</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">C++ API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="detector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="result.html">Result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="receiver_api.html">Receiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pygettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pydetector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyenums.html">Enums</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyexamples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyPatternGenerator.html">PatternGenerator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pattern.html">Pattern</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Command line</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="commandline.html">Command line interface</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="container_utils.html">ContainerUtils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="type_traits.html">TypeTraits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ToString.html">ToString</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Firmware</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="firmware.html">Firmware Upgrade</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="servers.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverupgrade.html">Upgrade</a></li>
+<li class="toctree-l1"><a class="reference internal" href="virtualserver.html">Simulators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverdefaults.html">Default Values</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector UDP Header</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="udpheader.html">Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udpconfig.html">Config file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udpdetspec.html">Detector Specific Fields</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiver.html">In-built Receiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="receivers.html">Custom Receiver</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver Files</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">File format</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#number-of-files">Number of Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#naming">Naming</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#formats">Formats</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#content">Content</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiverheaderformat.html">SLS Receiver Header Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dataformat.html">Detector Image Size and Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="masterfileattributes.html">Master File Attributes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="binaryfileformat.html">Binary File Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hdf5fileformat.html">HDF5 File Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver ZMQ Stream</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="zmqjsonheaderformat.html">ZMQ: Json Header Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Troubleshooting</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">slsDetectorPackage 10.0.0</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">File format</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/fileformat.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="file-format">
+<span id="id1"></span><h1>File format<a class="headerlink" href="#file-format" title="Link to this heading"></a></h1>
+<p>If <a class="reference external" href="commandline.html#term-fwrite-0-1">fwrite</a> is enabled, the receiver will write data to files.</p>
+<section id="number-of-files">
+<h2>Number of Files<a class="headerlink" href="#number-of-files" title="Link to this heading"></a></h2>
+<p>Every acquisition will create a master file and data files.</p>
+<p>An acquisition can have multiple data files for a single frame. The number of files is determined by the number of UDP ports per module and the number of modules.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Every modules has its own receiver process. Every receiver process can have 1 or 2 UDP ports.</p></li>
+<li><p>Each UDP port will create its own file. Therefore, each receiver can write 1 or 2 files.</p></li>
+<li><p>So, for example a detector with 4 modules with 2 UDP ports each will create a total of 8 files with file names containing UDP port index <strong>‘_d0’</strong> to <strong>‘_d7’</strong>.</p></li>
+</ul>
+</div></blockquote>
+<p>A new file containing <strong>‘_f[file_index]’</strong> in file name is also created when reaching the maximum frames per file. Configured using <a class="reference external" href="commandline.html#term-rx_framesperfile-n_frames">rx_framesperfile</a>.</p>
+</section>
+<section id="naming">
+<span id="file-name-format"></span><h2>Naming<a class="headerlink" href="#naming" title="Link to this heading"></a></h2>
+<div class="line-block">
+<div class="line">Master File Name: [fpath]/[fname]_master_[findex].[ext]</div>
+</div>
+<div class="line-block">
+<div class="line">Data File Name: [fpath]/[fname]_dx_fy_[findex].[ext]</div>
+</div>
+<blockquote>
+<div><ul class="simple">
+<li><p>fpath: file path set using command <a class="reference external" href="commandline.html#term-fpath-path">fpath</a>. Default: ‘/’</p></li>
+<li><p>fname: file name prefix using command <a class="reference external" href="commandline.html#term-fname-name">fname</a>. Default: “run”</p></li>
+<li><p>findex: acquisition index using command <a class="reference external" href="commandline.html#term-findex-n_value">findex</a>. Automatically incremented for every acquisition with <a class="reference external" href="commandline.html#term-acquire">sls_detector_acquire</a> (if <a class="reference external" href="commandline.html#term-fwrite-0-1">fwrite</a> enabled).</p></li>
+<li><p>x: unique udp port index. New file per UDP port.</p></li>
+<li><p>y: file index. New file created after reaching max frames per file.</p></li>
+<li><p>ext: file extension. Default: “raw”(data file) or “json”(master file)</p></li>
+</ul>
+</div></blockquote>
+<p>Some file name examples:</p>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># first file</span>
+path-to-file/run_d0_f0_0.raw
+
+<span class="c1"># first file for second UDP port</span>
+path-to-file/run_d1_f0_0.raw
+
+<span class="c1"># second file after reaching max frames in first file</span>
+path-to-file/run_d0_f1_0.raw
+
+<span class="c1"># second acquisition, first file</span>
+path-to-file/run_d0_f0_1.raw
+</pre></div>
+</div>
+</div></blockquote>
+</section>
+<section id="formats">
+<h2>Formats<a class="headerlink" href="#formats" title="Link to this heading"></a></h2>
+<p>There are 2 file formats supported by the receiver:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Binary - extension .json (master file) or .raw (data files)</p></li>
+<li><p>HDF5 - extension .h5</p></li>
+</ul>
+</div></blockquote>
+<p>The default is binary. HDF5 can be enabled by compiling the package with HDF5 option enabled. The file format is set using the command <a class="reference external" href="commandline.html#term-fformat-binary-hdf5">fformat</a>.</p>
+</section>
+<section id="content">
+<h2>Content<a class="headerlink" href="#content" title="Link to this heading"></a></h2>
+<div class="line-block">
+<div class="line"><cite>Master File</cite>: Contains the metadata of the acquisition. The content is described in <a class="reference internal" href="masterfileattributes.html#master-file-attributes"><span class="std std-ref">master file attributes</span></a>.</div>
+</div>
+<div class="line-block">
+<div class="line"><cite>Data File</cite>: Contains the metadata for each image (<a class="reference internal" href="slsreceiverheaderformat.html#sls-receiver-header-format"><span class="std std-ref">slsReceiverHeader</span></a>) and the <cite>data of the image</cite> transmitted over that port. The image data is described in <a class="reference internal" href="dataformat.html#data-format"><span class="std std-ref">Detector Image Size and Format</span></a> section.</div>
+</div>
+<div class="line-block">
+<div class="line">More content and examples are found in the <a class="reference internal" href="hdf5fileformat.html#hdf5-file-format"><span class="std std-ref">HDF5 file format</span></a> and <a class="reference internal" href="binaryfileformat.html#binary-file-format"><span class="std std-ref">Binary file format</span></a> sections.</div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="receivers.html" class="btn btn-neutral float-left" title="Custom Receiver" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="slsreceiverheaderformat.html" class="btn btn-neutral float-right" title="SLS Receiver Header Format" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, PSD Detector Group.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

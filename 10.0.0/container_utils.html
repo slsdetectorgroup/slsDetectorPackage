@@ -1,0 +1,312 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ContainerUtils &mdash; slsDetectorPackage 10.0.0  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/css/extra.css?v=2be88464" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="TypeTraits" href="type_traits.html" />
+    <link rel="prev" title="Command line interface" href="commandline.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            slsDetectorPackage 10.0.0
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Installation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="consuming.html">Consuming slsDetectorPackage</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">how to</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="softwarearchitecture.html">Software Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configcommands.html">Setup Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick_start_guide.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dataformat.html">Detector Image Size and Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="multidet.html">Using multiple detectors</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">C++ API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="detector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="result.html">Result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="receiver_api.html">Receiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pygettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pydetector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyenums.html">Enums</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyexamples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyPatternGenerator.html">PatternGenerator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pattern.html">Pattern</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Command line</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="commandline.html">Command line interface</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">ContainerUtils</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#_CPPv43sls"><code class="docutils literal notranslate"><span class="pre">sls</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4I0DpEN3sls11make_uniqueENSt9enable_ifIXntNSt8is_arrayI1TE5valueEENSt10unique_ptrI1TEEE4typeEDpRR4Args"><code class="docutils literal notranslate"><span class="pre">make_unique()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4I0EN3sls11make_uniqueENSt9enable_ifINSt8is_arrayI1TE5valueENSt10unique_ptrI1TEEE4typeENSt6size_tE"><code class="docutils literal notranslate"><span class="pre">make_unique()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4I0EN3sls8allEqualEbRK9Container"><code class="docutils literal notranslate"><span class="pre">allEqual()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4I0EN3sls15allEqualWithTolENSt9enable_ifINSt13is_arithmeticI1TE5valueEbE4typeERKNSt6vectorI1TEEK1T"><code class="docutils literal notranslate"><span class="pre">allEqualWithTol()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4I0EN3sls10allEqualToEbRKNSt6vectorI1TEEK1T"><code class="docutils literal notranslate"><span class="pre">allEqualTo()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4I0EN3sls17allEqualToWithTolEbRKNSt6vectorI1TEEK1TK1T"><code class="docutils literal notranslate"><span class="pre">allEqualToWithTol()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4I0EN3sls10anyEqualToEbRKNSt6vectorI1TEEK1T"><code class="docutils literal notranslate"><span class="pre">anyEqualTo()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4I0EN3sls17anyEqualToWithTolEbRKNSt6vectorI1TEEK1TK1T"><code class="docutils literal notranslate"><span class="pre">anyEqualToWithTol()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4I0EN3sls3sumENSt9enable_ifINSt13is_arithmeticI1TE5valueE1TE4typeERKNSt6vectorI1TEE"><code class="docutils literal notranslate"><span class="pre">sum()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4I0EN3sls19minusOneIfDifferentE1TRKNSt6vectorI1TEE"><code class="docutils literal notranslate"><span class="pre">minusOneIfDifferent()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N3sls19minusOneIfDifferentERKNSt6vectorIbEE"><code class="docutils literal notranslate"><span class="pre">minusOneIfDifferent()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4I0EN3sls19minusOneIfDifferentENSt6vectorI1TEERKNSt6vectorINSt6vectorI1TEEEE"><code class="docutils literal notranslate"><span class="pre">minusOneIfDifferent()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4I0_6size_tEN3sls19minusOneIfDifferentENSt5arrayI1T4sizeEERKNSt6vectorINSt5arrayI1T4sizeEEEE"><code class="docutils literal notranslate"><span class="pre">minusOneIfDifferent()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4I0EN3sls6SquashEN9Container10value_typeERK9ContainerN9Container10value_typeE"><code class="docutils literal notranslate"><span class="pre">Squash()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4I0EN3sls13hasDuplicatesEb9Container"><code class="docutils literal notranslate"><span class="pre">hasDuplicates()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4I0EN3sls16removeDuplicatesENSt9enable_ifIN12is_containerI1TE5valueEbE4typeER1T"><code class="docutils literal notranslate"><span class="pre">removeDuplicates()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="type_traits.html">TypeTraits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ToString.html">ToString</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Firmware</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="firmware.html">Firmware Upgrade</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="servers.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverupgrade.html">Upgrade</a></li>
+<li class="toctree-l1"><a class="reference internal" href="virtualserver.html">Simulators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverdefaults.html">Default Values</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector UDP Header</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="udpheader.html">Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udpconfig.html">Config file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udpdetspec.html">Detector Specific Fields</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiver.html">In-built Receiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="receivers.html">Custom Receiver</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver Files</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="fileformat.html">File format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiverheaderformat.html">SLS Receiver Header Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dataformat.html">Detector Image Size and Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="masterfileattributes.html">Master File Attributes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="binaryfileformat.html">Binary File Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hdf5fileformat.html">HDF5 File Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver ZMQ Stream</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="zmqjsonheaderformat.html">ZMQ: Json Header Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Troubleshooting</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">slsDetectorPackage 10.0.0</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">ContainerUtils</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/container_utils.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="containerutils">
+<h1>ContainerUtils<a class="headerlink" href="#containerutils" title="Link to this heading"></a></h1>
+<p>Helper functions to handle standard container compliant
+containers. Supports array, vector, sls::Result etc.</p>
+<p>While not a part of the public API we aim not to change this
+interface too much. However, we don’t give the same strong
+guarantees as for Detector etc.</p>
+<p>Any reoccurring container operation should probably be added to
+this file.</p>
+<dl class="cpp type">
+<dt class="sig sig-object cpp" id="_CPPv43sls">
+<span id="_CPPv33sls"></span><span id="_CPPv23sls"></span><span id="sls"></span><span class="target" id="namespacesls"></span><span class="k"><span class="pre">namespace</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">sls</span></span></span><br /></dt>
+<dd><p>functions basic implemenation of shared memory </p>
+<p>creates/destroys a thread</p>
+<p>creates &amp; manages a listener thread each</p>
+<p>abstract for setting/getting properties of detector data</p>
+<p>constructs the fifo structure</p>
+<p>creates &amp; manages a data streamer thread each</p>
+<p>creates &amp; manages a data processor thread each</p>
+<p>creates/destroys an ARPing child process to arping the interfaces slsReceiver is listening to. </p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-functions">Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4I0DpEN3sls11make_uniqueENSt9enable_ifIXntNSt8is_arrayI1TE5valueEENSt10unique_ptrI1TEEE4typeEDpRR4Args">
+<span id="_CPPv3I0DpEN3sls11make_uniqueEDpRR4Args"></span><span id="_CPPv2I0DpEN3sls11make_uniqueEDpRR4Args"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">T</span></span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="sig-name descname"><span class="n"><span class="pre">Args</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="namespacesls_1adcb0f4d4ed3480c1646c3d477001accf"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">enable_if</span></span><span class="p"><span class="pre">&lt;</span></span><span class="o"><span class="pre">!</span></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">is_array</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I0DpEN3sls11make_uniqueENSt9enable_ifIXntNSt8is_arrayI1TE5valueEENSt10unique_ptrI1TEEE4typeEDpRR4Args" title="sls::make_unique::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">unique_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I0DpEN3sls11make_uniqueENSt9enable_ifIXntNSt8is_arrayI1TE5valueEENSt10unique_ptrI1TEEE4typeEDpRR4Args" title="sls::make_unique::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">type</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">make_unique</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I0DpEN3sls11make_uniqueENSt9enable_ifIXntNSt8is_arrayI1TE5valueEENSt10unique_ptrI1TEEE4typeEDpRR4Args" title="sls::make_unique::Args"><span class="n"><span class="pre">Args</span></span></a><span class="p"><span class="pre">&amp;</span></span><span class="p"><span class="pre">&amp;</span></span><span class="p"><span class="pre">...</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">args</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0DpEN3sls11make_uniqueENSt9enable_ifIXntNSt8is_arrayI1TE5valueEENSt10unique_ptrI1TEEE4typeEDpRR4Args" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4I0EN3sls11make_uniqueENSt9enable_ifINSt8is_arrayI1TE5valueENSt10unique_ptrI1TEEE4typeENSt6size_tE">
+<span id="_CPPv3I0EN3sls11make_uniqueENSt6size_tE"></span><span id="_CPPv2I0EN3sls11make_uniqueENSt6size_tE"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">T</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="namespacesls_1a15369191d3427ddac963c9b214d81f98"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">enable_if</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">is_array</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I0EN3sls11make_uniqueENSt9enable_ifINSt8is_arrayI1TE5valueENSt10unique_ptrI1TEEE4typeENSt6size_tE" title="sls::make_unique::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">unique_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I0EN3sls11make_uniqueENSt9enable_ifINSt8is_arrayI1TE5valueENSt10unique_ptrI1TEEE4typeENSt6size_tE" title="sls::make_unique::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">type</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">make_unique</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">n</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0EN3sls11make_uniqueENSt9enable_ifINSt8is_arrayI1TE5valueENSt10unique_ptrI1TEEE4typeENSt6size_tE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4I0EN3sls8allEqualEbRK9Container">
+<span id="_CPPv3I0EN3sls8allEqualERK9Container"></span><span id="_CPPv2I0EN3sls8allEqualERK9Container"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Container</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="namespacesls_1a2389ce56ad5220b225c132806de784ed"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">allEqual</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I0EN3sls8allEqualEbRK9Container" title="sls::allEqual::Container"><span class="n"><span class="pre">Container</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">c</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0EN3sls8allEqualEbRK9Container" title="Link to this definition"></a><br /></dt>
+<dd><p>Compare elements in a Container to see if they are all equal </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4I0EN3sls15allEqualWithTolENSt9enable_ifINSt13is_arithmeticI1TE5valueEbE4typeERKNSt6vectorI1TEEK1T">
+<span id="_CPPv3I0EN3sls15allEqualWithTolERKNSt6vectorI1TEEK1T"></span><span id="_CPPv2I0EN3sls15allEqualWithTolERKNSt6vectorI1TEEK1T"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">T</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="namespacesls_1af618ac49a01a1430d125f01bcd6d125b"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">enable_if</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">is_arithmetic</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I0EN3sls15allEqualWithTolENSt9enable_ifINSt13is_arithmeticI1TE5valueEbE4typeERKNSt6vectorI1TEEK1T" title="sls::allEqualWithTol::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">type</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">allEqualWithTol</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I0EN3sls15allEqualWithTolENSt9enable_ifINSt13is_arithmeticI1TE5valueEbE4typeERKNSt6vectorI1TEEK1T" title="sls::allEqualWithTol::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">container</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I0EN3sls15allEqualWithTolENSt9enable_ifINSt13is_arithmeticI1TE5valueEbE4typeERKNSt6vectorI1TEEK1T" title="sls::allEqualWithTol::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">tol</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0EN3sls15allEqualWithTolENSt9enable_ifINSt13is_arithmeticI1TE5valueEbE4typeERKNSt6vectorI1TEEK1T" title="Link to this definition"></a><br /></dt>
+<dd><p>Compare elements but with specified tolerance, useful for floating point values. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4I0EN3sls10allEqualToEbRKNSt6vectorI1TEEK1T">
+<span id="_CPPv3I0EN3sls10allEqualToERKNSt6vectorI1TEEK1T"></span><span id="_CPPv2I0EN3sls10allEqualToERKNSt6vectorI1TEEK1T"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">T</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="namespacesls_1a71ecf200c0d008d90489320cbe6b69f7"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">allEqualTo</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I0EN3sls10allEqualToEbRKNSt6vectorI1TEEK1T" title="sls::allEqualTo::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">container</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I0EN3sls10allEqualToEbRKNSt6vectorI1TEEK1T" title="sls::allEqualTo::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">value</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0EN3sls10allEqualToEbRKNSt6vectorI1TEEK1T" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4I0EN3sls17allEqualToWithTolEbRKNSt6vectorI1TEEK1TK1T">
+<span id="_CPPv3I0EN3sls17allEqualToWithTolERKNSt6vectorI1TEEK1TK1T"></span><span id="_CPPv2I0EN3sls17allEqualToWithTolERKNSt6vectorI1TEEK1TK1T"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">T</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="namespacesls_1a91900b221ab990a7c88ad240d586933d"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">allEqualToWithTol</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I0EN3sls17allEqualToWithTolEbRKNSt6vectorI1TEEK1TK1T" title="sls::allEqualToWithTol::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">container</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I0EN3sls17allEqualToWithTolEbRKNSt6vectorI1TEEK1TK1T" title="sls::allEqualToWithTol::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">value</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I0EN3sls17allEqualToWithTolEbRKNSt6vectorI1TEEK1TK1T" title="sls::allEqualToWithTol::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">tol</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0EN3sls17allEqualToWithTolEbRKNSt6vectorI1TEEK1TK1T" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4I0EN3sls10anyEqualToEbRKNSt6vectorI1TEEK1T">
+<span id="_CPPv3I0EN3sls10anyEqualToERKNSt6vectorI1TEEK1T"></span><span id="_CPPv2I0EN3sls10anyEqualToERKNSt6vectorI1TEEK1T"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">T</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="namespacesls_1a3690dc9dfe60e4169d0d3b49ffd6be7f"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">anyEqualTo</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I0EN3sls10anyEqualToEbRKNSt6vectorI1TEEK1T" title="sls::anyEqualTo::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">container</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I0EN3sls10anyEqualToEbRKNSt6vectorI1TEEK1T" title="sls::anyEqualTo::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">value</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0EN3sls10anyEqualToEbRKNSt6vectorI1TEEK1T" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4I0EN3sls17anyEqualToWithTolEbRKNSt6vectorI1TEEK1TK1T">
+<span id="_CPPv3I0EN3sls17anyEqualToWithTolERKNSt6vectorI1TEEK1TK1T"></span><span id="_CPPv2I0EN3sls17anyEqualToWithTolERKNSt6vectorI1TEEK1TK1T"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">T</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="namespacesls_1a17e311d48536675a250d7a2b2ec32afc"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">anyEqualToWithTol</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I0EN3sls17anyEqualToWithTolEbRKNSt6vectorI1TEEK1TK1T" title="sls::anyEqualToWithTol::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">container</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I0EN3sls17anyEqualToWithTolEbRKNSt6vectorI1TEEK1TK1T" title="sls::anyEqualToWithTol::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">value</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I0EN3sls17anyEqualToWithTolEbRKNSt6vectorI1TEEK1TK1T" title="sls::anyEqualToWithTol::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">tol</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0EN3sls17anyEqualToWithTolEbRKNSt6vectorI1TEEK1TK1T" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4I0EN3sls3sumENSt9enable_ifINSt13is_arithmeticI1TE5valueE1TE4typeERKNSt6vectorI1TEE">
+<span id="_CPPv3I0EN3sls3sumERKNSt6vectorI1TEE"></span><span id="_CPPv2I0EN3sls3sumERKNSt6vectorI1TEE"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">T</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="namespacesls_1af98458fa8ab1ec60e5bebb234d5192f7"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">enable_if</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">is_arithmetic</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I0EN3sls3sumENSt9enable_ifINSt13is_arithmeticI1TE5valueE1TE4typeERKNSt6vectorI1TEE" title="sls::sum::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I0EN3sls3sumENSt9enable_ifINSt13is_arithmeticI1TE5valueE1TE4typeERKNSt6vectorI1TEE" title="sls::sum::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">type</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">sum</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I0EN3sls3sumENSt9enable_ifINSt13is_arithmeticI1TE5valueE1TE4typeERKNSt6vectorI1TEE" title="sls::sum::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">container</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0EN3sls3sumENSt9enable_ifINSt13is_arithmeticI1TE5valueE1TE4typeERKNSt6vectorI1TEE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4I0EN3sls19minusOneIfDifferentE1TRKNSt6vectorI1TEE">
+<span id="_CPPv3I0EN3sls19minusOneIfDifferentERKNSt6vectorI1TEE"></span><span id="_CPPv2I0EN3sls19minusOneIfDifferentERKNSt6vectorI1TEE"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">T</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="namespacesls_1a68437717dda12f37262f2a5528727e86"></span><a class="reference internal" href="#_CPPv4I0EN3sls19minusOneIfDifferentE1TRKNSt6vectorI1TEE" title="sls::minusOneIfDifferent::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">minusOneIfDifferent</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I0EN3sls19minusOneIfDifferentE1TRKNSt6vectorI1TEE" title="sls::minusOneIfDifferent::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">container</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0EN3sls19minusOneIfDifferentE1TRKNSt6vectorI1TEE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N3sls19minusOneIfDifferentERKNSt6vectorIbEE">
+<span id="_CPPv3N3sls19minusOneIfDifferentERKNSt6vectorIbEE"></span><span id="_CPPv2N3sls19minusOneIfDifferentERKNSt6vectorIbEE"></span><span id="sls::minusOneIfDifferent__std::vector:b:CR"></span><span class="target" id="namespacesls_1a0279cef1b4efe914aac0b5ecb2068400"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">minusOneIfDifferent</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">bool</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">container</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N3sls19minusOneIfDifferentERKNSt6vectorIbEE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4I0EN3sls19minusOneIfDifferentENSt6vectorI1TEERKNSt6vectorINSt6vectorI1TEEEE">
+<span id="_CPPv3I0EN3sls19minusOneIfDifferentERKNSt6vectorINSt6vectorI1TEEEE"></span><span id="_CPPv2I0EN3sls19minusOneIfDifferentERKNSt6vectorINSt6vectorI1TEEEE"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">T</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="namespacesls_1a4f6b2d4c4b1bfc09d1c3b8e2fa24df58"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I0EN3sls19minusOneIfDifferentENSt6vectorI1TEERKNSt6vectorINSt6vectorI1TEEEE" title="sls::minusOneIfDifferent::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">minusOneIfDifferent</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I0EN3sls19minusOneIfDifferentENSt6vectorI1TEERKNSt6vectorINSt6vectorI1TEEEE" title="sls::minusOneIfDifferent::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">container</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0EN3sls19minusOneIfDifferentENSt6vectorI1TEERKNSt6vectorINSt6vectorI1TEEEE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4I0_6size_tEN3sls19minusOneIfDifferentENSt5arrayI1T4sizeEERKNSt6vectorINSt5arrayI1T4sizeEEEE">
+<span id="_CPPv3I0_6size_tEN3sls19minusOneIfDifferentERKNSt6vectorINSt5arrayI1T4sizeEEEE"></span><span id="_CPPv2I0_6size_tEN3sls19minusOneIfDifferentERKNSt6vectorINSt5arrayI1T4sizeEEEE"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">T</span></span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">size</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="namespacesls_1a6f67c0b3739caaf14e6d837e646c487d"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">array</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I0_6size_tEN3sls19minusOneIfDifferentENSt5arrayI1T4sizeEERKNSt6vectorINSt5arrayI1T4sizeEEEE" title="sls::minusOneIfDifferent::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I0_6size_tEN3sls19minusOneIfDifferentENSt5arrayI1T4sizeEERKNSt6vectorINSt5arrayI1T4sizeEEEE" title="sls::minusOneIfDifferent::size"><span class="n"><span class="pre">size</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">minusOneIfDifferent</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">array</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I0_6size_tEN3sls19minusOneIfDifferentENSt5arrayI1T4sizeEERKNSt6vectorINSt5arrayI1T4sizeEEEE" title="sls::minusOneIfDifferent::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I0_6size_tEN3sls19minusOneIfDifferentENSt5arrayI1T4sizeEERKNSt6vectorINSt5arrayI1T4sizeEEEE" title="sls::minusOneIfDifferent::size"><span class="n"><span class="pre">size</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">container</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0_6size_tEN3sls19minusOneIfDifferentENSt5arrayI1T4sizeEERKNSt6vectorINSt5arrayI1T4sizeEEEE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4I0EN3sls6SquashEN9Container10value_typeERK9ContainerN9Container10value_typeE">
+<span id="_CPPv3I0EN3sls6SquashERK9ContainerN9Container10value_typeE"></span><span id="_CPPv2I0EN3sls6SquashERK9ContainerN9Container10value_typeE"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Container</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="namespacesls_1a21d4f279b357894fee7e0f3958a1cb89"></span><a class="reference internal" href="#_CPPv4I0EN3sls6SquashEN9Container10value_typeERK9ContainerN9Container10value_typeE" title="sls::Squash::Container"><span class="n"><span class="pre">Container</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">value_type</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Squash</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I0EN3sls6SquashEN9Container10value_typeERK9ContainerN9Container10value_typeE" title="sls::Squash::Container"><span class="n"><span class="pre">Container</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">c</span></span>, <span class="k"><span class="pre">typename</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I0EN3sls6SquashEN9Container10value_typeERK9ContainerN9Container10value_typeE" title="sls::Squash::Container"><span class="n"><span class="pre">Container</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">value_type</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">default_value</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="p"><span class="pre">{</span></span><span class="p"><span class="pre">}</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0EN3sls6SquashEN9Container10value_typeERK9ContainerN9Container10value_typeE" title="Link to this definition"></a><br /></dt>
+<dd><p>Return the first value if all values are equal otherwise return default_value. If no default value is supplied it will be default constructed </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4I0EN3sls13hasDuplicatesEb9Container">
+<span id="_CPPv3I0EN3sls13hasDuplicatesE9Container"></span><span id="_CPPv2I0EN3sls13hasDuplicatesE9Container"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Container</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="namespacesls_1abd09117ac95f9a32f047d3906fc2d959"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">hasDuplicates</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I0EN3sls13hasDuplicatesEb9Container" title="sls::hasDuplicates::Container"><span class="n"><span class="pre">Container</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">c</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0EN3sls13hasDuplicatesEb9Container" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4I0EN3sls16removeDuplicatesENSt9enable_ifIN12is_containerI1TE5valueEbE4typeER1T">
+<span id="_CPPv3I0EN3sls16removeDuplicatesER1T"></span><span id="_CPPv2I0EN3sls16removeDuplicatesER1T"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">T</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="namespacesls_1aca810a746268958199091950038ac3e1"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">enable_if</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="type_traits.html#_CPPv4I00EN3sls12is_containerE" title="sls::is_container"><span class="n"><span class="pre">is_container</span></span></a><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I0EN3sls16removeDuplicatesENSt9enable_ifIN12is_containerI1TE5valueEbE4typeER1T" title="sls::removeDuplicates::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">type</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">removeDuplicates</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I0EN3sls16removeDuplicatesENSt9enable_ifIN12is_containerI1TE5valueEbE4typeER1T" title="sls::removeDuplicates::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">c</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0EN3sls16removeDuplicatesENSt9enable_ifIN12is_containerI1TE5valueEbE4typeER1T" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="commandline.html" class="btn btn-neutral float-left" title="Command line interface" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="type_traits.html" class="btn btn-neutral float-right" title="TypeTraits" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, PSD Detector Group.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

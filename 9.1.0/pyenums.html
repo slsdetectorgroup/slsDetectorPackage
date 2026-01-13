@@ -1,0 +1,547 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Enums &mdash; slsDetectorPackage 9.1.0  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/css/extra.css?v=2be88464" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Examples" href="pyexamples.html" />
+    <link rel="prev" title="Detector" href="pydetector.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            slsDetectorPackage 9.1.0
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Installation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="consuming.html">Consuming slsDetectorPackage</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">C++ API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="detector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="result.html">Result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="receiver_api.html">Receiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="pygettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pydetector.html">Detector</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Enums</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#slsdet.runStatus"><code class="docutils literal notranslate"><span class="pre">runStatus</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#slsdet.detectorType"><code class="docutils literal notranslate"><span class="pre">detectorType</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#slsdet.frameDiscardPolicy"><code class="docutils literal notranslate"><span class="pre">frameDiscardPolicy</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#slsdet.fileFormat"><code class="docutils literal notranslate"><span class="pre">fileFormat</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#slsdet.dimension"><code class="docutils literal notranslate"><span class="pre">dimension</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#slsdet.externalSignalFlag"><code class="docutils literal notranslate"><span class="pre">externalSignalFlag</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#slsdet.timingMode"><code class="docutils literal notranslate"><span class="pre">timingMode</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#slsdet.dacIndex"><code class="docutils literal notranslate"><span class="pre">dacIndex</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#slsdet.detectorSettings"><code class="docutils literal notranslate"><span class="pre">detectorSettings</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#slsdet.clockIndex"><code class="docutils literal notranslate"><span class="pre">clockIndex</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#slsdet.speedLevel"><code class="docutils literal notranslate"><span class="pre">speedLevel</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#slsdet.readoutMode"><code class="docutils literal notranslate"><span class="pre">readoutMode</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#slsdet.burstMode"><code class="docutils literal notranslate"><span class="pre">burstMode</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#slsdet.timingSourceType"><code class="docutils literal notranslate"><span class="pre">timingSourceType</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#slsdet.M3_GainCaps"><code class="docutils literal notranslate"><span class="pre">M3_GainCaps</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#slsdet.portPosition"><code class="docutils literal notranslate"><span class="pre">portPosition</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#slsdet.streamingInterface"><code class="docutils literal notranslate"><span class="pre">streamingInterface</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#slsdet.vetoAlgorithm"><code class="docutils literal notranslate"><span class="pre">vetoAlgorithm</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#slsdet.gainMode"><code class="docutils literal notranslate"><span class="pre">gainMode</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pyexamples.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Command line</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="commandline.html">Command line interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick_start_guide.html">Quick Start Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="container_utils.html">ContainerUtils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="type_traits.html">TypeTraits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ToString.html">ToString</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Firmware</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="firmware.html">Firmware Upgrade</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="servers.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverupgrade.html">Upgrade</a></li>
+<li class="toctree-l1"><a class="reference internal" href="virtualserver.html">Simulators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverdefaults.html">Default Values</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector UDP Header</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="udpheader.html">Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udpconfig.html">Config file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udpdetspec.html">Detector Specific Fields</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="receivers.html">Receivers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiver.html">slsReceiver/ slsMultiReceiver</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver Files</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="fileformat.html">File format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiverheaderformat.html">SLS Receiver Header Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="masterfileattributes.html">Master File Attributes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="binaryfileformat.html">Binary File Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hdf5fileformat.html">HDF5 File Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver ZMQ Stream</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="zmqjsonheaderformat.html">ZMQ: Json Header Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Troubleshooting</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">slsDetectorPackage 9.1.0</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Enums</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/pyenums.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="enums">
+<h1>Enums<a class="headerlink" href="#enums" title="Link to this heading"></a></h1>
+<p>These enums are defined in slsDetectorDefs in the C++ package and
+exposed to Python through pybind11.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Most settings are represented as enums that can be</span>
+<span class="c1"># explicitly imported</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">slsdet</span><span class="w"> </span><span class="kn">import</span> <span class="n">Detector</span><span class="p">,</span> <span class="n">fileFormat</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">()</span>
+<span class="n">d</span><span class="o">.</span><span class="n">fformat</span> <span class="o">=</span> <span class="n">fileFormat</span><span class="o">.</span><span class="n">BINARY</span>
+
+<span class="c1"># Altough not recommended for convenience all enums</span>
+<span class="c1"># and some other things can be impored using *</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">slsdet</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="n">d</span><span class="o">.</span><span class="n">speed</span> <span class="o">=</span> <span class="n">speedLevel</span><span class="o">.</span><span class="n">FULL_SPEED</span>
+
+<span class="c1"># To list the available enums, use dir()</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">slsdet.enums</span>
+<span class="k">for</span> <span class="n">enum</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">slsdet</span><span class="o">.</span><span class="n">enums</span><span class="p">):</span>
+    <span class="c1"># filter out special memebers</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">enum</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">enum</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="slsdet.runStatus">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">slsdet.</span></span><span class="sig-name descname"><span class="pre">runStatus</span></span><a class="headerlink" href="#slsdet.runStatus" title="Link to this definition"></a></dt>
+<dd><p>Members:</p>
+<p>IDLE</p>
+<p>ERROR</p>
+<p>WAITING</p>
+<p>RUN_FINISHED</p>
+<p>TRANSMITTING</p>
+<p>RUNNING</p>
+<p>STOPPED</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="slsdet.detectorType">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">slsdet.</span></span><span class="sig-name descname"><span class="pre">detectorType</span></span><a class="headerlink" href="#slsdet.detectorType" title="Link to this definition"></a></dt>
+<dd><p>Members:</p>
+<p>GENERIC</p>
+<p>EIGER</p>
+<p>GOTTHARD</p>
+<p>JUNGFRAU</p>
+<p>CHIPTESTBOARD</p>
+<p>MOENCH</p>
+<p>MYTHEN3</p>
+<p>GOTTHARD2</p>
+<p>XILINX_CHIPTESTBOARD</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="slsdet.frameDiscardPolicy">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">slsdet.</span></span><span class="sig-name descname"><span class="pre">frameDiscardPolicy</span></span><a class="headerlink" href="#slsdet.frameDiscardPolicy" title="Link to this definition"></a></dt>
+<dd><p>Members:</p>
+<p>NO_DISCARD</p>
+<p>DISCARD_EMPTY_FRAMES</p>
+<p>DISCARD_PARTIAL_FRAMES</p>
+<p>NUM_DISCARD_POLICIES</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="slsdet.fileFormat">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">slsdet.</span></span><span class="sig-name descname"><span class="pre">fileFormat</span></span><a class="headerlink" href="#slsdet.fileFormat" title="Link to this definition"></a></dt>
+<dd><p>Members:</p>
+<p>BINARY</p>
+<p>HDF5</p>
+<p>NUM_FILE_FORMATS</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="slsdet.dimension">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">slsdet.</span></span><span class="sig-name descname"><span class="pre">dimension</span></span><a class="headerlink" href="#slsdet.dimension" title="Link to this definition"></a></dt>
+<dd><p>Members:</p>
+<p>X</p>
+<p>Y</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="slsdet.externalSignalFlag">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">slsdet.</span></span><span class="sig-name descname"><span class="pre">externalSignalFlag</span></span><a class="headerlink" href="#slsdet.externalSignalFlag" title="Link to this definition"></a></dt>
+<dd><p>Members:</p>
+<p>TRIGGER_IN_RISING_EDGE</p>
+<p>TRIGGER_IN_FALLING_EDGE</p>
+<p>INVERSION_ON</p>
+<p>INVERSION_OFF</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="slsdet.timingMode">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">slsdet.</span></span><span class="sig-name descname"><span class="pre">timingMode</span></span><a class="headerlink" href="#slsdet.timingMode" title="Link to this definition"></a></dt>
+<dd><p>Members:</p>
+<p>AUTO_TIMING</p>
+<p>TRIGGER_EXPOSURE</p>
+<p>GATED</p>
+<p>BURST_TRIGGER</p>
+<p>TRIGGER_GATED</p>
+<p>NUM_TIMING_MODES</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="slsdet.dacIndex">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">slsdet.</span></span><span class="sig-name descname"><span class="pre">dacIndex</span></span><a class="headerlink" href="#slsdet.dacIndex" title="Link to this definition"></a></dt>
+<dd><p>Members:</p>
+<p>DAC_0</p>
+<p>DAC_1</p>
+<p>DAC_2</p>
+<p>DAC_3</p>
+<p>DAC_4</p>
+<p>DAC_5</p>
+<p>DAC_6</p>
+<p>DAC_7</p>
+<p>DAC_8</p>
+<p>DAC_9</p>
+<p>DAC_10</p>
+<p>DAC_11</p>
+<p>DAC_12</p>
+<p>DAC_13</p>
+<p>DAC_14</p>
+<p>DAC_15</p>
+<p>DAC_16</p>
+<p>DAC_17</p>
+<p>VSVP</p>
+<p>VTRIM</p>
+<p>VRPREAMP</p>
+<p>VRSHAPER</p>
+<p>VSVN</p>
+<p>VTGSTV</p>
+<p>VCMP_LL</p>
+<p>VCMP_LR</p>
+<p>VCAL</p>
+<p>VCMP_RL</p>
+<p>RXB_RB</p>
+<p>RXB_LB</p>
+<p>VCMP_RR</p>
+<p>VCP</p>
+<p>VCN</p>
+<p>VISHAPER</p>
+<p>VTHRESHOLD</p>
+<p>IO_DELAY</p>
+<p>VREF_DS</p>
+<p>VCASCN_PB</p>
+<p>VCASCP_PB</p>
+<p>VOUT_CM</p>
+<p>VCASC_OUT</p>
+<p>VIN_CM</p>
+<p>VREF_COMP</p>
+<p>IB_TESTC</p>
+<p>VB_COMP</p>
+<p>VDD_PROT</p>
+<p>VIN_COM</p>
+<p>VREF_PRECH</p>
+<p>VB_PIXBUF</p>
+<p>VB_DS</p>
+<p>VREF_H_ADC</p>
+<p>VB_COMP_FE</p>
+<p>VB_COMP_ADC</p>
+<p>VCOM_CDS</p>
+<p>VREF_RSTORE</p>
+<p>VB_OPA_1ST</p>
+<p>VREF_COMP_FE</p>
+<p>VCOM_ADC1</p>
+<p>VREF_L_ADC</p>
+<p>VREF_CDS</p>
+<p>VB_CS</p>
+<p>VB_OPA_FD</p>
+<p>VCOM_ADC2</p>
+<p>VCASSH</p>
+<p>VTH2</p>
+<p>VRSHAPER_N</p>
+<p>VIPRE_OUT</p>
+<p>VTH3</p>
+<p>VTH1</p>
+<p>VICIN</p>
+<p>VCAS</p>
+<p>VCAL_N</p>
+<p>VIPRE</p>
+<p>VCAL_P</p>
+<p>VDCSH</p>
+<p>VBP_COLBUF</p>
+<p>VB_SDA</p>
+<p>VCASC_SFP</p>
+<p>VIPRE_CDS</p>
+<p>IBIAS_SFP</p>
+<p>ADC_VPP</p>
+<p>HIGH_VOLTAGE</p>
+<p>TEMPERATURE_ADC</p>
+<p>TEMPERATURE_FPGA</p>
+<p>TEMPERATURE_FPGAEXT</p>
+<p>TEMPERATURE_10GE</p>
+<p>TEMPERATURE_DCDC</p>
+<p>TEMPERATURE_SODL</p>
+<p>TEMPERATURE_SODR</p>
+<p>TEMPERATURE_FPGA2</p>
+<p>TEMPERATURE_FPGA3</p>
+<p>TRIMBIT_SCAN</p>
+<p>V_POWER_A</p>
+<p>V_POWER_B</p>
+<p>V_POWER_C</p>
+<p>V_POWER_D</p>
+<p>V_POWER_IO</p>
+<p>V_POWER_CHIP</p>
+<p>I_POWER_A</p>
+<p>I_POWER_B</p>
+<p>I_POWER_C</p>
+<p>I_POWER_D</p>
+<p>I_POWER_IO</p>
+<p>V_LIMIT</p>
+<p>SLOW_ADC0</p>
+<p>SLOW_ADC1</p>
+<p>SLOW_ADC2</p>
+<p>SLOW_ADC3</p>
+<p>SLOW_ADC4</p>
+<p>SLOW_ADC5</p>
+<p>SLOW_ADC6</p>
+<p>SLOW_ADC7</p>
+<p>SLOW_ADC_TEMP</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="slsdet.detectorSettings">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">slsdet.</span></span><span class="sig-name descname"><span class="pre">detectorSettings</span></span><a class="headerlink" href="#slsdet.detectorSettings" title="Link to this definition"></a></dt>
+<dd><p>Members:</p>
+<p>STANDARD</p>
+<p>FAST</p>
+<p>HIGHGAIN</p>
+<p>DYNAMICGAIN</p>
+<p>LOWGAIN</p>
+<p>MEDIUMGAIN</p>
+<p>VERYHIGHGAIN</p>
+<p>HIGHGAIN0</p>
+<p>FIXGAIN1</p>
+<p>FIXGAIN2</p>
+<p>VERYLOWGAIN</p>
+<p>G1_HIGHGAIN</p>
+<p>G1_LOWGAIN</p>
+<p>G2_HIGHCAP_HIGHGAIN</p>
+<p>G2_HIGHCAP_LOWGAIN</p>
+<p>G2_LOWCAP_HIGHGAIN</p>
+<p>G2_LOWCAP_LOWGAIN</p>
+<p>G4_HIGHGAIN</p>
+<p>G4_LOWGAIN</p>
+<p>GAIN0</p>
+<p>UNDEFINED</p>
+<p>UNINITIALIZED</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="slsdet.clockIndex">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">slsdet.</span></span><span class="sig-name descname"><span class="pre">clockIndex</span></span><a class="headerlink" href="#slsdet.clockIndex" title="Link to this definition"></a></dt>
+<dd><p>Members:</p>
+<p>ADC_CLOCK</p>
+<p>DBIT_CLOCK</p>
+<p>RUN_CLOCK</p>
+<p>SYNC_CLOCK</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="slsdet.speedLevel">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">slsdet.</span></span><span class="sig-name descname"><span class="pre">speedLevel</span></span><a class="headerlink" href="#slsdet.speedLevel" title="Link to this definition"></a></dt>
+<dd><p>Members:</p>
+<p>FULL_SPEED</p>
+<p>HALF_SPEED</p>
+<p>QUARTER_SPEED</p>
+<p>G2_108MHZ</p>
+<p>G2_144MHZ</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="slsdet.readoutMode">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">slsdet.</span></span><span class="sig-name descname"><span class="pre">readoutMode</span></span><a class="headerlink" href="#slsdet.readoutMode" title="Link to this definition"></a></dt>
+<dd><p>Members:</p>
+<p>ANALOG_ONLY</p>
+<p>DIGITAL_ONLY</p>
+<p>ANALOG_AND_DIGITAL</p>
+<p>TRANSCEIVER_ONLY</p>
+<p>DIGITAL_AND_TRANSCEIVER</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="slsdet.burstMode">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">slsdet.</span></span><span class="sig-name descname"><span class="pre">burstMode</span></span><a class="headerlink" href="#slsdet.burstMode" title="Link to this definition"></a></dt>
+<dd><p>Members:</p>
+<p>BURST_INTERNAL</p>
+<p>BURST_EXTERNAL</p>
+<p>CONTINUOUS_INTERNAL</p>
+<p>CONTINUOUS_EXTERNAL</p>
+<p>NUM_BURST_MODES</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="slsdet.timingSourceType">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">slsdet.</span></span><span class="sig-name descname"><span class="pre">timingSourceType</span></span><a class="headerlink" href="#slsdet.timingSourceType" title="Link to this definition"></a></dt>
+<dd><p>Members:</p>
+<p>TIMING_INTERNAL</p>
+<p>TIMING_EXTERNAL</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="slsdet.M3_GainCaps">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">slsdet.</span></span><span class="sig-name descname"><span class="pre">M3_GainCaps</span></span><a class="headerlink" href="#slsdet.M3_GainCaps" title="Link to this definition"></a></dt>
+<dd><p>Members:</p>
+<p>M3_C10pre</p>
+<p>M3_C15sh</p>
+<p>M3_C30sh</p>
+<p>M3_C50sh</p>
+<p>M3_C225ACsh</p>
+<p>M3_C15pre</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="slsdet.portPosition">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">slsdet.</span></span><span class="sig-name descname"><span class="pre">portPosition</span></span><a class="headerlink" href="#slsdet.portPosition" title="Link to this definition"></a></dt>
+<dd><p>Members:</p>
+<p>LEFT</p>
+<p>RIGHT</p>
+<p>TOP</p>
+<p>BOTTOM</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="slsdet.streamingInterface">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">slsdet.</span></span><span class="sig-name descname"><span class="pre">streamingInterface</span></span><a class="headerlink" href="#slsdet.streamingInterface" title="Link to this definition"></a></dt>
+<dd><p>Members:</p>
+<p>NONE</p>
+<p>LOW_LATENCY_LINK</p>
+<p>ETHERNET_10GB</p>
+<p>ALL</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="slsdet.vetoAlgorithm">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">slsdet.</span></span><span class="sig-name descname"><span class="pre">vetoAlgorithm</span></span><a class="headerlink" href="#slsdet.vetoAlgorithm" title="Link to this definition"></a></dt>
+<dd><p>Members:</p>
+<p>ALG_HITS</p>
+<p>ALG_RAW</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="slsdet.gainMode">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">slsdet.</span></span><span class="sig-name descname"><span class="pre">gainMode</span></span><a class="headerlink" href="#slsdet.gainMode" title="Link to this definition"></a></dt>
+<dd><p>Members:</p>
+<p>DYNAMIC</p>
+<p>FORCE_SWITCH_G1</p>
+<p>FORCE_SWITCH_G2</p>
+<p>FIX_G1</p>
+<p>FIX_G2</p>
+<p>FIX_G0</p>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="pydetector.html" class="btn btn-neutral float-left" title="Detector" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pyexamples.html" class="btn btn-neutral float-right" title="Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, PSD Detector Group.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

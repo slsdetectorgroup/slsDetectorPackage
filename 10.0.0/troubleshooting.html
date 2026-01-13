@@ -1,0 +1,861 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Troubleshooting &mdash; slsDetectorPackage 10.0.0  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/css/extra.css?v=2be88464" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="ZMQ: Json Header Format" href="zmqjsonheaderformat.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            slsDetectorPackage 10.0.0
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Installation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="consuming.html">Consuming slsDetectorPackage</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">how to</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="softwarearchitecture.html">Software Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configcommands.html">Setup Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick_start_guide.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dataformat.html">Detector Image Size and Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="multidet.html">Using multiple detectors</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">C++ API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="detector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="result.html">Result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="receiver_api.html">Receiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pygettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pydetector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyenums.html">Enums</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyexamples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyPatternGenerator.html">PatternGenerator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pattern.html">Pattern</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Command line</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="commandline.html">Command line interface</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="container_utils.html">ContainerUtils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="type_traits.html">TypeTraits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ToString.html">ToString</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Firmware</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="firmware.html">Firmware Upgrade</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="servers.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverupgrade.html">Upgrade</a></li>
+<li class="toctree-l1"><a class="reference internal" href="virtualserver.html">Simulators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverdefaults.html">Default Values</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector UDP Header</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="udpheader.html">Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udpconfig.html">Config file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udpdetspec.html">Detector Specific Fields</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiver.html">In-built Receiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="receivers.html">Custom Receiver</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver Files</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="fileformat.html">File format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiverheaderformat.html">SLS Receiver Header Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dataformat.html">Detector Image Size and Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="masterfileattributes.html">Master File Attributes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="binaryfileformat.html">Binary File Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hdf5fileformat.html">HDF5 File Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver ZMQ Stream</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="zmqjsonheaderformat.html">ZMQ: Json Header Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Troubleshooting</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Troubleshooting</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#common">Common</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#total-failure-of-packet-delivery">1. Total Failure of Packet Delivery</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#partial-or-random-packet-loss-performance">2. Partial or Random Packet Loss (Performance)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#receiver-pc-tuning-options">Receiver PC Tuning Options</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slsreceiver-tuning">slsReceiver Tuning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#shared-memory-error">Shared memory error</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cannot-connect-to-detector">Cannot connect to detector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cannot-connect-to-receiver">Cannot connect to receiver</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#receiver-cannot-bind-socket">Receiver: cannot bind socket</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cannot-get-multi-module-data">Cannot get multi module data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cannot-ping-module-nios">Cannot ping module (Nios)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#gotthard2">Gotthard2</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#cannot-get-data-without-a-module-attached">Cannot get data without a module attached</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#mythen3">Mythen3</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#detector-status-is-waiting-even-in-auto-timing-mode">Detector status is waiting even in auto timing mode</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#jungfrau">Jungfrau</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#temperature-event-occured">Temperature event occured</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#jungfrau-troubleshooting-power-supply">Cannot get multi module data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cannot-stop-slaves-in-sync-mode">Cannot stop slaves in sync mode</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">slsDetectorPackage 10.0.0</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Troubleshooting</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/troubleshooting.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="troubleshooting">
+<h1>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h1>
+<p>If something is missing, don’t hesitate to
+open an issue at our  <a class="reference external" href="https://github.com/slsdetectorgroup/slsDetectorPackage/issues">github repo issues</a>.</p>
+<section id="common">
+<h2>Common<a class="headerlink" href="#common" title="Link to this heading"></a></h2>
+<section id="total-failure-of-packet-delivery">
+<h3>1. Total Failure of Packet Delivery<a class="headerlink" href="#total-failure-of-packet-delivery" title="Link to this heading"></a></h3>
+<ol class="arabic">
+<li><dl class="simple">
+<dt>Data cable plugged into the wrong interface on board (Jungfrau)</dt><dd><ul class="simple">
+<li><p>Please ensure that the data cable is plugged into the rightmost interface (default for single interface). The inner one is disabled for PCB v1.0 and must be selected via command for PCB v2.0.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>Link up and speed</dt><dd><ul>
+<li><p>Check ethtool and find if Link Deteced:Yes and Speed is acceptable (&gt;10k).</p></li>
+<li><p>Check to see if the 10G link is up (blue or red LED on board, close to SFP+). If not:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Check transeiver and fibers are compatible (all MMF 850nm or all SMF 1030nm)</p></li>
+<li><p>Check fiber</p></li>
+<li><p>Check fiber polarity (if short range, unplug the link anywhere, and look at the light/dark pattern: dark has to mate with light)</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>For Jungfrau, check if the blue sfp light is blinking rapidly (even when it is not sending data). If so, most likely the link is down and something is wrong with the board. If it connected to a switch, then you do not see it with the ethtool command if link is down. One option is to connect it directly to a pc to see if link is down.</p></li>
+<li><p>With nc, try “nc -u -p 50001 -l” in receiving pc, and from another pc try “echo hallo | nc -u 10.1.2.172 50001” to send something to the recieving pc interface to see if the link is up and see if the other nc console receives the hallo.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>Detector is not acquiring (Not Eiger)</dt><dd><ul>
+<li><p>Take an acquisition with many images and using the following steps instead of acquire:</p>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sls_detector_put<span class="w"> </span>status<span class="w"> </span>start
+<span class="c1"># keep executing this command to see if the number of frames left keeps decreasing,</span>
+<span class="c1"># which means the detector is acquiring.</span>
+sls_detector_get<span class="w"> </span>framesl
+
+<span class="c1"># If you are using multiple modules, the previous command can return -1 because each module will return different values. Then, check for a single module instead: sls_detector_get 0:framesl</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Detector is not sending data (Except Eiger)</dt><dd><ul class="simple">
+<li><p>Check the board to see if the green LED close to SFP is blinking (detector is sending data). If not, detector is not operated properly (period too short/long, no trigger in trigger mode) or misconfigured and needs reboot.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Power supply</dt><dd><ul class="simple">
+<li><p>Check if power supply has enough current.</p></li>
+<li><p>For Jungfrau, refer to <a class="reference internal" href="#jungfrau-troubleshooting-power-supply"><span class="std std-ref">Jungfrau Power Supply Troubleshooting</span></a>.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Ethernet interface not configured for Jumbo frames (10Gb)</dt><dd><ul class="simple">
+<li><p>Ensure that the interfaces (on NIC and the switch) used in receiver pc have MTU 9000 (jumbo frames) enabled.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>Check if ‘rx packets’ counter in ‘ifconfig’ do not increment for interface.</dt><dd><ul>
+<li><p>If no, check switch configuration if present. Port counters of switch can also help to identify problem.</p></li>
+<li><p>If yes, but receiver software does not see it:</p>
+<blockquote>
+<div><ul>
+<li><p>Check no firewall (eg. firewalld) is present or add rules</p>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Stop and disable firewall</span>
+service<span class="w"> </span>firewalld<span class="w"> </span>stop
+systemctl<span class="w"> </span>disable<span class="w"> </span>firewalld
+<span class="c1"># Check status</span>
+service<span class="w"> </span>firewalld<span class="w"> </span>status
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>Check that selinux is disabled ( or add rules)</p></li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Source UDP IP in config file (Not Eiger)</dt><dd><ul class="simple">
+<li><p>Ensure it is valid and does not end if 0 or 255. Also ensure that the source ip ‘udp_srcip’ is in the same subnet as destination ip ‘udp_dstip’ and the masking in the interface configuration ensures this rule.</p></li>
+<li><p>Eg. If interface IP is 102.10.10.110 and mask is 255.255.255.0, udp_srcip has to be 102.10.10.xxx (same subnet)</p></li>
+<li><p>Use ifconfig and route commands to verify etheret interface configuration</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Netstat and netcat</dt><dd><ul class="simple">
+<li><p>Try with netstat to see if its really listening to the right interface. Or netcat to see if you get packets.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Wireshark or Tcpdump</dt><dd><ul class="simple">
+<li><p>Use one of these to confirm that you receive packets (with the right filtering ie. source and destination ports, ip).</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ol>
+</section>
+<section id="partial-or-random-packet-loss-performance">
+<h3>2. Partial or Random Packet Loss (Performance)<a class="headerlink" href="#partial-or-random-packet-loss-performance" title="Link to this heading"></a></h3>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The following suggestions are for convenience. Please do not follow blindly, research each parameter and adapt it to your system.</p>
+</div>
+<ol class="arabic">
+<li><dl class="simple">
+<dt>Receiver PC is not tuned for socket buffer size and input packet queue or other parameters.</dt><dd><ul class="simple">
+<li><p>Refer to <a class="reference internal" href="#receiver-pc-tuning"><span class="std std-ref">Receiver PC Tuning</span></a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Wiring</dt><dd><ul class="simple">
+<li><p>Faulty wiring or connecting cable to incorrect interface.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>Pinging the subnet (receiving only a few number of packets each time)</dt><dd><ul>
+<li><p>If a switch is used between a receiver pc and detector instead of plugging the cables directly, one might have to ping any ip in the subnet of the Ethernet interface constantly so that it does not forget the ip during operation.</p></li>
+<li><p>Eg. if rx_udpip is 10.2.3.100, then ping constantly 10.2.3.xxx, where xxx is any ip other than 100.</p></li>
+<li><dl>
+<dt>Using slsReceiver, you can use a command that does this for you:</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># arping the interface in a separate thread every minute</span>
+sls_detector_put<span class="w"> </span>rx_arping<span class="w"> </span><span class="m">1</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Only the slaves get no data</dt><dd><ul class="simple">
+<li><p>Check trigger cabling and trigger configuration</p></li>
+<li><p>When you cannot stop Jungfrau slaves in sync mode, refer to <a class="reference internal" href="#jungfrau-troubleshooting-sync-slaves-cannot-stop"><span class="std std-ref">Cannot stop slaves</span></a>.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ol>
+</section>
+<section id="receiver-pc-tuning-options">
+<span id="receiver-pc-tuning"></span><h3>Receiver PC Tuning Options<a class="headerlink" href="#receiver-pc-tuning-options" title="Link to this heading"></a></h3>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<div class="line-block">
+<div class="line">xth1 is example interface name in the following examples.</div>
+<div class="line">These settings are lost at pc reboot.</div>
+</div>
+</div>
+<ol class="arabic">
+<li><dl>
+<dt>Increase maximum receive socket buffer size and socket input packet queue.</dt><dd><ul>
+<li><dl>
+<dt>Temporarily (until shut down)</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># check size</span>
+sysctl<span class="w"> </span>-a<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>rmem
+sysctl<span class="w"> </span>-a<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>backlog
+
+<span class="c1"># set max and default (use 1Gb for Jungfrau and 100Mb for others)</span>
+sysctl<span class="w"> </span>net.core.rmem_max<span class="o">=</span><span class="k">$((</span><span class="m">100</span><span class="o">*</span><span class="m">1024</span><span class="o">*</span><span class="m">1024</span><span class="k">))</span>
+sysctl<span class="w"> </span>net.core.rmem_default<span class="o">=</span><span class="k">$((</span><span class="m">100</span><span class="o">*</span><span class="m">1024</span><span class="o">*</span><span class="m">1024</span><span class="k">))</span>
+sysctl<span class="w"> </span>net.core.netdev_max_backlog<span class="o">=</span><span class="m">250000</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>Permanently</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># edit /etc/sysctl.conf file</span>
+<span class="c1"># set max and default (use 1Gb for Jungfrau and 100Mb for others)</span>
+net.core.rmem_max<span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">104857600</span>
+net.core.rmem_default<span class="o">=</span><span class="w"> </span><span class="m">104857600</span>
+net.core.netdev_max_backlog<span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">250000</span>
+
+<span class="c1"># save file and run the following</span>
+sysctl<span class="w"> </span>-p
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This is the most basic setting, which is sometimes more than enough.</p>
+</div>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>For 10Gb,</dt><dd><ul class="simple">
+<li><p>MTU must be set up to 9000 for jumbo frames on detector, switch and server NIC</p></li>
+<li><p>Set up static MAC address tables with separated VLANs</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>Write to memory if not a large disk and pc not fast enough.</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mount<span class="w"> </span>-t<span class="w"> </span>tmpfs<span class="w"> </span>none<span class="w"> </span>/ramdisk_folder
+<span class="c1"># or</span>
+mount<span class="w"> </span>-t<span class="w"> </span>tmpfs<span class="w"> </span>none<span class="w"> </span>/mnt/ramdisk<span class="w"> </span>-o<span class="w"> </span><span class="nv">size</span><span class="o">=</span>10G
+<span class="c1"># check how many GB memory you can allocate, to avoid swapping otherwise</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>Modify ethtool settings.</dt><dd><ul>
+<li><dl>
+<dt>rx ring parameters</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># check</span>
+ethtool<span class="w"> </span>-g<span class="w"> </span>xth1
+
+<span class="c1"># set to max value in your pc settings</span>
+ethtool<span class="w"> </span>-G<span class="w"> </span>xth1<span class="w"> </span>rx<span class="w"> </span><span class="m">4096</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>coalesce settings (might not always work)</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># check</span>
+ethtool<span class="w"> </span>-c<span class="w"> </span>xth1
+
+<span class="c1"># enable adaptive xoalescence parameters</span>
+ethtool<span class="w"> </span>-C<span class="w"> </span>xth1<span class="w"> </span>adaptive-rx<span class="w"> </span>on
+
+<span class="c1"># set to max value in your pc settings</span>
+ethtool<span class="w"> </span>-C<span class="w"> </span>xth1<span class="w"> </span>rx-usecs<span class="w"> </span><span class="m">100</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>pause parameters</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># check</span>
+ethtool<span class="w"> </span>-a<span class="w"> </span>xth1
+
+<span class="c1"># set to max value in your pc settings</span>
+ethtool<span class="w"> </span>-A<span class="w"> </span>xth1<span class="w"> </span>rx<span class="w"> </span>on
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>generic receiver offload (might not always work)</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># check</span>
+ethtool<span class="w"> </span>-k<span class="w"> </span>xth1
+
+<span class="c1"># enable generic receiver offload</span>
+ethtool<span class="w"> </span>-K<span class="w"> </span>xth1<span class="w"> </span>gro
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+<li><p><strong>permanent ethtool settings</strong></p>
+<blockquote>
+<div><p>There are two main methods.</p>
+<ol class="arabic">
+<li><p><code class="docutils literal notranslate"><span class="pre">systemd</span> <span class="pre">service</span></code> (recommended for Fedora and modern RHEL)</p>
+<blockquote>
+<div><p>This is the preferred method on systems using systemd and NetworkManager, such as Fedora and RHEL 8+.</p>
+<dl>
+<dt>Create a systemd service template:</dt><dd><div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="c1"># /etc/systemd/system/ethtool@.service</span>
+
+<span class="k">[Unit]</span>
+<span class="na">Description</span><span class="o">=</span><span class="s">Set RX buffer size with ethtool</span>
+<span class="na">After</span><span class="o">=</span><span class="s">network-online.target</span>
+<span class="na">Wants</span><span class="o">=</span><span class="s">network-online.target</span>
+
+<span class="k">[Service]</span>
+<span class="na">ExecStart</span><span class="o">=</span><span class="s">/usr/sbin/ethtool -G %i rx 8192</span>
+<span class="na">Type</span><span class="o">=</span><span class="s">oneshot</span>
+
+<span class="k">[Install]</span>
+<span class="na">WantedBy</span><span class="o">=</span><span class="s">multi-user.target</span>
+</pre></div>
+</div>
+</dd>
+<dt>Enable the service for a specific interface:</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>systemctl<span class="w"> </span><span class="nb">enable</span><span class="w"> </span>ethtool@xth1.service
+</pre></div>
+</div>
+</dd>
+</dl>
+<p>This ensures the setting is applied at every boot once the network is online.</p>
+</div></blockquote>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ETHTOOL_OPTS</span> <span class="pre">in</span> <span class="pre">ifcfg</span> <span class="pre">scripts</span></code> (legacy method for RHEL 7 and earlier)</p>
+<blockquote>
+<div><p>This method applies only to systems using the legacy network-scripts backend, typically RHEL 7 and earlier.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># edit the corresponding ``ifcfg-*`` file</span>
+<span class="c1"># file: /etc/sysconfig/network-scripts/ifcfg-eth0</span>
+
+<span class="c1"># add or modify the following line:</span>
+<span class="nv">ETHTOOL_OPTS</span><span class="o">=</span><span class="s2">&quot;-K  gro on; -G  rx 4096; -L  combined 4; -C  rx-usecs 100; -C  adaptive-rx on&quot;</span>
+
+<span class="c1"># restart the interface</span>
+ifdown<span class="w"> </span>eth0<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>ifup<span class="w"> </span>eth0
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ol>
+</div></blockquote>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>Disable power saving in CPU frequency scaling and set system to performance</dt><dd><ul>
+<li><dl>
+<dt>Check current policy (default might be powersave or schedutil)</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># check current active governor and range of cpu freq policy</span>
+cpupower<span class="w"> </span>frequency-info<span class="w"> </span>--policy
+<span class="c1"># list all available governors for this kernel</span>
+cpupower<span class="w"> </span>frequency-info<span class="w"> </span>--governors
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>Temporarily (until shut down)</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># set to performance</span>
+sudo<span class="w"> </span>cpupower<span class="w"> </span>frequency-set<span class="w"> </span>-g<span class="w"> </span>performance
+
+<span class="c1"># or</span>
+cpufreq-info
+<span class="k">for</span><span class="w"> </span>i<span class="w"> </span><span class="k">in</span><span class="w"> </span>‘seq<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="m">7</span>‘<span class="p">;</span><span class="w"> </span><span class="k">do</span><span class="w"> </span>cpufreq-set<span class="w"> </span>-c<span class="w"> </span><span class="nv">$i</span><span class="w"> </span>-g<span class="w"> </span>performance<span class="p">;</span><span class="w"> </span><span class="k">done</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>Permanently</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># edit /etc/sysconfig/cpupower to preference</span>
+
+<span class="c1"># enable or disable permanently</span>
+sudo<span class="w"> </span>systemctl<span class="w"> </span><span class="nb">enable</span><span class="w"> </span>cpupower
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>Give user speicific user scheduling privileges.</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># edit /etc/security/limits.conf</span>
+<span class="c1"># add following line or similar depending on your distribution</span>
+username<span class="w"> </span>rtprio<span class="w"> </span><span class="m">99</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This is also set if slsReceiver is run as root user.</p>
+</div>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>Some more advanced options:</dt><dd><div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Please do not try if you do not understand</p>
+</div>
+<ol class="arabic">
+<li><p>reduce the number of queue per NIC to the number of expected streams: ethtool -L xth0 combined 2</p></li>
+<li><p>assign each queue to its stream:  ethtool -U xth0 flow-type tcp4 dst-port 50004 action 1</p></li>
+<li><p>assign to each queue (IRQ) one CPU on the right socket:  echo “3”&gt; /proc/irq/47/smp_affinity_list    #change the numbers looking at /proc/interrupts</p></li>
+<li><p>disable irqbalance service</p></li>
+<li><p>Be sure that the switch knows the receiver mac address. Most switches reset the mac lists every few minutes, and since the receiver only receives, there is not a periodic refresh of the mac list. In this case, one can set a fixed mac list in the switch, or setup some kind of script arping or pinging out from that interface (will be available in 7.0.0).</p></li>
+<li><p>assign the receiver numa node (also with -m) to the socket where the NIC is attached. To know it, cat /sys/class/net/ethxxx/device/numa_node</p></li>
+<li><p>ensure file system performance can handle sustained high data rate:</p>
+<blockquote>
+<div><ul>
+<li><p>One can use dd:</p>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>dd<span class="w"> </span><span class="k">if</span><span class="o">=</span>/dev/zero<span class="w"> </span><span class="nv">of</span><span class="o">=</span>/testpath/testfile<span class="w"> </span><span class="nv">bs</span><span class="o">=</span>1M<span class="w"> </span><span class="nv">count</span><span class="o">=</span><span class="m">100000</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>Or better fio (which needs to be installed)</p>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>fio<span class="w"> </span>--name<span class="o">=</span>global<span class="w"> </span>–directory<span class="o">=</span>/testpath/<span class="w"> </span>--rw<span class="o">=</span>write<span class="w"> </span>--ioengine<span class="o">=</span>libaio<span class="w"> </span>--direct<span class="o">=</span><span class="m">0</span><span class="w"> </span>--size<span class="o">=</span>200G<span class="w"> </span>--<span class="w">  </span><span class="nv">numjobs</span><span class="o">=</span><span class="m">2</span><span class="w"> </span>--iodepth<span class="o">=</span><span class="m">1</span><span class="w"> </span>--bs<span class="o">=</span>1M<span class="w"> </span>–name<span class="o">=</span>job
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+</div></blockquote>
+</li>
+</ol>
+</dd>
+</dl>
+</li>
+</ol>
+</section>
+<section id="slsreceiver-tuning">
+<h3>slsReceiver Tuning<a class="headerlink" href="#slsreceiver-tuning" title="Link to this heading"></a></h3>
+<ol class="arabic">
+<li><p>Starting receiver as root to have scheduling privileges.</p></li>
+<li><p>For 10g, enable flow control</p>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sls_detector_put<span class="w"> </span>flowcontrol10g<span class="w"> </span><span class="m">1</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><dl>
+<dt>Increase slsReceiver ring buffer depth</dt><dd><p>This can be tuned depending on the number of receivers (modules) and memory available.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># sugggested not to use more than half memory of CPU socket in case of NUMA systems) for this</span>
+
+sls_detector_get<span class="w"> </span>rx_fifodepth
+<span class="c1"># sets number of frames in fifo to 1024 ~1GB per receiver. Default is 2500</span>
+sls_detector_put<span class="w"> </span>rx_fifodepth<span class="w"> </span><span class="m">1024</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>Increase number of frames per file</dt><dd><p>This can reduce time taken to open and close files.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sls_detector_get<span class="w"> </span>rx_framesperfile
+sls_detector_put<span class="w"> </span>rx_framesperfile<span class="w"> </span><span class="m">20000</span>
+<span class="c1"># writes all frames into a single file</span>
+sls_detector_put<span class="w"> </span>rx_framesperfile<span class="w"> </span><span class="m">0</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>Disable file write</dt><dd><p>This can ensure it is not the file system performance hampering high date rate.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sls_detector_put<span class="w"> </span>fwrite<span class="w"> </span><span class="m">0</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+</ol>
+</section>
+<section id="shared-memory-error">
+<h3>Shared memory error<a class="headerlink" href="#shared-memory-error" title="Link to this heading"></a></h3>
+<dl>
+<dt>For errors due to access or size, use any of the following suggestions.</dt><dd><ol class="arabic">
+<li><p>Delete shared memory files and try again</p></li>
+<li><p>Use environment variable to use a different shared memory ending in jfxx</p>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># shared memory ending in jfxx</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">SLSDETNAME</span><span class="o">=</span>jfxx
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><dl>
+<dt>USe a different multi shared memory ID</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sls_detector_put<span class="w"> </span><span class="m">2</span>-config<span class="w"> </span>xxxx.config
+<span class="c1"># or</span>
+sls_detector_put<span class="w"> </span><span class="m">2</span>-hostname<span class="w"> </span>bchipxxx
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+</ol>
+</dd>
+<dt>To list all shared memory files of sls detector package.</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ll<span class="w"> </span>/dev/shm/slsDetectorPackage*
+-rw-------.<span class="w"> </span><span class="m">1</span><span class="w"> </span>l_d<span class="w"> </span>l_d<span class="w">  </span><span class="m">136</span><span class="w"> </span>Oct<span class="w">  </span><span class="m">1</span><span class="w"> </span><span class="m">11</span>:42<span class="w"> </span>/dev/shm/slsDetectorPackage_multi_0
+-rw-------.<span class="w"> </span><span class="m">1</span><span class="w"> </span>l_d<span class="w"> </span>l_d<span class="w"> </span><span class="m">3476</span><span class="w"> </span>Oct<span class="w">  </span><span class="m">1</span><span class="w"> </span><span class="m">11</span>:42<span class="w"> </span>/dev/shm/slsDetectorPackage_multi_0_sls_0
+-rw-------.<span class="w"> </span><span class="m">1</span><span class="w"> </span>l_d<span class="w"> </span>l_d<span class="w"> </span><span class="m">3476</span><span class="w"> </span>Oct<span class="w">  </span><span class="m">1</span><span class="w"> </span><span class="m">11</span>:42<span class="w"> </span>/dev/shm/slsDetectorPackage_multi_0_sls_1
+</pre></div>
+</div>
+</dd>
+</dl>
+</section>
+<section id="cannot-connect-to-detector">
+<h3>Cannot connect to detector<a class="headerlink" href="#cannot-connect-to-detector" title="Link to this heading"></a></h3>
+<dl>
+<dt>Ensure both control and stop servers are running on the detector.</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ps<span class="w"> </span>-ef<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>jungfrauDetectorServer*
+</pre></div>
+</div>
+</dd>
+</dl>
+</section>
+<section id="cannot-connect-to-receiver">
+<h3>Cannot connect to receiver<a class="headerlink" href="#cannot-connect-to-receiver" title="Link to this heading"></a></h3>
+<p>Start receiver before running a client command that needs to communicate with receiver.</p>
+</section>
+<section id="receiver-cannot-bind-socket">
+<h3>Receiver: cannot bind socket<a class="headerlink" href="#receiver-cannot-bind-socket" title="Link to this heading"></a></h3>
+<ol class="arabic">
+<li><dl class="simple">
+<dt>slsReceiver or slsMultiReceiver is already open somewhere.</dt><dd><ul class="simple">
+<li><p>Kill it and restart it.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>Tcp port is in use by another application.</dt><dd><ul>
+<li><dl>
+<dt>Start Receiver with a different tcp port and adjust it config file</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># restart receiver with different port</span>
+slsReceiver<span class="w"> </span>-t1980
+
+<span class="c1"># adjust in config file</span>
+rx_hostname<span class="w"> </span>pcxxxx:1980
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ol>
+</section>
+<section id="cannot-get-multi-module-data">
+<span id="common-troubleshooting-multi-module-data"></span><h3>Cannot get multi module data<a class="headerlink" href="#cannot-get-multi-module-data" title="Link to this heading"></a></h3>
+<p>Possible causes could be the following:</p>
+<ol class="arabic simple">
+<li><dl class="simple">
+<dt>Network</dt><dd><ul class="simple">
+<li><p>If you have a direct connection, check to see if the network cables are connected correctly to corresponding interfaces on the PC side. Check also the network configuration and that the detectors and receivers are in the corresponding subnet.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Power Supply</dt><dd><ul class="simple">
+<li><p>Check power supply current limit.</p></li>
+<li><p>For Jungfrau, refer to <a class="reference internal" href="#jungfrau-troubleshooting-power-supply"><span class="std std-ref">Jungfrau Power Supply Troubleshooting</span></a>.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ol>
+</section>
+<section id="cannot-ping-module-nios">
+<h3>Cannot ping module (Nios)<a class="headerlink" href="#cannot-ping-module-nios" title="Link to this heading"></a></h3>
+<p>If you executed “reboot” command on the board, you cannot ping it anymore unless you power cycle. To reboot the controller, please use the software command (“rebootcontroller”), which talks to the microcontroller.</p>
+</section>
+</section>
+<section id="gotthard2">
+<h2>Gotthard2<a class="headerlink" href="#gotthard2" title="Link to this heading"></a></h2>
+<section id="cannot-get-data-without-a-module-attached">
+<h3>Cannot get data without a module attached<a class="headerlink" href="#cannot-get-data-without-a-module-attached" title="Link to this heading"></a></h3>
+<p>You cannot get data without a module attached as a specific pin is floating. Attach module to get data.</p>
+</section>
+</section>
+<section id="mythen3">
+<h2>Mythen3<a class="headerlink" href="#mythen3" title="Link to this heading"></a></h2>
+<section id="detector-status-is-waiting-even-in-auto-timing-mode">
+<h3>Detector status is waiting even in auto timing mode<a class="headerlink" href="#detector-status-is-waiting-even-in-auto-timing-mode" title="Link to this heading"></a></h3>
+<p>Check if the control board or the flat band cable is connected properly. If not, connect them properly and try again.</p>
+</section>
+</section>
+<section id="jungfrau">
+<h2>Jungfrau<a class="headerlink" href="#jungfrau" title="Link to this heading"></a></h2>
+<section id="temperature-event-occured">
+<h3>Temperature event occured<a class="headerlink" href="#temperature-event-occured" title="Link to this heading"></a></h3>
+<p>This will occur only if:
+* temp_threshold (threshold temperature) has been set to a value
+* temp_control (temperature control) set to 1
+* and the temperature overshooted the threshold temperature.</p>
+<p><strong>Consequence</strong>
+* sls_detector_get temp_event will give 1 # temperature event occured
+* the chip will be powered off</p>
+<p><strong>Solution</strong>
+* Even after fixing the cooling, any subsequent powerchip command will fail unless the temperature event has been cleared.</p>
+<ul>
+<li><dl>
+<dt>Clear the temperature event</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># gives the current chip power status (zero currently as chip powered off)</span>
+sls_detector_get<span class="w"> </span>powerchip
+
+<span class="c1"># clear temperature event</span>
+sls_detector_put<span class="w"> </span>temp_event<span class="w"> </span><span class="m">0</span>
+
+<span class="c1"># power on the chip</span>
+sls_detector_put<span class="w"> </span>powerchip<span class="w"> </span><span class="m">1</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
+<section id="jungfrau-troubleshooting-power-supply">
+<span id="id1"></span><h3>Cannot get multi module data<a class="headerlink" href="#jungfrau-troubleshooting-power-supply" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p>Check <a class="reference internal" href="#common-troubleshooting-multi-module-data"><span class="std std-ref">Common Multi Module Troubleshooting</span></a></p></li>
+<li><dl class="simple">
+<dt>Power Supply</dt><dd><ul class="simple">
+<li><p>Jungfrau needs a ~4A per module for a short time at startup. If not, it reboots misconfigured.</p></li>
+<li><p>Comment out this line in the config file: powerchip 1</p></li>
+<li><p>Powering on the chip increases the power consumption by a considerable amount. If commenting out this line aids in getting data (strange data due to powered off chip), then it could be the power supply current limit. Fix it (possibly to 8A current limit) and uncomment the powerchip line back in config file.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ol>
+</section>
+<section id="cannot-stop-slaves-in-sync-mode">
+<span id="jungfrau-troubleshooting-sync-slaves-cannot-stop"></span><h3>Cannot stop slaves in sync mode<a class="headerlink" href="#cannot-stop-slaves-in-sync-mode" title="Link to this heading"></a></h3>
+<ol class="arabic">
+<li><p>If cabling is accessible, ensure termination board and flatband cable between the masters and the slaves are connnected properly. Then try to stop.</p></li>
+<li><p>If cabling is inaccessible, unsync first so that the slaves can get the stop directly from the client using the command. Then, don’t use sync mode until the cabling is fixed.</p>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># unsync, slaves command will fail as it is still in waiting state</span>
+sls_detector_put<span class="w"> </span>sync<span class="w"> </span><span class="m">0</span>
+
+<span class="c1"># stop should now be successful as master does not determine the stop anymore</span>
+sls_detector_put<span class="w"> </span>stop
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ol>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="zmqjsonheaderformat.html" class="btn btn-neutral float-left" title="ZMQ: Json Header Format" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, PSD Detector Group.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

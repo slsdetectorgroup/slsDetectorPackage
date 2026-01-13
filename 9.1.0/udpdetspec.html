@@ -1,0 +1,407 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Detector Specific Fields &mdash; slsDetectorPackage 9.1.0  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/css/extra.css?v=2be88464" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Receivers" href="receivers.html" />
+    <link rel="prev" title="Config file" href="udpconfig.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            slsDetectorPackage 9.1.0
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Installation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="consuming.html">Consuming slsDetectorPackage</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">C++ API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="detector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="result.html">Result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="receiver_api.html">Receiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pygettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pydetector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyenums.html">Enums</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyexamples.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Command line</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="commandline.html">Command line interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick_start_guide.html">Quick Start Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="container_utils.html">ContainerUtils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="type_traits.html">TypeTraits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ToString.html">ToString</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Firmware</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="firmware.html">Firmware Upgrade</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="servers.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverupgrade.html">Upgrade</a></li>
+<li class="toctree-l1"><a class="reference internal" href="virtualserver.html">Simulators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverdefaults.html">Default Values</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector UDP Header</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="udpheader.html">Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udpconfig.html">Config file</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Detector Specific Fields</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#eiger">Eiger</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#jungfrau">Jungfrau</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#gotthard2">Gotthard2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#mythen3">Mythen3</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="receivers.html">Receivers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiver.html">slsReceiver/ slsMultiReceiver</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver Files</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="fileformat.html">File format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiverheaderformat.html">SLS Receiver Header Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="masterfileattributes.html">Master File Attributes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="binaryfileformat.html">Binary File Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hdf5fileformat.html">HDF5 File Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver ZMQ Stream</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="zmqjsonheaderformat.html">ZMQ: Json Header Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Troubleshooting</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">slsDetectorPackage 9.1.0</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Detector Specific Fields</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/udpdetspec.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="detector-specific-fields">
+<span id="id1"></span><h1>Detector Specific Fields<a class="headerlink" href="#detector-specific-fields" title="Link to this heading"></a></h1>
+<p>Please check out <a class="reference internal" href="udpheader.html#detector-udp-header"><span class="std std-ref">the current detector header</span></a> to see
+where the detector specific fields are placed.</p>
+<section id="eiger">
+<h2>Eiger<a class="headerlink" href="#eiger" title="Link to this heading"></a></h2>
+<table class="docutils align-default" id="id8">
+<caption><span class="caption-text">Detector Specific Field</span><a class="headerlink" href="#id8" title="Link to this table"></a></caption>
+<tbody>
+<tr class="row-odd"><td><p>expLength</p></td>
+<td><p>Sub Frame Number</p></td>
+</tr>
+<tr class="row-even"><td><p>detSpec1</p></td>
+<td><p>0x0</p></td>
+</tr>
+<tr class="row-odd"><td><p>detSpec2</p></td>
+<td><p>0x0</p></td>
+</tr>
+<tr class="row-even"><td><p>detSpec3</p></td>
+<td><p>e14a</p></td>
+</tr>
+<tr class="row-odd"><td><p>detSpec4</p></td>
+<td><p>Round Robin Interface Number</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="jungfrau">
+<h2>Jungfrau<a class="headerlink" href="#jungfrau" title="Link to this heading"></a></h2>
+<table class="docutils align-default" id="id9">
+<caption><span class="caption-text">Detector Specific Field</span><a class="headerlink" href="#id9" title="Link to this table"></a></caption>
+<tbody>
+<tr class="row-odd"><td><p>detSpec1</p></td>
+<td><p>Bunch Id <a class="footnote-reference brackets" href="#id5" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p>detSpec2</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-odd"><td><p>detSpec3</p></td>
+<td><p>DAQ info</p></td>
+</tr>
+<tr class="row-even"><td><p>detSpec4</p></td>
+<td><p>0</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default" id="id10">
+<caption><span class="caption-text">DAQ Info Field</span><a class="headerlink" href="#id10" title="Link to this table"></a></caption>
+<tbody>
+<tr class="row-odd"><td><p>Bits</p></td>
+<td><p>Name</p></td>
+<td colspan="4"><p>Description</p></td>
+</tr>
+<tr class="row-even"><td rowspan="2"><p>0</p></td>
+<td rowspan="2"><p>High gain</p></td>
+<td><p>1</p></td>
+<td colspan="3"><p>High Gain enabled</p></td>
+</tr>
+<tr class="row-odd"><td><p>0</p></td>
+<td colspan="3"><p>High Gain disabled</p></td>
+</tr>
+<tr class="row-even"><td rowspan="2"><p>1</p></td>
+<td rowspan="2"><p>Fix gain stage 1</p></td>
+<td><p>1</p></td>
+<td colspan="3"><p>Gain stage 1 fixed. The switch that
+selects the gains stage 1 is active all
+the time.</p></td>
+</tr>
+<tr class="row-odd"><td><p>0</p></td>
+<td colspan="3"><p>Gain stage 1 unset. The switch that
+selects the gains stage 1 is inactive
+all the time.</p></td>
+</tr>
+<tr class="row-even"><td rowspan="2"><p>2</p></td>
+<td rowspan="2"><p>Fix gain stage 2</p></td>
+<td><p>1</p></td>
+<td colspan="3"><p>Gain stage 2 fixed. The switch that
+selects the gains stage 2 is active all
+the time.</p></td>
+</tr>
+<tr class="row-odd"><td><p>0</p></td>
+<td colspan="3"><p>Gain stage 2 unset. The switch that
+selects the gains stage 2 is inactive
+all the time.</p></td>
+</tr>
+<tr class="row-even"><td rowspan="2"><p>4</p></td>
+<td rowspan="2"><p>Comparator reset</p></td>
+<td><p>1</p></td>
+<td colspan="3"><p>On-chip comparator in reset state.
+Dynamic-gain switching is therefore
+disabled.</p></td>
+</tr>
+<tr class="row-odd"><td><p>0</p></td>
+<td colspan="3"><p>On-chip comparator active.</p></td>
+</tr>
+<tr class="row-even"><td rowspan="5"><p>7-5</p></td>
+<td rowspan="5"><p>Jungfrau chip
+version</p></td>
+<td><p>Bit 7</p></td>
+<td><p>Bit 6</p></td>
+<td><p>Bit 5</p></td>
+<td><p>Description</p></td>
+</tr>
+<tr class="row-odd"><td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>v1.0</p></td>
+</tr>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>1</p></td>
+<td><p>v1.1</p></td>
+</tr>
+<tr class="row-odd"><td><p>0</p></td>
+<td><p>1</p></td>
+<td><p>X</p></td>
+<td><p>Reserved</p></td>
+</tr>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>X</p></td>
+<td><p>X</p></td>
+<td><p>Reserved</p></td>
+</tr>
+<tr class="row-odd"><td><p>11-8</p></td>
+<td><p>Storage cell select</p></td>
+<td colspan="4"><p>Storage cell used for this exposure. This
+field defines the storage cell that was used
+to acquire the data of this frame</p></td>
+</tr>
+<tr class="row-even"><td rowspan="2"><p>12</p></td>
+<td rowspan="2"><p>Force switching
+to gain stage 1</p></td>
+<td><p>1</p></td>
+<td colspan="3"><p>Forced switching to gain stage 1 at the
+start of the exposure period.</p></td>
+</tr>
+<tr class="row-odd"><td><p>0</p></td>
+<td colspan="3"><p>Disabled forced gain switching to gain
+stage 1. Dynamic gain switching
+conditions apply.</p></td>
+</tr>
+<tr class="row-even"><td rowspan="2"><p>13</p></td>
+<td rowspan="2"><p>Force switching
+to gain stage 2</p></td>
+<td><p>1</p></td>
+<td colspan="3"><p>Forced switching to gain stage 2 at the
+start of the exposure period.</p></td>
+</tr>
+<tr class="row-odd"><td><p>0</p></td>
+<td colspan="3"><p>Disabled forced gain switching to gain
+stage 2. Dynamic gain switching
+conditions apply.</p></td>
+</tr>
+<tr class="row-even"><td><p>23-16</p></td>
+<td><p>10-Gigabit event
+code</p></td>
+<td colspan="4"><p>The 8-bit event code contains value of the
+event received over the 10 GbE interface by
+JUNGFRAU detector at the moment of the frame
+acquisition.</p></td>
+</tr>
+<tr class="row-odd"><td rowspan="2"><p>31</p></td>
+<td rowspan="2"><p>External input flag</p></td>
+<td><p>1</p></td>
+<td colspan="3"><p>External input flag detected in the
+last exposure.</p></td>
+</tr>
+<tr class="row-even"><td><p>0</p></td>
+<td colspan="3"><p>External input flag not detected in the
+last exposure.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="gotthard2">
+<h2>Gotthard2<a class="headerlink" href="#gotthard2" title="Link to this heading"></a></h2>
+<table class="docutils align-default" id="id11">
+<caption><span class="caption-text">Detector Specific Field</span><a class="headerlink" href="#id11" title="Link to this table"></a></caption>
+<tbody>
+<tr class="row-odd"><td><p>detSpec1</p></td>
+<td><p>Train Id <a class="footnote-reference brackets" href="#id6" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p>detSpec2</p></td>
+<td><p>Bunch Id <a class="footnote-reference brackets" href="#id7" id="id4" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p>detSpec3</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-even"><td><p>detSpec4</p></td>
+<td><p>0</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="mythen3">
+<h2>Mythen3<a class="headerlink" href="#mythen3" title="Link to this heading"></a></h2>
+<table class="docutils align-default" id="id12">
+<caption><span class="caption-text">Detector Specific Field</span><a class="headerlink" href="#id12" title="Link to this table"></a></caption>
+<tbody>
+<tr class="row-odd"><td><p>detSpec1</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-even"><td><p>detSpec2</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-odd"><td><p>detSpec3</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-even"><td><p>detSpec4</p></td>
+<td><p>0</p></td>
+</tr>
+</tbody>
+</table>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id5" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">1</a><span class="fn-bracket">]</span></span>
+<p><strong>Bunch Id</strong>: bunch identification number received by the detector at the moment of frame acquisition.</p>
+</aside>
+<aside class="footnote brackets" id="id6" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id3">2</a><span class="fn-bracket">]</span></span>
+<p><strong>Train Id</strong>: train identification number received by the detector at the moment of frame acquisition.</p>
+</aside>
+<aside class="footnote brackets" id="id7" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id4">3</a><span class="fn-bracket">]</span></span>
+<p><strong>Bunch Id</strong>: bunch identification number to identify every single exposure during a burst acquisition.</p>
+</aside>
+</aside>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="udpconfig.html" class="btn btn-neutral float-left" title="Config file" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="receivers.html" class="btn btn-neutral float-right" title="Receivers" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, PSD Detector Group.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

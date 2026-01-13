@@ -1,0 +1,561 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Binary File Format &mdash; slsDetectorPackage 10.0.0  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/css/extra.css?v=2be88464" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="HDF5 File Format" href="hdf5fileformat.html" />
+    <link rel="prev" title="Master File Attributes" href="masterfileattributes.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            slsDetectorPackage 10.0.0
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Installation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="consuming.html">Consuming slsDetectorPackage</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">how to</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="softwarearchitecture.html">Software Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configcommands.html">Setup Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick_start_guide.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dataformat.html">Detector Image Size and Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="multidet.html">Using multiple detectors</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">C++ API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="detector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="result.html">Result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="receiver_api.html">Receiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pygettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pydetector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyenums.html">Enums</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyexamples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyPatternGenerator.html">PatternGenerator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pattern.html">Pattern</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Command line</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="commandline.html">Command line interface</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="container_utils.html">ContainerUtils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="type_traits.html">TypeTraits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ToString.html">ToString</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Firmware</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="firmware.html">Firmware Upgrade</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="servers.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverupgrade.html">Upgrade</a></li>
+<li class="toctree-l1"><a class="reference internal" href="virtualserver.html">Simulators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverdefaults.html">Default Values</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector UDP Header</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="udpheader.html">Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udpconfig.html">Config file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udpdetspec.html">Detector Specific Fields</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiver.html">In-built Receiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="receivers.html">Custom Receiver</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver Files</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="fileformat.html">File format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiverheaderformat.html">SLS Receiver Header Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dataformat.html">Detector Image Size and Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="masterfileattributes.html">Master File Attributes</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Binary File Format</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#master-file">Master File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#data-file">Data File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#json-master-file-examples">JSON Master File Examples</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#eiger">Eiger</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#jungfrau">Jungfrau</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gotthard2">Gotthard2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mythen3">Mythen3</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#moench">Moench</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#chip-test-board">Chip Test Board</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="hdf5fileformat.html">HDF5 File Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver ZMQ Stream</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="zmqjsonheaderformat.html">ZMQ: Json Header Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Troubleshooting</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">slsDetectorPackage 10.0.0</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Binary File Format</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/binaryfileformat.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="binary-file-format">
+<span id="id1"></span><h1>Binary File Format<a class="headerlink" href="#binary-file-format" title="Link to this heading"></a></h1>
+<p>This is the default file format that can be configured using command <a class="reference external" href="commandline.html#term-fformat-binary-hdf5">fformat</a>.</p>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sls_detector_put<span class="w"> </span>fformat<span class="w"> </span>binary
+</pre></div>
+</div>
+</div></blockquote>
+<section id="master-file">
+<h2>Master File<a class="headerlink" href="#master-file" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>File Name: [fpath]/[fname]_master_[findex].json <a class="reference internal" href="fileformat.html#file-name-format"><span class="std std-ref">Details here</span></a></p></li>
+<li><p>It is in json format and created for every acquisition.</p></li>
+<li><p>It contains <a class="reference internal" href="masterfileattributes.html#master-file-attributes"><span class="std std-ref">attributes</span></a> relevant to the acquisition. This can vary with detector type shown in <a class="reference internal" href="#json-master-file-examples"><span class="std std-ref">master json file examples</span></a> here.</p></li>
+<li><p>It shows the <a class="reference internal" href="slsreceiverheaderformat.html#sls-receiver-header-format"><span class="std std-ref">**SLS Receiver Header**</span></a> format used in data files.</p></li>
+<li><p>Enabled/disabled using command <a class="reference external" href="commandline.html#term-fmaster-0-1">fmaster</a>.</p></li>
+</ul>
+</section>
+<section id="data-file">
+<h2>Data File<a class="headerlink" href="#data-file" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>File Name: [fpath]/[fname]_dx_fy_[findex].raw <a class="reference internal" href="fileformat.html#file-name-format"><span class="std std-ref">Details here</span></a></p></li>
+<li><p>It store multiple frames sequentially, with total number of frames determined by <a class="reference external" href="commandline.html#term-rx_framesperfile-n_frames">rx_framesperfile</a> parameter.</p></li>
+<li><p>Each frame includes a <a class="reference internal" href="slsreceiverheaderformat.html#sls-receiver-header-format"><span class="std std-ref">**sls_receiver_header**</span></a> structure, followed by the actual frame data.</p></li>
+<li><p>More details on <a class="reference internal" href="slsreceiverheaderformat.html#sls-receiver-header-format"><span class="std std-ref">slsReceiverHeader</span></a> and the actual image data is described in the <a class="reference internal" href="dataformat.html#data-format"><span class="std std-ref">Detector Image Size and Format</span></a> section.</p></li>
+</ul>
+</section>
+<section id="json-master-file-examples">
+<span id="id2"></span><h2>JSON Master File Examples<a class="headerlink" href="#json-master-file-examples" title="Link to this heading"></a></h2>
+<section id="eiger">
+<h3>Eiger<a class="headerlink" href="#eiger" title="Link to this heading"></a></h3>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>{
+    &quot;Version&quot;: 7.2,
+    &quot;Timestamp&quot;: &quot;Wed Nov 13 15:46:30 2024&quot;,
+    &quot;Detector Type&quot;: &quot;Eiger&quot;,
+    &quot;Timing Mode&quot;: &quot;auto&quot;,
+    &quot;Geometry&quot;: {
+        &quot;x&quot;: 2,
+        &quot;y&quot;: 1
+    },
+    &quot;Image Size in bytes&quot;: 262144,
+    &quot;Pixels&quot;: {
+        &quot;x&quot;: 512,
+        &quot;y&quot;: 256
+    },
+    &quot;Max Frames Per File&quot;: 10000,
+    &quot;Frame Discard Policy&quot;: &quot;nodiscard&quot;,
+    &quot;Frame Padding&quot;: 1,
+    &quot;Scan Parameters&quot;: &quot;[disabled]&quot;,
+    &quot;Total Frames&quot;: 1,
+    &quot;Receiver Roi&quot;: {
+        &quot;xmin&quot;: 4294967295,
+        &quot;xmax&quot;: 4294967295,
+        &quot;ymin&quot;: 4294967295,
+        &quot;ymax&quot;: 4294967295
+    },
+    &quot;Dynamic Range&quot;: 16,
+    &quot;Ten Giga&quot;: 0,
+    &quot;Exptime&quot;: &quot;1s&quot;,
+    &quot;Period&quot;: &quot;1s&quot;,
+    &quot;Threshold Energy&quot;: -1,
+    &quot;Sub Exptime&quot;: &quot;2.62144ms&quot;,
+    &quot;Sub Period&quot;: &quot;2.62144ms&quot;,
+    &quot;Quad&quot;: 0,
+    &quot;Number of rows&quot;: 256,
+    &quot;Rate Corrections&quot;: &quot;[0]&quot;,
+    &quot;Frames in File&quot;: 1,
+    &quot;Frame Header Format&quot;: {
+        &quot;Frame Number&quot;: &quot;8 bytes&quot;,
+        &quot;SubFrame Number/ExpLength&quot;: &quot;4 bytes&quot;,
+        &quot;Packet Number&quot;: &quot;4 bytes&quot;,
+        &quot;Bunch ID&quot;: &quot;8 bytes&quot;,
+        &quot;Timestamp&quot;: &quot;8 bytes&quot;,
+        &quot;Module Id&quot;: &quot;2 bytes&quot;,
+        &quot;Row&quot;: &quot;2 bytes&quot;,
+        &quot;Column&quot;: &quot;2 bytes&quot;,
+        &quot;Reserved&quot;: &quot;2 bytes&quot;,
+        &quot;Debug&quot;: &quot;4 bytes&quot;,
+        &quot;Round Robin Number&quot;: &quot;2 bytes&quot;,
+        &quot;Detector Type&quot;: &quot;1 byte&quot;,
+        &quot;Header Version&quot;: &quot;1 byte&quot;,
+        &quot;Packets Caught Mask&quot;: &quot;64 bytes&quot;
+    }
+}
+</pre></div>
+</div>
+</section>
+<section id="jungfrau">
+<h3>Jungfrau<a class="headerlink" href="#jungfrau" title="Link to this heading"></a></h3>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>{
+    &quot;Version&quot;: 7.2,
+    &quot;Timestamp&quot;: &quot;Wed Nov 13 13:03:53 2024&quot;,
+    &quot;Detector Type&quot;: &quot;Jungfrau&quot;,
+    &quot;Timing Mode&quot;: &quot;auto&quot;,
+    &quot;Geometry&quot;: {
+        &quot;x&quot;: 1,
+        &quot;y&quot;: 1
+    },
+    &quot;Image Size in bytes&quot;: 1048576,
+    &quot;Pixels&quot;: {
+        &quot;x&quot;: 1024,
+        &quot;y&quot;: 512
+    },
+    &quot;Max Frames Per File&quot;: 10000,
+    &quot;Frame Discard Policy&quot;: &quot;nodiscard&quot;,
+    &quot;Frame Padding&quot;: 1,
+    &quot;Scan Parameters&quot;: &quot;[disabled]&quot;,
+    &quot;Total Frames&quot;: 1000,
+    &quot;Receiver Roi&quot;: {
+        &quot;xmin&quot;: 4294967295,
+        &quot;xmax&quot;: 4294967295,
+        &quot;ymin&quot;: 4294967295,
+        &quot;ymax&quot;: 4294967295
+    },
+    &quot;Exptime&quot;: &quot;10us&quot;,
+    &quot;Period&quot;: &quot;2ms&quot;,
+    &quot;Number of UDP Interfaces&quot;: 1,
+    &quot;Number of rows&quot;: 512,
+    &quot;Frames in File&quot;: 10,
+    &quot;Frame Header Format&quot;: {
+        &quot;Frame Number&quot;: &quot;8 bytes&quot;,
+        &quot;SubFrame Number/ExpLength&quot;: &quot;4 bytes&quot;,
+        &quot;Packet Number&quot;: &quot;4 bytes&quot;,
+        &quot;Bunch ID&quot;: &quot;8 bytes&quot;,
+        &quot;Timestamp&quot;: &quot;8 bytes&quot;,
+        &quot;Module Id&quot;: &quot;2 bytes&quot;,
+        &quot;Row&quot;: &quot;2 bytes&quot;,
+        &quot;Column&quot;: &quot;2 bytes&quot;,
+        &quot;Reserved&quot;: &quot;2 bytes&quot;,
+        &quot;Debug&quot;: &quot;4 bytes&quot;,
+        &quot;Round Robin Number&quot;: &quot;2 bytes&quot;,
+        &quot;Detector Type&quot;: &quot;1 byte&quot;,
+        &quot;Header Version&quot;: &quot;1 byte&quot;,
+        &quot;Packets Caught Mask&quot;: &quot;64 bytes&quot;
+    }
+}
+</pre></div>
+</div>
+</section>
+<section id="gotthard2">
+<h3>Gotthard2<a class="headerlink" href="#gotthard2" title="Link to this heading"></a></h3>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>{
+    &quot;Version&quot;: 7.2,
+    &quot;Timestamp&quot;: &quot;Wed Nov 13 14:18:17 2024&quot;,
+    &quot;Detector Type&quot;: &quot;Gotthard2&quot;,
+    &quot;Timing Mode&quot;: &quot;auto&quot;,
+    &quot;Geometry&quot;: {
+        &quot;x&quot;: 1,
+        &quot;y&quot;: 1
+    },
+    &quot;Image Size in bytes&quot;: 2560,
+    &quot;Pixels&quot;: {
+        &quot;x&quot;: 1280,
+        &quot;y&quot;: 1
+    },
+    &quot;Max Frames Per File&quot;: 20000,
+    &quot;Frame Discard Policy&quot;: &quot;nodiscard&quot;,
+    &quot;Frame Padding&quot;: 1,
+    &quot;Scan Parameters&quot;: &quot;[disabled]&quot;,
+    &quot;Total Frames&quot;: 10,
+    &quot;Receiver Roi&quot;: {
+        &quot;xmin&quot;: 4294967295,
+        &quot;xmax&quot;: 4294967295,
+        &quot;ymin&quot;: 4294967295,
+        &quot;ymax&quot;: 4294967295
+    },
+    &quot;Exptime&quot;: &quot;0ns&quot;,
+    &quot;Period&quot;: &quot;0ns&quot;,
+    &quot;Burst Mode&quot;: &quot;burst_internal&quot;,
+    &quot;Frames in File&quot;: 10,
+    &quot;Frame Header Format&quot;: {
+        &quot;Frame Number&quot;: &quot;8 bytes&quot;,
+        &quot;SubFrame Number/ExpLength&quot;: &quot;4 bytes&quot;,
+        &quot;Packet Number&quot;: &quot;4 bytes&quot;,
+        &quot;Bunch ID&quot;: &quot;8 bytes&quot;,
+        &quot;Timestamp&quot;: &quot;8 bytes&quot;,
+        &quot;Module Id&quot;: &quot;2 bytes&quot;,
+        &quot;Row&quot;: &quot;2 bytes&quot;,
+        &quot;Column&quot;: &quot;2 bytes&quot;,
+        &quot;Reserved&quot;: &quot;2 bytes&quot;,
+        &quot;Debug&quot;: &quot;4 bytes&quot;,
+        &quot;Round Robin Number&quot;: &quot;2 bytes&quot;,
+        &quot;Detector Type&quot;: &quot;1 byte&quot;,
+        &quot;Header Version&quot;: &quot;1 byte&quot;,
+        &quot;Packets Caught Mask&quot;: &quot;64 bytes&quot;
+    }
+}
+</pre></div>
+</div>
+</section>
+<section id="mythen3">
+<h3>Mythen3<a class="headerlink" href="#mythen3" title="Link to this heading"></a></h3>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>{
+    &quot;Version&quot;: 7.2,
+    &quot;Timestamp&quot;: &quot;Wed Nov 13 14:39:14 2024&quot;,
+    &quot;Detector Type&quot;: &quot;Mythen3&quot;,
+    &quot;Timing Mode&quot;: &quot;auto&quot;,
+    &quot;Geometry&quot;: {
+        &quot;x&quot;: 1,
+        &quot;y&quot;: 1
+    },
+    &quot;Image Size in bytes&quot;: 15360,
+    &quot;Pixels&quot;: {
+        &quot;x&quot;: 3840,
+        &quot;y&quot;: 1
+    },
+    &quot;Max Frames Per File&quot;: 10000,
+    &quot;Frame Discard Policy&quot;: &quot;nodiscard&quot;,
+    &quot;Frame Padding&quot;: 1,
+    &quot;Scan Parameters&quot;: &quot;[disabled]&quot;,
+    &quot;Total Frames&quot;: 1,
+    &quot;Receiver Roi&quot;: {
+        &quot;xmin&quot;: 4294967295,
+        &quot;xmax&quot;: 4294967295,
+        &quot;ymin&quot;: 4294967295,
+        &quot;ymax&quot;: 4294967295
+    },
+    &quot;Dynamic Range&quot;: 32,
+    &quot;Ten Giga&quot;: 1,
+    &quot;Period&quot;: &quot;2ms&quot;,
+    &quot;Counter Mask&quot;: &quot;0x7&quot;,
+    &quot;Exptime1&quot;: &quot;0.1s&quot;,
+    &quot;Exptime2&quot;: &quot;0.1s&quot;,
+    &quot;Exptime3&quot;: &quot;0.1s&quot;,
+    &quot;GateDelay1&quot;: &quot;0ns&quot;,
+    &quot;GateDelay2&quot;: &quot;0ns&quot;,
+    &quot;GateDelay3&quot;: &quot;0ns&quot;,
+    &quot;Gates&quot;: 1,
+    &quot;Threshold Energies&quot;: &quot;[-1, -1, -1]&quot;,
+    &quot;Frames in File&quot;: 1,
+    &quot;Frame Header Format&quot;: {
+        &quot;Frame Number&quot;: &quot;8 bytes&quot;,
+        &quot;SubFrame Number/ExpLength&quot;: &quot;4 bytes&quot;,
+        &quot;Packet Number&quot;: &quot;4 bytes&quot;,
+        &quot;Bunch ID&quot;: &quot;8 bytes&quot;,
+        &quot;Timestamp&quot;: &quot;8 bytes&quot;,
+        &quot;Module Id&quot;: &quot;2 bytes&quot;,
+        &quot;Row&quot;: &quot;2 bytes&quot;,
+        &quot;Column&quot;: &quot;2 bytes&quot;,
+        &quot;Reserved&quot;: &quot;2 bytes&quot;,
+        &quot;Debug&quot;: &quot;4 bytes&quot;,
+        &quot;Round Robin Number&quot;: &quot;2 bytes&quot;,
+        &quot;Detector Type&quot;: &quot;1 byte&quot;,
+        &quot;Header Version&quot;: &quot;1 byte&quot;,
+        &quot;Packets Caught Mask&quot;: &quot;64 bytes&quot;
+    }
+}
+</pre></div>
+</div>
+</section>
+<section id="moench">
+<h3>Moench<a class="headerlink" href="#moench" title="Link to this heading"></a></h3>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>{
+    &quot;Version&quot;: 7.2,
+    &quot;Timestamp&quot;: &quot;Wed Nov 13 14:41:32 2024&quot;,
+    &quot;Detector Type&quot;: &quot;Moench&quot;,
+    &quot;Timing Mode&quot;: &quot;auto&quot;,
+    &quot;Geometry&quot;: {
+        &quot;x&quot;: 1,
+        &quot;y&quot;: 1
+    },
+    &quot;Image Size in bytes&quot;: 320000,
+    &quot;Pixels&quot;: {
+        &quot;x&quot;: 400,
+        &quot;y&quot;: 400
+    },
+    &quot;Max Frames Per File&quot;: 100000,
+    &quot;Frame Discard Policy&quot;: &quot;discardpartial&quot;,
+    &quot;Frame Padding&quot;: 1,
+    &quot;Scan Parameters&quot;: &quot;[disabled]&quot;,
+    &quot;Total Frames&quot;: 1,
+    &quot;Receiver Roi&quot;: {
+        &quot;xmin&quot;: 4294967295,
+        &quot;xmax&quot;: 4294967295,
+        &quot;ymin&quot;: 4294967295,
+        &quot;ymax&quot;: 4294967295
+    },
+    &quot;Exptime&quot;: &quot;10us&quot;,
+    &quot;Period&quot;: &quot;2ms&quot;,
+    &quot;Number of UDP Interfaces&quot;: 1,
+    &quot;Number of rows&quot;: 400,
+    &quot;Frames in File&quot;: 1,
+    &quot;Frame Header Format&quot;: {
+        &quot;Frame Number&quot;: &quot;8 bytes&quot;,
+        &quot;SubFrame Number/ExpLength&quot;: &quot;4 bytes&quot;,
+        &quot;Packet Number&quot;: &quot;4 bytes&quot;,
+        &quot;Bunch ID&quot;: &quot;8 bytes&quot;,
+        &quot;Timestamp&quot;: &quot;8 bytes&quot;,
+        &quot;Module Id&quot;: &quot;2 bytes&quot;,
+        &quot;Row&quot;: &quot;2 bytes&quot;,
+        &quot;Column&quot;: &quot;2 bytes&quot;,
+        &quot;Reserved&quot;: &quot;2 bytes&quot;,
+        &quot;Debug&quot;: &quot;4 bytes&quot;,
+        &quot;Round Robin Number&quot;: &quot;2 bytes&quot;,
+        &quot;Detector Type&quot;: &quot;1 byte&quot;,
+        &quot;Header Version&quot;: &quot;1 byte&quot;,
+        &quot;Packets Caught Mask&quot;: &quot;64 bytes&quot;
+    }
+}
+</pre></div>
+</div>
+</section>
+<section id="chip-test-board">
+<h3>Chip Test Board<a class="headerlink" href="#chip-test-board" title="Link to this heading"></a></h3>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>{
+    &quot;Version&quot;: 7.2,
+    &quot;Timestamp&quot;: &quot;Wed Nov 13 15:32:59 2024&quot;,
+    &quot;Detector Type&quot;: &quot;ChipTestBoard&quot;,
+    &quot;Timing Mode&quot;: &quot;auto&quot;,
+    &quot;Geometry&quot;: {
+        &quot;x&quot;: 1,
+        &quot;y&quot;: 1
+    },
+    &quot;Image Size in bytes&quot;: 48018,
+    &quot;Pixels&quot;: {
+        &quot;x&quot;: 3,
+        &quot;y&quot;: 1
+    },
+    &quot;Max Frames Per File&quot;: 20000,
+    &quot;Frame Discard Policy&quot;: &quot;nodiscard&quot;,
+    &quot;Frame Padding&quot;: 1,
+    &quot;Scan Parameters&quot;: &quot;[disabled]&quot;,
+    &quot;Total Frames&quot;: 1,
+    &quot;Receiver Roi&quot;: {
+        &quot;xmin&quot;: 4294967295,
+        &quot;xmax&quot;: 4294967295,
+        &quot;ymin&quot;: 4294967295,
+        &quot;ymax&quot;: 4294967295
+    },
+    &quot;Exptime&quot;: &quot;0ns&quot;,
+    &quot;Period&quot;: &quot;0.18s&quot;,
+    &quot;Ten Giga&quot;: 0,
+    &quot;ADC Mask&quot;: &quot;0x2202&quot;,
+    &quot;Analog Flag&quot;: 1,
+    &quot;Analog Samples&quot;: 8003,
+    &quot;Digital Flag&quot;: 0,
+    &quot;Digital Samples&quot;: 1000,
+    &quot;Dbit Offset&quot;: 0,
+    &quot;Dbit Reorder&quot;: 1,
+    &quot;Dbit Bitset&quot;: 0,
+    &quot;Transceiver Mask&quot;: &quot;0x3&quot;,
+    &quot;Transceiver Flag&quot;: 0,
+    &quot;Transceiver Samples&quot;: 1,
+    &quot;Frames in File&quot;: 1,
+    &quot;Frame Header Format&quot;: {
+        &quot;Frame Number&quot;: &quot;8 bytes&quot;,
+        &quot;SubFrame Number/ExpLength&quot;: &quot;4 bytes&quot;,
+        &quot;Packet Number&quot;: &quot;4 bytes&quot;,
+        &quot;Bunch ID&quot;: &quot;8 bytes&quot;,
+        &quot;Timestamp&quot;: &quot;8 bytes&quot;,
+        &quot;Module Id&quot;: &quot;2 bytes&quot;,
+        &quot;Row&quot;: &quot;2 bytes&quot;,
+        &quot;Column&quot;: &quot;2 bytes&quot;,
+        &quot;Reserved&quot;: &quot;2 bytes&quot;,
+        &quot;Debug&quot;: &quot;4 bytes&quot;,
+        &quot;Round Robin Number&quot;: &quot;2 bytes&quot;,
+        &quot;Detector Type&quot;: &quot;1 byte&quot;,
+        &quot;Header Version&quot;: &quot;1 byte&quot;,
+        &quot;Packets Caught Mask&quot;: &quot;64 bytes&quot;
+    }
+}
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="masterfileattributes.html" class="btn btn-neutral float-left" title="Master File Attributes" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="hdf5fileformat.html" class="btn btn-neutral float-right" title="HDF5 File Format" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, PSD Detector Group.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

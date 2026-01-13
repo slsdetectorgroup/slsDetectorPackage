@@ -1,0 +1,509 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Detector Image Size and Format &mdash; slsDetectorPackage 10.0.0  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/css/extra.css?v=2be88464" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Using multiple detectors" href="multidet.html" />
+    <link rel="prev" title="Quick Start Guide" href="quick_start_guide.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            slsDetectorPackage 10.0.0
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Installation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="consuming.html">Consuming slsDetectorPackage</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">how to</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="softwarearchitecture.html">Software Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configcommands.html">Setup Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick_start_guide.html">Quick Start Guide</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Detector Image Size and Format</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#jungfrau">Jungfrau</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#single-port-configuration">Single Port Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#double-port-configuration">Double Port Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#read-partial-rows">Read Partial Rows</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#moench">Moench</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id2">Single Port Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id3">Double Port Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id9">Read Partial Rows</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#eiger">Eiger</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#default-configuration">Default Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#the-myth-the-legend-the-bottom-ports-demystifying-them">The myth, the legend, the bottom ports: Demystifying them</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pixel-width">Pixel width</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flip-rows">Flip rows</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gbe-10gbe-interfaces">1GbE/ 10GbE Interfaces</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#reducing-network-load">Reducing network load</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#quad">Quad</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#mythen3">Mythen3</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id25">Default Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#counters">Counters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id27">Pixel width</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id29">1GbE/ 10GbE Interfaces</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#gotthard2">Gotthard2</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id33">Default Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#veto-info">Veto Info</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="multidet.html">Using multiple detectors</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">C++ API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="detector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="result.html">Result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="receiver_api.html">Receiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pygettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pydetector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyenums.html">Enums</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyexamples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyPatternGenerator.html">PatternGenerator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pattern.html">Pattern</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Command line</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="commandline.html">Command line interface</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="container_utils.html">ContainerUtils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="type_traits.html">TypeTraits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ToString.html">ToString</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Firmware</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="firmware.html">Firmware Upgrade</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="servers.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverupgrade.html">Upgrade</a></li>
+<li class="toctree-l1"><a class="reference internal" href="virtualserver.html">Simulators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverdefaults.html">Default Values</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector UDP Header</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="udpheader.html">Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udpconfig.html">Config file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udpdetspec.html">Detector Specific Fields</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiver.html">In-built Receiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="receivers.html">Custom Receiver</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver Files</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="fileformat.html">File format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiverheaderformat.html">SLS Receiver Header Format</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Detector Image Size and Format</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#jungfrau">Jungfrau</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#single-port-configuration">Single Port Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#double-port-configuration">Double Port Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#read-partial-rows">Read Partial Rows</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#moench">Moench</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id2">Single Port Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id3">Double Port Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id9">Read Partial Rows</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#eiger">Eiger</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#default-configuration">Default Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#the-myth-the-legend-the-bottom-ports-demystifying-them">The myth, the legend, the bottom ports: Demystifying them</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pixel-width">Pixel width</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flip-rows">Flip rows</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gbe-10gbe-interfaces">1GbE/ 10GbE Interfaces</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#reducing-network-load">Reducing network load</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#quad">Quad</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#mythen3">Mythen3</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id25">Default Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#counters">Counters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id27">Pixel width</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id29">1GbE/ 10GbE Interfaces</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#gotthard2">Gotthard2</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id33">Default Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#veto-info">Veto Info</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="masterfileattributes.html">Master File Attributes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="binaryfileformat.html">Binary File Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hdf5fileformat.html">HDF5 File Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver ZMQ Stream</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="zmqjsonheaderformat.html">ZMQ: Json Header Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Troubleshooting</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">slsDetectorPackage 10.0.0</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Detector Image Size and Format</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/dataformat.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="detector-image-size-and-format">
+<span id="data-format"></span><h1>Detector Image Size and Format<a class="headerlink" href="#detector-image-size-and-format" title="Link to this heading"></a></h1>
+<p>Each UDP port creates its own output file, which contains the data of the image transmitted over that port. More on number of files and naming for each file in the <a class="reference external" href="fileformat.html">File format</a> section.</p>
+<section id="jungfrau">
+<h2>Jungfrau<a class="headerlink" href="#jungfrau" title="Link to this heading"></a></h2>
+<section id="single-port-configuration">
+<h3>Single Port Configuration<a class="headerlink" href="#single-port-configuration" title="Link to this heading"></a></h3>
+<a class="reference external image-reference" href="_images/Jungfrau_module.png"><img alt="Jungfrau Module Single Port Configuration" class="align-center" src="_images/Jungfrau_module.png" style="width: 650px;" />
+</a>
+<p>By default, only the outer 10GbE interface is enabled, transmitting the full image over a single UDP port. This results in one file per module containing the complete image.</p>
+<dl class="simple">
+<dt>Total image size = 524,288 bytes</dt><dd><ul class="simple">
+<li><p>8 chips (2 x 4 grid)</p></li>
+<li><p>256 x 256 pixels (chip size)</p></li>
+<li><p>2 bytes (pixel width)</p></li>
+</ul>
+</dd>
+</dl>
+</section>
+<section id="double-port-configuration">
+<h3>Double Port Configuration<a class="headerlink" href="#double-port-configuration" title="Link to this heading"></a></h3>
+<a class="reference external image-reference" href="_images/Jungfrau_two_port.png"><img alt="Jungfrau Module Two Port Configuration" class="align-center" src="_images/Jungfrau_two_port.png" style="width: 500px;" />
+</a>
+<p>If both interfaces are enabled using the <a class="reference external" href="commandline.html#term-numinterfaces-1-2">numinterfaces</a> command on compatible hardware and firmware, the image splits into top and bottom halves sent over two UDP ports:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>The top half transmits via the inner interface (<a class="reference external" href="commandline.html#term-udp_dstport2-n">udp_dstport2</a> and <a class="reference external" href="commandline.html#term-udp_dstip2-x.x.x.x-or-auto">udp_dstip2</a>).</p></li>
+<li><p>The bottom half uses the outer interface(<a class="reference external" href="commandline.html#term-udp_dstport-n">udp_dstport</a> and <a class="reference external" href="commandline.html#term-udp_dstip-x.x.x.x-or-auto">udp_dstip</a>).</p></li>
+</ul>
+</div></blockquote>
+<p>The number of files per module equals the active UDP ports—two files per module when both interfaces are used.</p>
+<dl class="simple">
+<dt>Image size per UDP port or File = 262,144 bytes</dt><dd><ul class="simple">
+<li><p><strong>Complete Image size / 2</strong></p></li>
+</ul>
+</dd>
+</dl>
+</section>
+<section id="read-partial-rows">
+<h3>Read Partial Rows<a class="headerlink" href="#read-partial-rows" title="Link to this heading"></a></h3>
+<a class="reference external image-reference" href="_images/Jungfrau_read_rows.png"><img alt="Jungfrau Module Read Partial Rows Configuration" class="align-center" src="_images/Jungfrau_read_rows.png" style="width: 550px;" />
+</a>
+<p>The number of image rows per port can be adjusted using the <a class="reference external" href="commandline.html#term-readnrows">readnrows</a> command. By default, 512 rows are read, but a smaller value centers the readout vertically (e.g., 8 rows reads 4 above and 4 below the center). Increasing the value symmetrically expands the region toward the top and bottom. Permissible values are multiples of 8.</p>
+<dl class="simple">
+<dt>Total image size = 32,768 bytes</dt><dd><ul class="simple">
+<li><p>8 chips (2 x 4 grid)</p></li>
+<li><p><strong>8</strong> x 256 pixels (chip size: <strong>8 rows</strong>)</p></li>
+<li><p>2 bytes (pixel width)</p></li>
+</ul>
+</dd>
+</dl>
+<p>Note: Still in prototype stage, writes complete image (padded or not depending on <a class="reference external" href="commandline.html#term-rx_padding-0-1">rx_padding</a> parameter) to file. Only the summary written to console in the receiver handles the <a class="reference external" href="commandline.html#term-readnrows">readnrows</a> to calculate to calculate complete images received. Only reduces network load, not file size. Use <a class="reference external" href="commandline.html#term-rx_roi-xmin-xmax-ymin-ymax">rx_roi</a> for file size.</p>
+</section>
+</section>
+<section id="moench">
+<h2>Moench<a class="headerlink" href="#moench" title="Link to this heading"></a></h2>
+<section id="id2">
+<h3>Single Port Configuration<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
+<a class="reference external image-reference" href="_images/Moench_module.png"><img alt="Moench Module Single Port Configuration" class="align-center" src="_images/Moench_module.png" style="width: 550px;" />
+</a>
+<p>By default, only the outer 10GbE interface is enabled, transmitting the full image over a single UDP port. This results in one file per module containing the complete image.</p>
+<dl class="simple">
+<dt>Total image size = 320,000 bytes</dt><dd><ul class="simple">
+<li><p>400 x 400 pixels (chip size)</p></li>
+<li><p>2 bytes (pixel width)</p></li>
+</ul>
+</dd>
+</dl>
+</section>
+<section id="id3">
+<h3>Double Port Configuration<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
+<a class="reference external image-reference" href="_images/Moench_two_port.png"><img alt="Moench Module Two Port Configuration" class="align-center" src="_images/Moench_two_port.png" style="width: 400px;" />
+</a>
+<p>If both interfaces are enabled using the <a class="reference external" href="commandline.html#term-numinterfaces-1-2">numinterfaces</a> command on compatible hardware and firmware, the image splits into top and bottom halves sent over two UDP ports:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>The top half transmits via the inner interface (<a class="reference external" href="commandline.html#term-udp_dstport2-n">udp_dstport2</a> and <a class="reference external" href="commandline.html#term-udp_dstip2-x.x.x.x-or-auto">udp_dstip2</a>).</p></li>
+<li><p>The bottom half uses the outer interface(<a class="reference external" href="commandline.html#term-udp_dstport-n">udp_dstport</a> and <a class="reference external" href="commandline.html#term-udp_dstip-x.x.x.x-or-auto">udp_dstip</a>).</p></li>
+</ul>
+</div></blockquote>
+<p>The number of files per module equals the active UDP ports—two files per module when both interfaces are used.</p>
+<dl class="simple">
+<dt>Image size per UDP port or File = 160,000 bytes</dt><dd><ul class="simple">
+<li><p><strong>Complete Image size / 2</strong></p></li>
+</ul>
+</dd>
+</dl>
+</section>
+<section id="id9">
+<h3>Read Partial Rows<a class="headerlink" href="#id9" title="Link to this heading"></a></h3>
+<a class="reference external image-reference" href="_images/Moench_read_rows.png"><img alt="Moench Module Read Partial Rows Configuration" class="align-center" src="_images/Moench_read_rows.png" style="width: 400px;" />
+</a>
+<p>The number of image rows per port can be adjusted using the <a class="reference external" href="commandline.html#term-readnrows">readnrows</a> command. By default, 400 rows are read, but a smaller value centers the readout vertically (e.g., 16 rows reads 8 above and 8 below the center). Increasing the value symmetrically expands the region toward the top and bottom. Permissible values are multiples of 16.</p>
+<dl class="simple">
+<dt>Total image size = 12,800 bytes</dt><dd><ul class="simple">
+<li><p><strong>16</strong> x 400 pixels (chip size: <strong>16 rows</strong>)</p></li>
+<li><p>2 bytes (pixel width)</p></li>
+</ul>
+</dd>
+</dl>
+<p>Note: Still in prototype stage, writes complete image (padded or not depending on <a class="reference external" href="commandline.html#term-rx_padding-0-1">rx_padding</a> parameter) to file. Only the summary written to console in the receiver handles the read n rows to calculate complete images received. Only reduces network load, not file size. Use <a class="reference external" href="commandline.html#term-rx_roi-xmin-xmax-ymin-ymax">rx_roi</a> for file size.</p>
+</section>
+</section>
+<section id="eiger">
+<h2>Eiger<a class="headerlink" href="#eiger" title="Link to this heading"></a></h2>
+<section id="default-configuration">
+<h3>Default Configuration<a class="headerlink" href="#default-configuration" title="Link to this heading"></a></h3>
+<a class="reference external image-reference" href="_images/Eiger_module.png"><img alt="Eiger Module Default Configuration" class="align-center" src="_images/Eiger_module.png" style="width: 350px;" />
+</a>
+<p>Each Eiger module has two independent identical readout systems (other than firmware), each with its own control port and <a class="reference external" href="commandline.html#term-hostname">hostname</a> to be configured with. They are referred to as the ‘top’ and ‘bottom’ half modules. The bottom half module is flipped vertically.</p>
+<p>Each half module has 2 parallel UDP ports for 2 chips each. The left UDP port is configured with <a class="reference external" href="commandline.html#term-udp_dstport-n">udp_dstport</a>, while the right UDP port is configured with <a class="reference external" href="commandline.html#term-udp_dstport2-n">udp_dstport2</a>. This is vice versa for the bottom half module.</p>
+<dl class="simple">
+<dt>Image size per UDP port or File = 262,144 bytes</dt><dd><ul class="simple">
+<li><p>2 chips (1 x 2 grid)</p></li>
+<li><p>256 x 256 pixels (chip size)</p></li>
+<li><p>2 bytes (default pixel width)</p></li>
+</ul>
+</dd>
+</dl>
+</section>
+<section id="the-myth-the-legend-the-bottom-ports-demystifying-them">
+<h3>The myth, the legend, the bottom ports: Demystifying them<a class="headerlink" href="#the-myth-the-legend-the-bottom-ports-demystifying-them" title="Link to this heading"></a></h3>
+<figure class="align-center" id="id37">
+<a class="reference external image-reference" href="_images/Eiger_bottom_1.png"><img alt="Eiger Bottom as Firmware gets it" src="_images/Eiger_bottom_1.png" style="width: 350px;" />
+</a>
+<figcaption>
+<p><span class="caption-text">How the firmware gets the images</span><a class="headerlink" href="#id37" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id38">
+<a class="reference external image-reference" href="_images/Eiger_bottom_2.png"><img alt="Eiger Bottom after the firmware flips it horizontally" src="_images/Eiger_bottom_2.png" style="width: 350px;" />
+</a>
+<figcaption>
+<p><span class="caption-text">After the firmware flips it horizontally</span><a class="headerlink" href="#id38" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id39">
+<a class="reference external image-reference" href="_images/Eiger_bottom_3.png"><img alt="After the software swaps the udp ports" src="_images/Eiger_bottom_3.png" style="width: 350px;" />
+</a>
+<figcaption>
+<p><span class="caption-text">After the software swaps the udp ports</span><a class="headerlink" href="#id39" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id40">
+<a class="reference external image-reference" href="_images/Eiger_bottom_4.png"><img alt="After the gui has flipped the bottom vertically" src="_images/Eiger_bottom_4.png" style="width: 400px;" />
+</a>
+<figcaption>
+<p><span class="caption-text">After the gui has flipped the bottom vertically</span><a class="headerlink" href="#id40" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<p>Note: The same process happens for the bottom 2 udp ports of the quad.</p>
+</section>
+<section id="pixel-width">
+<h3>Pixel width<a class="headerlink" href="#pixel-width" title="Link to this heading"></a></h3>
+<p>The pixel width can be configured to 4, 8, 16 (default) or 32 bits using the command <a class="reference external" href="commandline.html#term-dr-value">dr</a>. This affects image size per UDP port or file.</p>
+</section>
+<section id="flip-rows">
+<h3>Flip rows<a class="headerlink" href="#flip-rows" title="Link to this heading"></a></h3>
+<p>One can use the command <a class="reference external" href="commandline.html#term-fliprows-0-1">fliprows</a> to flip the rows vertically for the bottom or top half module. It is sent out to the reciever, but does not flip rows in the output file itself, but rather streams out this info via the json header and thus instructs the GUI to display them correctly.</p>
+</section>
+<section id="gbe-10gbe-interfaces">
+<h3>1GbE/ 10GbE Interfaces<a class="headerlink" href="#gbe-10gbe-interfaces" title="Link to this heading"></a></h3>
+<p>Both UDP ports <a class="reference external" href="commandline.html#term-udp_dstport-n">udp_dstport</a> and <a class="reference external" href="commandline.html#term-udp_dstport2-n">udp_dstport2</a> are used in Eiger as shows in the figure. Both of them can be set to use either the 1GbE or the 10GbE interface for data. The 1GbE interface is used also for control and configuration. For data, the 1GbE interface is enabled by default. It can be disabled by enabling the <a class="reference external" href="commandline.html#term-tengiga-0-1">tengiga</a> command and updating both the <a class="reference external" href="commandline.html#term-udp_dstport-n">udp_dstport</a> , <a class="reference external" href="commandline.html#term-udp_dstport2-n">udp_dstport2</a> , <a class="reference external" href="commandline.html#term-udp_dstip-x.x.x.x-or-auto">udp_dstip</a> commands to match the 1GbE or 10GbE interface. This setting only affects packetsize and number of packets, but does not affect the total image size.</p>
+</section>
+<section id="reducing-network-load">
+<h3>Reducing network load<a class="headerlink" href="#reducing-network-load" title="Link to this heading"></a></h3>
+<p><strong>Activate</strong>: By default, the <a class="reference external" href="commandline.html#term-hostname">hostname</a> command activates the respective half module it connects to, enabling all UDP ports. To deactivate an entire half module (i.e., both UDP ports), use the <a class="reference external" href="commandline.html#term-activate-0-1">activate</a> command. This disables both UDP ports for that half module, so no data is transmitted from it — only half of the module is read out. To specify which half module to activate or deactivate, use the module index (for Eiger, each half module has its own module index).</p>
+<p><strong>Datastream</strong>: The <a class="reference external" href="commandline.html#term-datastream-left-right-0-1">datastream</a> command with arguments to specify which port can be used to disable the data streaming from one or both the two UDP ports in a half module. This allows for more flexible configurations, such as reading only two chips or one UDP port of a half module. To specify which half module to activate or deactivate, use the module index (for Eiger, each half module has its own module index).</p>
+<p>Note: Only the activated ports will write data as it does not make sense to write an empty file.</p>
+<p><strong>Read Partial Rows</strong>: The number of image rows per port can be adjusted using the <a class="reference external" href="commandline.html#term-readnrows">readnrows</a> command. By default, 256 rows are read, but a smaller value centers the readout vertically (e.g., 8 rows reads 4 above and 4 below the center). Increasing the value symmetrically expands the region toward the top and bottom. Permissible values depend on dynamic range and 10GbE enable.</p>
+<a class="reference external image-reference" href="_images/Eiger_read_rows.png"><img alt="Eiger Module Read Partial Rows Configuration" class="align-center" src="_images/Eiger_read_rows.png" style="width: 400px;" />
+</a>
+<dl class="simple">
+<dt>Total image size per UDP Port = 8,192 bytes</dt><dd><ul class="simple">
+<li><p>2 chips (1 x 2 grid)</p></li>
+<li><p><strong>8</strong> x 256 pixels (chip size: <strong>8 rows</strong>)</p></li>
+<li><p>2 bytes (default pixel width)</p></li>
+</ul>
+</dd>
+</dl>
+<p>Note: Still in prototype stage, writes complete image (padded or not depending on <a class="reference external" href="commandline.html#term-rx_padding-0-1">rx_padding</a> parameter) to file. Only the summary written to console in the receiver handles the <a class="reference external" href="commandline.html#term-readnrows">readnrows</a> to calculate complete images received. Only reduces network load, not file size. Use <a class="reference external" href="commandline.html#term-rx_roi-xmin-xmax-ymin-ymax">rx_roi</a> for file size.</p>
+</section>
+<section id="quad">
+<h3>Quad<a class="headerlink" href="#quad" title="Link to this heading"></a></h3>
+<p>The Eiger quad is a special hardware configuration that uses only the top half-module to create a quad layout. In this setup, the second half of the top module—normally associated with the right-side UDP port—is used to represent the inverted bottom half of the quad.</p>
+<p>As with any standard half-module, it includes one control TCP port (with a hostname) and two UDP data ports (top and bottom). When the quad option is enabled, the firmware automatically flips the second UDP port vertically.</p>
+<p>In this configuration, the fliprows command cannot be used to flip the entire half-module. Instead, the receiver automatically includes row-flipping information only for the second UDP port in the JSON header, so the GUI can apply the correct orientation during display</p>
+<a class="reference external image-reference" href="_images/Eiger_quad.png"><img alt="Eiger Quad Configuration" class="align-center" src="_images/Eiger_quad.png" style="width: 300px;" />
+</a>
+<p>Image size per UDP port = same as a normal Eiger UDP port</p>
+</section>
+</section>
+<section id="mythen3">
+<h2>Mythen3<a class="headerlink" href="#mythen3" title="Link to this heading"></a></h2>
+<section id="id25">
+<h3>Default Configuration<a class="headerlink" href="#id25" title="Link to this heading"></a></h3>
+<a class="reference external image-reference" href="_images/Mythen3_module.png"><img alt="Mythen3 Module Default Configuration" class="align-center" src="_images/Mythen3_module.png" />
+</a>
+<p>Each Mythen3 module is a 1D detector with 10 chips, each with 128 channels. Each channel has 3 counters that are enabled by default.</p>
+<dl class="simple">
+<dt>Image size = 15,360 bytes</dt><dd><ul class="simple">
+<li><p>10 chips (1 x 10 grid)</p></li>
+<li><p>128 channels</p></li>
+<li><p>3 counters</p></li>
+<li><p>4 bytes (default pixel width)</p></li>
+</ul>
+</dd>
+</dl>
+</section>
+<section id="counters">
+<h3>Counters<a class="headerlink" href="#counters" title="Link to this heading"></a></h3>
+<p>If all 3 counters are enabeld, the frame size for each channel is multiplied by 3. The counters are stored consecutively per channel. One can disable one or more of the counters using the <a class="reference external" href="commandline.html#term-counters-i0-i1-i2-...">counters</a> command. The frame size will then be reduced accordingly.</p>
+<dl class="simple">
+<dt>Image size = 10,240 bytes</dt><dd><ul class="simple">
+<li><p>10 chips (1 x 10 grid)</p></li>
+<li><p>128 channels</p></li>
+<li><p>2 counters (0, 1 enabled)</p></li>
+<li><p>4 bytes (default pixel width)</p></li>
+</ul>
+</dd>
+</dl>
+</section>
+<section id="id27">
+<h3>Pixel width<a class="headerlink" href="#id27" title="Link to this heading"></a></h3>
+<p>The pixel width can be configured to 8, 16 or 32 (default) bits using the command <a class="reference external" href="commandline.html#term-dr-value">dr</a>. 32 bits is actually 24 bits in the chip. This setting does affect image size.</p>
+</section>
+<section id="id29">
+<h3>1GbE/ 10GbE Interfaces<a class="headerlink" href="#id29" title="Link to this heading"></a></h3>
+<p>The UDP port can be set to use either the 1GbE or the 10GbE interface for data. The 1GbE interface is used also for control and configuration. For data, the 10GbE interface is enabled by default. It can be disabled by using the <a class="reference external" href="commandline.html#term-tengiga-0-1">tengiga</a> command and updating the <a class="reference external" href="commandline.html#term-udp_dstport-n">udp_dstport</a> and <a class="reference external" href="commandline.html#term-udp_dstip-x.x.x.x-or-auto">udp_dstip</a> commands to match the 1GbE or 10GbE interface. This setting only affects packetsize and number of packets, but does not affect the total image size.</p>
+</section>
+</section>
+<section id="gotthard2">
+<h2>Gotthard2<a class="headerlink" href="#gotthard2" title="Link to this heading"></a></h2>
+<section id="id33">
+<h3>Default Configuration<a class="headerlink" href="#id33" title="Link to this heading"></a></h3>
+<a class="reference external image-reference" href="_images/Gotthard2_module.png"><img alt="Gotthard2 Module Default Configuration" class="align-center" src="_images/Gotthard2_module.png" />
+</a>
+<p>Each Gotthard2 module is a 1D detector with 10 chips, each with 128 channels.</p>
+<dl class="simple">
+<dt>Image size = 2,560 bytes</dt><dd><ul class="simple">
+<li><p>10 chips (1 x 10 grid)</p></li>
+<li><p>128 channels</p></li>
+<li><p>2 bytes (pixel width)</p></li>
+</ul>
+</dd>
+</dl>
+</section>
+<section id="veto-info">
+<h3>Veto Info<a class="headerlink" href="#veto-info" title="Link to this heading"></a></h3>
+<p>One can enable veto data in the chip of the Gotthard2 module using the <a class="reference external" href="commandline.html#term-veto-0-1">veto</a> command. By default, this is disabled. This does not affect the image size as veto information is not sent out through the same 10GbE interface.</p>
+<p>One can either stream out the veto info through the low latency link (2.5 gbps) or for debugging purposes through another 10GbE interface.</p>
+<p>For debugging purposes, the veto info can be enabled using the <a class="reference external" href="commandline.html#term-numinterfaces-1-2">numinterfaces</a> command and the following parameters are updated: <a class="reference external" href="commandline.html#term-udp_dstport2-n">udp_dstport2</a> and <a class="reference external" href="commandline.html#term-udp_dstip2-x.x.x.x-or-auto">udp_dstip2</a>. The veto data from this port is of course written to a separate file and is not combined in the virtual HDF5 file mapping (complete image mapped).</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="quick_start_guide.html" class="btn btn-neutral float-left" title="Quick Start Guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="multidet.html" class="btn btn-neutral float-right" title="Using multiple detectors" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, PSD Detector Group.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

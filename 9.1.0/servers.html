@@ -1,0 +1,285 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Getting Started &mdash; slsDetectorPackage 9.1.0  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/css/extra.css?v=2be88464" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Upgrade" href="serverupgrade.html" />
+    <link rel="prev" title="Firmware Upgrade" href="firmware.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            slsDetectorPackage 9.1.0
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Installation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="consuming.html">Consuming slsDetectorPackage</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">C++ API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="detector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="result.html">Result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="receiver_api.html">Receiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pygettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pydetector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyenums.html">Enums</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyexamples.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Command line</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="commandline.html">Command line interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick_start_guide.html">Quick Start Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="container_utils.html">ContainerUtils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="type_traits.html">TypeTraits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ToString.html">ToString</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Firmware</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="firmware.html">Firmware Upgrade</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector Server</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#location">Location</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#arguments">Arguments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#automatic-start">Automatic start</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="serverupgrade.html">Upgrade</a></li>
+<li class="toctree-l1"><a class="reference internal" href="virtualserver.html">Simulators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverdefaults.html">Default Values</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector UDP Header</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="udpheader.html">Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udpconfig.html">Config file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udpdetspec.html">Detector Specific Fields</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="receivers.html">Receivers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiver.html">slsReceiver/ slsMultiReceiver</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver Files</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="fileformat.html">File format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiverheaderformat.html">SLS Receiver Header Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="masterfileattributes.html">Master File Attributes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="binaryfileformat.html">Binary File Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hdf5fileformat.html">HDF5 File Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver ZMQ Stream</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="zmqjsonheaderformat.html">ZMQ: Json Header Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Troubleshooting</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">slsDetectorPackage 9.1.0</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Getting Started</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/servers.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="getting-started">
+<h1>Getting Started<a class="headerlink" href="#getting-started" title="Link to this heading"></a></h1>
+<dl class="simple">
+<dt>Detector Servers include:</dt><dd><ul class="simple">
+<li><dl class="simple">
+<dt>Control server [default port: 1952]</dt><dd><ul>
+<li><p>Almost all client communication.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Stop server [default port: 1953]</dt><dd><ul>
+<li><p>Client requests for detector status, stop acquisition, temperature, advanced read/write registers.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+<p>When using a blocking acquire command (sls_detector_acquire or Detector::acquire), the control server is blocked until end of acquisition. However, stop server commands could be used in parallel.</p>
+<section id="location">
+<h2>Location<a class="headerlink" href="#location" title="Link to this heading"></a></h2>
+<blockquote>
+<div><p>slsDetectorPackage/serverBin/ folder in every release.</p>
+</div></blockquote>
+</section>
+<section id="arguments">
+<span id="detector-server-arguments"></span><h2>Arguments<a class="headerlink" href="#arguments" title="Link to this heading"></a></h2>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>Possible<span class="w"> </span>arguments<span class="w"> </span>are:
+<span class="w">   </span>-v,<span class="w"> </span>--version<span class="w">            </span>:<span class="w"> </span>Software<span class="w"> </span>version
+<span class="w">   </span>-p,<span class="w"> </span>--port<span class="w"> </span>&lt;port&gt;<span class="w">        </span>:<span class="w"> </span>TCP<span class="w"> </span>communication<span class="w"> </span>port<span class="w"> </span>with<span class="w"> </span>client.
+<span class="w">   </span>-g,<span class="w"> </span>--nomodule<span class="w">           </span>:<span class="w"> </span><span class="o">[</span>Mythen3<span class="o">][</span>Gotthard2<span class="o">]</span>
+<span class="w">                              </span>Generic<span class="w"> </span>or<span class="w"> </span>No<span class="w"> </span>Module<span class="w"> </span>mode.<span class="w"> </span>Skips<span class="w"> </span>detector<span class="w"> </span><span class="nb">type</span><span class="w"> </span>checks.
+<span class="w">   </span>-f,<span class="w"> </span>--phaseshift<span class="w"> </span>&lt;value&gt;<span class="w"> </span>:<span class="w"> </span><span class="o">[</span>Gotthard<span class="o">]</span><span class="w"> </span>only.<span class="w"> </span>Sets<span class="w"> </span>phase<span class="w"> </span>shift.
+<span class="w">   </span>-d,<span class="w"> </span>--devel<span class="w">              </span>:<span class="w"> </span>Developer<span class="w"> </span>mode.<span class="w"> </span>Skips<span class="w"> </span>firmware<span class="w"> </span>checks.
+<span class="w">   </span>-u,<span class="w"> </span>--update<span class="w">             </span>:<span class="w"> </span>Update<span class="w"> </span>mode.<span class="w"> </span>Skips<span class="w"> </span>firmware<span class="w"> </span>checks<span class="w"> </span>and<span class="w"> </span>initial<span class="w"> </span>detector<span class="w"> </span>setup.
+<span class="w">   </span>-i,<span class="w"> </span>--ignore-config<span class="w">      </span>:<span class="w"> </span><span class="o">[</span>Eiger<span class="o">][</span>Jungfrau<span class="o">][</span>Gotthard<span class="o">][</span>Gotthard2<span class="o">][</span>Moench<span class="o">]</span>
+<span class="w">                              </span>Ignore<span class="w"> </span>config<span class="w"> </span>file.
+<span class="w">   </span>-m,<span class="w"> </span>--master<span class="w"> </span>&lt;master&gt;<span class="w">    </span>:<span class="w"> </span><span class="o">[</span>Eiger<span class="o">][</span>Mythen3<span class="o">][</span>Gotthard<span class="o">][</span>Gotthard2<span class="o">]</span>
+<span class="w">                              </span>Set<span class="w"> </span>Master<span class="w"> </span>to<span class="w"> </span><span class="m">0</span><span class="w"> </span>or<span class="w"> </span><span class="m">1</span>.<span class="w"> </span>Precedence<span class="w"> </span>over<span class="w"> </span>config<span class="w"> </span>file.<span class="w"> </span>Only<span class="w"> </span><span class="k">for</span><span class="w"> </span>virtual<span class="w"> </span>servers<span class="w"> </span>except<span class="w"> </span>Eiger.
+<span class="w">   </span>-t,<span class="w"> </span>--top<span class="w"> </span>&lt;top&gt;<span class="w">          </span>:<span class="w"> </span><span class="o">[</span>Eiger<span class="o">]</span><span class="w"> </span>Set<span class="w"> </span>Top<span class="w"> </span>to<span class="w"> </span><span class="m">0</span><span class="w"> </span>or<span class="w"> </span><span class="m">1</span>.<span class="w"> </span>Precedence<span class="w"> </span>over<span class="w"> </span>config<span class="w"> </span>file.
+<span class="w">   </span>-s,<span class="w"> </span>--stopserver<span class="w">         </span>:<span class="w"> </span>Stop<span class="w"> </span>server.<span class="w"> </span>Do<span class="w"> </span>not<span class="w"> </span>use<span class="w"> </span>as<span class="w"> </span>it<span class="w"> </span>is<span class="w"> </span>created<span class="w"> </span>by<span class="w"> </span>control<span class="w"> </span>server
+</pre></div>
+</div>
+</div></blockquote>
+</section>
+<section id="automatic-start">
+<span id="automatic-start-servers"></span><h2>Automatic start<a class="headerlink" href="#automatic-start" title="Link to this heading"></a></h2>
+<p>One can start the on-board detector server automatically upon powering on the board.</p>
+<ol class="arabic">
+<li><dl>
+<dt>Create a soft link to the binary on board:</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ln<span class="w"> </span>-sf<span class="w"> </span>someDetectorServervx.x.x<span class="w"> </span>someDetectorServer
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+<li><p>Do the following depending on the detector type :</p>
+<dl>
+<dt>Eiger</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># create script in rc5.d on the board</span>
+vi<span class="w"> </span>/etc/rc5.d/S50board_com.sh
+
+<span class="c1"># enter the following (edit server name)</span>
+<span class="c1">#! /bin/sh</span>
+/home/root/executables/eigerDetectorServer<span class="w"> </span><span class="p">&amp;</span>&gt;<span class="w"> </span>/dev/null<span class="w"> </span><span class="p">&amp;</span>
+<span class="nb">exit</span><span class="w"> </span><span class="m">0</span>
+</pre></div>
+</div>
+</dd>
+<dt>Jungfrau | Moench | CTB | Gotthard I</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Edit inittab on board</span>
+vi<span class="w"> </span>/etc/inittab
+
+<span class="c1"># enter the following line</span>
+ttyS0::respawn:/./xxxDetectorServer
+</pre></div>
+</div>
+</dd>
+<dt>Gotthard II | Mythen III</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># create script in init.d on board</span>
+vi<span class="w"> </span>/etc/init.d/S99detServer.sh
+
+<span class="c1"># enter the following (edit server name)</span>
+<span class="c1">#! /bin/sh</span>
+<span class="nb">cd</span><span class="w"> </span>/root<span class="w"> </span>&gt;&gt;<span class="w"> </span>/dev/null
+/root/xxxDetectorServer<span class="w"> </span>&gt;&gt;<span class="w"> </span>/dev/null<span class="w"> </span><span class="p">&amp;</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>Sync, reboot and verify:</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sync
+
+<span class="c1"># physically reboot for Gotthard II or Mythen III</span>
+reboot
+
+<span class="c1"># verify</span>
+ps<span class="w"> </span>-ef<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>xxxDetectorServer
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+</ol>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="firmware.html" class="btn btn-neutral float-left" title="Firmware Upgrade" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="serverupgrade.html" class="btn btn-neutral float-right" title="Upgrade" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, PSD Detector Group.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

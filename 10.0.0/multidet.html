@@ -1,0 +1,380 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Using multiple detectors &mdash; slsDetectorPackage 10.0.0  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/css/extra.css?v=2be88464" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Detector" href="detector.html" />
+    <link rel="prev" title="Detector Image Size and Format" href="dataformat.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            slsDetectorPackage 10.0.0
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Installation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="consuming.html">Consuming slsDetectorPackage</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">how to</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="softwarearchitecture.html">Software Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configcommands.html">Setup Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick_start_guide.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dataformat.html">Detector Image Size and Format</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Using multiple detectors</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#detector-index">Detector index</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#slsdetname">$SLSDETNAME</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#checking-for-other-detectors">Checking for other detectors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#other-considerations">Other considerations</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">C++ API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="detector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="result.html">Result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="receiver_api.html">Receiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pygettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pydetector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyenums.html">Enums</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyexamples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyPatternGenerator.html">PatternGenerator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pattern.html">Pattern</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Command line</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="commandline.html">Command line interface</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="container_utils.html">ContainerUtils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="type_traits.html">TypeTraits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ToString.html">ToString</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Firmware</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="firmware.html">Firmware Upgrade</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="servers.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverupgrade.html">Upgrade</a></li>
+<li class="toctree-l1"><a class="reference internal" href="virtualserver.html">Simulators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverdefaults.html">Default Values</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector UDP Header</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="udpheader.html">Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udpconfig.html">Config file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udpdetspec.html">Detector Specific Fields</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiver.html">In-built Receiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="receivers.html">Custom Receiver</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver Files</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="fileformat.html">File format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiverheaderformat.html">SLS Receiver Header Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dataformat.html">Detector Image Size and Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="masterfileattributes.html">Master File Attributes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="binaryfileformat.html">Binary File Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hdf5fileformat.html">HDF5 File Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver ZMQ Stream</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="zmqjsonheaderformat.html">ZMQ: Json Header Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Troubleshooting</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">slsDetectorPackage 10.0.0</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Using multiple detectors</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/multidet.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="using-multiple-detectors">
+<span id="id1"></span><h1>Using multiple detectors<a class="headerlink" href="#using-multiple-detectors" title="Link to this heading"></a></h1>
+<p>The slsDetectorPackage supports using several detectors on the same computer.
+This can either be two users, that need to use the same computer without interfering
+with each other, or the same user that wants to use multiple detectors at the same time.
+The detectors in turn can consist of multiple modules. For example, a 9M Jungfrau detector
+consists of 18 modules which typically are addressed at once as a single detector.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>To address a single module of a multi-module detector you can use the module index.</p>
+<ul class="simple">
+<li><p>Command line: <a class="reference internal" href="commandline.html#cl-module-index-label"><span class="std std-ref">Module index</span></a></p></li>
+<li><p>Python: <a class="reference internal" href="pygettingstarted.html#py-module-index-label"><span class="std std-ref">Accessing individual modules</span></a></p></li>
+</ul>
+</div>
+<p>Coming back to multiple detectors we have two tools to our disposal:</p>
+<ol class="arabic simple">
+<li><p>Detector index</p></li>
+<li><p>The SLSDETNAME environment variable</p></li>
+</ol>
+<p>They can be used together or separately depending on the use case.</p>
+<section id="detector-index">
+<h2>Detector index<a class="headerlink" href="#detector-index" title="Link to this heading"></a></h2>
+<p>When configuring a detector you can specify a detector index. The default is 0.</p>
+<p><strong>Command line</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Given that we have two detectors (my-det and my-det2) that we want to use,</span>
+<span class="c1"># we can configure them with different indices.</span>
+
+<span class="c1"># Configure the first detector with index 0</span>
+$<span class="w"> </span>sls_detector_put<span class="w"> </span>hostname<span class="w"> </span>my-det
+
+<span class="c1"># Set number of frames for detector 0 to 10</span>
+$<span class="w"> </span>sls_detector_put<span class="w"> </span>frames<span class="w"> </span><span class="m">10</span>
+
+
+<span class="c1">#</span>
+<span class="c1">#Configure the second detector with index 1 (notice the 1- before hostname)</span>
+$<span class="w"> </span>sls_detector_put<span class="w"> </span><span class="m">1</span>-hostname<span class="w"> </span>my-det2
+
+
+<span class="c1"># Further configuration</span>
+...
+
+<span class="c1"># Set number of frames for detector 1 to 19</span>
+$<span class="w"> </span>sls_detector_put<span class="w"> </span><span class="m">1</span>-frames<span class="w"> </span><span class="m">19</span>
+
+<span class="c1"># Note that if we call sls_detector_get without specifying the index,</span>
+<span class="c1"># it will return the configuration of detector 0</span>
+$<span class="w"> </span>sls_detector_get<span class="w"> </span>frames
+<span class="m">10</span>
+</pre></div>
+</div>
+<p>The detector index is added to the name of the shared memory segment, so in this case
+the shared memory segments would be:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1">#First detector</span>
+/dev/shm/slsDetectorPackage_detector_0
+/dev/shm/slsDetectorPackage_detector_0_module_0
+
+<span class="c1">#Second detector</span>
+/dev/shm/slsDetectorPackage_detector_1
+/dev/shm/slsDetectorPackage_detector_1_module_0
+</pre></div>
+</div>
+<p><strong>Python</strong></p>
+<p>The main difference between the command line and the Python API is that you set the index
+when you create the detector object and you don’t have to repeat it for every call.</p>
+<p>The C++ API works int the same way.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">slsdet</span><span class="w"> </span><span class="kn">import</span> <span class="n">Detector</span>
+
+
+<span class="c1"># The same can be achieved in Python by creating a detector object with an index.</span>
+<span class="c1"># Again we have two detectors (my-det and my-det2) that we want to use:</span>
+
+<span class="c1"># Configure detector with index 0</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">()</span>
+
+<span class="c1"># If the detector has already been configured and has a shared memory</span>
+<span class="c1"># segment, you can omit setting the hostname again</span>
+<span class="n">d</span><span class="o">.</span><span class="n">hostname</span> <span class="o">=</span> <span class="s1">&#39;my-det&#39;</span>
+
+<span class="c1">#Further configuration</span>
+<span class="o">...</span>
+
+<span class="c1"># Configure a second detector with index 1</span>
+<span class="n">d2</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">d2</span><span class="o">.</span><span class="n">hostname</span> <span class="o">=</span> <span class="s1">&#39;my-det2&#39;</span>
+
+<span class="n">d</span><span class="o">.</span><span class="n">frames</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">d2</span><span class="o">.</span><span class="n">frames</span> <span class="o">=</span> <span class="mi">19</span>
+</pre></div>
+</div>
+</section>
+<section id="slsdetname">
+<h2>$SLSDETNAME<a class="headerlink" href="#slsdetname" title="Link to this heading"></a></h2>
+<p>To avoid interfering with other users on shared PCs it is best to always set the SLSDETNAME environmental variable.
+Imagining a fictive user: Anna, we can set SLSDETNAME from the shell before configuring the detector:</p>
+<p><strong>Command line</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set the SLSDETNAME variable</span>
+$<span class="w"> </span><span class="nb">export</span><span class="w"> </span><span class="nv">SLSDETNAME</span><span class="o">=</span>Anna
+
+<span class="c1"># You can check that it is set</span>
+$<span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="nv">$SLSDETNAME</span>
+Anna
+
+<span class="c1"># Now configures a detector with index 0 and prefixed with the name Anna</span>
+<span class="c1"># /dev/shm/slsDetectorPackage_detector_0_Anna</span>
+$<span class="w"> </span>sls_detector_put<span class="w"> </span>hostname<span class="w"> </span>my-det
+</pre></div>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Set SLSDETNAME in your .bashrc in order to not forget it when opening a new terminal.</p>
+</div>
+<p><strong>Python</strong></p>
+<p>With python the best way is to set the SLSDETNAME from the command line before starting the python interpreter.</p>
+<p>Bash:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span><span class="nb">export</span><span class="w"> </span><span class="nv">SLSDETNAME</span><span class="o">=</span>Anna
+</pre></div>
+</div>
+<p>Python:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">slsdet</span><span class="w"> </span><span class="kn">import</span> <span class="n">Detector</span>
+
+<span class="c1"># Now configures a detector with index 0 and prefixed with the name Anna</span>
+<span class="c1"># /dev/shm/slsDetectorPackage_detector_0_Anna</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">()</span>
+<span class="n">d</span><span class="o">.</span><span class="n">hostname</span> <span class="o">=</span> <span class="s1">&#39;my-det&#39;</span>
+</pre></div>
+</div>
+<p>You can also set SLSDETNAME from within the Python interpreter, but you have to be aware that it will only
+affect the current process and not the whole shell session.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;SLSDETNAME&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Anna&#39;</span>
+
+<span class="c1"># You can check that it is set</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;SLSDETNAME&#39;</span><span class="p">])</span>  <span class="c1"># Output: Anna</span>
+
+<span class="c1">#Now SLSDETNAME is set to Anna but as soon as you exit the python interpreter</span>
+<span class="c1"># it will not be set anymore</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Python has two ways of reading environment variables: <cite>**os.environ**</cite> as shown above which throws a
+KeyError if the variable is not set and <cite>os.getenv(‘SLSDETNAME’)</cite> which returns None if the variable is not set.</p>
+<p>For more details see the official python documentation on: <a class="reference external" href="https://docs.python.org/3/library/os.html#os.environ">https://docs.python.org/3/library/os.html#os.environ</a></p>
+</div>
+</section>
+<section id="checking-for-other-detectors">
+<h2>Checking for other detectors<a class="headerlink" href="#checking-for-other-detectors" title="Link to this heading"></a></h2>
+<p>If using shared accounts on a shared computer (which you anyway should not do), it is good practice to check
+if there are other detectors configured by other users before configuring your own detector.</p>
+<p>You can do this by listing the files in the shared memory directory <cite>/dev/shm/</cite> that start with <cite>sls</cite>. In this
+example we can see that two single module detectors are configured one with index 0 and one with index 1.
+SLSDETNAME is set to <cite>Anna</cite> so it makes sense to assume that she is the user that configured these detectors.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># List the files in /dev/shm that starts with sls</span>
+$<span class="w"> </span>ls<span class="w"> </span>/dev/shm/sls*
+/dev/shm/slsDetectorPackage_detector_0_Anna
+/dev/shm/slsDetectorPackage_detector_0_module_0_Anna
+/dev/shm/slsDetectorPackage_detector_1_Anna
+/dev/shm/slsDetectorPackage_detector_1_module_0_Anna
+</pre></div>
+</div>
+<p>We also provide a command: user, which gets information about the shared memory segment that
+the client points to without doing any changes.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1">#in this case 3 simulated Mythen3 modules</span>
+$<span class="w"> </span>sls_detector_get<span class="w"> </span>user
+user
+Hostname:<span class="w"> </span>localhost+localhost+localhost+
+Type:<span class="w"> </span>Mythen3
+PID:<span class="w"> </span><span class="m">1226078</span>
+User:<span class="w"> </span>l_msdetect
+Date:<span class="w"> </span>Mon<span class="w"> </span>Jun<span class="w">  </span><span class="m">2</span><span class="w"> </span><span class="m">05</span>:46:20<span class="w"> </span>PM<span class="w"> </span>CEST<span class="w"> </span><span class="m">2025</span>
+</pre></div>
+</div>
+</section>
+<section id="other-considerations">
+<h2>Other considerations<a class="headerlink" href="#other-considerations" title="Link to this heading"></a></h2>
+<p>The shared memory is not the only way to interfere with other users. You also need to make sure that you are not
+using the same:</p>
+<ul class="simple">
+<li><p>rx_tcpport</p></li>
+<li><p>Unique combination of udp_dstip and udp_dstport</p></li>
+<li><p>rx_zmqport</p></li>
+<li><p>zmqport</p></li>
+</ul>
+<div class="admonition attention">
+<p class="admonition-title">Attention</p>
+<p>The computer that you are using need to have enough resources to run multiple detectors at the same time.
+This includes CPU and network bandwidth. Please coordinate with the other users!</p>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="dataformat.html" class="btn btn-neutral float-left" title="Detector Image Size and Format" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="detector.html" class="btn btn-neutral float-right" title="Detector" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, PSD Detector Group.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,373 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PatternGenerator &mdash; slsDetectorPackage 10.0.0  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/css/extra.css?v=2be88464" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Pattern" href="pattern.html" />
+    <link rel="prev" title="Examples" href="pyexamples.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            slsDetectorPackage 10.0.0
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Installation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="consuming.html">Consuming slsDetectorPackage</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">how to</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="softwarearchitecture.html">Software Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configcommands.html">Setup Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick_start_guide.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dataformat.html">Detector Image Size and Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="multidet.html">Using multiple detectors</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">C++ API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="detector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="result.html">Result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="receiver_api.html">Receiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="pygettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pydetector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyenums.html">Enums</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyexamples.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">PatternGenerator</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#slsdet.PatternGenerator"><code class="docutils literal notranslate"><span class="pre">PatternGenerator</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#slsdet.PatternGenerator.CB"><code class="docutils literal notranslate"><span class="pre">PatternGenerator.CB()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slsdet.PatternGenerator.CLOCK"><code class="docutils literal notranslate"><span class="pre">PatternGenerator.CLOCK()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slsdet.PatternGenerator.CLOCKS"><code class="docutils literal notranslate"><span class="pre">PatternGenerator.CLOCKS()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slsdet.PatternGenerator.PW"><code class="docutils literal notranslate"><span class="pre">PatternGenerator.PW()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slsdet.PatternGenerator.SB"><code class="docutils literal notranslate"><span class="pre">PatternGenerator.SB()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slsdet.PatternGenerator.load"><code class="docutils literal notranslate"><span class="pre">PatternGenerator.load()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slsdet.PatternGenerator.print"><code class="docutils literal notranslate"><span class="pre">PatternGenerator.print()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slsdet.PatternGenerator.save"><code class="docutils literal notranslate"><span class="pre">PatternGenerator.save()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slsdet.PatternGenerator.send_to_detector"><code class="docutils literal notranslate"><span class="pre">PatternGenerator.send_to_detector()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slsdet.PatternGenerator.serializer"><code class="docutils literal notranslate"><span class="pre">PatternGenerator.serializer()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slsdet.PatternGenerator.setinput"><code class="docutils literal notranslate"><span class="pre">PatternGenerator.setinput()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slsdet.PatternGenerator.setinputs"><code class="docutils literal notranslate"><span class="pre">PatternGenerator.setinputs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slsdet.PatternGenerator.setnloop"><code class="docutils literal notranslate"><span class="pre">PatternGenerator.setnloop()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slsdet.PatternGenerator.setoutput"><code class="docutils literal notranslate"><span class="pre">PatternGenerator.setoutput()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slsdet.PatternGenerator.setoutputs"><code class="docutils literal notranslate"><span class="pre">PatternGenerator.setoutputs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slsdet.PatternGenerator.setstart"><code class="docutils literal notranslate"><span class="pre">PatternGenerator.setstart()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slsdet.PatternGenerator.setstartloop"><code class="docutils literal notranslate"><span class="pre">PatternGenerator.setstartloop()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slsdet.PatternGenerator.setstop"><code class="docutils literal notranslate"><span class="pre">PatternGenerator.setstop()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slsdet.PatternGenerator.setstoploop"><code class="docutils literal notranslate"><span class="pre">PatternGenerator.setstoploop()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slsdet.PatternGenerator.setwait"><code class="docutils literal notranslate"><span class="pre">PatternGenerator.setwait()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slsdet.PatternGenerator.setwaitpoint"><code class="docutils literal notranslate"><span class="pre">PatternGenerator.setwaitpoint()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slsdet.PatternGenerator.setwaittime"><code class="docutils literal notranslate"><span class="pre">PatternGenerator.setwaittime()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pattern.html">Pattern</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Command line</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="commandline.html">Command line interface</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="container_utils.html">ContainerUtils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="type_traits.html">TypeTraits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ToString.html">ToString</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Firmware</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="firmware.html">Firmware Upgrade</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="servers.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverupgrade.html">Upgrade</a></li>
+<li class="toctree-l1"><a class="reference internal" href="virtualserver.html">Simulators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverdefaults.html">Default Values</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector UDP Header</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="udpheader.html">Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udpconfig.html">Config file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udpdetspec.html">Detector Specific Fields</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiver.html">In-built Receiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="receivers.html">Custom Receiver</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver Files</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="fileformat.html">File format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiverheaderformat.html">SLS Receiver Header Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dataformat.html">Detector Image Size and Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="masterfileattributes.html">Master File Attributes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="binaryfileformat.html">Binary File Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hdf5fileformat.html">HDF5 File Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver ZMQ Stream</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="zmqjsonheaderformat.html">ZMQ: Json Header Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Troubleshooting</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">slsDetectorPackage 10.0.0</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">PatternGenerator</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/pyPatternGenerator.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="patterngenerator">
+<h1>PatternGenerator<a class="headerlink" href="#patterngenerator" title="Link to this heading"></a></h1>
+<p>Python class to generate patterns for the Chip Test Board.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">slsdet</span><span class="w"> </span><span class="kn">import</span> <span class="n">PatternGenerator</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="n">PatternGenerator</span><span class="p">()</span>
+<span class="n">p</span><span class="o">.</span><span class="n">SB</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">p</span><span class="o">.</span><span class="n">PW</span><span class="p">()</span>
+<span class="n">p</span><span class="o">.</span><span class="n">SB</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="mi">9</span><span class="p">)</span>
+<span class="n">p</span><span class="o">.</span><span class="n">PW</span><span class="p">()</span>
+<span class="n">p</span><span class="o">.</span><span class="n">CB</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Created a pattern like this:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>patword<span class="w"> </span>0x0000<span class="w"> </span>0x0000000000000020
+patword<span class="w"> </span>0x0001<span class="w"> </span>0x0000000000000320
+patword<span class="w"> </span>0x0002<span class="w"> </span>0x0000000000000300
+patioctrl<span class="w"> </span>0x0000000000000000
+patlimits<span class="w"> </span>0x0000<span class="w"> </span>0x0002
+...
+</pre></div>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="slsdet.PatternGenerator">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">slsdet.</span></span><span class="sig-name descname"><span class="pre">PatternGenerator</span></span><a class="headerlink" href="#slsdet.PatternGenerator" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class to generate a pattern for the SLS detector. Intents to as closely as possible
+mimic the old pattern generation in the C code.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="slsdet.PatternGenerator.CB">
+<span class="sig-name descname"><span class="pre">CB</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">bits</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#slsdet.PatternGenerator.CB" title="Link to this definition"></a></dt>
+<dd><p>Clear one or several bits. Change will take affect with the next PW.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slsdet.PatternGenerator.CLOCK">
+<span class="sig-name descname"><span class="pre">CLOCK</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#slsdet.PatternGenerator.CLOCK" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slsdet.PatternGenerator.CLOCKS">
+<span class="sig-name descname"><span class="pre">CLOCKS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">times</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#slsdet.PatternGenerator.CLOCKS" title="Link to this definition"></a></dt>
+<dd><p>clocks “bit” n “times”, every half clock is long “length”
+length is optional, default value is 1</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slsdet.PatternGenerator.PW">
+<span class="sig-name descname"><span class="pre">PW</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#slsdet.PatternGenerator.PW" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slsdet.PatternGenerator.SB">
+<span class="sig-name descname"><span class="pre">SB</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">bits</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#slsdet.PatternGenerator.SB" title="Link to this definition"></a></dt>
+<dd><p>Set one or several bits. Change will take affect with the next PW.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slsdet.PatternGenerator.load">
+<span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#slsdet.PatternGenerator.load" title="Link to this definition"></a></dt>
+<dd><p>Load pattern from text file</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slsdet.PatternGenerator.print">
+<span class="sig-name descname"><span class="pre">print</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#slsdet.PatternGenerator.print" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slsdet.PatternGenerator.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#slsdet.PatternGenerator.save" title="Link to this definition"></a></dt>
+<dd><p>Save pattern to text file</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slsdet.PatternGenerator.send_to_detector">
+<span class="sig-name descname"><span class="pre">send_to_detector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">det</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#slsdet.PatternGenerator.send_to_detector" title="Link to this definition"></a></dt>
+<dd><p>Load the pattern into the detector.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slsdet.PatternGenerator.serializer">
+<span class="sig-name descname"><span class="pre">serializer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">serInBit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clkBit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nbits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">msbfirst</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#slsdet.PatternGenerator.serializer" title="Link to this definition"></a></dt>
+<dd><p>Produces the .pat file needed to serialize a word into a shift register.
+value: value to be serialized
+serInBit: control bit corresponding to serial in
+clkBit: control bit corresponding to the clock
+nbits: number of bits of the target register to load
+msbfirst: if 1 pushes in the MSB first (default),
+if 0 pushes in the LSB first
+length: length of all the PWs in the pattern
+It produces no output because it modifies directly the members of the class pat via SB and CB</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slsdet.PatternGenerator.setinput">
+<span class="sig-name descname"><span class="pre">setinput</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bit</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#slsdet.PatternGenerator.setinput" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slsdet.PatternGenerator.setinputs">
+<span class="sig-name descname"><span class="pre">setinputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#slsdet.PatternGenerator.setinputs" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slsdet.PatternGenerator.setnloop">
+<span class="sig-name descname"><span class="pre">setnloop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reps</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#slsdet.PatternGenerator.setnloop" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slsdet.PatternGenerator.setoutput">
+<span class="sig-name descname"><span class="pre">setoutput</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bit</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#slsdet.PatternGenerator.setoutput" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slsdet.PatternGenerator.setoutputs">
+<span class="sig-name descname"><span class="pre">setoutputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#slsdet.PatternGenerator.setoutputs" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slsdet.PatternGenerator.setstart">
+<span class="sig-name descname"><span class="pre">setstart</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#slsdet.PatternGenerator.setstart" title="Link to this definition"></a></dt>
+<dd><p>Set start of pattern to the current address.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slsdet.PatternGenerator.setstartloop">
+<span class="sig-name descname"><span class="pre">setstartloop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#slsdet.PatternGenerator.setstartloop" title="Link to this definition"></a></dt>
+<dd><p>Set startloop[i] to the current address.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slsdet.PatternGenerator.setstop">
+<span class="sig-name descname"><span class="pre">setstop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">l</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#slsdet.PatternGenerator.setstop" title="Link to this definition"></a></dt>
+<dd><p>Set stop of pattern to the current address.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slsdet.PatternGenerator.setstoploop">
+<span class="sig-name descname"><span class="pre">setstoploop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#slsdet.PatternGenerator.setstoploop" title="Link to this definition"></a></dt>
+<dd><p>Set stoploop[i] to the current address.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slsdet.PatternGenerator.setwait">
+<span class="sig-name descname"><span class="pre">setwait</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#slsdet.PatternGenerator.setwait" title="Link to this definition"></a></dt>
+<dd><p>Set wait[i] to the current address and waittime[i] to t.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slsdet.PatternGenerator.setwaitpoint">
+<span class="sig-name descname"><span class="pre">setwaitpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#slsdet.PatternGenerator.setwaitpoint" title="Link to this definition"></a></dt>
+<dd><p>Set wait[i] to the current address.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slsdet.PatternGenerator.setwaittime">
+<span class="sig-name descname"><span class="pre">setwaittime</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#slsdet.PatternGenerator.setwaittime" title="Link to this definition"></a></dt>
+<dd><p>Set waittime[i] to t.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="pyexamples.html" class="btn btn-neutral float-left" title="Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pattern.html" class="btn btn-neutral float-right" title="Pattern" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, PSD Detector Group.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

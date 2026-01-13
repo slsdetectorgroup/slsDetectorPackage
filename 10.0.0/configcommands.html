@@ -1,0 +1,380 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Setup Commands &mdash; slsDetectorPackage 10.0.0  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/css/extra.css?v=2be88464" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Quick Start Guide" href="quick_start_guide.html" />
+    <link rel="prev" title="Software Architecture" href="softwarearchitecture.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            slsDetectorPackage 10.0.0
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Installation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="consuming.html">Consuming slsDetectorPackage</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">how to</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="softwarearchitecture.html">Software Architecture</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Setup Commands</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#client-to-module">Client to Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#client-to-receiver">Client to Receiver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-to-receiver">Module to Receiver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#receiver-to-gui">Receiver to GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#receiver-to-external-processing">Receiver to External Processing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="quick_start_guide.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dataformat.html">Detector Image Size and Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="multidet.html">Using multiple detectors</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">C++ API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="detector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="result.html">Result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="receiver_api.html">Receiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pygettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pydetector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyenums.html">Enums</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyexamples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyPatternGenerator.html">PatternGenerator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pattern.html">Pattern</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Command line</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="commandline.html">Command line interface</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="container_utils.html">ContainerUtils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="type_traits.html">TypeTraits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ToString.html">ToString</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Firmware</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="firmware.html">Firmware Upgrade</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="servers.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverupgrade.html">Upgrade</a></li>
+<li class="toctree-l1"><a class="reference internal" href="virtualserver.html">Simulators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverdefaults.html">Default Values</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector UDP Header</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="udpheader.html">Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udpconfig.html">Config file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udpdetspec.html">Detector Specific Fields</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiver.html">In-built Receiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="receivers.html">Custom Receiver</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver Files</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="fileformat.html">File format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiverheaderformat.html">SLS Receiver Header Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dataformat.html">Detector Image Size and Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="masterfileattributes.html">Master File Attributes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="binaryfileformat.html">Binary File Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hdf5fileformat.html">HDF5 File Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver ZMQ Stream</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="zmqjsonheaderformat.html">ZMQ: Json Header Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Troubleshooting</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">slsDetectorPackage 10.0.0</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Setup Commands</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/configcommands.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="setup-commands">
+<span id="id1"></span><h1>Setup Commands<a class="headerlink" href="#setup-commands" title="Link to this heading"></a></h1>
+<section id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Link to this heading"></a></h2>
+<p>To connect to any device, one needs a unique combination of <strong>IP address</strong> (which identifies the device) and <strong>port number</strong> (which specifies the service).</p>
+<p>This package typically deals with two types of network interfaces:</p>
+<ul class="simple">
+<li><p><strong>1 GbE public interface</strong> - Accessible from anywhere on the network. Connectivity can be verified by pinging this interface from any PC.</p></li>
+<li><p><strong>10 GbE private interface</strong> - Dedicated to high-speed data transfer with a specific PC. In addition to the 1 GbE public interface (MTU 1500), the device may include one or more private 10 GbE interfaces (MTU 9000), which are not accessible from other machines.</p></li>
+</ul>
+</section>
+<section id="client-to-module">
+<h2>Client to Module<a class="headerlink" href="#client-to-module" title="Link to this heading"></a></h2>
+<figure class="align-center" id="id8">
+<a class="reference external image-reference" href="_images/Client_module_commands.png"><img alt="Client Module Commands" src="_images/Client_module_commands.png" style="width: 700px;" />
+</a>
+<figcaption>
+<p><span class="caption-text">Client Module TCP Commands</span><a class="headerlink" href="#id8" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<p>The client configures and controls modules via the 1 GbE public TCP interface.</p>
+<ul class="simple">
+<li><p>Should be able to ping the module’s hostname from any PC on the network.</p></li>
+<li><p>If one cannot ping, ensure that it is powered on.</p></li>
+<li><p>If the command cannot connect to the port (<a class="reference external" href="commandline.html#term-hostname">hostname command</a> failed), the onboard servers may not have started yet.</p></li>
+</ul>
+<p>Each physical module has its own unique IP address. As the IPs are already different, all modules can share the same default ports:</p>
+<ul class="simple">
+<li><p>1952 - Default Module TCP Control Port</p></li>
+<li><p>1953 - Default Module TCP Stop port</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Therefore, one can use</span>
+hostname<span class="w"> </span>bchip100+bchip101+
+<span class="c1"># instead of</span>
+hostname<span class="w"> </span>bchip100:1952+bchip101:1954+
+</pre></div>
+</div>
+<p><strong>Simulators</strong>, however, usually run on the same PC. See <a class="reference external" href="https://slsdetectorgroup.github.io/devdoc/virtualserver.html">virtual servers</a> for more details. In that case, each instance must use a different port. By incrementing port numbers, you can also use the virtual command for convenience.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Therefore, one can use</span>
+virtual<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="m">1952</span>
+<span class="c1"># instead of</span>
+hostname<span class="w"> </span>localhost:1952+localhost:1954+
+</pre></div>
+</div>
+</section>
+<section id="client-to-receiver">
+<h2>Client to Receiver<a class="headerlink" href="#client-to-receiver" title="Link to this heading"></a></h2>
+<figure class="align-center" id="id9">
+<a class="reference external image-reference" href="_images/Client_receiver_commands.png"><img alt="Client Receiver Commands" src="_images/Client_receiver_commands.png" />
+</a>
+<figcaption>
+<p><span class="caption-text">Client Receiver TCP Commands</span><a class="headerlink" href="#id9" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<p>Each module has a receiver, which can be either local or remote.</p>
+<p>The client can configure and control receivers via the 1 GbE public TCP interface:</p>
+<ul class="simple">
+<li><p>Should be able to ping the receiver’s hostname from any PC on the network.</p></li>
+<li><p>If one cannot ping, ensure that it is powered on.</p></li>
+<li><p>If the command cannot connect to the port (<a class="reference external" href="commandline.html#term-rx_hostname-hostname-or-ip-address">rx_hostname command</a> failed), the receivers may not have started yet.</p></li>
+</ul>
+<p>Since multiple receiver processes typically run on the same PC, they share the same IP. Here, each receiver process must use a different TCP port for a unique connection.</p>
+<ul class="simple">
+<li><p>1954 - Default Receiver TCP port</p></li>
+</ul>
+<p>Configuring the receiver with the command <a class="reference external" href="commandline.html#term-rx_hostname-hostname-or-ip-address">rx_hostname command</a>, sets up a receiver for every module in shared memory automatically ie. every module’s receiver TCP port will automatically increment in shared memory. The starting port is defined by the command <a class="reference external" href="commandline.html#term-rx_tcpport-port">rx_tcpport</a> with the default being 1954.</p>
+<p>A multi-module command (without colon or module index) sets incremental ports starting from the specified port number.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>hostname<span class="w"> </span>bchip100+bchip101+bchip102+bchip103+
+rx_tcport<span class="w"> </span><span class="m">2000</span><span class="w"> </span><span class="c1"># sets the receiver port to 2000, 2001, 2002, 2003</span>
+</pre></div>
+</div>
+<p>For example, using default TCP ports (1954, 1955):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>hostname<span class="w"> </span>bchip100+bchip101+
+rx_hostname<span class="w"> </span>localhost
+<span class="c1"># Equivalent to:</span>
+rx_hostname<span class="w"> </span>localhost:1954+localhost:1955+
+
+<span class="c1"># or set to another set of ports (automatically incremented)</span>
+rx_tcpport<span class="w"> </span><span class="m">1984</span>
+rx_hostname<span class="w"> </span>localhost
+<span class="c1"># instead of</span>
+rx_hostname<span class="w"> </span>localhost:1984+localhost:1985+
+</pre></div>
+</div>
+</section>
+<section id="module-to-receiver">
+<h2>Module to Receiver<a class="headerlink" href="#module-to-receiver" title="Link to this heading"></a></h2>
+<figure class="align-center" id="id10">
+<a class="reference external image-reference" href="_images/Module_receiver_commands.png"><img alt="Module Receiver Commands" src="_images/Module_receiver_commands.png" />
+</a>
+<figcaption>
+<p><span class="caption-text">Module Receiver UDP Commands</span><a class="headerlink" href="#id10" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<p><strong>10GbE Interface</strong></p>
+<p>The module typically sends images to the receiver via a 10 GbE private interface on the receiver PC, which has an MTU of 9000 to support jumbo packets. The private interface is not reachable from other machines, so it cannot be pinged from anywhere.</p>
+<p><strong>Multiple UDP Packets</strong></p>
+<p>Images are split into UDP packets for transmission. Unlike TCP, UDP is connectionless and does not guarantee delivery. Therefore, the receiver PC must be tuned for reliable reception. See <a class="reference external" href="https://slsdetectorgroup.github.io/devdoc/troubleshooting.html">Troubleshooting</a>.</p>
+<p><strong>UDP Configuration</strong></p>
+<p>Unlike TCP, the module (hardware) requires explicit configuration for sending images via UDP, including:</p>
+<ul class="simple">
+<li><p>Source and destination IPs</p></li>
+<li><p>Source and destination MAC addresses</p></li>
+<li><p>Source and destination ports</p></li>
+</ul>
+<p><strong>UDP Destination</strong></p>
+<p>Info on where to send the image from the module to.</p>
+<p><strong>UDP Desination IP</strong> - The IP of the receiver PC’s 10 GbE interface, usually found via <code class="docutils literal notranslate"><span class="pre">ifconfig</span></code>. Command: <a class="reference external" href="commandline.html#term-udp_dstip-x.x.x.x-or-auto">udp_dstip</a>. For 1GbE interface and for this command, one can use ‘auto’ as an argument, which will pick up the IP from the <a class="reference external" href="commandline.html#term-rx_hostname-hostname-or-ip-address">rx_hostname command</a>.</p>
+<p><strong>UDP desintation MAC</strong> - Also obtained from the interface using <code class="docutils literal notranslate"><span class="pre">ifconfig</span></code>. For built-in receivers, the module configures this automatically from the <code class="docutils literal notranslate"><span class="pre">UDP</span> <span class="pre">destination</span> <span class="pre">IP</span></code>. For custom receivers, it must be explicitly provided. Command: <a class="reference external" href="commandline.html#term-udp_dstmac-x-x-x-x-x-x">udp_dstmac</a></p>
+<p><strong>UDP destination port</strong> - Ensure uniqueness if multiple users share the interface. Command: <a class="reference external" href="commandline.html#term-udp_dstport-n">udp_dstport</a></p>
+<ul class="simple">
+<li><p>50001 - Default Receiver UDP port</p></li>
+</ul>
+<p><strong>UDP Source</strong></p>
+<p>As it is a one-way communication (module to receiver with no reply or acknowledgements), info on the source of the image is more for debugging purposes and prevent packet rejection.</p>
+<p><strong>UDP source IP</strong> - Must be on the same subnet as the destination IP (same first three octets) to prevent packet rejection by the receiver interface. For 1GbE interface and for this command (except for Eiger), one can use <code class="docutils literal notranslate"><span class="pre">auto</span></code> as an argument, which will pick up the IP from the <a class="reference external" href="commandline.html#term-hostname">hostname command</a>. Command: <a class="reference external" href="commandline.html#term-udp_srcip-x.x.x.x-or-auto">udp_srcip</a></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 10 GbE interface</span>
+hostname<span class="w"> </span>bchip100
+udp_dstip<span class="w"> </span><span class="m">10</span>.0.2.1
+udp_srcip<span class="w"> </span><span class="m">10</span>.0.2.19
+rx_hostname<span class="w"> </span>localhost
+
+<span class="c1"># 1 GbE interface</span>
+hostname<span class="w"> </span>bchip100
+rx_hostname<span class="w"> </span>localhost
+udp_dstip<span class="w"> </span>auto<span class="w"> </span><span class="c1"># this command uses IP from rx_hostname. So, it comes after.</span>
+udp_srcip<span class="w"> </span>auto<span class="w"> </span><span class="c1"># this command uses IP from hostname</span>
+</pre></div>
+</div>
+<p><strong>UDP source MAC</strong> - By default, it is set to <code class="docutils literal notranslate"><span class="pre">aa:bb:cc:dd:xx:yy</span></code> where <code class="docutils literal notranslate"><span class="pre">xx</span></code> and <code class="docutils literal notranslate"><span class="pre">yy</span></code> are module row and column indices to differentiate the modules while debugging. Command: <a class="reference external" href="commandline.html#term-udp_srcmac-x-x-x-x-x-x">udp_srcmac</a></p>
+<p><strong>UDP source port</strong> - This is hardcoded in every module to the same value in the detector server and cannot be changed.</p>
+<p>Note: If there is a second UDP port on the module, use ‘udp_dstport2’ or ‘udp_dstip2’etc. See <a class="reference external" href="https://slsdetectorgroup.github.io/devdoc/dataformat.html">here</a> for more detector specific info.</p>
+</section>
+<section id="receiver-to-gui">
+<h2>Receiver to GUI<a class="headerlink" href="#receiver-to-gui" title="Link to this heading"></a></h2>
+<figure class="align-center" id="id11">
+<a class="reference external image-reference" href="_images/Receiver_gui_commands.png"><img alt="Receiver GUI Commands" src="_images/Receiver_gui_commands.png" />
+</a>
+<figcaption>
+<p><span class="caption-text">Receiver GUI Commands</span><a class="headerlink" href="#id11" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<p>Enabling the GUI automatically streams images from the receiver via ZMQ sockets. Even without the GUI, streaming can be activated explicitly using the command <a class="reference external" href="commandline.html#term-rx_zmqstream-0-1">rx_zmqstream</a>. ZMQ streaming uses TCP/IP, so the ports must be configured appropriately.</p>
+<p><strong>Receiver ZMQ Port</strong> - Port from which the receiver streams ZMQ packets. Command: <a class="reference external" href="commandline.html#term-rx_zmqport-port">rx_zmqport</a></p>
+<ul class="simple">
+<li><p>30001 - Default Receiver ZMQ Port (stream out from)</p></li>
+</ul>
+<p><strong>Client ZMQ Port</strong> - Port that the client ZMQ socket listens to. Command: <a class="reference external" href="commandline.html#term-zmqport-port">zmqport</a></p>
+<ul class="simple">
+<li><p>30001 - Default Client ZMQ Port (listens to)</p></li>
+</ul>
+<p><strong>Client ZMQ IP</strong> - IP address the client ZMQ socket listens to. Command: <a class="reference external" href="commandline.html#term-zmqip-x.x.x.x">zmqip</a>. By default, this is set to the IP of <code class="docutils literal notranslate"><span class="pre">rx_hostname</span></code>, but can be set to any IP address that the client can reach.</p>
+<ul class="simple">
+<li><p>Default: Receiver’s hostname (rx_hostname)</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">zmqport</span></code> and <code class="docutils literal notranslate"><span class="pre">zmqip</span></code> need to be set up in shared memory before starting up the Gui. If the Gui is already running, change it in the Advanced Tab directly in the Gui.</p>
+<p><code class="docutils literal notranslate"><span class="pre">rx_zmqstream</span></code> is set to 1 when the GUI is started, but has to be manually set back to 0 to disable zmq streaming in the receiver for better performance when not using the Gui.</p>
+<p>The GUI hwm (high water mark, which is like a measurement of the number of enqueued zmq packets) values are set to a low number (from library default of possibly 1000 to 2) to reduce the zmq buffer to display only some of the images. Resetting it back to -1 or 1000 should only matter if one plans to not use the Gui and still zmq stream without wanting to drop zmq images (eg. for external processing chain).</p>
+</div>
+</section>
+<section id="receiver-to-external-processing">
+<h2>Receiver to External Processing<a class="headerlink" href="#receiver-to-external-processing" title="Link to this heading"></a></h2>
+<figure class="align-center" id="id12">
+<a class="reference external image-reference" href="_images/Receiver_external_process_commands.png"><img alt="Click to zoom" src="_images/Receiver_external_process_commands.png" />
+</a>
+<figcaption>
+<p><span class="caption-text">Receiver External Process Commands</span><a class="headerlink" href="#id12" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<p>Images from the receiver can also be streamed to an external processing chain for further processing or storage. In this setup:</p>
+<ul class="simple">
+<li><p>The external processor listens to the ZMQ ports and IPs that the receiver streams from.</p></li>
+<li><p>The client ZMQ sockets now listen to the ports and IPs that the external processor streams from instead of the receiver.</p></li>
+</ul>
+<p><strong>Receiver ZMQ Port</strong> - Port from which the receiver streams ZMQ packets. Command: <a class="reference external" href="commandline.html#term-rx_zmqport-port">rx_zmqport</a></p>
+<ul class="simple">
+<li><p>30001 - Default Receiver ZMQ Port (stream out from)</p></li>
+</ul>
+<p><strong>Client ZMQ Port</strong> - Port that the client ZMQ socket listens to. Command: <a class="reference external" href="commandline.html#term-zmqport-port">zmqport</a>. In this set up, it should listen to the zmq port that the external process is streaming out from.</p>
+<ul class="simple">
+<li><p>30001 - Default Client ZMQ Port (listens to)</p></li>
+</ul>
+<p><strong>Client ZMQ IP</strong> - IP address the client ZMQ socket listens to. Command: <a class="reference external" href="commandline.html#term-zmqip-x.x.x.x">zmqip</a>. By default, this is set to the IP of <code class="docutils literal notranslate"><span class="pre">rx_hostname</span></code>, but in this set up, it should listen to the zmq IP that the external process is streaming out from.</p>
+<ul class="simple">
+<li><p>Default: Receiver’s hostname (rx_hostname)</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="softwarearchitecture.html" class="btn btn-neutral float-left" title="Software Architecture" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="quick_start_guide.html" class="btn btn-neutral float-right" title="Quick Start Guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, PSD Detector Group.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

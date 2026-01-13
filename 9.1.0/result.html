@@ -1,0 +1,457 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Result &mdash; slsDetectorPackage 9.1.0  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/css/extra.css?v=2be88464" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Receiver" href="receiver_api.html" />
+    <link rel="prev" title="Detector" href="detector.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            slsDetectorPackage 9.1.0
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Installation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="consuming.html">Consuming slsDetectorPackage</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">C++ API</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="detector.html">Detector</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Result</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#_CPPv43sls"><code class="docutils literal notranslate"><span class="pre">sls</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4I0EN3slslsERNSt7ostreamERNSt7ostreamERK6ResultI1TE"><code class="docutils literal notranslate"><span class="pre">operator&lt;&lt;()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4I00EN3sls6ResultE"><code class="docutils literal notranslate"><span class="pre">sls::Result</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N3sls6Result10value_typeE"><code class="docutils literal notranslate"><span class="pre">value_type</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N3sls6Result8iteratorE"><code class="docutils literal notranslate"><span class="pre">iterator</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N3sls6Result14const_iteratorE"><code class="docutils literal notranslate"><span class="pre">const_iterator</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N3sls6Result9size_typeE"><code class="docutils literal notranslate"><span class="pre">size_type</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N3sls6Result9referenceE"><code class="docutils literal notranslate"><span class="pre">reference</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N3sls6Result15const_referenceE"><code class="docutils literal notranslate"><span class="pre">const_reference</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N3sls6Result6ResultEv"><code class="docutils literal notranslate"><span class="pre">Result()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N3sls6Result6ResultENSt16initializer_listI1TEE"><code class="docutils literal notranslate"><span class="pre">Result()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4I00EN3sls6Result6ResultERK6ResultI1VE"><code class="docutils literal notranslate"><span class="pre">Result()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4I00EN3sls6Result6ResultER6ResultI1VE"><code class="docutils literal notranslate"><span class="pre">Result()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4I00EN3sls6Result6ResultERR6ResultI1VE"><code class="docutils literal notranslate"><span class="pre">Result()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4IDpEN3sls6Result6ResultEDpRR4Args"><code class="docutils literal notranslate"><span class="pre">Result()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N3sls6Result5beginEv"><code class="docutils literal notranslate"><span class="pre">begin()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4NK3sls6Result5beginEv"><code class="docutils literal notranslate"><span class="pre">begin()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4NK3sls6Result6cbeginEv"><code class="docutils literal notranslate"><span class="pre">cbegin()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N3sls6Result3endEv"><code class="docutils literal notranslate"><span class="pre">end()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4NK3sls6Result3endEv"><code class="docutils literal notranslate"><span class="pre">end()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4NK3sls6Result4cendEv"><code class="docutils literal notranslate"><span class="pre">cend()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4NK3sls6Result4sizeEv"><code class="docutils literal notranslate"><span class="pre">size()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4NK3sls6Result5emptyEv"><code class="docutils literal notranslate"><span class="pre">empty()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N3sls6Result5frontEv"><code class="docutils literal notranslate"><span class="pre">front()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4NK3sls6Result5frontEv"><code class="docutils literal notranslate"><span class="pre">front()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N3sls6Result7reserveE9size_type"><code class="docutils literal notranslate"><span class="pre">reserve()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4I0EN3sls6Result9push_backEDTcldt3vec9push_back5valueEE1V"><code class="docutils literal notranslate"><span class="pre">push_back()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N3sls6ResultixE9size_type"><code class="docutils literal notranslate"><span class="pre">operator[]()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4NK3sls6ResultixE9size_type"><code class="docutils literal notranslate"><span class="pre">operator[]()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4NK3sls6Result6squashEv"><code class="docutils literal notranslate"><span class="pre">squash()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N3sls6Result7tsquashERKNSt6stringE"><code class="docutils literal notranslate"><span class="pre">tsquash()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4NK3sls6Result6squashERK1T"><code class="docutils literal notranslate"><span class="pre">squash()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4NK3sls6Result5equalEv"><code class="docutils literal notranslate"><span class="pre">equal()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4NK3sls6Result3anyERK1T"><code class="docutils literal notranslate"><span class="pre">any()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4I0Dp0ENK3sls6Result13contains_onlyENSt9enable_ifINSt7is_sameI1V1TE5valueEbE4typeERK1VDpRK4Args"><code class="docutils literal notranslate"><span class="pre">contains_only()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N3sls6ResultcvNSt6vectorI1TEEEv"><code class="docutils literal notranslate"><span class="pre">operator</span> <span class="pre">std::vector&lt;</span> <span class="pre">T</span> <span class="pre">&gt;()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N3sls6Result3vecE"><code class="docutils literal notranslate"><span class="pre">vec</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="receiver_api.html">Receiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pygettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pydetector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyenums.html">Enums</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyexamples.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Command line</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="commandline.html">Command line interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick_start_guide.html">Quick Start Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="container_utils.html">ContainerUtils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="type_traits.html">TypeTraits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ToString.html">ToString</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Firmware</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="firmware.html">Firmware Upgrade</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="servers.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverupgrade.html">Upgrade</a></li>
+<li class="toctree-l1"><a class="reference internal" href="virtualserver.html">Simulators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverdefaults.html">Default Values</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector UDP Header</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="udpheader.html">Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udpconfig.html">Config file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udpdetspec.html">Detector Specific Fields</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="receivers.html">Receivers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiver.html">slsReceiver/ slsMultiReceiver</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver Files</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="fileformat.html">File format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiverheaderformat.html">SLS Receiver Header Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="masterfileattributes.html">Master File Attributes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="binaryfileformat.html">Binary File Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hdf5fileformat.html">HDF5 File Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver ZMQ Stream</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="zmqjsonheaderformat.html">ZMQ: Json Header Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Troubleshooting</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">slsDetectorPackage 9.1.0</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Result</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/result.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="result">
+<span id="result-class"></span><h1>Result<a class="headerlink" href="#result" title="Link to this heading"></a></h1>
+<p>Result is a thin wrapper around std::vector and used for returning values from the detector. Since every module could have a different value, we need to return a vector instead of just a single value.</p>
+<p>Easy conversions to single values are provided using the squash and tsquash method. </p>
+<dl class="cpp type">
+<dt class="sig sig-object cpp" id="_CPPv43sls">
+<span id="_CPPv33sls"></span><span id="_CPPv23sls"></span><span id="sls"></span><span class="target" id="namespacesls"></span><span class="k"><span class="pre">namespace</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">sls</span></span></span><br /></dt>
+<dd><p>functions basic implemenation of shared memory </p>
+<p>creates/destroys a thread</p>
+<p>creates &amp; manages a listener thread each</p>
+<p>abstract for setting/getting properties of detector data</p>
+<p>constructs the fifo structure</p>
+<p>creates &amp; manages a data streamer thread each</p>
+<p>creates &amp; manages a data processor thread each</p>
+<p>creates/destroys an ARPing child process to arping the interfaces slsReceiver is listening to. </p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-functions">Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4I0EN3slslsERNSt7ostreamERNSt7ostreamERK6ResultI1TE">
+<span id="_CPPv3I0EN3slslsERNSt7ostreamERK6ResultI1TE"></span><span id="_CPPv2I0EN3slslsERNSt7ostreamERK6ResultI1TE"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">T</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="namespacesls_1ace400442f39e9f9c75095824bf99aa04"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">ostream</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="sig-name descname"><span class="k"><span class="pre">operator</span></span><span class="o"><span class="pre">&lt;&lt;</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">ostream</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">os</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I00EN3sls6ResultE" title="sls::Result"><span class="n"><span class="pre">Result</span></span></a><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I0EN3slslsERNSt7ostreamERNSt7ostreamERK6ResultI1TE" title="sls::operator&lt;&lt;::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">res</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0EN3slslsERNSt7ostreamERNSt7ostreamERK6ResultI1TE" title="Link to this definition"></a><br /></dt>
+<dd><p>operator &lt;&lt; overload to print <a class="reference internal" href="#classsls_1_1Result"><span class="std std-ref">Result</span></a>, uses ToString for the conversion </p>
+<dl class="field-list simple">
+<dt class="field-odd">Template Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>T</strong> – type stored in the <a class="reference internal" href="#classsls_1_1Result"><span class="std std-ref">Result</span></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv4I00EN3sls6ResultE">
+<span id="_CPPv3I00EN3sls6ResultE"></span><span id="_CPPv2I00EN3sls6ResultE"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">T</span></span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Allocator</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">allocator</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I00EN3sls6ResultE" title="sls::Result::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="classsls_1_1Result"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Result</span></span></span><a class="headerlink" href="#_CPPv4I00EN3sls6ResultE" title="Link to this definition"></a><br /></dt>
+<dd><div class="docutils container">
+<em>#include &lt;Result.h&gt;</em></div>
+<dl class="field-list simple">
+<dt class="field-odd">Template Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>T</strong> – type to store in the result </p></li>
+<li><p><strong>Allocator</strong> – for the underlying vector, default </p></li>
+</ul>
+</dd>
+</dl>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-types">Public Types</p>
+<dl class="cpp type">
+<dt class="sig sig-object cpp" id="_CPPv4N3sls6Result10value_typeE">
+<span id="_CPPv3N3sls6Result10value_typeE"></span><span id="_CPPv2N3sls6Result10value_typeE"></span><span class="target" id="classsls_1_1Result_1a1a36881370d2a3af9301a257e96f5a06"></span><span class="k"><span class="pre">using</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">value_type</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I00EN3sls6ResultE" title="sls::Result::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">value_type</span></span><a class="headerlink" href="#_CPPv4N3sls6Result10value_typeE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp type">
+<dt class="sig sig-object cpp" id="_CPPv4N3sls6Result8iteratorE">
+<span id="_CPPv3N3sls6Result8iteratorE"></span><span id="_CPPv2N3sls6Result8iteratorE"></span><span class="target" id="classsls_1_1Result_1a1286675c067366e76c7f0b8692bba9b9"></span><span class="k"><span class="pre">using</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">iterator</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I00EN3sls6ResultE" title="sls::Result::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">iterator</span></span><a class="headerlink" href="#_CPPv4N3sls6Result8iteratorE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp type">
+<dt class="sig sig-object cpp" id="_CPPv4N3sls6Result14const_iteratorE">
+<span id="_CPPv3N3sls6Result14const_iteratorE"></span><span id="_CPPv2N3sls6Result14const_iteratorE"></span><span class="target" id="classsls_1_1Result_1af303b128daef78c3e7934755253665a6"></span><span class="k"><span class="pre">using</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">const_iterator</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I00EN3sls6ResultE" title="sls::Result::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">const_iterator</span></span><a class="headerlink" href="#_CPPv4N3sls6Result14const_iteratorE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp type">
+<dt class="sig sig-object cpp" id="_CPPv4N3sls6Result9size_typeE">
+<span id="_CPPv3N3sls6Result9size_typeE"></span><span id="_CPPv2N3sls6Result9size_typeE"></span><span class="target" id="classsls_1_1Result_1a1600d06f5cc9310454da68997d448ff2"></span><span class="k"><span class="pre">using</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">size_type</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I00EN3sls6ResultE" title="sls::Result::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">size_type</span></span><a class="headerlink" href="#_CPPv4N3sls6Result9size_typeE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp type">
+<dt class="sig sig-object cpp" id="_CPPv4N3sls6Result9referenceE">
+<span id="_CPPv3N3sls6Result9referenceE"></span><span id="_CPPv2N3sls6Result9referenceE"></span><span class="target" id="classsls_1_1Result_1a31a88be6428d3264e874c260b46d5725"></span><span class="k"><span class="pre">using</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">reference</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I00EN3sls6ResultE" title="sls::Result::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">reference</span></span><a class="headerlink" href="#_CPPv4N3sls6Result9referenceE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp type">
+<dt class="sig sig-object cpp" id="_CPPv4N3sls6Result15const_referenceE">
+<span id="_CPPv3N3sls6Result15const_referenceE"></span><span id="_CPPv2N3sls6Result15const_referenceE"></span><span class="target" id="classsls_1_1Result_1a5dbc266ffc8456ad9d1c83e9713985f1"></span><span class="k"><span class="pre">using</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">const_reference</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I00EN3sls6ResultE" title="sls::Result::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">const_reference</span></span><a class="headerlink" href="#_CPPv4N3sls6Result15const_referenceE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N3sls6Result6ResultEv">
+<span id="_CPPv3N3sls6Result6ResultEv"></span><span id="_CPPv2N3sls6Result6ResultEv"></span><span id="sls::Result::Result"></span><span class="target" id="classsls_1_1Result_1afb58004f091150ec6edc363695a40a24"></span><span class="sig-name descname"><span class="n"><span class="pre">Result</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">default</span></span><a class="headerlink" href="#_CPPv4N3sls6Result6ResultEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N3sls6Result6ResultENSt16initializer_listI1TEE">
+<span id="_CPPv3N3sls6Result6ResultENSt16initializer_listI1TEE"></span><span id="_CPPv2N3sls6Result6ResultENSt16initializer_listI1TEE"></span><span id="sls::Result::Result__std::initializer_list:T:"></span><span class="target" id="classsls_1_1Result_1a366cfb57157587bb2443962c62b96bc5"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Result</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">initializer_list</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I00EN3sls6ResultE" title="sls::Result::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">list</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N3sls6Result6ResultENSt16initializer_listI1TEE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4I00EN3sls6Result6ResultERK6ResultI1VE">
+<span id="_CPPv3I00EN3sls6Result6ResultERK6ResultI1VE"></span><span id="_CPPv2I00EN3sls6Result6ResultERK6ResultI1VE"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">V</span></span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">enable_if</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">is_integral</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I00EN3sls6Result6ResultERK6ResultI1VE" title="sls::Result::Result::V"><span class="n"><span class="pre">V</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">value</span></span><span class="w"> </span><span class="o"><span class="pre">&amp;&amp;</span></span><span class="w"> </span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">is_same</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I00EN3sls6ResultE" title="sls::Result::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">time</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">ns</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">value</span></span><span class="w"> </span><span class="o"><span class="pre">||</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">is_same</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I00EN3sls6ResultE" title="sls::Result::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">type</span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="classsls_1_1Result_1a044b5689663e1773d950b8ce37913061"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Result</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I00EN3sls6Result6ResultERK6ResultI1VE" title="sls::Result::Result"><span class="n"><span class="pre">Result</span></span></a><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I00EN3sls6Result6ResultERK6ResultI1VE" title="sls::Result::Result::V"><span class="n"><span class="pre">V</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">from</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I00EN3sls6Result6ResultERK6ResultI1VE" title="Link to this definition"></a><br /></dt>
+<dd><p>Custom constructor from integer type to Result&lt;ns&gt; or Result&lt;bool&gt;</p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4I00EN3sls6Result6ResultER6ResultI1VE">
+<span id="_CPPv3I00EN3sls6Result6ResultER6ResultI1VE"></span><span id="_CPPv2I00EN3sls6Result6ResultER6ResultI1VE"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">V</span></span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">enable_if</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">is_integral</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I00EN3sls6Result6ResultER6ResultI1VE" title="sls::Result::Result::V"><span class="n"><span class="pre">V</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">value</span></span><span class="w"> </span><span class="o"><span class="pre">&amp;&amp;</span></span><span class="w"> </span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">is_same</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I00EN3sls6ResultE" title="sls::Result::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">time</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">ns</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">value</span></span><span class="w"> </span><span class="o"><span class="pre">||</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">is_same</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I00EN3sls6ResultE" title="sls::Result::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">type</span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="classsls_1_1Result_1a69d9dd7713264cd6a08d9151ddf34933"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Result</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I00EN3sls6Result6ResultER6ResultI1VE" title="sls::Result::Result"><span class="n"><span class="pre">Result</span></span></a><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I00EN3sls6Result6ResultER6ResultI1VE" title="sls::Result::Result::V"><span class="n"><span class="pre">V</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">from</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I00EN3sls6Result6ResultER6ResultI1VE" title="Link to this definition"></a><br /></dt>
+<dd><p>Custom constructor from integer type to Result&lt;ns&gt; or Result&lt;bool&gt;</p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4I00EN3sls6Result6ResultERR6ResultI1VE">
+<span id="_CPPv3I00EN3sls6Result6ResultERR6ResultI1VE"></span><span id="_CPPv2I00EN3sls6Result6ResultERR6ResultI1VE"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">V</span></span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">enable_if</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">is_integral</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I00EN3sls6Result6ResultERR6ResultI1VE" title="sls::Result::Result::V"><span class="n"><span class="pre">V</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">value</span></span><span class="w"> </span><span class="o"><span class="pre">&amp;&amp;</span></span><span class="w"> </span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">is_same</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I00EN3sls6ResultE" title="sls::Result::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">time</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">ns</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">value</span></span><span class="w"> </span><span class="o"><span class="pre">||</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">is_same</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I00EN3sls6ResultE" title="sls::Result::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">type</span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="classsls_1_1Result_1a07a68a42bfcc843bd9e934086f5e3ff3"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Result</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I00EN3sls6Result6ResultERR6ResultI1VE" title="sls::Result::Result"><span class="n"><span class="pre">Result</span></span></a><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I00EN3sls6Result6ResultERR6ResultI1VE" title="sls::Result::Result::V"><span class="n"><span class="pre">V</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">from</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I00EN3sls6Result6ResultERR6ResultI1VE" title="Link to this definition"></a><br /></dt>
+<dd><p>Custom constructor from integer type to Result&lt;ns&gt; or Result&lt;bool&gt;</p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4IDpEN3sls6Result6ResultEDpRR4Args">
+<span id="_CPPv3IDpEN3sls6Result6ResultEDpRR4Args"></span><span id="_CPPv2IDpEN3sls6Result6ResultEDpRR4Args"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="sig-name descname"><span class="n"><span class="pre">Args</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="classsls_1_1Result_1a07326e694b5424c3206d2e75beccc024"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Result</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4IDpEN3sls6Result6ResultEDpRR4Args" title="sls::Result::Result::Args"><span class="n"><span class="pre">Args</span></span></a><span class="p"><span class="pre">&amp;</span></span><span class="p"><span class="pre">&amp;</span></span><span class="p"><span class="pre">...</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">args</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4IDpEN3sls6Result6ResultEDpRR4Args" title="Link to this definition"></a><br /></dt>
+<dd><p>Forward arguments to the constructor of std::vector </p>
+<dl class="field-list simple">
+<dt class="field-odd">Template Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>Args</strong> – template paramter pack to forward </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N3sls6Result5beginEv">
+<span id="_CPPv3N3sls6Result5beginEv"></span><span id="_CPPv2N3sls6Result5beginEv"></span><span id="sls::Result::begin"></span><span class="target" id="classsls_1_1Result_1a94a9a6e3f1ca35da10513dc6ebef72a7"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">decltype</span></span><span class="p"><span class="pre">(</span></span><a class="reference internal" href="#_CPPv4N3sls6Result3vecE" title="sls::Result::vec"><span class="n"><span class="pre">vec</span></span></a><span class="p"><span class="pre">.</span></span><span class="n"><span class="pre">begin</span></span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">)</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">begin</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">noexcept</span></span><a class="headerlink" href="#_CPPv4N3sls6Result5beginEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK3sls6Result5beginEv">
+<span id="_CPPv3NK3sls6Result5beginEv"></span><span id="_CPPv2NK3sls6Result5beginEv"></span><span id="sls::Result::beginC"></span><span class="target" id="classsls_1_1Result_1af5c3507362478c42260a565c9296da18"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">decltype</span></span><span class="p"><span class="pre">(</span></span><a class="reference internal" href="#_CPPv4N3sls6Result3vecE" title="sls::Result::vec"><span class="n"><span class="pre">vec</span></span></a><span class="p"><span class="pre">.</span></span><span class="n"><span class="pre">begin</span></span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">)</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">begin</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">noexcept</span></span><a class="headerlink" href="#_CPPv4NK3sls6Result5beginEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK3sls6Result6cbeginEv">
+<span id="_CPPv3NK3sls6Result6cbeginEv"></span><span id="_CPPv2NK3sls6Result6cbeginEv"></span><span id="sls::Result::cbeginC"></span><span class="target" id="classsls_1_1Result_1af0b7203f2ee12acc28246da494204e79"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">decltype</span></span><span class="p"><span class="pre">(</span></span><a class="reference internal" href="#_CPPv4N3sls6Result3vecE" title="sls::Result::vec"><span class="n"><span class="pre">vec</span></span></a><span class="p"><span class="pre">.</span></span><span class="n"><span class="pre">cbegin</span></span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">)</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cbegin</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">noexcept</span></span><a class="headerlink" href="#_CPPv4NK3sls6Result6cbeginEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N3sls6Result3endEv">
+<span id="_CPPv3N3sls6Result3endEv"></span><span id="_CPPv2N3sls6Result3endEv"></span><span id="sls::Result::end"></span><span class="target" id="classsls_1_1Result_1a184c67f81953c2eac8d4b045ace70a2d"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">decltype</span></span><span class="p"><span class="pre">(</span></span><a class="reference internal" href="#_CPPv4N3sls6Result3vecE" title="sls::Result::vec"><span class="n"><span class="pre">vec</span></span></a><span class="p"><span class="pre">.</span></span><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">)</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">end</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">noexcept</span></span><a class="headerlink" href="#_CPPv4N3sls6Result3endEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK3sls6Result3endEv">
+<span id="_CPPv3NK3sls6Result3endEv"></span><span id="_CPPv2NK3sls6Result3endEv"></span><span id="sls::Result::endC"></span><span class="target" id="classsls_1_1Result_1a3fcd48e647e116a6687c9577b79a6914"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">decltype</span></span><span class="p"><span class="pre">(</span></span><a class="reference internal" href="#_CPPv4N3sls6Result3vecE" title="sls::Result::vec"><span class="n"><span class="pre">vec</span></span></a><span class="p"><span class="pre">.</span></span><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">)</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">end</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">noexcept</span></span><a class="headerlink" href="#_CPPv4NK3sls6Result3endEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK3sls6Result4cendEv">
+<span id="_CPPv3NK3sls6Result4cendEv"></span><span id="_CPPv2NK3sls6Result4cendEv"></span><span id="sls::Result::cendC"></span><span class="target" id="classsls_1_1Result_1a8ef65dcb19b1a83918bb10f4ece52c25"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">decltype</span></span><span class="p"><span class="pre">(</span></span><a class="reference internal" href="#_CPPv4N3sls6Result3vecE" title="sls::Result::vec"><span class="n"><span class="pre">vec</span></span></a><span class="p"><span class="pre">.</span></span><span class="n"><span class="pre">cend</span></span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">)</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cend</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">noexcept</span></span><a class="headerlink" href="#_CPPv4NK3sls6Result4cendEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK3sls6Result4sizeEv">
+<span id="_CPPv3NK3sls6Result4sizeEv"></span><span id="_CPPv2NK3sls6Result4sizeEv"></span><span id="sls::Result::sizeC"></span><span class="target" id="classsls_1_1Result_1abd7ad2ad125b5f29571433f35ae2e267"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">decltype</span></span><span class="p"><span class="pre">(</span></span><a class="reference internal" href="#_CPPv4N3sls6Result3vecE" title="sls::Result::vec"><span class="n"><span class="pre">vec</span></span></a><span class="p"><span class="pre">.</span></span><span class="n"><span class="pre">size</span></span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">)</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">size</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">noexcept</span></span><a class="headerlink" href="#_CPPv4NK3sls6Result4sizeEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK3sls6Result5emptyEv">
+<span id="_CPPv3NK3sls6Result5emptyEv"></span><span id="_CPPv2NK3sls6Result5emptyEv"></span><span id="sls::Result::emptyC"></span><span class="target" id="classsls_1_1Result_1a1d05e98eeace732fb6d94270d201a80f"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">decltype</span></span><span class="p"><span class="pre">(</span></span><a class="reference internal" href="#_CPPv4N3sls6Result3vecE" title="sls::Result::vec"><span class="n"><span class="pre">vec</span></span></a><span class="p"><span class="pre">.</span></span><span class="n"><span class="pre">empty</span></span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">)</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">empty</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">noexcept</span></span><a class="headerlink" href="#_CPPv4NK3sls6Result5emptyEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N3sls6Result5frontEv">
+<span id="_CPPv3N3sls6Result5frontEv"></span><span id="_CPPv2N3sls6Result5frontEv"></span><span id="sls::Result::front"></span><span class="target" id="classsls_1_1Result_1a68ff45c7b6b1d7840ced37bfcdfba2ae"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">decltype</span></span><span class="p"><span class="pre">(</span></span><a class="reference internal" href="#_CPPv4N3sls6Result3vecE" title="sls::Result::vec"><span class="n"><span class="pre">vec</span></span></a><span class="p"><span class="pre">.</span></span><span class="n"><span class="pre">front</span></span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">)</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">front</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N3sls6Result5frontEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK3sls6Result5frontEv">
+<span id="_CPPv3NK3sls6Result5frontEv"></span><span id="_CPPv2NK3sls6Result5frontEv"></span><span id="sls::Result::frontC"></span><span class="target" id="classsls_1_1Result_1a1151af8f771b0678f90ed338f12e8797"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">decltype</span></span><span class="p"><span class="pre">(</span></span><a class="reference internal" href="#_CPPv4N3sls6Result3vecE" title="sls::Result::vec"><span class="n"><span class="pre">vec</span></span></a><span class="p"><span class="pre">.</span></span><span class="n"><span class="pre">front</span></span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">)</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">front</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK3sls6Result5frontEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N3sls6Result7reserveE9size_type">
+<span id="_CPPv3N3sls6Result7reserveE9size_type"></span><span id="_CPPv2N3sls6Result7reserveE9size_type"></span><span id="sls::Result::reserve__size_type"></span><span class="target" id="classsls_1_1Result_1a22f6c868d634b08d90bafa8184a37758"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">reserve</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N3sls6Result9size_typeE" title="sls::Result::size_type"><span class="n"><span class="pre">size_type</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">new_cap</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N3sls6Result7reserveE9size_type" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4I0EN3sls6Result9push_backEDTcldt3vec9push_back5valueEE1V">
+<span id="_CPPv3I0EN3sls6Result9push_backE1V"></span><span id="_CPPv2I0EN3sls6Result9push_backE1V"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">V</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="classsls_1_1Result_1a0c7e8a095bef349462311d7fba878822"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">decltype</span></span><span class="p"><span class="pre">(</span></span><a class="reference internal" href="#_CPPv4N3sls6Result3vecE" title="sls::Result::vec"><span class="n"><span class="pre">vec</span></span></a><span class="p"><span class="pre">.</span></span><span class="n"><span class="pre">push_back</span></span><span class="p"><span class="pre">(</span></span><a class="reference internal" href="#_CPPv4I0EN3sls6Result9push_backEDTcldt3vec9push_back5valueEE1V" title="sls::Result::push_back::value"><span class="n"><span class="pre">value</span></span></a><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">)</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">push_back</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I0EN3sls6Result9push_backEDTcldt3vec9push_back5valueEE1V" title="sls::Result::push_back::V"><span class="n"><span class="pre">V</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">value</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0EN3sls6Result9push_backEDTcldt3vec9push_back5valueEE1V" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N3sls6ResultixE9size_type">
+<span id="_CPPv3N3sls6ResultixE9size_type"></span><span id="_CPPv2N3sls6ResultixE9size_type"></span><span id="sls::Result::subscript-operator__size_type"></span><span class="target" id="classsls_1_1Result_1aa431accb37d594614b52cbc9b8ae4d1c"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">decltype</span></span><span class="p"><span class="pre">(</span></span><a class="reference internal" href="#_CPPv4N3sls6Result3vecE" title="sls::Result::vec"><span class="n"><span class="pre">vec</span></span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#_CPPv4N3sls6ResultixE9size_type" title="sls::Result::operator[]::pos"><span class="n"><span class="pre">pos</span></span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">)</span></span><span class="w"> </span><span class="sig-name descname"><span class="k"><span class="pre">operator</span></span><span class="o"><span class="pre">[]</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N3sls6Result9size_typeE" title="sls::Result::size_type"><span class="n"><span class="pre">size_type</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">pos</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N3sls6ResultixE9size_type" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK3sls6ResultixE9size_type">
+<span id="_CPPv3NK3sls6ResultixE9size_type"></span><span id="_CPPv2NK3sls6ResultixE9size_type"></span><span id="sls::Result::subscript-operator__size_typeC"></span><span class="target" id="classsls_1_1Result_1a73bcbc696ac7bfe229d3d787033ad305"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N3sls6Result15const_referenceE" title="sls::Result::const_reference"><span class="n"><span class="pre">const_reference</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="k"><span class="pre">operator</span></span><span class="o"><span class="pre">[]</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N3sls6Result9size_typeE" title="sls::Result::size_type"><span class="n"><span class="pre">size_type</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">pos</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK3sls6ResultixE9size_type" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK3sls6Result6squashEv">
+<span id="_CPPv3NK3sls6Result6squashEv"></span><span id="_CPPv2NK3sls6Result6squashEv"></span><span id="sls::Result::squashC"></span><span class="target" id="classsls_1_1Result_1ab2f986279ea4c1520c721eea0733eaec"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I00EN3sls6ResultE" title="sls::Result::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">squash</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK3sls6Result6squashEv" title="Link to this definition"></a><br /></dt>
+<dd><p>If all elements are equal it returns the front value otherwise a default constructed T </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N3sls6Result7tsquashERKNSt6stringE">
+<span id="_CPPv3N3sls6Result7tsquashERKNSt6stringE"></span><span id="_CPPv2N3sls6Result7tsquashERKNSt6stringE"></span><span id="sls::Result::tsquash__ssCR"></span><span class="target" id="classsls_1_1Result_1a70ba801a97e85248c5ad6a8a0c55eed2"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I00EN3sls6ResultE" title="sls::Result::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">tsquash</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">error_msg</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N3sls6Result7tsquashERKNSt6stringE" title="Link to this definition"></a><br /></dt>
+<dd><p>If all elements are equal it returns the front value otherwise throws an exception with custom message provided </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK3sls6Result6squashERK1T">
+<span id="_CPPv3NK3sls6Result6squashERK1T"></span><span id="_CPPv2NK3sls6Result6squashERK1T"></span><span id="sls::Result::squash__TCRC"></span><span class="target" id="classsls_1_1Result_1ae39c0c65d7e9c577142a9489057f85f0"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I00EN3sls6ResultE" title="sls::Result::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">squash</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I00EN3sls6ResultE" title="sls::Result::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">default_value</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK3sls6Result6squashERK1T" title="Link to this definition"></a><br /></dt>
+<dd><p>If all elements are equal return the front value, otherwise return the supplied default value </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK3sls6Result5equalEv">
+<span id="_CPPv3NK3sls6Result5equalEv"></span><span id="_CPPv2NK3sls6Result5equalEv"></span><span id="sls::Result::equalC"></span><span class="target" id="classsls_1_1Result_1a49c78acc91a94a5cf8356011458a12c3"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">equal</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">noexcept</span></span><a class="headerlink" href="#_CPPv4NK3sls6Result5equalEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Test whether all elements of the result are equal </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK3sls6Result3anyERK1T">
+<span id="_CPPv3NK3sls6Result3anyERK1T"></span><span id="_CPPv2NK3sls6Result3anyERK1T"></span><span id="sls::Result::any__TCRC"></span><span class="target" id="classsls_1_1Result_1ad644b513e0d8ae5acad68bda854c76bd"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">any</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I00EN3sls6ResultE" title="sls::Result::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">value</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">noexcept</span></span><a class="headerlink" href="#_CPPv4NK3sls6Result3anyERK1T" title="Link to this definition"></a><br /></dt>
+<dd><p>Test whether any element of the result are equal to a value </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4I0Dp0ENK3sls6Result13contains_onlyENSt9enable_ifINSt7is_sameI1V1TE5valueEbE4typeERK1VDpRK4Args">
+<span id="_CPPv3I0Dp0ENK3sls6Result13contains_onlyERK1VDpRK4Args"></span><span id="_CPPv2I0Dp0ENK3sls6Result13contains_onlyERK1VDpRK4Args"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">V</span></span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="sig-name descname"><span class="n"><span class="pre">Args</span></span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><a class="reference internal" href="type_traits.html#_CPPv4I0DpEN3sls7AllSameE" title="sls::AllSame"><span class="n"><span class="pre">AllSame</span></span></a><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I0Dp0ENK3sls6Result13contains_onlyENSt9enable_ifINSt7is_sameI1V1TE5valueEbE4typeERK1VDpRK4Args" title="sls::Result::contains_only::V"><span class="n"><span class="pre">V</span></span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I0Dp0ENK3sls6Result13contains_onlyENSt9enable_ifINSt7is_sameI1V1TE5valueEbE4typeERK1VDpRK4Args" title="sls::Result::contains_only::Args"><span class="n"><span class="pre">Args</span></span></a><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="classsls_1_1Result_1a935e095cd12e2ad32e775679ba6d1281"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">enable_if</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">is_same</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I0Dp0ENK3sls6Result13contains_onlyENSt9enable_ifINSt7is_sameI1V1TE5valueEbE4typeERK1VDpRK4Args" title="sls::Result::contains_only::V"><span class="n"><span class="pre">V</span></span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I00EN3sls6ResultE" title="sls::Result::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">type</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">contains_only</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I0Dp0ENK3sls6Result13contains_onlyENSt9enable_ifINSt7is_sameI1V1TE5valueEbE4typeERK1VDpRK4Args" title="sls::Result::contains_only::V"><span class="n"><span class="pre">V</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">a</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I0Dp0ENK3sls6Result13contains_onlyENSt9enable_ifINSt7is_sameI1V1TE5valueEbE4typeERK1VDpRK4Args" title="sls::Result::contains_only::Args"><span class="n"><span class="pre">Args</span></span></a><span class="p"><span class="pre">&amp;</span></span><span class="p"><span class="pre">...</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">args</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">noexcept</span></span><a class="headerlink" href="#_CPPv4I0Dp0ENK3sls6Result13contains_onlyENSt9enable_ifINSt7is_sameI1V1TE5valueEbE4typeERK1VDpRK4Args" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N3sls6ResultcvNSt6vectorI1TEEEv">
+<span id="_CPPv3N3sls6ResultcvNSt6vectorI1TEEEv"></span><span id="_CPPv2N3sls6ResultcvNSt6vectorI1TEEEv"></span><span id="sls::Result::castto-std::vector:T:-operator"></span><span class="target" id="classsls_1_1Result_1a91f37d2815718cb838369716525966ee"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="k"><span class="pre">operator</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I00EN3sls6ResultE" title="sls::Result::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">&gt;</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N3sls6ResultcvNSt6vectorI1TEEEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Convert Result&lt;T&gt; to std::vector&lt;T&gt; </p>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-members">Private Members</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N3sls6Result3vecE">
+<span id="_CPPv3N3sls6Result3vecE"></span><span id="_CPPv2N3sls6Result3vecE"></span><span id="sls::Result::vec__std::vector:T.Allocator:"></span><span class="target" id="classsls_1_1Result_1aae2fc049edee5d7de657a5024480c054"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I00EN3sls6ResultE" title="sls::Result::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I00EN3sls6ResultE" title="sls::Result::Allocator"><span class="n"><span class="pre">Allocator</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">vec</span></span></span><a class="headerlink" href="#_CPPv4N3sls6Result3vecE" title="Link to this definition"></a><br /></dt>
+<dd><p>wrapped vector </p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="detector.html" class="btn btn-neutral float-left" title="Detector" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="receiver_api.html" class="btn btn-neutral float-right" title="Receiver" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, PSD Detector Group.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

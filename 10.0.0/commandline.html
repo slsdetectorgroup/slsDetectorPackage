@@ -1,0 +1,2264 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Command line interface &mdash; slsDetectorPackage 10.0.0  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/css/extra.css?v=2be88464" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="ContainerUtils" href="container_utils.html" />
+    <link rel="prev" title="Pattern" href="pattern.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            slsDetectorPackage 10.0.0
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Installation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="consuming.html">Consuming slsDetectorPackage</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">how to</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="softwarearchitecture.html">Software Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configcommands.html">Setup Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick_start_guide.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dataformat.html">Detector Image Size and Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="multidet.html">Using multiple detectors</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">C++ API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="detector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="result.html">Result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="receiver_api.html">Receiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pygettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pydetector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyenums.html">Enums</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyexamples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyPatternGenerator.html">PatternGenerator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pattern.html">Pattern</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Command line</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Command line interface</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#module-index">Module index</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#detector-index">Detector index</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#command-execution">Command Execution</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#help">Help</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#autocompletion">Autocompletion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#commands">Commands</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#deprecated-commands">Deprecated commands</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="container_utils.html">ContainerUtils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="type_traits.html">TypeTraits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ToString.html">ToString</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Firmware</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="firmware.html">Firmware Upgrade</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="servers.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverupgrade.html">Upgrade</a></li>
+<li class="toctree-l1"><a class="reference internal" href="virtualserver.html">Simulators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverdefaults.html">Default Values</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector UDP Header</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="udpheader.html">Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udpconfig.html">Config file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udpdetspec.html">Detector Specific Fields</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiver.html">In-built Receiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="receivers.html">Custom Receiver</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver Files</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="fileformat.html">File format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiverheaderformat.html">SLS Receiver Header Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dataformat.html">Detector Image Size and Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="masterfileattributes.html">Master File Attributes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="binaryfileformat.html">Binary File Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hdf5fileformat.html">HDF5 File Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver ZMQ Stream</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="zmqjsonheaderformat.html">ZMQ: Json Header Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Troubleshooting</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">slsDetectorPackage 10.0.0</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Command line interface</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/commandline.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="command-line-interface">
+<h1>Command line interface<a class="headerlink" href="#command-line-interface" title="Link to this heading"></a></h1>
+<section id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Link to this heading"></a></h2>
+<p>The syntax is <em>‘[detector index]-[module index]:[command]’</em>, where the indices are by default ‘0’, when not specified.</p>
+<section id="module-index">
+<span id="cl-module-index-label"></span><h3>Module index<a class="headerlink" href="#module-index" title="Link to this heading"></a></h3>
+<p>Modules are indexed based on their order in the hostname command. They are used to configure a specific module within a detector and are followed by a ‘:’ in syntax.</p>
+<blockquote>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Applies to all modules of detector 0</span>
+<span class="n">sls_detector_put</span> <span class="n">exptime</span> <span class="mi">5</span><span class="n">s</span>
+
+<span class="c1"># Applies to only the 4th module</span>
+<span class="n">sls_detector_put</span> <span class="mi">3</span><span class="p">:</span><span class="n">exptime</span> <span class="mi">5</span><span class="n">s</span>
+</pre></div>
+</div>
+</div></blockquote>
+</section>
+<section id="detector-index">
+<h3>Detector index<a class="headerlink" href="#detector-index" title="Link to this heading"></a></h3>
+<p>This index is useful when configuring multiple detectors from a single host. Each detector uses a unique shared memory identified by a detector index, derived again from the hostname command. It is followed by a ‘-‘.</p>
+<blockquote>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># For detector with index 2 in shared memory</span>
+<span class="n">sls_detector_put</span> <span class="mi">2</span><span class="o">-</span><span class="n">hostname</span> <span class="n">bchip133</span><span class="o">+</span><span class="n">bchip123</span><span class="o">+</span><span class="n">bchip456</span>
+
+<span class="c1"># Without &#39;-&#39;, the detector index defaults to 0</span>
+<span class="n">sls_detector_put</span> <span class="n">hostname</span> <span class="n">bchip133</span><span class="o">+</span><span class="n">bchip123</span><span class="o">+</span><span class="n">bchip456</span>
+
+<span class="c1"># Accessing all modules with detector index 2</span>
+<span class="n">sls_detector_put</span> <span class="mi">2</span><span class="o">-</span><span class="n">exptime</span>
+
+<span class="c1"># Starting acquisition only for detector with index 2</span>
+<span class="n">sls_detector_put</span> <span class="mi">2</span><span class="o">-</span><span class="n">start</span>
+
+<span class="c1"># Applies only to the 2nd detector, 4th module</span>
+<span class="n">sls_detector_put</span> <span class="mi">1</span><span class="o">-</span><span class="mi">3</span><span class="p">:</span><span class="n">exptime</span> <span class="mi">5</span><span class="n">s</span>
+</pre></div>
+</div>
+</div></blockquote>
+</section>
+<section id="command-execution">
+<h3>Command Execution<a class="headerlink" href="#command-execution" title="Link to this heading"></a></h3>
+<p>Commands can be executed using:</p>
+<ul class="simple">
+<li><p><strong>sls_detector_put</strong>: setting values</p></li>
+<li><p><strong>sls_detector_get</strong>: getting values</p></li>
+<li><p><strong>sls_detector</strong>: automatically infers based on the number of arguments.</p></li>
+<li><p><strong>sls_detector_help</strong>: gets help on the specific command</p></li>
+<li><p><strong>sls_detector_acquire</strong>: initiates acquisition with the detector. This command blocks until the entire acquisition process is completed.</p></li>
+</ul>
+</section>
+</section>
+<section id="help">
+<h2>Help<a class="headerlink" href="#help" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># get list of commands</span>
+<span class="n">sls_detector_get</span> <span class="nb">list</span>
+
+<span class="c1"># search for a particular command using a word</span>
+<span class="n">sls_detector_get</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">grep</span> <span class="n">adc</span>
+
+<span class="c1"># get help for a particular command</span>
+<span class="n">sls_detector_get</span> <span class="o">-</span><span class="n">h</span> <span class="n">fpath</span>
+<span class="n">sls_detector_help</span> <span class="n">fpath</span>
+
+<span class="c1"># list of deprecated commands</span>
+<span class="nb">list</span> <span class="n">deprecated</span>
+</pre></div>
+</div>
+</section>
+<section id="autocompletion">
+<h2>Autocompletion<a class="headerlink" href="#autocompletion" title="Link to this heading"></a></h2>
+<p>bash_autocomplete.sh or zsh_autocomplete.sh must be sourced from the main package folder to enable auto completion of commands and arguments for the command line on that shell.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="n">bash_autocomplete</span><span class="o">.</span><span class="n">sh</span>
+</pre></div>
+</div>
+</section>
+<section id="commands">
+<h2>Commands<a class="headerlink" href="#commands" title="Link to this heading"></a></h2>
+<dl class="glossary">
+<dt id="term-acquire">acquire<a class="headerlink" href="#term-acquire" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Acquire the number of frames set up.</div>
+<div class="line">Blocking command, where control server is blocked and cannot accept other commands until acquisition is done.</div>
+<div class="line">- sets acquiring flag</div>
+<div class="line">- starts the receiver listener (if enabled)</div>
+<div class="line">- starts detector acquisition for number of frames set</div>
+<div class="line">- monitors detector status from running to idle</div>
+<div class="line">- stops the receiver listener (if enabled)</div>
+<div class="line">- increments file index if file write enabled</div>
+<div class="line">- resets acquiring flag</div>
+</div>
+</dd>
+<dt id="term-activate-0-1">activate [0, 1]<a class="headerlink" href="#term-activate-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger] 1 is default. 0 deactivates readout and does not send data.</div>
+</div>
+</dd>
+<dt id="term-adcclk-n_clk-in-MHz">adcclk [n_clk in MHz]<a class="headerlink" href="#term-adcclk-n_clk-in-MHz" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb] ADC clock frequency in MHz.</div>
+</div>
+</dd>
+<dt id="term-adcenable-bitmask">adcenable [bitmask]<a class="headerlink" href="#term-adcenable-bitmask" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb] ADC Enable Mask for 1Gb Enable for each 32 ADC channel.</div>
+</div>
+</dd>
+<dt id="term-adcenable10g-bitmask">adcenable10g [bitmask]<a class="headerlink" href="#term-adcenable10g-bitmask" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb] ADC Enable Mask for 10Gb mode for each 32 ADC channel. However, if any of a consecutive 4 bits are enabled, the complete 4 bits are enabled.</div>
+</div>
+</dd>
+<dt id="term-adcindex-name">adcindex [name]<a class="headerlink" href="#term-adcindex-name" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Xilinx_Ctb] Get the adc index for the given name.</div>
+</div>
+</dd>
+<dt id="term-adcinvert-bitmask">adcinvert [bitmask]<a class="headerlink" href="#term-adcinvert-bitmask" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Jungfrau][Moench] ADC Inversion Mask.</div>
+<div class="line">[Jungfrau][Moench] Inversions on top of the default mask.</div>
+</div>
+</dd>
+<dt id="term-adclist-adcname1-adcname2-..-adcname32">adclist [adcname1 adcname2 .. adcname32]<a class="headerlink" href="#term-adclist-adcname1-adcname2-..-adcname32" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Xilinx_Ctb] Set the list of adc names for this board.</div>
+</div>
+</dd>
+<dt id="term-adcname-0-31-name">adcname [0-31][name]<a class="headerlink" href="#term-adcname-0-31-name" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Xilinx_Ctb] Set the adc at the given position to the given name.</div>
+</div>
+</dd>
+<dt id="term-adcphase-n_value-optional-deg">adcphase [n_value] [(optional)deg]<a class="headerlink" href="#term-adcphase-n_value-optional-deg" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Jungfrau][Moench][Ctb] Phase shift of ADC clock.</div>
+<div class="line">[Jungfrau][Moench] Absolute phase shift. If deg used, then shift in degrees. Changing Speed also resets adcphase to recommended defaults.</div>
+<div class="line">[Ctb] Absolute phase shift. If deg used, then shift in degrees. Changing adcclk also resets adcphase and sets it to previous values.</div>
+</div>
+</dd>
+<dt id="term-adcpipeline-n_value">adcpipeline [n_value]<a class="headerlink" href="#term-adcpipeline-n_value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Moench] Pipeline for ADC clock.</div>
+</div>
+</dd>
+<dt id="term-adcreg-address-value">adcreg [address] [value]<a class="headerlink" href="#term-adcreg-address-value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Jungfrau][Moench][Ctb] Writes to an adc register in hex. Advanced user Function!</div>
+</div>
+</dd>
+<dt id="term-adcvpp-dac-or-mV-value-optional-unit-mV">adcvpp [dac or mV value][(optional unit) mV]<a class="headerlink" href="#term-adcvpp-dac-or-mV-value-optional-unit-mV" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb] Vpp of ADC.</div>
+<div class="line-block">
+<div class="line">0 -&gt; 1V ; 1 -&gt; 1.14V ; 2 -&gt; 1.33V ; 3 -&gt; 1.6V ; 4 -&gt; 2V.</div>
+</div>
+<div class="line">Advanced User function!</div>
+</div>
+</dd>
+<dt id="term-apulse-0-1">apulse [0, 1]<a class="headerlink" href="#term-apulse-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Mythen3] Enables or disables analog pulsing. Default is disabled</div>
+</div>
+</dd>
+<dt id="term-asamples-n_samples">asamples [n_samples]<a class="headerlink" href="#term-asamples-n_samples" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb] Number of analog samples expected.</div>
+</div>
+</dd>
+<dt id="term-autocompdisable-0-1">autocompdisable [0, 1]<a class="headerlink" href="#term-autocompdisable-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Jungfrau] Auto comparator disable mode. By default, the on-chip gain switching is active during the entire exposure.This mode disables the on - chip gain switching comparator automatically and the duration is set using compdisabletime command.</div>
+<div class="line">Default is 0 or this mode disabled(comparator enabled throughout). 1 enables mode. 0 disables mode.</div>
+</div>
+</dd>
+<dt id="term-badchannels-fname-none-0">badchannels [fname|none|0]<a class="headerlink" href="#term-badchannels-fname-none-0" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Gotthard2][Mythen3] Sets the bad channels (from file of bad channel numbers) to be masked out. None or 0 unsets all the badchannels.</div>
+<div class="line">[Mythen3] Also does trimming</div>
+</div>
+</dd>
+<dt id="term-blockingtrigger">blockingtrigger<a class="headerlink" href="#term-blockingtrigger" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger][Jungfrau][Moench] Sends software trigger signal to detector and blocks till the frames are sent out for that trigger.</div>
+</div>
+</dd>
+<dt id="term-burstmode-burst_internal-or-0-burst_external-or-1-cw_internal-or-2-cw_external-or-3">burstmode [burst_internal or 0, burst_external or 1, cw_internal or 2, cw_external or 3]<a class="headerlink" href="#term-burstmode-burst_internal-or-0-burst_external-or-1-cw_internal-or-2-cw_external-or-3" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Gotthard2] Default is burst_internal type. Also changes clkdiv 2, 3, 4</div>
+</div>
+</dd>
+<dt id="term-burstperiod-duration-optional-unit-ns-us-ms-s">burstperiod [duration] [(optional unit) ns|us|ms|s]<a class="headerlink" href="#term-burstperiod-duration-optional-unit-ns-us-ms-s" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Gotthard2] Period between 2 bursts. Only in burst mode and auto timing mode.</div>
+</div>
+</dd>
+<dt id="term-bursts-n_bursts">bursts [n_bursts]<a class="headerlink" href="#term-bursts-n_bursts" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Gotthard2] Number of bursts per aquire. Only in auto timing mode and burst mode. Use timing command to set timing mode and burstmode command to set burst mode.</div>
+</div>
+</dd>
+<dt id="term-burstsl">burstsl<a class="headerlink" href="#term-burstsl" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Gotthard2] Number of bursts left in acquisition. Only in burst auto mode.</div>
+</div>
+</dd>
+<dt id="term-bustest">bustest<a class="headerlink" href="#term-bustest" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Jungfrau][Moench][Mythen3][Gotthard2][Ctb] Bus test, ie. Writes different values in a R/W register and confirms the writes to check bus.</div>
+<div class="line">Advanced User function!</div>
+</div>
+</dd>
+<dt id="term-cdsgain-0-1">cdsgain [0, 1]<a class="headerlink" href="#term-cdsgain-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Gotthard2] Enable or disable CDS gain. Default is disabled.</div>
+</div>
+</dd>
+<dt id="term-chipversion">chipversion<a class="headerlink" href="#term-chipversion" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Jungfrau] Returns chip version. Can be 1.0 or 1.1</div>
+</div>
+</dd>
+<dt id="term-clearbit-reg-address-in-hex-bit-index">clearbit [reg address in hex] [bit index]<a class="headerlink" href="#term-clearbit-reg-address-in-hex-bit-index" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Clears bit in address.</div>
+<div class="line">Use –validate to force validation.</div>
+</div>
+</dd>
+<dt id="term-clearbusy">clearbusy<a class="headerlink" href="#term-clearbusy" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">If acquisition aborted during acquire command, use this to clear acquiring flag in shared memory before starting next acquisition</div>
+</div>
+</dd>
+<dt id="term-clientversion">clientversion<a class="headerlink" href="#term-clientversion" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Client software version</div>
+</div>
+</dd>
+<dt id="term-clkdiv-n_clock-n_divider">clkdiv [n_clock] [n_divider]<a class="headerlink" href="#term-clkdiv-n_clock-n_divider" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Gotthard2][Mythen3] Clock Divider of clock n_clock. Must be greater than 1.</div>
+<div class="line">[Gotthard2] Clock index range: 0-5</div>
+<div class="line">[Mythen3] Clock index range: 0</div>
+</div>
+</dd>
+<dt id="term-clkfreq-n_clock-freq_in_Hz">clkfreq [n_clock] [freq_in_Hz]<a class="headerlink" href="#term-clkfreq-n_clock-freq_in_Hz" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Gotthard2][Mythen3] Frequency of clock n_clock in Hz. Use clkdiv to set frequency.</div>
+<div class="line">[Gotthard2] Clock index range: 0-5</div>
+<div class="line">[Mythen3] Clock index range: 0</div>
+</div>
+</dd>
+<dt id="term-clkphase-n_clock-phase-deg-optional">clkphase [n_clock] [phase] [deg (optional)]<a class="headerlink" href="#term-clkphase-n_clock-phase-deg-optional" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Gotthard2][Mythen3] Phase of clock n_clock. If deg, then phase shift in degrees, else absolute phase shift values.n  [Gotthard2] Clock index range: 0-5</div>
+<div class="line">[Mythen3] Clock index range: 0</div>
+</div>
+</dd>
+<dt id="term-collectionmode-hole-electron">collectionmode [hole|electron]<a class="headerlink" href="#term-collectionmode-hole-electron" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Jungfrau] Sets collection mode to hole or electron. Default is hole.</div>
+</div>
+</dd>
+<dt id="term-column-value">column [value]<a class="headerlink" href="#term-column-value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Set Detector column (udp header) to value.</div>
+<div class="line">Gui uses it to rearrange for complete image</div>
+</div>
+</dd>
+<dt id="term-compdisabletime-duration-optional-unit-ns-us-ms-s">compdisabletime [duration] [(optional unit) ns|us|ms|s]<a class="headerlink" href="#term-compdisabletime-duration-optional-unit-ns-us-ms-s" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Jungfrau] Time before end of exposure when comparator is disabled.</div>
+</div>
+</dd>
+<dt id="term-confadc-chip-index-0-9-1-for-all-adc-index-0-31-1-for-all-7-bit-configuration-value-in-hex">confadc [chip index 0-9, -1 for all] [adc index 0-31, -1 for all] [7 bit configuration value in hex]<a class="headerlink" href="#term-confadc-chip-index-0-9-1-for-all-adc-index-0-31-1-for-all-7-bit-configuration-value-in-hex" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Gotthard2] Sets  configuration for specific chip and adc, but configures 1 chip (all adcs for that chip) at a time.</div>
+</div>
+</dd>
+<dt id="term-config">config<a class="headerlink" href="#term-config" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Frees shared memory before loading configuration file. Set up once.</div>
+</div>
+</dd>
+<dt id="term-configtransceiver">configtransceiver<a class="headerlink" href="#term-configtransceiver" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Xilinx Ctb] Waits for transceiver to be aligned. Chip had to be configured (powered on) before this.</div>
+</div>
+</dd>
+<dt id="term-counters-i0-i1-i2-...">counters [i0] [i1] [i2]…<a class="headerlink" href="#term-counters-i0-i1-i2-..." title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Mythen3] List of counters indices enabled. Each element in list can be 0 - 2 and must be non repetitive. Enabling counters sets vth dacs to remembered values and disabling sets them to disabled values.</div>
+</div>
+</dd>
+<dt id="term-currentsource">currentsource<a class="headerlink" href="#term-currentsource" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[0|1]</div>
+<div class="line-block">
+<div class="line">[Gotthard2] Enable or disable current source. Default is disabled.</div>
+</div>
+<div class="line">[0|1] [fix|nofix] [select source] [(only for chipv1.1)normal|low]</div>
+<div class="line-block">
+<div class="line">[Jungfrau] Disable or enable current source with some parameters. The select source is 0-63 for chipv1.0 and a 64 bit mask for chipv1.1. To disable, one needs only one argument ‘0’.</div>
+</div>
+</div>
+</dd>
+<dt id="term-dac-dac-dac-name-dac-or-mV-value-optional-unit-mV">dac dac [dac name] [dac or mV value] [(optional unit) mV]<a class="headerlink" href="#term-dac-dac-dac-name-dac-or-mV-value-optional-unit-mV" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb] Use dac index for dac name.</div>
+</div>
+</dd>
+<dt id="term-dacindex-name">dacindex [name]<a class="headerlink" href="#term-dacindex-name" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Xilinx_Ctb] Get the dac index for the given name.</div>
+</div>
+</dd>
+<dt id="term-daclist-dacname1-dacname2-..-dacname18">daclist [dacname1 dacname2 .. dacname18]<a class="headerlink" href="#term-daclist-dacname1-dacname2-..-dacname18" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Xilinx_Ctb] Set the list of dac names for this detector.</div>
+<div class="line">[All] Gets the list of dac names for every dac for this detector.</div>
+</div>
+</dd>
+<dt id="term-dacname-0-17-name">dacname [0-17][name]<a class="headerlink" href="#term-dacname-0-17-name" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Xilinx_Ctb] Set the dac at the given position to the given name.</div>
+</div>
+</dd>
+<dt id="term-dacvalues-optional-unit-mV">dacvalues [(optional unit) mV]<a class="headerlink" href="#term-dacvalues-optional-unit-mV" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Gets the values for every dac for this detector.</div>
+</div>
+</dd>
+<dt id="term-datastream-left-right-0-1">datastream [left|right] [0, 1]<a class="headerlink" href="#term-datastream-left-right-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger] Enables or disables data streaming from left or/and right side of detector for 10 GbE mode. 1 (enabled) by default.</div>
+</div>
+</dd>
+<dt id="term-dbitclk-n_clk-in-MHz">dbitclk [n_clk in MHz]<a class="headerlink" href="#term-dbitclk-n_clk-in-MHz" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb] Clock for latching the digital bits in MHz.</div>
+</div>
+</dd>
+<dt id="term-dbitphase-n_value-optional-deg">dbitphase [n_value] [(optional)deg]<a class="headerlink" href="#term-dbitphase-n_value-optional-deg" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Jungfrau] Phase shift of clock to latch digital bits. Absolute phase shift. If deg used, then shift in degrees.</div>
+<div class="line">[Ctb]Changing dbitclk also resets dbitphase and sets to previous values.</div>
+</div>
+</dd>
+<dt id="term-dbitpipeline-n_value">dbitpipeline [n_value]<a class="headerlink" href="#term-dbitpipeline-n_value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Gotthard2] Pipeline of the clock for latching digital bits.</div>
+<div class="line">[Gotthard2] Options: 0-7</div>
+<div class="line">[Ctb] Options: 0-255</div>
+</div>
+</dd>
+<dt id="term-defaultdac-dac-name-value-optional-setting">defaultdac [dac name][value][(optional)setting]<a class="headerlink" href="#term-defaultdac-dac-name-value-optional-setting" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Sets the default for that dac to this value.</div>
+<div class="line">[Jungfrau][Moench][Mythen3] When settings is provided, it sets the default value only for that setting</div>
+</div>
+</dd>
+<dt id="term-defaultpattern">defaultpattern<a class="headerlink" href="#term-defaultpattern" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Mythen3] Loads and runs default pattern in pattern generator. It is to go back to initial settings.</div>
+</div>
+</dd>
+<dt id="term-delay-duration-optional-unit-ns-us-ms-s">delay [duration] [(optional unit) ns|us|ms|s]<a class="headerlink" href="#term-delay-duration-optional-unit-ns-us-ms-s" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Moench][Xilinx Ctb] Delay after trigger</div>
+</div>
+</dd>
+<dt id="term-delayl">delayl<a class="headerlink" href="#term-delayl" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Delay Left in Acquisition.</div>
+<div class="line">[Gotthard2] only in continuous mode.</div>
+</div>
+</dd>
+<dt id="term-detectorserverversion">detectorserverversion<a class="headerlink" href="#term-detectorserverversion" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">On-board detector server software version</div>
+</div>
+</dd>
+<dt id="term-detsize-nx-ny">detsize [nx] [ny]<a class="headerlink" href="#term-detsize-nx-ny" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Detector size, ie. Number of channels in x and y dim. This is used to calculate module coordinates included in UDP data.</div>
+<div class="line">By default, it adds module in y dimension for 2d detectors and in x dimension for 1d detectors packet header.</div>
+</div>
+</dd>
+<dt id="term-diodelay-0-775">diodelay [0-775]<a class="headerlink" href="#term-diodelay-0-775" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb] Delay for diode. Delay is in ps and max of 775 ps. Resolution is 25 ps.</div>
+</div>
+</dd>
+<dt id="term-dpulse-0-1">dpulse [0, 1]<a class="headerlink" href="#term-dpulse-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Mythen3] Enables or disables digital pulsing. Default is disabled</div>
+</div>
+</dd>
+<dt id="term-dr-value">dr [value]<a class="headerlink" href="#term-dr-value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Dynamic Range or number of bits per pixel in detector.</div>
+<div class="line">[Eiger] Options: 4, 8, 12, 16, 32. If set to 32, also sets clkdivider to 2, else to 0.</div>
+<div class="line">[Mythen3] Options: 8, 16, 32</div>
+<div class="line">[Jungfrau][Moench][Ctb][Mythen3][Gotthard2][Xilinx Ctb] 16</div>
+</div>
+</dd>
+<dt id="term-drlist">drlist<a class="headerlink" href="#term-drlist" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Gets the list of dynamic ranges for this detector.</div>
+</div>
+</dd>
+<dt id="term-dsamples-n_value">dsamples [n_value]<a class="headerlink" href="#term-dsamples-n_value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb] Number of digital samples expected.</div>
+</div>
+</dd>
+<dt id="term-execcommand-command">execcommand [command]<a class="headerlink" href="#term-execcommand-command" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Executes command on detector server console.</div>
+</div>
+</dd>
+<dt id="term-exptime-duration-optional-unit-ns-us-ms-s">exptime [duration] [(optional unit) ns|us|ms|s]<a class="headerlink" href="#term-exptime-duration-optional-unit-ns-us-ms-s" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger][Jungfrau][Moench][Gotthard2][Ctb][Xilinx Ctb] Exposure time</div>
+<div class="line">[Mythen3] Exposure time of all gate signals in auto and trigger mode (internal gating). To specify gate index, use exptime1, exptime2, exptime3.</div>
+</div>
+</dd>
+<dt id="term-exptime1-n_value">exptime1 [n_value]<a class="headerlink" href="#term-exptime1-n_value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Mythen3] Exposure time of gate signal 1 in auto and trigger mode (internal gating).</div>
+</div>
+</dd>
+<dt id="term-exptime2-n_value">exptime2 [n_value]<a class="headerlink" href="#term-exptime2-n_value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Mythen3] Exposure time of gate signal 2 in auto and trigger mode (internal gating).</div>
+</div>
+</dd>
+<dt id="term-exptime3-n_value">exptime3 [n_value]<a class="headerlink" href="#term-exptime3-n_value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Mythen3] Exposure time of gate signal 3 in auto and trigger mode (internal gating).</div>
+</div>
+</dd>
+<dt id="term-extrastoragecells-0-15">extrastoragecells [0-15]<a class="headerlink" href="#term-extrastoragecells-0-15" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Jungfrau] Only for chipv1.0. Number of additional storage cells. Default is 0. For advanced users only.</div>
+<div class="line">The #images = #frames x #triggers x (#extrastoragecells + 1).</div>
+</div>
+</dd>
+<dt id="term-extsampling-0-1">extsampling [0, 1]<a class="headerlink" href="#term-extsampling-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb] Enable for external sampling signal for digital data to signal by extsampling src command. For advanced users only.</div>
+</div>
+</dd>
+<dt id="term-extsamplingsrc-0-63">extsamplingsrc [0-63]<a class="headerlink" href="#term-extsamplingsrc-0-63" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb] Sampling source signal for digital data. For advanced users only.</div>
+</div>
+</dd>
+<dt id="term-extsig-n_signal-signal_type">extsig [n_signal] [signal_type]<a class="headerlink" href="#term-extsig-n_signal-signal_type" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Mythen3] External signal mode for trigger timing mode.</div>
+<div class="line">[Mythen3] [0-7] [trigger_in_rising_edge|trigger_in_falling_edge|inversion_on|inversion_off]</div>
+<div class="line-block">
+<div class="line">where 0 is master input trigger signal, 1-3 is master input gate signals, 4 is busy out signal and 5-7 is master output gate signals.</div>
+</div>
+</div>
+</dd>
+<dt id="term-fformat-binary-hdf5">fformat [binary|hdf5]<a class="headerlink" href="#term-fformat-binary-hdf5" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">File format of data file. For HDF5, package must be compiled with HDF5 flags. Default is binary.</div>
+</div>
+</dd>
+<dt id="term-filtercells-0-12">filtercells [0-12]<a class="headerlink" href="#term-filtercells-0-12" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Jungfrau] Set Filter Cell. Only for chipv1.1. Advanced user Command</div>
+</div>
+</dd>
+<dt id="term-filterresistor-value-Gotthard2-Jungfrau-Set-filter-resistor.-Increasing-values-for-increasing-resistance.">filterresistor [value] [Gotthard2][Jungfrau] Set filter resistor. Increasing values for increasing resistance.<a class="headerlink" href="#term-filterresistor-value-Gotthard2-Jungfrau-Set-filter-resistor.-Increasing-values-for-increasing-resistance." title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Gotthard2] Options: [0|1|2|3]. Default is 0.</div>
+<div class="line">[Jungfrau] Options: [0|1]. Default is 1.</div>
+</div>
+</dd>
+<dt id="term-findex-n_value">findex [n_value]<a class="headerlink" href="#term-findex-n_value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">File or Acquisition index.</div>
+</div>
+</dd>
+<dt id="term-firmwaretest">firmwaretest<a class="headerlink" href="#term-firmwaretest" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Firmware test, ie. reads a read fixed pattern from a register.</div>
+</div>
+</dd>
+<dt id="term-firmwareversion">firmwareversion<a class="headerlink" href="#term-firmwareversion" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Firmware version of detector in format [0xYYMMDD] or an increasing 2 digit number for Eiger.</div>
+</div>
+</dd>
+<dt id="term-fliprows-0-1">fliprows [0, 1]<a class="headerlink" href="#term-fliprows-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger] flips rows paramater sent to slsreceiver to stream as json parameter to flip rows in gui</div>
+<div class="line">[Jungfrau][Moench] flips rows in the detector itself. For bottom module and number of interfaces must be set to 2. slsReceiver and slsDetectorGui does not handle.</div>
+</div>
+</dd>
+<dt id="term-flowcontrol10g-0-1">flowcontrol10g [0, 1]<a class="headerlink" href="#term-flowcontrol10g-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger][Jungfrau][Moench] 10GbE Flow Control.</div>
+</div>
+</dd>
+<dt id="term-fmaster-0-1">fmaster [0, 1]<a class="headerlink" href="#term-fmaster-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Enable or disable receiver master file. Default is 1.</div>
+</div>
+</dd>
+<dt id="term-fname-name">fname [name]<a class="headerlink" href="#term-fname-name" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">File name prefix for output data file. Default is run. File name: [file name prefix]_d[detector index]_f[sub file index]_[acquisition/file index].raw.</div>
+</div>
+</dd>
+<dt id="term-foverwrite-0-1">foverwrite [0, 1]<a class="headerlink" href="#term-foverwrite-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Enable or disable file overwriting. Default is 1.</div>
+</div>
+</dd>
+<dt id="term-fpath-path">fpath [path]<a class="headerlink" href="#term-fpath-path" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Directory where output data files are written in receiver. Default is ‘/’.</div>
+<div class="line">If path does not exist and fwrite enabled, it will try to create it at start of acquisition.</div>
+</div>
+</dd>
+<dt id="term-framecounter">framecounter<a class="headerlink" href="#term-framecounter" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Number of frames from start run control.</div>
+<div class="line">[Gotthard2] only in continuous mode.</div>
+</div>
+</dd>
+<dt id="term-frames-n_frames">frames [n_frames]<a class="headerlink" href="#term-frames-n_frames" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Number of frames per acquisition. In trigger mode, number of frames per trigger.</div>
+<div class="line">Cannot be set in modular level.</div>
+<div class="line">In scan mode, number of frames is set to number of steps.</div>
+<div class="line">[Gotthard2] Burst mode has a maximum of 2720 frames.</div>
+</div>
+</dd>
+<dt id="term-framesl">framesl<a class="headerlink" href="#term-framesl" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Number of frames left in acquisition.</div>
+<div class="line">[Gotthard2] only in continuous auto mode.</div>
+</div>
+</dd>
+<dt id="term-frametime-optional-unit-ns-us-ms-s">frametime [(optional unit) ns|us|ms|s]<a class="headerlink" href="#term-frametime-optional-unit-ns-us-ms-s" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Timestamp at a frame start.</div>
+<div class="line">[Gotthard2] not in burst and auto mode.</div>
+</div>
+</dd>
+<dt id="term-free-free">free free<a class="headerlink" href="#term-free-free" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Free detector shared memory</div>
+</div>
+</dd>
+<dt id="term-fwrite-0-1">fwrite [0, 1]<a class="headerlink" href="#term-fwrite-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Enable or disable receiver file write. Default is 0.</div>
+</div>
+</dd>
+<dt id="term-gaincaps-cap1-cap2-...">gaincaps [cap1, cap2, …]<a class="headerlink" href="#term-gaincaps-cap1-cap2-..." title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Mythen3] gain, options: C10pre, C15sh, C30sh, C50sh, C225ACsh, C15pre</div>
+</div>
+</dd>
+<dt id="term-gainmode-dynamic-forceswitchg1-forceswitchg2-fixg1-fixg2-fixg0">gainmode [dynamic|forceswitchg1|forceswitchg2|fixg1|fixg2|fixg0]<a class="headerlink" href="#term-gainmode-dynamic-forceswitchg1-forceswitchg2-fixg1-fixg2-fixg0" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Jungfrau] Gain mode.</div>
+<div class="line">CAUTION: Do not use fixg0 without caution, you can damage the detector!!!</div>
+</div>
+</dd>
+<dt id="term-gappixels-0-1">gappixels [0, 1]<a class="headerlink" href="#term-gappixels-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger][Jungfrau][Moench] Include Gap pixels in client data call back in Detecor api. Will not be in detector streaming, receiver file or streaming. Default is 0.</div>
+</div>
+</dd>
+<dt id="term-gatedelay-duration-optional-unit-ns-us-ms-s">gatedelay [duration] [(optional unit) ns|us|ms|s]<a class="headerlink" href="#term-gatedelay-duration-optional-unit-ns-us-ms-s" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Mythen3] Gate Delay of all gate signals in auto and trigger mode (internal gating).</div>
+</div>
+</dd>
+<dt id="term-gatedelay1-duration-optional-unit-ns-us-ms-s">gatedelay1 [duration] [(optional unit) ns|us|ms|s]<a class="headerlink" href="#term-gatedelay1-duration-optional-unit-ns-us-ms-s" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Mythen3] Gate Delay of gate signal 1 in auto and trigger mode (internal gating).</div>
+</div>
+</dd>
+<dt id="term-gatedelay2-duration-optional-unit-ns-us-ms-s">gatedelay2 [duration] [(optional unit) ns|us|ms|s]<a class="headerlink" href="#term-gatedelay2-duration-optional-unit-ns-us-ms-s" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Mythen3] Gate Delay of gate signal 2 in auto and trigger mode (internal gating).</div>
+</div>
+</dd>
+<dt id="term-gatedelay3-duration-optional-unit-ns-us-ms-s">gatedelay3 [duration] [(optional unit) ns|us|ms|s]<a class="headerlink" href="#term-gatedelay3-duration-optional-unit-ns-us-ms-s" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Mythen3] Gate Delay of gate signal 3 in auto and trigger mode (internal gating).</div>
+</div>
+</dd>
+<dt id="term-gates-n_gates">gates [n_gates]<a class="headerlink" href="#term-gates-n_gates" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Mythen3] Number of external gates in gating or trigger_gating mode (external gating).</div>
+</div>
+</dd>
+<dt id="term-getbit-reg-address-in-hex-bit-index">getbit [reg address in hex] [bit index]<a class="headerlink" href="#term-getbit-reg-address-in-hex-bit-index" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Gets bit in address.</div>
+</div>
+</dd>
+<dt id="term-hardwareversion">hardwareversion<a class="headerlink" href="#term-hardwareversion" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Hardware version of detector.</div>
+<div class="line">[Eiger] Hardware version of front FPGA on detector.</div>
+</div>
+</dd>
+<dt id="term-highvoltage-n_value">highvoltage [n_value]<a class="headerlink" href="#term-highvoltage-n_value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">High voltage to the sensor in Voltage.</div>
+<div class="line">[Eiger][Mythen3][Gotthard2] 0-200</div>
+<div class="line">[Jungfrau][Moench][Ctb] [0|60-200]</div>
+</div>
+</dd>
+<dt id="term-hostname">hostname<a class="headerlink" href="#term-hostname" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Frees shared memory and sets hostname (or IP address) of all modules concatenated by +.</div>
+<div class="line-block">
+<div class="line">Virtual servers can already use the port in hostname separated by ‘:’ and ports incremented by 2 to accomodate the stop server as well. The row and column values in the udp/zmq header are affected by the order in this command and the detsize command. The modules are stacked row by row until they reach the y-axis limit set by detsize (if specified). Then, stacking continues in the next column and so on. This only affects row and column in udp/zmq header.</div>
+</div>
+</div>
+</dd>
+<dt id="term-im_a">im_a<a class="headerlink" href="#term-im_a" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb] Measured current of power supply a in mA.</div>
+</div>
+</dd>
+<dt id="term-im_b">im_b<a class="headerlink" href="#term-im_b" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb] Measured current of power supply b in mA.</div>
+</div>
+</dd>
+<dt id="term-im_c">im_c<a class="headerlink" href="#term-im_c" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb] Measured current of power supply c in mA.</div>
+</div>
+</dd>
+<dt id="term-im_d">im_d<a class="headerlink" href="#term-im_d" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb] Measured current of power supply d in mA.</div>
+</div>
+</dd>
+<dt id="term-im_io">im_io<a class="headerlink" href="#term-im_io" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb] Measured current of power supply io in mA.</div>
+</div>
+</dd>
+<dt id="term-imagetest-0-1">imagetest [0, 1]<a class="headerlink" href="#term-imagetest-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger][Jungfrau][Moench] Only for Virtual servers. If 0, each pixel intensity incremented by 1. If 1, all pixels almost saturated.</div>
+</div>
+</dd>
+<dt id="term-initialchecks-0-1">initialchecks [0, 1]<a class="headerlink" href="#term-initialchecks-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Mythen3][Gotthard2] Enable or disable intial compatibility and other checks at detector start up. It is enabled by default. Must come before ‘hostname’ command to take effect. Can be used to reprogram fpga when current firmware is incompatible.</div>
+<div class="line">Advanced User function!</div>
+</div>
+</dd>
+<dt id="term-inj_ch-offset-increment">inj_ch [offset] [increment]<a class="headerlink" href="#term-inj_ch-offset-increment" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Gotthard2] Inject channels with current source for calibration. Offset is starting channel that is injected, increment determines succeeding channels to be injected.</div>
+</div>
+</dd>
+<dt id="term-interpolation-0-1">interpolation [0, 1]<a class="headerlink" href="#term-interpolation-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Mythen3] Enables or disables interpolation. Default is disabled.  Interpolation mode enables all counters and disables vth3. Disabling sets back counter mask and vth3.</div>
+</div>
+</dd>
+<dt id="term-interruptsubframe-0-1">interruptsubframe [0, 1]<a class="headerlink" href="#term-interruptsubframe-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger] 1 interrupts last subframe at required exposure time. 0 will wait for last sub frame to finish exposing. 0 is default.</div>
+</div>
+</dd>
+<dt id="term-kernelversion">kernelversion<a class="headerlink" href="#term-kernelversion" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Get kernel version on the detector including time and date.</div>
+</div>
+</dd>
+<dt id="term-lastclient">lastclient<a class="headerlink" href="#term-lastclient" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Client IP Address that last communicated with the detector.</div>
+</div>
+</dd>
+<dt id="term-led-0-1">led [0, 1]<a class="headerlink" href="#term-led-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb] Switches on/off all LEDs.</div>
+</div>
+</dd>
+<dt id="term-list-deprecated-optional">list [deprecated(optional)]<a class="headerlink" href="#term-list-deprecated-optional" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">lists all available commands, list deprecated - list deprecated commands</div>
+</div>
+</dd>
+<dt id="term-lock-0-1">lock [0, 1]<a class="headerlink" href="#term-lock-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Lock detector to one IP, 1: locks. Default is unlocked</div>
+</div>
+</dd>
+<dt id="term-master-0-1">master [0, 1]<a class="headerlink" href="#term-master-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger][Gotthard2][Jungfrau][Moench] Sets (half) module to master and other(s) to slaves.</div>
+<div class="line">[Gotthard2][Mythen3][Eiger][Jungfrau][Moench] Gets if the current (half) module is master.</div>
+</div>
+</dd>
+<dt id="term-maxadcphaseshift">maxadcphaseshift<a class="headerlink" href="#term-maxadcphaseshift" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Jungfrau][Moench][Ctb] Absolute maximum Phase shift of ADC clock.</div>
+</div>
+</dd>
+<dt id="term-maxclkphaseshift-n_clock">maxclkphaseshift [n_clock]<a class="headerlink" href="#term-maxclkphaseshift-n_clock" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Gotthard2][Mythen3] Absolute Maximum Phase shift of clock n_clock.n  [Gotthard2] Clock index range: 0-5</div>
+<div class="line">[Mythen3] Clock index range: 0</div>
+</div>
+</dd>
+<dt id="term-maxdbitphaseshift">maxdbitphaseshift<a class="headerlink" href="#term-maxdbitphaseshift" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Jungfrau] Absolute maximum Phase shift of of the clock to latch digital bits.</div>
+</div>
+</dd>
+<dt id="term-measuredperiod-optional-unit-ns-us-ms-s">measuredperiod [(optional unit) ns|us|ms|s]<a class="headerlink" href="#term-measuredperiod-optional-unit-ns-us-ms-s" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger] Measured frame period between last frame and previous one. Can be measured with minimum 2 frames in an acquisition.</div>
+</div>
+</dd>
+<dt id="term-measuredsubperiod-optional-unit-ns-us-ms-s">measuredsubperiod [(optional unit) ns|us|ms|s]<a class="headerlink" href="#term-measuredsubperiod-optional-unit-ns-us-ms-s" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger] Measured sub frame period between last sub frame and previous one.</div>
+</div>
+</dd>
+<dt id="term-moduleid">moduleid<a class="headerlink" href="#term-moduleid" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Gotthard2][Eiger][Mythen3][Jungfrau][Moench] 16 bit value (ideally unique) that is streamed out in the UDP header of the detector. Picked up from a file on the module.</div>
+</div>
+</dd>
+<dt id="term-nextframenumber-n_value">nextframenumber [n_value]<a class="headerlink" href="#term-nextframenumber-n_value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger][Jungfrau][Moench][Ctb][Xilinx Ctb][Gotthard2] Next frame number. Stopping acquisition might result in different frame numbers for different modules. So, after stopping, next frame number (max + 1) is set for all the modules afterwards.</div>
+</div>
+</dd>
+<dt id="term-nmod">nmod<a class="headerlink" href="#term-nmod" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Number of modules in shared memory.</div>
+</div>
+</dd>
+<dt id="term-numinterfaces-1-2">numinterfaces [1, 2]<a class="headerlink" href="#term-numinterfaces-1-2" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Jungfrau][Moench] Number of udp interfaces to stream data from detector. Default: 1.</div>
+<div class="line">Also enables second interface in receiver for listening (Writes a file per interface if writing enabled).</div>
+<div class="line">Also restarts client and receiver zmq sockets if zmq streaming enabled.</div>
+<div class="line">[Eiger] Only gets with result 2.</div>
+</div>
+</dd>
+<dt id="term-overflow-0-1">overflow [0, 1]<a class="headerlink" href="#term-overflow-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger] Enable or disable show overflow flag in 32 bit mode. Default is disabled.</div>
+</div>
+</dd>
+<dt id="term-packageversion">packageversion<a class="headerlink" href="#term-packageversion" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Package version.</div>
+</div>
+</dd>
+<dt id="term-parallel-0-1">parallel [0, 1]<a class="headerlink" href="#term-parallel-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger][Mythen3][Gotthard2][Moench] Enable or disable parallel mode.</div>
+<div class="line">[Mythen3] If exptime is too short, the acquisition will return ERROR status and take fewer frames than expected.</div>
+<div class="line">[Mythen3][Eiger][Moench] Default: Non parallel.</div>
+<div class="line">[Gotthard2] Default: Parallel. Non parallel mode works only in continuous mode.</div>
+</div>
+</dd>
+<dt id="term-parameters">parameters<a class="headerlink" href="#term-parameters" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Sets detector measurement parameters to those contained in fname. Set up per measurement.</div>
+</div>
+</dd>
+<dt id="term-partialreset-0-1">partialreset [0, 1]<a class="headerlink" href="#term-partialreset-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger] Sets up detector to do partial or complete reset at start of acquisition. 0 complete reset, 1 partial reset. Default is complete reset. Advanced function!</div>
+</div>
+</dd>
+<dt id="term-patfname">patfname<a class="headerlink" href="#term-patfname" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Mythen3][Xilinx Ctb] Gets the pattern file name including path of the last pattern uploaded. Returns an empty if nothing was uploaded or via a server default file</div>
+</div>
+</dd>
+<dt id="term-patioctrl-64-bit-mask">patioctrl [64 bit mask]<a class="headerlink" href="#term-patioctrl-64-bit-mask" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb] 64 bit mask defining input (0) and output (1) signals.</div>
+</div>
+</dd>
+<dt id="term-patlimits-start-addr-stop-addr">patlimits [start addr] [stop addr]<a class="headerlink" href="#term-patlimits-start-addr-stop-addr" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Mythen3][Xilinx Ctb] Limits of complete pattern</div>
+</div>
+</dd>
+<dt id="term-patloop-0-6-start-addr-stop-addr">patloop [0-6] [start addr] [stop addr]<a class="headerlink" href="#term-patloop-0-6-start-addr-stop-addr" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Mythen3][Xilinx Ctb] Limits of the loop level provided.</div>
+<div class="line">[Mythen3] Level options: 0-3 only.</div>
+</div>
+</dd>
+<dt id="term-patloop0">patloop0<a class="headerlink" href="#term-patloop0" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Deprecated command. Use patloop.</div>
+</div>
+</dd>
+<dt id="term-patloop1">patloop1<a class="headerlink" href="#term-patloop1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Deprecated command. Use patloop.</div>
+</div>
+</dd>
+<dt id="term-patloop2">patloop2<a class="headerlink" href="#term-patloop2" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Deprecated command. Use patloop.</div>
+</div>
+</dd>
+<dt id="term-patmask-64-bit-mask">patmask [64 bit mask]<a class="headerlink" href="#term-patmask-64-bit-mask" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Mythen3][Xilinx Ctb] Selects the bits that will have a pattern mask applied to the selected patmask for every pattern.</div>
+</div>
+</dd>
+<dt id="term-patnloop-0-6-n_cycles">patnloop [0-6] [n_cycles]<a class="headerlink" href="#term-patnloop-0-6-n_cycles" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Mythen3][Xilinx Ctb] Number of cycles of the loop level provided.</div>
+<div class="line">[Mythen3] Level options: 0-3 only.</div>
+</div>
+</dd>
+<dt id="term-patnloop0">patnloop0<a class="headerlink" href="#term-patnloop0" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Deprecated command. Use patnloop.</div>
+</div>
+</dd>
+<dt id="term-patnloop1">patnloop1<a class="headerlink" href="#term-patnloop1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Deprecated command. Use patnloop.</div>
+</div>
+</dd>
+<dt id="term-patnloop2">patnloop2<a class="headerlink" href="#term-patnloop2" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Deprecated command. Use patnloop.</div>
+</div>
+</dd>
+<dt id="term-patsetbit-64-bit-mask">patsetbit [64 bit mask]<a class="headerlink" href="#term-patsetbit-64-bit-mask" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Mythen3][Xilinx Ctb] Sets the mask applied to every pattern to the selected bits.</div>
+</div>
+</dd>
+<dt id="term-pattern-fname">pattern [fname]<a class="headerlink" href="#term-pattern-fname" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Mythen3][Ctb][Xilinx Ctb] Loads ASCII pattern file directly to server (instead of executing line by line)</div>
+</div>
+</dd>
+<dt id="term-patternstart">patternstart<a class="headerlink" href="#term-patternstart" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Mythen3] Starts Pattern</div>
+</div>
+</dd>
+<dt id="term-patwait-0-6-addr">patwait [0-6] [addr]<a class="headerlink" href="#term-patwait-0-6-addr" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Mythen3][Xilinx Ctb] Wait address for loop level provided.</div>
+<div class="line">[Mythen3] Level options: 0-3 only.</div>
+</div>
+</dd>
+<dt id="term-patwait0">patwait0<a class="headerlink" href="#term-patwait0" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Deprecated command. Use patwait.</div>
+</div>
+</dd>
+<dt id="term-patwait1">patwait1<a class="headerlink" href="#term-patwait1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Deprecated command. Use patwait.</div>
+</div>
+</dd>
+<dt id="term-patwait2">patwait2<a class="headerlink" href="#term-patwait2" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Deprecated command. Use patwait.</div>
+</div>
+</dd>
+<dt id="term-patwaittime-0-6-n_clk">patwaittime [0-6] [n_clk]<a class="headerlink" href="#term-patwaittime-0-6-n_clk" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Mythen3][Xilinx Ctb] Wait time in clock cycles for the loop provided.</div>
+<div class="line">[Mythen3] Level options: 0-3 only.</div>
+</div>
+</dd>
+<dt id="term-patwaittime0-0-6-n_clk">patwaittime0 [0-6] [n_clk]<a class="headerlink" href="#term-patwaittime0-0-6-n_clk" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Mythen3][Xilinx Ctb] Wait time in clock cycles for the loop provided.</div>
+<div class="line">[Mythen3] Level options: 0-3 only.</div>
+</div>
+</dd>
+<dt id="term-patwaittime1-0-6-n_clk">patwaittime1 [0-6] [n_clk]<a class="headerlink" href="#term-patwaittime1-0-6-n_clk" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Mythen3][Xilinx Ctb] Wait time in clock cycles for the loop provided.</div>
+<div class="line">[Mythen3] Level options: 0-3 only.</div>
+</div>
+</dd>
+<dt id="term-patwaittime2-0-6-n_clk">patwaittime2 [0-6] [n_clk]<a class="headerlink" href="#term-patwaittime2-0-6-n_clk" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Mythen3][Xilinx Ctb] Wait time in clock cycles for the loop provided.</div>
+<div class="line">[Mythen3] Level options: 0-3 only.</div>
+</div>
+</dd>
+<dt id="term-patword-step-or-address-64-bit-mask">patword [step or address] [64 bit mask]<a class="headerlink" href="#term-patword-step-or-address-64-bit-mask" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Mythen3][Xilinx Ctb] 64 bit pattern at address of pattern memory.</div>
+<div class="line">[Ctb] read is same as executing pattern</div>
+</div>
+</dd>
+<dt id="term-pedestalmode-frames-uint8_t-loops-uint16_t">pedestalmode  [frames&lt;uint8_t&gt;] [loops&lt;uint16_t&gt;]<a class="headerlink" href="#term-pedestalmode-frames-uint8_t-loops-uint16_t" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line-block">
+<div class="line">[Jungfrau] Enable pedestal mode.</div>
+<div class="line">The number of frames or triggers is overwritten by:</div>
+<div class="line">(#pedestal_frames x #pedestal_loops x 2).</div>
+<div class="line">In auto timing mode or in trigger mode with #frames &gt; 1,</div>
+<div class="line">#frames is overwritten and #triggers = 1,</div>
+<div class="line">else #triggers is overwritten and #frames = 1.</div>
+<div class="line">One cannot set #frames, #triggers or timing mode in pedestal mode (exception thrown).</div>
+</div>
+<div class="line">pedestalmode [0]</div>
+<div class="line-block">
+<div class="line">[Jungfrau] Disable pedestal mode.</div>
+<div class="line">Disabling pedestal mode will set back the normal mode values of #frames and #triggers.</div>
+</div>
+</div>
+</dd>
+<dt id="term-period-duration-optional-unit-ns-us-ms-s">period [duration] [(optional unit) ns|us|ms|s]<a class="headerlink" href="#term-period-duration-optional-unit-ns-us-ms-s" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Period between frames</div>
+</div>
+</dd>
+<dt id="term-periodl">periodl<a class="headerlink" href="#term-periodl" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Jungfrau][Moench][Ctb][Mythen3][Gotthard2][Xilinx Ctb] Period left for current frame.</div>
+<div class="line">[Gotthard2] only in continuous mode.</div>
+</div>
+</dd>
+<dt id="term-polarity-pos-neg">polarity [pos|neg]<a class="headerlink" href="#term-polarity-pos-neg" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Mythen3] Sets negative or positive polarity. Default is positive</div>
+</div>
+</dd>
+<dt id="term-port-n">port [n]<a class="headerlink" href="#term-port-n" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Port number of the control server on detector for detector-client tcp interface. Default is 1952. Normally unchanged. Set different ports for virtual servers on same pc.</div>
+</div>
+</dd>
+<dt id="term-powerchip-0-1">powerchip [0, 1]<a class="headerlink" href="#term-powerchip-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Jungfrau][Moench][Mythen3][Gotthard2][Xilinx Ctb] Power the chip.</div>
+<div class="line">[Jungfrau][Moench] Default is 0. Get will return power status. Can be off if temperature event occured (temperature over temp_threshold with temp_control enabled. Will configure chip (only chip v1.1)</div>
+<div class="line">[Mythen3][Gotthard2] Default is 1. If module not connected or wrong module, powerchip will fail.</div>
+<div class="line">[Xilinx Ctb] Default is 0. Also configures the chip if powered on.</div>
+</div>
+</dd>
+<dt id="term-powerindex-name">powerindex [name]<a class="headerlink" href="#term-powerindex-name" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Xilinx_Ctb] Get the power index for the given name.</div>
+</div>
+</dd>
+<dt id="term-powerlist-powername1-powername2-..-powername4">powerlist [powername1 powername2 .. powername4]<a class="headerlink" href="#term-powerlist-powername1-powername2-..-powername4" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Xilinx_Ctb] Set the list of power names for this board.</div>
+</div>
+</dd>
+<dt id="term-powername-0-4-name">powername [0-4][name]<a class="headerlink" href="#term-powername-0-4-name" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Xilinx_Ctb] Set the power at the given position to the given name.</div>
+</div>
+</dd>
+<dt id="term-powervalues-name">powervalues [name]<a class="headerlink" href="#term-powervalues-name" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Xilinx_Ctb] Get values of all powers.</div>
+</div>
+</dd>
+<dt id="term-programfpga-fname.pof-fname.rbf-full-path-opitonal-force-delete-normal-file">programfpga [fname.pof | fname.rbf (full path)][(opitonal)–force-delete-normal-file]<a class="headerlink" href="#term-programfpga-fname.pof-fname.rbf-full-path-opitonal-force-delete-normal-file" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Jungfrau][Moench][Ctb] Programs FPGA from pof file (full path). Then, detector controller is rebooted.</div>
+<div class="line-block">
+<div class="line">Use –force-delete-normal-file argument, if normal file found in device tree, it must be deleted, a new device drive created and programming continued.</div>
+</div>
+<div class="line">[Mythen3][Gotthard2] Programs FPGA from rbf file (full path). Then, detector controller is rebooted.</div>
+</div>
+</dd>
+<dt id="term-pulse-n_times-x-y">pulse [n_times] [x] [y]<a class="headerlink" href="#term-pulse-n_times-x-y" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger] Pulse pixel n number of times at coordinates (x, y). Advanced User!</div>
+</div>
+</dd>
+<dt id="term-pulsechip-n_times">pulsechip [n_times]<a class="headerlink" href="#term-pulsechip-n_times" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger] Pulse chip n times. If n is -1, resets to normal mode (reset chip completely at start of acquisition, where partialreset = 0). Advanced User!</div>
+</div>
+</dd>
+<dt id="term-pulsenmove-n_times-x-y">pulsenmove [n_times] [x] [y]<a class="headerlink" href="#term-pulsenmove-n_times-x-y" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger] Pulse pixel n number of times and moves relatively by (x, y). Advanced User!</div>
+</div>
+</dd>
+<dt id="term-pumpprobe-0-1">pumpprobe [0, 1]<a class="headerlink" href="#term-pumpprobe-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Mythen3] Enables or disables pump probe mode. Default is disabled. Pump probe mode only enables vth2. Disabling sets back to previous value.</div>
+</div>
+</dd>
+<dt id="term-quad-0-1">quad [0, 1]<a class="headerlink" href="#term-quad-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger] Sets detector size to a quad. 0 (disabled) is default. (Specific hardware required).</div>
+</div>
+</dd>
+<dt id="term-ratecorr-n_rate-in-ns">ratecorr [n_rate (in ns)]<a class="headerlink" href="#term-ratecorr-n_rate-in-ns" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger] Dead time correction constant in ns. -1 will set to default tau of settings from trimbit file. 0 will unset rate correction.</div>
+</div>
+</dd>
+<dt id="term-readnrows">readnrows<a class="headerlink" href="#term-readnrows" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[1-256]</div>
+<div class="line-block">
+<div class="line">[Eiger] Number of rows to readout per half module starting from the centre. Options: 0 - 256. 256 is default. The permissible values depend on dynamic range and 10Gbe enabled.</div>
+</div>
+<div class="line">[8-512 (multiple of 8)]</div>
+<div class="line-block">
+<div class="line">[Jungfrau] Number of rows per module starting from the centre. Options: 8 - 512, must be multiples of 8. Default is 512.</div>
+<div class="line">[Moench] Number of rows per module starting from the centre. Options:16 - 400, must be multiples of 16. Default is 400.</div>
+</div>
+</div>
+</dd>
+<dt id="term-readout">readout<a class="headerlink" href="#term-readout" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Mythen3] Starts detector readout. Status changes to TRANSMITTING and automatically returns to idle at the end of readout.</div>
+</div>
+</dd>
+<dt id="term-readoutspeed">readoutspeed<a class="headerlink" href="#term-readoutspeed" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[0 or full_speed|1 or half_speed|2 or quarter_speed]</div>
+<div class="line">[Eiger][Jungfrau][Moench][Mythen3] Readout speed of chip.</div>
+<div class="line">[Eiger][Moench] Default speed is full_speed.</div>
+<div class="line">[Jungfrau][Mythen3] Default speed is half_speed.</div>
+<div class="line">[Jungfrau] full_speed option only available from v2.0 boards and is recommended to set number of interfaces to 2. Also overwrites adcphase to recommended default.</div>
+<div class="line-block">
+<div class="line">[144|108]</div>
+<div class="line-block">
+<div class="line">[Gotthard2] Readout speed of chip in MHz. Default is 108.</div>
+</div>
+</div>
+</div>
+</dd>
+<dt id="term-readoutspeedlist">readoutspeedlist<a class="headerlink" href="#term-readoutspeedlist" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">List of readout speed levels implemented for this detector.</div>
+</div>
+</dd>
+<dt id="term-rebootcontroller">rebootcontroller<a class="headerlink" href="#term-rebootcontroller" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Jungfrau][Moench][Ctb][Mythen3][Gotthard2][Xilinx Ctb] Reboot controller of detector.</div>
+</div>
+</dd>
+<dt id="term-reg-address-32-bit-value-optional-validate">reg [address] [32 bit value][(optional)–validate]<a class="headerlink" href="#term-reg-address-32-bit-value-optional-validate" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Mythen3][Gotthard2] Reads/writes to a 32 bit register in hex. Advanced Function!</div>
+<div class="line">Goes to stop server. Hence, can be called while calling blocking acquire().</div>
+<div class="line-block">
+<div class="line">Use –validate to force validation when writing to it.</div>
+</div>
+<div class="line">[Eiger] +0x100 for only left, +0x200 for only right.</div>
+</div>
+</dd>
+<dt id="term-resetdacs-optional-hard">resetdacs [(optional) hard]<a class="headerlink" href="#term-resetdacs-optional-hard" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger][Jungfrau][Moench][Gotthard2][Mythen3]Reset dac values to the defaults. A ‘hard’ optional reset will reset the dacs to the hardcoded defaults in on-board detector server.</div>
+</div>
+</dd>
+<dt id="term-resetfpga">resetfpga<a class="headerlink" href="#term-resetfpga" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Jungfrau][Moench][Ctb][Xilinx Ctb] Reset FPGA.</div>
+</div>
+</dd>
+<dt id="term-romode-analog-digital-analog_digital-transceiver-digital_transceiver">romode [analog|digital|analog_digital|transceiver|digital_transceiver]<a class="headerlink" href="#term-romode-analog-digital-analog_digital-transceiver-digital_transceiver" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][xilinx Ctb] Readout mode. [Ctb] Default is analog. [Xilinx Ctb] Default is Transceiver (only one implemented so far)</div>
+</div>
+</dd>
+<dt id="term-row-value">row [value]<a class="headerlink" href="#term-row-value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Set Detector row (udp header) to value.</div>
+<div class="line">Gui uses it to rearrange for complete image</div>
+</div>
+</dd>
+<dt id="term-runclk-n_clk-in-MHz">runclk [n_clk in MHz]<a class="headerlink" href="#term-runclk-n_clk-in-MHz" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb] Run clock in MHz.</div>
+</div>
+</dd>
+<dt id="term-runtime-optional-unit-ns-us-ms-s">runtime [(optional unit) ns|us|ms|s]<a class="headerlink" href="#term-runtime-optional-unit-ns-us-ms-s" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Time from detector start up.</div>
+<div class="line">[Gotthard2] not in burst and auto mode.</div>
+</div>
+</dd>
+<dt id="term-rx_arping-0-1">rx_arping [0, 1]<a class="headerlink" href="#term-rx_arping-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Starts a thread in slsReceiver to arping the interface it is listening to every minute. Useful in 10G mode.</div>
+</div>
+</dd>
+<dt id="term-rx_clearroi">rx_clearroi<a class="headerlink" href="#term-rx_clearroi" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Resets Region of interest in receiver. Default is all channels/pixels enabled.</div>
+</div>
+</dd>
+<dt id="term-rx_dbitlist-all-or-none-or-i0-i1-i2-...">rx_dbitlist [all] or [none] or [i0] [i1] [i2]…<a class="headerlink" href="#term-rx_dbitlist-all-or-none-or-i0-i1-i2-..." title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb] List of digital signal bits enabled and rearranged according to the signals (all samples of each signal is put together). If ‘all’ is used instead of a list, all digital bits (64) enabled. Each element in list can be 0 - 63 and must be non repetitive. The option ‘none’ will still spit out all data as is from the detector, but without rearranging it. Please note that when using the receiver list, the data size will be bigger if the number of samples is not divisible by 8 as every signal bit is padded to the next byte when combining all the samples in the receiver.</div>
+</div>
+</dd>
+<dt id="term-rx_dbitoffset-n_bytes">rx_dbitoffset [n_bytes]<a class="headerlink" href="#term-rx_dbitoffset-n_bytes" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb] Offset in bytes in digital data to skip in receiver.</div>
+</div>
+</dd>
+<dt id="term-rx_dbitreorder-0-1">rx_dbitreorder [0, 1]<a class="headerlink" href="#term-rx_dbitreorder-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb] Reorder digital data such that it groups each signal (0-63) from all the different samples together . Default is 1. Setting to 0 means ‘do not reorder’ and to keep what the board spits out, which is that all signals in a sample are grouped together.</div>
+</div>
+</dd>
+<dt id="term-rx_discardpolicy-nodiscard-default-discardempty-discardpartial-fastest">rx_discardpolicy [nodiscard (default)|discardempty|discardpartial(fastest)]<a class="headerlink" href="#term-rx_discardpolicy-nodiscard-default-discardempty-discardpartial-fastest" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Frame discard policy of receiver. nodiscard does not discard frames, discardempty discards empty frames, discardpartial discards partial frames.</div>
+</div>
+</dd>
+<dt id="term-rx_fifodepth-n_frames">rx_fifodepth [n_frames]<a class="headerlink" href="#term-rx_fifodepth-n_frames" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Set the number of frames in the receiver fifo depth (buffer between listener and writer threads).</div>
+</div>
+</dd>
+<dt id="term-rx_frameindex">rx_frameindex<a class="headerlink" href="#term-rx_frameindex" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Current frame index received for each port in receiver during acquisition.</div>
+</div>
+</dd>
+<dt id="term-rx_framescaught">rx_framescaught<a class="headerlink" href="#term-rx_framescaught" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Number of frames caught by each port in receiver.</div>
+</div>
+</dd>
+<dt id="term-rx_framesperfile-n_frames">rx_framesperfile [n_frames]<a class="headerlink" href="#term-rx_framesperfile-n_frames" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Number of frames per file in receiver in an acquisition. Default depends on detector type. 0 is infinite or all frames in single file.</div>
+</div>
+</dd>
+<dt id="term-rx_hostname-hostname-or-ip-address">rx_hostname [hostname or ip address]<a class="headerlink" href="#term-rx_hostname-hostname-or-ip-address" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[hostname or ip address]:[tcp port]</div>
+<div class="line">[hostname1]:[tcp_port1]+[hostname2]:[tcp_port2]+</div>
+<div class="line">Receiver hostname or IP. If port included, then the receiver tcp port.</div>
+<div class="line">Used for TCP control communication between client and receiver to configure receiver. Also updates receiver with detector parameters. Also resets any prior receiver property (not on detector).</div>
+</div>
+</dd>
+<dt id="term-rx_jsonaddheader-key1-value1-key2-value2-...-keyn-valuen">rx_jsonaddheader [key1] [value1] [key2] [value2]…[keyn] [valuen]<a class="headerlink" href="#term-rx_jsonaddheader-key1-value1-key2-value2-...-keyn-valuen" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Additional json header to be streamed out from receiver via zmq. Default is empty. Max 20 characters for each key/value. Use only if to be processed by an intermediate user process listening to receiver zmq packets. Empty value deletes header.</div>
+</div>
+</dd>
+<dt id="term-rx_jsonpara-key1-value1">rx_jsonpara [key1] [value1]<a class="headerlink" href="#term-rx_jsonpara-key1-value1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Receiver] Additional json header parameter streamed out from receiver. If not found in header, the pair is appended. An empty values deletes parameter. Max 20 characters for each key/value.</div>
+</div>
+</dd>
+<dt id="term-rx_lastclient">rx_lastclient<a class="headerlink" href="#term-rx_lastclient" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Client IP Address that last communicated with the receiver.</div>
+</div>
+</dd>
+<dt id="term-rx_lock-0-1">rx_lock [0, 1]<a class="headerlink" href="#term-rx_lock-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Lock receiver to one client IP, 1 locks, 0 unlocks. Default is unlocked.</div>
+</div>
+</dd>
+<dt id="term-rx_missingpackets">rx_missingpackets<a class="headerlink" href="#term-rx_missingpackets" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Number of missing packets for receiver. If negative, they are packets in excess.</div>
+</div>
+</dd>
+<dt id="term-rx_padding-0-1">rx_padding [0, 1]<a class="headerlink" href="#term-rx_padding-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Partial frames padding enable in the receiver. Default: enabled. Disabling is fastest.</div>
+</div>
+</dd>
+<dt id="term-rx_printconfig">rx_printconfig<a class="headerlink" href="#term-rx_printconfig" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Prints the receiver configuration.</div>
+</div>
+</dd>
+<dt id="term-rx_realudpsocksize">rx_realudpsocksize<a class="headerlink" href="#term-rx_realudpsocksize" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Actual udp socket buffer size. Double the size of rx_udpsocksize due to kernel bookkeeping.</div>
+</div>
+</dd>
+<dt id="term-rx_roi-xmin-xmax-ymin-ymax">rx_roi [xmin] [xmax] [ymin] [ymax]<a class="headerlink" href="#term-rx_roi-xmin-xmax-ymin-ymax" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Defines a single region of interest (ROI) in the receiver.</div>
+<div class="line">For example, to set a single ROI: 0 100 20 30</div>
+</div>
+<div class="line-block">
+<div class="line">To specify multiple ROIs, use square brackets between ROIs and commas inside for each ROI.</div>
+<div class="line">Inside each bracket, no spaces allowed.</div>
+</div>
+<div class="line-block">
+<div class="line">If you use semicolon (along with ‘[‘and ‘]’ to separate rois),</div>
+<div class="line">enclose the entire list in quotes.</div>
+<div class="line">Examples:</div>
+<div class="line-block">
+<div class="line">[0,100,0,100] [200,300,0,100]</div>
+<div class="line">“[0,100,0,100];[200,300,0,100]”</div>
+</div>
+</div>
+<div class="line-block">
+<div class="line">Notes:</div>
+<div class="line">- ROIs can only be set at the multi-module level.</div>
+<div class="line">- If multi module ROIs ends up with more then 1 ROI per UDP port or if they overlap each other, it will throw an error.</div>
+<div class="line">- ROIs coordinates assume no gap pixels, even if they are enabled in gui.</div>
+<div class="line">- To retrieve ROIs per port, specify the module ID when using the get command.</div>
+<div class="line">- Use the command ‘rx_clearroi’ to clear all ROIs.</div>
+<div class="line">- Changing the number of UDP interfaces will automatically clear the current ROIs.</div>
+</div>
+<div class="line-block">
+<div class="line">- Cannot be set for CTB or Xilinx CTB.</div>
+</div>
+</dd>
+<dt id="term-rx_silent-0-1">rx_silent [0, 1]<a class="headerlink" href="#term-rx_silent-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Switch on or off receiver text output during acquisition.</div>
+</div>
+</dd>
+<dt id="term-rx_start">rx_start<a class="headerlink" href="#term-rx_start" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Starts receiver listener for detector data packets and create a data file (if file write enabled).</div>
+</div>
+</dd>
+<dt id="term-rx_status-running-idle-transmitting">rx_status [running, idle, transmitting]<a class="headerlink" href="#term-rx_status-running-idle-transmitting" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Receiver listener status.</div>
+</div>
+</dd>
+<dt id="term-rx_stop">rx_stop<a class="headerlink" href="#term-rx_stop" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Stops receiver listener for detector data packets and closes current data file (if file write enabled).</div>
+</div>
+</dd>
+<dt id="term-rx_tcpport-port">rx_tcpport [port]<a class="headerlink" href="#term-rx_tcpport-port" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">TCP port for client-receiver communication. Default is 1954. Must be different if multiple receivers on same pc. Must be first command to set a receiver parameter. Multi command will automatically increment for individual modules.</div>
+</div>
+</dd>
+<dt id="term-rx_threads">rx_threads<a class="headerlink" href="#term-rx_threads" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Get kernel thread ids from the receiver in order of [parent, tcp, listener 0, processor 0, streamer 0, listener 1, processor 1, streamer 1, arping]. If no streamer yet or there is no second interface, it gives 0 in its place.</div>
+</div>
+</dd>
+<dt id="term-rx_udpsocksize-n_size">rx_udpsocksize [n_size]<a class="headerlink" href="#term-rx_udpsocksize-n_size" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">UDP socket buffer size in receiver. Tune rmem_default and rmem_max accordingly. Max value is INT_MAX/2.</div>
+</div>
+</dd>
+<dt id="term-rx_version">rx_version<a class="headerlink" href="#term-rx_version" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Receiver version</div>
+</div>
+</dd>
+<dt id="term-rx_zmqfreq-nth-frame">rx_zmqfreq [nth frame]<a class="headerlink" href="#term-rx_zmqfreq-nth-frame" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Frequency of frames streamed out from receiver via zmq</div>
+<div class="line">Default: 1, Means every frame is streamed out.</div>
+<div class="line">If 2, every second frame is streamed out.</div>
+<div class="line">If 0, streaming timer is the timeout, after which current frame is sent out. (default timeout is 500 ms). Usually used for gui purposes.</div>
+</div>
+</dd>
+<dt id="term-rx_zmqhwm-n_value">rx_zmqhwm [n_value]<a class="headerlink" href="#term-rx_zmqhwm-n_value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Receiver’s zmq send high water mark. Default is the zmq library’s default (1000). This is a high number and can be set to 2 for gui purposes. One must also set the client’s receive high water mark to similar value. Final effect is sum of them. Also restarts receiver zmq streaming if enabled. Can set to -1 to set default value.</div>
+</div>
+</dd>
+<dt id="term-rx_zmqip">rx_zmqip<a class="headerlink" href="#term-rx_zmqip" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[deprecated] The receiver zmq socket (publisher) will listen to all interfaces (’<a class="reference external" href="tcp://0.0.0.0:[port]'to">tcp://0.0.0.0:[port]’to</a> all interfaces (from v9.0.0). This command does nothing and will be removed (from v10.0.0). This change makes no difference to the user.</div>
+</div>
+</dd>
+<dt id="term-rx_zmqport-port">rx_zmqport [port]<a class="headerlink" href="#term-rx_zmqport-port" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Zmq port for data to be streamed out of the receiver. Also restarts receiver zmq streaming if enabled. Default is 30001. Modified only when using an intermediate process between receiver and client(gui). Must be different for every detector (and udp port). Multi command will automatically increment for individual modules.</div>
+</div>
+</dd>
+<dt id="term-rx_zmqstartfnum-fnum">rx_zmqstartfnum [fnum]<a class="headerlink" href="#term-rx_zmqstartfnum-fnum" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">The starting frame index to stream out. 0 by default, which streams the first frame in an acquisition, and then depending on the rx zmq frequency/ timer</div>
+</div>
+</dd>
+<dt id="term-rx_zmqstream-0-1">rx_zmqstream [0, 1]<a class="headerlink" href="#term-rx_zmqstream-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Enable/ disable data streaming from receiver via zmq (eg. to GUI or to another process for further processing). This creates/ destroys zmq streamer threads in receiver.</div>
+<div class="line">Switching to Gui automatically enables data streaming in receiver.</div>
+<div class="line">Switching back to command line acquire will require disabling data streaming in receiver for fast applications.</div>
+</div>
+</dd>
+<dt id="term-samples-n_samples">samples [n_samples]<a class="headerlink" href="#term-samples-n_samples" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Xilinx_Ctb] Number of samples (analog, digitial and transceiver) expected.</div>
+</div>
+</dd>
+<dt id="term-savepattern">savepattern<a class="headerlink" href="#term-savepattern" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Mythen3][Xilinx Ctb] Saves pattern to file (ascii).</div>
+<div class="line">[Ctb] Also executes pattern.</div>
+</div>
+</dd>
+<dt id="term-scan-dac_name-0-trimbits-start_val-stop_val-step_size-dac-settling-time-ns-us-ms-s">scan [dac_name|0|trimbits] [start_val] [stop_val] [step_size] [dac settling time ns|us|ms|s]<a class="headerlink" href="#term-scan-dac_name-0-trimbits-start_val-stop_val-step_size-dac-settling-time-ns-us-ms-s" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Enables/ disables scans for dac and trimbits</div>
+<div class="line">Enabling scan sets number of frames to number of steps in receiver.</div>
+<div class="line">To cancel scan configuration, set dac to ‘0’, which also sets number of frames to 1.</div>
+<div class="line">[Eiger][Mythen3] Use trimbits as dac name for a trimbit scan.</div>
+</div>
+</dd>
+<dt id="term-scanerrmsg">scanerrmsg<a class="headerlink" href="#term-scanerrmsg" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Gets Scan error message if scan ended in error for non blocking acquisitions.</div>
+</div>
+</dd>
+<dt id="term-selinterface-0-1">selinterface [0, 1]<a class="headerlink" href="#term-selinterface-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Jungfrau][Moench] The udp interface to stream data from detector. Effective only when number of interfaces is 1. Default: 0 (outer)</div>
+</div>
+</dd>
+<dt id="term-serialnumber">serialnumber<a class="headerlink" href="#term-serialnumber" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Jungfrau][Moench][Mythen3][Gotthard2][Ctb]</div>
+<div class="line">Serial number of detector.</div>
+</div>
+</dd>
+<dt id="term-setbit-reg-address-in-hex-bit-index">setbit [reg address in hex] [bit index]<a class="headerlink" href="#term-setbit-reg-address-in-hex-bit-index" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Sets bit in address.</div>
+<div class="line">Use –validate to force validation.</div>
+</div>
+</dd>
+<dt id="term-settings-standard-fast-highgain-dynamicgain-lowgain-mediumgain-veryhighgain-highgain0-fixgain1-fixgain2-forceswitchg1-forceswitchg2-verylowgain-g1_hg-g1_lg-g2_hc_hg-g2_hc_lg-g2_lc_hg-g2_lc_lg-g4_hg-g4_lg-gain0">settings [standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain, highgain0, fixgain1, fixgain2, forceswitchg1, forceswitchg2, verylowgain, g1_hg, g1_lg, g2_hc_hg, g2_hc_lg, g2_lc_hg, g2_lc_lg, g4_hg, g4_lg, gain0]<a class="headerlink" href="#term-settings-standard-fast-highgain-dynamicgain-lowgain-mediumgain-veryhighgain-highgain0-fixgain1-fixgain2-forceswitchg1-forceswitchg2-verylowgain-g1_hg-g1_lg-g2_hc_hg-g2_hc_lg-g2_lc_hg-g2_lc_lg-g4_hg-g4_lg-gain0" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line-block">
+<div class="line">Detector Settings</div>
+</div>
+<div class="line">[Jungfrau] - [ gain0 | highgain0]</div>
+<div class="line">[Gotthard2] - [dynamicgain | fixgain1 | fixgain2]</div>
+<div class="line">[Mythen3] - [standard | fast | highgain] Also changes vrshaper and vrpreamp.</div>
+<div class="line">[Eiger] Use threshold or thresholdnotb.</div>
+<div class="line">[Eiger] threshold and settings loaded from file found in settingspath.</div>
+<div class="line">[Moench] - [g1_hg | g1_lg | g2_hc_hg | g2_hc_lg | g2_lc_hg | g2_lc_lg | g4_hg | g4_lg]</div>
+</div>
+</dd>
+<dt id="term-settingslist">settingslist<a class="headerlink" href="#term-settingslist" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">List of settings implemented for this detector.</div>
+</div>
+</dd>
+<dt id="term-settingspath-path">settingspath [path]<a class="headerlink" href="#term-settingspath-path" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger][Mythen3] Directory where settings files are loaded from/to.</div>
+</div>
+</dd>
+<dt id="term-signalindex-name">signalindex [name]<a class="headerlink" href="#term-signalindex-name" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Xilinx_Ctb] Get the signal index for the given name.</div>
+</div>
+</dd>
+<dt id="term-signallist-signalname1-signalname2-..-signalname63">signallist [signalname1 signalname2 .. signalname63]<a class="headerlink" href="#term-signallist-signalname1-signalname2-..-signalname63" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Xilinx_Ctb] Set the list of signal names for this board.</div>
+</div>
+</dd>
+<dt id="term-signalname-0-63-name">signalname [0-63][name]<a class="headerlink" href="#term-signalname-0-63-name" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Xilinx_Ctb] Set the signal at the given position to the given name.</div>
+</div>
+</dd>
+<dt id="term-sleep-duration-optional-unit-ns-us-ms-s">sleep [duration] [(optional unit) ns|us|ms|s]<a class="headerlink" href="#term-sleep-duration-optional-unit-ns-us-ms-s" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Sleep for duration. Mainly for config files for firmware developers.Default unit is s.</div>
+</div>
+</dd>
+<dt id="term-slowadc-n_channel-0-7-for-channel">slowadc [n_channel (0-7 for channel]<a class="headerlink" href="#term-slowadc-n_channel-0-7-for-channel" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb] Slow ADC channel in mV</div>
+</div>
+</dd>
+<dt id="term-slowadcindex-name">slowadcindex [name]<a class="headerlink" href="#term-slowadcindex-name" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Xilinx_Ctb] Get the slowadc index for the given name.</div>
+</div>
+</dd>
+<dt id="term-slowadclist-slowadcname1-slowadcname2-..-slowadcname7">slowadclist [slowadcname1 slowadcname2 .. slowadcname7]<a class="headerlink" href="#term-slowadclist-slowadcname1-slowadcname2-..-slowadcname7" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Xilinx_Ctb] Set the list of slowadc names for this board.</div>
+</div>
+</dd>
+<dt id="term-slowadcname-0-7-name">slowadcname [0-7][name]<a class="headerlink" href="#term-slowadcname-0-7-name" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Xilinx_Ctb] Set the slowadc at the given position to the given name.</div>
+</div>
+</dd>
+<dt id="term-slowadcvalues-name">slowadcvalues [name]<a class="headerlink" href="#term-slowadcvalues-name" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Xilinx_Ctb] Get values of all slow adcs.</div>
+</div>
+</dd>
+<dt id="term-start">start<a class="headerlink" href="#term-start" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Starts detector acquisition. Status changes to RUNNING or WAITING and automatically returns to idle at the end of acquisition. If the acquisition was abruptly stopped, some detectors come back to STOPPED.</div>
+</div>
+</dd>
+<dt id="term-status-running-error-transmitting-finished-waiting-idle">status [running, error, transmitting, finished, waiting, idle]<a class="headerlink" href="#term-status-running-error-transmitting-finished-waiting-idle" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Detector status. Goes to stop server.</div>
+</div>
+</dd>
+<dt id="term-stop">stop<a class="headerlink" href="#term-stop" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Abort detector acquisition. Status changes to IDLE or STOPPED. Goes to stop server.</div>
+</div>
+</dd>
+<dt id="term-stopport-n">stopport [n]<a class="headerlink" href="#term-stopport-n" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Port number of the stop server on detector for detector-client tcp interface. Default is 1953. Normally unchanged.</div>
+</div>
+</dd>
+<dt id="term-storagecell_delay-duration-0-1638375-ns-optional-unit-ns-us-ms-s">storagecell_delay [duration (0-1638375 ns)] [(optional unit) ns|us|ms|s]<a class="headerlink" href="#term-storagecell_delay-duration-0-1638375-ns-optional-unit-ns-us-ms-s" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Jungfrau] Additional time delay between 2 consecutive exposures in burst mode (resolution of 25ns). Only applicable for chipv1.0. For advanced users only.</div>
+</div>
+</dd>
+<dt id="term-storagecell_start-0-max">storagecell_start [0-max]<a class="headerlink" href="#term-storagecell_start-0-max" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Jungfrau] Storage cell that stores the first acquisition of the series. max is 15 (default) for chipv1.0 and 3 (default) for chipv1.1. For advanced users only.</div>
+</div>
+</dd>
+<dt id="term-subdeadtime-duration-optional-unit-ns-us-ms-s">subdeadtime [duration] [(optional unit) ns|us|ms|s]<a class="headerlink" href="#term-subdeadtime-duration-optional-unit-ns-us-ms-s" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger] Dead time of EIGER subframes in 32 bit mode. Subperiod = subexptime + subdeadtime.</div>
+</div>
+</dd>
+<dt id="term-subexptime-duration-optional-unit-ns-us-ms-s">subexptime [duration] [(optional unit) ns|us|ms|s]<a class="headerlink" href="#term-subexptime-duration-optional-unit-ns-us-ms-s" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger] Exposure time of EIGER subframes in 32 bit mode.</div>
+</div>
+</dd>
+<dt id="term-sync-0-1">sync [0, 1]<a class="headerlink" href="#term-sync-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Jungfrau][Moench] Enables or disables synchronization between modules. Sync mode requires at least one master configured. Also requires flatband cabling between master and slave with termination board.</div>
+</div>
+</dd>
+<dt id="term-syncclk-n_clk-in-MHz">syncclk [n_clk in MHz]<a class="headerlink" href="#term-syncclk-n_clk-in-MHz" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb] Sync clock in MHz.</div>
+</div>
+</dd>
+<dt id="term-temp_10ge-n_value">temp_10ge [n_value]<a class="headerlink" href="#term-temp_10ge-n_value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger]Temperature close to the 10GbE</div>
+</div>
+</dd>
+<dt id="term-temp_adc-n_value">temp_adc [n_value]<a class="headerlink" href="#term-temp_adc-n_value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Jungfrau][Moench] ADC Temperature</div>
+</div>
+</dd>
+<dt id="term-temp_control-0-1">temp_control [0, 1]<a class="headerlink" href="#term-temp_control-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Jungfrau][Moench] Temperature control enable. Default is 0 (disabled). If temperature crosses threshold temperature and temperature control is enabled, power to chip will be switched off and temperature event occurs. To power on chip again, temperature has to be less than threshold temperature and temperature event has to be cleared.</div>
+</div>
+</dd>
+<dt id="term-temp_dcdc-n_value">temp_dcdc [n_value]<a class="headerlink" href="#term-temp_dcdc-n_value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger]Temperature close to the dc dc converter</div>
+</div>
+</dd>
+<dt id="term-temp_event-0">temp_event [0]<a class="headerlink" href="#term-temp_event-0" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Jungfrau][Moench] 1, if a temperature event occured. To clear this event, set it to 0.</div>
+<div class="line">If temperature crosses threshold temperature and temperature control is enabled, power to chip will be switched off and temperature event occurs. To power on chip again, temperature has to be less than threshold temperature and temperature event has to be cleared.</div>
+</div>
+</dd>
+<dt id="term-temp_fpga-n_value">temp_fpga [n_value]<a class="headerlink" href="#term-temp_fpga-n_value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger][Jungfrau][Moench][Mythen3][Gotthard2][Xilinx CTB] FPGA Temperature</div>
+</div>
+</dd>
+<dt id="term-temp_fpgaext-n_value">temp_fpgaext [n_value]<a class="headerlink" href="#term-temp_fpgaext-n_value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger]Temperature close to the FPGA</div>
+</div>
+</dd>
+<dt id="term-temp_fpgafl-n_value">temp_fpgafl [n_value]<a class="headerlink" href="#term-temp_fpgafl-n_value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger]Temperature of the left front end board fpga.</div>
+</div>
+</dd>
+<dt id="term-temp_fpgafr-n_value">temp_fpgafr [n_value]<a class="headerlink" href="#term-temp_fpgafr-n_value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger]Temperature of the right front end board fpga.</div>
+</div>
+</dd>
+<dt id="term-temp_slowadc-n_value">temp_slowadc [n_value]<a class="headerlink" href="#term-temp_slowadc-n_value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb]Temperature of the slow adc</div>
+</div>
+</dd>
+<dt id="term-temp_sodl-n_value">temp_sodl [n_value]<a class="headerlink" href="#term-temp_sodl-n_value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger]Temperature close to the left so-dimm memory</div>
+</div>
+</dd>
+<dt id="term-temp_sodr-n_value">temp_sodr [n_value]<a class="headerlink" href="#term-temp_sodr-n_value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger]Temperature close to the right so-dimm memory</div>
+</div>
+</dd>
+<dt id="term-temp_threshold-n_temp-in-degrees">temp_threshold [n_temp (in degrees)]<a class="headerlink" href="#term-temp_threshold-n_temp-in-degrees" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Jungfrau][Moench] Threshold temperature in degrees. If temperature crosses threshold temperature and temperature control is enabled, power to chip will be switched off and temperature event occurs. To power on chip again, temperature has to be less than threshold temperature and temperature event has to be cleared.</div>
+</div>
+</dd>
+<dt id="term-templist">templist<a class="headerlink" href="#term-templist" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">List of temperature commands implemented for this detector.</div>
+</div>
+</dd>
+<dt id="term-tempvalues">tempvalues<a class="headerlink" href="#term-tempvalues" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Gets the values for every temperature for this detector.</div>
+</div>
+</dd>
+<dt id="term-tengiga-0-1">tengiga [0, 1]<a class="headerlink" href="#term-tengiga-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger][Ctb][Mythen3] 10GbE Enable.</div>
+</div>
+</dd>
+<dt id="term-threshold-eV-optinal-settings">threshold [eV] [(optinal settings)<a class="headerlink" href="#term-threshold-eV-optinal-settings" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger][Mythen3] Threshold in eV. It loads trim files from settingspath.</div>
+<div class="line">threshold [eV1] [eV2] [eV3] [(optional settings)]</div>
+<div class="line">[Mythen3] Threshold in eV for each counter. It loads trim files from settingspath. An energy of -1 will pick up values  from detector.</div>
+</div>
+</dd>
+<dt id="term-thresholdnotb-eV-optinal-settings">thresholdnotb [eV] [(optinal settings)<a class="headerlink" href="#term-thresholdnotb-eV-optinal-settings" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger][Mythen3] Threshold in eV. It loads trim files from settingspath.Trimbits are not loaded.</div>
+<div class="line">thresholdnotb [eV1] [eV2] [eV3] [(optional settings)]</div>
+<div class="line">[Mythen3] Threshold in eV for each counter. It loads trim files from settingspath. An energy of -1 will pick up values  from detector.Trimbits are not loaded.</div>
+</div>
+</dd>
+<dt id="term-timing-auto-trigger-gating-burst_trigger-trigger_gating">timing [auto|trigger|gating|burst_trigger|trigger_gating]<a class="headerlink" href="#term-timing-auto-trigger-gating-burst_trigger-trigger_gating" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Timing Mode of detector.</div>
+<div class="line">[Jungfrau][Moench][Ctb][Gotthard2][Xilinx Ctb] [auto|trigger]</div>
+<div class="line">[Mythen3] [auto|trigger|gating|trigger_gating]</div>
+<div class="line">[Eiger] [auto|trigger|gating|burst_trigger]</div>
+</div>
+</dd>
+<dt id="term-timing_info_decoder-swissfel-shine">timing_info_decoder [swissfel|shine]<a class="headerlink" href="#term-timing_info_decoder-swissfel-shine" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Jungfrau] Advanced Command and only for Swissfel and Shine. Sets the bunch id or timing info decoder. Default is swissfel. Only allowed for pcbv2.0.</div>
+</div>
+</dd>
+<dt id="term-timinglist">timinglist<a class="headerlink" href="#term-timinglist" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Gets the list of timing modes for this detector.</div>
+</div>
+</dd>
+<dt id="term-timingsource-internal-external">timingsource [internal|external]<a class="headerlink" href="#term-timingsource-internal-external" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Gotthard2] Timing source. Internal is crystal and external is system timing. Default is internal.</div>
+</div>
+</dd>
+<dt id="term-top-0-1">top [0, 1]<a class="headerlink" href="#term-top-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger] Sets half module to top (1), else bottom.</div>
+</div>
+</dd>
+<dt id="term-transceiverenable-bitmask">transceiverenable [bitmask]<a class="headerlink" href="#term-transceiverenable-bitmask" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Xilinx Ctb] Transceiver Enable Mask. Enable for each 4 Transceiver channel.</div>
+</div>
+</dd>
+<dt id="term-trigger">trigger<a class="headerlink" href="#term-trigger" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger][Mythen3][Jungfrau][Moench] Sends software trigger signal to detector</div>
+</div>
+</dd>
+<dt id="term-triggers-n_triggers">triggers [n_triggers]<a class="headerlink" href="#term-triggers-n_triggers" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Number of triggers per aquire. Set timing mode to use triggers.</div>
+</div>
+</dd>
+<dt id="term-triggersl">triggersl<a class="headerlink" href="#term-triggersl" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Number of triggers left in acquisition. Only when external trigger used.</div>
+</div>
+</dd>
+<dt id="term-trimbits-fname">trimbits [fname]<a class="headerlink" href="#term-trimbits-fname" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger][Mythen3] Put will load the trimbit file to detector. If no extension specified, serial number of each module is attached. Get will save the trimbits from the detector to file with serial number added to file name.</div>
+</div>
+</dd>
+<dt id="term-trimen-trim_ev1-trim_Ev2-optional-trim_ev3-optional-...">trimen [trim_ev1] [trim_Ev2 (optional)] [trim_ev3 (optional)] …<a class="headerlink" href="#term-trimen-trim_ev1-trim_Ev2-optional-trim_ev3-optional-..." title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger][Mythen3] list of trim energies, where corresponding default trim files exist in corresponding trim folders.</div>
+</div>
+</dd>
+<dt id="term-trimval-n_trimval">trimval [n_trimval]<a class="headerlink" href="#term-trimval-n_trimval" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger][Mythen3] All trimbits set to this value. Returns -1 if all trimbits are different values.</div>
+</div>
+</dd>
+<dt id="term-tsamples-n_value">tsamples [n_value]<a class="headerlink" href="#term-tsamples-n_value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Xilinx Ctb] Number of transceiver samples expected.</div>
+</div>
+</dd>
+<dt id="term-txdelay-n_delay">txdelay [n_delay]<a class="headerlink" href="#term-txdelay-n_delay" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger][Jungfrau][Moench][Mythen3] Set transmission delay for all modules in the detector using the step size provided.Sets up</div>
+<div class="line">[Eiger] txdelay_left to (2 * mod_index * n_delay),</div>
+<div class="line">[Eiger] txdelay_right to ((2 * mod_index + 1) * n_delay) and</div>
+<div class="line">[Eiger] txdelay_frame to (2 * num_modules * n_delay)</div>
+<div class="line">[Jungfrau][Moench][Mythen3] txdelay_frame to (num_modules * n_delay) for every module.</div>
+</div>
+</dd>
+<dt id="term-txdelay_frame-n_delay">txdelay_frame [n_delay]<a class="headerlink" href="#term-txdelay_frame-n_delay" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger][Jungfrau][Moench][Mythen3] Transmission delay of first udp packet being streamed out of the module.</div>
+<div class="line">[Jungfrau][Moench] [0-31] Each value represents 1 ms</div>
+<div class="line">[Eiger] Additional delay to txdelay_left and txdelay_right. Each value represents 10ns. Typical value is 50000.</div>
+<div class="line">[Mythen3] [0-16777215] Each value represents 8 ns (125 MHz clock), max is 134 ms.</div>
+</div>
+</dd>
+<dt id="term-txdelay_left-n_delay">txdelay_left [n_delay]<a class="headerlink" href="#term-txdelay_left-n_delay" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger] Transmission delay of first packet in an image being streamed out of the module’s left UDP port. Each value represents 10ns. Typical value is 50000.</div>
+</div>
+</dd>
+<dt id="term-txdelay_right-n_delay">txdelay_right [n_delay]<a class="headerlink" href="#term-txdelay_right-n_delay" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger] Transmission delay of first packet in an image being streamed out of the module’s right UDP port. Each value represents 10ns. Typical value is 50000.</div>
+</div>
+</dd>
+<dt id="term-type">type<a class="headerlink" href="#term-type" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Returns detector type. Can be Eiger, Jungfrau, Moench, Mythen3, Gotthard2, ChipTestBoard, Xilinx_ChipTestBoard</div>
+</div>
+</dd>
+<dt id="term-udp_cleardst">udp_cleardst<a class="headerlink" href="#term-udp_cleardst" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Clears udp destination details on the detector.</div>
+</div>
+</dd>
+<dt id="term-udp_dstip-x.x.x.x-or-auto">udp_dstip [x.x.x.x] or auto<a class="headerlink" href="#term-udp_dstip-x.x.x.x-or-auto" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Ip address of the receiver (destination) udp interface. If ‘auto’ used, then ip is set to ip of rx_hostname.</div>
+</div>
+</dd>
+<dt id="term-udp_dstip2-x.x.x.x-or-auto">udp_dstip2 [x.x.x.x] or auto<a class="headerlink" href="#term-udp_dstip2-x.x.x.x-or-auto" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Jungfrau][Moench][Gotthard2] Ip address of the receiver (destination) udp interface 2. If ‘auto’ used, then ip is set to ip of rx_hostname.</div>
+<div class="line">[Jungfrau][Moench] bottom half</div>
+<div class="line">[Gotthard2] veto debugging.</div>
+</div>
+</dd>
+<dt id="term-udp_dstlist-ip-x.x.x.x-optional-ip2-x.x.x.x">udp_dstlist [ip=x.x.x.x] [(optional)ip2=x.x.x.x]<a class="headerlink" href="#term-udp_dstlist-ip-x.x.x.x-optional-ip2-x.x.x.x" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[mac=xx:xx:xx:xx:xx:xx] [(optional)mac2=xx:xx:xx:xx:xx:xx]</div>
+<div class="line">[port=value] [(optional)port2=value]</div>
+<div class="line">The order of ip, mac and port does not matter. entry_value can be &gt;0 only for [Eiger][Jungfrau][Moench][Mythen3][Gotthard2] where round robin is implemented. If ‘auto’ used, then ip is set to ip of rx_hostname.</div>
+</div>
+</dd>
+<dt id="term-udp_dstmac-x-x-x-x-x-x">udp_dstmac [x:x:x:x:x:x]<a class="headerlink" href="#term-udp_dstmac-x-x-x-x-x-x" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Mac address of the receiver (destination) udp interface. Not mandatory to set as udp_dstip retrieves it from slsReceiver process, but must be set if you use a custom receiver (not slsReceiver). Use router mac if router between detector and receiver.</div>
+</div>
+</dd>
+<dt id="term-udp_dstmac2-x-x-x-x-x-x">udp_dstmac2 [x:x:x:x:x:x]<a class="headerlink" href="#term-udp_dstmac2-x-x-x-x-x-x" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Jungfrau][Moench] Mac address of the receiver (destination) udp interface 2. Not mandatory to set as udp_dstip2 retrieves it from slsReceiver process but must be set if you use a custom receiver (not slsReceiver).</div>
+<div class="line-block">
+<div class="line">[Jungfrau][Moench] top half or inner interface</div>
+<div class="line">[Gotthard2] veto debugging. Use router mac if router between detector and receiver.</div>
+</div>
+</div>
+</dd>
+<dt id="term-udp_dstport-n">udp_dstport [n]<a class="headerlink" href="#term-udp_dstport-n" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Port number of the receiver (destination) udp interface. Default is 50001.</div>
+<div class="line">If multi command, ports for each module is calculated (incremented by 1 if no 2nd interface)</div>
+</div>
+</dd>
+<dt id="term-udp_dstport2-n">udp_dstport2 [n]<a class="headerlink" href="#term-udp_dstport2-n" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Jungfrau][Moench][Eiger][Gotthard2] Port number of the receiver (destination) udp interface 2. Default is 50002.</div>
+<div class="line">If multi command, ports for each module is calculated (incremented by 2)</div>
+<div class="line">[Jungfrau][Moench] top half or inner interface</div>
+<div class="line">[Eiger] right half</div>
+<div class="line">[Gotthard2] veto debugging</div>
+</div>
+</dd>
+<dt id="term-udp_firstdst">udp_firstdst<a class="headerlink" href="#term-udp_firstdst" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[0 - N]</div>
+<div class="line">where N is the max number of udp destinations - 1.</div>
+<div class="line">[Jungfrau][Moench][Gotthard2] Max number of udp destinations is 32.</div>
+<div class="line">[Mythen3] Max number of udp destination is 64.</div>
+<div class="line-block">
+<div class="line">One can set which is the first destination that the detector will stream images out from in a round robin fashion. The entry must not have been empty. Default: 0</div>
+</div>
+</div>
+</dd>
+<dt id="term-udp_numdst">udp_numdst<a class="headerlink" href="#term-udp_numdst" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Jungfrau][Moench][Eiger][Mythen3][Gotthard2] One can enter upto 32 (64 for Mythen3) destinations that the detector will stream images out in a round robin fashion. This is get only command. Default: 1</div>
+</div>
+</dd>
+<dt id="term-udp_reconfigure">udp_reconfigure<a class="headerlink" href="#term-udp_reconfigure" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Reconfigures Detector with UDP destination. More for debugging as the configuration is done automatically when the detector has sufficient UDP details.</div>
+</div>
+</dd>
+<dt id="term-udp_srcip-x.x.x.x-or-auto">udp_srcip [x.x.x.x] or auto<a class="headerlink" href="#term-udp_srcip-x.x.x.x-or-auto" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Ip address of the detector (source) udp interface. Must be same subnet as destination udp ip.</div>
+<div class="line">[Eiger] Set only for 10G. For 1G, detector will replace with its own DHCP IP address.</div>
+<div class="line">One can also set this to ‘auto’ for 1 GbE data and virtual detectors. It will set to IP of detector.</div>
+</div>
+</dd>
+<dt id="term-udp_srcip2-x.x.x.x-or-auto">udp_srcip2 [x.x.x.x] or auto<a class="headerlink" href="#term-udp_srcip2-x.x.x.x-or-auto" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Jungfrau][Moench][Gotthard2] Ip address of the detector (source) udp interface 2. Must be same subnet as destination udp ip2.</div>
+<div class="line-block">
+<div class="line">[Jungfrau][Moench] top half or inner interface</div>
+<div class="line">[Gotthard2] veto debugging.</div>
+</div>
+<div class="line">One can also set this to ‘auto’ for 1 GbE data and virtual detectors. It will set to IP of detector.</div>
+</div>
+</dd>
+<dt id="term-udp_srcmac-x-x-x-x-x-x">udp_srcmac [x:x:x:x:x:x]<a class="headerlink" href="#term-udp_srcmac-x-x-x-x-x-x" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Mac address of the detector (source) udp interface.</div>
+<div class="line">[Eiger] Do not set as detector will replace with its own DHCP Mac (1G) or DHCP Mac + 1 (10G).</div>
+</div>
+</dd>
+<dt id="term-udp_srcmac2-x-x-x-x-x-x">udp_srcmac2 [x:x:x:x:x:x]<a class="headerlink" href="#term-udp_srcmac2-x-x-x-x-x-x" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Jungfrau][Moench] Mac address of the top half or inner (source) udp interface.</div>
+</div>
+</dd>
+<dt id="term-udp_validate">udp_validate<a class="headerlink" href="#term-udp_validate" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Validates that UDP configuration in the detector is valid. If not configured, it will throw with error message requesting missing udp information.</div>
+</div>
+</dd>
+<dt id="term-update">update<a class="headerlink" href="#term-update" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Without tftp: [server_name (incl fullpath)] [fname.pof (incl full path)] This does not use tftp.</div>
+<div class="line-block">
+<div class="line">[Jungfrau][Moench][Ctb] Updates the firmware, detector server, deletes old server, creates the symbolic link and then reboots detector controller.</div>
+<div class="line">[Mythen3][Gotthard2] will require a script to start up the shorter named server link at start up.</div>
+<div class="line">server_name is full path name of detector server binary</div>
+<div class="line">fname is full path of programming file</div>
+</div>
+</div>
+</dd>
+<dt id="term-updatedetectorserver-server_name-with-full-path">updatedetectorserver [server_name  with full path]<a class="headerlink" href="#term-updatedetectorserver-server_name-with-full-path" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Jungfrau][Moench][Eiger][Ctb][Mythen3][Gotthard2] Copies detector server via TCP (without tftp). Makes a symbolic link with a shorter name (without vx.x.x). Then, detector controller reboots (except Eiger).</div>
+<div class="line">[Jungfrau][Moench][Ctb]Also changes respawn server to the link, which is effective after a reboot.</div>
+</div>
+</dd>
+<dt id="term-updatekernel-kernel_name-with-full-path">updatekernel [kernel_name with full path]<a class="headerlink" href="#term-updatekernel-kernel_name-with-full-path" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Jungfrau][Moench][Ctb][Mythen3][Gotthard2] Advanced Command!! You could damage the detector. Please use with caution.</div>
+<div class="line">Updates the kernel image. Then, detector controller reboots with new kernel.</div>
+</div>
+</dd>
+<dt id="term-updatemode-0-1">updatemode [0|1]<a class="headerlink" href="#term-updatemode-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Restart the detector server in update mode or not. This is useful when server-firmware compatibility is at its worst and server cannot start up normally</div>
+</div>
+</dd>
+<dt id="term-user-user">user user<a class="headerlink" href="#term-user-user" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">User details from shared memory (hostname, type, PID, User, Date).</div>
+</div>
+</dd>
+<dt id="term-v_a-n_value">v_a [n_value]<a class="headerlink" href="#term-v_a-n_value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Xilinx Ctb] Power supply a in mV.</div>
+</div>
+</dd>
+<dt id="term-v_b-n_value">v_b [n_value]<a class="headerlink" href="#term-v_b-n_value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Xilinx Ctb] Power supply b in mV.</div>
+</div>
+</dd>
+<dt id="term-v_c-n_value">v_c [n_value]<a class="headerlink" href="#term-v_c-n_value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Xilinx Ctb] Power supply c in mV.</div>
+</div>
+</dd>
+<dt id="term-v_chip-n_value">v_chip [n_value]<a class="headerlink" href="#term-v_chip-n_value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb] Power supply chip in mV. Do not use it unless you are completely sure you will not fry the board.</div>
+</div>
+</dd>
+<dt id="term-v_d-n_value">v_d [n_value]<a class="headerlink" href="#term-v_d-n_value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Xilinx Ctb] Power supply d in mV.</div>
+</div>
+</dd>
+<dt id="term-v_io-n_value">v_io [n_value]<a class="headerlink" href="#term-v_io-n_value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Xilinx Ctb] Power supply io in mV. Minimum 1200 mV. Must be the first power regulator to be set after fpga reset (on-board detector server start up).</div>
+</div>
+</dd>
+<dt id="term-v_limit-n_value">v_limit [n_value]<a class="headerlink" href="#term-v_limit-n_value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Xilinx Ctb] Soft limit for power supplies (ctb only) and DACS in mV.</div>
+</div>
+</dd>
+<dt id="term-vchip_comp_adc-chip-index-0-9-1-for-all-10-bit-hex-value">vchip_comp_adc [chip index 0-9, -1 for all][10 bit hex value]<a class="headerlink" href="#term-vchip_comp_adc-chip-index-0-9-1-for-all-10-bit-hex-value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Gotthard2] On chip Dac for comparator current of ADC.</div>
+</div>
+</dd>
+<dt id="term-vchip_comp_fe-chip-index-0-9-1-for-all-10-bit-hex-value">vchip_comp_fe [chip index 0-9, -1 for all][10 bit hex value]<a class="headerlink" href="#term-vchip_comp_fe-chip-index-0-9-1-for-all-10-bit-hex-value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Gotthard2] On chip Dac for comparator current of analogue front end.</div>
+</div>
+</dd>
+<dt id="term-vchip_cs-chip-index-0-9-1-for-all-10-bit-hex-value">vchip_cs [chip index 0-9, -1 for all][10 bit hex value]<a class="headerlink" href="#term-vchip_cs-chip-index-0-9-1-for-all-10-bit-hex-value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Gotthard2] On chip Dac for current injection into preamplifier.</div>
+</div>
+</dd>
+<dt id="term-vchip_opa_1st-chip-index-0-9-1-for-all-10-bit-hex-value">vchip_opa_1st [chip index 0-9, -1 for all][10 bit hex value]<a class="headerlink" href="#term-vchip_opa_1st-chip-index-0-9-1-for-all-10-bit-hex-value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Gotthard2] On chip Dac for opa current for driving the other DACs in chip.</div>
+</div>
+</dd>
+<dt id="term-vchip_opa_fd-chip-index-0-9-1-for-all-10-bit-hex-value">vchip_opa_fd [chip index 0-9, -1 for all][10 bit hex value]<a class="headerlink" href="#term-vchip_opa_fd-chip-index-0-9-1-for-all-10-bit-hex-value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Gotthard2] On chip Dac current for CDS opa stage.</div>
+</div>
+</dd>
+<dt id="term-vchip_ref_comp_fe-chip-index-0-9-1-for-all-10-bit-hex-value">vchip_ref_comp_fe [chip index 0-9, -1 for all][10 bit hex value]<a class="headerlink" href="#term-vchip_ref_comp_fe-chip-index-0-9-1-for-all-10-bit-hex-value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Gotthard2] On chip Dac for reference voltage of the comparator of analogue front end.</div>
+</div>
+</dd>
+<dt id="term-versions">versions<a class="headerlink" href="#term-versions" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Print all versions and detector type</div>
+</div>
+</dd>
+<dt id="term-veto-0-1">veto [0, 1]<a class="headerlink" href="#term-veto-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Gotthard2] Enable or disable veto data data from chip. Default is 0.</div>
+</div>
+</dd>
+<dt id="term-vetoalg-hits-raw-lll-10gbe">vetoalg [hits|raw] [lll|10gbe]<a class="headerlink" href="#term-vetoalg-hits-raw-lll-10gbe" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Gotthard2] Set the veto algorithm. Default is hits.</div>
+</div>
+</dd>
+<dt id="term-vetofile-chip-index-0-9-1-for-all-file-name">vetofile [chip index 0-9, -1 for all] [file name]<a class="headerlink" href="#term-vetofile-chip-index-0-9-1-for-all-file-name" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Gotthard2] Set veto reference for each 128 channels for specific chip. The file should have 128 rows of gain index and 12 bit value in dec</div>
+</div>
+</dd>
+<dt id="term-vetophoton-ichip-photons-energy-in-keV-reference-file">vetophoton [ichip] [#photons] [energy in keV] [reference file]<a class="headerlink" href="#term-vetophoton-ichip-photons-energy-in-keV-reference-file" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Gotthard2] Set veto reference for 128 channels for chip ichip according to reference file and #photons and energy in keV.</div>
+<div class="line">[ichip] [output file]</div>
+<div class="line-block">
+<div class="line">Get gain indices and veto reference for 128 channels for chip ichip, saved to file.</div>
+</div>
+</div>
+</dd>
+<dt id="term-vetoref-gain-index-12-bit-value">vetoref [gain index] [12 bit value]<a class="headerlink" href="#term-vetoref-gain-index-12-bit-value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Gotthard2] Set veto reference for all 128 channels for all chips.</div>
+</div>
+</dd>
+<dt id="term-vetostream-none-lll-10gbe-...">vetostream [none|lll|10gbe|…]<a class="headerlink" href="#term-vetostream-none-lll-10gbe-..." title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Gotthard2] Enable or disable the 2 veto streaming interfaces available. Can include more than one interface.</div>
+<div class="line">Default: none. lll (low latency link) is the default interface to work with.</div>
+<div class="line">10GbE is for debugging and also enables second interface in receiver for listening to veto packets (writes a separate file if writing enabled). Also restarts client and receiver zmq sockets if zmq streaming enabled.</div>
+</div>
+</dd>
+<dt id="term-virtual-n_servers-starting_port_number">virtual [n_servers] [starting_port_number]<a class="headerlink" href="#term-virtual-n_servers-starting_port_number" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Connecs to n virtual server at local host starting at specific control port. Every virtual server will have a stop port (control port + 1)</div>
+</div>
+</dd>
+<dt id="term-vm_a">vm_a<a class="headerlink" href="#term-vm_a" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb] Measured voltage of power supply a in mV.</div>
+</div>
+</dd>
+<dt id="term-vm_b">vm_b<a class="headerlink" href="#term-vm_b" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb] Measured voltage of power supply b in mV.</div>
+</div>
+</dd>
+<dt id="term-vm_c">vm_c<a class="headerlink" href="#term-vm_c" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb] Measured voltage of power supply c in mV.</div>
+</div>
+</dd>
+<dt id="term-vm_d">vm_d<a class="headerlink" href="#term-vm_d" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb] Measured voltage of power supply d in mV.</div>
+</div>
+</dd>
+<dt id="term-vm_io">vm_io<a class="headerlink" href="#term-vm_io" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb] Measured voltage of power supply io in mV.</div>
+</div>
+</dd>
+<dt id="term-zmqhwm-n_limit">zmqhwm [n_limit]<a class="headerlink" href="#term-zmqhwm-n_limit" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Client’s zmq receive high water mark. Default is the zmq library’s default (1000), can also be set here using -1.</div>
+<div class="line">This is a high number and can be set to 2 for gui purposes.</div>
+<div class="line">One must also set the receiver’s send high water mark to similar value. Final effect is sum of them.</div>
+<div class="line-block">
+<div class="line">Setting it via command line is useful only before zmq enabled (before opening gui).</div>
+</div>
+</div>
+</dd>
+<dt id="term-zmqip-x.x.x.x">zmqip [x.x.x.x]<a class="headerlink" href="#term-zmqip-x.x.x.x" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Ip Address to listen to zmq data streamed out from receiver or intermediate process. Default connects to receiver zmq Ip Address (from rx_hostname). Modified only when using an intermediate process between receiver and client(gui). Also restarts client zmq streaming if enabled.</div>
+</div>
+</dd>
+<dt id="term-zmqport-port">zmqport [port]<a class="headerlink" href="#term-zmqport-port" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Zmq port in client(gui) or intermediate process for data to be streamed to from receiver. Default connects to receiver zmq streaming out port (30001). Modified only when using an intermediate process between receiver and client(gui). Also restarts client zmq streaming if enabled. Must be different for every detector (and udp port). Multi command will automatically increment for individual modules.</div>
+</div>
+</dd>
+</dl>
+</section>
+<section id="deprecated-commands">
+<h2>Deprecated commands<a class="headerlink" href="#deprecated-commands" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>All the dac commands are preceded with the <strong>dac</strong> command. Use command <strong>daclist</strong> to get correct list of dac command arguments for current detector.</p>
+</div>
+<table class="docutils align-default" id="id1">
+<caption><span class="caption-text">Deprecated commands</span><a class="headerlink" href="#id1" title="Link to this table"></a></caption>
+<colgroup>
+<col style="width: 50.0%" />
+<col style="width: 50.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Old</p></th>
+<th class="head"><p>New</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>adc</p></td>
+<td><p>slowadc</p></td>
+</tr>
+<tr class="row-odd"><td><p>auto_comp_disable</p></td>
+<td><p>autocompdisable</p></td>
+</tr>
+<tr class="row-even"><td><p>busy</p></td>
+<td><p>clearbusy</p></td>
+</tr>
+<tr class="row-odd"><td><p>clkdivider</p></td>
+<td><p>readoutspeed</p></td>
+</tr>
+<tr class="row-even"><td><p>comp_disable_time</p></td>
+<td><p>compdisabletime</p></td>
+</tr>
+<tr class="row-odd"><td><p>copydetectorserver</p></td>
+<td><p>updatedetectorserver</p></td>
+</tr>
+<tr class="row-even"><td><p>cycles</p></td>
+<td><p>triggers</p></td>
+</tr>
+<tr class="row-odd"><td><p>cyclesl</p></td>
+<td><p>triggersl</p></td>
+</tr>
+<tr class="row-even"><td><p>defaultdacs</p></td>
+<td><p>resetdacs</p></td>
+</tr>
+<tr class="row-odd"><td><p>detectorip</p></td>
+<td><p>udp_srcip</p></td>
+</tr>
+<tr class="row-even"><td><p>detectorip2</p></td>
+<td><p>udp_srcip2</p></td>
+</tr>
+<tr class="row-odd"><td><p>detectormac</p></td>
+<td><p>udp_srcmac</p></td>
+</tr>
+<tr class="row-even"><td><p>detectormac2</p></td>
+<td><p>udp_srcmac2</p></td>
+</tr>
+<tr class="row-odd"><td><p>detectornumber</p></td>
+<td><p>serialnumber</p></td>
+</tr>
+<tr class="row-even"><td><p>detectorversion</p></td>
+<td><p>firmwareversion</p></td>
+</tr>
+<tr class="row-odd"><td><p>detsizechan</p></td>
+<td><p>detsize</p></td>
+</tr>
+<tr class="row-even"><td><p>digitest</p></td>
+<td><p>imagetest</p></td>
+</tr>
+<tr class="row-odd"><td><p>enablefwrite</p></td>
+<td><p>fwrite</p></td>
+</tr>
+<tr class="row-even"><td><p>fileformat</p></td>
+<td><p>fformat</p></td>
+</tr>
+<tr class="row-odd"><td><p>filter</p></td>
+<td><p>filterresistor</p></td>
+</tr>
+<tr class="row-even"><td><p>flags</p></td>
+<td><p>romode</p></td>
+</tr>
+<tr class="row-odd"><td><p>flippeddatax</p></td>
+<td><p>fliprows</p></td>
+</tr>
+<tr class="row-even"><td><p>flowcontrol_10g</p></td>
+<td><p>flowcontrol10g</p></td>
+</tr>
+<tr class="row-odd"><td><p>frameindex</p></td>
+<td><p>rx_frameindex</p></td>
+</tr>
+<tr class="row-even"><td><p>framescaught</p></td>
+<td><p>rx_framescaught</p></td>
+</tr>
+<tr class="row-odd"><td><p>i_a</p></td>
+<td><p>im_a</p></td>
+</tr>
+<tr class="row-even"><td><p>i_b</p></td>
+<td><p>im_b</p></td>
+</tr>
+<tr class="row-odd"><td><p>i_c</p></td>
+<td><p>im_c</p></td>
+</tr>
+<tr class="row-even"><td><p>i_d</p></td>
+<td><p>im_d</p></td>
+</tr>
+<tr class="row-odd"><td><p>i_io</p></td>
+<td><p>im_io</p></td>
+</tr>
+<tr class="row-even"><td><p>ibias_sfp</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-odd"><td><p>index</p></td>
+<td><p>findex</p></td>
+</tr>
+<tr class="row-even"><td><p>iodelay</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-odd"><td><p>masterfile</p></td>
+<td><p>fmaster</p></td>
+</tr>
+<tr class="row-even"><td><p>nframes</p></td>
+<td><p>framecounter</p></td>
+</tr>
+<tr class="row-odd"><td><p>now</p></td>
+<td><p>runtime</p></td>
+</tr>
+<tr class="row-even"><td><p>outdir</p></td>
+<td><p>fpath</p></td>
+</tr>
+<tr class="row-odd"><td><p>overwrite</p></td>
+<td><p>foverwrite</p></td>
+</tr>
+<tr class="row-even"><td><p>patternX</p></td>
+<td><p>pattern</p></td>
+</tr>
+<tr class="row-odd"><td><p>r_discardpolicy</p></td>
+<td><p>rx_discardpolicy</p></td>
+</tr>
+<tr class="row-even"><td><p>r_framesperfile</p></td>
+<td><p>rx_framesperfile</p></td>
+</tr>
+<tr class="row-odd"><td><p>r_lastclient</p></td>
+<td><p>rx_lastclient</p></td>
+</tr>
+<tr class="row-even"><td><p>r_lock</p></td>
+<td><p>rx_lock</p></td>
+</tr>
+<tr class="row-odd"><td><p>r_padding</p></td>
+<td><p>rx_padding</p></td>
+</tr>
+<tr class="row-even"><td><p>r_readfreq</p></td>
+<td><p>rx_zmqfreq</p></td>
+</tr>
+<tr class="row-odd"><td><p>r_silent</p></td>
+<td><p>rx_silent</p></td>
+</tr>
+<tr class="row-even"><td><p>readnlines</p></td>
+<td><p>readnrows</p></td>
+</tr>
+<tr class="row-odd"><td><p>receiver</p></td>
+<td><p>rx_status</p></td>
+</tr>
+<tr class="row-even"><td><p>receiverversion</p></td>
+<td><p>rx_version</p></td>
+</tr>
+<tr class="row-odd"><td><p>resmat</p></td>
+<td><p>partialreset</p></td>
+</tr>
+<tr class="row-even"><td><p>rx_datastream</p></td>
+<td><p>rx_zmqstream</p></td>
+</tr>
+<tr class="row-odd"><td><p>rx_readfreq</p></td>
+<td><p>rx_zmqfreq</p></td>
+</tr>
+<tr class="row-even"><td><p>rx_udpip</p></td>
+<td><p>udp_dstip</p></td>
+</tr>
+<tr class="row-odd"><td><p>rx_udpip2</p></td>
+<td><p>udp_dstip2</p></td>
+</tr>
+<tr class="row-even"><td><p>rx_udpmac</p></td>
+<td><p>udp_dstmac</p></td>
+</tr>
+<tr class="row-odd"><td><p>rx_udpmac2</p></td>
+<td><p>udp_dstmac2</p></td>
+</tr>
+<tr class="row-even"><td><p>rx_udpport</p></td>
+<td><p>udp_dstport</p></td>
+</tr>
+<tr class="row-odd"><td><p>rx_udpport2</p></td>
+<td><p>udp_dstport2</p></td>
+</tr>
+<tr class="row-even"><td><p>rxb_lb</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-odd"><td><p>rxb_rb</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-even"><td><p>settingsdir</p></td>
+<td><p>settingspath</p></td>
+</tr>
+<tr class="row-odd"><td><p>softwareversion</p></td>
+<td><p>detectorserverversion</p></td>
+</tr>
+<tr class="row-even"><td><p>speed</p></td>
+<td><p>readoutspeed</p></td>
+</tr>
+<tr class="row-odd"><td><p>startingfnum</p></td>
+<td><p>nextframenumber</p></td>
+</tr>
+<tr class="row-even"><td><p>storagecells</p></td>
+<td><p>extrastoragecells</p></td>
+</tr>
+<tr class="row-odd"><td><p>thisversion</p></td>
+<td><p>clientversion</p></td>
+</tr>
+<tr class="row-even"><td><p>timestamp</p></td>
+<td><p>frametime</p></td>
+</tr>
+<tr class="row-odd"><td><p>trimdir</p></td>
+<td><p>settingspath</p></td>
+</tr>
+<tr class="row-even"><td><p>txndelay_frame</p></td>
+<td><p>txdelay_frame</p></td>
+</tr>
+<tr class="row-odd"><td><p>txndelay_left</p></td>
+<td><p>txdelay_left</p></td>
+</tr>
+<tr class="row-even"><td><p>txndelay_right</p></td>
+<td><p>txdelay_right</p></td>
+</tr>
+<tr class="row-odd"><td><p>vb_comp</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-even"><td><p>vb_comp_adc</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-odd"><td><p>vb_comp_fe</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-even"><td><p>vb_cs</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-odd"><td><p>vb_ds</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-even"><td><p>vb_opa_1st</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-odd"><td><p>vb_opa_fd</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-even"><td><p>vb_pixbuf</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-odd"><td><p>vb_sda</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-even"><td><p>vbp_colbuf</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-odd"><td><p>vcal</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-even"><td><p>vcal_n</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-odd"><td><p>vcal_p</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-even"><td><p>vcall</p></td>
+<td><p>vcal</p></td>
+</tr>
+<tr class="row-odd"><td><p>vcas</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-even"><td><p>vcasc_sfp</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-odd"><td><p>vcassh</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-even"><td><p>vcmp_ll</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-odd"><td><p>vcmp_lr</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-even"><td><p>vcmp_rl</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-odd"><td><p>vcmp_rr</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-even"><td><p>vcn</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-odd"><td><p>vcom_adc1</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-even"><td><p>vcom_adc2</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-odd"><td><p>vcom_cds</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-even"><td><p>vcp</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-odd"><td><p>vdcsh</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-even"><td><p>vdd_prot</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-odd"><td><p>vhighvoltage</p></td>
+<td><p>highvoltage</p></td>
+</tr>
+<tr class="row-even"><td><p>vicin</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-odd"><td><p>viinsh</p></td>
+<td><p>vishaper</p></td>
+</tr>
+<tr class="row-even"><td><p>vin_cm</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-odd"><td><p>vin_com</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-even"><td><p>vipre</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-odd"><td><p>vipre_cds</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-even"><td><p>vipre_out</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-odd"><td><p>vis</p></td>
+<td><p>vishaper</p></td>
+</tr>
+<tr class="row-even"><td><p>vishaper</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-odd"><td><p>vout_cm</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-even"><td><p>vph</p></td>
+<td><p>vcal_p</p></td>
+</tr>
+<tr class="row-odd"><td><p>vpl</p></td>
+<td><p>vcal_n</p></td>
+</tr>
+<tr class="row-even"><td><p>vpreamp</p></td>
+<td><p>vrpreamp</p></td>
+</tr>
+<tr class="row-odd"><td><p>vref_cds</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-even"><td><p>vref_comp</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-odd"><td><p>vref_comp_fe</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-even"><td><p>vref_ds</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-odd"><td><p>vref_h_adc</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-even"><td><p>vref_l_adc</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-odd"><td><p>vref_prech</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-even"><td><p>vref_rstore</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-odd"><td><p>vrf</p></td>
+<td><p>vrpreamp</p></td>
+</tr>
+<tr class="row-even"><td><p>vrpreamp</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-odd"><td><p>vrs</p></td>
+<td><p>vrshaper</p></td>
+</tr>
+<tr class="row-even"><td><p>vrshaper</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-odd"><td><p>vrshaper_n</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-even"><td><p>vshaper</p></td>
+<td><p>vrshaper</p></td>
+</tr>
+<tr class="row-odd"><td><p>vshaperneg</p></td>
+<td><p>vrshaper_n</p></td>
+</tr>
+<tr class="row-even"><td><p>vsvn</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-odd"><td><p>vsvp</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-even"><td><p>vtgstv</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-odd"><td><p>vth1</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-even"><td><p>vth2</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-odd"><td><p>vth3</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-even"><td><p>vthreshold</p></td>
+<td><p>dac</p></td>
+</tr>
+<tr class="row-odd"><td><p>vtr</p></td>
+<td><p>vtrim</p></td>
+</tr>
+<tr class="row-even"><td><p>vtrim</p></td>
+<td><p>dac</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="pattern.html" class="btn btn-neutral float-left" title="Pattern" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="container_utils.html" class="btn btn-neutral float-right" title="ContainerUtils" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, PSD Detector Group.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

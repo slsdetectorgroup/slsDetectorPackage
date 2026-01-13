@@ -1,0 +1,526 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Installation &mdash; slsDetectorPackage 9.1.0  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/css/extra.css?v=2be88464" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Dependencies" href="dependencies.html" />
+    <link rel="prev" title="slsDetectorPackage" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            slsDetectorPackage 9.1.0
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Installation:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#install-binaries-using-conda">Install binaries using conda</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#build-from-source">Build from source</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#download-source-code-from-github">1. Download Source Code from github</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#build-from-source-using-cmake">2. Build from Source</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#build-using-cmake">Build using CMake</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#build-using-in-built-cmk-sh-script">Build using in-built cmk.sh script</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#build-on-old-distributions">Build on old distributions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#build-slsdetectorgui-qt5">Build slsDetectorGui (Qt5)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#build-this-documentation">Build this documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pybind-and-zeromq">Pybind and Zeromq</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="consuming.html">Consuming slsDetectorPackage</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">C++ API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="detector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="result.html">Result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="receiver_api.html">Receiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pygettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pydetector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyenums.html">Enums</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyexamples.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Command line</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="commandline.html">Command line interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick_start_guide.html">Quick Start Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="container_utils.html">ContainerUtils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="type_traits.html">TypeTraits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ToString.html">ToString</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Firmware</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="firmware.html">Firmware Upgrade</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="servers.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverupgrade.html">Upgrade</a></li>
+<li class="toctree-l1"><a class="reference internal" href="virtualserver.html">Simulators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverdefaults.html">Default Values</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector UDP Header</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="udpheader.html">Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udpconfig.html">Config file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udpdetspec.html">Detector Specific Fields</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="receivers.html">Receivers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiver.html">slsReceiver/ slsMultiReceiver</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver Files</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="fileformat.html">File format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiverheaderformat.html">SLS Receiver Header Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="masterfileattributes.html">Master File Attributes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="binaryfileformat.html">Binary File Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hdf5fileformat.html">HDF5 File Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver ZMQ Stream</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="zmqjsonheaderformat.html">ZMQ: Json Header Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Troubleshooting</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">slsDetectorPackage 9.1.0</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Installation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/installation.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="installation">
+<span id="id1"></span><h1>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h1>
+<p>One can either install pre-built binaries using conda or build from source.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Before building from source make sure that you have the
+<a class="reference internal" href="dependencies.html"><span class="doc">dependencies</span></a> installed. If installing using conda, conda will
+manage the dependencies. Avoid also installing packages with pip.</p>
+</div>
+<section id="install-binaries-using-conda">
+<h2>Install binaries using conda<a class="headerlink" href="#install-binaries-using-conda" title="Link to this heading"></a></h2>
+<p>Conda is not only useful to manage python environments but can also
+be used as a user space package manager. Dates in the tag (for eg. 2020.07.23.dev0)
+are from the developer branch. Please use released tags for stability.</p>
+<dl>
+<dt>We have four different packages available:</dt><dd><table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Package</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>slsdetlib</p></td>
+<td><p>shared libraries and command line utilities</p></td>
+</tr>
+<tr class="row-odd"><td><p>slsdetgui</p></td>
+<td><p>GUI</p></td>
+</tr>
+<tr class="row-even"><td><p>slsdet</p></td>
+<td><p>Python bindings</p></td>
+</tr>
+<tr class="row-odd"><td><p>moenchzmq</p></td>
+<td><p>moench</p></td>
+</tr>
+</tbody>
+</table>
+</dd>
+</dl>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1">#Add channels for dependencies and our library</span>
+conda<span class="w"> </span>config<span class="w"> </span>--add<span class="w"> </span>channels<span class="w"> </span>conda-forge
+conda<span class="w"> </span>config<span class="w"> </span>--add<span class="w"> </span>channels<span class="w"> </span>slsdetectorgroup
+conda<span class="w"> </span>config<span class="w"> </span>--set<span class="w"> </span>channel_priority<span class="w"> </span>strict
+
+<span class="c1">#create and activate an environment with our library</span>
+<span class="c1">#replace 6.1.1 with the required tag</span>
+conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>myenv<span class="w"> </span><span class="nv">slsdetlib</span><span class="o">=</span><span class="m">6</span>.1.1
+conda<span class="w"> </span>activate<span class="w"> </span>myenv
+
+<span class="c1">#ready to use</span>
+sls_detector_get<span class="w"> </span>exptime
+...
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1">#List available versions</span>
+<span class="c1"># lib and binaries</span>
+conda<span class="w"> </span>search<span class="w"> </span>slsdetlib
+<span class="c1"># python</span>
+conda<span class="w"> </span>search<span class="w"> </span>slsdet
+<span class="c1"># gui</span>
+conda<span class="w"> </span>search<span class="w"> </span>slsdetgui
+<span class="c1"># moench</span>
+conda<span class="w"> </span>search<span class="w"> </span>moenchzmq
+</pre></div>
+</div>
+</section>
+<section id="build-from-source">
+<h2>Build from source<a class="headerlink" href="#build-from-source" title="Link to this heading"></a></h2>
+<section id="download-source-code-from-github">
+<h3>1. Download Source Code from github<a class="headerlink" href="#download-source-code-from-github" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/slsdetectorgroup/slsDetectorPackage.git<span class="w"> </span>--branch<span class="w"> </span><span class="m">6</span>.1.1
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For v6.x.x of slsDetectorPackage and older, refer <a class="reference internal" href="#pybind-for-different-slsdetectorpackage-versions"><span class="std std-ref">pybind11 notes on cloning.</span></a></p>
+</div>
+</section>
+<section id="build-from-source-using-cmake">
+<span id="id2"></span><h3>2. Build from Source<a class="headerlink" href="#build-from-source-using-cmake" title="Link to this heading"></a></h3>
+<p>One can either build using cmake or use the in-built cmk.sh script.</p>
+</section>
+<section id="build-using-cmake">
+<h3>Build using CMake<a class="headerlink" href="#build-using-cmake" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># outside slsDetecorPackage folder</span>
+mkdir<span class="w"> </span>build<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>build
+
+<span class="c1"># configure &amp; generate Makefiles using cmake</span>
+<span class="c1"># by listing all your options (alternately use ccmake described below)</span>
+<span class="c1"># cmake3 for some systems</span>
+cmake<span class="w"> </span>../slsDetectorPackage<span class="w"> </span>-DCMAKE_INSTALL_PREFIX<span class="o">=</span>/your/install/path
+
+<span class="c1"># compiled to the build/bin directory</span>
+make<span class="w"> </span>-j12<span class="w"> </span><span class="c1">#or whatever number of cores you are using to build</span>
+
+<span class="c1"># install headers and libs in /your/install/path directory</span>
+make<span class="w"> </span>install
+</pre></div>
+</div>
+<p>Instead of the cmake command, one can use ccmake to get a list of options to configure and generate Makefiles at ease.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># ccmake3 for some systems</span>
+ccmake<span class="w"> </span>..
+
+<span class="c1"># choose the options</span>
+<span class="c1"># first press [c] - configure (until you see [g])</span>
+<span class="c1"># then press [g] - generate</span>
+</pre></div>
+</div>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Example cmake options</p></th>
+<th class="head"><p>Comment</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>-DSLS_USE_PYTHON=ON</p></td>
+<td><p>Python</p></td>
+</tr>
+<tr class="row-odd"><td><p>-DPython_FIND_VIRTUALENV=ONLY</p></td>
+<td><p>Python from the conda env</p></td>
+</tr>
+<tr class="row-even"><td><p>-DSLS_USE_GUI=ON</p></td>
+<td><p>GUI</p></td>
+</tr>
+<tr class="row-odd"><td><p>-DSLS_USE_HDF5=ON</p></td>
+<td><p>HDF5</p></td>
+</tr>
+<tr class="row-even"><td><p>-DSLS_USE_SIMULATOR=ON</p></td>
+<td><p>Simulator</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For v7.x.x of slsDetectorPackage and older, refer <a class="reference internal" href="#zeromq-for-different-slsdetectorpackage-versions"><span class="std std-ref">zeromq notes for cmake option to hint library location.</span></a></p>
+</div>
+</section>
+<section id="build-using-in-built-cmk-sh-script">
+<h3>Build using in-built cmk.sh script<a class="headerlink" href="#build-using-in-built-cmk-sh-script" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>The<span class="w"> </span>binaries<span class="w"> </span>are<span class="w"> </span>generated<span class="w"> </span><span class="k">in</span><span class="w"> </span>slsDetectorPackage/build/bin<span class="w"> </span>directory.
+
+Usage:<span class="w"> </span><span class="nv">$0</span><span class="w"> </span><span class="o">[</span>-b<span class="o">]</span><span class="w"> </span><span class="o">[</span>-c<span class="o">]</span><span class="w"> </span><span class="o">[</span>-d<span class="w"> </span>&lt;HDF5<span class="w"> </span>directory&gt;<span class="o">]</span><span class="w"> </span><span class="o">[</span>-e<span class="o">]</span><span class="w"> </span><span class="o">[</span>-g<span class="o">]</span><span class="w"> </span><span class="o">[</span>-h<span class="o">]</span><span class="w"> </span><span class="o">[</span>-i<span class="o">]</span>
+<span class="o">[</span>-j<span class="w"> </span>&lt;Number<span class="w"> </span>of<span class="w"> </span>threads&gt;<span class="o">]</span><span class="w"> </span><span class="o">[</span>-k<span class="w"> </span>&lt;CMake<span class="w"> </span>command&gt;<span class="o">]</span><span class="w"> </span><span class="o">[</span>-l<span class="w"> </span>&lt;Install<span class="w"> </span>directory&gt;<span class="o">]</span>
+<span class="o">[</span>-m<span class="o">]</span><span class="w"> </span><span class="o">[</span>-n<span class="o">]</span><span class="w"> </span><span class="o">[</span>-p<span class="o">]</span><span class="w"> </span><span class="o">[</span>-r<span class="o">]</span><span class="w"> </span><span class="o">[</span>-s<span class="o">]</span><span class="w"> </span><span class="o">[</span>-t<span class="o">]</span><span class="w"> </span><span class="o">[</span>-u<span class="o">]</span><span class="w"> </span><span class="o">[</span>-z<span class="o">]</span>
+-<span class="o">[</span>no<span class="w"> </span>option<span class="o">]</span>:<span class="w"> </span>only<span class="w"> </span>make
+-b:<span class="w"> </span>Builds/Rebuilds<span class="w"> </span>CMake<span class="w"> </span>files<span class="w"> </span>normal<span class="w"> </span>mode
+-c:<span class="w"> </span>Clean
+-d:<span class="w"> </span>HDF5<span class="w"> </span>Custom<span class="w"> </span>Directory
+-e:<span class="w"> </span>Debug<span class="w"> </span>mode
+-g:<span class="w"> </span>Build/Rebuilds<span class="w"> </span>gui
+-h:<span class="w"> </span>Builds/Rebuilds<span class="w"> </span>Cmake<span class="w"> </span>files<span class="w"> </span>with<span class="w"> </span>HDF5<span class="w"> </span>package
+-i:<span class="w"> </span>Builds<span class="w"> </span>tests
+-j:<span class="w"> </span>Number<span class="w"> </span>of<span class="w"> </span>threads<span class="w"> </span>to<span class="w"> </span>compile<span class="w"> </span>through
+-k:<span class="w"> </span>CMake<span class="w"> </span><span class="nb">command</span>
+-l:<span class="w"> </span>Install<span class="w"> </span>directory
+-m:<span class="w"> </span>Manuals
+-n:<span class="w"> </span>Manuals<span class="w"> </span>without<span class="w"> </span>compiling<span class="w"> </span>doxygen<span class="w"> </span><span class="o">(</span>only<span class="w"> </span>rst<span class="o">)</span>
+-p:<span class="w"> </span>Builds/Rebuilds<span class="w"> </span>Python<span class="w"> </span>API
+-r:<span class="w"> </span>Build/Rebuilds<span class="w"> </span>only<span class="w"> </span>receiver
+-s:<span class="w"> </span>Simulator
+-t:<span class="w"> </span>Build/Rebuilds<span class="w"> </span>only<span class="w"> </span>text<span class="w"> </span>client
+-u:<span class="w"> </span>Chip<span class="w"> </span>Test<span class="w"> </span>Gui
+-z:<span class="w"> </span>Moench<span class="w"> </span>zmq<span class="w"> </span>processor
+
+
+<span class="c1"># display all options</span>
+./cmk.sh<span class="w"> </span>-?
+
+<span class="c1"># new build and compile in parallel (recommended basic option):</span>
+./cmk.sh<span class="w"> </span>-cbj5
+
+<span class="c1"># new build, python and compile in parallel:</span>
+./cmk.sh<span class="w"> </span>-cbpj5
+
+<span class="c1">#For rebuilding only certain sections</span>
+./cmk.sh<span class="w"> </span>-tg<span class="w"> </span><span class="c1">#only text client and gui</span>
+./cmk.sh<span class="w"> </span>-r<span class="w"> </span><span class="c1">#only receiver</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For v7.x.x of slsDetectorPackage and older, refer <a class="reference internal" href="#zeromq-for-different-slsdetectorpackage-versions"><span class="std std-ref">zeromq notes for cmk script option to hint library location.</span></a></p>
+</div>
+</section>
+<section id="build-on-old-distributions">
+<h3>Build on old distributions<a class="headerlink" href="#build-on-old-distributions" title="Link to this heading"></a></h3>
+<p>If your linux distribution doesn’t come with a C++11 compiler (gcc&gt;4.8) then
+it’s possible to install a newer gcc using conda and build the slsDetectorPackage
+using this compiler</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1">#Create an environment with the dependencies</span>
+conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>myenv<span class="w"> </span>gxx_linux-64<span class="w"> </span>cmake
+conda<span class="w"> </span>activate<span class="w"> </span>myenv
+
+<span class="c1"># outside slsDetecorPackage folder</span>
+mkdir<span class="w"> </span>build<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>build
+cmake<span class="w"> </span>../slsDetectorPackage<span class="w"> </span>-DCMAKE_PREFIX_PATH<span class="o">=</span><span class="nv">$CONDA_PREFIX</span>
+make<span class="w"> </span>-j12
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For v7.x.x of slsDetectorPackage and older, refer <a class="reference internal" href="#zeromq-for-different-slsdetectorpackage-versions"><span class="std std-ref">zeromq notes for dependencies for conda.</span></a></p>
+</div>
+</section>
+<section id="build-slsdetectorgui-qt5">
+<h3>Build slsDetectorGui (Qt5)<a class="headerlink" href="#build-slsdetectorgui-qt5" title="Link to this heading"></a></h3>
+<ol class="arabic">
+<li><p>Using pre-built binary on conda</p>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>myenv<span class="w"> </span><span class="nv">slsdetgui</span><span class="o">=</span><span class="m">7</span>.0.0
+conda<span class="w"> </span>activate<span class="w"> </span>myenv
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>Using system installation on RHEL7</p>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>yum<span class="w"> </span>install<span class="w"> </span>qt5-qtbase-devel.x86_64
+yum<span class="w"> </span>install<span class="w"> </span>qt5-qtsvg-devel.x86_64
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>Using system installation on RHEL8</p>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>yum<span class="w"> </span>install<span class="w"> </span>qt5-qtbase-devel.x86_64
+yum<span class="w"> </span>install<span class="w"> </span>qt5-qtsvg-devel.x86_64
+yum<span class="w"> </span>install<span class="w"> </span>expat-devel.x86_64
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>Using conda</p>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1">#Add channels for dependencies and our library</span>
+conda<span class="w"> </span>config<span class="w"> </span>--add<span class="w"> </span>channels<span class="w"> </span>conda-forge
+conda<span class="w"> </span>config<span class="w"> </span>--add<span class="w"> </span>channels<span class="w"> </span>slsdetectorgroup
+conda<span class="w"> </span>config<span class="w"> </span>--set<span class="w"> </span>channel_priority<span class="w"> </span>strict
+
+<span class="c1"># create environment to compile</span>
+<span class="c1"># on rhel7</span>
+conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>slsgui<span class="w"> </span>gxx_linux-64<span class="w"> </span>gxx_linux-64<span class="w"> </span>mesa-libgl-devel-cos6-x86_64<span class="w"> </span>qt
+<span class="c1"># on fedora or newer systems</span>
+conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>slsgui<span class="w"> </span>qt
+
+<span class="c1"># when using conda compilers, would also need libgl, but no need for it on fedora unless maybe using it with ROOT</span>
+
+<span class="c1"># activate environment</span>
+conda<span class="w"> </span>activate<span class="w"> </span>slsgui
+
+<span class="c1"># compile with cmake outside slsDetecorPackage folder</span>
+mkdir<span class="w"> </span>build<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>build
+cmake<span class="w"> </span>../slsDetectorPackage<span class="w"> </span>-DSLS_USE_GUI<span class="o">=</span>ON
+make<span class="w"> </span>-j12
+
+<span class="c1"># or compile with cmk.sh</span>
+<span class="nb">cd</span><span class="w"> </span>slsDetectorPackage
+./cmk.sh<span class="w"> </span>-cbgj9
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For v7.x.x of slsDetectorPackage and older, refer <a class="reference internal" href="#zeromq-for-different-slsdetectorpackage-versions"><span class="std std-ref">zeromq notes for dependencies for conda.</span></a></p>
+</div>
+</section>
+<section id="build-this-documentation">
+<h3>Build this documentation<a class="headerlink" href="#build-this-documentation" title="Link to this heading"></a></h3>
+<p>The documentation for the slsDetectorPackage is build using a combination
+of Doxygen, Sphinx and Breathe. The easiest way to install the dependencies
+is to use conda</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>myenv<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.12<span class="w"> </span>sphinx<span class="w"> </span>sphinx_rtd_theme<span class="w"> </span>breathe<span class="w"> </span>doxygen<span class="w"> </span>numpy
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># using cmake or ccmake to enable DSLS_BUILD_DOCS</span>
+<span class="c1"># outside slsDetecorPackage folder</span>
+mkdir<span class="w"> </span>build<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>build
+cmake<span class="w"> </span>../slsDetectorPackage<span class="w"> </span>-DSLS_BUILD_DOCS<span class="o">=</span>ON
+
+make<span class="w"> </span>docs<span class="w"> </span><span class="c1"># generate API docs and build Sphinx RST</span>
+make<span class="w"> </span>rst<span class="w"> </span><span class="c1"># rst only, saves time in case the API did not change</span>
+</pre></div>
+</div>
+</section>
+<section id="pybind-and-zeromq">
+<h3>Pybind and Zeromq<a class="headerlink" href="#pybind-and-zeromq" title="Link to this heading"></a></h3>
+<div class="line-block" id="pybind-for-different-slsdetectorpackage-versions">
+<div class="line"><strong>Pybind11 for Python</strong></div>
+<div class="line">v8.0.0+:</div>
+<div class="line-block">
+<div class="line">pybind11 is built</div>
+<div class="line">* by default from tar file in repo (libs/pybind/v2.1x.0.tar.gz)</div>
+<div class="line">* or use advanced option SLS_FETCH_PYBIND11_FROM_GITHUB [<a class="reference external" href="https://github.com/pybind/pybind11">link</a>].</div>
+<div class="line-block">
+<div class="line">* v9.0.0+: pybind11 (v2.13.6)</div>
+<div class="line">* v8.x.x : pybind11 (v2.11.0)</div>
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="line">v7.x.x:</div>
+<div class="line-block">
+<div class="line">pybind11 packaged into ‘libs/pybind’. No longer a submodule. No need for “recursive” or “submodule update”.</div>
+<div class="line"><br /></div>
+</div>
+<div class="line">Older versions:</div>
+<div class="line-block">
+<div class="line">pybind11 is a submodule. Must be cloned using “recursive” and updated when switching between versions using the following commands.</div>
+</div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Note: Only for v6.x.x versions and older</span>
+
+<span class="c1"># clone using recursive to get pybind11 submodule</span>
+git<span class="w"> </span>clone<span class="w"> </span>--recursive<span class="w"> </span>https://github.com/slsdetectorgroup/slsDetectorPackage.git
+
+<span class="c1"># update submodule when switching between releases</span>
+<span class="nb">cd</span><span class="w"> </span>slsDetectorPackage
+git<span class="w"> </span>submodule<span class="w"> </span>update<span class="w"> </span>--init
+</pre></div>
+</div>
+<div class="line-block" id="zeromq-for-different-slsdetectorpackage-versions">
+<div class="line"><strong>Zeromq</strong></div>
+<div class="line">v8.0.0+:</div>
+<div class="line-block">
+<div class="line">zeromq (v4.3.4) is built</div>
+<div class="line">* by default from tar file in repo (libs/libzmq/libzmq-4.3.4.tar.gz)</div>
+<div class="line">* or use advanced option SLS_FETCH_ZMQ_FROM_GITHUB [<a class="reference external" href="https://github.com/zeromq/libzmq.git">link</a>].</div>
+<div class="line"><br /></div>
+</div>
+<div class="line">v7.x.x and older:</div>
+<div class="line-block">
+<div class="line">zeromq-devel must be installed and one can hint its location using</div>
+<div class="line">* cmake option:’-DZeroMQ_HINT=/usr/lib64’ or</div>
+<div class="line">* option ‘-q’ in cmk.sh script: : ./cmk.sh -cbj5 -q /usr/lib64</div>
+<div class="line">* ‘zeromq’ dependency added when installing using conda</div>
+</div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="slsDetectorPackage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="dependencies.html" class="btn btn-neutral float-right" title="Dependencies" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, PSD Detector Group.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

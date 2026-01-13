@@ -1,0 +1,315 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pattern &mdash; slsDetectorPackage 10.0.0  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/css/extra.css?v=2be88464" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Command line interface" href="commandline.html" />
+    <link rel="prev" title="PatternGenerator" href="pyPatternGenerator.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            slsDetectorPackage 10.0.0
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Installation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="consuming.html">Consuming slsDetectorPackage</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">how to</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="softwarearchitecture.html">Software Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configcommands.html">Setup Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick_start_guide.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dataformat.html">Detector Image Size and Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="multidet.html">Using multiple detectors</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">C++ API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="detector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="result.html">Result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="receiver_api.html">Receiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="pygettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pydetector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyenums.html">Enums</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyexamples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyPatternGenerator.html">PatternGenerator</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Pattern</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Command line</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="commandline.html">Command line interface</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="container_utils.html">ContainerUtils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="type_traits.html">TypeTraits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ToString.html">ToString</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Firmware</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="firmware.html">Firmware Upgrade</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="servers.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverupgrade.html">Upgrade</a></li>
+<li class="toctree-l1"><a class="reference internal" href="virtualserver.html">Simulators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverdefaults.html">Default Values</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector UDP Header</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="udpheader.html">Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udpconfig.html">Config file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udpdetspec.html">Detector Specific Fields</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiver.html">In-built Receiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="receivers.html">Custom Receiver</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver Files</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="fileformat.html">File format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiverheaderformat.html">SLS Receiver Header Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dataformat.html">Detector Image Size and Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="masterfileattributes.html">Master File Attributes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="binaryfileformat.html">Binary File Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hdf5fileformat.html">HDF5 File Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver ZMQ Stream</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="zmqjsonheaderformat.html">ZMQ: Json Header Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Troubleshooting</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">slsDetectorPackage 10.0.0</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Pattern</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/pattern.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="pattern">
+<h1>Pattern<a class="headerlink" href="#pattern" title="Link to this heading"></a></h1>
+<p>This is a test and development feature implemented only for Ctb, Xilinx_Ctb and Mythen3.</p>
+<p>A pattern is a sequence of 64-bit words which is executed using a clock on the FPGA. Each of the 64 bits is connected to a pin or internal signal of the FPGA. The purpose of a pattern is to provide a way to change these 64 signals with precise timing. Commands run by the detector server could manipulate the same signals as the pattern, but they cannot enforce a change in a specific clock cycle.</p>
+<p><strong>Usage</strong></p>
+<p>A pattern is written to memory on the FPGA using the patword command.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">patword</span> <span class="mh">0x0000</span> <span class="mh">0x000000000000000A</span>
+<span class="n">patword</span> <span class="mh">0x0001</span> <span class="mh">0x000000000000000B</span>
+<span class="n">patword</span> <span class="mh">0x0002</span> <span class="mh">0x000000000000000C</span>
+<span class="n">patword</span> <span class="mh">0x0003</span> <span class="mh">0x000000000000000D</span>
+<span class="n">patword</span> <span class="mh">0x0004</span> <span class="mh">0x000000000000000E</span>
+</pre></div>
+</div>
+<p>The example above writes a five-word pattern into FPGA memory. The first argument is the memory address, the second argument is the content to be written into this address. Before executing a pattern one has to set the address limits of the pattern:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">patlimits</span> <span class="mh">0x0000</span> <span class="mh">0x0004</span>
+</pre></div>
+</div>
+<p>This instructs the firmware to execute the commands from address 0 to 4 (including 0 and 4). The execution can be started from the pyctbgui or with the commands</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">start</span> <span class="p">[</span><span class="n">Ctb</span><span class="p">,</span> <span class="n">Xilinx_Ctb</span><span class="p">]</span>
+<span class="n">patternstart</span> <span class="p">[</span><span class="n">Mythen3</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>The maximal number of patword addresses is 8192. However, it is possible to extend the length of the pattern sequence using loops and wait commands. Loops can be configured with the following commands:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">patloop</span> <span class="mi">0</span> <span class="mh">0x0001</span> <span class="mh">0x0003</span>
+<span class="n">patnloop</span> <span class="mi">0</span> <span class="mi">7</span>
+</pre></div>
+</div>
+<p>The first argument of both commands is the ID of the loop. Ctb and Xilinx_Ctb can have 6 loops (ID 0-5), Mythen3 can have 4 loop definitions. The commands above configure the loop with ID 0 to run 7 times and jump from the patword with address 3 to the patword with address 1. Important: If patnloop is set to 1, the addresses 0x1-0x3 will execute exactly once; if it is set to 0, the pattern addresses will be skipped.</p>
+<p>The same idea is used to introduce wait times. The example below causes the patword at address 0x0002 to be active for 9 clock cycles before the execution continues.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">patwait</span> <span class="mi">0</span> <span class="mh">0x0002</span>
+<span class="n">patwaittime</span> <span class="mi">0</span> <span class="mi">9</span>
+</pre></div>
+</div>
+<p>Waits can be placed inside a loop and loops can be nested.</p>
+<p><strong>patioctrl</strong></p>
+<p>The function of each bit in the sequence of 64-bit words depends on the connected detector and firmware version. Some of the 64 bits might connect directly to pads of a chip. The patioctrl command is used to configure the direction of some of these signals (not all of them !! See tables below). Signals where the corresponding bit in the argument of patioctrl is set to 1 will be driven from the FPGA.</p>
+<p><strong>patsetbit and patmask</strong></p>
+<p>The functions patsetbit and patmask can be used to ignore a specific bit of the pattern.
+Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">patmask</span> <span class="mh">0x0101</span>
+<span class="n">patsetbit</span> <span class="mh">0x0001</span>
+</pre></div>
+</div>
+<p>Patmask configures bit 0 and 8 of the pattern to be set to their value in patsetbit. These bits will be ignored during pattern execution and will always be 0 (bit 8) and 1 (bit 0).</p>
+<p>The mappings of bit positions in the pattern word to signals/pads of the FPGA are listed below for the three detector types where patterns are used. In the case of the two CTB’s, connections of the signals to actual pads of a chip depend on the layout of the used detector adapter board. Therefore, each type of detector adapter board adds an additional mapping layer.</p>
+<p><strong>CTB Pattern Bit Mapping</strong></p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p>63</p></td>
+<td><p>62</p></td>
+<td><p>61-57</p></td>
+<td><p>56</p></td>
+<td><p>55-48</p></td>
+<td><p>47-32</p></td>
+<td><p>31-0</p></td>
+</tr>
+<tr class="row-even"><td><p>A</p></td>
+<td><p>D</p></td>
+<td><p>—</p></td>
+<td><p>T</p></td>
+<td><p>EXTIO</p></td>
+<td><p>DO, stream source</p></td>
+<td><p>DIO</p></td>
+</tr>
+</tbody>
+</table>
+<p>DIO: Driving the 32 FPGA pins corresponding to the lowest 32 bits of the patioctrl command. If bits in patioctrl are 0, the same bit positions in DIO will switch to input pins and connect to dbit sampling. Additionally, some of these 32 bits have an automatic override by detector-specific statemachines which is active whenever one of these statemachines is running (currently bits 7,8,11,14 and 20).</p>
+<p>DO: Directly connected to 16 FPGA pins. Output only. Not influenced by patioctrl. Also connected to bit 47-32 in all Ctb dbit samples. All of them can be used as dbit sample trigger. In addition, every bit of DO can be selected as trigger for sending out a udp packet with samples to the receiver.</p>
+<p>EXTIO: Similar to DIO, but not used as input to the fpga. With the corresponding patioctrl bits set to 0 these pins will switch to a high impedance mode and be ignored by the firmware.</p>
+<p>T: trigger output</p>
+<p>D: enable signal for digital sampling</p>
+<p>A: adc enable</p>
+<p><strong>Xilinx_CTB Pattern Bit Mapping</strong></p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p>63-32</p></td>
+<td><p>31-0</p></td>
+</tr>
+<tr class="row-even"><td><p>—</p></td>
+<td><p>DIO</p></td>
+</tr>
+</tbody>
+</table>
+<p>DIO: Driving the 32 FPGA pins corresponding to the lowest 32 bits of the patioctrl command. If bits in patioctrl are 0, the same bit positions in DIO will switch to input pins and connect to dbit sampling. Additionally, some of these 32 bits have an automatic override by detector-specific statemachines which is active whenever these sm’s are running (currently bits 7,8,11,14 and 20).</p>
+<p><strong>Mythen3 Pattern Bit Mapping</strong></p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p>63-33</p></td>
+<td><p>32</p></td>
+<td><p>31-25</p></td>
+<td><p>24</p></td>
+<td><p>23</p></td>
+<td><p>22</p></td>
+<td><p>21</p></td>
+<td><p>20</p></td>
+<td><p>19</p></td>
+</tr>
+<tr class="row-even"><td><p>—</p></td>
+<td><p>signARD</p></td>
+<td><p>—</p></td>
+<td><p>CHSclk</p></td>
+<td><p>cnt_rst</p></td>
+<td><p>sto_rst</p></td>
+<td><p>STATLOAD</p></td>
+<td><p>STO</p></td>
+<td><p>SIN</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p>18</p></td>
+<td><p>17</p></td>
+<td><p>16-14</p></td>
+<td><p>13</p></td>
+<td><p>12</p></td>
+<td><p>11</p></td>
+<td><p>10</p></td>
+<td><p>9-0</p></td>
+</tr>
+<tr class="row-even"><td><p>SR_MODE</p></td>
+<td><p>clk</p></td>
+<td><p>EN</p></td>
+<td><p>PULSE</p></td>
+<td><p>RD</p></td>
+<td><p>CHSIN</p></td>
+<td><p>ANAMode</p></td>
+<td><p>TBLOAD</p></td>
+</tr>
+</tbody>
+</table>
+<p>For Mythen3 the pattern word only connects to output pins of the FPGA when the pattern is running. Afterwards the signals will switch back to other logic in the FPGA. Both CTB’s hold the last executed pattern word until a new pattern is started.</p>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="pyPatternGenerator.html" class="btn btn-neutral float-left" title="PatternGenerator" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="commandline.html" class="btn btn-neutral float-right" title="Command line interface" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, PSD Detector Group.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

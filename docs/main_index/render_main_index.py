@@ -33,6 +33,19 @@ def save_versions(data_path: Path, versions):
         yaml.dump(data, f, default_flow_style=False, sort_keys=False)
     print(f"✓ Saved version data to {data_path}")
 
+def extract_release_type(version: str) -> str: 
+    """Extract release type from version string."""
+    parts = version.split('.')
+    if len(parts) != 3:
+        return "Unknown"
+    major, minor, patch = map(int, parts)
+    if minor == 0 and patch == 0:
+        return "Major"
+    elif patch == 0:
+        return "Minor"
+    else:
+        return "Bug Fix"
+
 
 def add_version(data_path: Path, version: str, release_type: str, date: str, has_docs: bool = True):
     """Add a new version to the YAML data file."""
@@ -77,12 +90,8 @@ def main():
     # Options for adding a new version
     parser.add_argument('--version', type=str,
                         help='new version (e.g., 10.1.0)')
-    parser.add_argument('--type', type=str,
-                        help='Release type (e.g., Major, Minor, Bug Fix)')
     parser.add_argument('--date', type=str,
                         help='Release date (e.g., 15.10.2025)')
-    parser.add_argument('--no-docs', action='store_true',
-                        help='New version does not have documentation')
     
     # Options for rendering
     parser.add_argument('--template', type=Path, default=Path(SCRIPT_DIR + "/index.html.j2"),
@@ -94,9 +103,10 @@ def main():
     
     # Add new version if requested
     if args.version:
-        if not args.type or not args.date:
-            parser.error("--version requires --type and --date")
-        add_version(args.data, args.version, args.type, args.date, has_docs=not args.no_docs)
+        if not args.date:
+            parser.error("--version requires --date")
+        release_type = extract_release_type(args.version)
+        add_version(args.data, args.version, release_type, args.date, has_docs=True)
     
     # Render template if requested
     if args.template and args.output:

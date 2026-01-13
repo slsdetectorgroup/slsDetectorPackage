@@ -3,7 +3,9 @@ name: Build and upload Documentation
 on: 
     workflow_dispatch: 
     push: # Only for Testing change later 
-
+    release:
+        types:
+            - published
 
 env: 
     BUILD_TYPE: RELEASE 
@@ -31,6 +33,23 @@ jobs:
                 fetch-depth: 0  # Fetch all history for proper git operations
                 token: ${{ secrets.GITHUB_TOKEN }}  # Use the default token
 
+            # Extract release version (if triggered by release)
+            - name: Get Release Version
+              id: version
+              run: |
+                if [ "${{ github.event_name }}" == "release" ]; then
+                  # Remove 'v' prefix if present (e.g., v10.0.0 -> 10.0.0)
+                  VERSION="${{ github.event.release.tag_name }}"
+                  VERSION="${VERSION#v}"
+                  echo "version=${VERSION}" >> $GITHUB_OUTPUT
+                  echo "is_release=true" >> $GITHUB_OUTPUT
+                  echo "Release version: ${VERSION}"
+                else
+                  echo "version=developer" >> $GITHUB_OUTPUT
+                  echo "is_release=false" >> $GITHUB_OUTPUT
+                  echo "Not a release build"
+                fi
+
             - name: Install System Packages
               uses: awalsh128/cache-apt-pkgs-action@latest
               with:
@@ -42,8 +61,9 @@ jobs:
               with:
                 python-version: 3.12
                 cache: 'pip'
+            
             - name: Install Python Packages
-              run: pip install sphinx sphinx_rtd_theme breathe
+              run: pip install sphinx sphinx_rtd_theme breathe pyyaml jinja2
                
 
             - name: Build Documentation
@@ -53,20 +73,28 @@ jobs:
                 cmake -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DSLS_BUILD_DOCS=ON -DSLS_USE_HDF5=ON -DSLS_USE_PYTHON=ON ..
                 make -j4 
                 make docs
-
-            - name: Upload Documentation Artifact
-              uses: actions/upload-pages-artifact@v4
-              with:
-                path: build/docs/html # maybe we need to upload images as well - so one can click on them? 
         
+            # Update main_index if this is a release
+            - name: Update version index
+              run: |
+                if [ "${{ github.event_name }}" == "release" ]; then
+                    cd gh-pages
+                    python docs/main_index/render_main_index.py \
+                    --version "${{ steps.version.outputs.version }}" \
+                    --date "$(date +'%d.%m.%Y')" 
+
             - name: Checkout gh-pages
               uses: actions/checkout@v4
               with:
                 ref: gh-pages
                 path: gh-pages
                 
-            - name: Copy documentation to gh-pages # create folder structure 
-              run: cp -r build/docs/html/. gh-pages/
+            - name: Copy documentation to versioned folder
+              run: |
+                VERSION="${{ steps.version.outputs.version }}"
+                mkdir -p "gh-pages/${VERSION}"
+                cp -r build/docs/html/. "gh-pages/${VERSION}/"
+                cp build/docs/main_index/index.html "gh-pages/index.html"
               
             - name: Commit and Push changes to gh-pages
               run: |
@@ -74,7 +102,7 @@ jobs:
                 git config --global user.name 'github-actions'
                 git config --global user.email 'github-actions@github.com'
                 git add .
-                git commit -m "Update Documentation"
+                git commit -m "Update Documentation for ${{ steps.version.outputs.version }}"
                 git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
                 git push origin gh-pages 
               env: 

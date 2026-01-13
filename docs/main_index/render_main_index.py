@@ -1,6 +1,5 @@
-#!/usr/bin/env python3
 """
-Render the main index HTML from a Jinja2 template with version data.
+Render the index HTML from a Jinja2 template with version data.
 Can also add new versions to the YAML data file.
 
 Usage:
@@ -70,7 +69,7 @@ def render_template(template_path: Path, output_path: Path, data_path: Path):
 
 def main():
     parser = argparse.ArgumentParser(description='Manage versions and render main index HTML')
-    parser.add_argument('--data', type=Path, required=True,
+    parser.add_argument('--data', type=Path, default=Path("versions.yaml"), 
                         help='Path to versions YAML data file')
     
     # Options for adding a new version
@@ -84,9 +83,9 @@ def main():
                         help='New version does not have documentation')
     
     # Options for rendering
-    parser.add_argument('--template', type=Path,
+    parser.add_argument('--template', type=Path, default=Path("index.html.j2"),
                         help='Path to Jinja2 template file')
-    parser.add_argument('--output', type=Path,
+    parser.add_argument('--output', type=Path, default=Path("index.html"),
                         help='Path to output HTML file')
     
     args = parser.parse_args()

@@ -13,7 +13,9 @@ import argparse
 from pathlib import Path
 from jinja2 import Template
 import yaml
+import os
 
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def load_versions(data_path: Path):
     """Load version data from YAML file."""
@@ -69,7 +71,7 @@ def render_template(template_path: Path, output_path: Path, data_path: Path):
 
 def main():
     parser = argparse.ArgumentParser(description='Manage versions and render main index HTML')
-    parser.add_argument('--data', type=Path, default=Path("versions.yaml"), 
+    parser.add_argument('--data', type=Path, default=Path(SCRIPT_DIR + "/versions.yaml"), 
                         help='Path to versions YAML data file')
     
     # Options for adding a new version
@@ -83,9 +85,9 @@ def main():
                         help='New version does not have documentation')
     
     # Options for rendering
-    parser.add_argument('--template', type=Path, default=Path("index.html.j2"),
+    parser.add_argument('--template', type=Path, default=Path(SCRIPT_DIR + "/index.html.j2"),
                         help='Path to Jinja2 template file')
-    parser.add_argument('--output', type=Path, default=Path("index.html"),
+    parser.add_argument('--output', type=Path, default=Path(SCRIPT_DIR + "/index.html"),
                         help='Path to output HTML file')
     
     args = parser.parse_args()

@@ -88,7 +88,7 @@ jobs:
                 
             
             - name: Copy documentation and Release notes to versioned folder
-              # if: github.event_name == 'release' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+             
               run: |
                 VERSION="${{ steps.version.outputs.version }}"
                 mkdir -p "gh-pages/${VERSION}"
@@ -100,7 +100,6 @@ jobs:
                 fi 
               
             - name: Commit and Push changes to gh-pages
-              # if: github.event_name == 'release' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
               run: |
                 cd gh-pages
                 git config --global user.name 'github-actions'

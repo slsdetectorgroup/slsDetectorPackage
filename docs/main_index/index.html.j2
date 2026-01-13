@@ -18,7 +18,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="{{ versions[0]["version"] }}" href="https://slsdetectorgroup.github.io/devdoc/{{ versions[0]["version"] }}/index.html" /> 
+    <link rel="next" title="{{ versions[0]["version"] }}" href="https://slsdetectorgroup.github.io/slsDetectorPackage/{{ versions[0]["version"] }}/index.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -43,10 +43,10 @@
               <p class="caption" role="heading"><span class="caption-text">Versions:</span></p>
 <ul>
 {% for v in versions if v["has_docs"] %}
-<li class="toctree-l1"><a class="reference external" href="https://slsdetectorgroup.github.io/devdoc/{{ v["version"] }}/index.html">{{ v["version"] }}</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://slsdetectorgroup.github.io/slsDetectorPackage/{{ v["version"] }}/index.html">{{ v["version"] }}</a></li>
 {% endfor %}
 
-<li class="toctree-l1"><a class="reference external" href="https://slsdetectorgroup.github.io/devdoc/developer/index.html">Developer</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://slsdetectorgroup.github.io/slsDetectorPackage/developer/index.html">Developer</a></li>
 
 </ul>
 
@@ -99,12 +99,16 @@
 </thead>
 <tbody>
 {% for v in versions %}
+{# Check if version >= 10.0.0 for .md vs .txt #}
+{% set version_parts = v["version"].split('.') | map('int') | list %}
+{% set is_new_format = (version_parts[0] > 10) or (version_parts[0] == 10 and version_parts[1] >= 0 and version_parts[2] >= 0) %}
+{% set release_ext = '.md' if is_new_format else '.txt' %}
 <tr class="row-{{ 'even' if loop.index is even else 'odd' }}">
   <td><p><a class="reference external" href="https://github.com/slsdetectorgroup/slsDetectorPackage/releases/tag/{{ v["version"] }}">{{ v["version"] }}</a></p></td>
   <td><p>{{ v["type"] }}</p></td>
   <td><p>{{ v["date"] }}</p></td>
-  <td><p><a class="reference external" href="https://slsdetectorgroup.github.io/slsDetectorPackage/releases/RELEASE_v{{ v["version"] }}.txt">{{ v["version"] }} Release Notes</a></p></td>
-  <td><p>{% if v["has_docs"] %}<a class="reference external" href="https://slsdetectorgroup.github.io/devdoc/{{ v["version"] }}/index.html">{{ v["version"] }} Docs</a>{% else %}&nbsp;{% endif %}</p></td>
+  <td><p><a class="reference external" href="https://slsdetectorgroup.github.io/slsDetectorPackage/releases/RELEASE_v{{ v["version"] }}{{ release_ext }}">{{ v["version"] }} Release Notes</a></p></td>
+  <td><p>{% if v["has_docs"] %}<a class="reference external" href="https://slsdetectorgroup.github.io/slsDetectorPackage/{{ v["version"] }}/index.html">{{ v["version"] }} Docs</a>{% else %}&nbsp;{% endif %}</p></td>
 </tr>
 {% endfor %}
 
@@ -113,7 +117,7 @@
   <td><p>&nbsp;</p></td>
   <td><p>&nbsp;</p></td>
   <td><p>&nbsp;</p></td>
-  <td><p><a class="reference external" href="https://slsdetectorgroup.github.io/devdoc/developer/index.html">Developer Docs</a></p></td>
+  <td><p><a class="reference external" href="https://slsdetectorgroup.github.io/slsDetectorPackage/developer/index.html">Developer Docs</a></p></td>
 </tr>
 
 </tbody>

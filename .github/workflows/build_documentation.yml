@@ -74,12 +74,11 @@ jobs:
         
             # Update main index if this is a release
             - name: Update version index
+              if: github.event_name == 'release'
               run: |
-                if [ "${{ github.event_name }}" == "release" ]; then
-                    cd gh-pages
-                    python docs/main_index/render_main_index.py \
-                    --version "${{ steps.version.outputs.version }}" \
-                    --date "$(date +'%d.%m.%Y')" 
+                python docs/main_index/render_main_index.py \
+                --version "${{ steps.version.outputs.version }}" \
+                --date "$(date +'%d.%m.%Y')" 
 
             - name: Checkout gh-pages
               uses: actions/checkout@v4

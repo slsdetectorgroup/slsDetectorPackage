@@ -1,0 +1,108 @@
+#!/usr/bin/env python3
+"""
+Render the main index HTML from a Jinja2 template with version data.
+Can also add new versions to the YAML data file.
+
+Usage:
+  # Just render from existing data
+  python render_main_index.py --template main_index.html.j2 --output main_index.html --data versions.yaml
+  
+  # Add a new version and render
+  python render_main_index.py --data versions.yaml --add-version 10.1.0 --type Minor --date "15.10.2025" --template main_index.html.j2 --output main_index.html
+"""
+import argparse
+from pathlib import Path
+from jinja2 import Template
+import yaml
+
+
+def load_versions(data_path: Path):
+    """Load version data from YAML file."""
+    with open(data_path, 'r') as f:
+        data = yaml.safe_load(f)
+    return data['versions']
+
+
+def save_versions(data_path: Path, versions):
+    """Save version data to YAML file."""
+    data = {
+        'versions': versions
+    }
+    with open(data_path, 'w') as f:
+        yaml.dump(data, f, default_flow_style=False, sort_keys=False)
+    print(f"✓ Saved version data to {data_path}")
+
+
+def add_version(data_path: Path, version: str, release_type: str, date: str, has_docs: bool = True):
+    """Add a new version to the YAML data file."""
+    versions = load_versions(data_path)
+    
+    # Add to table (check if not already present)
+    new_entry = {
+            'version': version,
+            'type': release_type,
+            'date': date,
+            'has_docs': has_docs
+    }
+    versions.insert(0, new_entry)
+    
+    print(f"✓ Added version {new_entry} to version data")
+   
+    save_versions(data_path, versions)
+
+
+def render_template(template_path: Path, output_path: Path, data_path: Path):
+    """Render the Jinja2 template with version data."""
+    versions = load_versions(data_path)
+    
+    with open(template_path, 'r') as f:
+        template = Template(f.read())
+    
+    html = template.render(
+        versions=versions
+    )
+    
+    with open(output_path, 'w') as f:
+        f.write(html)
+    
+    print(f"✓ Rendered {output_path}")
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Manage versions and render main index HTML')
+    parser.add_argument('--data', type=Path, required=True,
+                        help='Path to versions YAML data file')
+    
+    # Options for adding a new version
+    parser.add_argument('--version', type=str,
+                        help='new version (e.g., 10.1.0)')
+    parser.add_argument('--type', type=str,
+                        help='Release type (e.g., Major, Minor, Bug Fix)')
+    parser.add_argument('--date', type=str,
+                        help='Release date (e.g., 15.10.2025)')
+    parser.add_argument('--no-docs', action='store_true',
+                        help='New version does not have documentation')
+    
+    # Options for rendering
+    parser.add_argument('--template', type=Path,
+                        help='Path to Jinja2 template file')
+    parser.add_argument('--output', type=Path,
+                        help='Path to output HTML file')
+    
+    args = parser.parse_args()
+    
+    # Add new version if requested
+    if args.version:
+        if not args.type or not args.date:
+            parser.error("--version requires --type and --date")
+        add_version(args.data, args.version, args.type, args.date, has_docs=not args.no_docs)
+    
+    # Render template if requested
+    if args.template and args.output:
+        render_template(args.template, args.output, args.data)
+    elif args.template or args.output:
+        parser.error("--template and --output must be used together")
+
+
+if __name__ == '__main__':
+    main()

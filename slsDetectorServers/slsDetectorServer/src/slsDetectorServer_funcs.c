@@ -1302,7 +1302,17 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
             }
 
             else {
+#ifdef XILINX_CHIPTESTBOARDD
+                ret = setPower(serverDacIndex, val);
+                if (ret == FAIL) {
+                    sprintf(mess,
+                            "Setting power regulator %d to value %d failed.\n",
+                            serverDacIndex, val);
+                    LOG(logERROR, (mess));
+                }
+#else
                 setPower(serverDacIndex, val);
+#endif
             }
         }
         if (ret == OK) {
@@ -1393,6 +1403,15 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
 #ifdef MYTHEN3D
                 // ignore counter enable to force vth dac values
                 setDAC(serverDacIndex, val, mV, 0);
+#elif defined(XILINX_CHIPTESTBOARDD)
+            {
+                ret = setDAC(serverDacIndex, val, mV);
+                if (ret == FAIL) {
+                    sprintf(mess, "Setting dac %d to value %d failed.\n",
+                            serverDacIndex, val);
+                    LOG(logERROR, (mess));
+                }
+            }
 #else
             setDAC(serverDacIndex, val, mV);
 #endif

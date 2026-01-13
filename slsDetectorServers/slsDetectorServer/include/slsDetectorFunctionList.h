@@ -373,6 +373,8 @@ int getOnChipDAC(enum ONCHIP_DACINDEX ind, int chipIndex);
 void setDAC(enum DACINDEX ind, int val, int mV, int counterEnableCheck);
 void setGeneralDAC(enum DACINDEX ind, int val, int mV);
 void setVthDac(int index, int enable);
+#elif defined(XILINX_CHIPTESTBOARDD)
+int setDAC(enum DACINDEX ind, int val, int mV);
 #else
 void setDAC(enum DACINDEX ind, int val, int mV);
 #endif
@@ -401,7 +403,7 @@ void powerOff();
 int getBitOffsetFromDACIndex(enum DACINDEX ind);
 int isPowerValid(enum DACINDEX ind, int val);
 int getPower();
-void setPower(enum DACINDEX ind, int val);
+int setPower(enum DACINDEX ind, int val);
 #endif
 
 #if defined(MYTHEN3D) || defined(GOTTHARD2D) || defined(XILINX_CHIPTESTBOARDD)

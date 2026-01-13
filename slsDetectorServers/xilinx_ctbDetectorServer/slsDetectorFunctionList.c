@@ -413,8 +413,12 @@ void setupDetector() {
     }
 
     LOG(logINFOBLUE, ("Powering down all dacs\n"));
-    for (int idac = 0; idac < NDAC; ++idac) {
+    for (int idac = 0; idac < NDAC_ONLY; ++idac) {
         setDAC(idac, LTC2620_D_GetPowerDownValue(), 0);
+    }
+    LOG(logINFOBLUE, ("Defaulting all power regulators to 0 mV.\n"));
+    for (int idac = NDAC_ONLY; idac < NDAC; ++idac) {
+        setDAC(idac, 0, 0);
     }
 
     resetFlow();
@@ -509,9 +513,6 @@ void setTransceiverAlignment(int align) {
 #endif
 
 int isTransceiverAligned() {
-#ifdef VIRTUAL
-    return 1;
-#endif
     int times = 0;
     int retval = bus_r(TRANSCEIVERSTATUS2) & RXLOCKED_MSK;
     while (retval) {
@@ -1151,19 +1152,42 @@ int64_t getMeasurementTime() {
 
 /* parameters - dac, adc, hv */
 
-void setDAC(enum DACINDEX ind, int val, int mV) {
+int setDAC(enum DACINDEX ind, int val, int mV) {
+
+    // Cannot use power down value for power regulators
+    if (val == LTC2620_D_GetPowerDownValue()) {
+        switch (ind) {
+        case D_PWR_D:
+        case D_PWR_EMPTY:
+        case D_PWR_IO:
+        case D_PWR_A:
+        case D_PWR_B:
+        case D_PWR_C:
+            LOG(logERROR, ("Cannot power down Power regulators.\n"));
+            return FAIL;
+        default:
+            break;
+        }
+    }
+
     char dacName[MAX_STR_LENGTH] = {0};
     memset(dacName, 0, MAX_STR_LENGTH);
     sprintf(dacName, "dac%d", (int)ind);
 
-    if (val < 0 && val != LTC2620_D_GetPowerDownValue())
-        return;
+    if (val < 0 && val != LTC2620_D_GetPowerDownValue()) {
+        LOG(logERROR,
+            ("Invalid value %d for dac[%d - %s]\n", val, (int)ind, dacName));
+        return FAIL;
+    }
 
     LOG(logDEBUG1, ("Setting dac[%d - %s]: %d %s \n", (int)ind, dacName, val,
                     (mV ? "mV" : "dac units")));
     int dacval = val;
-    if (LTC2620_D_SetDACValue((int)ind, val, mV, dacName, &dacval) == OK)
-        dacValues[ind] = dacval;
+    if (LTC2620_D_SetDACValue((int)ind, val, mV, dacName, &dacval) == FAIL)
+        return FAIL;
+
+    dacValues[ind] = dacval;
+    return OK;
 }
 
 int getDAC(enum DACINDEX ind, int mV) {
@@ -1243,8 +1267,7 @@ int isPowerValid(enum DACINDEX ind, int val) {
     }
 
     // not power_rgltr_max because it is allowed only upto vchip max - 200
-    if (val != 0 && (val != LTC2620_D_GetPowerDownValue()) &&
-        (val < min || val > POWER_RGLTR_MAX)) {
+    if (val != 0 && (val < min || val > POWER_RGLTR_MAX)) {
         LOG(logERROR,
             ("Invalid value of %d mV for Power V%s. Is not between %d and "
              "%d mV\n",
@@ -1295,17 +1318,15 @@ int getPower(enum DACINDEX ind) {
     return retval;
 }
 
-void setPower(enum DACINDEX ind, int val) {
+int setPower(enum DACINDEX ind, int val) {
+
     // validate index and get bit offset in ctrl register
     int bitOffset = getBitOffsetFromDACIndex(ind);
     if (bitOffset == -1) {
-        return;
+        return FAIL;
     }
     uint32_t addr = CTRL_REG;
     uint32_t mask = (1 << bitOffset);
-
-    if (val == -1)
-        return;
 
     char *powerNames[] = {PWR_NAMES};
     int pwrIndex = (int)(ind - D_PWR_D);
@@ -1313,26 +1334,20 @@ void setPower(enum DACINDEX ind, int val) {
 
     // validate value (already checked at tcp (funcs.c))
     if (!isPowerValid(ind, val)) {
-        LOG(logERROR, ("Invalid power value for V%s: %d mV\n",
-                       powerNames[pwrIndex], val));
-        return;
+        return FAIL;
     }
 
     // Switch off power enable
-    LOG(logDEBUG1, ("Switching off power enable\n"));
+    LOG(logDEBUG1, ("\tSwitching off power enable\n"));
     bus_w(addr, bus_r(addr) & ~(mask));
 
-    // power down dac
-    LOG(logINFO, ("\tPowering down V%d\n", powerNames[pwrIndex]));
-    setDAC(ind, LTC2620_D_GetPowerDownValue(), 0);
+    // power down dac (Cannot use power down value for power regulators)
+    if (setDAC(ind, 0, 0) == FAIL) {
+        return FAIL;
+    }
 
-    //(power off is anyway done with power enable)
-    if (val == 0)
-        val = LTC2620_D_GetPowerDownValue();
-
-    // convert voltage to dac (power off is anyway done with power enable)
-    if (val != LTC2620_D_GetPowerDownValue()) {
-
+    // convert voltage to dac
+    if (val != 0) {
         int dacval = -1;
         if (ConvertToDifferentRange(
                 POWER_RGLTR_MIN, POWER_RGLTR_MAX, LTC2620_D_GetMaxInput(),
@@ -1342,20 +1357,23 @@ void setPower(enum DACINDEX ind, int val) {
                  "mV. Is not between "
                  "%d and %d mV\n",
                  powerNames[pwrIndex], val, POWER_RGLTR_MIN, POWER_RGLTR_MAX));
-            return;
+            return FAIL;
         }
 
-        // set and power on/ update dac
-        LOG(logINFO, ("Setting Power V%s: %d mV (%d dac)\n",
+        LOG(logINFO, ("\tSetting DAC V%s: %d mV (%d dac)\n",
                       powerNames[pwrIndex], val, dacval));
-        setDAC(ind, dacval, 0);
-
-        // if valid, enable power
-        if (dacval >= 0) {
-            LOG(logDEBUG1, ("Switching on power enable\n"));
-            bus_w(addr, bus_r(addr) | mask);
+        if (setDAC(ind, dacval, 0) == FAIL) {
+            LOG(logERROR,
+                ("Could not set dac for Power V%s\n", powerNames[pwrIndex]));
+            return FAIL;
         }
+
+        LOG(logDEBUG1, ("\tSwitching on power enable for Power V%s\n",
+                        powerNames[pwrIndex]));
+        bus_w(addr, bus_r(addr) | mask);
     }
+
+    return OK;
 }
 
 int getADC(enum ADCINDEX ind, int *value) {

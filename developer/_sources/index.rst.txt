@@ -66,6 +66,7 @@ slsDetectorPackage
     container_utils
     type_traits
     ToString
+    Versioning
 
 .. toctree::
     :caption: Firmware

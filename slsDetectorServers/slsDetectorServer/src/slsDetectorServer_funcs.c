@@ -1405,11 +1405,13 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
                 setDAC(serverDacIndex, val, mV, 0);
 #elif defined(XILINX_CHIPTESTBOARDD)
             {
-                ret = setDAC(serverDacIndex, val, mV);
-                if (ret == FAIL) {
-                    sprintf(mess, "Setting dac %d to value %d failed.\n",
-                            serverDacIndex, val);
-                    LOG(logERROR, (mess));
+                if (val != GET_FLAG) {
+                    ret = setDAC(serverDacIndex, val, mV);
+                    if (ret == FAIL) {
+                        sprintf(mess, "Setting dac %d to value %d failed.\n",
+                                serverDacIndex, val);
+                        LOG(logERROR, (mess));
+                    }
                 }
             }
 #else

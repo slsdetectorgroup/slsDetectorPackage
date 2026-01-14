@@ -35,10 +35,10 @@
 #define DEVICE_NAME_LIST       "xilinx-ams", "ad7689", "dac@0", "dac@1", "dac@2"
 #define DEVICE_TREE_API_FOLDER "/sys/kernel/config/device-tree/overlays/spidr"
 
-#define DAC_DRIVER_FILE_NAME           CURRENT_BOARD_LINKS_FOLDER "/ao%d"
-#define DAC_POWERDOWN_DRIVER_FILE_NAME CURRENT_BOARD_LINKS_FOLDER "/ao%d_pd"
-#define SLOWADC_DRIVER_FILE_NAME       CURRENT_BOARD_LINKS_FOLDER "/ai%d"
-#define TEMP_DRIVER_FILE_NAME          DEVICE_TREE_DST "0/in_temp7_input"
+#define DAC_DRIVER_FILE_NAME             CURRENT_BOARD_LINKS_FOLDER "/ao"
+#define DAC_POWERDOWN_DRIVER_FILE_SUFFIX "_pd"
+#define SLOWADC_DRIVER_FILE_NAME         CURRENT_BOARD_LINKS_FOLDER "/ai"
+#define TEMP_DRIVER_FILE_NAME            DEVICE_TREE_DST "0/in_temp7_input"
 
 #define CONFIG_CHIP_FILE "chip_config_xilinx.txt"
 #define RESET_CHIP_FILE  "reset_chip_xilinx.txt"

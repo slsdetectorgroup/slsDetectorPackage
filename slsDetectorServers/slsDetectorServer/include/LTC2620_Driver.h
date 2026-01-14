@@ -5,8 +5,7 @@
 #include <inttypes.h>
 
 void LTC2620_D_SetDefines(int hardMinV, int hardMaxV, char *driverfname,
-                          int numdacs, int numpowers,
-                          char *powerdownDriverfname);
+                          int numdacs, int numpowers);
 int LTC2620_D_GetMaxNumSteps();
 int LTC2620_D_GetPowerDownValue();
 int LTC2620_D_GetMinInput();
@@ -28,14 +27,12 @@ int LTC2620_D_VoltageToDac(int voltage, int *dacval);
  */
 int LTC2620_D_DacToVoltage(int dacval, int *voltage);
 
+/** for all dacs including power regulators to write dac value to file */
+int LTC2620_D_WriteDACValue(int dacnum, int dacvalue, char *dacname);
+
 /**
- * Set value
- * @param dacnum dac index
- * @param val value to set
- * @param mV 1 for mv, else 0
- * @paam dacname dac name
- * @param dacval pointer to dac value
- * @return OK or FAIL
+ * Set value for dac only
+ * @param dacval if val is in mV, returns dac units set
  */
 int LTC2620_D_SetDACValue(int dacnum, int val, int mV, char *dacname,
                           int *dacval);

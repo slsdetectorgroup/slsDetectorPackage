@@ -4,7 +4,7 @@
 #include "clogger.h"
 #include "common.h"
 
-// to include power down file name suffix
+// to include power down file name suffix directly
 #ifdef XILINX_CHIPTESTBOARDD
 #include "slsDetectorServer_defs.h"
 #else
@@ -70,12 +70,23 @@ int LTC2620_D_WriteDACValue(int dacnum, int dacvalue, char *dacname) {
         return FAIL;
     }
 
-    // validate value
-    if ((dacvalue < 0 && dacvalue != LTC2620_D_PWR_DOWN_VAL) ||
-        (dacvalue > LTC2620_D_MAX_DAC_VAL)) {
+    // validate max value
+    if (dacvalue > LTC2620_D_MAX_DAC_VAL) {
         LOG(logERROR,
             ("Dac %d %s: Invalid dac value %d\n", dacnum, dacname, dacvalue));
         return FAIL;
+    }
+    // validate negative values
+    if (dacvalue < 0) {
+        // dacs only: allow power down value (-100)
+        if ((dacnum < LTC2620_D_NumDacsOnly &&
+             dacvalue != LTC2620_D_PWR_DOWN_VAL) ||
+            // power regulators: allow no negative values
+            (dacnum >= LTC2620_D_NumDacsOnly)) {
+            LOG(logERROR, ("Dac %d %s: Invalid dac value %d\n", dacnum, dacname,
+                           dacvalue));
+            return FAIL;
+        }
     }
 
     // print info

@@ -31,7 +31,8 @@ int LTC2620_D_DacToVoltage(int dacval, int *voltage);
 int LTC2620_D_WriteDACValue(int dacnum, int dacvalue, char *dacname);
 
 /**
- * Set value for dac only
+ * Only for DACs (not power regulators) to validate indices and convert values
+ * to dac units if needed
  * @param dacval if val is in mV, returns dac units set
  */
 int LTC2620_D_SetDACValue(int dacnum, int val, int mV, char *dacname,

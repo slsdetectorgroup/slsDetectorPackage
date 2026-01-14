@@ -401,6 +401,7 @@ void setPower(enum DACINDEX ind, int val);
 void powerOff();
 #elif XILINX_CHIPTESTBOARDD
 int getBitOffsetFromDACIndex(enum DACINDEX ind);
+int getMinPowerValue(enum DACINDEX ind);
 int isPowerValid(enum DACINDEX ind, int val);
 int getPower();
 int setPower(enum DACINDEX ind, int val);

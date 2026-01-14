@@ -1317,8 +1317,15 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
         }
         if (ret == OK) {
             retval = getPower(serverDacIndex);
-            LOG(logDEBUG1, ("Power regulator(%d): %d\n", ind, retval));
-            validate(&ret, mess, val, retval, "set power regulator", DEC);
+            LOG(logDEBUG1,
+                ("Power regulator(%d): %d\n", serverDacIndex, retval));
+            if (retval == -1) {
+                ret = FAIL;
+                sprintf(mess, "Could not get power regulator %d.\n",
+                        serverDacIndex);
+                LOG(logERROR, (mess));
+            }
+            validate(&ret, mess, val, retval, "set/get power regulator", DEC);
         }
         break;
 #endif
@@ -1400,10 +1407,7 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
                 LOG(logERROR, (mess));
             } else
 #endif
-#ifdef MYTHEN3D
-                // ignore counter enable to force vth dac values
-                setDAC(serverDacIndex, val, mV, 0);
-#elif defined(XILINX_CHIPTESTBOARDD)
+#if defined(XILINX_CHIPTESTBOARDD)
             {
                 if (val != GET_FLAG) {
                     ret = setDAC(serverDacIndex, val, mV);
@@ -1413,11 +1417,28 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
                         LOG(logERROR, (mess));
                     }
                 }
+                if (ret == OK) {
+                    retval = getDAC(serverDacIndex, mV);
+                    LOG(logDEBUG1, ("Dac (%d): %d %s\n", serverDacIndex, retval,
+                                    (mV ? "mV" : "dac units")));
+                    if (retval == -1) {
+                        ret = FAIL;
+                        sprintf(mess, "Could not get dac %d.\n",
+                                serverDacIndex);
+                        LOG(logERROR, (mess));
+                    }
+                }
             }
+#elif MYTHEN3D
+            // ignore counter enable to force vth dac values
+            setDAC(serverDacIndex, val, mV, 0);
 #else
             setDAC(serverDacIndex, val, mV);
-#endif
+
             retval = getDAC(serverDacIndex, mV);
+            LOG(logDEBUG1, ("Dac (%d): %d %s\n", serverDacIndex, retval,
+                            (mV ? "mV" : "dac units")));
+#endif
         }
 #ifdef EIGERD
         if (val != GET_FLAG && getSettings() != UNDEFINED) {

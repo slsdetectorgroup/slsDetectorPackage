@@ -753,10 +753,12 @@ TEST_CASE("v_limit", "[.cmdcall]") {
     if (det_type == defs::CHIPTESTBOARD ||
         det_type == defs::XILINX_CHIPTESTBOARD) {
         auto prev_val = det.getPower(defs::V_LIMIT);
+        auto prev_va = det.getPower(defs::V_POWER_A);
         {
             std::ostringstream oss;
             caller.call("v_limit", {"1500"}, -1, PUT, oss);
             REQUIRE(oss.str() == "v_limit 1500\n");
+            REQUIRE_THROWS(caller.call("v_a", {"1600"}, -1, PUT, oss));
         }
         {
             std::ostringstream oss;
@@ -778,6 +780,7 @@ TEST_CASE("v_limit", "[.cmdcall]") {
                 prev_val[i] = 0;
             }
             det.setPower(defs::V_LIMIT, prev_val[i], {i});
+            det.setPower(defs::V_POWER_A, prev_va[i], {i});
         }
     } else {
         REQUIRE_THROWS(caller.call("v_limit", {}, -1, GET));
@@ -1053,6 +1056,16 @@ TEST_CASE("v_abcd", "[.cmdcall]") {
                     caller.call(cmds[i], {}, -1, GET, oss2);
                     REQUIRE(oss2.str() == cmds[i] + " 1200\n");
                 }
+
+                if (det_type == defs::XILINX_CHIPTESTBOARD &&
+                    det.isVirtualDetectorServer().tsquash(
+                        "inconsistent virtual values")) {
+                    // prev value for power regulators should have been 0
+                    // as they are only touched in this test
+                    REQUIRE(prev_val.squash(-1) == 0);
+                    REQUIRE_THROWS(caller.call(cmds[i], {"-100"}, -1, PUT));
+                }
+
                 for (int i = 0; i != det.size(); ++i) {
                     if (det_type == defs::XILINX_CHIPTESTBOARD &&
                         prev_val[i] == -100) {

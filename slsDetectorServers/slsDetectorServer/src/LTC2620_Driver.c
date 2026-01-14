@@ -112,7 +112,7 @@ int LTC2620_D_WriteDACValue(int dacnum, int dacvalue, char *dacname) {
                  dacnum, DAC_POWERDOWN_DRIVER_FILE_SUFFIX);
     }
 #endif
-    LOG(logDEBUG1, ("fname %s\n", fname));
+    LOG(logINFORED, ("fname %s\n", fname));
 
     // open file
     FILE *fd = fopen(fname, "w");

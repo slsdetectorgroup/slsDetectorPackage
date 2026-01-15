@@ -1907,6 +1907,8 @@ class Detector(CppDetectorApi):
                 raise ValueError("bit_position must be provided when passing int address")
             if not isinstance(bit_position, int):
                 raise ValueError("bit_position must be int")
+            if isinstance(bitname_or_addr, int):
+                bitname_or_addr = RegisterAddress(bitname_or_addr)
             return BitAddress(bitname_or_addr, bit_position)
 
         # New usage with str or BitAddress

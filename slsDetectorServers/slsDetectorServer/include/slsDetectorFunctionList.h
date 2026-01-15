@@ -381,7 +381,16 @@ void setDAC(enum DACINDEX ind, int val, int mV);
 int getDAC(enum DACINDEX ind, int mV);
 int getMaxDacSteps();
 #if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
-int dacToVoltage(int dac);
+int dacToVoltage_PowerRegulators(int pwrIndex, int dac_value, int *retval,
+                                 char *mess);
+int voltageToDac_PowerRegulators(int pwrIndex, int voltage, int *retval,
+                                 char *mess);
+void powerEnable(int on, int pwrIndex);
+int getPowerEnable(int pwrIndex);
+int isPowerValid(enum DACINDEX ind, int val, char *mess);
+int getPower(enum DACINDEX ind, int *retval, char *mess);
+int setPower(enum DACINDEX ind, int val, char *mess);
+
 int checkVLimitCompliant(int mV);
 int checkVLimitDacCompliant(int dac);
 int getVLimit();
@@ -395,16 +404,11 @@ void setVchip(int val);
 int getVChipToSet(enum DACINDEX ind, int val);
 int getDACIndexFromADCIndex(enum ADCINDEX ind);
 int getADCIndexFromDACIndex(enum DACINDEX ind);
-int isPowerValid(enum DACINDEX ind, int val);
-int getPower();
-void setPower(enum DACINDEX ind, int val);
+
 void powerOff();
 #elif XILINX_CHIPTESTBOARDD
+int getPwrIndex(enum DACINDEX ind);
 int getBitOffsetFromDACIndex(enum DACINDEX ind);
-int getMinPowerValue(enum DACINDEX ind);
-int isPowerValid(enum DACINDEX ind, int val);
-int getPower();
-int setPower(enum DACINDEX ind, int val);
 #endif
 
 #if defined(MYTHEN3D) || defined(GOTTHARD2D) || defined(XILINX_CHIPTESTBOARDD)

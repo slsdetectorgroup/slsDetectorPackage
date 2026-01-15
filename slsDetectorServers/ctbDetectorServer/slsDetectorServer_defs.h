@@ -147,6 +147,8 @@ enum ADCINDEX {
     S_ADC7,
     S_TMP
 };
+#define PWR_NAMES "VIO", "VA", "VB", "VC", "VD"
+
 enum DACINDEX {
     D0,
     D1,
@@ -173,5 +175,6 @@ enum DACINDEX {
     D_PWR_A,
     D_PWR_IO
 };
+
 enum CLKINDEX { RUN_CLK, ADC_CLK, SYNC_CLK, DBIT_CLK, NUM_CLOCKS };
 #define CLK_NAMES "run", "adc", "sync", "dbit"

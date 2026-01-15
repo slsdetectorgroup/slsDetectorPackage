@@ -1238,9 +1238,7 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
     // convert to dac units
     else if (LTC2620_VoltageToDac(val, &dacval) == OK) {
         dacValues[ind] = dacval;
-    }
-#else
-    if (LTC2620_SetDACValue((int)ind, val, mV, &dacval) == OK)
+    } else if (LTC2620_SetDACValue((int)ind, val, mV, &dacval) == OK)
         dacValues[ind] = dacval;
 #endif
 }
@@ -1258,12 +1256,6 @@ int getDAC(enum DACINDEX ind, int mV) {
 }
 
 int getMaxDacSteps() { return LTC2620_GetMaxNumSteps(); }
-
-int dacToVoltage(int dac) {
-    int val;
-    LTC2620_DacToVoltage(dac, &val);
-    return val;
-}
 
 int checkVLimitCompliant(int mV) {
     if (vLimit > 0 && mV > vLimit)
@@ -1352,7 +1344,13 @@ int getVChipToSet(enum DACINDEX ind, int val) {
     for (int ipwr = 0; ipwr < NPWR - 1; ++ipwr) {
 
         // get the dac values for each adc
-        int dacmV = getPower(getDACIndexFromADCIndex(ipwr));
+        char emsg[MAX_STR_LENGTH];
+        int dacmV = -1;
+        if (getPower(ipwr, &dacmV, emsg) == FAIL) {
+            LOG(logERROR, ("Could not get power %d to calculate vchip. %s\n",
+                           ipwr, emsg));
+            return -1;
+        }
 
         // if current index, replace with value to be set
         if (ipwr == adcIndex) {
@@ -1376,6 +1374,42 @@ int getVChipToSet(enum DACINDEX ind, int val) {
         return -1;
     }
     return max;
+}
+
+int dacToVoltage_PowerRegulators(int pwrIndex, int dac_value, int *retval_mV,
+                                 char *mess) {
+    *retval_mV = -1;
+    char *powerNames[] = {PWR_NAMES};
+    if (ConvertToDifferentRange(LTC2620_GetMaxInput(), LTC2620_GetMinInput(),
+                                POWER_RGLTR_MIN, POWER_RGLTR_MAX, dac_value,
+                                retval_mV) == FAIL) {
+        snprintf(mess, MAX_STR_LENGTH,
+                 "Could not convert dac value %d to mV for Power %s\n",
+                 dac_value, powerNames[pwrIndex]);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    return OK;
+}
+
+int voltageToDac_PowerRegulators(int pwrIndex, int voltage, int *retval_dac,
+                                 char *mess) {
+    *retval_dac = -1;
+    char *powerNames[] = {PWR_NAMES};
+
+    if (ConvertToDifferentRange(POWER_RGLTR_MIN, POWER_RGLTR_MAX,
+                                LTC2620_GetMaxInput(), LTC2620_GetMinInput(),
+                                voltage, retval_dac) == FAIL) {
+        int min = pwrIndex == V_PWR_IO ? VIO_MIN_MV : POWER_RGLTR_MIN;
+        int max = getVchip() - VCHIP_POWER_INCRMNT;
+        snprintf(mess, MAX_STR_LENGTH,
+                 "Could not convert Power %s to dac value. Invalid value of "
+                 "%d mV. Should be between %d and %d mV\n",
+                 powerNames[pwrIndex], voltage, min, max);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    return OK;
 }
 
 int getDACIndexFromADCIndex(enum ADCINDEX ind) {
@@ -1414,46 +1448,103 @@ int getADCIndexFromDACIndex(enum DACINDEX ind) {
     }
 }
 
-int isPowerValid(enum DACINDEX ind, int val) {
-    int min = (ind == D_PWR_IO) ? VIO_MIN_MV : POWER_RGLTR_MIN;
+void powerEnable(int on, int pwrIndex) {
+    uint32_t addr = POWER_REG;
+    int offset = POWER_ENBL_VLTG_RGLTR_OFST + pwrIndex;
+    uint32_t mask = (1 << offset);
 
-    // not power_rgltr_max because it is allowed only upto vchip max - 200
-    if (val != 0 && (val != LTC2620_GetPowerDownValue()) &&
-        (val < min || val > (VCHIP_MAX_MV - VCHIP_POWER_INCRMNT))) {
-        return 0;
+    if (on) {
+        // Switch on power enable
+        LOG(logINFO, ("\tSwitching on power enable\n"));
+        bus_w(addr, bus_r(addr) | mask);
+    } else {
+        // Switch off power enable
+        LOG(logINFO, ("\tSwitching off power enable\n"));
+        bus_w(addr, bus_r(addr) & ~(mask));
     }
-    return 1;
 }
 
-int getPower(enum DACINDEX ind) {
-    // validate index & get adc index
-    int adcIndex = getADCIndexFromDACIndex(ind);
-    if (adcIndex == -1) {
-        return -1;
+int getPowerEnable(int pwrIndex) {
+    int offset = POWER_ENBL_VLTG_RGLTR_OFST + pwrIndex;
+    uint32_t mask = (1 << offset);
+    return (bus_r(POWER_REG) & mask);
+}
+
+int isPowerValid(enum DACINDEX ind, int val, char *mess) {
+    char *powerNames[] = {PWR_NAMES};
+
+    // validate & get power index
+    int pwrIndex = getADCIndexFromDACIndex(ind);
+    if (pwrIndex == -1) {
+        snprintf(mess, MAX_STR_LENGTH,
+                 "Could not validate power. Invalid DAC index: %d for Power\n",
+                 ind);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+
+    // check vlimit
+    if (checkVLimitCompliant(val) == FAIL) {
+        snprintf(mess, MAX_STR_LENGTH,
+                 "Power %s value %d mV exceeds vLimit of %d mV\n",
+                 powerNames[pwrIndex], val, vLimit);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+
+    // validate within bounds
+    // not power_rgltr_max because it is allowed only upto vchip max - 200
+    int min = pwrIndex == V_PWR_IO ? VIO_MIN_MV : POWER_RGLTR_MIN;
+    int max = VCHIP_MAX_MV - VCHIP_POWER_INCRMNT;
+    if ((val != 0 && (val != LTC2620_GetPowerDownValue()) && val < min) ||
+        val > max) {
+        snprintf(mess, MAX_STR_LENGTH,
+                 "Invalid value of %d mV for Power %s. Can be -100, 0 or "
+                 "between %d and %d mV\n",
+                 val, powerNames[pwrIndex], min, max);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    return OK;
+}
+
+int getPower(enum DACINDEX ind, int *retval, char *mess) {
+    *retval = -1;
+    char *powerNames[] = {PWR_NAMES};
+
+    // validate & get power index
+    int pwrIndex = getADCIndexFromDACIndex(ind);
+    if (pwrIndex == -1) {
+        snprintf(mess, MAX_STR_LENGTH,
+                 "Could not validate power. Invalid DAC index: %d for Power\n",
+                 ind);
+        LOG(logERROR, (mess));
+        return FAIL;
     }
 
     // powered enable off
-    {
-        uint32_t addr = POWER_REG;
-        uint32_t offset = POWER_ENBL_VLTG_RGLTR_OFST + adcIndex;
-        uint32_t mask = (1 << offset);
-        if (!(bus_r(addr) & mask))
-            return 0;
+    if (getPowerEnable(pwrIndex) == 0) {
+        *retval = 0;
+        return OK;
     }
 
-    // not set yet
+    // dac value not set by user yet
     if (dacValues[ind] == -1) {
-        LOG(logERROR,
-            ("Power enabled, but unknown dac value for power index %d!", ind));
-        return -1;
+        snprintf(mess, MAX_STR_LENGTH,
+                 "Power %s not initialized to a value yet (other than 0). "
+                 "Cannot get value.\n",
+                 powerNames[pwrIndex]);
+        LOG(logERROR, (mess));
+        return FAIL;
     }
 
-    // dac powered off
+    // dac powered down
     if (dacValues[ind] == LTC2620_GetPowerDownValue()) {
         LOG(logWARNING,
             ("Power %d enabled, dac value %d, voltage at minimum or 0\n", ind,
              LTC2620_GetPowerDownValue()));
-        return LTC2620_GetPowerDownValue();
+        *retval = LTC2620_GetPowerDownValue();
+        return OK;
     }
 
     // vchip not set, weird error, should not happen (as vchip set to max in the
@@ -1461,100 +1552,100 @@ int getPower(enum DACINDEX ind) {
     // tried to get a power regulator value
     if (dacValues[D_PWR_CHIP] == -1 ||
         dacValues[D_PWR_CHIP] == LTC2620_GetPowerDownValue()) {
-        LOG(logERROR, ("Cannot read power regulator %d (vchip not set)."
-                       "Set a power regulator, which will also set vchip.\n"));
-        return -1;
+        snprintf(mess, MAX_STR_LENGTH,
+                 "Power %s cannot be read as vchip is not set. Set a power "
+                 "regulator first, which will also set vchip.\n",
+                 powerNames[pwrIndex]);
+        LOG(logERROR, (mess));
+        return FAIL;
     }
 
-    // convert dac to voltage
-    int retval = -1;
-    ConvertToDifferentRange(LTC2620_GetMaxInput(), LTC2620_GetMinInput(),
-                            POWER_RGLTR_MIN, POWER_RGLTR_MAX, dacValues[ind],
-                            &retval);
-    return retval;
+    // get dac in mV
+    if (dacToVoltage_PowerRegulators(pwrIndex, dacValues[ind], retval, mess) ==
+        FAIL)
+        return FAIL;
+
+    return OK;
 }
 
-void setPower(enum DACINDEX ind, int val) {
-    // validate index & get adc index
-    int adcIndex = getADCIndexFromDACIndex(ind);
-    if (adcIndex == -1) {
-        return;
+int setPower(enum DACINDEX ind, int val, char *mess) {
+    char *powerNames[] = {PWR_NAMES};
+
+    // validate & get power index
+    int pwrIndex = getADCIndexFromDACIndex(ind);
+    if (pwrIndex == -1) {
+        snprintf(mess, MAX_STR_LENGTH,
+                 "Could not validate power. Invalid DAC index: %d for Power\n",
+                 ind);
+        LOG(logERROR, (mess));
+        return FAIL;
     }
 
-    uint32_t addr = POWER_REG;
-    uint32_t offset = POWER_ENBL_VLTG_RGLTR_OFST + adcIndex;
-    uint32_t mask = (1 << offset);
-
-    // set power
-    if (val != -1) {
-        LOG(logINFO, ("Setting Power to %d mV\n", val));
-
-        // validate value (already checked at tcp)
-        if (!isPowerValid(ind, val)) {
-            LOG(logERROR,
-                ("Invalid value of %d mV for Power %d. Is not between %d and "
-                 "%d mV\n",
-                 val, ind, (ind == D_PWR_IO ? VIO_MIN_MV : POWER_RGLTR_MIN),
-                 POWER_RGLTR_MAX));
-            return;
-        }
-
-        // get vchip to set vchip (calculated now before switching off power
-        // enable)
-        int vchip = getVChipToSet(ind, val);
-        LOG(logDEBUG1, ("Vchip to set: %d\n", vchip));
-        // index problem of vchip calculation problem
-        if (vchip == -1)
-            return;
-
-        // Switch off power enable
-        LOG(logDEBUG1, ("Switching off power enable\n"));
-        bus_w(addr, bus_r(addr) & ~(mask));
-
-        // power down dac
-        LOG(logDEBUG1, ("Powering off P%d (DAC %d)\n", adcIndex, ind));
-        setDAC(ind, LTC2620_GetPowerDownValue(), 0);
-
-        // set vchip
-        setVchip(vchip);
-        if (getVchip() != vchip) {
-            LOG(logERROR, ("Weird, Could not set vchip. Set %d, read %d\n.",
-                           vchip, getVchip()));
-            return;
-        }
-
-        //(power off is anyway done with power enable)
-        if (val == 0)
-            val = LTC2620_GetPowerDownValue();
-
-        // convert it to dac (power off is anyway done with power enable)
-        if (val != LTC2620_GetPowerDownValue()) {
-            LOG(logDEBUG1, ("Convert Power of %d mV to dac units\n", val));
-
-            int dacval = -1;
-            // convert voltage to dac
-            if (ConvertToDifferentRange(
-                    POWER_RGLTR_MIN, POWER_RGLTR_MAX, LTC2620_GetMaxInput(),
-                    LTC2620_GetMinInput(), val, &dacval) == FAIL) {
-                LOG(logERROR,
-                    ("\tPower index %d of value %d mV invalid. Is not between "
-                     "%d and %d mV\n",
-                     ind, val, POWER_RGLTR_MIN, vchip - VCHIP_POWER_INCRMNT));
-                return;
-            }
-
-            // set and power on/ update dac
-            LOG(logINFO, ("Setting P%d (DAC %d): %d dac (%d mV)\n", adcIndex,
-                          ind, dacval, val));
-            setDAC(ind, dacval, 0);
-
-            // to be sure of valid conversion
-            if (dacval >= 0) {
-                LOG(logDEBUG1, ("Switching on power enable\n"));
-                bus_w(addr, bus_r(addr) | mask);
-            }
-        }
+    if (isPowerValid(ind, val, mess) == FAIL) {
+        return FAIL;
     }
+
+    LOG(logINFO, ("Setting Power %s to %d mV\n", powerNames[pwrIndex], val));
+
+    // get vchip to set vchip (calculated now before switching off power
+    // enable)
+    int vchip = getVChipToSet(ind, val);
+    LOG(logDEBUG1, ("Vchip to set: %d\n", vchip));
+    // index issue of vchip calculation
+    if (vchip == -1) {
+        snprintf(mess, MAX_STR_LENGTH,
+                 "Could not set power %s. Calculated vchip to set is beyond "
+                 "its maximum range.\n",
+                 powerNames[pwrIndex]);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+
+    powerEnable(0, pwrIndex);
+
+    // power down dac
+    LOG(logDEBUG1, ("Powering off %s\n", powerNames[pwrIndex]));
+    setDAC(ind, LTC2620_GetPowerDownValue(), 0);
+
+    // set vchip
+    setVchip(vchip);
+    if (getVchip() != vchip) {
+        snprintf(mess, MAX_STR_LENGTH,
+                 "Could not set power %s. Tried to set vchip to %d mV, read %d "
+                 "mV\n.",
+                 powerNames[pwrIndex], vchip, getVchip());
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+
+    //(power off is anyway done with power enable)
+    if (val == 0)
+        val = LTC2620_GetPowerDownValue();
+
+    // convert it to dac (power off is anyway done with power enable)
+    if (val != LTC2620_GetPowerDownValue()) {
+
+        // convert mV to dac value
+        int dacval = -1;
+        if (voltageToDac_PowerRegulators(pwrIndex, val, &dacval, mess) == FAIL)
+            return FAIL;
+
+        // set dac value
+        LOG(logINFO, ("\tSetting %s: %d mV (%d dac)\n", powerNames[pwrIndex],
+                      val, dacval));
+        setDAC(ind, dacval, 0);
+        if (dacval == -1) {
+            snprintf(mess, MAX_STR_LENGTH,
+                     "Could not set power %s. Tried to set dac value to %d\n.",
+                     powerNames[pwrIndex], dacval);
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
+
+        powerEnable(1, pwrIndex);
+    }
+
+    return OK;
 }
 
 void powerOff() {

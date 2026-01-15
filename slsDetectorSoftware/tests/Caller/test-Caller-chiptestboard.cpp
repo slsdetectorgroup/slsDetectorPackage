@@ -1060,9 +1060,9 @@ TEST_CASE("v_abcd", "[.cmdcall]") {
                 if (det_type == defs::XILINX_CHIPTESTBOARD &&
                     det.isVirtualDetectorServer().tsquash(
                         "inconsistent virtual values")) {
-                    // prev value for power regulators should have been 0
-                    // as they are only touched in this test
-                    REQUIRE(prev_val.squash(-1) == 0);
+                    // prev value for power regulators should have been 1200
+                    // (set in config) as they are only touched in this test
+                    REQUIRE(prev_val.squash(-1) == 1200);
                     REQUIRE_THROWS(caller.call(cmds[i], {"-100"}, -1, PUT));
                 }
 

@@ -1283,48 +1283,14 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
                         "exceeds voltage limit %d.\n",
                         ind, getVLimit());
                 LOG(logERROR, (mess));
-            }
-
-            else if (!isPowerValid(serverDacIndex, val)) {
-                ret = FAIL;
-                sprintf(
-                    mess,
-                    "Could not set power. Power regulator %d "
-                    "should be between %d and %d mV\n",
-                    ind,
-                    (serverDacIndex == D_PWR_IO ? VIO_MIN_MV : POWER_RGLTR_MIN),
-#ifdef CHIPTESTBOARDD
-                    (VCHIP_MAX_MV - VCHIP_POWER_INCRMNT));
-#else
-                    POWER_RGLTR_MAX);
-#endif
-                LOG(logERROR, (mess));
-            }
-
-            else {
-#ifdef XILINX_CHIPTESTBOARDD
-                ret = setPower(serverDacIndex, val);
-                if (ret == FAIL) {
-                    sprintf(mess,
-                            "Setting power regulator %d to value %d failed.\n",
-                            serverDacIndex, val);
-                    LOG(logERROR, (mess));
-                }
-#else
-                setPower(serverDacIndex, val);
-#endif
+            } else {
+                ret = setPower(serverDacIndex, val, mess);
             }
         }
         if (ret == OK) {
-            retval = getPower(serverDacIndex);
+            ret = getPower(serverDacIndex, &retval, mess);
             LOG(logDEBUG1,
                 ("Power regulator(%d): %d\n", serverDacIndex, retval));
-            if (retval == -1) {
-                ret = FAIL;
-                sprintf(mess, "Could not get power regulator %d.\n",
-                        serverDacIndex);
-                LOG(logERROR, (mess));
-            }
             validate(&ret, mess, val, retval, "set/get power regulator", DEC);
         }
         break;
@@ -1401,9 +1367,9 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
                  checkVLimitDacCompliant(val) == FAIL)) {
                 ret = FAIL;
                 sprintf(mess,
-                        "Could not set dac %d to value %d. "
-                        "Exceeds voltage limit %d.\n",
-                        ind, (mV ? val : dacToVoltage(val)), getVLimit());
+                        "Could not set dac %d. "
+                        "Exceeds voltage limit %d mV.\n",
+                        ind, getVLimit());
                 LOG(logERROR, (mess));
             } else
 #endif

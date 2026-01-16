@@ -1332,8 +1332,8 @@ void setVchip(int val) {
 int getVChipToSet(enum DACINDEX ind, int val) {
     LOG(logDEBUG1, ("Calculating vchip to set\n"));
     // validate index & get adc index
-    int adcIndex = getADCIndexFromDACIndex(ind);
-    if (adcIndex == -1) {
+    int pwrIndex = getADCIndexFromDACIndex(ind);
+    if (pwrIndex == -1) {
         return -1;
     }
 
@@ -1346,14 +1346,14 @@ int getVChipToSet(enum DACINDEX ind, int val) {
         // get the dac values for each adc
         char emsg[MAX_STR_LENGTH];
         int dacmV = -1;
-        if (getPower(ipwr, &dacmV, emsg) == FAIL) {
+        if (getPower(ind, &dacmV, emsg) == FAIL) {
             LOG(logERROR, ("Could not get power %d to calculate vchip. %s\n",
                            ipwr, emsg));
             return -1;
         }
 
         // if current index, replace with value to be set
-        if (ipwr == adcIndex) {
+        if (ipwr == pwrIndex) {
             dacmV = val;
         }
 
@@ -1470,19 +1470,8 @@ int getPowerEnable(int pwrIndex) {
     return (bus_r(POWER_REG) & mask);
 }
 
-int isPowerValid(enum DACINDEX ind, int val, char *mess) {
+int isPowerValid(int pwrIndex, int val, char *mess) {
     char *powerNames[] = {PWR_NAMES};
-
-    // validate & get power index
-    int pwrIndex = getADCIndexFromDACIndex(ind);
-    if (pwrIndex == -1) {
-        snprintf(mess, MAX_STR_LENGTH,
-                 "Could not validate power. Invalid DAC index: %d for Power\n",
-                 ind);
-        LOG(logERROR, (mess));
-        return FAIL;
-    }
-
     // check vlimit
     if (checkVLimitCompliant(val) == FAIL) {
         snprintf(mess, MAX_STR_LENGTH,
@@ -1581,7 +1570,7 @@ int setPower(enum DACINDEX ind, int val, char *mess) {
         return FAIL;
     }
 
-    if (isPowerValid(ind, val, mess) == FAIL) {
+    if (isPowerValid(pwrIndex, val, mess) == FAIL) {
         return FAIL;
     }
 

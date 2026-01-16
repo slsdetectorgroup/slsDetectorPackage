@@ -1070,7 +1070,6 @@ TEST_CASE("v_abcd", "[.cmdcall]") {
                     if (det_type == defs::XILINX_CHIPTESTBOARD &&
                         prev_val[i] == -100) {
                         prev_val[i] = 0;
-                        continue;
                     }
                     det.setPower(indices[i], prev_val[i], {i});
                 }

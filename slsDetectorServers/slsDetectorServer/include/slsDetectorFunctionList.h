@@ -387,7 +387,7 @@ int voltageToDac_PowerRegulators(int pwrIndex, int voltage, int *retval,
                                  char *mess);
 void powerEnable(int on, int pwrIndex);
 int getPowerEnable(int pwrIndex);
-int isPowerValid(enum DACINDEX ind, int val, char *mess);
+int isPowerValid(int pwrIndex, int val, char *mess);
 int getPower(enum DACINDEX ind, int *retval, char *mess);
 int setPower(enum DACINDEX ind, int val, char *mess);
 

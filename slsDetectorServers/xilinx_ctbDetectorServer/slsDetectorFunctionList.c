@@ -1323,18 +1323,8 @@ int getPowerEnable(int pwrIndex) {
     return (bus_r(CTRL_REG) & mask);
 }
 
-int isPowerValid(enum DACINDEX ind, int val, char *mess) {
+int isPowerValid(int pwrIndex, int val, char *mess) {
     char *powerNames[] = {PWR_NAMES};
-
-    // validate & get power index
-    int pwrIndex = getPwrIndex(ind);
-    if (pwrIndex == -1) {
-        snprintf(mess, MAX_STR_LENGTH,
-                 "Could not validate power. Invalid DAC index: %d for Power\n",
-                 ind);
-        LOG(logERROR, (mess));
-        return FAIL;
-    }
 
     // check vlimit
     if (checkVLimitCompliant(val) == FAIL) {
@@ -1410,7 +1400,7 @@ int setPower(enum DACINDEX ind, int val, char *mess) {
         return FAIL;
     }
 
-    if (isPowerValid(ind, val, mess) == FAIL) {
+    if (isPowerValid(pwrIndex, val, mess) == FAIL) {
         return FAIL;
     }
 

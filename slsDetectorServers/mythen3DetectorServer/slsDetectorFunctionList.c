@@ -1599,26 +1599,15 @@ void setDAC(enum DACINDEX ind, int val, int mV, int counterEnableCheck) {
 
 void setGeneralDAC(enum DACINDEX ind, int val, int mV) {
     char *dac_names[] = {DAC_NAMES};
-    LOG(logDEBUG1, ("Setting dac[%d - %s]: %d %s \n", (int)ind, dac_names[ind],
-                    val, (mV ? "mV" : "dac units")));
-    int dacval = val;
 
-#ifdef VIRTUAL
     LOG(logINFO, ("Setting dac[%d - %s]: %d %s \n", (int)ind, dac_names[ind],
                   val, (mV ? "mV" : "dac units")));
-    if (!mV) {
-        detectorDacs[ind] = val;
-    }
-    // convert to dac units
-    else if (LTC2620_D_VoltageToDac(val, &dacval) == OK) {
-        detectorDacs[ind] = dacval;
-    }
-#else
+    int dacval = -1;
     if (LTC2620_D_SetDACValue((int)ind, val, mV, dac_names[ind], &dacval) ==
         OK) {
         detectorDacs[ind] = dacval;
     }
-#endif
+
     const int specialDacs[NSPECIALDACS] = SPECIALDACINDEX;
     for (int i = 0; i < NSPECIALDACS; ++i) {
         if ((int)ind == specialDacs[i]) {

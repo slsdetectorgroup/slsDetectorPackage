@@ -1395,11 +1395,13 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
                     }
                 }
             }
-#elif MYTHEN3D
+#else
+#if MYTHEN3D
             // ignore counter enable to force vth dac values
             setDAC(serverDacIndex, val, mV, 0);
 #else
             setDAC(serverDacIndex, val, mV);
+#endif
 
             retval = getDAC(serverDacIndex, mV);
             LOG(logDEBUG1, ("Dac (%d): %d %s\n", serverDacIndex, retval,

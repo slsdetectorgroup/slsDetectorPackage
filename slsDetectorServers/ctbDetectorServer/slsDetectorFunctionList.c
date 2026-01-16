@@ -1238,7 +1238,9 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
     // convert to dac units
     else if (LTC2620_VoltageToDac(val, &dacval) == OK) {
         dacValues[ind] = dacval;
-    } else if (LTC2620_SetDACValue((int)ind, val, mV, &dacval) == OK)
+    }
+#else
+    if (LTC2620_SetDACValue((int)ind, val, mV, &dacval) == OK)
         dacValues[ind] = dacval;
 #endif
 }

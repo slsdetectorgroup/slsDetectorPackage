@@ -5,12 +5,12 @@ Script to update VERSION file with semantic versioning if provided as an argumen
 """
 
 import sys
-import os
+from pathlib import Path
 
 from packaging.version import Version, InvalidVersion
 
 
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+SCRIPT_DIR = Path(__file__).resolve().parent.parent 
 
 def get_version():
 
@@ -30,7 +30,7 @@ def get_version():
     
 
 def write_version_to_file(version):
-    version_file_path = os.path.join(SCRIPT_DIR, "VERSION")
+    version_file_path = Path(SCRIPT_DIR / "VERSION")
     with open(version_file_path, "w") as version_file:
         version_file.write(version)
     print(f"Version {version} written to VERSION file.")

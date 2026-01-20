@@ -79,6 +79,12 @@ jobs:
                 --version "${{ steps.version.outputs.version }}" \
                 --date "$(date +'%d.%m.%Y')" 
 
+            # update paths to documentation version etc in release notes 
+            - name: Update Release Notes
+              if: github.event_name == 'release'
+              run: |
+                python etc/generate_release_notes.py --version "${{ steps.version.outputs.version }}"
+            
             - name: Checkout gh-pages
               uses: actions/checkout@v4
               with:

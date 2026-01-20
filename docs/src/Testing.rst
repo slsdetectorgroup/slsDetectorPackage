@@ -36,11 +36,11 @@ If a test requires a detector mark them with the hidden tag ``[.detectorintegrat
     tests "[.detectorintegration]"
 
 
-If you want to disable a specific test for a specific detector add the hidden tag ``[.disable_<detector_name>]`` to the test case. Please note that only some specific disable tests have been implemented so far.
+If you want to disable testing that involves a data file that require pc tuning optimizations add the hidden tag ``[.disable_check_data_file]`` to the test case. Please note that only some specific disable tests have been implemented so far.
 
 .. code-block:: console
 
-    tests "[.detectorintegration] ~[.disable_jungfrau]"
+    tests "[detectorintegration] ~[disable_check_data_file]"
 
 Simulator Script: 
 -----------------
@@ -59,13 +59,11 @@ If you want to run them for a specific virtual detector or a specific test use t
     cd build
     python bin/test_simulators.py --servers jungfrau --test "[.rx]"
 
-You can exclude a specific detector for tests that have this marker by adding the option ``~[.disable_<detector_name>]``. Again, we assume that this marker is added to the tests that you want to exclude. 
+You can exclude specific tests by adding the option ``~[.<disable_test_name>]``. Again, we assume that this marker is added to the tests that you want to exclude. 
 
 .. code-block:: console
     cd build
-    python bin/test_simulators.py --servers eiger jungfrau moench --test "[.detectorintegration] ~[.disable_jungfrau]"
-
-Note that this still runs all the tests for the virtual jungfrau detector except for the ones marked with the tag ``[.disable_jungfrau]``. 
+    python bin/test_simulators.py --servers eiger jungfrau moench --test "[detectorintegration] ~[disable_check_data_file]"
 
 You can additionally run all the tests not requiring detectors using the script ``bin/test_simulators.py`` by passing the option ``--general_tests``. 
 

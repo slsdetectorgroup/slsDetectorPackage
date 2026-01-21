@@ -804,7 +804,7 @@ typedef struct {
     }
 
     sls_detector_module &operator=(const sls_detector_module &other) {
-        if(this == &other)
+        if (this == &other)
             return *this;
         delete[] dacs;
         delete[] chanregs;

@@ -1096,74 +1096,49 @@ clearbit:
     PUT:
       args:
       - arg_types:
-        - uint32_t
-        - int
-        argc: 2
-        cast_input:
-        - true
-        - true
-        - true
+        - std::string
+        argc: 1
+        cast_input: []
         check_det_id: false
         convert_det_id: true
-        exceptions:
-        - condition: StringTo<int>(args[1]) < 0 || StringTo<int>(args[1]) > 31
-          message: '"Bit number out of range: " + args[1]'
-        function: clearBit
-        input:
-        - args[0]
-        - args[1]
-        - '"0"'
-        input_types:
-        - uint32_t
-        - int
-        - bool
-        output:
-        - '"["'
-        - args[0]
-        - '", "'
-        - args[1]
-        - '"]"'
-        require_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
         store_result_in_t: false
       - arg_types:
-        - uint32_t
-        - int
-        - special::validate
-        argc: 3
-        cast_input:
-        - true
-        - true
-        - true
+        - std::string
+        - std::string
+        argc: 2
+        cast_input: []
         check_det_id: false
         convert_det_id: true
-        exceptions:
-        - condition: StringTo<int>(args[1]) < 0 || StringTo<int>(args[1]) > 31
-          message: '"Bit number out of range: " + args[1]'
-        - condition: args[2] != "--validate"
-          message: '"Could not scan third argument. Did you mean --validate?"'
-        function: clearBit
-        input:
-        - args[0]
-        - args[1]
-        - '"1"'
-        input_types:
-        - uint32_t
-        - int
-        - bool
-        output:
-        - '"["'
-        - args[0]
-        - '", "'
-        - args[1]
-        - '"]"'
-        require_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+      - arg_types:
+        - std::string
+        - std::string
+        - special::validate
+        argc: 3
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
         store_result_in_t: false
   command_name: clearbit
   function_alias: clearbit
-  help: "[reg address in hex] [bit index]\n\tClears bit in address.\n\tUse --validate\
-    \ to force validation."
+  help: ''
   infer_action: true
-  template: true
+  is_description: true
 clearbusy:
   actions:
     PUT:
@@ -2500,6 +2475,132 @@ defaultpattern:
     \ to go back to initial settings."
   infer_action: true
   template: true
+define_bit:
+  actions:
+    GET:
+      args:
+      - arg_types:
+        - std::string
+        argc: 1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: true
+      - arg_types:
+        - std::string
+        - int
+        argc: 2
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: true
+    PUT:
+      args:
+      - arg_types:
+        - std::string
+        - std::string
+        - int
+        argc: 3
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+  command_name: define_bit
+  function_alias: define_bit
+  help: ''
+  infer_action: true
+  is_description: true
+define_reg:
+  actions:
+    GET:
+      args:
+      - arg_types:
+        - std::string
+        argc: 1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: true
+    PUT:
+      args:
+      - arg_types:
+        - std::string
+        - int
+        argc: 2
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+  command_name: define_reg
+  function_alias: define_reg
+  help: ''
+  infer_action: true
+  is_description: true
+definelist_bit:
+  actions:
+    GET:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: true
+  command_name: definelist_bit
+  function_alias: definelist_bit
+  help: ''
+  infer_action: true
+  is_description: true
+definelist_reg:
+  actions:
+    GET:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: true
+  command_name: definelist_reg
+  function_alias: definelist_reg
+  help: ''
+  infer_action: true
+  is_description: true
 delay:
   actions:
     GET:
@@ -4706,32 +4807,35 @@ getbit:
     GET:
       args:
       - arg_types:
-        - uint32_t
-        - int
-        argc: 2
-        cast_input:
-        - true
-        - true
+        - std::string
+        argc: 1
+        cast_input: []
         check_det_id: false
         convert_det_id: true
-        exceptions:
-        - condition: StringTo<int>(args[1]) < 0 || StringTo<int>(args[1]) > 31
-          message: '"Bit number out of range: " + args[1]'
-        function: getBit
-        input:
-        - args[0]
-        - args[1]
-        input_types:
-        - uint32_t
-        - int
-        output:
-        - OutString(t)
-        require_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: true
+      - arg_types:
+        - std::string
+        - std::string
+        argc: 2
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
         store_result_in_t: true
   command_name: getbit
   function_alias: getbit
-  help: "[reg address in hex] [bit index]\n\tGets bit in address."
+  help: ''
   infer_action: true
+  is_description: true
 hardwareversion:
   actions:
     GET:
@@ -4986,6 +5090,32 @@ imagetest:
   function_alias: imagetest
   help: "[0, 1]\n\t[Eiger][Jungfrau][Moench] Only for Virtual servers. If 0, each\
     \ pixel intensity incremented by 1. If 1, all pixels almost saturated."
+  infer_action: true
+  template: true
+include:
+  actions:
+    PUT:
+      args:
+      - arg_types:
+        - special::path
+        argc: 1
+        cast_input:
+        - false
+        check_det_id: true
+        convert_det_id: true
+        function: loadParameters
+        input:
+        - args[0]
+        input_types:
+        - std::string
+        output:
+        - args.front()
+        require_det_id: false
+        store_result_in_t: false
+  command_name: include
+  function_alias: include
+  help: "\n\tSets detector measurement parameters to those contained in fname. Set\
+    \ up per measurement. Same as parameters command."
   infer_action: true
   template: true
 initialchecks:
@@ -7870,20 +8000,16 @@ reg:
     GET:
       args:
       - arg_types:
-        - uint32_t
+        - std::string
         argc: 1
-        cast_input:
-        - true
+        cast_input: []
         check_det_id: false
         convert_det_id: true
-        function: readRegister
-        input:
-        - args[0]
-        input_types:
-        - uint32_t
-        output:
-        - OutStringHex(t)
-        require_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
         store_result_in_t: true
     PUT:
       args:
@@ -7891,68 +8017,34 @@ reg:
         - uint32_t
         - uint32_t
         argc: 2
-        cast_input:
-        - true
-        - true
-        - true
+        cast_input: []
         check_det_id: false
         convert_det_id: true
-        function: writeRegister
-        input:
-        - args[0]
-        - args[1]
-        - '"0"'
-        input_types:
-        - uint32_t
-        - uint32_t
-        - bool
-        output:
-        - '"["'
-        - args[0]
-        - '", "'
-        - args[1]
-        - '"]"'
-        require_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
         store_result_in_t: false
       - arg_types:
         - uint32_t
         - uint32_t
         - special::validate
         argc: 3
-        cast_input:
-        - true
-        - true
-        - true
+        cast_input: []
         check_det_id: false
         convert_det_id: true
-        exceptions:
-        - condition: args[2] != "--validate"
-          message: '"Could not scan third argument. Did you mean --validate?"'
-        function: writeRegister
-        input:
-        - args[0]
-        - args[1]
-        - '"1"'
-        input_types:
-        - uint32_t
-        - uint32_t
-        - bool
-        output:
-        - '"["'
-        - args[0]
-        - '", "'
-        - args[1]
-        - '"]"'
-        require_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
         store_result_in_t: false
   command_name: reg
   function_alias: reg
-  help: "[address] [32 bit value][(optional)--validate]\n\t[Mythen3][Gotthard2] Reads/writes\
-    \ to a 32 bit register in hex. Advanced Function!\n\tGoes to stop server. Hence,\
-    \ can be called while calling blocking acquire().\n\t\t Use --validate to force\
-    \ validation when writing to it.\n\t[Eiger] +0x100 for only left, +0x200 for only\
-    \ right."
+  help: ''
   infer_action: true
+  is_description: true
 resetdacs:
   actions:
     PUT:
@@ -9577,74 +9669,49 @@ setbit:
     PUT:
       args:
       - arg_types:
-        - uint32_t
-        - int
-        argc: 2
-        cast_input:
-        - true
-        - true
-        - true
+        - std::string
+        argc: 1
+        cast_input: []
         check_det_id: false
         convert_det_id: true
-        exceptions:
-        - condition: StringTo<int>(args[1]) < 0 || StringTo<int>(args[1]) > 31
-          message: '"Bit number out of range: " + args[1]'
-        function: setBit
-        input:
-        - args[0]
-        - args[1]
-        - '"0"'
-        input_types:
-        - uint32_t
-        - int
-        - bool
-        output:
-        - '"["'
-        - args[0]
-        - '", "'
-        - args[1]
-        - '"]"'
-        require_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
         store_result_in_t: false
       - arg_types:
-        - uint32_t
-        - int
-        - special::validate
-        argc: 3
-        cast_input:
-        - true
-        - true
-        - true
+        - std::string
+        - std::string
+        argc: 2
+        cast_input: []
         check_det_id: false
         convert_det_id: true
-        exceptions:
-        - condition: StringTo<int>(args[1]) < 0 || StringTo<int>(args[1]) > 31
-          message: '"Bit number out of range: " + args[1]'
-        - condition: args[2] != "--validate"
-          message: '"Could not scan third argument. Did you mean --validate?"'
-        function: setBit
-        input:
-        - args[0]
-        - args[1]
-        - '"1"'
-        input_types:
-        - uint32_t
-        - int
-        - bool
-        output:
-        - '"["'
-        - args[0]
-        - '", "'
-        - args[1]
-        - '"]"'
-        require_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+      - arg_types:
+        - std::string
+        - std::string
+        - special::validate
+        argc: 3
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
         store_result_in_t: false
   command_name: setbit
   function_alias: setbit
-  help: "[reg address in hex] [bit index]\n\tSets bit in address.\n\tUse --validate\
-    \ to force validation."
+  help: ''
   infer_action: true
-  template: true
+  is_description: true
 settings:
   actions:
     GET:

@@ -3,6 +3,7 @@
 from ._slsdet import CppDetectorApi
 from ._slsdet import slsDetectorDefs
 from ._slsdet import IpAddr, MacAddr
+from ._slsdet import RegisterAddress, RegisterValue, BitAddress
 
 runStatus = slsDetectorDefs.runStatus
 timingMode = slsDetectorDefs.timingMode
@@ -144,6 +145,33 @@ class Detector(CppDetectorApi):
 
     @parameters.setter
     def parameters(self, value):
+        if isinstance(value, str):
+            value = ut.make_string_path(value)
+        self.loadParameters(value)
+
+
+    @property
+    def include(self):
+        """Sets detector measurement parameters to those contained in fname. 
+        Set up per measurement.
+        
+        Note 
+        -----
+        Equivalent to config, but does not free shared memory. Same as parameters command.
+
+        :getter: Not implemented
+        :setter: loads parameters file
+
+        Example
+        ---------
+
+        >>> d.include = 'path/to/file.par'
+        
+        """
+        return NotImplementedError("include is set only")
+
+    @include.setter
+    def include(self, value):
         if isinstance(value, str):
             value = ut.make_string_path(value)
         self.loadParameters(value)
@@ -1813,6 +1841,150 @@ class Detector(CppDetectorApi):
         [Eiger] Address is +0x100 for only left, +0x200 for only right.
         """
         return self._register
+    
+    def define_reg(self, *, name: str, addr):
+        """
+        [Ctb] Define a name for a register to be used later with reg.
+
+        Example
+        --------
+
+        d.define_reg('myreg',addr=0x6)
+        d.define_reg('myreg',addr=RegisterAddress(0x6))')
+        """
+        if isinstance(addr, int):
+            addr = RegisterAddress(addr)
+        elif not isinstance(addr, RegisterAddress):
+            raise ValueError("addr must int or RegisterAddress")
+        self.setRegisterDefinition(name, addr)
+
+
+    def define_bit(self, *, name: str, addr, bit_position:int=None):
+        """
+        [Ctb] Define a name for a bit in a register to be used later with setBit/clearBit/getBit
+
+        Example
+        --------
+
+        bit1 = BitAddress(RegisterAddress(0x6),7)
+        d.define_bit('mybit',addr=bit1)
+        d.define_bit('mybit',addr=0x6, bit=7)
+        d.define_bit('mybit',addr=RegisterAddress(0x6), bit=7)
+        d.define_bit('mybit',addr='myreg', bit=7) #if myreg defined before
+        """
+
+        # bitAddress
+        if isinstance(addr, BitAddress):
+            if bit_position is not None:
+                raise ValueError("If addr is BitAddress, bit_position must be None")
+            bitaddr = addr
+        # register name/address + bit_position
+        else:
+            if isinstance(addr, str):
+                addr = self.getRegisterAddress(addr)
+            elif isinstance(addr, int):
+                addr = RegisterAddress(addr)
+            elif not isinstance(addr, RegisterAddress):
+                raise ValueError("addr must be str, int or RegisterAddress")
+            
+            if bit_position is None:
+                raise ValueError("bit_position must be provided if addr is used.")
+            if not isinstance(bit_position, int):
+                raise ValueError("bit_position must be int")
+
+            bitaddr = BitAddress(addr, bit_position)
+
+        self.setBitDefinition(name, bitaddr)
+
+    def _resolve_bit_name_or_addr(self, bitname_or_addr, bit_position=None):
+        """
+        Internal function to resolve bit name or address arguments for setBit, clearBit and getBit
+        Returns a BitAddress
+        """
+        #Old usage passing two ints  or [RegisterAddress and int]
+        if isinstance(bitname_or_addr, (int, RegisterAddress)):
+            if bit_position is None:
+                raise ValueError("bit_position must be provided when passing int address")
+            if not isinstance(bit_position, int):
+                raise ValueError("bit_position must be int")
+            if isinstance(bitname_or_addr, int):
+                bitname_or_addr = RegisterAddress(bitname_or_addr)
+            return BitAddress(bitname_or_addr, bit_position)
+
+        # New usage with str or BitAddress
+        # str
+        if isinstance(bitname_or_addr, str):
+            bitname_or_addr = self.getBitAddress(bitname_or_addr)
+
+        if bit_position is not None:
+            raise ValueError("bit_position must be None when passing str or BitAddress")
+
+        #must now be a BitAddress
+        if not isinstance(bitname_or_addr, BitAddress):
+            raise ValueError("bitname_or_addr must be str, BitAddress, int or RegisterAddress")
+
+        return bitname_or_addr
+        
+
+    def setBit(self, bitname_or_addr, bit_position=None):
+        """
+        Set a bit in a register
+        [Ctb] Can use a named bit address
+
+        Example
+        --------
+        d.setBit(0x5, 3)
+        d.setBit(RegisterAddress(0x5), 3)
+        
+        #Ctb
+        d.setBit('mybit')
+
+        myreg = RegisterAddress(0x5)
+        mybit = BitAddress(myreg, 5) 
+        d.setBit(mybit)
+        """
+        resolved = self._resolve_bit_name_or_addr(bitname_or_addr, bit_position)
+        return super().setBit(resolved)
+        
+    def clearBit(self, bitname_or_addr, bit_position=None):
+        """
+        Clear a bit in a register
+        [Ctb] Can use a named bit address
+
+        Example
+        --------
+        d.clearBit(0x5, 3)
+        
+        #Ctb
+        d.clearBit('mybit')
+
+        myreg = RegisterAddress(0x5)
+        mybit = BitAddress(myreg, 5) 
+        d.clearBit(mybit)
+        """
+        resolved = self._resolve_bit_name_or_addr(bitname_or_addr, bit_position)
+        return super().clearBit(resolved)
+
+    @element
+    def getBit(self, bitname_or_addr, bit_position=None):
+        """
+        Get a bit from a register
+        [Ctb] Can use a named bit address
+
+        Example
+        --------
+        d.getBit(0x5, 3)
+        
+        #Ctb
+        d.getBit('mybit')
+
+        myreg = RegisterAddress(0x5)
+        mybit = BitAddress(myreg, 5) 
+        d.getBit(mybit)
+        """
+        resolved = self._resolve_bit_name_or_addr(bitname_or_addr, bit_position)
+        return super().getBit(resolved)  
+
 
     @property
     def slowadc(self):

@@ -84,8 +84,8 @@ TEST_CASE("Shutdown socket without hanging when waiting for data") {
 
     // Start a thread and wait for package
     // if the socket is left open we would block
-    std::future<bool> ret =
-        std::async(std::launch::async, &UdpRxSocket::ReceivePacket, &s, (char *)&buff);
+    std::future<bool> ret = std::async(
+        std::launch::async, &UdpRxSocket::ReceivePacket, &s, (char *)&buff);
 
     s.Shutdown();
     auto r = ret.get();

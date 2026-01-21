@@ -1,44 +1,57 @@
 #pragma once
-#include <string>
-#include <vector>
-namespace sls {
 
-#define CTB_SHMAPIVERSION 0x250820
-#define CTB_SHMVERSION    0x250820
+#include "MapOnStack.h"
+#include "sls/bit_utils.h"
+#include "sls/sls_detector_defs.h"
+#include "sls/string_utils.h"
+
+#include <vector>
+
+namespace sls {
 
 class CtbConfig {
   public:
     /** fixed pattern */
-    int shmversion{CTB_SHMVERSION};
+    static constexpr int SHM_VERSION = 0x251215;
+    int shmversion{SHM_VERSION};
     bool isValid{true}; // false if freed to block access from python or c++ api
                         /** end of fixed pattern */
+
   private:
-    static constexpr size_t name_length = 20;
+    static constexpr const char *shm_tag_ = "ctbdacs";
+    static constexpr size_t name_length = 32;
+
     static constexpr size_t num_dacs = 18;
     static constexpr size_t num_adcs = 32;
     static constexpr size_t num_signals = 64;
     static constexpr size_t num_powers = 5;
     static constexpr size_t num_slowADCs = 8;
-    static constexpr const char *shm_tag_ = "ctbdacs";
-    char dacnames[name_length * num_dacs]{};
-    char adcnames[name_length * num_adcs]{};
-    char signalnames[name_length * num_signals]{};
-    char powernames[name_length * num_powers]{};
-    char slowADCnames[name_length * num_slowADCs]{};
+    char dacnames[num_dacs][name_length]{};
+    char adcnames[num_adcs][name_length]{};
+    char signalnames[num_signals][name_length]{};
+    char powernames[num_powers][name_length]{};
+    char slowADCnames[num_slowADCs][name_length]{};
 
-    void check_dac_index(size_t i) const;
-    void check_adc_index(size_t i) const;
-    void check_signal_index(size_t i) const;
-    void check_power_index(size_t i) const;
-    void check_slow_adc_index(size_t i) const;
-    void check_size(const std::string &name) const;
+    void check_index(size_t index, size_t max, const std::string &name,
+                     const std::string &suffix = "") const;
+    void set_name(const std::string &name, char dst[][name_length],
+                  size_t index);
+
+    void setNames(const std::vector<std::string> &names, size_t expected_size,
+                  void (CtbConfig::*setNameFunc)(size_t, const std::string &));
+    std::vector<std::string>
+    getNames(size_t expected_size,
+             std::string (CtbConfig::*getNameFunc)(size_t) const) const;
+
+    static constexpr size_t Max_Named_Regs = 1024;
+    static constexpr size_t Max_Named_Bits = 32 * 1024;
+    MapOnStack<FixedString<name_length>, RegisterAddress, Max_Named_Regs, true>
+        registers;
+    MapOnStack<FixedString<name_length>, BitAddress, Max_Named_Bits, true> bits;
 
   public:
     CtbConfig();
-    CtbConfig(const CtbConfig &) = default;
-    CtbConfig(CtbConfig &&) = default;
-    CtbConfig &operator=(const CtbConfig &) = default;
-    ~CtbConfig() = default;
+    static const char *shm_tag();
 
     void setDacNames(const std::vector<std::string> &names);
     void setDacName(size_t index, const std::string &name);
@@ -64,7 +77,27 @@ class CtbConfig {
     void setSlowADCName(size_t index, const std::string &name);
     std::string getSlowADCName(size_t index) const;
     std::vector<std::string> getSlowADCNames() const;
-    static const char *shm_tag();
+
+    int getRegisterNamesCount() const;
+    bool hasRegisterName(const std::string &name) const;
+    bool hasRegisterAddress(RegisterAddress addr) const;
+    void clearRegisterNames();
+    void setRegisterName(const std::string &name, RegisterAddress addr);
+    RegisterAddress getRegisterAddress(const std::string &name) const;
+    std::string getRegisterName(RegisterAddress addr) const;
+    void setRegisterNames(const std::map<std::string, RegisterAddress> &list);
+    std::map<std::string, RegisterAddress> getRegisterNames() const;
+
+    int getBitNamesCount() const;
+    void clearBitNames();
+    bool hasBitName(const std::string &name) const;
+    bool hasBitAddress(BitAddress addr) const;
+    std::string toRegisterNameBitString(BitAddress addr) const;
+    void setBitName(const std::string &name, BitAddress addr);
+    BitAddress getBitAddress(const std::string &name) const;
+    std::string getBitName(BitAddress addr) const;
+    void setBitNames(const std::map<std::string, BitAddress> &list);
+    std::map<std::string, BitAddress> getBitNames() const;
 };
 
 } // namespace sls

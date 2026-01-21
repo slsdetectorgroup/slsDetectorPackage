@@ -183,6 +183,11 @@ class DetectorImpl : public virtual slsDetectorDefs {
 
     bool isAllPositions(Positions pos) const;
 
+    inline bool isChipTestBoard() const {
+        return (shm()->detType == defs::CHIPTESTBOARD ||
+                shm()->detType == defs::XILINX_CHIPTESTBOARD);
+    }
+
     /** set acquiring flag in shared memory */
     void setAcquiringFlag(bool flag);
 
@@ -327,6 +332,43 @@ class DetectorImpl : public virtual slsDetectorDefs {
     std::string getCtbSlowADCName(const defs::dacIndex i) const;
     void setCtbSlowADCNames(const std::vector<std::string> &names);
     void setCtbSlowADCName(const defs::dacIndex index, const std::string &name);
+
+    int getRegisterDefinitionsCount() const;
+    void setRegisterDefinition(const std::string &name, RegisterAddress addr);
+    bool hasRegisterDefinition(const std::string &name) const;
+    bool hasRegisterDefinition(RegisterAddress addr) const;
+    RegisterAddress getRegisterAddress(const std::string &name) const;
+    std::string getRegisterName(RegisterAddress addr) const;
+    void clearRegisterDefinitions();
+    void
+    setRegisterDefinitions(const std::map<std::string, RegisterAddress> &list);
+    std::map<std::string, RegisterAddress> getRegisterDefinitions() const;
+    int getBitDefinitionsCount() const;
+    void setBitDefinition(const std::string &name, BitAddress addr);
+    bool hasBitDefinition(const std::string &name) const;
+    bool hasBitDefinition(BitAddress addr) const;
+    std::string toRegisterNameBitString(BitAddress addr) const;
+    BitAddress getBitAddress(const std::string &name) const;
+    std::string getBitName(BitAddress addr) const;
+    void clearBitDefinitions();
+    void setBitDefinitions(const std::map<std::string, BitAddress> &list);
+    std::map<std::string, BitAddress> getBitDefinitions() const;
+
+    Result<RegisterValue> readRegister(const std::string &reg_name,
+                                       Positions pos) const;
+    void writeRegister(const std::string &reg_name, RegisterValue val,
+                       bool validate, Positions pos);
+    void setBit(const std::string &bit_name, bool validate, Positions pos);
+    void clearBit(const std::string &bit_name, bool validate, Positions pos);
+    Result<int> getBit(const std::string &bit_name, Positions pos) const;
+
+    Result<RegisterValue> readRegister(RegisterAddress addr,
+                                       Positions pos = {}) const;
+    void writeRegister(RegisterAddress addr, RegisterValue val,
+                       bool validate = false, Positions pos = {});
+    void setBit(BitAddress addr, bool validate = false, Positions pos = {});
+    void clearBit(BitAddress addr, bool validate = false, Positions pos = {});
+    Result<int> getBit(BitAddress addr, Positions pos = {}) const;
 
   private:
     /**

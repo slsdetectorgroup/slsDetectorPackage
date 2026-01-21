@@ -107,6 +107,10 @@ class Caller {
     std::string dbitpipeline(int action);
     std::string defaultdac(int action);
     std::string defaultpattern(int action);
+    std::string define_bit(int action);
+    std::string define_reg(int action);
+    std::string definelist_bit(int action);
+    std::string definelist_reg(int action);
     std::string delay(int action);
     std::string delayl(int action);
     std::string detectorserverversion(int action);
@@ -161,6 +165,7 @@ class Caller {
     std::string im_d(int action);
     std::string im_io(int action);
     std::string imagetest(int action);
+    std::string include(int action);
     std::string initialchecks(int action);
     std::string inj_ch(int action);
     std::string interpolation(int action);
@@ -398,6 +403,24 @@ class Caller {
     static void EmptyDataCallBack(detectorData *data, uint64_t frameIndex,
                                   uint32_t subFrameIndex, void *this_pointer);
 
+    std::string bitoperations(int action);
+
+    // parsing from args
+    // parse from string to RegisterAddress
+    RegisterAddress parseRegisterAddress(const std::string &addr) const;
+    // parse from 2 strings to BitAddress
+    BitAddress parseBitAddress(const std::string &addr,
+                               const std::string &bitPos) const;
+    // parse from string to RegisterValue
+    RegisterValue parseRegisterValue(const std::string &addr) const;
+    // parse validate flag from args and remove it from args
+    bool parseValidate();
+
+    // parses from args, but also gets addresses from shared memory if
+    // applicable
+    RegisterAddress getRegisterAddress(const std::string &saddr) const;
+    BitAddress getBitAddress() const;
+
     FunctionMap functions{
         {"list", &Caller::list},
 
@@ -451,6 +474,10 @@ class Caller {
         {"dbitpipeline", &Caller::dbitpipeline},
         {"defaultdac", &Caller::defaultdac},
         {"defaultpattern", &Caller::defaultpattern},
+        {"define_bit", &Caller::define_bit},
+        {"define_reg", &Caller::define_reg},
+        {"definelist_bit", &Caller::definelist_bit},
+        {"definelist_reg", &Caller::definelist_reg},
         {"delay", &Caller::delay},
         {"delayl", &Caller::delayl},
         {"detectorserverversion", &Caller::detectorserverversion},
@@ -505,6 +532,7 @@ class Caller {
         {"im_d", &Caller::im_d},
         {"im_io", &Caller::im_io},
         {"imagetest", &Caller::imagetest},
+        {"include", &Caller::include},
         {"initialchecks", &Caller::initialchecks},
         {"inj_ch", &Caller::inj_ch},
         {"interpolation", &Caller::interpolation},

@@ -62,6 +62,10 @@ class InferAction {
     int dbitpipeline();
     int defaultdac();
     int defaultpattern();
+    int define_bit();
+    int define_reg();
+    int definelist_bit();
+    int definelist_reg();
     int delay();
     int delayl();
     int detectorserverversion();
@@ -116,6 +120,7 @@ class InferAction {
     int im_d();
     int im_io();
     int imagetest();
+    int include();
     int initialchecks();
     int inj_ch();
     int interpolation();
@@ -394,6 +399,10 @@ class InferAction {
         {"dbitpipeline", &InferAction::dbitpipeline},
         {"defaultdac", &InferAction::defaultdac},
         {"defaultpattern", &InferAction::defaultpattern},
+        {"define_bit", &InferAction::define_bit},
+        {"define_reg", &InferAction::define_reg},
+        {"definelist_bit", &InferAction::definelist_bit},
+        {"definelist_reg", &InferAction::definelist_reg},
         {"delay", &InferAction::delay},
         {"delayl", &InferAction::delayl},
         {"detectorserverversion", &InferAction::detectorserverversion},
@@ -448,6 +457,7 @@ class InferAction {
         {"im_d", &InferAction::im_d},
         {"im_io", &InferAction::im_io},
         {"imagetest", &InferAction::imagetest},
+        {"include", &InferAction::include},
         {"initialchecks", &InferAction::initialchecks},
         {"inj_ch", &InferAction::inj_ch},
         {"interpolation", &InferAction::interpolation},

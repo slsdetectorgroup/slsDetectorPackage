@@ -1,0 +1,55 @@
+# SPDX-License-Identifier: LGPL-3.0-or-other
+# Copyright (C) 2021 Contributors to the SLS Detector Package
+#module add CBFlib/0.9.5
+INCDIR=-I. -I../ -I../interpolations  -I../interpolations/etaVEL  -I../dataStructures  -I../../slsSupportLib/include/ -I../../slsReceiverSoftware/include/ -I../tiffio/include
+
+LDFLAG= ../tiffio/src/tiffIO.cpp -L/usr/lib64/ -lpthread -lm  -lstdc++   -pthread -lrt    -ltiff -O3  -std=c++11
+
+MAIN=jungfrauClusterFinder.cpp
+
+
+all: jungfrauRawDataProcess
+
+jungfrauRawDataProcess:  jungfrauRawDataProcess.cpp  $(INCS) clean
+			 g++ -o jungfrauRawDataProcess  jungfrauRawDataProcess.cpp $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) -DSAVE_ALL  
+
+
+jungfrauClusterFinder:  jungfrauClusterFinder.cpp  $(INCS) clean
+			 g++ -o jungfrauClusterFinder  jungfrauClusterFinder.cpp $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) -DSAVE_ALL  
+
+
+jungfrauClusterFinderHighZ:  jungfrauClusterFinder.cpp  $(INCS) clean
+			 g++ -o jungfrauClusterFinderHighZ  jungfrauClusterFinder.cpp $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) -DSAVE_ALL  -DHIGHZ 
+
+
+jungfrauClusterFinderStrx:  jungfrauClusterFinder.cpp  $(INCS) clean
+			 g++ -o jungfrauClusterFinderStrx  jungfrauClusterFinder.cpp $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) -DSAVE_ALL  -DJFSTRX 
+
+
+
+
+jungfrauMakeEta:  jungfrauInterpolation.cpp  $(INCS) clean
+			 g++ -o jungfrauMakeEta jungfrauInterpolation.cpp    $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) -DFF
+
+jungfrauInterpolation:  jungfrauInterpolation.cpp  $(INCS) clean
+			 g++ -o jungfrauInterpolation jungfrauInterpolation.cpp    $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF)  
+
+jungfrauNoInterpolation:  jungfrauNoInterpolation.cpp  $(INCS) clean
+			 g++ -o jungfrauNoInterpolation jungfrauNoInterpolation.cpp    $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) 
+
+jungfrauPhotonCounter: jungfrauPhotonCounter.cpp   $(INCS) clean
+			 g++ -o jungfrauPhotonCounter  jungfrauPhotonCounter.cpp  $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF)  -DNEWRECEIVER
+
+jungfrauAnalog: jungfrauPhotonCounter.cpp  $(INCS) clean
+			 g++ -o jungfrauAnalog  jungfrauPhotonCounter.cpp  $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF)  -DNEWRECEIVER -DANALOG
+
+jungfrauPhotonCounterHighZ: jungfrauPhotonCounter.cpp   $(INCS) clean
+			 g++ -o jungfrauPhotonCounterHighZ  jungfrauPhotonCounter.cpp  $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF)  -DNEWRECEIVER -DHIGHZ
+
+jungfrauAnalogHighZ: jungfrauPhotonCounter.cpp  $(INCS) clean
+			 g++ -o jungfrauAnalogHighZ  jungfrauPhotonCounter.cpp  $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF)  -DNEWRECEIVER -DANALOG -DHIGHZ
+
+clean: 	
+	rm -f  jungfrauClusterFinder jungfrauMakeEta jungfrauInterpolation jungfrauNoInterpolation jungfrauPhotonCounter jungfrauAnalog
+
+

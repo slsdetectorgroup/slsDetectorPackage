@@ -37,6 +37,8 @@ Experimental support for building the detector client (including python bindings
 
 ``rx_dbitlist`` keeps the order of the passed bit list 
 
+Detector.pattern (python) accepts also a pattern object, not only a pattern file
+
 2  On-board Detector Server Compatibility
 ==========================================
 

@@ -265,6 +265,13 @@ instead of the one included in our repo.
 
 Experimental support for building the detector client (including python bindings) on macOS
 
+<<<<<<< HEAD
+=======
+``rx_dbitlist`` keeps the order of the passed bit list 
+
+Detector.pattern (python) accepts also a pattern object, not only a pattern file
+
+>>>>>>> 06cd6c9eb (docstring and release)
 2  On-board Detector Server Compatibility
 ==========================================
 

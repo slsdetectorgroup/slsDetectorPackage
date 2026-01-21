@@ -3574,7 +3574,7 @@ class Detector(CppDetectorApi):
 
     @property
     def pattern(self):
-        """[Mythen3][Ctb][Xilinx Ctb] Loads ASCII pattern file directly to server (instead of executing line by line).
+        """[Mythen3][Ctb][Xilinx Ctb] Load a pattern (from file or memory) to the server (instead of executing line by line).
                
         :getter: Not Implemented
         

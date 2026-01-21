@@ -18,17 +18,54 @@ from utils_for_test import (
     RuntimeException,
     cleanup,
     startProcessInBackground,
-    startReceiver,
     startDetectorVirtualServer,
     connectToVirtualServers,
     loadBasicSettings,
-    loadConfig,
     runProcessWithLogFile
 )
 
 LOG_PREFIX_FNAME = '/tmp/slsDetectorPackage_virtual_roi_test'
 MAIN_LOG_FNAME = LOG_PREFIX_FNAME + '_log.txt'
 ROI_TEST_FNAME = LOG_PREFIX_FNAME + '_results_'
+
+def startReceiver(num_mods, fp):
+    if num_mods == 1:
+        cmd = ['slsReceiver']
+    else:
+        cmd = ['slsMultiReceiver', str(DEFAULT_TCP_RX_PORTNO), str(num_mods)]
+        # in 10.0.0
+        #cmd = ['slsMultiReceiver', '-p', str(DEFAULT_TCP_RX_PORTNO), '-n', str(num_mods)]
+    startProcessInBackground(cmd, fp)
+    time.sleep(1)
+
+
+def loadConfigForRoi(name, fp, num_mods = 1, num_interfaces = 1):
+    Log(LogLevel.INFO, 'Loading config')
+    Log(LogLevel.INFO, 'Loading config', fp)
+    try:
+        d = connectToVirtualServers(name, num_mods)
+        
+        if name == 'jungfrau' or name == 'moench':
+            d.numinterfaces = num_interfaces
+
+        d.udp_dstport = DEFAULT_UDP_DST_PORTNO
+        if name == 'eiger' or name == 'jungfrau' or name == 'moench':
+            d.udp_dstport2 = DEFAULT_UDP_DST_PORTNO + 1
+
+        d.rx_hostname = 'localhost'
+        d.udp_dstip = 'auto'
+        if name != "eiger":
+            d.udp_srcip = 'auto'
+        if name == 'jungfrau' or name == 'moench':
+            d.udp_dstip2 = 'auto'
+            d.powerchip = 1
+
+        d.frames = 5
+
+    except Exception as e:
+        raise RuntimeException(f'Could not load config for {name}. Error: {str(e)}') from e
+    
+    return d
 
 def startTestsForAll(fp):
     servers = [
@@ -52,7 +89,7 @@ def startTestsForAll(fp):
                 cleanup(fp)
                 startDetectorVirtualServer(server, nmods, fp)
                 startReceiver(nmods, fp)
-                d = loadConfig(name=server, log_file_fp = fp, num_mods=nmods, num_frames=5, num_interfaces=ninterfaces)
+                d = loadConfigForRoi(name=server, fp=fp, num_mods=nmods, num_interfaces=ninterfaces)
                 loadBasicSettings(name=server, d=d, fp=fp)
 
                 fname = ROI_TEST_FNAME + server + '.txt'

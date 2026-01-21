@@ -6,7 +6,6 @@
 
 #include "DurationWrapper.h"
 #include "sls/Result.h"
-#include "sls/sls_detector_defs.h"
 
 namespace py = pybind11;
 namespace pybind11 {
@@ -95,48 +94,6 @@ template <> struct type_caster<std::chrono::nanoseconds> {
         sls::DurationWrapper *dur = obj->cast<sls::DurationWrapper *>();
         dur->set_count(src.count());
         return *obj;
-    }
-};
-
-// Type caster for sls::defs::ROI from tuple
-template <> struct type_caster<sls::defs::ROI> {
-    PYBIND11_TYPE_CASTER(sls::defs::ROI, _("Sequence[int, int, int, int] or "
-                                           "Sequence[int, int]"));
-
-    // convert c++ ROI to python tuple
-    static handle cast(const sls::defs::ROI &roi, return_value_policy, handle) {
-        return py::make_tuple(roi.xmin, roi.xmax, roi.ymin, roi.ymax).release();
-    }
-
-    // convert from python to c++ ROI
-    bool load(handle roi, bool /*allow implicit conversion*/) {
-
-        // accept tuple, list, numpy array any sequence
-        py::sequence seq;
-        try {
-            seq = py::reinterpret_borrow<py::sequence>(roi);
-        } catch (...) {
-            return false;
-        }
-
-        if (seq.size() != 4 && seq.size() != 2)
-            return false;
-        // Check if each element is an int
-        for (auto item : seq) {
-            if (!py::isinstance<py::int_>(item)) {
-                return false;
-            }
-        }
-
-        value.xmin = seq[0].cast<int>();
-        value.xmax = seq[1].cast<int>();
-
-        if (seq.size() == 4) {
-            value.ymin = seq[2].cast<int>();
-            value.ymax = seq[3].cast<int>();
-        }
-
-        return true;
     }
 };
 

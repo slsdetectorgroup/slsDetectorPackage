@@ -138,8 +138,7 @@ TEST_CASE("Parse version and help", "[detector]") {
     }
 }
 
-// TODO: fails on gitea CI due to uid issue, fix later
-TEST_CASE("Parse port and uid", "[.failsongitea][detector]") {
+TEST_CASE("Parse port and uid", "[detector]") {
     uid_t uid = getuid();
     std::string uidStr = std::to_string(uid);
     uid_t invalidUid = uid + 1000;

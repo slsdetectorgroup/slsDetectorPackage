@@ -113,7 +113,7 @@ def startTestsForAll(args, fp):
             startDetectorVirtualServer(server, args.num_mods, fp)
             startFrameSynchronizerPullSocket(server, fp)
             startFrameSynchronizer(args.num_mods, fp)
-            d = loadConfig(name=server, rx_hostname=args.rx_hostname, settingsdir=args.settingspath, log_file_fp=fp, num_mods=args.num_mods, num_frames=args.num_frames)
+            d = loadConfig(name=server, rx_hostname=args.rx_hostname, settingsdir=args.settingspath, fp=fp, num_mods=args.num_mods, num_frames=args.num_frames)
             loadBasicSettings(name=server, d=d, fp=fp)
             acquire(fp, d)
             testFramesCaught(server, d, args.num_frames)

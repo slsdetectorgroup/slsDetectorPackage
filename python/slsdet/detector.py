@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: LGPL-3.0-or-other
 # Copyright (C) 2021 Contributors to the SLS Detector Package
+import pathlib
 from ._slsdet import CppDetectorApi
 from ._slsdet import slsDetectorDefs
 from ._slsdet import IpAddr, MacAddr
@@ -3757,7 +3758,7 @@ class Detector(CppDetectorApi):
 
     @property
     def pattern(self):
-        """[Mythen3][Ctb][Xilinx Ctb] Loads ASCII pattern file directly to server (instead of executing line by line).
+        """[Mythen3][Ctb][Xilinx Ctb] Load a pattern (from file or memory) to the server (instead of executing line by line).
                
         :getter: Not Implemented
         
@@ -3768,9 +3769,13 @@ class Detector(CppDetectorApi):
         raise NotImplementedError("Pattern is set only")
 
     @pattern.setter
-    def pattern(self, fname):
-        fname = ut.make_string_path(fname)
-        ut.set_using_dict(self.setPattern, fname)
+    def pattern(self, name_or_pattern):
+        # If passed a file path, convert to string representation
+        # with the path expanded. Otherwise it's probably a sls::Pattern
+        # and we can pass it directly.
+        if isinstance(name_or_pattern, (pathlib.Path, str)):
+            name_or_pattern = ut.make_string_path(name_or_pattern)
+        ut.set_using_dict(self.setPattern, name_or_pattern)
 
     @property
     def patfname(self):

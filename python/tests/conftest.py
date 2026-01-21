@@ -1,4 +1,3 @@
-from http import server
 import pytest
 import sys
 import traceback

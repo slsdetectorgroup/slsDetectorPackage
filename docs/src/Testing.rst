@@ -36,7 +36,7 @@ If a test requires a detector mark them with the hidden tag ``[.detectorintegrat
     tests "[.detectorintegration]"
 
 
-If you want to disable testing that involves a data file that require pc tuning optimizations add the hidden tag ``[.disable_check_data_file]`` to the test case. Please note that only some specific disable tests have been implemented so far.
+If you want to disable testing that involves a data file that require pc tuning optimizations, add the hidden tag ``[.disable_check_data_file]`` to the test case. Please note that only some specific disable tests have been implemented so far.
 
 .. code-block:: console
 
@@ -88,7 +88,7 @@ To run only tests requiring virtual detectors use the following command:
     #in build
     python -m pytest -m detectorintegration ../python/tests/
 
-There is a helper test fixture in ``slsDetectorSoftware/python/tests/conftest.py`` called ``test_with_simulators`` that sets up virtual detectors and yields the test for all detectors. 
+There is a helper test fixture in ``slsDetectorSoftware/python/tests/conftest.py`` called ``test_with_simulators`` that sets up virtual detectors and yields the test for all detectors. The set up is done for every test automatically.
 
 Example usage: 
 
@@ -114,5 +114,15 @@ Example usage:
         # your test code here
 
 
+There is another helper test fixture in ``slsDetectorSoftware/python/tests/conftest.py`` called ``session_simulator`` that sets up virtual detectors and yields the test for all detectors. The difference with the previous fixture ``test_with_simulators`` is that this fixture will set up one detector at a time and run all the tests using this fixture before cleaning up and moving on to the next detector. It saves time if the setup and cleanup is expensive.
 
+Example usage: 
 
+.. code-block:: python
+
+    import pytest
+
+    @pytest.mark.detectorintegration
+    def test_define_reg(session_simulator, request):
+        det_type, d = session_simulator
+        # your test code here

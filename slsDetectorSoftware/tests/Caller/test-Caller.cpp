@@ -2609,10 +2609,10 @@ TEST_CASE("numinterfaces", "[.detectorintegration]") {
     if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
         auto prev_val = det.getNumberofUDPInterfaces().tsquash(
             "inconsistent numinterfaces to test");
-        UdpDestination prev_udp_dest{};
+        Result<UdpDestination> prev_udp_dest;
         IpAddr prev_src_ip2{};
         if (prev_val == 2 && det_type != defs::EIGER) {
-            prev_udp_dest = det.getDestinationUDPList(0)[0];
+            prev_udp_dest = det.getDestinationUDPList(0);
             prev_src_ip2 = det.getSourceUDPIP2()[0];
         }
         {
@@ -2631,8 +2631,10 @@ TEST_CASE("numinterfaces", "[.detectorintegration]") {
             REQUIRE(oss.str() == "numinterfaces 1\n");
         }
         if (prev_val == 2 && det_type != defs::EIGER) {
-            det.setDestinationUDPList({prev_udp_dest}, 0);
-            det.setSourceUDPIP2({prev_src_ip2}, {0});
+            for (int i = 0; i != det.size(); ++i) {
+                det.setDestinationUDPList({prev_udp_dest[i]}, {i});
+            }
+            det.setSourceUDPIP2({prev_src_ip2});
         }
         det.setNumberofUDPInterfaces(prev_val);
     } else if (det_type == defs::EIGER) {

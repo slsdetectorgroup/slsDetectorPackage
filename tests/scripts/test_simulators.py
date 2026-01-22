@@ -58,39 +58,41 @@ def startTestsForAll(args, fp):
     num_mods = args.num_mods 
 
     for server in args.servers:
-        for ninterfaces in [1,2]: # always test both
-            if ninterfaces == 2 and server != 'jungfrau' and server != 'moench':
+        for curMods in range(1, num_mods + 1):
+            if curMods == 2 and server in ['ctb', 'xilinx_ctb']:
                 continue
+            for ninterfaces in [1,2]: # always test both
+                if ninterfaces == 2 and server != 'jungfrau' and server != 'moench':
+                    continue
 
-            if server == "eiger": 
-                num_mods = 2*args.num_mods # top and bottom half module 
-            try:
-                fname = fname_template.format(args.tests, server) if not args.no_log_file else None
+                if server == "eiger": 
+                    curMods *= 2 # top and bottom half module 
+                try:
+                    fname = fname_template.format(args.tests, server) if not args.no_log_file else None
 
-                Log(LogLevel.INFOBLUE, f'Starting {args.tests} Tests for {server}')
-                if args.no_log_file:
-                    print("Log file disabled.")
-                cleanup(fp)
-                startDetectorVirtualServer(name=server, num_mods=num_mods, fp=fp, no_log_file=args.no_log_file)
-                startReceiver(args.num_mods, fp)
-                d = loadConfig(name=server, rx_hostname=args.rx_hostname, settingsdir=args.settingspath, log_file_fp=fp, num_mods=args.num_mods, num_interfaces=ninterfaces)
-                loadBasicSettings(name=server, d=d, fp=fp)
-        
-                if args.no_log_file:
-                    runProcess('Tests (' + args.tests + ') for ' + server, cmd, fp)
-                else:
-                    runProcessWithLogFile('Tests (' + args.tests + ') for ' + server, cmd, fp, fname)
-            except Exception as e:
-                raise RuntimeException(f'Tests (' + args.tests + ') failed for ' + server + '.') from e
+                    Log(LogLevel.INFOBLUE, f'Starting {args.tests} Tests for {server}, {ninterfaces} interfaces, {curMods} modules')
+                    Log(LogLevel.INFOBLUE, f'Starting {args.tests} Tests for {server}, {ninterfaces} interfaces, {curMods} modules', fp)
+                    if args.no_log_file:
+                        print("Log file disabled.")
+                    cleanup(fp)
+                    startDetectorVirtualServer(name=server, num_mods=curMods, fp=fp, no_log_file=args.no_log_file)
+                    startReceiver(curMods, fp)
+                    d = loadConfig(name=server, rx_hostname=args.rx_hostname, settingsdir=args.settingspath, log_file_fp=fp, num_mods=curMods, num_interfaces=ninterfaces)
+                    loadBasicSettings(name=server, d=d, fp=fp)
+            
+                    if args.no_log_file:
+                        runProcess('Tests (' + args.tests + ') for ' + server, cmd, fp)
+                    else:
+                        runProcessWithLogFile('Tests (' + args.tests + ') for ' + server, cmd, fp, fname)
+                except Exception as e:
+                    raise RuntimeException(f'Tests (' + args.tests + ') failed for ' + server + '.') from e
 
     Log(LogLevel.INFOGREEN, 'Passed all tests for all detectors \n' + str(args.servers))
 
 
 if __name__ == '__main__':
-    args = ParseArguments(description='Automated tests with the virtual detector servers', default_num_mods=1, specific_tests=True, general_tests_option=True)
-    if args.num_mods > 1:
-        raise RuntimeException(f'Cannot support multiple modules at the moment (except Eiger).')
-    
+    args = ParseArguments(description='Automated tests with the virtual detector servers', default_num_mods=2, specific_tests=True, general_tests_option=True)
+
     with optional_file(MAIN_LOG_FNAME if not args.no_log_file else None, 'w') as fp:  
         try:
             if args.general_tests:

@@ -367,8 +367,8 @@ def ParseArguments(description, default_num_mods=2, specific_tests=False, genera
             'jungfrau',
             'mythen3',
             'gotthard2',
-            'ctb',
             'moench',
+            'ctb',
             'xilinx_ctb'
         ]
 

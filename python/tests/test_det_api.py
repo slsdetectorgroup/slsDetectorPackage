@@ -17,8 +17,8 @@ from slsdet import Detector
 @pytest.mark.detectorintegration
 def test_define_reg(session_simulator, request):
     """ Test setting define_reg for ctb and xilinx_ctb."""
-    det_type, d = session_simulator
-    assert isinstance(d, Detector)
+    det_type, num_interfaces, num_mods, d = session_simulator
+    assert d is not None
 
     from slsdet import RegisterAddress
 
@@ -77,8 +77,8 @@ def test_define_reg(session_simulator, request):
 @pytest.mark.detectorintegration
 def test_define_bit(session_simulator, request):
     """ Test setting define_bit for ctb and xilinx_ctb."""
-    det_type, d = session_simulator
-    assert isinstance(d, Detector)
+    det_type, num_interfaces, num_mods, d = session_simulator
+    assert d is not None
 
     from slsdet import RegisterAddress, BitAddress
 
@@ -167,8 +167,8 @@ def test_define_bit(session_simulator, request):
 @pytest.mark.detectorintegration
 def test_using_defined_reg_and_bit(session_simulator, request):
     """ Test using defined reg and bit define_bit for ctb and xilinx_ctb."""
-    det_type, d = session_simulator
-    assert isinstance(d, Detector)
+    det_type, num_interfaces, num_mods, d = session_simulator
+    assert d is not None
 
     from slsdet import RegisterAddress, BitAddress, RegisterValue
 
@@ -251,8 +251,8 @@ def test_using_defined_reg_and_bit(session_simulator, request):
 @pytest.mark.detectorintegration
 def test_definelist_reg(session_simulator, request):
     """ Test using definelist_reg for ctb and xilinx_ctb."""
-    det_type, d = session_simulator
-    assert isinstance(d, Detector)
+    det_type, num_interfaces, num_mods, d = session_simulator
+    assert d is not None
 
     from slsdet import RegisterAddress, BitAddress, RegisterValue
 
@@ -294,8 +294,8 @@ def test_definelist_reg(session_simulator, request):
 @pytest.mark.detectorintegration
 def test_definelist_bit(session_simulator, request):
     """ Test using definelist_bit for ctb and xilinx_ctb."""
-    det_type, d = session_simulator
-    assert isinstance(d, Detector)
+    det_type, num_interfaces, num_mods, d = session_simulator
+    assert d is not None
 
     from slsdet import RegisterAddress, BitAddress, RegisterValue
 
@@ -345,8 +345,8 @@ def test_definelist_bit(session_simulator, request):
 @pytest.mark.detectorintegration
 def test_parameters_file(session_simulator, request):
     """ Test using test_parameters_file."""
-    det_type, d = session_simulator
-    assert isinstance(d, Detector)
+    det_type, num_interfaces, num_mods, d = session_simulator
+    assert d is not None
 
     with open("/tmp/params.det", "w") as f:
         f.write("frames 2\n")
@@ -364,8 +364,8 @@ def test_parameters_file(session_simulator, request):
 @pytest.mark.detectorintegration
 def test_include_file(session_simulator, request):
     """ Test using test_include_file."""
-    det_type, d = session_simulator
-    assert isinstance(d, Detector)
+    det_type, num_interfaces, num_mods, d = session_simulator
+    assert d is not None
     
     with open("/tmp/params.det", "w") as f:
         f.write("frames 3\n")

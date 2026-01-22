@@ -271,7 +271,12 @@ Experimental support for building the detector client (including python bindings
 
 Detector.pattern (python) accepts also a pattern object, not only a pattern file
 
+<<<<<<< HEAD
 >>>>>>> 06cd6c9eb (docstring and release)
+=======
+added patternstart to python (ctb, xilinx_ctb , mythen3), only the detector class api was exposed (startPattern())
+
+>>>>>>> e519633e1 (added patternstart to python (#1368))
 2  On-board Detector Server Compatibility
 ==========================================
 

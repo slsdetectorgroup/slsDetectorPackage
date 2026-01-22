@@ -13,6 +13,15 @@ from utils_for_test import (
 from slsdet import Detector
 
 
+@pytest.fixture(
+    scope="session", 
+    params=['ctb', 'xilinx_ctb', 'mythen3', 'jungfrau']
+)
+def simulator(request):
+    """Fixture to start the detector server once and clean up at the end."""
+    det_name = request.param
+    num_mods = 1
+    fp = sys.stdout
 
 @pytest.mark.detectorintegration
 def test_define_reg(session_simulator, request):
@@ -342,6 +351,7 @@ def test_definelist_bit(session_simulator, request):
     Log(LogLevel.INFOGREEN, f"✅ {request.node.name} passed")
 
 
+<<<<<<< HEAD:python/tests/test_det_api.py
 @pytest.mark.detectorintegration
 def test_parameters_file(session_simulator, request):
     """ Test using test_parameters_file."""
@@ -387,10 +397,25 @@ def test_patternstart(session_simulator, request):
     assert d is not None
 
     if det_type in ['ctb', 'xilinx_ctb', 'mythen3']:
+=======
+@pytest.mark.withdetectorsimulators
+def test_patternstart(simulator, request):
+    """ Test using patternstart for ctb, xilinx_ctb and mythen3."""
+    det_name = simulator
+    # setup
+    d = Detector()
+    d.hostname = f"localhost:{SERVER_START_PORTNO}" 
+
+    if det_name in ['ctb', 'xilinx_ctb', 'mythen3']:
+>>>>>>> e519633e1 (added patternstart to python (#1368)):python/tests/test_CtbAPI.py
         d.patternstart()
     else:
         with pytest.raises(Exception) as exc_info:
             d.patternstart()
         assert "not implemented" in str(exc_info.value)
 
+<<<<<<< HEAD:python/tests/test_det_api.py
     Log(LogLevel.INFOGREEN, f"✅ {request.node.name} passed")
+=======
+    Log(LogLevel.INFOGREEN, f"✅ {request.node.name} passed")
+>>>>>>> e519633e1 (added patternstart to python (#1368)):python/tests/test_CtbAPI.py

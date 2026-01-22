@@ -27,7 +27,7 @@ from slsdet import Detector, detectorType
 
 @pytest.fixture(
     scope="session", 
-    params=['ctb', 'xilinx_ctb', 'mythen3']
+    params=['ctb', 'xilinx_ctb', 'mythen3', 'jungfrau']
 )
 def simulator(request):
     """Fixture to start the detector server once and clean up at the end."""
@@ -381,5 +381,23 @@ def test_definelist_bit(simulator, request):
         with pytest.raises(Exception) as exc_info:
             d.define_bit(name="test_bit", addr=0x300, bit_position=1)
         assert "Bit Definitions only for CTB" in str(exc_info.value)
+
+    Log(LogLevel.INFOGREEN, f"✅ {request.node.name} passed")
+
+
+@pytest.mark.withdetectorsimulators
+def test_patternstart(simulator, request):
+    """ Test using patternstart for ctb, xilinx_ctb and mythen3."""
+    det_name = simulator
+    # setup
+    d = Detector()
+    d.hostname = f"localhost:{SERVER_START_PORTNO}" 
+
+    if det_name in ['ctb', 'xilinx_ctb', 'mythen3']:
+        d.patternstart()
+    else:
+        with pytest.raises(Exception) as exc_info:
+            d.patternstart()
+        assert "not implemented" in str(exc_info.value)
 
     Log(LogLevel.INFOGREEN, f"✅ {request.node.name} passed")

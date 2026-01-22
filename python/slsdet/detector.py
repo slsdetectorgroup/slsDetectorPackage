@@ -3785,6 +3785,10 @@ class Detector(CppDetectorApi):
         """
         return self.getPatterFileName()
 
+    def patternstart(self):
+        """[Ctb][Mythen3][Xilinx Ctb] Starts pattern. """
+        self.startPattern()
+        
     @property
     @element
     def patioctrl(self):

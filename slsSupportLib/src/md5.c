@@ -243,10 +243,10 @@ int HASH_UPDATE(HASH_CTX *c, const void *data_, size_t len) {
             len -= n;
             c->num = 0;
             /*
-             * We use memset rather than OPENSSL_cleanse() here deliberately.
-             * Using OPENSSL_cleanse() here could be a performance issue. It
-             * will get properly cleansed on finalisation so this isn't a
-             * security problem.
+             * We use memset rather than OPENSSL_cleanse() here
+             * deliberately. Using OPENSSL_cleanse() here could be a
+             * performance issue. It will get properly cleansed on
+             * finalisation so this isn't a security problem.
              */
             memset(p, 0, HASH_CBLOCK); /* keep it zeroed */
         } else {

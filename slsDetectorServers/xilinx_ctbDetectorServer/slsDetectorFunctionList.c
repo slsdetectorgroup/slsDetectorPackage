@@ -426,7 +426,8 @@ void setupDetector() {
     for (int idac = NDAC_ONLY; idac < NDAC; ++idac) {
         if (idac == D_PWR_EMPTY)
             continue;
-        initError = setPower(idac, 0, initErrorMessage);
+        int min = (idac == D_PWR_IO) ? VIO_MIN_MV : POWER_RGLTR_MIN;
+        initError = setPower(idac, min, initErrorMessage);
         if (initError == FAIL)
             return;
     }
@@ -1406,6 +1407,7 @@ int setPower(enum DACINDEX ind, int val, char *mess) {
 
     LOG(logINFO, ("Setting Power %s to %d mV\n", powerNames[pwrIndex], val));
 
+    int startup = (dacValues[ind] == -1) ? 1 : 0;
     powerEnable(0, pwrIndex);
 
     if (val > 0) {
@@ -1428,7 +1430,9 @@ int setPower(enum DACINDEX ind, int val, char *mess) {
         }
         dacValues[ind] = dacval;
 
-        powerEnable(1, pwrIndex);
+        // dont power on at startup (was -1 before)
+        if (startup == 0)
+            powerEnable(1, pwrIndex);
     }
 
     return OK;

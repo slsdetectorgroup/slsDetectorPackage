@@ -234,11 +234,6 @@ def loadConfig(name, rx_hostname = 'localhost', settingsdir = None, log_file_fp 
             d.powerchip = 1
 
         if name == "xilinx_ctb":
-            d.v_a = 1200
-            d.v_b = 1200
-            d.v_c = 1200
-            d.v_d = 1200
-            d.v_io = 1200
             d.configureTransceiver()
 
         if settingsdir is not None and name in ['eiger', 'mythen3']: 

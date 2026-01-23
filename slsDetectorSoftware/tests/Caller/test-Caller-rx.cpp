@@ -549,7 +549,6 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
                     REQUIRE_NOTHROW(caller.call("rx_roi", {}, 1, GET, oss1));
                     REQUIRE(oss.str() == "rx_roi [[5, 10]]\n");
                     REQUIRE(oss1.str() == "rx_roi [[0, 0]]\n");
-                    // TODO: verify if only one file created
                 }
                 // verify individual roi
                 {
@@ -685,7 +684,6 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
                             REQUIRE(oss1.str() == "rx_roi [[0, 0, 0, 0]]\n");
                         }
                     }
-                    // TODO: check if files actually created
                 }
                 // verify individual roi
                 {
@@ -790,7 +788,6 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
                             REQUIRE(oss1.str() == "rx_roi [[0, 0, 0, 0]]\n");
                         }
                     }
-                    // TODO: verify only one file created
                 }
                 // verify individual roi
                 {

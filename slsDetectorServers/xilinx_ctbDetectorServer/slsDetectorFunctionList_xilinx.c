@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
-#include "slsDetectorFunctionList.h"
+#include "slsDetectorFunctionList_xilinx.h"
 #include "arm64.h"
 #include "clogger.h"
 #include "common.h"

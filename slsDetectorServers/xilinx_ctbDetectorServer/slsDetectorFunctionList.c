@@ -413,8 +413,14 @@ void setupDetector() {
     }
 
     LOG(logINFOBLUE, ("Powering down all dacs\n"));
-    for (int idac = 0; idac < NDAC; ++idac) {
+    for (int idac = 0; idac < NDAC_ONLY; ++idac) {
         setDAC(idac, LTC2620_D_GetPowerDownValue(), 0);
+    }
+    for (int idac = NDAC_ONLY; idac < NDAC; ++idac) {
+        if (idac == D_PWR_EMPTY)
+            continue;
+        int min = (idac == D_PWR_IO) ? VIO_MIN_MV : POWER_RGLTR_MIN;
+        setDAC(idac, min, 0);
     }
 
     resetFlow();
@@ -1296,6 +1302,9 @@ int getPower(enum DACINDEX ind) {
 }
 
 void setPower(enum DACINDEX ind, int val) {
+    if (val < 0)
+        return;
+
     // validate index and get bit offset in ctrl register
     int bitOffset = getBitOffsetFromDACIndex(ind);
     if (bitOffset == -1) {
@@ -1303,10 +1312,6 @@ void setPower(enum DACINDEX ind, int val) {
     }
     uint32_t addr = CTRL_REG;
     uint32_t mask = (1 << bitOffset);
-
-    if (val == -1)
-        return;
-
     char *powerNames[] = {PWR_NAMES};
     int pwrIndex = (int)(ind - D_PWR_D);
     LOG(logINFO, ("Setting Power V%s to %d mV\n", powerNames[pwrIndex], val));
@@ -1322,16 +1327,8 @@ void setPower(enum DACINDEX ind, int val) {
     LOG(logDEBUG1, ("Switching off power enable\n"));
     bus_w(addr, bus_r(addr) & ~(mask));
 
-    // power down dac
-    LOG(logINFO, ("\tPowering down V%d\n", powerNames[pwrIndex]));
-    setDAC(ind, LTC2620_D_GetPowerDownValue(), 0);
-
-    //(power off is anyway done with power enable)
-    if (val == 0)
-        val = LTC2620_D_GetPowerDownValue();
-
     // convert voltage to dac (power off is anyway done with power enable)
-    if (val != LTC2620_D_GetPowerDownValue()) {
+    if (val > 0) {
 
         int dacval = -1;
         if (ConvertToDifferentRange(
@@ -1339,9 +1336,8 @@ void setPower(enum DACINDEX ind, int val) {
                 LTC2620_D_GetMinInput(), val, &dacval) == FAIL) {
             LOG(logERROR,
                 ("\tCannot convert Power V%s to dac value. Invalid value of %d "
-                 "mV. Is not between "
-                 "%d and %d mV\n",
-                 powerNames[pwrIndex], val, POWER_RGLTR_MIN, POWER_RGLTR_MAX));
+                 "mV.n",
+                 powerNames[pwrIndex], val));
             return;
         }
 

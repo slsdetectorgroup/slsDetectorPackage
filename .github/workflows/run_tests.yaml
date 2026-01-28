@@ -1,7 +1,7 @@
 name: Run Simulator Tests
 
 on:
-  pull_request:
+  push:
     branches:
       - developer
       - main

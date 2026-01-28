@@ -935,6 +935,11 @@ TEST_CASE("tsamples", "[.cmdcall]") {
             caller.call("tsamples", {}, -1, GET, oss);
             REQUIRE(oss.str() == "tsamples 450\n");
         }
+        if (det_type == defs::XILINX_CHIPTESTBOARD) {
+            std::ostringstream oss;
+            caller.call("tsamples", {"10000"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "tsamples 10000\n");
+        }
         for (int i = 0; i != det.size(); ++i) {
             det.setNumberOfTransceiverSamples(prev_val[i], {i});
         }

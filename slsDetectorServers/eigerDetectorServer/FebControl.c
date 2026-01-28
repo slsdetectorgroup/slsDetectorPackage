@@ -4,6 +4,7 @@
 #include "Beb.h"
 #include "FebRegisterDefs.h"
 #include "clogger.h"
+#include "common.h"
 #include "sharedMemory.h"
 #include "slsDetectorServer_defs.h"
 
@@ -403,12 +404,13 @@ int Feb_Control_ReceiveHighVoltage(unsigned int *value) {
 
     // normal
     if (Feb_Control_normal) {
+        int retval = 0;
         if (readParameterFromFile(NORMAL_HIGHVOLTAGE_INPUTPORT, "high voltage",
-                                  value) == FAIL) {
+                                  &retval) == FAIL) {
             LOG(logERROR, ("Could not get high voltage\n"));
             return 0;
         }
-        *value /= 10;
+        *value = retval / 10;
         LOG(logINFO, ("High Voltage: %d\n", (*value)));
     }
 

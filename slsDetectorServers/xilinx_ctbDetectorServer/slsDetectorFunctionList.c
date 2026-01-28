@@ -1665,12 +1665,7 @@ int startStateMachine() {
 #endif
 
     LOG(logINFOBLUE, ("Starting readout\n"));
-
-    // MM:readout via pattern does not work right now due to firmware bug,
-    // readout via MatterhornCTRL for the moment
-    // bus_w(FLOW_CONTROL_REG, bus_r(FLOW_CONTROL_REG) | START_F_MSK);
-    bus_w(MATTERHORNSPICTRL, bus_r(MATTERHORNSPICTRL) | STARTREAD_P_MSK);
-
+    bus_w(FLOW_CONTROL_REG, bus_r(FLOW_CONTROL_REG) | START_F_MSK);
     return OK;
 }
 

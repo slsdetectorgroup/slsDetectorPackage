@@ -50,6 +50,6 @@ jobs:
       - name: Simulator unit tests
         working-directory: ${{github.workspace}}/build/bin
         run: |
-            python test_simulators.py --tests "[detectorintegration] ~[disable_jungfrau] [disable_check_data_file]"
+            python test_simulators.py --tests "[detectorintegration]"
             #python test_frame_synchronizer.py -nlf
 

@@ -420,7 +420,8 @@ void setupDetector() {
         if (idac == D_PWR_EMPTY)
             continue;
         int min = (idac == D_PWR_IO) ? VIO_MIN_MV : POWER_RGLTR_MIN;
-        setDAC(idac, min, 0);
+        // will not enable power at startup (dacValues = -1)
+        setPower(idac, min);
     }
 
     resetFlow();
@@ -1327,6 +1328,8 @@ void setPower(enum DACINDEX ind, int val) {
     LOG(logDEBUG1, ("Switching off power enable\n"));
     bus_w(addr, bus_r(addr) & ~(mask));
 
+    int startup = dacValues[ind] == -1 ? 1 : 0;
+
     // convert voltage to dac (power off is anyway done with power enable)
     if (val > 0) {
 
@@ -1347,7 +1350,7 @@ void setPower(enum DACINDEX ind, int val) {
         setDAC(ind, dacval, 0);
 
         // if valid, enable power
-        if (dacval >= 0) {
+        if (dacval >= 0 && startup == 0) {
             LOG(logDEBUG1, ("Switching on power enable\n"));
             bus_w(addr, bus_r(addr) | mask);
         }

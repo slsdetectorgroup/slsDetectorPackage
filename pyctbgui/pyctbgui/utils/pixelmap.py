@@ -79,7 +79,7 @@ def matterhorn1_transceiver_16bit_4_counters():
     n_counters = 4
     n_cols = 256
     n_rows = 256
-    pixel_map = np.zeros((n_rows*n_counters,n_cols,n_counters), np.uint32)
+    pixel_map = np.zeros((n_rows*n_counters,n_cols), np.uint32)
 
     for row in range(n_rows):
         for counter in range(n_counters):

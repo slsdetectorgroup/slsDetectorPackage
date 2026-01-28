@@ -428,7 +428,7 @@ class PlotTab(QtWidgets.QWidget):
             self.mainWindow.pixel_map = pm.matterhorn1_transceiver_16bit_1_counter()
         elif self.view.comboBoxPlot.currentText() == "Matterhorn1_16bit_4_counters":
             print("Setting pixel map for Matterhorn1 with 4 counters")
-            self.mainWindow.nTransceiverRows = Defines.Matterhorn1.nRows
+            self.mainWindow.nTransceiverRows = Defines.Matterhorn1.nRows*4
             self.mainWindow.nTransceiverCols = Defines.Matterhorn1.nCols
             self.mainWindow.pixel_map = pm.matterhorn1_transceiver_16bit_4_counters()
         elif self.view.comboBoxPlot.currentText() == "Moench04":

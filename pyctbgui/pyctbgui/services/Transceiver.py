@@ -134,7 +134,8 @@ class TransceiverTab(QtWidgets.QWidget):
             transceiverOffset += nDBitEnabled * (nbitsPerDBit // 8)
         trans_array = np.array(np.frombuffer(data, offset=transceiverOffset, dtype=np.uint16))
         print(f'{trans_array.shape=}')
-        tmp =  decoder.decode(trans_array, self.mainWindow.pixel_map)
+        # tmp =  decoder.decode(trans_array, self.mainWindow.pixel_map)
+        tmp = np.take(trans_array, self.mainWindow.pixel_map)
         print(f'{tmp.shape=}')
         return tmp
 

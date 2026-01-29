@@ -24,7 +24,7 @@ from utils_for_test import (
     cleanup,
     runProcess,
     startReceiver,
-    runProcessWithLogFile,
+    runProcess,
     runProcess, 
     startDetectorVirtualServer,
     loadConfig,
@@ -72,18 +72,12 @@ def startTestsForAll(args, fp):
 
                     Log(LogLevel.INFOBLUE, f'Starting {args.tests} Tests for {server}, {ninterfaces} interfaces, {curMods} modules')
                     Log(LogLevel.INFOBLUE, f'Starting {args.tests} Tests for {server}, {ninterfaces} interfaces, {curMods} modules', fp)
-                    if args.no_log_file:
-                        print("Log file disabled.")
                     cleanup(fp)
                     startDetectorVirtualServer(name=server, num_mods=curMods, fp=fp, no_log_file=args.no_log_file)
-                    startReceiver(curMods, fp)
+                    startReceiver(curMods, fp, args.no_log_file)
                     d = loadConfig(name=server, rx_hostname=args.rx_hostname, settingsdir=args.settingspath, log_file_fp=fp, num_mods=curMods, num_interfaces=ninterfaces)
                     loadBasicSettings(name=server, d=d, fp=fp)
-            
-                    if args.no_log_file:
-                        runProcess('Tests (' + args.tests + ') for ' + server, cmd, fp)
-                    else:
-                        runProcessWithLogFile('Tests (' + args.tests + ') for ' + server, cmd, fp, fname)
+                    runProcess('Tests (' + args.tests + ') for ' + server, cmd, fp, fname)
                 except Exception as e:
                     raise RuntimeException(f'Tests (' + args.tests + ') failed for ' + server + '.') from e
 

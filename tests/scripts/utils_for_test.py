@@ -15,6 +15,8 @@ from slsdet import Detector, Ctb, detectorSettings, burstMode
 from slsdet.defines import DEFAULT_TCP_RX_PORTNO, DEFAULT_UDP_DST_PORTNO
 SERVER_START_PORTNO=1900
 
+LOG_PREFIX_FNAME = "/tmp/slsDetectorPackage_"
+
 init(autoreset=True)
 
 build_dir = Path(__file__).resolve().parents[2] / "build" / "bin"
@@ -110,19 +112,14 @@ def cleanup(fp):
     cleanSharedmemory(fp)
 
 
-def startProcessInBackground(cmd, fp):
-    Log(LogLevel.INFO, 'Starting up ' + ' '.join(cmd))
-    Log(LogLevel.INFO, 'Starting up ' + ' '.join(cmd), fp)
-    try:
-        p = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, restore_signals=False) 
-    except Exception as e:
-        raise RuntimeException(f'Failed to start {cmd}:{str(e)}') from e
+def startProcessInBackground(cmd, fp, log_file_name: str):
+    info_text = 'Starting up ' + ' '.join(cmd)
+    if log_file_name:
+        info_text += '. Log: ' +  log_file_name
 
+    Log(LogLevel.INFO, f'{info_text}')
+    Log(LogLevel.INFO, f'{info_text}', fp)   
 
-def startProcessInBackgroundWithLogFile(cmd, fp, log_file_name: str):
-    if log_file_name: 
-        Log(LogLevel.INFOBLUE, 'Starting up ' +  ' '.join(cmd) + '. Log: ' +  log_file_name)
-        Log(LogLevel.INFOBLUE, 'Starting up ' +  ' '.join(cmd) + '. Log: ' +  log_file_name, fp)
     try:
         with optional_file(log_file_name, 'w') as log_fp:
             subprocess.Popen(cmd, stdout=log_fp, stderr=log_fp, text=True)
@@ -146,109 +143,90 @@ def checkLogForErrors(fp, log_file_path: str):
         raise
 
 
-def checkLogForErrorsOrPrintSummary(fp, log_file_name: str):
+def checkLogForErrorsOrSummary(fp, lines, source_name=""):
     failed = False # if it found "failed" or "FAILED" in file
+    failed_msg = ""
     printing_error = False # print every line in file after failure
     printing_summary = False # print summary if no failure
 
-    with optional_file(log_file_name, 'r') as f:
-        for line in f:
-            line_stripped = line.rstrip()
 
-            # Detect failure (case-insensitive)
-            if not failed and (": FAILED:" in line or " failed\nassertions" in line):
-                failed = True
-                failed_msg = line
-                printing_error = True
-                Log(LogLevel.ERROR, line_stripped, fp)
-                Log(LogLevel.ERROR, f"Error log from file: {log_file_name}")
-                Log(LogLevel.ERROR, "=====================================")
+    for line in lines:
+        line_stripped = line.rstrip()
 
-            # After failure, log everything as ERROR
-            if printing_error:
-                print(f"{line_stripped}")
-                continue
+        # Detect failure (case-insensitive)
+        if not failed and (": FAILED:" in line or " failed\nassertions" in line):
+            failed = True
+            failed_msg = line_stripped
+            printing_error = True
+            Log(LogLevel.ERROR, line_stripped, fp)
+            if source_name:
+                Log(LogLevel.ERROR, f"Error log from file: {source_name}")
+            Log(LogLevel.ERROR, "="*40)
 
-            # Summary delimiter
-            if line_stripped.startswith("====="):
-                printing_summary = True
+        # After failure, log everything as ERROR
+        if printing_error:
+            print(f"{line_stripped}")
+            continue
 
-            # No failure - print summary lines 
-            if printing_summary:
-                print(f"{line_stripped}")
+        # Summary delimiter
+        if line_stripped.startswith("====="):
+            printing_summary = True
+
+        # No failure - print summary lines 
+        if printing_summary:
+            print(f"{line_stripped}")
 
     if failed:
-        Log(LogLevel.ERROR, "=====================================")
-        raise RuntimeException(f'{failed_msg}')
+        Log(LogLevel.ERROR, "="*40)
+        raise RuntimeException(f'Test failed: {failed_msg}')
 
 
 
-def runProcessWithLogFile(name, cmd, fp, log_file_name):
+def runProcess(name, cmd, fp, log_file_name = None):
     
     info_text = 'Running ' +  name + '.'
     if log_file_name:
         info_text += ' Log: ' +  log_file_name
-
     Log(LogLevel.INFOBLUE, info_text)
     Log(LogLevel.INFOBLUE, info_text, fp)
     Log(LogLevel.INFOBLUE, 'Cmd: ' + ' '.join(cmd), fp)
+
+    error_log = None
+
     try:
-        with optional_file(log_file_name, 'w') as log_fp:
-            subprocess.run(cmd, stdout=log_fp, stderr=log_fp, check=True, text=True)
+        if log_file_name:
+            with optional_file(log_file_name, 'w') as log_fp:
+                subprocess.run(cmd, stdout=log_fp, stderr=log_fp, check=True, text=True)
+        else:
+            subprocess.run(cmd, check=True, text=True, capture_output=True)
     except subprocess.CalledProcessError as e:
         print("error: ", str(e))
+        if log_file_name is None:
+            error_log = e.stdout.splitlines()
         pass    
     except Exception as e:
         print("something else failed")
         Log(LogLevel.ERROR, f'Failed to run {name}:{str(e)}', fp)
         raise RuntimeException(f'Failed to run {name}:{str(e)}')
     
-    checkLogForErrorsOrPrintSummary(fp, log_file_name)
+    if log_file_name:
+        with optional_file(log_file_name, 'r') as log_fp:
+            checkLogForErrorsOrSummary(fp, log_fp, log_file_name)
+    elif error_log:
+        checkLogForErrorsOrSummary(fp, error_log)
 
     Log(LogLevel.INFOGREEN, name + ' successful!\n')
     Log(LogLevel.INFOGREEN, name + ' successful!\n', fp)
-
-def runProcess(name, cmd, fp): 
-    Log(LogLevel.INFOBLUE, 'Running ' +  name + '.')
-    Log(LogLevel.INFOBLUE, 'Running ' +  name + '.', fp)
-    Log(LogLevel.INFOBLUE, 'Cmd: ' + ' '.join(cmd), fp)
-    try: 
-        subprocess.run(cmd, check=True, text=True, capture_output=True)
-    except subprocess.CalledProcessError as e:
-        lines = e.stdout.splitlines()
-        failure_messages = []
-        failure_block = False;
-        failure_message = [] 
-        for line in lines: 
-            if "FAILED" in line: 
-                failure_message.append(line)
-                failure_block = True
-            elif failure_block and "PASSED" in line:
-                failure_block = False
-                failure_messages.append(failure_message)
-                failure_message = []
-            elif failure_block:
-                failure_message.append(line)
-
-        Log(LogLevel.ERROR, f"Test failed:\n" + "\n".join(failure_message), fp)
-        raise 
-    except Exception as e:
-        Log(LogLevel.ERROR, f'Failed to run {name}:{str(e)}', fp)
-        raise RuntimeException(f'Failed to run {name}:{str(e)}')
-    
-    Log(LogLevel.INFOGREEN, name + ' successful!\n')
-    Log(LogLevel.INFOGREEN, name + ' successful!\n', fp)
-
 
 
 def startDetectorVirtualServer(name :str, num_mods, fp, no_log_file = False):
     for i in range(num_mods):
         port_no = SERVER_START_PORTNO + (i * 2)
         cmd = [str(build_dir / (name + 'DetectorServer_virtual')), '-p', str(port_no)]
+        fname = LOG_PREFIX_FNAME + "virtual_det_" + name + "_" + str(SERVER_START_PORTNO) + ".txt"
         if no_log_file: 
-            startProcessInBackgroundWithLogFile(cmd, fp, None)
-        else: 
-            startProcessInBackgroundWithLogFile(cmd, fp, "/tmp/virtual_det_" + name + "_" + str(i) + ".txt")
+            fname = None
+        startProcessInBackground(cmd, fp, fname)
         match name:
             case 'jungfrau':
                 time.sleep(7)
@@ -283,14 +261,19 @@ def connectToVirtualServers(name, num_mods, ctb_object=False):
 
     return d
 
-def startReceiver(num_mods, fp):
+def startReceiver(num_mods, fp, no_log_file = False):
     if num_mods == 1:
         cmd = [str(build_dir / 'slsReceiver')]
+        fname = LOG_PREFIX_FNAME + "slsReceiver.txt"
     else:
         cmd = [str(build_dir / 'slsMultiReceiver'), str(DEFAULT_TCP_RX_PORTNO), str(num_mods)]
+        fname = LOG_PREFIX_FNAME + "slsMultiReceiver.txt"
         # in 10.0.0
         #cmd = ['slsMultiReceiver', '-p', str(DEFAULT_TCP_RX_PORTNO), '-n', str(num_mods)]
-    startProcessInBackground(cmd, fp)
+
+    if no_log_file: 
+        fname = None
+    startProcessInBackground(cmd, fp, fname)
     time.sleep(1)
 
 def loadConfig(name, rx_hostname = 'localhost', settingsdir = None, log_file_fp = None, num_mods = 1, num_frames = 1, num_interfaces = 1):
@@ -414,6 +397,12 @@ def ParseArguments(description, default_num_mods=2, specific_tests=False, genera
         f"num_mods: '{args.num_mods}'\n"
         f"num_frames: '{args.num_frames}'"
     )
+
+    if args.no_log_file:
+        msg += f"\nLog File: Disabled"
+    else:
+        msg += f"\nLog File: Enabled"
+
     if specific_tests:
         msg += f"\ntests: '{args.tests}'"
 

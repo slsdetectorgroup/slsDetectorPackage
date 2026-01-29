@@ -16,24 +16,25 @@ from utils_for_test import (
     RuntimeException,
     cleanup,
     startProcessInBackground,
-    startProcessInBackgroundWithLogFile,
     checkLogForErrors,
     startDetectorVirtualServer,
     loadConfig,
     loadBasicSettings,
     ParseArguments, 
-    build_dir
+    build_dir,
+    optional_file
 )
 
 LOG_PREFIX_FNAME = '/tmp/slsFrameSynchronizer_test'
 MAIN_LOG_FNAME = LOG_PREFIX_FNAME + '_log.txt'
 PULL_SOCKET_PREFIX_FNAME = LOG_PREFIX_FNAME + '_pull_socket_'
+SYNCHRONIZER_SUFFIX_FNAME = LOG_PREFIX_FNAME + '_synchronizer.txt'
 
 
 def startFrameSynchronizerPullSocket(name, fp):
-    fname = PULL_SOCKET_PREFIX_FNAME + name + '.txt'
     cmd = ['python', '-u', 'frameSynchronizerPullSocket.py']  
-    startProcessInBackgroundWithLogFile(cmd, fp, fname)
+    fname = PULL_SOCKET_PREFIX_FNAME + name + '.txt'
+    startProcessInBackground(cmd, fp, fname)
     time.sleep(1)
     checkLogForErrors(fp, fname)
     
@@ -43,7 +44,8 @@ def startFrameSynchronizer(num_mods, fp):
     cmd = [str(build_dir / 'slsFrameSynchronizer'), str(DEFAULT_TCP_RX_PORTNO), str(num_mods)]
     # in 10.0.0
     #cmd = ['slsFrameSynchronizer', '-p', str(DEFAULT_TCP_RX_PORTNO), '-n', str(num_mods)]
-    startProcessInBackground(cmd, fp)
+    fname = SYNCHRONIZER_SUFFIX_FNAME
+    startProcessInBackground(cmd, fp, fname)
     time.sleep(1)
 
 
@@ -87,7 +89,6 @@ def testZmqHeadetTypeCount(name, det, num_mods, num_frames, fp):
                         htype_counts[htype] += 1
                 except json.JSONDecodeError:
                     continue
-
         # test if file contents matches expected counts
         num_ports_per_module = 1 if name == "gotthard2" else det.numinterfaces
         total_num_frame_parts = num_ports_per_module * num_mods * num_frames
@@ -125,6 +126,9 @@ def startTestsForAll(args, fp):
 
 if __name__ == '__main__':
     args = ParseArguments(description='Automated tests to test frame synchronizer', default_num_mods=2)
+
+    if args.no_log_file:
+        raise RuntimeException("Cannot run frame synchronizer test without files")
 
     Log(LogLevel.INFOBLUE, '\nLog File: ' + MAIN_LOG_FNAME + '\n') 
 

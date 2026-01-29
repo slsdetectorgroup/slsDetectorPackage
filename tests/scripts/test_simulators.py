@@ -52,7 +52,8 @@ def startTestsForAll(args, fp):
 
     
     test_filter = args.tests
-    cmd = [str(build_dir / 'tests'), '--abort', test_filter, '-s'] 
+    #cmd = [str(build_dir / 'tests'), '--abort', test_filter, '-s'] 
+    cmd = [str(build_dir / 'tests'), '--abort', test_filter]
 
     num_mods = args.num_mods 
 

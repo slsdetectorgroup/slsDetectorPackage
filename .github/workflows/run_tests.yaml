@@ -49,6 +49,6 @@ jobs:
 
       - name: Simulator unit tests
         working-directory: ${{github.workspace}}/build/bin
-        run: python test_simulators.py -s xilinx_ctb
+        run: python test_simulators.py -s jungfrau --tests "[detectorintegration]~[disable_check_data_file]"
 
 

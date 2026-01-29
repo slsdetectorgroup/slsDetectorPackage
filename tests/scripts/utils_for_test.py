@@ -152,6 +152,7 @@ def checkLogForErrorsOrSummary(fp, lines, source_name=""):
 
     for line in lines:
         line_stripped = line.rstrip()
+        print(f"{line_stripped}")
 
         # Detect failure (case-insensitive)
         if not failed and (": FAILED:" in line or " failed\nassertions" in line):

@@ -53,11 +53,8 @@ void test_include_file(const std::string &cmd) {
     // put only
     REQUIRE_THROWS(caller.call(cmd, {}, -1, GET));
 
-    int64_t prev_frames = 0;
-    REQUIRE_NOTHROW(prev_frames = det.getNumberOfFrames().tsquash(
-        "Number of frames has to be same to test"));
-    /*auto prev_frames = det.getNumberOfFrames().tsquash(
-        "Number of frames has to be same to test");*/
+    auto prev_frames = det.getNumberOfFrames().tsquash(
+        "Number of frames has to be same to test");
     auto prev_fwrite =
         det.getFileWrite().tsquash("File write enable has to be same to test");
 

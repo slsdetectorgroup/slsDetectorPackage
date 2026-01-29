@@ -44,7 +44,7 @@ jobs:
 
       - name: Simulator unit tests
         working-directory: ${{github.workspace}}/build/bin
-        run: python test_simulators.py -g --tests ""
+        run: python test_simulators.py -nlf -g --tests ""
 
       - name: Python unit tests with simulators
         working-directory: ${{github.workspace}}/build/bin

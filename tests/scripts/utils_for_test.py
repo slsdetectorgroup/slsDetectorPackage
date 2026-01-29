@@ -172,13 +172,14 @@ def checkLogForErrorsOrSummary(fp, lines, source_name=""):
         # Summary delimiter
         if line_stripped.startswith("====="):
             printing_summary = True
+            continue
 
         # No failure - print summary lines 
         if printing_summary:
             print(f"{line_stripped}")
 
     if failed:
-        Log(LogLevel.ERROR, "="*40)
+        #Log(LogLevel.ERROR, "="*40)
         raise RuntimeException(f'Test failed: {failed_msg}')
 
 

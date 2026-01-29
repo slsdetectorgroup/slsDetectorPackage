@@ -205,8 +205,7 @@ def runProcess(name, cmd, fp, log_file_name = None):
         print("error: ", str(e))
         if log_file_name is None:
             error_log = e.stdout.splitlines()
-        #pass    
-        raise RuntimeException(f'Failed to run {name}:{str(e)}')
+        pass    
     except Exception as e:
         print("something else failed")
         Log(LogLevel.ERROR, f'Failed to run {name}:{str(e)}', fp)

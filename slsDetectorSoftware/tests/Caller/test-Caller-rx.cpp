@@ -467,7 +467,7 @@ TEST_CASE("rx_arping", "[.detectorintegration][.rx]") {
         }
     }
 }
-TEST_CASE("rx_roi", "[.detectorintegration]") {
+TEST_CASE("rx_roi", "[.detectorintegration][.disable_check_data_file]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();

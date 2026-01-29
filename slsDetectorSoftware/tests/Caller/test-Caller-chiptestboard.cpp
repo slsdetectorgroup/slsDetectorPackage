@@ -1039,7 +1039,6 @@ TEST_CASE("v_abcd", "[.detectorintegration]") {
         indices.push_back(defs::V_POWER_IO);
     }
 
-
     for (size_t i = 0; i < cmds.size(); ++i) {
         if (det_type == defs::CHIPTESTBOARD ||
             det_type == defs::XILINX_CHIPTESTBOARD) {

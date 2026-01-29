@@ -82,7 +82,9 @@ void test_include_file(const std::string &cmd) {
     det.setFileWrite(prev_fwrite);
 }
 
-TEST_CASE("parameters", "[.detectorintegration]") { test_include_file("parameters"); }
+TEST_CASE("parameters", "[.detectorintegration]") {
+    test_include_file("parameters");
+}
 
 TEST_CASE("include", "[.detectorintegration]") { test_include_file("include"); }
 

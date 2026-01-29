@@ -126,8 +126,7 @@ void test_acquire_binary_file_size(const testFileInfo &file_info,
 }
 
 void test_frames_caught(const Detector &det, int num_frames_to_acquire) {
-    auto frames_caught = det.getFramesCaught().tsquash(
-        "Inconsistent number of frames caught")[0];
+    auto frames_caught = det.getFramesCaught()[0][0];
     REQUIRE(frames_caught == num_frames_to_acquire);
 }
 
@@ -175,8 +174,7 @@ void create_files_for_acquire(
     // TODO: maybe there should not be REQUIRE statements in void function at
     // all, but traceback should be handled
     if (check_num_frames) {
-        auto frames_caught = det.getFramesCaught().tsquash(
-            "Inconsistent number of frames caught")[0];
+        auto frames_caught = det.getFramesCaught()[0][0];
         REQUIRE(frames_caught == num_frames);
     }
 
@@ -189,8 +187,7 @@ void create_files_for_acquire(
     // acquire and get num frames caught
     test_acquire_with_receiver(caller, det);
     if (check_num_frames) {
-        auto frames_caught = det.getFramesCaught().tsquash(
-            "Inconsistent number of frames caught")[0];
+        auto frames_caught = det.getFramesCaught()[0][0];
         REQUIRE(frames_caught == num_frames);
     }
 #endif

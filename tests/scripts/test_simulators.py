@@ -25,7 +25,6 @@ from utils_for_test import (
     runProcess,
     startReceiver,
     runProcess,
-    runProcess, 
     startDetectorVirtualServer,
     loadConfig,
     loadBasicSettings,
@@ -43,7 +42,7 @@ def startGeneralTests(fp):
     cmd = [str(build_dir / 'tests'), '--abort', '-s']
     try:
         cleanup(fp)
-        runProcessWithLogFile('General Tests', cmd, fp, fname)
+        runProcess('General Tests', cmd, fp, fname)
     except Exception as e:
         raise RuntimeException(f'General tests failed.') from e
 

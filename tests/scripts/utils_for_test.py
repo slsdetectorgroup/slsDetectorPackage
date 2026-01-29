@@ -189,6 +189,7 @@ def runProcess(name, cmd, fp, log_file_name = None):
         info_text += ' Log: ' +  log_file_name
     Log(LogLevel.INFOBLUE, info_text)
     Log(LogLevel.INFOBLUE, info_text, fp)
+    Log(LogLevel.INFOBLUE, 'Cmd: ' + ' '.join(cmd))
     Log(LogLevel.INFOBLUE, 'Cmd: ' + ' '.join(cmd), fp)
 
     error_log = None

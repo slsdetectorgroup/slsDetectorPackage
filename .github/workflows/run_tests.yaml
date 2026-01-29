@@ -42,7 +42,7 @@ jobs:
 
       - name: Simulator unit tests
         working-directory: ${{github.workspace}}/build/bin
-        run: python test_simulators.py -nlf -s jungfrau --tests "[detectorintegration]~[disable_check_data_file]"
+        run: python test_simulators.py -s jungfrau --tests "[detectorintegration]~[disable_check_data_file]"
 
       - name: Python unit tests with simulators
         working-directory: ${{github.workspace}}/build/bin

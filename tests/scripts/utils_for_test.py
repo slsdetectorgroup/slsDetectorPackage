@@ -161,10 +161,8 @@ def checkLogForErrorsOrPrintSummary(fp, log_file_name: str):
                 failed_msg = line
                 printing_error = True
                 Log(LogLevel.ERROR, line_stripped, fp)
-                Log(LogLevel.ERROR, "=====================================")
-                Log(LogLevel.ERROR, "====")
                 Log(LogLevel.ERROR, f"Error log from file: {log_file_name}")
-                Log(LogLevel.ERROR, "==")
+                Log(LogLevel.ERROR, "=====================================")
 
             # After failure, log everything as ERROR
             if printing_error:
@@ -403,8 +401,8 @@ def ParseArguments(description, default_num_mods=2, specific_tests=False, genera
             'jungfrau',
             'mythen3',
             'gotthard2',
-            'moench',
             'ctb',
+            'moench',
             'xilinx_ctb'
         ]
 

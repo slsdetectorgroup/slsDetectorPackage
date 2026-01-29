@@ -152,7 +152,6 @@ def checkLogForErrorsOrSummary(fp, lines, source_name=""):
 
     for line in lines:
         line_stripped = line.rstrip()
-        print(f"{line_stripped}")
 
         # Detect failure (case-insensitive)
         if not failed and (": FAILED:" in line or " failed\nassertions" in line):
@@ -202,9 +201,10 @@ def runProcess(name, cmd, fp, log_file_name = None):
         #    subprocess.run(cmd, check=True, text=True, capture_output=True)
     except subprocess.CalledProcessError as e:
         print("error: ", str(e))
-        if log_file_name is None:
-            error_log = e.stdout.splitlines()
-        pass    
+        #if log_file_name is None:
+        #    error_log = e.stdout.splitlines()
+        #pass
+        raise RuntimeException(f'Failed to run {name}:{str(e)}')    
     except Exception as e:
         print("something else failed")
         Log(LogLevel.ERROR, f'Failed to run {name}:{str(e)}', fp)

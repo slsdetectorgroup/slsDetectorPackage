@@ -151,7 +151,6 @@ def checkLogForErrorsOrSummary(fp, lines, source_name=""):
 
 
     for line in lines:
-        continue
         line_stripped = line.rstrip()
         print(f"{line_stripped}")
 
@@ -196,11 +195,11 @@ def runProcess(name, cmd, fp, log_file_name = None):
     error_log = None
 
     try:
-        if log_file_name:
-            with optional_file(log_file_name, 'w') as log_fp:
-                subprocess.run(cmd, stdout=log_fp, stderr=log_fp, check=True, text=True)
-        else:
-            subprocess.run(cmd, check=True, text=True, capture_output=True)
+        #if log_file_name:
+        with optional_file(log_file_name, 'w') as log_fp:
+            subprocess.run(cmd, stdout=log_fp, stderr=log_fp, check=True, text=True)
+        #else:
+        #    subprocess.run(cmd, check=True, text=True, capture_output=True)
     except subprocess.CalledProcessError as e:
         print("error: ", str(e))
         if log_file_name is None:

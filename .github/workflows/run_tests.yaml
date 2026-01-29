@@ -49,7 +49,6 @@ jobs:
 
       - name: Simulator unit tests
         working-directory: ${{github.workspace}}/build/bin
-        run: |
-          python test_simulators.py -nlf --tests "[detectorintegration]"
+        run: python test_simulators.py -nlf --tests "[detectorintegration]"
 
 

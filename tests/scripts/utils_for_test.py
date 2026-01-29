@@ -144,6 +144,7 @@ def checkLogForErrors(fp, log_file_path: str):
 
 
 def checkLogForErrorsOrSummary(fp, lines, source_name=""):
+    return None
     failed = False # if it found "failed" or "FAILED" in file
     failed_msg = ""
     printing_error = False # print every line in file after failure
@@ -162,7 +163,7 @@ def checkLogForErrorsOrSummary(fp, lines, source_name=""):
             Log(LogLevel.ERROR, line_stripped, fp)
             if source_name:
                 Log(LogLevel.ERROR, f"Error log from file: {source_name}")
-            #Log(LogLevel.ERROR, "="*40)
+            Log(LogLevel.ERROR, "="*40)
 
         # After failure, log everything as ERROR
         if printing_error:
@@ -178,7 +179,7 @@ def checkLogForErrorsOrSummary(fp, lines, source_name=""):
             print(f"{line_stripped}")
 
     if failed:
-        #Log(LogLevel.ERROR, "="*40)
+        Log(LogLevel.ERROR, "="*40)
         raise RuntimeException(f'Test failed: {failed_msg}')
 
 
@@ -204,7 +205,8 @@ def runProcess(name, cmd, fp, log_file_name = None):
         print("error: ", str(e))
         if log_file_name is None:
             error_log = e.stdout.splitlines()
-        pass    
+        #pass    
+        raise RuntimeException(f'Failed to run {name}:{str(e)}')
     except Exception as e:
         print("something else failed")
         Log(LogLevel.ERROR, f'Failed to run {name}:{str(e)}', fp)

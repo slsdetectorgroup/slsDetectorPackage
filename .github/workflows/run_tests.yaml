@@ -41,14 +41,13 @@ jobs:
           # Build your program with the given configuration
         run: cmake --build ${{github.workspace}}/build -j4 --config ${{env.BUILD_TYPE}}
 
+      - name: Simulator unit tests
+        working-directory: ${{github.workspace}}/build/bin
+        run: python test_simulators.py -nlf -s jungfrau --tests "[detectorintegration]~[disable_check_data_file]"
+
       - name: Python unit tests with simulators
         working-directory: ${{github.workspace}}/build/bin
         run: |
           python -m pytest -m detectorintegration ${{github.workspace}}/python/tests --detector-integration 
           python -m pytest ${{github.workspace}}/python/tests
-
-      - name: Simulator unit tests
-        working-directory: ${{github.workspace}}/build/bin
-        run: python ${{github.workspace}}/build/bin/test_simulators.py -s jungfrau --tests "[detectorintegration]~[disable_check_data_file]"
-
 

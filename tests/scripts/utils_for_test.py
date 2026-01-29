@@ -146,6 +146,45 @@ def checkLogForErrors(fp, log_file_path: str):
         raise
 
 
+def checkLogForErrorsOrPrintSummary(fp, log_file_name: str):
+    failed = False # if it found "failed" or "FAILED" in file
+    printing_error = False # print every line in file after failure
+    printing_summary = False # print summary if no failure
+
+    with optional_file(log_file_name, 'r') as f:
+        for line in f:
+            line_stripped = line.rstrip()
+
+            # Detect failure (case-insensitive)
+            if not failed and (": FAILED:" in line or " failed\nassertions" in line):
+                failed = True
+                failed_msg = line
+                printing_error = True
+                Log(LogLevel.ERROR, line_stripped, fp)
+                Log(LogLevel.ERROR, "=====================================")
+                Log(LogLevel.ERROR, "====")
+                Log(LogLevel.ERROR, f"Error log from file: {log_file_name}")
+                Log(LogLevel.ERROR, "==")
+
+            # After failure, log everything as ERROR
+            if printing_error:
+                print(f"{line_stripped}")
+                continue
+
+            # Summary delimiter
+            if line_stripped.startswith("====="):
+                printing_summary = True
+
+            # No failure - print summary lines 
+            if printing_summary:
+                print(f"{line_stripped}")
+
+    if failed:
+        Log(LogLevel.ERROR, "=====================================")
+        raise RuntimeException(f'{failed_msg}')
+
+
+
 def runProcessWithLogFile(name, cmd, fp, log_file_name):
     
     info_text = 'Running ' +  name + '.'
@@ -166,10 +205,7 @@ def runProcessWithLogFile(name, cmd, fp, log_file_name):
         Log(LogLevel.ERROR, f'Failed to run {name}:{str(e)}', fp)
         raise RuntimeException(f'Failed to run {name}:{str(e)}')
     
-    with optional_file(log_file_name, 'r') as f:
-        for line in f:
-            if "FAILED" in line:
-                raise RuntimeException(f'{line}')
+    checkLogForErrorsOrPrintSummary(fp, log_file_name)
 
     Log(LogLevel.INFOGREEN, name + ' successful!\n')
     Log(LogLevel.INFOGREEN, name + ' successful!\n', fp)

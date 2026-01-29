@@ -162,7 +162,7 @@ def checkLogForErrorsOrSummary(fp, lines, source_name=""):
             Log(LogLevel.ERROR, line_stripped, fp)
             if source_name:
                 Log(LogLevel.ERROR, f"Error log from file: {source_name}")
-            Log(LogLevel.ERROR, "="*40)
+            #Log(LogLevel.ERROR, "="*40)
 
         # After failure, log everything as ERROR
         if printing_error:
@@ -172,7 +172,6 @@ def checkLogForErrorsOrSummary(fp, lines, source_name=""):
         # Summary delimiter
         if line_stripped.startswith("====="):
             printing_summary = True
-            continue
 
         # No failure - print summary lines 
         if printing_summary:

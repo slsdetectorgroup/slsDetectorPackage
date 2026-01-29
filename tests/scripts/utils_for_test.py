@@ -151,6 +151,7 @@ def checkLogForErrorsOrSummary(fp, lines, source_name=""):
 
 
     for line in lines:
+        continue
         line_stripped = line.rstrip()
         print(f"{line_stripped}")
 
@@ -203,9 +204,7 @@ def runProcess(name, cmd, fp, log_file_name = None):
     except subprocess.CalledProcessError as e:
         print("error: ", str(e))
         if log_file_name is None:
-            #error_log = e.stdout.splitlines()
-            elog = e.stdout.splitlines()
-            error_log = [l for l in elog if l.strip() and any(c.isdigit() for c in l)]
+            error_log = e.stdout.splitlines()
         pass    
     except Exception as e:
         print("something else failed")

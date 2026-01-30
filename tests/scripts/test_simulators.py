@@ -69,14 +69,13 @@ def startTestsForAll(args, fp):
                 try:
                     fname = fname_template.format(args.tests, server) if not args.no_log_file else None
 
-                    Log(LogLevel.INFOBLUE, f'Starting {args.tests} Tests for {server}, {ninterfaces} interfaces, {curMods} modules')
-                    Log(LogLevel.INFOBLUE, f'Starting {args.tests} Tests for {server}, {ninterfaces} interfaces, {curMods} modules', fp)
+                    Log(LogLevel.INFOBLUE, f'Starting {args.tests} Tests for {server}, {ninterfaces} interfaces, {curMods} modules', fp, True)
                     cleanup(fp)
-                    startDetectorVirtualServer(name=server, num_mods=curMods, fp=fp, no_log_file=args.no_log_file)
-                    startReceiver(curMods, fp, args.no_log_file)
+                    startDetectorVirtualServer(name=server, num_mods=curMods, fp=fp, no_log_file=args.no_log_file, quiet_mode=args.quiet)
+                    startReceiver(curMods, fp, args.no_log_file, args.quiet)
                     d = loadConfig(name=server, rx_hostname=args.rx_hostname, settingsdir=args.settingspath, log_file_fp=fp, num_mods=curMods, num_interfaces=ninterfaces)
                     loadBasicSettings(name=server, d=d, fp=fp)
-                    runProcess('Tests (' + args.tests + ') for ' + server, cmd, fp, fname)
+                    runProcess('Tests (' + args.tests + ') for ' + server, cmd, fp, fname, args.quiet)
                 except Exception as e:
                     raise RuntimeException(f'Tests (' + args.tests + ') failed for ' + server + '.') from e
 
@@ -86,7 +85,7 @@ def startTestsForAll(args, fp):
 if __name__ == '__main__':
     args = ParseArguments(description='Automated tests with the virtual detector servers', default_num_mods=2, specific_tests=True, general_tests_option=True)
 
-    with optional_file(MAIN_LOG_FNAME if not args.no_log_file else None, 'w') as fp:  
+    with optional_file(MAIN_LOG_FNAME if not args.no_log_file else None, 'w', args.quiet) as fp:  
         try:
             if args.general_tests:
                 startGeneralTests(fp)

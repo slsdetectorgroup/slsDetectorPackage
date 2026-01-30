@@ -31,27 +31,26 @@ PULL_SOCKET_PREFIX_FNAME = LOG_PREFIX_FNAME + '_pull_socket_'
 SYNCHRONIZER_SUFFIX_FNAME = LOG_PREFIX_FNAME + '_synchronizer.txt'
 
 
-def startFrameSynchronizerPullSocket(name, fp):
+def startFrameSynchronizerPullSocket(name, fp, quiet_mode=False):
     cmd = ['python', '-u', 'frameSynchronizerPullSocket.py']  
     fname = PULL_SOCKET_PREFIX_FNAME + name + '.txt'
-    startProcessInBackground(cmd, fp, fname)
+    startProcessInBackground(cmd, fp, fname, quiet_mode)
     time.sleep(1)
     checkLogForErrors(fp, fname)
     
 
 
-def startFrameSynchronizer(num_mods, fp):
+def startFrameSynchronizer(num_mods, fp, quiet_mode=False):
     cmd = [str(build_dir / 'slsFrameSynchronizer'), str(DEFAULT_TCP_RX_PORTNO), str(num_mods)]
     # in 10.0.0
     #cmd = ['slsFrameSynchronizer', '-p', str(DEFAULT_TCP_RX_PORTNO), '-n', str(num_mods)]
     fname = SYNCHRONIZER_SUFFIX_FNAME
-    startProcessInBackground(cmd, fp, fname)
+    startProcessInBackground(cmd, fp, fname, quiet_mode)
     time.sleep(1)
 
 
 def acquire(fp, det):
-    Log(LogLevel.INFO, 'Acquiring')
-    Log(LogLevel.INFO, 'Acquiring', fp)
+    Log(LogLevel.INFO, 'Acquiring', fp, True)
     det.acquire()
 
 
@@ -60,14 +59,12 @@ def testFramesCaught(name, det, num_frames):
     if fnum != num_frames:
         raise RuntimeException(f"{name} caught only {fnum}. Expected {num_frames}") 
     
-    Log(LogLevel.INFOGREEN, f'Frames caught test passed for {name}')
-    Log(LogLevel.INFOGREEN, f'Frames caught test passed for {name}', fp)
+    Log(LogLevel.INFOGREEN, f'Frames caught test passed for {name}', fp, True)
 
 
 def testZmqHeadetTypeCount(name, det, num_mods, num_frames, fp):
 
-    Log(LogLevel.INFO, f"Testing Zmq Header type count for {name}")
-    Log(LogLevel.INFO, f"Testing Zmq Header type count for {name}", fp)
+    Log(LogLevel.INFO, f"Testing Zmq Header type count for {name}", fp, True)
     htype_counts = {
         "header": 0,
         "series_end": 0,
@@ -99,19 +96,17 @@ def testZmqHeadetTypeCount(name, det, num_mods, num_frames, fp):
     except Exception as e:
         raise RuntimeException(f'Failed to get zmq header count type. Error:{str(e)}') from e
         
-    Log(LogLevel.INFOGREEN, f"Zmq Header type count test passed for {name}")
-    Log(LogLevel.INFOGREEN, f"Zmq Header type count test passed for {name}", fp)
+    Log(LogLevel.INFOGREEN, f"Zmq Header type count test passed for {name}", fp, True)
 
 
 def startTestsForAll(args, fp):
     for server in args.servers:
         try:
-            Log(LogLevel.INFOBLUE, f'Synchronizer Tests for {server}')
-            Log(LogLevel.INFOBLUE, f'Synchronizer Tests for {server}', fp)
+            Log(LogLevel.INFOBLUE, f'Synchronizer Tests for {server}', fp, True)
             cleanup(fp)
-            startDetectorVirtualServer(server, args.num_mods, fp)
-            startFrameSynchronizerPullSocket(server, fp)
-            startFrameSynchronizer(args.num_mods, fp)
+            startDetectorVirtualServer(server, args.num_mods, fp, args.quiet)
+            startFrameSynchronizerPullSocket(server, fp, args.quiet)
+            startFrameSynchronizer(args.num_mods, f, args.quiet_modep)
             d = loadConfig(name=server, rx_hostname=args.rx_hostname, settingsdir=args.settingspath, log_file_fp=fp, num_mods=args.num_mods, num_frames=args.num_frames)
             loadBasicSettings(name=server, d=d, fp=fp)
             acquire(fp, d)

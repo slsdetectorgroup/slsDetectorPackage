@@ -72,8 +72,8 @@ def session_simulator(request):
         f'---- {det_type} | interfaces={num_interfaces} | modules={num_mods} ----', fp)
     
     cleanup(fp)
-    startDetectorVirtualServer(det_type, num_mods, fp)
-    startReceiver(num_mods, fp)
+    startDetectorVirtualServer(det_type, num_mods, fp, True)
+    startReceiver(num_mods, fp, True)
 
     Log(LogLevel.INFOBLUE, f'Waiting for server to start up and connect', fp)
     d = loadConfig(

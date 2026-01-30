@@ -3,7 +3,7 @@
 '''
 This file is used for common utils used for integration tests between simulators and receivers.
 '''
-
+import os
 from pathlib import Path
 import sys, subprocess, time, argparse
 from enum import Enum
@@ -49,10 +49,13 @@ LOG_COLORS = {
 }
 
 
-def Log(level: LogLevel, message: str, stream=sys.stdout):
+def Log(level: LogLevel, message: str, stream=sys.stdout, both=False):
     color = LOG_COLORS.get(level, Fore.WHITE)
     label = LOG_LABELS.get(level, "")
     print(f"{color}{label}{message}{Style.RESET_ALL}", file=stream, flush=True)
+    if both and stream != sys.stdout:
+        print(f"{color}{label}{message}{Style.RESET_ALL}", file=sys.stdout, flush=True)
+
 
 
 class RuntimeException (Exception):
@@ -62,7 +65,7 @@ class RuntimeException (Exception):
 
 
 @contextmanager
-def optional_file(file_path=None, mode='w'):
+def optional_file(file_path=None, mode='w', quiet_mode=False):
     if file_path:
         f = open(file_path, mode)
         try:
@@ -70,7 +73,14 @@ def optional_file(file_path=None, mode='w'):
         finally:
             f.close()
     else:
-        yield sys.stdout
+        if quiet_mode:
+            f = open(os.devnull, mode)
+            try:
+                yield f
+            finally:
+                f.close()
+        else:
+            yield sys.stdout
 
 
 def checkIfProcessRunning(processName):
@@ -102,8 +112,7 @@ def cleanSharedmemory(fp):
 
 
 def cleanup(fp):
-    Log(LogLevel.INFO, 'Cleaning up')
-    Log(LogLevel.INFO, 'Cleaning up', fp)
+    Log(LogLevel.INFO, 'Cleaning up', fp, True)
     killProcess('DetectorServer_virtual', fp)
     killProcess('slsReceiver', fp)
     killProcess('slsMultiReceiver', fp)
@@ -112,16 +121,15 @@ def cleanup(fp):
     cleanSharedmemory(fp)
 
 
-def startProcessInBackground(cmd, fp, log_file_name: str):
+def startProcessInBackground(cmd, fp, log_file_name: str, quiet_mode=False):
     info_text = 'Starting up ' + ' '.join(cmd)
     if log_file_name:
         info_text += '. Log: ' +  log_file_name
 
-    Log(LogLevel.INFO, f'{info_text}')
-    Log(LogLevel.INFO, f'{info_text}', fp)   
+    Log(LogLevel.INFO, f'{info_text}', fp, True)
 
     try:
-        with optional_file(log_file_name, 'w') as log_fp:
+        with optional_file(log_file_name, 'w', quiet_mode) as log_fp:
             subprocess.Popen(cmd, stdout=log_fp, stderr=log_fp, text=True)
     except Exception as e:
         raise RuntimeException(f'Failed to start {cmd}:{str(e)}') from e
@@ -132,8 +140,7 @@ def checkLogForErrors(fp, log_file_path: str):
         with open(log_file_path, 'r') as log_file:
             for line in log_file:
                 if 'Error' in line:
-                    Log(LogLevel.ERROR, f"Error found in log: {line.strip()}")
-                    Log(LogLevel.ERROR, f"Error found in log: {line.strip()}", fp)
+                    Log(LogLevel.ERROR, f"Error found in log: {line.strip()}", fp, True)
                     raise RuntimeException("Error found in log file")
     except FileNotFoundError:
         print(f"Log file not found: {log_file_path}")
@@ -161,7 +168,7 @@ def checkLogForErrorsOrSummary(fp, lines, source_name=""):
             Log(LogLevel.ERROR, line_stripped, fp)
             if source_name:
                 Log(LogLevel.ERROR, f"Error log from file: {source_name}")
-            Log(LogLevel.ERROR, "="*40)
+            Log(LogLevel.ERROR, "="*79)
 
         # After failure, log everything as ERROR
         if printing_error:
@@ -176,36 +183,37 @@ def checkLogForErrorsOrSummary(fp, lines, source_name=""):
         if printing_summary:
             print(f"{line_stripped}")
 
+
     if failed:
-        Log(LogLevel.ERROR, "="*40)
+        Log(LogLevel.ERROR, "="*79)
         raise RuntimeException(f'Test failed: {failed_msg}')
+    else:
+        print("="*79)
 
 
 
-def runProcess(name, cmd, fp, log_file_name = None):
+def runProcess(name, cmd, fp, log_file_name = None, quiet_mode=False):
     
     info_text = 'Running ' +  name + '.'
     if log_file_name:
         info_text += ' Log: ' +  log_file_name
-    Log(LogLevel.INFOBLUE, info_text)
-    Log(LogLevel.INFOBLUE, info_text, fp)
-    Log(LogLevel.INFOBLUE, 'Cmd: ' + ' '.join(cmd))
-    Log(LogLevel.INFOBLUE, 'Cmd: ' + ' '.join(cmd), fp)
+    Log(LogLevel.INFOBLUE, info_text, fp, True)
+    Log(LogLevel.INFOBLUE, 'Cmd: ' + ' '.join(cmd), fp, True)
 
     error_log = None
 
     try:
-        #if log_file_name:
-        with optional_file(log_file_name, 'w') as log_fp:
-            subprocess.run(cmd, stdout=log_fp, stderr=log_fp, check=True, text=True)
-        #else:
-        #    subprocess.run(cmd, check=True, text=True, capture_output=True)
+        if log_file_name:
+            with optional_file(log_file_name, 'w', quiet_mode) as log_fp:
+                subprocess.run(cmd, stdout=log_fp, stderr=log_fp, check=True, text=True)
+        else:
+            capture = subprocess.run(cmd, check=True, text=True, capture_output=True)
+            captured_log = capture.stdout.splitlines()
+
     except subprocess.CalledProcessError as e:
         print("error: ", str(e))
-        #if log_file_name is None:
-        #    error_log = e.stdout.splitlines()
-        #pass
-        raise RuntimeException(f'Failed to run {name}:{str(e)}')    
+        captured_log = e.stdout.splitlines()
+        pass
     except Exception as e:
         print("something else failed")
         Log(LogLevel.ERROR, f'Failed to run {name}:{str(e)}', fp)
@@ -214,21 +222,20 @@ def runProcess(name, cmd, fp, log_file_name = None):
     if log_file_name:
         with optional_file(log_file_name, 'r') as log_fp:
             checkLogForErrorsOrSummary(fp, log_fp, log_file_name)
-    elif error_log:
-        checkLogForErrorsOrSummary(fp, error_log)
+    else:
+        checkLogForErrorsOrSummary(fp, captured_log)
 
-    Log(LogLevel.INFOGREEN, name + ' successful!\n')
-    Log(LogLevel.INFOGREEN, name + ' successful!\n', fp)
+    Log(LogLevel.INFOGREEN, name + ' successful!\n', fp, True)
 
 
-def startDetectorVirtualServer(name :str, num_mods, fp, no_log_file = False):
+def startDetectorVirtualServer(name :str, num_mods, fp, no_log_file = False, quiet_mode=False):
     for i in range(num_mods):
         port_no = SERVER_START_PORTNO + (i * 2)
         cmd = [str(build_dir / (name + 'DetectorServer_virtual')), '-p', str(port_no)]
         fname = LOG_PREFIX_FNAME + "virtual_det_" + name + "_" + str(SERVER_START_PORTNO) + ".txt"
         if no_log_file: 
             fname = None
-        startProcessInBackground(cmd, fp, fname)
+        startProcessInBackground(cmd, fp, fname, quiet_mode)
         match name:
             case 'jungfrau':
                 time.sleep(7)
@@ -263,7 +270,7 @@ def connectToVirtualServers(name, num_mods, ctb_object=False):
 
     return d
 
-def startReceiver(num_mods, fp, no_log_file = False):
+def startReceiver(num_mods, fp, no_log_file = False, quiet_mode=False):
     if num_mods == 1:
         cmd = [str(build_dir / 'slsReceiver')]
         fname = LOG_PREFIX_FNAME + "slsReceiver.txt"
@@ -275,12 +282,11 @@ def startReceiver(num_mods, fp, no_log_file = False):
 
     if no_log_file: 
         fname = None
-    startProcessInBackground(cmd, fp, fname)
+    startProcessInBackground(cmd, fp, fname, quiet_mode)
     time.sleep(1)
 
 def loadConfig(name, rx_hostname = 'localhost', settingsdir = None, log_file_fp = None, num_mods = 1, num_frames = 1, num_interfaces = 1):
-    Log(LogLevel.INFO, 'Loading config')
-    Log(LogLevel.INFO, 'Loading config', log_file_fp)
+    Log(LogLevel.INFO, 'Loading config', log_file_fp, True)
     try:
         d = connectToVirtualServers(name, num_mods)
 
@@ -322,8 +328,7 @@ def loadConfig(name, rx_hostname = 'localhost', settingsdir = None, log_file_fp 
 
 # for easy acquire
 def loadBasicSettings(name, d, fp):
-    Log(LogLevel.INFO, 'Loading basic settings for ' + name)
-    Log(LogLevel.INFO, 'Loading basic settings for ' + name, fp)
+    Log(LogLevel.INFO, 'Loading basic settings for ' + name, fp, True)
     try:
         # basic settings for easy acquire
         if name == "jungfrau":
@@ -367,13 +372,14 @@ def ParseArguments(description, default_num_mods=2, specific_tests=False, genera
                         help='Detector servers to run')
     parser.add_argument('-nlf', '--no-log-file', action='store_true',
                         help='Dont write output to log file')
-    
+    parser.add_argument('-q', '--quiet', action='store_true',
+                        help='Dont write to stdout when possible.')   
     if specific_tests:
         parser.add_argument('-t', '--tests', nargs='?', default ='[.detectorintegration]',
                         help = 'Test markers or specific test name to use for tests, default: [.detectorintegration]')
         
     if general_tests_option:
-        parser.add_argument('-g', '--general_tests', action='store_true',
+        parser.add_argument('-g', '--general-tests', action='store_true',
                         help = 'Enable general tests (no value needed)')
         
     args = parser.parse_args()
@@ -404,6 +410,11 @@ def ParseArguments(description, default_num_mods=2, specific_tests=False, genera
         msg += f"\nLog File: Disabled"
     else:
         msg += f"\nLog File: Enabled"
+
+    if args.quiet:
+        msg += f"\nQuiet mode: Enabled"
+    else:
+        msg += f"\nQuiet mode: Disabled"
 
     if specific_tests:
         msg += f"\ntests: '{args.tests}'"

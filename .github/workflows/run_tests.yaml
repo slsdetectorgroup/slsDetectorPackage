@@ -2,10 +2,8 @@ name: Run Simulator Tests
 
 on:
   push:
-    branches:
-      - developer
-      - main
-      - 'dev/*'
+
+
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)

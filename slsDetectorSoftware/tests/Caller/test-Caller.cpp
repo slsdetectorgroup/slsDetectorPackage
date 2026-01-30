@@ -59,7 +59,11 @@ void test_include_file(const std::string &cmd) {
         det.getFileWrite().tsquash("File write enable has to be same to test");
 
     {
-        system("echo -e 'frames 2\nfwrite 1' > /tmp/tempsetup.det ");
+        std::ofstream f("/tmp/tempsetup.det", std::ios::trunc);
+        f << "frames 2\n";
+        f << "fwrite 1\n";
+    }
+    {
         std::ostringstream oss;
         caller.call(cmd, {"/tmp/tempsetup.det"}, -1, PUT, oss);
         REQUIRE(oss.str() == cmd + " /tmp/tempsetup.det\n");
@@ -69,7 +73,11 @@ void test_include_file(const std::string &cmd) {
                 1);
     }
     {
-        system("echo -e 'frames 3\nfwrite 0' > /tmp/tempsetup.det ");
+        std::ofstream f("/tmp/tempsetup.det", std::ios::trunc);
+        f << "frames 3\n";
+        f << "fwrite 0\n";
+    }
+    {
         std::ostringstream oss;
         caller.call(cmd, {"/tmp/tempsetup.det"}, -1, PUT, oss);
         REQUIRE(oss.str() == cmd + " /tmp/tempsetup.det\n");
@@ -82,11 +90,11 @@ void test_include_file(const std::string &cmd) {
     det.setFileWrite(prev_fwrite);
 }
 
-TEST_CASE("parameters", "[.detectorintegration][.disable_check_data_file]") {
+TEST_CASE("parameters", "[.detectorintegration]") {
     test_include_file("parameters");
 }
 
-TEST_CASE("include", "[.detectorintegration][.disable_check_data_file]") { test_include_file("include"); }
+TEST_CASE("include", "[.detectorintegration]") { test_include_file("include"); }
 
 TEST_CASE("hostname", "[.detectorintegration]") {
     Detector det;

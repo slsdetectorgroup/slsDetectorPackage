@@ -52,7 +52,8 @@ void test_include_file(const std::string &cmd) {
 
     // put only
     REQUIRE_THROWS(caller.call(cmd, {}, -1, GET));
-    auto test = det.getNumberOfFrames();
+    auto test = det.getNumberOfFrames().tsquash(
+        "Number of frames has to be same to test");
     std::cout << "Frames:"<< ToString(test) << std::endl;
 
     auto prev_frames = det.getNumberOfFrames().tsquash(

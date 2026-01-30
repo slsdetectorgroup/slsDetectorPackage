@@ -52,11 +52,6 @@ void test_include_file(const std::string &cmd) {
 
     // put only
     REQUIRE_THROWS(caller.call(cmd, {}, -1, GET));
-    auto test = det.getNumberOfFrames();
-    std::cout << "Frames:"<< ToString(test) << std::endl;
-    auto test1 = test.tsquash(
-        "Number of frames has to be same to test");
-    std::cout << "frames squashed:"<< ToString(test1) << std::endl;
 
     auto prev_frames = det.getNumberOfFrames().tsquash(
         "Number of frames has to be same to test");
@@ -87,11 +82,11 @@ void test_include_file(const std::string &cmd) {
     det.setFileWrite(prev_fwrite);
 }
 
-TEST_CASE("parameters", "[.detectorintegration]") {
+TEST_CASE("parameters", "[.detectorintegration][.disable_check_data_file]") {
     test_include_file("parameters");
 }
 
-TEST_CASE("include", "[.detectorintegration]") { test_include_file("include"); }
+TEST_CASE("include", "[.detectorintegration][.disable_check_data_file]") { test_include_file("include"); }
 
 TEST_CASE("hostname", "[.detectorintegration]") {
     Detector det;

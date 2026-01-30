@@ -40,8 +40,11 @@ jobs:
 
       - name: Simulator unit tests
         working-directory: ${{github.workspace}}/build/bin
-        run: python test_simulators.py --general-tests --no-log-file --quiet --tests "[detectorintegration]~[disable_check_data_file]"
-        #remove --quiet to see more prints from simulator, receiver and tests
+        run: |
+          python test_simulators.py --general-tests --no-log-file --quiet --tests "[detectorintegration]~[disable_check_data_file]"
+          #remove --quiet to see more prints from simulator, receiver and tests
+          python test_frame_synchronizer.py
+        
 
       - name: Python unit tests with simulators
         working-directory: ${{github.workspace}}/build/bin

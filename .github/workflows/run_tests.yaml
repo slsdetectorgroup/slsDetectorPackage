@@ -10,8 +10,6 @@ on:
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Debug  
-  LANG: en_US.UTF-8
-  LC_ALL: ""
 
 jobs:
   build:
@@ -44,7 +42,7 @@ jobs:
 
       - name: Simulator unit tests
         working-directory: ${{github.workspace}}/build/bin
-        run: python test_simulators.py -nlf -s jungfrau --tests "[detectorintegration]~[disable_check_data_file]"
+        run: python test_simulators.py -nlf -g --tests "[detectorintegration]~[disable_check_data_file]"
 
       - name: Python unit tests with simulators
         working-directory: ${{github.workspace}}/build/bin

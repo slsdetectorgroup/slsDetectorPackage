@@ -52,3 +52,6 @@ jobs:
           python -m pytest -m detectorintegration ${{github.workspace}}/python/tests --detector-integration 
           python -m pytest ${{github.workspace}}/python/tests
 
+      - name: C++ unit tests
+        working-directory: ${{github.workspace}}/build
+        run: ctest -C ${{env.BUILD_TYPE}} -j1 --rerun-failed --output-on-failure

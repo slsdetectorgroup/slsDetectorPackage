@@ -1046,6 +1046,12 @@ TEST_CASE("v_abcd", "[.cmdcall]") {
             if (det_type == defs::CHIPTESTBOARD ||
                 det_type == defs::XILINX_CHIPTESTBOARD) {
                 auto prev_val = det.getPower(indices[i]);
+                // this is the first command touching power dacs, should not be
+                // -100
+                if (det_type == defs::XILINX_CHIPTESTBOARD) {
+                    REQUIRE(prev_val.any(-100) == false);
+                    REQUIRE(prev_val.any(-1) == false);
+                }
                 {
                     std::ostringstream oss;
                     caller.call(cmds[i], {"0"}, -1, PUT, oss);

@@ -130,7 +130,7 @@ class TransceiverTab(QtWidgets.QWidget):
             if dSamples % 8 != 0:
                 nbitsPerDBit += (8 - (dSamples % 8))
             transceiverOffset += nDBitEnabled * (nbitsPerDBit // 8)
-        trans_array = np.array(np.frombuffer(data, offset=transceiverOffset, dtype=np.uint16))
+        trans_array = np.array(np.frombuffer(data, offset=transceiverOffset, dtype=np.uint8))
         
         print("shape trans array: ", trans_array.shape)
         #print("size decoder: ", self.mainWindow.decoder.shape)
@@ -154,14 +154,11 @@ class TransceiverTab(QtWidgets.QWidget):
                                                                        self.mainWindow.nDBitEnabled)
             self.plotTab.ignoreHistogramSignal = True
             self.mainWindow.plotTransceiverImage.setImage(self.mainWindow.transceiver_frame)
-        except Exception:
+        except Exception as e:
             self.mainWindow.statusbar.setStyleSheet("color:red")
-            message = f'Warning: Invalid size for Transceiver Image. Expected' \
-                      f' {self.mainWindow.nTransceiverRows * self.mainWindow.nTransceiverCols} size,' \
-                      f' got {self.mainWindow.transceiver_frame.size} instead.'
             self.acquisitionTab.updateCurrentFrame('Invalid Image')
-            self.mainWindow.statusbar.showMessage(message)
-            print(message)
+            self.mainWindow.statusbar.showMessage(str(e))
+            print("Error: ", str(e))
 
         self.plotTab.setFrameLimits(self.mainWindow.transceiver_frame)
 

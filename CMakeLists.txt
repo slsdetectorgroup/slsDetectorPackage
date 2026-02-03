@@ -204,7 +204,6 @@ option(SLS_USE_INTEGRATION_TESTS "Integration Tests" OFF)
 option(SLS_USE_SANITIZER "Sanitizers for debugging" OFF)
 option(SLS_USE_PYTHON "Python bindings" OFF)
 option(SLS_INSTALL_PYTHONEXT "Install the python extension in the install tree under CMAKE_INSTALL_PREFIX/python/" OFF)
-option(SLS_USE_CTBGUI "ctb GUI" OFF)
 option(SLS_BUILD_DOCS "docs" OFF)
 option(SLS_BUILD_EXAMPLES "examples" OFF)
 option(SLS_TUNE_LOCAL "tune to local machine" OFF)
@@ -427,9 +426,6 @@ if (SLS_USE_PYTHON)
     add_subdirectory(python)
 endif(SLS_USE_PYTHON)
 
-if (SLS_USE_CTBGUI)
-    add_subdirectory(pyctbgui)
-endif(SLS_USE_CTBGUI)
 
 # Workaround for file note being copied to build directory
 # when issuing a python -m build

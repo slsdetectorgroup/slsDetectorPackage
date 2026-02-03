@@ -1151,6 +1151,31 @@ int64_t getMeasurementTime() {
 
 /* parameters - dac, adc, hv */
 
+int setPower(enum DACINDEX ind, int val, int mV, char* mess) {
+
+    serverdacindex
+    if (checkVLimitCompliant(val) == FAIL) {
+        sprintf(mess, "Could not set power. Power regulator %d exceeds voltage limit %d.\n", ind, getVLimit());
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    if (!isPowerValid(ind, val)) {
+        sprintf(mess, "Could not set power. Power regulator %d should be between %d and %d mV\n", ind, (ind == D_PWR_IO ? VIO_MIN_MV : POWER_RGLTR_MIN), POWER_RGLTR_MAX);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    setPower(ind, val);
+    int retval = getPower(ind);
+    validate(&ret, mess, val, retval, "set power regulator", DEC);
+}
+
+int getPower(enum DACINDEX ind, int* retval, char* mess) {
+    *retval = getPower(ind);
+    LOG(logDEBUG1, ("Power regulator(%d): %d\n", ind, retval));
+}
+
+
+
 void setDAC(enum DACINDEX ind, int val, int mV) {
     char dacName[MAX_STR_LENGTH] = {0};
     memset(dacName, 0, MAX_STR_LENGTH);
@@ -1208,9 +1233,13 @@ int checkVLimitDacCompliant(int dac) {
 
 int getVLimit() { return vLimit; }
 
-void setVLimit(int l) {
-    if (l >= 0)
-        vLimit = l;
+int setVLimit(int val, char* mess) {
+    if (val < 0) {
+        sprintf(mess, "Could not set vlimit. Invalid value %d\n", val);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    vLimit = val;
 }
 
 int getBitOffsetFromDACIndex(enum DACINDEX ind) {

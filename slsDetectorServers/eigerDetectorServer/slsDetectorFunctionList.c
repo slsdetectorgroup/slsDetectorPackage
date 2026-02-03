@@ -836,7 +836,10 @@ void setupDetector() {
     Feb_Control_SetInTestModeVariable(DEFAULT_TEST_MODE);
     sharedMemory_unlockLocalLink();
 #endif
-    setHighVoltage(DEFAULT_HIGH_VOLTAGE);
+    initError = setHighVoltage(DEFAULT_HIGH_VOLTAGE, initErrorMessage);
+    if (initError == FAIL)
+        return;
+
 #ifndef VIRTUAL
     sharedMemory_lockLocalLink();
     if (!Feb_Control_CheckSetup()) {
@@ -1563,60 +1566,76 @@ int getADC(enum ADCINDEX ind) {
 #endif
 }
 
-int setHighVoltage(int val) {
+int getHighVoltage(int* retval, char* mess) {
+    if (!master) {
+        LOG(logDEBUG1, ("High Voltage: %d\n", SLAVE_HIGH_VOLTAGE_READ_VAL));
+        *retval = SLAVE_HIGH_VOLTAGE_READ_VAL;
+        return OK;
+    }
+
+    // master
 #ifdef VIRTUAL
-    if (master) {
-        // set
-        if (val != -1) {
-            LOG(logINFO, ("Setting High voltage: %d V\n", val));
-            eiger_theo_highvoltage = val;
-        }
-        return eiger_theo_highvoltage;
-    }
-
-    return SLAVE_HIGH_VOLTAGE_READ_VAL;
+    LOG(logDEBUG1, ("High Voltage: %d\n", eiger_theo_highvoltage));
+    *retval = eiger_theo_highvoltage;
+    return OK;
 #else
-
-    if (master) {
-
-        // set
-        if (val != -1) {
-            eiger_theo_highvoltage = val;
-            sharedMemory_lockLocalLink();
-            int ret = Feb_Control_SetHighVoltage(val);
-            sharedMemory_unlockLocalLink();
-            if (!ret) // could not set
-                return -2;
-            else if (ret == -1) // outside range
-                return -1;
-        }
-
-        // get
-        sharedMemory_lockLocalLink();
-        if (!Feb_Control_GetHighVoltage(&eiger_highvoltage)) {
-            LOG(logERROR, ("Could not read high voltage\n"));
-            sharedMemory_unlockLocalLink();
-            return -3;
-        }
-        // need to read the file twice to get the proper value
-        if (!Feb_Control_GetHighVoltage(&eiger_highvoltage)) {
-            LOG(logERROR, ("Could not read high voltage\n"));
-            sharedMemory_unlockLocalLink();
-            return -3;
-        }
+    // get
+    sharedMemory_lockLocalLink();
+    if (!Feb_Control_GetHighVoltage(&eiger_highvoltage)) {
+        LOG(logERROR, ("Could not read high voltage\n"));
         sharedMemory_unlockLocalLink();
+        strcpy(mess, "Getting high voltage failed. Serial/i2c communication failed.\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    // need to read the file twice to get the proper value
+    if (!Feb_Control_GetHighVoltage(&eiger_highvoltage)) {
+        LOG(logERROR, ("Could not read high voltage\n"));
+        sharedMemory_unlockLocalLink();
+        strcpy(mess, "Getting high voltage failed. Serial/i2c communication failed.\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    sharedMemory_unlockLocalLink();
 
-        // tolerance of 5
-        if (abs(eiger_theo_highvoltage - eiger_highvoltage) >
-            HIGH_VOLTAGE_TOLERANCE) {
-            LOG(logINFO,
-                ("High voltage still ramping: %d\n", eiger_highvoltage));
-            return eiger_highvoltage;
-        }
-        return eiger_theo_highvoltage;
+    // tolerance of 5
+    if (abs(eiger_theo_highvoltage - eiger_highvoltage) >
+        HIGH_VOLTAGE_TOLERANCE) {
+        LOG(logINFO,
+            ("High voltage still ramping: %d\n", eiger_highvoltage));
+        *retval = eiger_highvoltage;
+        LOG(logDEBUG1, ("High Voltage: %d\n", eiger_highvoltage));
+        return OK;
+    }
+    *retval = eiger_theo_highvoltage;
+    LOG(logDEBUG1, ("High Voltage: %d\n", eiger_theo_highvoltage));
+    return OK;
+#endif
+
+}
+
+int setHighVoltage(int val, char* mess) {
+#ifdef VIRTUAL
+    LOG(logINFO, ("Setting High voltage: %d V\n", val));
+    eiger_theo_highvoltage = val;
+#else
+    eiger_theo_highvoltage = val;
+    sharedMemory_lockLocalLink();
+    int ret = Feb_Control_SetHighVoltage(val);
+    sharedMemory_unlockLocalLink();
+
+    if (ret == 0) {
+        strcpy(mess, "Setting high voltage failed. Serial/i2c communication failed.\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    if (ret == -1) {
+        sprintf(mess, "Setting high voltage failed. Invalid input %d. The range is from 0 to 200 V.\n", val);
+        LOG(logERROR, (mess));
+        return FAIL;
     }
 
-    return SLAVE_HIGH_VOLTAGE_READ_VAL;
+    // cannot validate using get
 #endif
 }
 

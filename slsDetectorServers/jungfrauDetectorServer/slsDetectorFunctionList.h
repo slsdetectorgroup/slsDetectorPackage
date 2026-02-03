@@ -126,8 +126,8 @@ void setDAC(enum DACINDEX ind, int val, int mV);
 int getDAC(enum DACINDEX ind, int mV);
 int getMaxDacSteps();
 int getADC(enum ADCINDEX ind);
-int setHighVoltage(int val);
-int getHighVoltage(int *retval);
+int setHighVoltage(int val, char* mess);
+int getHighVoltage(int *retval, char* mess);
 
 // parameters - timing, extsig
 int setMaster(enum MASTERINDEX m);

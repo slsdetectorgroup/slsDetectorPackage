@@ -479,10 +479,8 @@ void setupDetector() {
     setTimingSource(DEFAULT_TIMING_SOURCE);
 
     // Default values
-    initError = setHighVoltage(DEFAULT_HIGH_VOLTAGE);
+    initError = setHighVoltage(DEFAULT_HIGH_VOLTAGE, initErrorMessage);
     if (initError == FAIL) {
-        sprintf(initErrorMessage, "Could not set high voltage to %d\n",
-                DEFAULT_HIGH_VOLTAGE);
         return;
     }
 
@@ -1575,9 +1573,12 @@ int getADC(enum ADCINDEX ind, int *value) {
     return OK;
 }
 
-int setHighVoltage(int val) {
-    if (val > HV_SOFT_MAX_VOLTAGE) {
-        LOG(logERROR, ("Invalid high voltage: %d V\n", val));
+int setHighVoltage(int val, char* mess) {
+    // validate input value
+    if (val < 0 || val > HV_SOFT_MAX_VOLTAGE) {
+        sprintf(mess, "Invalid Voltage. Valid range (0 - %d)\n",
+                    HV_SOFT_MAX_VOLTAGE);
+        LOG(logERROR, (mess)); 
         return FAIL;
     }
 
@@ -1589,7 +1590,7 @@ int setHighVoltage(int val) {
     // at startup (initCheck not done: to not wait 10s assuming hv = 0
     // otherwise as below, always check current hv to wait 10s if powering off
     if (initCheckDone) {
-        if (getHighVoltage(&prevHighVoltage) == FAIL) {
+        if (getHighVoltage(&prevHighVoltage, mess) == FAIL) {
             LOG(logERROR, ("Could not get current high voltage to determine if "
                            "%d s wait is required\n",
                            waitTime));
@@ -1597,21 +1598,36 @@ int setHighVoltage(int val) {
         }
     }
 
-    int ret = DAC6571_Set(val);
+    if (DAC6571_Set(val, mess) == FAIL) 
+        return FAIL;
+
 
     // only when powering off (from non zero value), wait 10s
-    if (ret == OK) {
-        if (prevHighVoltage > 0 && val == 0) {
-            LOG(logINFO,
-                ("\tSwitching off high voltage requires %d s...\n", waitTime));
-            sleep(waitTime);
-            LOG(logINFO, ("\tAssuming high voltage switched off\n"));
-        }
+    if (prevHighVoltage > 0 && val == 0) {
+        LOG(logINFO,
+            ("\tSwitching off high voltage requires %d s...\n", waitTime));
+        sleep(waitTime);
+        LOG(logINFO, ("\tAssuming high voltage switched off\n"));
     }
-    return ret;
+
+    // validate get
+    int retval = 0;
+    if (getHighVoltage(&retval, mess) == FAIL)
+        return FAIL;
+    if (val != retval) {
+        sprintf(mess, "Could not set high voltage. Set %d, but got %d\n", val, retval);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+
+    return OK;
 }
 
-int getHighVoltage(int *retval) { return DAC6571_Get(retval); }
+int getHighVoltage(int *retval, char* mess) { 
+    int ret = DAC6571_Get(retval, mess); 
+    LOG(logDEBUG1, ("High Voltage: %d\n", retval));
+    return ret;
+}
 
 /* parameters - timing */
 

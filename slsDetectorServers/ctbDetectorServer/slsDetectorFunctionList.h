@@ -123,6 +123,8 @@ enum detectorSettings getSettings();
 
 // parameters - threshold
 // parameters - dac, adc, hv
+int setADCVpp(int val, int mV, char* mess);
+int getADCVpp(int mV, int* retval, char* mess);
 
 void setDAC(enum DACINDEX ind, int val, int mV);
 int getDAC(enum DACINDEX ind, int mV);
@@ -131,23 +133,24 @@ int dacToVoltage(int dac);
 int checkVLimitCompliant(int mV);
 int checkVLimitDacCompliant(int dac);
 int getVLimit();
-void setVLimit(int l);
+int setVLimit(int val, char* mess);
 
 int isVchipValid(int val);
-int getVchip();
-void setVchip(int val);
+int getVchip(int* retval, char* mess);
+int setVchip(int val, char* mess);
 int getVChipToSet(enum DACINDEX ind, int val);
 int getDACIndexFromADCIndex(enum ADCINDEX ind);
 int getADCIndexFromDACIndex(enum DACINDEX ind);
 int isPowerValid(enum DACINDEX ind, int val);
-int getPower();
-void setPower(enum DACINDEX ind, int val);
+int getPower(int* retval, char* mess);
+int setPower(enum DACINDEX ind, int val, char* mess);
 void powerOff();
 
 int getADC(enum ADCINDEX ind);
 int getSlowADC(int ichan);
 int getSlowADCTemperature();
-int setHighVoltage(int val);
+int setHighVoltage(int val, char* mess);
+int getHighVoltage(int *retval, char* mess);
 
 // parameters - timing, extsig
 

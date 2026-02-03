@@ -493,10 +493,8 @@ void setupDetector() {
     cleanFifos();
 
     // defaults
-    initError = setHighVoltage(DEFAULT_HIGH_VOLTAGE);
+    initError = setHighVoltage(DEFAULT_HIGH_VOLTAGE, initErrorMessage);
     if (initError == FAIL) {
-        sprintf(initErrorMessage, "Could not set high voltage to %d\n",
-                DEFAULT_HIGH_VOLTAGE);
         return;
     }
 
@@ -1692,17 +1690,38 @@ int getADC(enum ADCINDEX ind, int *value) {
     return OK;
 }
 
-int setHighVoltage(int val) {
-    // limit values
-    if (val > HV_SOFT_MAX_VOLTAGE) {
-        val = HV_SOFT_MAX_VOLTAGE;
+int setHighVoltage(int val, char* mess) {
+    // validate input value
+    if (val < 0 || val > HV_SOFT_MAX_VOLTAGE) {
+        sprintf(mess, "Invalid Voltage. Valid range (0 - %d)\n",
+                    HV_SOFT_MAX_VOLTAGE);
+        LOG(logERROR, (mess));        
+        return FAIL;
     }
 
     LOG(logINFO, ("Setting High voltage: %d V\n", val));
-    return DAC6571_Set(val);
+    if (DAC6571_Set(val, mess) == FAIL) {
+        return FAIL;
+    }
+
+    // validate get
+    int retval = 0;
+    if (getHighVoltage(&retval, mess) == FAIL)
+        return FAIL;
+    if (val != retval) {
+        sprintf(mess, "Could not set high voltage. Set %d, but got %d\n", val, retval);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+
+    return OK;
 }
 
-int getHighVoltage(int *retval) { return DAC6571_Get(retval); }
+int getHighVoltage(int *retval, char* mess) { 
+    int ret = DAC6571_Get(retval, mess); 
+    LOG(logDEBUG1, ("High Voltage: %d\n", retval));
+    return ret;
+}
 
 /* parameters - timing */
 

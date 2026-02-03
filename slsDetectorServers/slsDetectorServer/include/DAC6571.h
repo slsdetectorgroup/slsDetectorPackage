@@ -5,5 +5,5 @@
 #include <inttypes.h>
 
 void DAC6571_SetDefines(int hardMaxV, char *driverfname);
-int DAC6571_Set(int val);
-int DAC6571_Get(int *retval);
+int DAC6571_Set(int val, char* mess);
+int DAC6571_Get(int *retval, char* mess);

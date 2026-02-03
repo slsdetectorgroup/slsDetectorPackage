@@ -488,7 +488,9 @@ void setupDetector() {
                        SPI_HV_SRL_DGTL_OTPT_MSK, SPI_HV_SRL_DGTL_OTPT_OFST,
                        HIGHVOLTAGE_MIN, HIGHVOLTAGE_MAX);
     MAX1932_Disable();
-    setHighVoltage(DEFAULT_HIGH_VOLTAGE);
+    initError = setHighVoltage(DEFAULT_HIGH_VOLTAGE, initErrorMessage);
+    if (initError == FAIL)
+        return;
 
     // adc
     AD9257_SetDefines(ADC_SPI_REG, ADC_SPI_SRL_CS_OTPT_MSK,
@@ -1398,13 +1400,20 @@ int getADC(enum ADCINDEX ind) {
     return retval;
 }
 
-int setHighVoltage(int val) {
-    // setting hv
-    if (val >= 0) {
-        LOG(logINFO, ("Setting High voltage: %d V", val));
-        MAX1932_Set(&val);
-        highvoltage = val;
+int setHighVoltage(int val, char* mess) {
+    if (val < 0) {
+        sprintf(mess, "Could not set high voltage. Invalid value:%d\n", val);
+        LOG(logERROR, (mess));
+        return FAIL;
     }
+    LOG(logINFO, ("Setting High voltage: %d V", val));
+    MAX1932_Set(&val);
+    highvoltage = val;
+    return OK;
+}
+
+int getHighVoltage(int *retval, char* mess) {
+    LOG(logDEBUG1, ("High Voltage: %d\n", retval));
     return highvoltage;
 }
 

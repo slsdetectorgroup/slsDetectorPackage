@@ -140,7 +140,7 @@ class DataProcessorTestFixture {
 };
 
 TEST_CASE_METHOD(DataProcessorTestFixture, "Remove Trailing Bits",
-                 "[.dataprocessor][.bitoffset]") {
+                 "[dataprocessor][bitoffset]") {
 
     const size_t num_random_offset_bytes = 3;
     set_random_offset_bytes(num_random_offset_bytes);
@@ -170,7 +170,7 @@ TEST_CASE_METHOD(DataProcessorTestFixture, "Remove Trailing Bits",
 // parametric test tested with num_samples = 5, num_samples = 10, num_samples =
 // 8
 TEST_CASE_METHOD(DataProcessorTestFixture, "Reorder all",
-                 "[.dataprocessor][.reorder]") {
+                 "[dataprocessor][reorder]") {
     // parameters: num_samples, expected_num_digital_bytes,
     // expected_digital_part_for_each_bit
     auto parameters = GENERATE(
@@ -219,7 +219,7 @@ TEST_CASE_METHOD(DataProcessorTestFixture, "Reorder all",
 
 TEST_CASE_METHOD(DataProcessorTestFixture,
                  "Reorder all and remove trailing bits",
-                 "[.dataprocessor][.reorder]") {
+                 "[dataprocessor][reorder]") {
 
     // set number of samples for test fixture -> create data
     const size_t num_random_offset_bytes = 3;
@@ -261,7 +261,7 @@ TEST_CASE_METHOD(DataProcessorTestFixture,
 }
 
 TEST_CASE_METHOD(DataProcessorTestFixture, "Arrange bitlist with reorder false",
-                 "[.dataprocessor][.retrievebitlist]") {
+                 "[dataprocessor][retrievebitlist]") {
     // parameters: num_samples, bitlist, expected_num_digital_bytes,
     // expected_digital_part
     auto parameters = GENERATE(
@@ -315,7 +315,7 @@ TEST_CASE_METHOD(DataProcessorTestFixture, "Arrange bitlist with reorder false",
 }
 
 TEST_CASE_METHOD(DataProcessorTestFixture, "Arrange bitlist with reorder true",
-                 "[.dataprocessor][.retrievebitlist]") {
+                 "[dataprocessor][retrievebitlist]") {
     // parameters: num_samples, bitlist, expected_num_digital_bytes,
     // expected_digital_part
     auto parameters = GENERATE(
@@ -369,7 +369,7 @@ TEST_CASE_METHOD(DataProcessorTestFixture, "Arrange bitlist with reorder true",
 
 TEST_CASE_METHOD(DataProcessorTestFixture,
                  "Arrange bitlist and remove trailing bits",
-                 "[.dataprocessor][.retrievebitlist]") {
+                 "[dataprocessor][retrievebitlist]") {
 
     size_t num_random_offset_bytes = 3;
     std::vector<int> bitlist{1, 4, 5};

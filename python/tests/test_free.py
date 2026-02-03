@@ -7,6 +7,15 @@ Run this using: pytest -s test_free.py
 
 import pytest, sys
 
+from pathlib import Path
+
+current_dir = Path(__file__).resolve().parents[2]
+
+scripts_dir = current_dir / "tests" / "scripts"
+
+sys.path.append(str(scripts_dir))
+
+
 from slsdet import Detector, Ctb, freeSharedMemory
 from utils_for_test import (
     Log,
@@ -46,7 +55,7 @@ def setup_simulator(det_config):
     cleanup(fp)
 
 
-
+@pytest.mark.detectorintegration
 def test_exptime_after_free_should_raise(setup_simulator):
     Log(LogLevel.INFOBLUE, f'\nRunning test_exptime_after_free_should_raise')
 
@@ -64,14 +73,11 @@ def test_exptime_after_free_should_raise(setup_simulator):
     assert str(exc_info.value) == "Shared memory is invalid or freed. Close resources before access."
 
 
-
-
-
 def free_and_create_shm():
     k = Ctb() # opens existing shm if it exists
     k.hostname = f"localhost:{SERVER_START_PORTNO}" # free and recreate shm, maps to local shm struct
 
-
+@pytest.mark.detectorintegration
 def test_exptime_after_not_passing_var_should_raise(setup_simulator):
     Log(LogLevel.INFOBLUE, f'\nRunning test_exptime_after_not_passing_var_should_raise')
 
@@ -95,7 +101,7 @@ def free_and_create_shm_passing_ctb_var(k):
     k = Ctb() # opens existing shm if it exists (disregards k as its new Ctb only local to this function)
     k.hostname = f"localhost:{SERVER_START_PORTNO}" # free and recreate shm, maps to local shm struct
 
-
+@pytest.mark.detectorintegration
 def test_exptime_after_passing_ctb_var_should_raise(setup_simulator):
     Log(LogLevel.INFOBLUE, f'\nRunning test_exptime_after_passing_ctb_var_should_raise')
 
@@ -118,7 +124,7 @@ def free_and_create_shm_returning_ctb():
     k.hostname = f"localhost:{SERVER_START_PORTNO}" # free and recreate shm, maps to local shm struct
     return k
 
-
+@pytest.mark.detectorintegration
 def test_exptime_after_returning_ctb_should_raise(setup_simulator):
     Log(LogLevel.INFOBLUE, f'\nRunning test_exptime_after_returning_ctb_should_raise')
 
@@ -141,11 +147,7 @@ def test_exptime_after_returning_ctb_should_raise(setup_simulator):
     Log(LogLevel.INFOGREEN, f"✅ Test passed, exception was: {exc_info.value}")
     assert str(exc_info.value) == "Shared memory is invalid or freed. Close resources before access."
 
-
-
-
-
-
+@pytest.mark.detectorintegration
 def test_hostname_twice_acess_old_should_raise(setup_simulator):
     Log(LogLevel.INFOBLUE, f'\nRunning test_hostname_twice_acess_old_should_raise')
 

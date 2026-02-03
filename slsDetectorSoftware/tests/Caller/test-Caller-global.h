@@ -88,8 +88,6 @@ void test_acquire_binary_file_size(const testFileInfo &file_info,
                                    uint64_t num_frames_to_acquire,
                                    uint64_t expected_image_size);
 
-void test_frames_caught(const Detector &det, int num_frames_to_acquire);
-
 void test_acquire_with_receiver(Caller &caller, const Detector &det);
 
 void create_files_for_acquire(

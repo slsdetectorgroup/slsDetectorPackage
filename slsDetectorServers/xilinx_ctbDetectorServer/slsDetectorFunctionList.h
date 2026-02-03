@@ -129,7 +129,7 @@ int getVLimit();
 int setVLimit(int val, char* mess);
 int getBitOffsetFromDACIndex(enum DACINDEX ind);
 int isPowerValid(enum DACINDEX ind, int val);
-int getPower(int* retval, char* mess);
+int getPower(enum DACINDEX ind, int* retval, char* mess);
 int setPower(enum DACINDEX ind, int val, char* mess);
 int getADC(enum ADCINDEX ind, int *value);
 int getSlowADC(int ichan, int *retval);

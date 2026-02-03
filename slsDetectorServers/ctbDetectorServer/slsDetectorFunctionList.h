@@ -126,8 +126,8 @@ enum detectorSettings getSettings();
 int setADCVpp(int val, int mV, char* mess);
 int getADCVpp(int mV, int* retval, char* mess);
 
-void setDAC(enum DACINDEX ind, int val, int mV);
-int getDAC(enum DACINDEX ind, int mV);
+int setDAC(enum DACINDEX ind, int val, int mV, char* mess);
+int getDAC(enum DACINDEX ind, int mV, int* retval, char* mess);
 int getMaxDacSteps();
 int dacToVoltage(int dac);
 int checkVLimitCompliant(int mV);
@@ -138,11 +138,17 @@ int setVLimit(int val, char* mess);
 int isVchipValid(int val);
 int getVchip(int* retval, char* mess);
 int setVchip(int val, char* mess);
-int getVChipToSet(enum DACINDEX ind, int val);
+int getVChipToSet(enum DACINDEX ind, int val, int* vchip, char* mess);
 int getDACIndexFromADCIndex(enum ADCINDEX ind);
 int getADCIndexFromDACIndex(enum DACINDEX ind);
-int isPowerValid(enum DACINDEX ind, int val);
-int getPower(int* retval, char* mess);
+
+int getPowerRailMask(enum PWRINDEX ind, uint32_t* mask, char* mess);
+int EnablePowerRail(enum PWRINDEX ind, char* mess);
+int DisablePowerRail(enum PWRINDEX ind, char* mess);
+int getPowerRail(enum PWRINDEX ind, int* retval, char* mess);
+int isPowerValid(enum PWRINDEX ind, int val, char* mess);
+int getPowerIndex(enum DACINDEX ind, enum PWRINDEX* pwrIndex, char* mess);
+int getPower(enum DACINDEX ind, int* retval, char* mess);
 int setPower(enum DACINDEX ind, int val, char* mess);
 void powerOff();
 

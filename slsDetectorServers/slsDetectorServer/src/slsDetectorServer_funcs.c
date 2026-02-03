@@ -1154,6 +1154,7 @@ enum DACINDEX getDACIndex(enum dacIndex ind) {
 int validateAndSetDac(enum dacIndex ind, int val, int mV) {
 
     int retval = -1;
+    enum DACINDEX serverDacIndex = 0;
 
     switch (ind) {
 
@@ -1226,6 +1227,7 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
     case V_POWER_C:
     case V_POWER_D:
     case V_POWER_IO:
+        serverDacIndex = getDACIndex(ind);
         if (val != GET_VAL) {
             if (!mV) {
                 ret = FAIL;
@@ -1233,40 +1235,16 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
                 LOG(logERROR, (mess));
                 return retval;
             }
-            ret = setPower(val, mess);
+            ret = setPower(serverDacIndex, val, mess);
         } else
-            ret = getPower(&retval, mess);
+            ret = getPower(serverDacIndex, &retval, mess);
 
 #endif
 
-    int retval = -1;
-    enum DACINDEX serverDacIndex = 0;
-    // valid enums
-    switch (ind) {
-    case HIGH_VOLTAGE:
-#ifdef EIGERD
-    case IO_DELAY:
-#elif CHIPTESTBOARDD
-    case ADC_VPP:
-    case V_LIMIT:
-#elif XILINX_CHIPTESTBOARDD
-    case V_LIMIT:
-#endif
-        break;
-    default:
-        serverDacIndex = getDACIndex(ind);
-        break;
-    }
-    if (ret == FAIL) {
-        return retval;
-    }
 
 
 
-#ifdef XILINX_CHIPTESTBOARDD
-        ret = SetDacEnum(ind, val, mV, &retval, mess);
-        return retval;
-#endif
+
 
     switch (ind) {
 

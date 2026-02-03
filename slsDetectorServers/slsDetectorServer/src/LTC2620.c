@@ -263,7 +263,9 @@ int LTC2620_SetDACValue(int dacnum, int val, int mV, int *dacval) {
     if ((*dacval >= 0) || (*dacval == LTC2620_PWR_DOWN_VAL)) {
         LOG(logINFO,
             ("Setting DAC %d: %d dac (%d mV)\n", dacnum, *dacval, dacmV));
+#ifndef VIRTUAL
         LTC2620_SetDAC(dacnum, *dacval);
+#endif
     }
     return OK;
 }

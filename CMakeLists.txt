@@ -40,8 +40,6 @@ include(FetchContent)
 option(SLS_FETCH_ZMQ_FROM_GITHUB "Fetch zmq from github" OFF)
 option(SLS_FETCH_PYBIND11_FROM_GITHUB "Fetch pybind11 from github" OFF)
 
-
-
 # Allow FetchContent_Populate to be called with a single argument
 # otherwise deprecated warning is issued
 # Note: From cmake 3.28 we can pass EXCLUDE_FROM_ALL to FetchContent_Declare
@@ -200,7 +198,6 @@ option(SLS_USE_RECEIVER_BINARIES "Receiver binaries" ON)
 option(SLS_USE_GUI "GUI" OFF)
 option(SLS_USE_SIMULATOR "Simulator" OFF)
 option(SLS_USE_TESTS "TESTS" OFF)
-option(SLS_USE_INTEGRATION_TESTS "Integration Tests" OFF)
 option(SLS_USE_SANITIZER "Sanitizers for debugging" OFF)
 option(SLS_USE_PYTHON "Python bindings" OFF)
 option(SLS_INSTALL_PYTHONEXT "Install the python extension in the install tree under CMAKE_INSTALL_PREFIX/python/" OFF)
@@ -291,6 +288,11 @@ if(NOT TARGET slsProjectOptions)
     add_library(slsProjectOptions INTERFACE)
    target_compile_features(slsProjectOptions INTERFACE cxx_std_17)
 endif()
+
+set(LOG_MAX_REPORTING_LEVEL sls::logINFO CACHE STRING "set logging level")
+target_compile_definitions(slsProjectOptions
+    INTERFACE LOG_MAX_REPORTING_LEVEL=${LOG_MAX_REPORTING_LEVEL}
+)
 
 if (NOT TARGET slsProjectWarnings)
     add_library(slsProjectWarnings INTERFACE)
@@ -399,10 +401,6 @@ endif (SLS_USE_GUI)
 if (SLS_USE_SIMULATOR)
     add_subdirectory(slsDetectorServers)
 endif (SLS_USE_SIMULATOR)
-
-if (SLS_USE_INTEGRATION_TESTS)
-    add_subdirectory(integrationTests)
-endif (SLS_USE_INTEGRATION_TESTS)
 
 if (SLS_USE_PYTHON)
     find_package (Python 3.8 COMPONENTS Interpreter Development.Module REQUIRED)

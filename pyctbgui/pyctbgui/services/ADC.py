@@ -8,10 +8,8 @@ from PyQt5 import QtWidgets, uic
 import pyqtgraph as pg
 from pyqtgraph import LegendItem
 
-from pyctbgui.utils import decoder
 from pyctbgui.utils.bit_utils import bit_is_set, manipulate_bit
 from pyctbgui.utils.defines import Defines
-import pyctbgui.utils.pixelmap as pm
 from pyctbgui.utils.recordOrApplyPedestal import recordOrApplyPedestal
 
 from slsdet import detectorType
@@ -207,7 +205,7 @@ class AdcTab(QtWidgets.QWidget):
     @recordOrApplyPedestal
     def _processImageData(self, data, aSamples, nADCEnabled):
         analog_array = np.array(np.frombuffer(data, dtype=np.uint16, count=nADCEnabled * aSamples))
-        return decoder.decode(analog_array, pm.moench04_analog())
+        return self.mainWindow.decoder(analog_array)
 
     def getADCEnableReg(self):
         if self.det.type == detectorType.CHIPTESTBOARD:

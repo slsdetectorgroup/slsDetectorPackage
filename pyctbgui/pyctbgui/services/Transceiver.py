@@ -6,11 +6,9 @@ from PyQt5 import QtWidgets, uic
 import pyqtgraph as pg
 from pyqtgraph import LegendItem
 
-from pyctbgui.utils import decoder
 from pyctbgui.utils.defines import Defines
 
 from pyctbgui.utils.bit_utils import bit_is_set, manipulate_bit
-import pyctbgui.utils.pixelmap as pm
 from pyctbgui.utils.recordOrApplyPedestal import recordOrApplyPedestal
 
 
@@ -133,7 +131,12 @@ class TransceiverTab(QtWidgets.QWidget):
                 nbitsPerDBit += (8 - (dSamples % 8))
             transceiverOffset += nDBitEnabled * (nbitsPerDBit // 8)
         trans_array = np.array(np.frombuffer(data, offset=transceiverOffset, dtype=np.uint16))
-        tmp = np.take(trans_array, self.mainWindow.pixel_map)
+        
+        print("shape trans array: ", trans_array.shape)
+        #print("size decoder: ", self.mainWindow.decoder.shape)
+        tmp = self.mainWindow.decoder(trans_array)
+        print("shape tmp: ", tmp.shape)
+
         return tmp
 
     def processImageData(self, data, dSamples):

@@ -932,6 +932,11 @@ TEST_CASE("tsamples", "[.detectorintegration]") {
             caller.call("tsamples", {}, -1, GET, oss);
             REQUIRE(oss.str() == "tsamples 450\n");
         }
+        if (det_type == defs::XILINX_CHIPTESTBOARD) {
+            std::ostringstream oss;
+            caller.call("tsamples", {"10000"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "tsamples 10000\n");
+        }
         for (int i = 0; i != det.size(); ++i) {
             det.setNumberOfTransceiverSamples(prev_val[i], {i});
         }
@@ -1043,6 +1048,12 @@ TEST_CASE("v_abcd", "[.detectorintegration]") {
         if (det_type == defs::CHIPTESTBOARD ||
             det_type == defs::XILINX_CHIPTESTBOARD) {
             auto prev_val = det.getPower(indices[i]);
+            // this is the first command touching power dacs, should not be
+            // -100
+            if (det_type == defs::XILINX_CHIPTESTBOARD) {
+                REQUIRE(prev_val.any(-100) == false);
+                REQUIRE(prev_val.any(-1) == false);
+            }
             {
                 std::ostringstream oss;
                 caller.call(cmds[i], {"0"}, -1, PUT, oss);

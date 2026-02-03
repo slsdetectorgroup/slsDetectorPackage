@@ -131,7 +131,7 @@
 
 /* REG no_Samples_X_Reg */
 #define NO_SAMPLES_X_REG 0xa00cUL
-#define NO_SAMPLES_X_MSK 0x1fffUL
+#define NO_SAMPLES_X_MSK 0x7FFFFFFFUL
 #define NO_SAMPLES_X_OFST 0
 
 /* REG count_Frames_From_Reg_1 */

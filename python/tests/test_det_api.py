@@ -378,3 +378,19 @@ def test_include_file(session_simulator, request):
     assert d.fwrite == 0
 
     Log(LogLevel.INFOGREEN, f"✅ Test passed. Command: include")
+
+
+@pytest.mark.detectorintegration
+def test_patternstart(session_simulator, request):
+    """ Test using patternstart for ctb, xilinx_ctb and mythen3."""
+    det_type, num_interfaces, num_mods, d = session_simulator
+    assert d is not None
+
+    if det_type in ['ctb', 'xilinx_ctb', 'mythen3']:
+        d.patternstart()
+    else:
+        with pytest.raises(Exception) as exc_info:
+            d.patternstart()
+        assert "not implemented" in str(exc_info.value)
+
+    Log(LogLevel.INFOGREEN, f"✅ {request.node.name} passed")

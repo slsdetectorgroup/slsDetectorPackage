@@ -5,7 +5,7 @@ This file is used to start up simulators, receivers and run all the tests on the
 
 It can be used to run all catch tests with tag [.detectorintegration]. 
 
-Pass --tests <testname> to run specific tests only or --tesst <testtag> to run all tests with that specific tag.
+Pass --tests <testname> to run specific tests only or --tests <testtag> to run all tests with that specific tag.
 
 Pass --servers <server1> <server2> ... to run tests only for specific detector servers.
 '''
@@ -24,8 +24,7 @@ from utils_for_test import (
     cleanup,
     runProcess,
     startReceiver,
-    runProcessWithLogFile,
-    runProcess, 
+    runProcess,
     startDetectorVirtualServer,
     loadConfig,
     loadBasicSettings,
@@ -43,72 +42,50 @@ def startGeneralTests(fp):
     cmd = [str(build_dir / 'tests'), '--abort', '-s']
     try:
         cleanup(fp)
-        runProcessWithLogFile('General Tests', cmd, fp, fname)
+        runProcess('General Tests', cmd, fp, fname)
     except Exception as e:
         raise RuntimeException(f'General tests failed.') from e
 
-def startTestsForAll(args, fp, advanced_test_settings=None):
+def startTestsForAll(args, fp):
 
     fname_template = LOG_PREFIX_FNAME + "_{}_{}.txt"
 
     
     test_filter = args.tests
-    if args.disable_xilinx_ctb:
-        test_filter += " ~[disable_xilinx_ctb]"
-    if args.disable_jungfrau: 
-        test_filter += " ~[disable_jungfrau]"
-    if args.disable_ctb: 
-        test_filter += " ~[disable_ctb]"
-    if args.disable_moench: 
-        test_filter += " ~[disable_moench]"
-    if args.disable_mythen3: 
-        test_filter += " ~[disable_mythen3]"
-    if args.disable_gotthard2: 
-        test_filter += " ~[disable_gotthard2]"
-    if args.disable_eiger: 
-        test_filter += " ~[disable_eiger]"
-
     cmd = [str(build_dir / 'tests'), '--abort', test_filter, '-s'] 
 
     num_mods = args.num_mods 
 
     for server in args.servers:
-        for ninterfaces in [1,2]: # always test both
-            if ninterfaces == 2 and server != 'jungfrau' and server != 'moench':
+        for curMods in range(1, num_mods + 1):
+            if curMods == 2 and server in ['ctb', 'xilinx_ctb']:
                 continue
+            for ninterfaces in [1,2]: # always test both
+                if ninterfaces == 2 and server != 'jungfrau' and server != 'moench':
+                    continue
 
-            if server == "eiger": 
-                num_mods = 2*args.num_mods # top and bottom half module 
-            try:
-                fname = fname_template.format(args.tests, server) if not args.no_log_file else None
+                if server == "eiger": 
+                    curMods *= 2 # top and bottom half module 
+                try:
+                    fname = fname_template.format(args.tests, server) if not args.no_log_file else None
 
-                Log(LogLevel.INFOBLUE, f'Starting {args.tests} Tests for {server}')
-                cleanup(fp)
-                
-                print("no log file: ", args.no_log_file)
-                startDetectorVirtualServer(name=server, num_mods=num_mods, fp=fp, no_log_file=args.no_log_file)
-                startReceiver(args.num_mods, fp)
-                d = loadConfig(name=server, rx_hostname=args.rx_hostname, settingsdir=args.settingspath, log_file_fp=fp, num_mods=args.num_mods, num_interfaces=ninterfaces)
-                loadBasicSettings(name=server, d=d, fp=fp)
-                if advanced_test_settings is not None:
-                    advanced_test_settings(name=server, detector=d, log_file_fp=fp) # special settings for specific tests 
-        
-                if args.no_log_file:
-                    runProcess('Tests (' + args.tests + ') for ' + server, cmd, fp)
-                else:
-                    runProcessWithLogFile('Tests (' + args.tests + ') for ' + server, cmd, fp, fname)
-            except Exception as e:
-                raise RuntimeException(f'Tests (' + args.tests + ') failed for ' + server + '.') from e
+                    Log(LogLevel.INFOBLUE, f'Starting {args.tests} Tests for {server}, {ninterfaces} interfaces, {curMods} modules', fp, True)
+                    cleanup(fp)
+                    startDetectorVirtualServer(name=server, num_mods=curMods, fp=fp, no_log_file=args.no_log_file, quiet_mode=args.quiet)
+                    startReceiver(curMods, fp, args.no_log_file, args.quiet)
+                    d = loadConfig(name=server, rx_hostname=args.rx_hostname, settingsdir=args.settingspath, log_file_fp=fp, num_mods=curMods, num_interfaces=ninterfaces)
+                    loadBasicSettings(name=server, d=d, fp=fp)
+                    runProcess('Tests (' + args.tests + ') for ' + server, cmd, fp, fname, args.quiet)
+                except Exception as e:
+                    raise RuntimeException(f'Tests (' + args.tests + ') failed for ' + server + '.') from e
 
     Log(LogLevel.INFOGREEN, 'Passed all tests for all detectors \n' + str(args.servers))
 
 
 if __name__ == '__main__':
     args = ParseArguments(description='Automated tests with the virtual detector servers', default_num_mods=2, specific_tests=True, general_tests_option=True)
-    if args.num_mods > 2:
-        raise RuntimeException(f'Cannot support multiple modules at the moment (except Eiger).')
-    
-    with optional_file(MAIN_LOG_FNAME if not args.no_log_file else None, 'w') as fp:  
+
+    with optional_file(MAIN_LOG_FNAME if not args.no_log_file else None, 'w', args.quiet) as fp:  
         try:
             if args.general_tests:
                 startGeneralTests(fp)

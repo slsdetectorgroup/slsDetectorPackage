@@ -125,12 +125,6 @@ void test_acquire_binary_file_size(const testFileInfo &file_info,
     REQUIRE(actual_file_size == expected_file_size);
 }
 
-void test_frames_caught(const Detector &det, int num_frames_to_acquire) {
-    auto frames_caught = det.getFramesCaught().tsquash(
-        "Inconsistent number of frames caught")[0];
-    REQUIRE(frames_caught == num_frames_to_acquire);
-}
-
 void test_acquire_with_receiver(Caller &caller, const Detector &det) {
     REQUIRE_NOTHROW(caller.call("rx_start", {}, -1, PUT));
     REQUIRE_NOTHROW(caller.call("start", {}, -1, PUT));
@@ -151,7 +145,7 @@ void test_acquire_with_receiver(Caller &caller, const Detector &det) {
 
 void create_files_for_acquire(
     Detector &det, Caller &caller, int64_t num_frames,
-    const std::optional<testCtbAcquireInfo> &test_info, bool check_num_frames) {
+    const std::optional<testCtbAcquireInfo> &test_info) {
 
     // save previous state
     testFileInfo prev_file_info = get_file_state(det);
@@ -173,10 +167,9 @@ void create_files_for_acquire(
     // acquire and get num frames caught
     REQUIRE_NOTHROW(test_acquire_with_receiver(caller, det));
     // TODO: maybe there should not be REQUIRE statements in void function at
-    // all
-    if (check_num_frames) {
-        auto frames_caught = det.getFramesCaught().tsquash(
-            "Inconsistent number of frames caught")[0];
+    // all, but traceback should be handled
+    {
+        auto frames_caught = det.getFramesCaught()[0][0];
         REQUIRE(frames_caught == num_frames);
     }
 
@@ -188,9 +181,8 @@ void create_files_for_acquire(
 
     // acquire and get num frames caught
     test_acquire_with_receiver(caller, det);
-    if (check_num_frames) {
-        auto frames_caught = det.getFramesCaught().tsquash(
-            "Inconsistent number of frames caught")[0];
+    {
+        auto frames_caught = det.getFramesCaught()[0][0];
         REQUIRE(frames_caught == num_frames);
     }
 #endif

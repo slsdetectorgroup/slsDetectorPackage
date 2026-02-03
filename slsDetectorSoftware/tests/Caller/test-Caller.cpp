@@ -59,7 +59,11 @@ void test_include_file(const std::string &cmd) {
         det.getFileWrite().tsquash("File write enable has to be same to test");
 
     {
-        system("echo -e 'frames 2\nfwrite 1' > /tmp/tempsetup.det ");
+        std::ofstream f("/tmp/tempsetup.det", std::ios::trunc);
+        f << "frames 2\n";
+        f << "fwrite 1\n";
+    }
+    {
         std::ostringstream oss;
         caller.call(cmd, {"/tmp/tempsetup.det"}, -1, PUT, oss);
         REQUIRE(oss.str() == cmd + " /tmp/tempsetup.det\n");
@@ -69,7 +73,11 @@ void test_include_file(const std::string &cmd) {
                 1);
     }
     {
-        system("echo -e 'frames 3\nfwrite 0' > /tmp/tempsetup.det ");
+        std::ofstream f("/tmp/tempsetup.det", std::ios::trunc);
+        f << "frames 3\n";
+        f << "fwrite 0\n";
+    }
+    {
         std::ostringstream oss;
         caller.call(cmd, {"/tmp/tempsetup.det"}, -1, PUT, oss);
         REQUIRE(oss.str() == cmd + " /tmp/tempsetup.det\n");
@@ -82,7 +90,9 @@ void test_include_file(const std::string &cmd) {
     det.setFileWrite(prev_fwrite);
 }
 
-TEST_CASE("parameters", "[.detectorintegration]") { test_include_file("parameters"); }
+TEST_CASE("parameters", "[.detectorintegration]") {
+    test_include_file("parameters");
+}
 
 TEST_CASE("include", "[.detectorintegration]") { test_include_file("include"); }
 
@@ -2609,10 +2619,10 @@ TEST_CASE("numinterfaces", "[.detectorintegration]") {
     if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
         auto prev_val = det.getNumberofUDPInterfaces().tsquash(
             "inconsistent numinterfaces to test");
-        UdpDestination prev_udp_dest{};
+        Result<UdpDestination> prev_udp_dest;
         IpAddr prev_src_ip2{};
         if (prev_val == 2 && det_type != defs::EIGER) {
-            prev_udp_dest = det.getDestinationUDPList(0)[0];
+            prev_udp_dest = det.getDestinationUDPList(0);
             prev_src_ip2 = det.getSourceUDPIP2()[0];
         }
         {
@@ -2631,8 +2641,10 @@ TEST_CASE("numinterfaces", "[.detectorintegration]") {
             REQUIRE(oss.str() == "numinterfaces 1\n");
         }
         if (prev_val == 2 && det_type != defs::EIGER) {
-            det.setDestinationUDPList({prev_udp_dest}, 0);
-            det.setSourceUDPIP2({prev_src_ip2}, {0});
+            for (int i = 0; i != det.size(); ++i) {
+                det.setDestinationUDPList({prev_udp_dest[i]}, {i});
+            }
+            det.setSourceUDPIP2({prev_src_ip2});
         }
         det.setNumberofUDPInterfaces(prev_val);
     } else if (det_type == defs::EIGER) {

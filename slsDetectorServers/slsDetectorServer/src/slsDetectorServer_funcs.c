@@ -7,6 +7,9 @@
 #include "sls/sls_detector_funcs.h"
 #include "slsDetectorFunctionList.h"
 
+#include <fcntl.h>
+#include <sys/ioctl.h>
+
 #if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD) ||               \
     defined(MYTHEN3D)
 #include "Pattern.h"

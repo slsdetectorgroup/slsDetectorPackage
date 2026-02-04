@@ -11141,7 +11141,7 @@ int spi_read(int file_des){
         fake_register[i] = (uint8_t)( (i*2) % 256 ); //0,2,4,6,...
     }
 #else
-    int spifd = open("dev/spidev2.0", O_RDWR);
+    int spifd = open("/dev/spidev2.0", O_RDWR);
     LOG(logINFO, ("SPI Read: opened spidev2.0 with fd=%d\n", spifd));
     //TODO! check spifd for errors
 #endif

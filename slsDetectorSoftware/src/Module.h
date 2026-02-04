@@ -610,6 +610,8 @@ class Module : public virtual slsDetectorDefs {
     std::vector<uint8_t> readSpi(int chip_id, int register_id,
                                                int n_bytes) const;
 
+    void writeSpi(int chip_id, int register_id, const std::vector<uint8_t> &data);
+
   private:
     std::string getReceiverLongVersion() const;
 

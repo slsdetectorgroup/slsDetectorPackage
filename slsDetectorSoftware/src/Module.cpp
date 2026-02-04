@@ -4096,8 +4096,26 @@ std::vector<uint8_t> Module::readSpi(int chip_id, int register_id,
         return data;
         // return {1,2,3};
     }
+}
 
+void Module::writeSpi(int chip_id, int register_id,
+                      const std::vector<uint8_t> &data){
+    LOG(logINFO) << "Writing to SPI chip_id: " << chip_id << ", register_id: " << register_id
+                   << ", data: " << ToString(data);
+    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    client.Send(F_SPI_WRITE);
+    client.setFnum(F_SPI_WRITE);
+    client.Send(chip_id);
+    client.Send(register_id);
+    client.Send(static_cast<int>(data.size()));
+    client.Send(data.data(), data.size());
 
+    if (client.Receive<int>() == FAIL) {
+        std::ostringstream os;
+        os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
+           << " returned error: " << client.readErrorMessage();
+        throw DetectorError(os.str());
+    }
+}
 
-                                               }
 } // namespace sls

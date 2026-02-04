@@ -2961,6 +2961,11 @@ Result<std::vector<uint8_t>> Detector::readSpi(int chip_id, int register_id,
                            n_bytes);
 }
 
+void Detector::writeSpi(int chip_id, int register_id,
+                                        const std::vector<uint8_t> &data, Positions pos){
+    pimpl->Parallel(&Module::writeSpi, pos, chip_id, register_id, data);
+                                        }
+
 
 
 

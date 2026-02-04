@@ -11238,9 +11238,55 @@ int spi_read(int file_des){
 int spi_write(int file_des){
 #if !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
-#else
-    return 0;
-
+    return FAIL;
 #endif
-return 0;
+    int chip_id = 0;
+    int register_id = 0;
+    int n_bytes = 0;
+    if (receiveData(file_des, &chip_id, sizeof(chip_id), INT32) < 0)
+        return printSocketReadError();
+    if (receiveData(file_des, &register_id, sizeof(register_id), INT32) < 0)
+        return printSocketReadError();
+    if (receiveData(file_des, &n_bytes, sizeof(n_bytes), INT32) < 0)
+        return printSocketReadError();
+
+    LOG(logINFO, ("SPI Write Requested: chip_id=%d, register_id=%d, n_bytes=%d\n",
+                    chip_id, register_id, n_bytes));
+    
+    uint8_t *data = (uint8_t*)malloc(n_bytes);
+    if (receiveData(file_des, data, n_bytes, OTHER) < 0)
+        return printSocketReadError();
+    
+    unsigned char* local_tx = malloc(n_bytes+1);
+	unsigned char* local_rx = malloc(n_bytes+1);
+
+    struct spi_ioc_transfer send_cmd[1];
+    memset(send_cmd, 0, sizeof(send_cmd));
+    send_cmd[0].len = n_bytes+1;
+	send_cmd[0].tx_buf = (unsigned long) local_tx;
+	send_cmd[0].rx_buf = (unsigned long) local_rx;
+
+    // 0 - Normal operation, 1 - CSn remains zero after operation
+	send_cmd[0].cs_change = 0; 
+    local_tx[0] = ((chip_id & 0xF) << 4) | (register_id & 0xF);
+	for (int i=0; i < n_bytes; i++)
+		local_tx[i+1] = data[i];
+
+#ifdef VIRTUAL
+
+#else
+    int spifd = open("/dev/spidev2.0", O_RDWR);
+    LOG(logINFO, ("SPI Read: opened spidev2.0 with fd=%d\n", spifd));
+    //TODO! check spifd for errors
+    ioctl(spifd, SPI_IOC_MESSAGE(1), &send_cmd);
+    close(spifd);
+#endif
+
+    free(data);
+    free(local_tx);
+    free(local_rx);
+
+    ret = OK;
+    LOG(logDEBUG1, ("SPI Write Complete\n"));
+    return Server_SendResult(file_des, INT32, NULL, 0);
 }

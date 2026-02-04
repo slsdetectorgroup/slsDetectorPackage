@@ -29,7 +29,7 @@ enum TLogLevel {
 
 // Compiler should optimize away anything below this value
 #ifndef LOG_MAX_REPORTING_LEVEL
-#define LOG_MAX_REPORTING_LEVEL sls::logINFO
+#define LOG_MAX_REPORTING_LEVEL sls::logDEBUG5
 #endif
 
 #define __AT__                                                                 \

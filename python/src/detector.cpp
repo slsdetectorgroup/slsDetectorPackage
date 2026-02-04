@@ -2198,5 +2198,11 @@ void init_det(py::module &m) {
                        (Result<sls::ns>(Detector::*)(sls::Positions) const) &
                            Detector::getMeasurementTime,
                        py::arg() = Positions{});
+    CppDetectorApi.def("readSpi",
+                       (Result<std::vector<uint8_t>>(Detector::*)(
+                           int, int, int, sls::Positions) const) &
+                           Detector::readSpi,
+                       py::arg(), py::arg(), py::arg(),
+                       py::arg() = Positions{});
     ;
 }

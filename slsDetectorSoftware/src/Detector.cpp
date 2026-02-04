@@ -2954,4 +2954,14 @@ std::vector<uint16_t> Detector::getValidPortNumbers(uint16_t start_port) {
     return res;
 }
 
+Result<std::vector<uint8_t>> Detector::readSpi(int chip_id, int register_id,
+                                               int n_bytes,
+                                               Positions pos) const {
+    return pimpl->Parallel(&Module::readSpi, pos, chip_id, register_id,
+                           n_bytes);
+}
+
+
+
+
 } // namespace sls

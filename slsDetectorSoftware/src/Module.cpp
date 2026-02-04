@@ -4074,4 +4074,30 @@ void Module::simulatingActivityinDetector(const std::string &functionType,
     }
     printf("\n");
 }
+
+std::vector<uint8_t> Module::readSpi(int chip_id, int register_id,
+                                               int n_bytes) const{
+    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    client.Send(F_SPI_READ);
+    client.setFnum(F_SPI_READ);
+    client.Send(chip_id);
+    client.Send(register_id);
+    client.Send(n_bytes);
+    // return client.Receive<std::vector<uint8_t>>();
+
+    if (client.Receive<int>() == FAIL) {
+        std::ostringstream os;
+        os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
+           << " returned error: " << client.readErrorMessage();
+        throw DetectorError(os.str());
+    }else{
+        std::vector<uint8_t> data(n_bytes);
+        client.Receive(data.data(), n_bytes);
+        return data;
+        // return {1,2,3};
+    }
+
+
+
+                                               }
 } // namespace sls

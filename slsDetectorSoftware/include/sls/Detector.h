@@ -2247,6 +2247,9 @@ class Detector {
 
     ///@}
 
+    Result<std::vector<uint8_t>> readSpi(int chip_id, int register_id,
+                                        int n_bytes, Positions pos = {}) const;
+
   private:
     std::vector<uint16_t> getValidPortNumbers(uint16_t start_port);
     void updateRxRateCorrections();

@@ -607,6 +607,8 @@ class Module : public virtual slsDetectorDefs {
     int64_t getNumberOfFramesFromStart() const;
     int64_t getActualTime() const;
     int64_t getMeasurementTime() const;
+    std::vector<uint8_t> readSpi(int chip_id, int register_id,
+                                               int n_bytes) const;
 
   private:
     std::string getReceiverLongVersion() const;

@@ -800,7 +800,9 @@ void setupDetector() {
         return;
 
     LOG(logINFOBLUE, ("Setting Default Parameters\n"));
-    resetToDefaultDacs(0);
+    initError = resetToDefaultDacs(0, initErrorMessage);
+    if (initError == FAIL)
+        return;
 #ifdef VIRTUAL
     if (isControlServer) {
         sharedMemory_setStatus(IDLE);
@@ -866,7 +868,7 @@ void setupDetector() {
     LOG(logDEBUG1, ("Setup detector done\n\n"));
 }
 
-int resetToDefaultDacs(int hardReset) {
+int resetToDefaultDacs(int hardReset, char* mess) {
     // reset defaults to hardcoded defaults
     if (hardReset) {
         const int vals[] = DEFAULT_DAC_VALS;
@@ -878,12 +880,8 @@ int resetToDefaultDacs(int hardReset) {
     int ret = OK;
     LOG(logINFOBLUE, ("Setting Default Dac values\n"));
     for (int i = 0; i < NDAC; ++i) {
-        setDAC((enum DACINDEX)i, defaultDacValues[i], 0);
-        if ((detectorModules)->dacs[i] != defaultDacValues[i]) {
-            ret = FAIL;
-            LOG(logERROR, ("Setting dac %d failed, wrote %d, read %d\n", i,
-                           defaultDacValues[i], (detectorModules)->dacs[i]));
-        }
+        if (setDAC((enum DACINDEX)i, defaultDacValues[i], 0, mess) == FAIL)
+            return FAIL;
     }
     return ret;
 }
@@ -1307,14 +1305,16 @@ int setModule(sls_detector_module myMod, char *mess) {
     detectorModules->serialnumber = myMod.serialnumber;
 
     // settings
-    setSettings((enum detectorSettings)myMod.reg);
+    if (setSettings((enum detectorSettings)myMod.reg, mess) == FAIL)
+        return FAIL;
 
     // iodelay
     if (setIODelay(myMod.iodelay) != myMod.iodelay) {
         sprintf(mess, "Could not set module. Could not set iodelay %d\n",
                 myMod.iodelay);
         LOG(logERROR, (mess));
-        setSettings(UNDEFINED);
+        if (setSettings(UNDEFINED, mess) == FAIL)
+            return FAIL;
         LOG(logERROR, ("Settings has been changed to undefined\n"));
         return FAIL;
     }
@@ -1324,18 +1324,21 @@ int setModule(sls_detector_module myMod, char *mess) {
         setThresholdEnergy(myMod.eV[0]);
     else {
         // (loading a random trim file) (dont return fail)
-        setSettings(UNDEFINED);
+        if (setSettings(UNDEFINED, mess) == FAIL)
+            return FAIL;
         LOG(logERROR,
             ("Settings has been changed to undefined (random trim file)\n"));
     }
 
     // dacs
     for (int i = 0; i < NDAC; ++i) {
-        setDAC((enum DACINDEX)i, myMod.dacs[i], 0);
+        if (setDAC((enum DACINDEX)i, myMod.dacs[i], 0, mess) == FAIL)
+            return FAIL;
         if (myMod.dacs[i] != (detectorModules)->dacs[i]) {
             sprintf(mess, "Could not set module. Could not set dac %d\n", i);
             LOG(logERROR, (mess));
-            setSettings(UNDEFINED);
+            if (setSettings(UNDEFINED, mess) == FAIL)
+                return FAIL;
             LOG(logERROR, ("Settings has been changed to undefined\n"));
             return FAIL;
         }
@@ -1362,7 +1365,8 @@ int setModule(sls_detector_module myMod, char *mess) {
                     "Cannot set module. Cannot set Rate correction. "
                     "No default tau provided. Deactivating Rate Correction\n");
             LOG(logERROR, (mess));
-            setSettings(UNDEFINED);
+            if (setSettings(UNDEFINED, mess) == FAIL)
+                return FAIL;
             LOG(logERROR, ("Settings has been changed to undefined (random "
                            "trim file)\n"));
             return FAIL;
@@ -1375,7 +1379,8 @@ int setModule(sls_detector_module myMod, char *mess) {
             if (setRateCorrection(myMod.tau) == FAIL) {
                 sprintf(mess, "Cannot set module. Rate correction failed.\n");
                 LOG(logERROR, (mess));
-                setSettings(UNDEFINED);
+                if (setSettings(UNDEFINED, mess) == FAIL)
+                    return FAIL;
                 LOG(logERROR, ("Settings has been changed to undefined (random "
                                "trim file)\n"));
                 return FAIL;
@@ -1386,7 +1391,8 @@ int setModule(sls_detector_module myMod, char *mess) {
                         mess,
                         "Cannot set module. Could not set rate correction\n");
                     LOG(logERROR, (mess));
-                    setSettings(UNDEFINED);
+                    if (setSettings(UNDEFINED, mess) == FAIL)
+                        return FAIL;
                     LOG(logERROR, ("Settings has been changed to undefined "
                                    "(random trim file)\n"));
                     return FAIL;
@@ -1397,14 +1403,16 @@ int setModule(sls_detector_module myMod, char *mess) {
     return OK;
 }
 
-enum detectorSettings setSettings(enum detectorSettings sett) {
+int setSettings(enum detectorSettings sett, char* mess) {
     if (sett == UNINITIALIZED) {
-        return thisSettings;
+        sprintf(mess, "Cannot set settings to uninitialized\n");
+        LOG(logERROR, (mess));
+        return FAIL;
     }
     thisSettings = sett;
     detectorModules->reg = sett;
     LOG(logINFO, ("Settings: %d\n", thisSettings));
-    return thisSettings;
+    return OK;
 }
 
 enum detectorSettings getSettings() { return thisSettings; }
@@ -1425,100 +1433,131 @@ int setThresholdEnergy(int ev) {
 }
 
 /* parameters - dac, adc, hv */
+int validateDAC(enum DACINDEX ind, int val, int mV, char* mess) {
+    char *dacNames[] = {DAC_NAMES};
+
+    // validate index (including E_VTHRESHOLD)
+    if (ind < 0 || ind >= NDAC + 1) {
+        sprintf(mess, "Could not set DAC. Invalid index %d\n", ind);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    // validate min value
+    if (val < 0) {
+        sprintf(mess, "Could not set DAC %s. Input value %d cannot be negative\n", dacNames[ind], val);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    // validate max value
+    if (mV && val > DAC_MAX_MV) {
+        sprintf(mess, "Could not set DAC %s. Input value %d exceed maximum %d mV\n", dacNames[ind], val, DAC_MAX_MV);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    else if (!mV && val > LTC2620_MAX_VAL) {
+        sprintf(mess, "Could not set DAC %s. Input value %d exceed maximum %d \n", dacNames[ind], val, LTC2620_MAX_VAL);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    return OK;
+}
+
 
 // uses LTC2620 with 2.048V (implementation different to others not bit banging)
-void setDAC(enum DACINDEX ind, int val, int mV) {
-    if (val < 0)
-        return;
+int setDAC(enum DACINDEX ind, int val, int mV, char* mess) {
+    if (validateDAC(ind, val, mV, mess) == FAIL)
+        return FAIL;
 
-    LOG(logDEBUG1, ("Setting dac[%d]: %d %s \n", (int)ind, val,
-                    (mV ? "mV" : "dac units")));
+    char *dacNames[] = {DAC_NAMES};
+    LOG(logINFO, ("Setting DAC %s: %d %s \n", dacNames[ind], val, (mV ? "mV" : "dac units")));
 
     if (ind == E_VTHRESHOLD) {
-        setDAC(E_VCMP_LL, val, mV);
-        setDAC(E_VCMP_LR, val, mV);
-        setDAC(E_VCMP_RL, val, mV);
-        setDAC(E_VCMP_RR, val, mV);
-        setDAC(E_VCP, val, mV);
-        return;
+        if (setDAC(E_VCMP_LL, val, mV, mess) == FAIL)
+            return FAIL;
+        if (setDAC(E_VCMP_LR, val, mV, mess) == FAIL)
+            return FAIL;
+        if (setDAC(E_VCMP_RL, val, mV, mess) == FAIL)
+            return FAIL;
+        if (setDAC(E_VCMP_RR, val, mV, mess) == FAIL)
+            return FAIL;
+        if (setDAC(E_VCP, val, mV, mess) == FAIL)
+            return FAIL;
+        return OK;
     }
 
-    // validate index
-    if (ind < 0 || ind >= NDAC) {
-        LOG(logERROR,
-            ("\tDac index %d is out of bounds (0 to %d)\n", ind, NDAC - 1));
-        return;
-    }
-
-    char *dac_names[] = {DAC_NAMES};
-    LOG(logINFO, ("Setting dac[%d - %s]: %d %s \n", (int)ind, dac_names[ind],
-                  val, (mV ? "mV" : "dac units")));
-
-#ifdef VIRTUAL
-    int dacval = 0;
-    if (!mV) {
-        (detectorModules)->dacs[ind] = val;
-    }
-    // convert to dac units
-    else if (ConvertToDifferentRange(DAC_MIN_MV, DAC_MAX_MV, LTC2620_MIN_VAL,
-                                     LTC2620_MAX_VAL, val, &dacval) == OK) {
-        (detectorModules)->dacs[ind] = dacval;
-    }
-#else
+    // mV: convert to dac value
     int dacval = val;
     if (mV) {
-        // convert to dac units
-        if (ConvertToDifferentRange(DAC_MIN_MV, DAC_MAX_MV, LTC2620_MIN_VAL,
-                                    LTC2620_MAX_VAL, val, &dacval) == FAIL) {
-            LOG(logERROR,
-                ("Could not convert %d mV for dac to dac units\n", val));
-            return;
+        if (ConvertToDifferentRange(DAC_MIN_MV, DAC_MAX_MV, LTC2620_MIN_VAL, LTC2620_MAX_VAL, val, &dacval) == FAIL) {
+            sprintf(mess, "Could not set DAC %s. Could not convert %d mV to dac units.\n", dacNames[ind], val);
+            LOG(logERROR, (mess));
+            return FAIL;
         }
     }
+
+#ifdef VIRTUAL
+    (detectorModules)->dacs[ind] = dacval;
+#else
     sharedMemory_lockLocalLink();
     if (Feb_Control_SetDAC(ind, dacval)) {
         (detectorModules)->dacs[ind] = dacval;
     }
     sharedMemory_unlockLocalLink();
 #endif
+    return OK;
 }
 
-int getDAC(enum DACINDEX ind, int mV) {
+int getDAC(enum DACINDEX ind, int mV, int* retval, char* mess) {   
+    // validate index (including E_VTHRESHOLD)
+    if (ind < 0 || ind >= NDAC + 1) {
+        sprintf(mess, "Could not set DAC. Invalid index %d\n", ind);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+
+
+
     if (ind == E_VTHRESHOLD) {
-        int ret[5] = {0};
-        ret[0] = getDAC(E_VCMP_LL, mV);
-        ret[1] = getDAC(E_VCMP_LR, mV);
-        ret[2] = getDAC(E_VCMP_RL, mV);
-        ret[3] = getDAC(E_VCMP_RR, mV);
-        ret[4] = getDAC(E_VCP, mV);
+        int retval[5] = {0};
+        if (getDAC(E_VCMP_LL, mV, &retval[0], mess) == FAIL)
+            return FAIL;
+        if (getDAC(E_VCMP_LR, mV, &retval[1], mess) == FAIL)
+            return FAIL;
+        if (getDAC(E_VCMP_RL, mV, &retval[2], mess) == FAIL)
+            return FAIL;
+        if (getDAC(E_VCMP_RR, mV, &retval[3], mess) == FAIL)
+            return FAIL;
+        if (getDAC(E_VCP, mV, &retval[4], mess) == FAIL)
+            return FAIL;
 
-        if ((ret[0] == ret[1]) && (ret[1] == ret[2]) && (ret[2] == ret[3]) &&
-            (ret[3] == ret[4])) {
-            LOG(logINFO, ("\tvthreshold match\n"));
-            return ret[0];
-        } else {
-            LOG(logERROR, ("\tvthreshold mismatch vcmp_ll:%d vcmp_lr:%d "
-                           "vcmp_rl:%d vcmp_rr:%d vcp:%d\n",
-                           ret[0], ret[1], ret[2], ret[3], ret[4]));
-            return -1;
+        if ((retval[0] != retval[1]) || (retval[1] != retval[2]) || (retval[2] != retval[3]) || (retval[3] != retval[4])) {
+            sprintf(mess, "Vthreshold mismatch. vcmp_ll:%d vcmp_lr:%d vcmp_rl:%d vcmp_rr:%d vcp:%d\n", retval[0], retval[1], retval[2], retval[3], retval[4]);
+            LOG(logERROR, (mess));
+            return FAIL;
         }
-    }
+        LOG(logINFO, ("\tvthreshold match\n"));
+        *retval = retval[0];
+        return OK;
+    } 
 
+    char *dacNames[] = {DAC_NAMES};
     if (!mV) {
-        LOG(logDEBUG1,
-            ("Getting DAC %d : %d dac\n", ind, (detectorModules)->dacs[ind]));
-        return (detectorModules)->dacs[ind];
+        LOG(logDEBUG1, ("Getting DAC %s : %d dac\n", dacNames[ind], (detectorModules)->dacs[ind]));
+        *retval = (detectorModules)->dacs[ind];
+        return OK;
     }
-    int voltage = -1;
-    // dac units to voltage
-    ConvertToDifferentRange(LTC2620_MIN_VAL, LTC2620_MAX_VAL, DAC_MIN_MV,
-                            DAC_MAX_MV, (detectorModules)->dacs[ind], &voltage);
-    LOG(logDEBUG1, ("Getting DAC %d : %d dac (%d mV)\n", ind,
-                    (detectorModules)->dacs[ind], voltage));
-    return voltage;
+    // convert to mV
+    *retval = -1;
+    if (ConvertToDifferentRange(LTC2620_MIN_VAL, LTC2620_MAX_VAL, DAC_MIN_MV, DAC_MAX_MV, (detectorModules)->dacs[ind], retval) == FAIL) {
+        sprintf(mess, "Could not set DAC %s. Could not convert %d mV to dac units.\n", dacNames[ind], (detectorModules)->dacs[ind]);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    LOG(logDEBUG1,
+        ("Getting DAC %s : %d dac (%d mV)\n", dacNames[ind], (detectorModules)->dacs[ind], *retval));
+    return OK;
 }
 
-int getMaxDacSteps() { return DAC_MAX_STEPS; }
 
 int getADC(enum ADCINDEX ind) {
 #ifdef VIRTUAL
@@ -2157,7 +2196,8 @@ int validateAndSetRateCorrection(int64_t tau_ns, char *mess) {
     }
     // user defined value (settings become undefined)
     else if (tau_ns > 0) {
-        setSettings(UNDEFINED);
+        if (setSettings(UNDEFINED, mess) == FAIL)
+            return FAIL;
         LOG(logERROR,
             ("Settings has been changed to undefined (tau changed)\n"));
         eiger_tau_ns = tau_ns;
@@ -2360,7 +2400,8 @@ int setTrimbits(int *chanregs, char *mess) {
     if (!Feb_Control_SetTrimbits(tt, top)) {
         sprintf(mess, "Could not set module. Could not set trimbits\n");
         LOG(logERROR, (mess));
-        setSettings(UNDEFINED);
+        if (setSettings(UNDEFINED, mess) == FAIL)
+            return FAIL;
         LOG(logERROR, ("Settings has been changed to undefined (random "
                        "trim file)\n"));
 

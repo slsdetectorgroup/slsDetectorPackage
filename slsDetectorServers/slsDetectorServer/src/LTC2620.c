@@ -222,8 +222,8 @@ void LTC2620_SetDAC(int dacnum, int data) {
     LTC2620_Set(cmd, data, addr, ichip);
 }
 
-int LTC2620_SetDACValue(int dacnum, int val, int mV, int *dacval) {
-    LOG(logDEBUG1, ("dacnum:%d, val:%d, ismV:%d\n", dacnum, val, mV));
+int LTC2620_SetDACValue(int dacnum, int val) {
+    LOG(logDEBUG1, ("dacnum:%d, val:%d\n", dacnum, val));
     // validate index
     if (dacnum < 0 || dacnum >= LTC2620_Ndac) {
         LOG(logERROR, ("Dac index %d is out of bounds (0 to %d)\n", dacnum,
@@ -231,41 +231,16 @@ int LTC2620_SetDACValue(int dacnum, int val, int mV, int *dacval) {
         return FAIL;
     }
 
-    // get
-    if (val < 0 && val != LTC2620_PWR_DOWN_VAL)
-        return FAIL;
-
-    // convert to dac or get mV value
-    *dacval = val;
-    int dacmV = val;
-    int ret = OK;
-    int ndacsonly = LTC2620_Ndac;
-#ifdef CHIPTESTBOARDD
-    ndacsonly = NDAC_ONLY;
-#endif
-    if (mV) {
-        ret = LTC2620_VoltageToDac(val, dacval);
-    } else if (val >= 0 && dacnum <= ndacsonly) {
-        // do not convert power down dac val
-        //(if not ndacsonly (pwr/vchip): dont need to print mV value as it will
-        // be wrong (wrong limits))
-        ret = LTC2620_DacToVoltage(val, &dacmV);
-    }
-
-    // conversion out of bounds
-    if (ret == FAIL) {
-        LOG(logERROR, ("Setting Dac %d %s is out of bounds\n", dacnum,
-                       (mV ? "mV" : "dac units")));
+    // validate value
+    if ((val < 0 && val != LTC2620_PWR_DOWN_VAL) || val > LTC2620_MAX_VAL) {
+        LOG(logERROR, ("Could not set DAC %d. Input value %d is out of bounds (0 to %d)\n", val,
+                       LTC2620_MAX_VAL));
         return FAIL;
     }
 
-    // set
-    if ((*dacval >= 0) || (*dacval == LTC2620_PWR_DOWN_VAL)) {
-        LOG(logINFO,
-            ("Setting DAC %d: %d dac (%d mV)\n", dacnum, *dacval, dacmV));
+    LOG(logINFO,("\tSetting DAC %d: %d dac\n", dacnum, val));
 #ifndef VIRTUAL
-        LTC2620_SetDAC(dacnum, *dacval);
+        LTC2620_SetDAC(dacnum, val);
 #endif
-    }
     return OK;
 }

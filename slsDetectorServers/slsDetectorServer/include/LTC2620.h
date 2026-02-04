@@ -109,12 +109,5 @@ void LTC2620_Configure();
  */
 void LTC2620_SetDAC(int dacnum, int data);
 
-/**
- * Set dac in dac units or mV
- * @param dacnum dac index
- * @param val value in dac units or mV
- * @param mV 0 for dac units and 1 for mV unit
- * @param dacval pointer to value in dac units
- * @returns OK or FAIL for success of operation
- */
-int LTC2620_SetDACValue(int dacnum, int val, int mV, int *dacval);
+/** Set dac in dac units */
+int LTC2620_SetDACValue(int dacnum, int val);

@@ -62,7 +62,7 @@ void initStopServer();
 
 // set up detector
 void setupDetector();
-int resetToDefaultDacs(int hardReset);
+int resetToDefaultDacs(int hardReset, char* mess);
 int getDefaultDac(enum DACINDEX index, enum detectorSettings sett, int *retval);
 int setDefaultDac(enum DACINDEX index, enum detectorSettings sett, int value);
 void setASICDefaults();
@@ -109,15 +109,17 @@ int64_t getActualTime();
 int64_t getMeasurementTime();
 
 // parameters - module, settings
-enum detectorSettings setSettings(enum detectorSettings sett);
+int setSettings(enum detectorSettings sett, char* mess);
 enum detectorSettings getSettings();
 
 // parameters - dac, adc, hv
 int setOnChipDAC(enum ONCHIP_DACINDEX ind, int chipIndex, int val);
 int getOnChipDAC(enum ONCHIP_DACINDEX ind, int chipIndex);
-void setDAC(enum DACINDEX ind, int val, int mV);
-int getDAC(enum DACINDEX ind, int mV);
-int getMaxDacSteps();
+
+int validateDAC(enum DACINDEX ind, int val, int mV, char* mess);
+int setDAC(enum DACINDEX ind, int val, int mV, char* mess);
+int getDAC(enum DACINDEX ind, int mV, int* retval, char* mess);
+
 
 int getADC(enum ADCINDEX ind, int *value);
 int setHighVoltage(int val, char* mess);

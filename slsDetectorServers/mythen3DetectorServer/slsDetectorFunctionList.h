@@ -67,7 +67,7 @@ void initStopServer();
 // set up detector
 int allocateDetectorStructureMemory();
 void setupDetector();
-int resetToDefaultDacs(int hardReset);
+int resetToDefaultDacs(int hardReset, char* mess);
 int getDefaultDac(enum DACINDEX index, enum detectorSettings sett, int *retval);
 int setDefaultDac(enum DACINDEX index, enum detectorSettings sett, int value);
 void setASICDefaults();
@@ -125,7 +125,7 @@ int setModule(sls_detector_module myMod, char *mess);
 int setTrimbits(int *trimbits);
 int setAllTrimbits(int val);
 int getAllTrimbits();
-enum detectorSettings setSettings(enum detectorSettings sett);
+int setSettings(enum detectorSettings sett, char* mess);
 enum detectorSettings getSettings();
 
 // parameters - threshold
@@ -133,11 +133,12 @@ int getThresholdEnergy(int counterIndex);
 void setThresholdEnergy(int counterIndex, int eV);
 
 // parameters - dac, adc, hv
-void setDAC(enum DACINDEX ind, int val, int mV, int counterEnableCheck);
-void setGeneralDAC(enum DACINDEX ind, int val, int mV);
+int validateDAC(enum DACINDEX ind, int val, int mV, char* mess);
+int setDAC(enum DACINDEX ind, int val, int mV, int counterEnableCheck, char* mess);
+int setGeneralDAC(enum DACINDEX ind, int val, int mV, char* mess);
+int getDAC(enum DACINDEX ind, int mV, int* retval, char* mess);
+
 void setVthDac(int index, int enable);
-int getDAC(enum DACINDEX ind, int mV);
-int getMaxDacSteps();
 
 int getADC(enum ADCINDEX ind, int *value);
 int setHighVoltage(int val, char* mess);
@@ -155,7 +156,6 @@ int setPumpProbe(int enable);
 int setDigitalPulsing(int enable);
 int setAnalogPulsing(int enable);
 int setNegativePolarity(int enable);
-int setDACS(int *dacs);
 void setExtSignal(int signalIndex, enum externalSignalFlag mode);
 int getExtSignal(int signalIndex);
 

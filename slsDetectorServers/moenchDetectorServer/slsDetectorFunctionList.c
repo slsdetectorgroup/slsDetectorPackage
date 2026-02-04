@@ -479,7 +479,9 @@ void setupDetector() {
                        DAC_MAX_MV);
     LTC2620_Disable();
     LTC2620_Configure();
-    resetToDefaultDacs(0);
+    initError = resetToDefaultDacs(0, initErrorMessage);
+    if (initError == FAIL)
+        return;
 
     LOG(logINFOBLUE, ("Setting Default parameters\n"));
 
@@ -501,7 +503,9 @@ void setupDetector() {
 
     // Initialization of acquistion parameters
     setReadoutSpeed(DEFAULT_SPEED);
-    setSettings(DEFAULT_SETTINGS);
+    initError = (DEFAULT_SETTINGS, initErrorMessage);
+    if (initError == FAIL)
+        return;
     setNumFrames(DEFAULT_NUM_FRAMES);
     setNumTriggers(DEFAULT_NUM_CYCLES);
     setExpTime(DEFAULT_EXPTIME);
@@ -520,7 +524,7 @@ void setupDetector() {
     setParallelMode(DEFAULT_PARALLEL_ENABLE);
 }
 
-int resetToDefaultDacs(int hardReset) {
+int resetToDefaultDacs(int hardReset, char* mess) {
     LOG(logINFOBLUE, ("Resetting %s to Default Dac values\n",
                       (hardReset == 1 ? "hard" : "")));
 
@@ -536,12 +540,8 @@ int resetToDefaultDacs(int hardReset) {
     for (int i = 0; i < NDAC; ++i) {
         int value = defaultDacValues[i];
         // set to defualt
-        setDAC((enum DACINDEX)i, value, 0);
-        if (dacValues[i] != value) {
-            LOG(logERROR, ("Setting dac %d failed, wrote %d, read %d\n", i,
-                           value, dacValues[i]));
+        if (setDAC((enum DACINDEX)i, value, 0, mess) == FAIL)
             return FAIL;
-        }
     }
     return OK;
 }
@@ -809,17 +809,23 @@ int setModule(sls_detector_module myMod, char *mess) {
     LOG(logINFO, ("Setting module with settings %d\n", myMod.reg));
 
     // settings
-    setSettings((enum detectorSettings)myMod.reg);
+    if (setSettings((enum detectorSettings)myMod.reg, mess) == FAIL)
+        return FAIL;
 
     // set dac values
-    for (int i = 0; i < NDAC; ++i)
-        setDAC((enum DACINDEX)i, myMod.dacs[i], 0);
+    for (int i = 0; i < NDAC; ++i) {
+        if (setDAC((enum DACINDEX)i, myMod.dacs[i], 0, mess) == FAIL)
+            return FAIL;
+    }
     return OK;
 }
 
-enum detectorSettings setSettings(enum detectorSettings sett) {
-    if (sett == UNINITIALIZED)
-        return thisSettings;
+int setSettings(enum detectorSettings sett, char* mess) {
+    if (sett == UNINITIALIZED) {
+        sprintf(mess, "Cannot set settings to uninitialized\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
 
     uint32_t mask = 0;
     // set settings
@@ -857,8 +863,9 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
         mask = SETTINGS_G4_LG;
         break;
     default:
-        LOG(logERROR, ("This settings %d is not defined\n", (int)sett));
-        return -1;
+        sprintf(mess, "Undefined settings %d\n", (int)sett);
+        LOG(logERROR, (mess));
+        return FAIL;
     }
 
     uint32_t addr = ASIC_CTRL_REG;
@@ -866,7 +873,7 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
     bus_w(addr, bus_r(addr) | mask);
 
     thisSettings = sett;
-    return getSettings();
+    return OK;
 }
 
 enum detectorSettings getSettings() {
@@ -904,43 +911,93 @@ enum detectorSettings getSettings() {
 }
 
 /* parameters - dac, adc, hv */
-void setDAC(enum DACINDEX ind, int val, int mV) {
-    if (val < 0)
-        return;
+int validateDAC(enum DACINDEX ind, int val, int mV, char* mess) {
+    char *dacNames[] = {DAC_NAMES};
 
-    char *dac_names[] = {DAC_NAMES};
+    // validate index
+    if (ind < 0 || ind >= NDAC) {
+        sprintf(mess, "Could not set DAC. Invalid index %d\n", ind);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    // validate mV
+    if (mV && val == LTC2620_GetPowerDownValue()) {
+        sprintf(mess, "Could not set DAC %s. Cannot use power down value and use 'mV'\n", dacNames[ind]);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    // validate min value
+    if (val < 0 && val != LTC2620_GetPowerDownValue()) {
+        sprintf(mess, "Could not set DAC %s. Input value %d cannot be negative\n", dacNames[ind], val);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    // validate max value
+    if (mV && val > DAC_MAX_MV) {
+        sprintf(mess, "Could not set DAC %s. Input value %d exceed maximum %d mV\n", dacNames[ind], val, DAC_MAX_MV);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    else if (!mV && val > LTC2620_GetMaxInput()) {
+        sprintf(mess, "Could not set DAC %s. Input value %d exceed maximum %d \n", dacNames[ind], val, LTC2620_GetMaxInput());
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    return OK;
+}
+
+int setDAC(enum DACINDEX ind, int val, int mV, char* mess) {
+    if (validateDAC(ind, val, mV, mess) == FAIL)
+        return FAIL;
+
+    char *dacNames[] = {DAC_NAMES};
+    LOG(logINFO, ("Setting DAC %s: %d %s \n", dacNames[ind], val, (mV ? "mV" : "dac units")));
+
+    // mV: convert to dac value
     int dacval = val;
-#ifdef VIRTUAL
-    LOG(logINFO, ("Setting dac[%d - %s]: %d %s \n", (int)ind, dac_names[ind],
-                  val, (mV ? "mV" : "dac units")));
-    if (!mV) {
-        dacValues[ind] = val;
+    if (mV) {
+        if (LTC2620_VoltageToDac(val, &dacval) == FAIL) {
+            sprintf(mess, "Could not set DAC %s. Could not convert %d mV to dac units.\n", dacNames[ind], val);
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
     }
-    // convert to dac units
-    else if (LTC2620_VoltageToDac(val, &dacval) == OK) {
-        dacValues[ind] = dacval;
+
+    if (LTC2620_SetDACValue((int)ind, dacval) == FAIL) {
+        sprintf(mess, "Could not set DAC %s.\n", dacNames[ind]);
+        LOG(logERROR, (mess));
+        return FAIL;
     }
-#else
-    LOG(logINFO, ("Setting DAC %s\n", dac_names[ind]));
-    if (LTC2620_SetDACValue((int)ind, val, mV, &dacval) == OK) {
-        dacValues[ind] = dacval;
-    }
-#endif
+    
+    dacValues[ind] = dacval;
+    return OK;
 }
 
-int getDAC(enum DACINDEX ind, int mV) {
-    if (!mV) {
-        LOG(logDEBUG1, ("Getting DAC %d : %d dac\n", ind, dacValues[ind]));
-        return dacValues[ind];
+int getDAC(enum DACINDEX ind, int mV, int* retval, char* mess) {
+    // validate index
+    if (ind < 0 || ind >= NDAC) {
+        sprintf(mess, "Could not get DAC %d. Invalid index.\n", ind);
+        LOG(logERROR, (mess));
+        return FAIL;
     }
-    int voltage = -1;
-    LTC2620_DacToVoltage(dacValues[ind], &voltage);
+    char *dacNames[] = {DAC_NAMES};
+    if (!mV) {
+        LOG(logDEBUG1, ("Getting DAC %s : %d dac\n", dacNames[ind], dacValues[ind]));
+        *retval = dacValues[ind];
+        return OK;
+    }
+    // convert to mV
+    *retval = -1;
+    if (LTC2620_DacToVoltage(dacValues[ind], retval) == FAIL) {
+        sprintf(mess, "Could not get DAC %s. Could not convert %d dac units to mV\n", dacNames[ind], dacValues[ind]);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
     LOG(logDEBUG1,
-        ("Getting DAC %d : %d dac (%d mV)\n", ind, dacValues[ind], voltage));
-    return voltage;
+        ("Getting DAC %s : %d dac (%d mV)\n", dacNames[ind], dacValues[ind], *retval));
+    return OK;
 }
 
-int getMaxDacSteps() { return LTC2620_GetMaxNumSteps(); }
 
 int getADC(enum ADCINDEX ind) {
 #ifdef VIRTUAL

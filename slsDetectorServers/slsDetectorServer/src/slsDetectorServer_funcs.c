@@ -11128,7 +11128,7 @@ int spi_read(int file_des){
     if (receiveData(file_des, &n_bytes, sizeof(n_bytes), INT32) < 0)
         return printSocketReadError();
 
-    LOG(logDEBUG1, ("SPI Read Requested: chip_id=%d, register_id=%d, n_bytes=%d\n",
+    LOG(logINFO, ("SPI Read Requested: chip_id=%d, register_id=%d, n_bytes=%d\n",
                     chip_id, register_id, n_bytes));
 
     //TODO! check that both chip_id and register_id are <16 
@@ -11141,7 +11141,8 @@ int spi_read(int file_des){
         fake_register[i] = (uint8_t)( (i*2) % 256 ); //0,2,4,6,...
     }
 #else
-    int spifd = open("/dev/spidev1.0", O_RDWR);
+    int spifd = open("dev/spidev2.0", O_RDWR);
+    LOG(logINFO, ("SPI Read: opened spidev2.0 with fd=%d\n", spifd));
     //TODO! check spifd for errors
 #endif
 
@@ -11158,6 +11159,7 @@ int spi_read(int file_des){
     // 2. Allocate actual data buffer this holds the data we read out 
     // and that we need to write back to restore the register
     uint8_t *actual_data = (uint8_t*)malloc(n_bytes);
+    memset(actual_data, 0, n_bytes);
     
 
     // 3. Setup sending and receiving buffers and the spi_ioc_transfer struct.
@@ -11177,7 +11179,6 @@ int spi_read(int file_des){
     local_tx[0] = ((chip_id & 0xF) << 4) | (register_id & 0xF);
 	for (int i=0; i < n_bytes; i++)
 		local_tx[i+1] = dummy_data[i];
-
 
 #ifdef VIRTUAL
     // For the virtual detector we just copy the dummy data to the rx buffer

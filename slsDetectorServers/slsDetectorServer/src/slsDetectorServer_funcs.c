@@ -11117,8 +11117,6 @@ int spi_read(int file_des){
     return sendError(file_des);
 #endif
 
-    spiRead();
-
     int chip_id = 0;
     if (receiveData(file_des, &chip_id, sizeof(chip_id), INT32) < 0){
         return printSocketReadError();

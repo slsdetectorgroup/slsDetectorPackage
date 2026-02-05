@@ -52,7 +52,7 @@ def find_libclang():
     raise FileNotFoundError("libclang not found in CONDA_PREFIX or system paths.")
 
 
-def check_libclang_version(required="20"):
+def check_libclang_version(required="12"):
     # Use already-loaded libclang, or let cindex resolve it
     lib = ctypes.CDLL(cindex.Config.library_file or ctypes.util.find_library("clang"))
 
@@ -223,8 +223,8 @@ if __name__ == "__main__":
     
     libclang_path = find_libclang()
     cindex.Config.set_library_file(libclang_path)
-    # check_libclang_version("20")
-    # check_clang_format_version(20)
+    check_libclang_version("12")
+    check_clang_format_version(12)
     check_for_compile_commands_json(cargs.build_path)
 
     print("Parsing functions in Detector.h - ", end="", flush=True)

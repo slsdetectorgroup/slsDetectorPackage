@@ -11385,6 +11385,9 @@ int spi_write(int file_des){
     }
     if(ioctl(spifd, SPI_IOC_MESSAGE(1), &send_cmd)<0){
         close(spifd);
+        free(data);
+        free(local_tx);
+        free(local_rx);
         sprintf(mess, "SPI write failed with %d:%s\n", errno, strerror(errno));
         return sendError(file_des);
     }

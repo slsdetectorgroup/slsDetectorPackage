@@ -4105,7 +4105,7 @@ void Module::writeSpi(int chip_id, int register_id,
     client.Send(chip_id);
     client.Send(register_id);
     client.Send(static_cast<int>(data.size()));
-    client.Send(data.data(), data.size());
+    client.Send(data);
 
     if (client.Receive<int>() == FAIL) {
         std::ostringstream os;

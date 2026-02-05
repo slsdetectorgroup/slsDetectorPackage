@@ -503,7 +503,7 @@ void setupDetector() {
 
     // Initialization of acquistion parameters
     setReadoutSpeed(DEFAULT_SPEED);
-    initError = (DEFAULT_SETTINGS, initErrorMessage);
+    initError = setSettings(DEFAULT_SETTINGS, initErrorMessage);
     if (initError == FAIL)
         return;
     setNumFrames(DEFAULT_NUM_FRAMES);

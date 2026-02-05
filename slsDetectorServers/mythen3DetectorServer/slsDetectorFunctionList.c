@@ -1497,7 +1497,8 @@ void validateSettings() {
         // if one value does not match, = undefined
         for (int i = 0; i < NSPECIALDACS; ++i) {
             int retval = 0;
-            if (getDac(specialDacs[i], 0, &retval) == FAIL) {
+            char emsg[MAX_STR_LENGTH]= {0};
+            if (getDAC(specialDacs[i], 0, &retval, emsg) == FAIL) {
                 sett = UNDEFINED;
                 break;
             }

@@ -568,7 +568,6 @@ int resetToDefaultDacs(int hardReset, char* mess) {
         }
     }
     // reset dacs to defaults
-    int ret = OK;
     LOG(logINFOBLUE, ("Setting Default Dac values\n"));
     for (int i = 0; i < NDAC; ++i) {
         if (defaultDacValues[i] != -1) {
@@ -2333,7 +2332,7 @@ int powerChip(int on, char *mess) {
     } else {
         // throw if high voltage on
         int highVoltage = 0;
-        if (getHighVoltage(&highVoltage) == FAIL) {
+        if (getHighVoltage(&highVoltage, mess) == FAIL) {
             sprintf(mess, "Could not get high voltage status to do a safety "
                           "check first\n");
             LOG(logERROR, (mess));

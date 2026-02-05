@@ -1676,6 +1676,7 @@ int setHighVoltage(int val, char* mess) {
 
     // cannot validate using get
 #endif
+    return OK;
 }
 
 /* parameters - timing, extsig */

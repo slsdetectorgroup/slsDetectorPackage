@@ -144,10 +144,11 @@ int getPowerRail(enum PWRINDEX ind, int* retval, char* mess);
 int isPowerValid(enum PWRINDEX ind, int val, char* mess);
 int getPowerIndex(enum DACINDEX ind, enum PWRINDEX* pwrIndex, char* mess);
 
-int convertPowertoDACUnits(enum PWRINDEX ind, int val, int* retval, char* mess);
-int initPower(enum DACINDEX ind, char* mess);
+int convertPowerRegDACtoVoltage(enum PWRINDEX ind, int val, int* retval, char* mess);
+int convertPowerRegVoltagetoDAC(enum PWRINDEX ind, int val, int* retval, char* mess);
 int getPower(enum DACINDEX ind, int* retval, char* mess);
 int setPower(enum DACINDEX ind, int val, char* mess);
+int initPower(enum DACINDEX ind, char* mess);
 void powerOff();
 
 int getADC(enum ADCINDEX ind);

@@ -11380,6 +11380,9 @@ int spi_write(int file_des){
     int spifd = open("/dev/spidev2.0", O_RDWR);
     LOG(logINFO, ("SPI Read: opened spidev2.0 with fd=%d\n", spifd));
     if(spifd < 0){
+        free(data);
+        free(local_tx);
+        free(local_rx);
         sprintf(mess, "Could not open /dev/spidev2.0\n");
         return sendError(file_des);
     }

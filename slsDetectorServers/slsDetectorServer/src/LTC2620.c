@@ -233,14 +233,15 @@ int LTC2620_SetDACValue(int dacnum, int val) {
 
     // validate value
     if ((val < 0 && val != LTC2620_PWR_DOWN_VAL) || val > LTC2620_MAX_VAL) {
-        LOG(logERROR, ("Could not set DAC %d. Input value %d is out of bounds (0 to %d)\n", val,
-                       LTC2620_MAX_VAL));
+        LOG(logERROR, ("Could not set DAC %d. Input value %d is out of bounds "
+                       "(0 to %d)\n",
+                       val, LTC2620_MAX_VAL));
         return FAIL;
     }
 
-    LOG(logINFO,("\tSetting DAC %d: %d dac\n", dacnum, val));
+    LOG(logINFO, ("\tSetting DAC %d: %d dac\n", dacnum, val));
 #ifndef VIRTUAL
-        LTC2620_SetDAC(dacnum, val);
+    LTC2620_SetDAC(dacnum, val);
 #endif
     return OK;
 }

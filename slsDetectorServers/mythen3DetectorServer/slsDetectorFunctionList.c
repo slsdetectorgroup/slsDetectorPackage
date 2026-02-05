@@ -556,7 +556,7 @@ void setupDetector() {
     setReadoutSpeed(DEFAULT_READOUT_SPEED);
 }
 
-int resetToDefaultDacs(int hardReset, char* mess) {
+int resetToDefaultDacs(int hardReset, char *mess) {
     LOG(logINFOBLUE, ("Resetting %s to Default Dac values\n",
                       (hardReset == 1 ? "hard" : "")));
 
@@ -1322,7 +1322,7 @@ int setModule(sls_detector_module myMod, char *mess) {
             }
         }
     }
-    
+
     // update vth and countermask
     updateVthAndCounterMask();
 
@@ -1444,7 +1444,7 @@ int getAllTrimbits() {
     return value;
 }
 
-int setSettings(enum detectorSettings sett, char* mess) {
+int setSettings(enum detectorSettings sett, char *mess) {
     int *dacVals = NULL;
     switch (sett) {
     case STANDARD:
@@ -1497,7 +1497,7 @@ void validateSettings() {
         // if one value does not match, = undefined
         for (int i = 0; i < NSPECIALDACS; ++i) {
             int retval = 0;
-            char emsg[MAX_STR_LENGTH]= {0};
+            char emsg[MAX_STR_LENGTH] = {0};
             if (getDAC(specialDacs[i], 0, &retval, emsg) == FAIL) {
                 sett = UNDEFINED;
                 break;
@@ -1538,7 +1538,7 @@ void setThresholdEnergy(int counterIndex, int eV) {
 }
 
 /* parameters - dac, hv */
-int validateDAC(enum DACINDEX ind, int val, int mV, char* mess) {
+int validateDAC(enum DACINDEX ind, int val, int mV, char *mess) {
     char *dacNames[] = {DAC_NAMES};
 
     // validate index (threshold included)
@@ -1549,18 +1549,23 @@ int validateDAC(enum DACINDEX ind, int val, int mV, char* mess) {
     }
     // validate min value
     if (val < 0) {
-        sprintf(mess, "Could not set DAC %s. Input value %d cannot be negative\n", dacNames[ind], val);
+        sprintf(mess,
+                "Could not set DAC %s. Input value %d cannot be negative\n",
+                dacNames[ind], val);
         LOG(logERROR, (mess));
         return FAIL;
     }
     // validate max value
     if (mV && val > DAC_MAX_MV) {
-        sprintf(mess, "Could not set DAC %s. Input value %d exceed maximum %d mV\n", dacNames[ind], val, DAC_MAX_MV);
+        sprintf(mess,
+                "Could not set DAC %s. Input value %d exceed maximum %d mV\n",
+                dacNames[ind], val, DAC_MAX_MV);
         LOG(logERROR, (mess));
         return FAIL;
-    }
-    else if (!mV && val > LTC2620_D_GetMaxInput()) {
-        sprintf(mess, "Could not set DAC %s. Input value %d exceed maximum %d \n", dacNames[ind], val, LTC2620_D_GetMaxInput());
+    } else if (!mV && val > LTC2620_D_GetMaxInput()) {
+        sprintf(mess,
+                "Could not set DAC %s. Input value %d exceed maximum %d \n",
+                dacNames[ind], val, LTC2620_D_GetMaxInput());
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -1568,25 +1573,28 @@ int validateDAC(enum DACINDEX ind, int val, int mV, char* mess) {
 }
 
 // counterEnableCheck false only if setDAC called directly
-int setDAC(enum DACINDEX ind, int val, int mV, int counterEnableCheck, char* mess) {
+int setDAC(enum DACINDEX ind, int val, int mV, int counterEnableCheck,
+           char *mess) {
     if (validateDAC(ind, val, mV, mess) == FAIL)
         return FAIL;
 
     char *dacNames[] = {DAC_NAMES};
-    LOG(logINFO, ("Setting DAC %s: %d %s \n", dacNames[ind], val, (mV ? "mV" : "dac units")));
+    LOG(logINFO, ("Setting DAC %s: %d %s \n", dacNames[ind], val,
+                  (mV ? "mV" : "dac units")));
 
     // threshold dacs:
     // - remember dac value if not disabled value
-    // - if counter disabled, set disabled val  
+    // - if counter disabled, set disabled val
     // (except when set direcly from client)
     //
-    // vthreshold: 
+    // vthreshold:
     // - remember dac value for every counter
     //
     // others: set dac as normal
 
     // only for threshold dacs or vthreshold
-    if (ind == M_VTHRESHOLD || ind == M_VTH1 || ind == M_VTH2 || ind == M_VTH3) {
+    if (ind == M_VTHRESHOLD || ind == M_VTH1 || ind == M_VTH2 ||
+        ind == M_VTH3) {
         uint32_t counters = getCounterMask();
         int vthdacs[] = {M_VTH1, M_VTH2, M_VTH3};
 
@@ -1603,14 +1611,18 @@ int setDAC(enum DACINDEX ind, int val, int mV, int counterEnableCheck, char* mes
                         // convert to dac units
                         if (mV) {
                             if (LTC2620_D_VoltageToDac(val, &dacval) == FAIL) {
-                                sprintf(mess, "Could not set %s. Could not convert input %d mV to dac\n", dacNames[ind], val);
+                                sprintf(mess,
+                                        "Could not set %s. Could not convert "
+                                        "input %d mV to dac\n",
+                                        dacNames[ind], val);
                                 LOG(logERROR, (mess));
                                 return FAIL;
                             }
                         }
                         // remember value
                         vthEnabledVals[i] = dacval;
-                        LOG(logINFO, ("Remembering %s [%d]\n", dacNames[ind], dacval));
+                        LOG(logINFO,
+                            ("Remembering %s [%d]\n", dacNames[ind], dacval));
                     }
                 }
 
@@ -1635,21 +1647,25 @@ int setDAC(enum DACINDEX ind, int val, int mV, int counterEnableCheck, char* mes
     return setGeneralDAC(ind, val, mV, mess);
 }
 
-int setGeneralDAC(enum DACINDEX ind, int val, int mV, char* mess) {
+int setGeneralDAC(enum DACINDEX ind, int val, int mV, char *mess) {
     char *dacNames[] = {DAC_NAMES};
 
-    LOG(logDEBUG1, ("Setting General DAC %s: %d %s \n", dacNames[ind], val, (mV ? "mV" : "dac units")));
+    LOG(logDEBUG1, ("Setting General DAC %s: %d %s \n", dacNames[ind], val,
+                    (mV ? "mV" : "dac units")));
 
     // mV: convert to dac value
     int dacval = val;
     if (mV) {
         if (LTC2620_D_VoltageToDac(val, &dacval) == FAIL) {
-            sprintf(mess, "Could not set DAC %s. Could not convert %d mV to dac units.\n", dacNames[ind], val);
+            sprintf(
+                mess,
+                "Could not set DAC %s. Could not convert %d mV to dac units.\n",
+                dacNames[ind], val);
             LOG(logERROR, (mess));
             return FAIL;
         }
     }
-    
+
     if (LTC2620_D_SetDACValue((int)ind, val) == FAIL) {
         sprintf(mess, "Could not set DAC %s.\n", dacNames[ind]);
         LOG(logERROR, (mess));
@@ -1676,11 +1692,11 @@ void setVthDac(int index, int enable) {
     if (enable) {
         value = vthEnabledVals[index];
     }
-    char msg[MAX_STR_LENGTH]= {0};
+    char msg[MAX_STR_LENGTH] = {0};
     setGeneralDAC(vthdacs[index], value, 0, msg);
 }
 
-int getDAC(enum DACINDEX ind, int mV, int* retval, char* mess) {
+int getDAC(enum DACINDEX ind, int mV, int *retval, char *mess) {
 
     // vthreshold
     if (ind == M_VTHRESHOLD) {
@@ -1699,7 +1715,8 @@ int getDAC(enum DACINDEX ind, int mV, int* retval, char* mess) {
                 }
                 // different values for enabled counters
                 else if (retval1 != *retval) {
-                    sprintf(mess, "Could not get vthrehsold DAC. Different values for enabled counters.\n");
+                    sprintf(mess, "Could not get vthrehsold DAC. Different "
+                                  "values for enabled counters.\n");
                     LOG(logERROR, (mess));
                     return FAIL;
                 }
@@ -1711,22 +1728,24 @@ int getDAC(enum DACINDEX ind, int mV, int* retval, char* mess) {
 
     char *dacNames[] = {DAC_NAMES};
     if (!mV) {
-        LOG(logDEBUG1, ("Getting DAC %s : %d dac\n", dacNames[ind], detectorDacs[ind]));
+        LOG(logDEBUG1,
+            ("Getting DAC %s : %d dac\n", dacNames[ind], detectorDacs[ind]));
         *retval = detectorDacs[ind];
         return OK;
     }
     // convert to mV
     *retval = -1;
     if (LTC2620_D_DacToVoltage(detectorDacs[ind], retval) == FAIL) {
-        sprintf(mess, "Could not get DAC %s. Could not convert %d dac units to mV\n", dacNames[ind], detectorDacs[ind]);
+        sprintf(mess,
+                "Could not get DAC %s. Could not convert %d dac units to mV\n",
+                dacNames[ind], detectorDacs[ind]);
         LOG(logERROR, (mess));
         return FAIL;
     }
-    LOG(logDEBUG1,
-        ("Getting DAC %s : %d dac (%d mV)\n", dacNames[ind], detectorDacs[ind], *retval));
+    LOG(logDEBUG1, ("Getting DAC %s : %d dac (%d mV)\n", dacNames[ind],
+                    detectorDacs[ind], *retval));
     return OK;
 }
-
 
 int getADC(enum ADCINDEX ind, int *value) {
     LOG(logDEBUG1, ("Reading FPGA temperature...\n"));
@@ -1739,12 +1758,12 @@ int getADC(enum ADCINDEX ind, int *value) {
     return OK;
 }
 
-int setHighVoltage(int val, char* mess) {
+int setHighVoltage(int val, char *mess) {
     // validate input value
     if (val < 0 || val > HV_SOFT_MAX_VOLTAGE) {
         sprintf(mess, "Invalid Voltage. Valid range (0 - %d)\n",
-                    HV_SOFT_MAX_VOLTAGE);
-        LOG(logERROR, (mess));        
+                HV_SOFT_MAX_VOLTAGE);
+        LOG(logERROR, (mess));
         return FAIL;
     }
 
@@ -1758,7 +1777,8 @@ int setHighVoltage(int val, char* mess) {
     if (getHighVoltage(&retval, mess) == FAIL)
         return FAIL;
     if (val != retval) {
-        sprintf(mess, "Could not set high voltage. Set %d, but got %d\n", val, retval);
+        sprintf(mess, "Could not set high voltage. Set %d, but got %d\n", val,
+                retval);
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -1766,8 +1786,8 @@ int setHighVoltage(int val, char* mess) {
     return OK;
 }
 
-int getHighVoltage(int *retval, char* mess) { 
-    int ret = DAC6571_Get(retval, mess); 
+int getHighVoltage(int *retval, char *mess) {
+    int ret = DAC6571_Get(retval, mess);
     LOG(logDEBUG1, ("High Voltage: %d\n", retval));
     return ret;
 }

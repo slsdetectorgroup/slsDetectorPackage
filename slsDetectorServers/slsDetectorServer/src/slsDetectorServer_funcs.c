@@ -1158,7 +1158,6 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
 
     switch (ind) {
 
-
 #ifdef EIGERD
     case IO_DELAY:
         retval = setIODelay(val);
@@ -1167,18 +1166,17 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
         return retval;
 #endif
 
-
 #if defined(CHIPTESTBOARDD)
     case ADC_VPP:
         if (val != GET_FLAG)
             ret = setADCVpp(val, mV, mess);
         else
             ret = getADCVpp(mV, &retval, mess);
-        return retval; 
+        return retval;
 #endif
 
-
-#if defined(MYTHEN3D) || defined(GOTTHARD2D) || defined(EIGERD) ||  defined(JUNGFRAUD) || defined(MOENCHD) || defined(CHIPTESTBOARDD)
+#if defined(MYTHEN3D) || defined(GOTTHARD2D) || defined(EIGERD) ||             \
+    defined(JUNGFRAUD) || defined(MOENCHD) || defined(CHIPTESTBOARDD)
     case HIGH_VOLTAGE:
         if (val != GET_FLAG)
             ret = setHighVoltage(val, mess);
@@ -1187,19 +1185,20 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
         return retval;
 #endif
 
-
 #ifdef CHIPTESTBOARDD
     case V_POWER_CHIP:
         if (val != GET_FLAG) {
             ret = FAIL;
-            sprintf(mess, "Can not set Vchip. Can only be set automatically in the background (+200mV from highest power regulator voltage).\n");
+            sprintf(
+                mess,
+                "Can not set Vchip. Can only be set automatically in the "
+                "background (+200mV from highest power regulator voltage).\n");
             LOG(logERROR, (mess));
             return retval;
-        } 
+        }
         ret = getVchip(&retval, mess);
         return retval;
 #endif
-
 
 #if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
     case V_LIMIT:
@@ -1207,7 +1206,7 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
             if (!mV) {
                 ret = FAIL;
                 strcpy(mess, "Could not set vlimit. VLimit should be in "
-                                "mV and not dac units.\n");
+                             "mV and not dac units.\n");
                 LOG(logERROR, (mess));
                 return retval;
             }
@@ -1216,10 +1215,6 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
             retval = getVLimit();
         return retval;
 #endif
-
-
-
-
 
 #if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
     case V_POWER_A:
@@ -1233,7 +1228,10 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
         if (val != GET_FLAG) {
             if (!mV) {
                 ret = FAIL;
-                sprintf(mess, "Could not set power. Power regulator %d should be in mV and not dac units.\n", ind);
+                sprintf(mess,
+                        "Could not set power. Power regulator %d should be in "
+                        "mV and not dac units.\n",
+                        ind);
                 LOG(logERROR, (mess));
                 return retval;
             }
@@ -1242,7 +1240,6 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
             ret = getPower(serverDacIndex, &retval, mess);
         return retval;
 #endif
-
 
     // actual dacs
     default:
@@ -1278,7 +1275,7 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
                         return retval;
                     }
                     LOG(logERROR, ("Settings has been changed "
-                                "to undefined (changed specific dacs)\n"));
+                                   "to undefined (changed specific dacs)\n"));
                     break;
                 default:
                     break;
@@ -1287,14 +1284,13 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
 #else
             ret = setDAC(serverDacIndex, val, mV, mess);
 #endif
-        } 
+        }
         // get
         else
             ret = getDAC(serverDacIndex, mV, &retval, mess);
         return retval;
     }
 }
-
 
 int set_dac(int file_des) {
     ret = OK;
@@ -3045,7 +3041,7 @@ int validateAndSetAllTrimbits(int arg) {
 #ifdef EIGERD
             // changes settings to undefined
             if (getSettings() != UNDEFINED) {
-                setSettings(UNDEFINED);
+                setSettings(UNDEFINED, mess);
                 LOG(logERROR,
                     ("Settings has been changed to undefined (change all "
                      "trimbits)\n"));

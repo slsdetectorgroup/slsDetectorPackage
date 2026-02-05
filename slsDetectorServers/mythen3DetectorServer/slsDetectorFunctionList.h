@@ -67,7 +67,7 @@ void initStopServer();
 // set up detector
 int allocateDetectorStructureMemory();
 void setupDetector();
-int resetToDefaultDacs(int hardReset, char* mess);
+int resetToDefaultDacs(int hardReset, char *mess);
 int getDefaultDac(enum DACINDEX index, enum detectorSettings sett, int *retval);
 int setDefaultDac(enum DACINDEX index, enum detectorSettings sett, int value);
 void setASICDefaults();
@@ -125,7 +125,7 @@ int setModule(sls_detector_module myMod, char *mess);
 int setTrimbits(int *trimbits);
 int setAllTrimbits(int val);
 int getAllTrimbits();
-int setSettings(enum detectorSettings sett, char* mess);
+int setSettings(enum detectorSettings sett, char *mess);
 enum detectorSettings getSettings();
 
 // parameters - threshold
@@ -133,16 +133,17 @@ int getThresholdEnergy(int counterIndex);
 void setThresholdEnergy(int counterIndex, int eV);
 
 // parameters - dac, adc, hv
-int validateDAC(enum DACINDEX ind, int val, int mV, char* mess);
-int setDAC(enum DACINDEX ind, int val, int mV, int counterEnableCheck, char* mess);
-int setGeneralDAC(enum DACINDEX ind, int val, int mV, char* mess);
-int getDAC(enum DACINDEX ind, int mV, int* retval, char* mess);
+int validateDAC(enum DACINDEX ind, int val, int mV, char *mess);
+int setDAC(enum DACINDEX ind, int val, int mV, int counterEnableCheck,
+           char *mess);
+int setGeneralDAC(enum DACINDEX ind, int val, int mV, char *mess);
+int getDAC(enum DACINDEX ind, int mV, int *retval, char *mess);
 
 void setVthDac(int index, int enable);
 
 int getADC(enum ADCINDEX ind, int *value);
-int setHighVoltage(int val, char* mess);
-int getHighVoltage(int *retval, char* mess);
+int setHighVoltage(int val, char *mess);
+int getHighVoltage(int *retval, char *mess);
 
 // parameters - timing, extsig
 int isMaster(int *retval);

@@ -30,9 +30,9 @@ void DAC6571_SetDefines(int hardMaxV, char *driverfname) {
 #endif
 }
 
-int DAC6571_Set(int val, char* mess) {
+int DAC6571_Set(int val, char *mess) {
     LOG(logDEBUG1, ("Setting high voltage to %d\n", val));
-    if (val < 0)   {
+    if (val < 0) {
         sprintf(mess, "Invalid value. Cannot be negative.\n");
         LOG(logERROR, (mess));
         return FAIL;
@@ -43,7 +43,9 @@ int DAC6571_Set(int val, char* mess) {
     // convert value
     if (ConvertToDifferentRange(0, DAC6571_HardMaxVoltage, DAC6571_MIN_DAC_VAL,
                                 DAC6571_MAX_DAC_VAL, val, &dacvalue) == FAIL) {
-        sprintf(mess, "Could not convert %d high voltage to a valid dac value\n", val);
+        sprintf(mess,
+                "Could not convert %d high voltage to a valid dac value\n",
+                val);
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -55,7 +57,9 @@ int DAC6571_Set(int val, char* mess) {
     // open file
     FILE *fd = fopen(DAC6571_DriverFileName, "w");
     if (fd == NULL) {
-        sprintg(mess, "Could not open file %s for writing to set high voltage\n", DAC6571_DriverFileName);
+        sprintg(mess,
+                "Could not open file %s for writing to set high voltage\n",
+                DAC6571_DriverFileName);
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -67,7 +71,7 @@ int DAC6571_Set(int val, char* mess) {
     return OK;
 }
 
-int DAC6571_Get(int *retval, char* mess) {
+int DAC6571_Get(int *retval, char *mess) {
     LOG(logDEBUG1, ("Getting high voltage\n"));
     int dacvalue = 0;
 
@@ -86,7 +90,9 @@ int DAC6571_Get(int *retval, char* mess) {
     if (ConvertToDifferentRange(DAC6571_MIN_DAC_VAL, DAC6571_MAX_DAC_VAL, 0,
                                 DAC6571_HardMaxVoltage, dacvalue,
                                 retval) == FAIL) {
-        sprintf(mess, "Could not convert %d dac value to a valid high voltage\n", dacvalue);
+        sprintf(mess,
+                "Could not convert %d dac value to a valid high voltage\n",
+                dacvalue);
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -96,7 +102,9 @@ int DAC6571_Get(int *retval, char* mess) {
     // open file
     FILE *fd = fopen(DAC6571_DriverFileName, "w");
     if (fd == NULL) {
-        sprintf(mess, "Could not open file %s for writing to get high voltage\n", DAC6571_DriverFileName);
+        sprintf(mess,
+                "Could not open file %s for writing to get high voltage\n",
+                DAC6571_DriverFileName);
         LOG(logERROR, (mess));
         return FAIL;
     }

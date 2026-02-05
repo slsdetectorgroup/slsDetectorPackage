@@ -868,7 +868,7 @@ void setupDetector() {
     LOG(logDEBUG1, ("Setup detector done\n\n"));
 }
 
-int resetToDefaultDacs(int hardReset, char* mess) {
+int resetToDefaultDacs(int hardReset, char *mess) {
     // reset defaults to hardcoded defaults
     if (hardReset) {
         const int vals[] = DEFAULT_DAC_VALS;
@@ -1403,7 +1403,7 @@ int setModule(sls_detector_module myMod, char *mess) {
     return OK;
 }
 
-int setSettings(enum detectorSettings sett, char* mess) {
+int setSettings(enum detectorSettings sett, char *mess) {
     if (sett == UNINITIALIZED) {
         sprintf(mess, "Cannot set settings to uninitialized\n");
         LOG(logERROR, (mess));
@@ -1433,7 +1433,7 @@ int setThresholdEnergy(int ev) {
 }
 
 /* parameters - dac, adc, hv */
-int validateDAC(enum DACINDEX ind, int val, int mV, char* mess) {
+int validateDAC(enum DACINDEX ind, int val, int mV, char *mess) {
     char *dacNames[] = {DAC_NAMES};
 
     // validate index (including E_VTHRESHOLD)
@@ -1444,32 +1444,37 @@ int validateDAC(enum DACINDEX ind, int val, int mV, char* mess) {
     }
     // validate min value
     if (val < 0) {
-        sprintf(mess, "Could not set DAC %s. Input value %d cannot be negative\n", dacNames[ind], val);
+        sprintf(mess,
+                "Could not set DAC %s. Input value %d cannot be negative\n",
+                dacNames[ind], val);
         LOG(logERROR, (mess));
         return FAIL;
     }
     // validate max value
     if (mV && val > DAC_MAX_MV) {
-        sprintf(mess, "Could not set DAC %s. Input value %d exceed maximum %d mV\n", dacNames[ind], val, DAC_MAX_MV);
+        sprintf(mess,
+                "Could not set DAC %s. Input value %d exceed maximum %d mV\n",
+                dacNames[ind], val, DAC_MAX_MV);
         LOG(logERROR, (mess));
         return FAIL;
-    }
-    else if (!mV && val > LTC2620_MAX_VAL) {
-        sprintf(mess, "Could not set DAC %s. Input value %d exceed maximum %d \n", dacNames[ind], val, LTC2620_MAX_VAL);
+    } else if (!mV && val > LTC2620_MAX_VAL) {
+        sprintf(mess,
+                "Could not set DAC %s. Input value %d exceed maximum %d \n",
+                dacNames[ind], val, LTC2620_MAX_VAL);
         LOG(logERROR, (mess));
         return FAIL;
     }
     return OK;
 }
 
-
 // uses LTC2620 with 2.048V (implementation different to others not bit banging)
-int setDAC(enum DACINDEX ind, int val, int mV, char* mess) {
+int setDAC(enum DACINDEX ind, int val, int mV, char *mess) {
     if (validateDAC(ind, val, mV, mess) == FAIL)
         return FAIL;
 
     char *dacNames[] = {DAC_NAMES};
-    LOG(logINFO, ("Setting DAC %s: %d %s \n", dacNames[ind], val, (mV ? "mV" : "dac units")));
+    LOG(logINFO, ("Setting DAC %s: %d %s \n", dacNames[ind], val,
+                  (mV ? "mV" : "dac units")));
 
     if (ind == E_VTHRESHOLD) {
         if (setDAC(E_VCMP_LL, val, mV, mess) == FAIL)
@@ -1488,8 +1493,12 @@ int setDAC(enum DACINDEX ind, int val, int mV, char* mess) {
     // mV: convert to dac value
     int dacval = val;
     if (mV) {
-        if (ConvertToDifferentRange(DAC_MIN_MV, DAC_MAX_MV, LTC2620_MIN_VAL, LTC2620_MAX_VAL, val, &dacval) == FAIL) {
-            sprintf(mess, "Could not set DAC %s. Could not convert %d mV to dac units.\n", dacNames[ind], val);
+        if (ConvertToDifferentRange(DAC_MIN_MV, DAC_MAX_MV, LTC2620_MIN_VAL,
+                                    LTC2620_MAX_VAL, val, &dacval) == FAIL) {
+            sprintf(
+                mess,
+                "Could not set DAC %s. Could not convert %d mV to dac units.\n",
+                dacNames[ind], val);
             LOG(logERROR, (mess));
             return FAIL;
         }
@@ -1507,15 +1516,13 @@ int setDAC(enum DACINDEX ind, int val, int mV, char* mess) {
     return OK;
 }
 
-int getDAC(enum DACINDEX ind, int mV, int* retval, char* mess) {   
+int getDAC(enum DACINDEX ind, int mV, int *retval, char *mess) {
     // validate index (including E_VTHRESHOLD)
     if (ind < 0 || ind >= NDAC + 1) {
         sprintf(mess, "Could not set DAC. Invalid index %d\n", ind);
         LOG(logERROR, (mess));
         return FAIL;
     }
-
-
 
     if (ind == E_VTHRESHOLD) {
         int retval[5] = {0};
@@ -1530,34 +1537,42 @@ int getDAC(enum DACINDEX ind, int mV, int* retval, char* mess) {
         if (getDAC(E_VCP, mV, &retval[4], mess) == FAIL)
             return FAIL;
 
-        if ((retval[0] != retval[1]) || (retval[1] != retval[2]) || (retval[2] != retval[3]) || (retval[3] != retval[4])) {
-            sprintf(mess, "Vthreshold mismatch. vcmp_ll:%d vcmp_lr:%d vcmp_rl:%d vcmp_rr:%d vcp:%d\n", retval[0], retval[1], retval[2], retval[3], retval[4]);
+        if ((retval[0] != retval[1]) || (retval[1] != retval[2]) ||
+            (retval[2] != retval[3]) || (retval[3] != retval[4])) {
+            sprintf(mess,
+                    "Vthreshold mismatch. vcmp_ll:%d vcmp_lr:%d vcmp_rl:%d "
+                    "vcmp_rr:%d vcp:%d\n",
+                    retval[0], retval[1], retval[2], retval[3], retval[4]);
             LOG(logERROR, (mess));
             return FAIL;
         }
         LOG(logINFO, ("\tvthreshold match\n"));
         *retval = retval[0];
         return OK;
-    } 
+    }
 
     char *dacNames[] = {DAC_NAMES};
     if (!mV) {
-        LOG(logDEBUG1, ("Getting DAC %s : %d dac\n", dacNames[ind], (detectorModules)->dacs[ind]));
+        LOG(logDEBUG1, ("Getting DAC %s : %d dac\n", dacNames[ind],
+                        (detectorModules)->dacs[ind]));
         *retval = (detectorModules)->dacs[ind];
         return OK;
     }
     // convert to mV
     *retval = -1;
-    if (ConvertToDifferentRange(LTC2620_MIN_VAL, LTC2620_MAX_VAL, DAC_MIN_MV, DAC_MAX_MV, (detectorModules)->dacs[ind], retval) == FAIL) {
-        sprintf(mess, "Could not set DAC %s. Could not convert %d mV to dac units.\n", dacNames[ind], (detectorModules)->dacs[ind]);
+    if (ConvertToDifferentRange(LTC2620_MIN_VAL, LTC2620_MAX_VAL, DAC_MIN_MV,
+                                DAC_MAX_MV, (detectorModules)->dacs[ind],
+                                retval) == FAIL) {
+        sprintf(mess,
+                "Could not set DAC %s. Could not convert %d mV to dac units.\n",
+                dacNames[ind], (detectorModules)->dacs[ind]);
         LOG(logERROR, (mess));
         return FAIL;
     }
-    LOG(logDEBUG1,
-        ("Getting DAC %s : %d dac (%d mV)\n", dacNames[ind], (detectorModules)->dacs[ind], *retval));
+    LOG(logDEBUG1, ("Getting DAC %s : %d dac (%d mV)\n", dacNames[ind],
+                    (detectorModules)->dacs[ind], *retval));
     return OK;
 }
-
 
 int getADC(enum ADCINDEX ind) {
 #ifdef VIRTUAL
@@ -1605,7 +1620,7 @@ int getADC(enum ADCINDEX ind) {
 #endif
 }
 
-int getHighVoltage(int* retval, char* mess) {
+int getHighVoltage(int *retval, char *mess) {
     if (!master) {
         LOG(logDEBUG1, ("High Voltage: %d\n", SLAVE_HIGH_VOLTAGE_READ_VAL));
         *retval = SLAVE_HIGH_VOLTAGE_READ_VAL;
@@ -1623,7 +1638,9 @@ int getHighVoltage(int* retval, char* mess) {
     if (!Feb_Control_GetHighVoltage(&eiger_highvoltage)) {
         LOG(logERROR, ("Could not read high voltage\n"));
         sharedMemory_unlockLocalLink();
-        strcpy(mess, "Getting high voltage failed. Serial/i2c communication failed.\n");
+        strcpy(
+            mess,
+            "Getting high voltage failed. Serial/i2c communication failed.\n");
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -1631,7 +1648,9 @@ int getHighVoltage(int* retval, char* mess) {
     if (!Feb_Control_GetHighVoltage(&eiger_highvoltage)) {
         LOG(logERROR, ("Could not read high voltage\n"));
         sharedMemory_unlockLocalLink();
-        strcpy(mess, "Getting high voltage failed. Serial/i2c communication failed.\n");
+        strcpy(
+            mess,
+            "Getting high voltage failed. Serial/i2c communication failed.\n");
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -1640,8 +1659,7 @@ int getHighVoltage(int* retval, char* mess) {
     // tolerance of 5
     if (abs(eiger_theo_highvoltage - eiger_highvoltage) >
         HIGH_VOLTAGE_TOLERANCE) {
-        LOG(logINFO,
-            ("High voltage still ramping: %d\n", eiger_highvoltage));
+        LOG(logINFO, ("High voltage still ramping: %d\n", eiger_highvoltage));
         *retval = eiger_highvoltage;
         LOG(logDEBUG1, ("High Voltage: %d\n", eiger_highvoltage));
         return OK;
@@ -1650,10 +1668,9 @@ int getHighVoltage(int* retval, char* mess) {
     LOG(logDEBUG1, ("High Voltage: %d\n", eiger_theo_highvoltage));
     return OK;
 #endif
-
 }
 
-int setHighVoltage(int val, char* mess) {
+int setHighVoltage(int val, char *mess) {
 #ifdef VIRTUAL
     LOG(logINFO, ("Setting High voltage: %d V\n", val));
     eiger_theo_highvoltage = val;
@@ -1664,12 +1681,17 @@ int setHighVoltage(int val, char* mess) {
     sharedMemory_unlockLocalLink();
 
     if (ret == 0) {
-        strcpy(mess, "Setting high voltage failed. Serial/i2c communication failed.\n");
+        strcpy(
+            mess,
+            "Setting high voltage failed. Serial/i2c communication failed.\n");
         LOG(logERROR, (mess));
         return FAIL;
     }
     if (ret == -1) {
-        sprintf(mess, "Setting high voltage failed. Invalid input %d. The range is from 0 to 200 V.\n", val);
+        sprintf(mess,
+                "Setting high voltage failed. Invalid input %d. The range is "
+                "from 0 to 200 V.\n",
+                val);
         LOG(logERROR, (mess));
         return FAIL;
     }

@@ -123,39 +123,41 @@ enum detectorSettings getSettings();
 
 // parameters - threshold
 // parameters - dac, adc, hv
-int setADCVpp(int val, int mV, char* mess);
-int getADCVpp(int mV, int* retval, char* mess);
+int setADCVpp(int val, int mV, char *mess);
+int getADCVpp(int mV, int *retval, char *mess);
 
-int validateDAC(enum DACINDEX ind, int val, int mV, char* mess);
-int setDAC(enum DACINDEX ind, int val, int mV, char* mess);
-int getDAC(enum DACINDEX ind, int mV, int* retval, char* mess);
+int validateDAC(enum DACINDEX ind, int val, int mV, char *mess);
+int setDAC(enum DACINDEX ind, int val, int mV, char *mess);
+int getDAC(enum DACINDEX ind, int mV, int *retval, char *mess);
 int getVLimit();
-int setVLimit(int val, char* mess);
+int setVLimit(int val, char *mess);
 
-int getVchip(int* retval, char* mess);
-int setVchip(int val, char* mess);
-int getVChipToSet(enum DACINDEX ind, int val, int* vchip, char* mess);
+int getVchip(int *retval, char *mess);
+int setVchip(int val, char *mess);
+int getVChipToSet(enum DACINDEX ind, int val, int *vchip, char *mess);
 
-int getPowerRailMask(enum PWRINDEX ind, uint32_t* mask, char* mess);
-int EnablePowerRail(enum PWRINDEX ind, char* mess);
-int DisablePowerRail(enum PWRINDEX ind, char* mess);
-int getPowerRail(enum PWRINDEX ind, int* retval, char* mess);
+int getPowerRailMask(enum PWRINDEX ind, uint32_t *mask, char *mess);
+int EnablePowerRail(enum PWRINDEX ind, char *mess);
+int DisablePowerRail(enum PWRINDEX ind, char *mess);
+int getPowerRail(enum PWRINDEX ind, int *retval, char *mess);
 
-int isPowerValid(enum PWRINDEX ind, int val, char* mess);
-int getPowerIndex(enum DACINDEX ind, enum PWRINDEX* pwrIndex, char* mess);
+int isPowerValid(enum PWRINDEX ind, int val, char *mess);
+int getPowerIndex(enum DACINDEX ind, enum PWRINDEX *pwrIndex, char *mess);
 
-int convertPowerRegDACtoVoltage(enum PWRINDEX ind, int val, int* retval, char* mess);
-int convertPowerRegVoltagetoDAC(enum PWRINDEX ind, int val, int* retval, char* mess);
-int getPower(enum DACINDEX ind, int* retval, char* mess);
-int setPower(enum DACINDEX ind, int val, char* mess);
-int initPower(enum DACINDEX ind, char* mess);
+int convertPowerRegDACtoVoltage(enum PWRINDEX ind, int val, int *retval,
+                                char *mess);
+int convertPowerRegVoltagetoDAC(enum PWRINDEX ind, int val, int *retval,
+                                char *mess);
+int getPower(enum DACINDEX ind, int *retval, char *mess);
+int setPower(enum DACINDEX ind, int val, char *mess);
+int initPower(enum DACINDEX ind, char *mess);
 void powerOff();
 
 int getADC(enum ADCINDEX ind);
 int getSlowADC(int ichan);
 int getSlowADCTemperature();
-int setHighVoltage(int val, char* mess);
-int getHighVoltage(int *retval, char* mess);
+int setHighVoltage(int val, char *mess);
+int getHighVoltage(int *retval, char *mess);
 
 // parameters - timing, extsig
 

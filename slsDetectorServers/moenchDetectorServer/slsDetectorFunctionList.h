@@ -69,7 +69,7 @@ void initStopServer();
 
 // set up detector
 void setupDetector();
-int resetToDefaultDacs(int hardReset, char* mess);
+int resetToDefaultDacs(int hardReset, char *mess);
 int getDefaultDac(enum DACINDEX index, enum detectorSettings sett, int *retval);
 int setDefaultDac(enum DACINDEX index, enum detectorSettings sett, int value);
 
@@ -111,16 +111,16 @@ int64_t getMeasurementTime();
 
 // parameters - module, settings
 int setModule(sls_detector_module myMod, char *mess);
-int setSettings(enum detectorSettings sett, char* mess);
+int setSettings(enum detectorSettings sett, char *mess);
 enum detectorSettings getSettings();
 
 // parameters - dac, adc, hv
-int validateDAC(enum DACINDEX ind, int val, int mV, char* mess);
-int setDAC(enum DACINDEX ind, int val, int mV, char* mess);
-int getDAC(enum DACINDEX ind, int mV, int* retval, char* mess);
+int validateDAC(enum DACINDEX ind, int val, int mV, char *mess);
+int setDAC(enum DACINDEX ind, int val, int mV, char *mess);
+int getDAC(enum DACINDEX ind, int mV, int *retval, char *mess);
 int getADC(enum ADCINDEX ind);
-int setHighVoltage(int val, char* mess);
-int getHighVoltage(int *retval, char* mess);
+int setHighVoltage(int val, char *mess);
+int getHighVoltage(int *retval, char *mess);
 
 // parameters - timing, extsig
 int setMaster(enum MASTERINDEX m);

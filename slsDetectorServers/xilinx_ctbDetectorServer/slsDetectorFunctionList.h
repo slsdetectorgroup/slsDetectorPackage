@@ -119,30 +119,32 @@ int64_t getMeasurementTime();
 int setModule(sls_detector_module myMod, char *mess);
 
 // parameters - dac, adc, hv
-int validateDAC(enum DACINDEX ind, int val, int mV, char* mess);
-int setDAC(enum DACINDEX ind, int val, int mV, char* mess);
-int getDAC(enum DACINDEX ind, int mV, int* retval, char* mess);
+int validateDAC(enum DACINDEX ind, int val, int mV, char *mess);
+int setDAC(enum DACINDEX ind, int val, int mV, char *mess);
+int getDAC(enum DACINDEX ind, int mV, int *retval, char *mess);
 int getVLimit();
-int setVLimit(int val, char* mess);
+int setVLimit(int val, char *mess);
 
-int getPowerRailMask(enum PWRINDEX ind, uint32_t* mask, char* mess);
-int EnablePowerRail(enum PWRINDEX ind, char* mess);
-int DisablePowerRail(enum PWRINDEX ind, char* mess);
-int getPowerRail(enum PWRINDEX ind, int* retval, char* mess);
+int getPowerRailMask(enum PWRINDEX ind, uint32_t *mask, char *mess);
+int EnablePowerRail(enum PWRINDEX ind, char *mess);
+int DisablePowerRail(enum PWRINDEX ind, char *mess);
+int getPowerRail(enum PWRINDEX ind, int *retval, char *mess);
 
-int isPowerValid(enum PWRINDEX ind, int val, char* mess);
-int getPowerIndex(enum DACINDEX ind, enum PWRINDEX* pwrIndex, char* mess);
+int isPowerValid(enum PWRINDEX ind, int val, char *mess);
+int getPowerIndex(enum DACINDEX ind, enum PWRINDEX *pwrIndex, char *mess);
 
-int convertPowertoDACUnits(enum PWRINDEX ind, int val, int* retval, char* mess);
-int initPower(enum DACINDEX ind, char* mess);
-int getPower(enum DACINDEX ind, int* retval, char* mess);
-int setPower(enum DACINDEX ind, int val, char* mess);
+int convertPowerRegDACtoVoltage(enum PWRINDEX ind, int val, int *retval,
+                                char *mess);
+int convertPowerRegVoltagetoDAC(enum PWRINDEX ind, int val, int *retval,
+                                char *mess);
+int initPower(enum DACINDEX ind, char *mess);
+int getPower(enum DACINDEX ind, int *retval, char *mess);
+int setPower(enum DACINDEX ind, int val, char *mess);
 
 int getADC(enum ADCINDEX ind, int *value);
 int getSlowADC(int ichan, int *retval);
 int getTemperature(int *retval);
 int setHighVoltage(int val);
-
 
 // parameters - timing, extsig
 void setTiming(enum timingMode arg);

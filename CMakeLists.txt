@@ -199,6 +199,7 @@ option(SLS_USE_GUI "GUI" OFF)
 option(SLS_USE_SIMULATOR "Simulator" OFF)
 option(SLS_USE_TESTS "TESTS" OFF)
 option(SLS_USE_SANITIZER "Sanitizers for debugging" OFF)
+option(SLS_USE_SANITIZER_IN_SERVER "Sanitizers for debugging" OFF)
 option(SLS_USE_PYTHON "Python bindings" OFF)
 option(SLS_INSTALL_PYTHONEXT "Install the python extension in the install tree under CMAKE_INSTALL_PREFIX/python/" OFF)
 option(SLS_USE_CTBGUI "ctb GUI" OFF)
@@ -346,6 +347,11 @@ if (NOT TARGET slsProjectCSettings)
     target_link_libraries(slsProjectCSettings INTERFACE
         Threads::Threads
     )
+
+    if(SLS_USE_SANITIZER_IN_SERVER)
+        target_compile_options(slsProjectCSettings INTERFACE -fsanitize=address,undefined -fno-omit-frame-pointer)
+        target_link_libraries(slsProjectCSettings INTERFACE -fsanitize=address,undefined)
+    endif()
 endif()
 
 

@@ -4089,11 +4089,12 @@ std::vector<uint8_t> Module::readSpi(int chip_id, int register_id,
         os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
            << " returned error: " << client.readErrorMessage();
         throw DetectorError(os.str());
-    }else{
-        std::vector<uint8_t> data(n_bytes);
-        client.Receive(data.data(), n_bytes);
-        return data;
     }
+
+    std::vector<uint8_t> data(n_bytes);
+    client.Receive(data);
+    return data;
+    
 }
 
 void Module::writeSpi(int chip_id, int register_id,

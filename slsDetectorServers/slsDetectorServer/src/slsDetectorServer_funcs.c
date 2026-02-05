@@ -9,6 +9,7 @@
 
 #include <fcntl.h>
 #include <sys/ioctl.h>
+#include <errno.h>
 
 #if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD) ||               \
     defined(MYTHEN3D)
@@ -11114,58 +11115,79 @@ int spi_read(int file_des){
 
 #if !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
-    return FAIL;
+    return Server_SendResult(file_des, INT32, NULL, 0);
 #endif
 
     
     int chip_id = 0;
-    int register_id = 0;
-    int n_bytes = 0;
-    if (receiveData(file_des, &chip_id, sizeof(chip_id), INT32) < 0)
+    if (receiveData(file_des, &chip_id, sizeof(chip_id), INT32) < 0){
         return printSocketReadError();
-    if (receiveData(file_des, &register_id, sizeof(register_id), INT32) < 0)
-        return printSocketReadError();
-    if (receiveData(file_des, &n_bytes, sizeof(n_bytes), INT32) < 0)
-        return printSocketReadError();
+    }
+    if(chip_id < 0 || chip_id > 15){
+        ret = FAIL;
+        sprintf(mess, "Invalid chip_id %d. Must be 0-15\n", chip_id);
+        LOG(logERROR, (mess));
+        return Server_SendResult(file_des, INT32, NULL, 0);
+    }
 
+
+    int register_id = 0;
+    if (receiveData(file_des, &register_id, sizeof(register_id), INT32) < 0){
+        return printSocketReadError();
+    }
+    if(register_id < 0 || register_id > 15){
+        ret = FAIL;
+        sprintf(mess, "Invalid register_id %d. Must be 0-15\n", register_id);
+        LOG(logERROR, (mess));
+        return Server_SendResult(file_des, INT32, NULL, 0);
+    }
+
+    int n_bytes = 0;
+    if (receiveData(file_des, &n_bytes, sizeof(n_bytes), INT32) < 0){
+        return printSocketReadError();
+    }
+
+    //TODO! Make logDEBUG1 before merging
     LOG(logINFO, ("SPI Read Requested: chip_id=%d, register_id=%d, n_bytes=%d\n",
                     chip_id, register_id, n_bytes));
-
-    //TODO! check that both chip_id and register_id are <16 
 
 
 #ifdef VIRTUAL
     // For the virtual detector we create a fake register to read from
-    uint8_t *fake_register = (uint8_t*)malloc(n_bytes+10);
-    for (int i = 0; i < n_bytes+10; i++) {
-        fake_register[i] = (uint8_t)( (i*2) % 256 ); //0,2,4,6,...
+    // and fill it with 0,2,4,6,... This way we can check that copying
+    // of the data works as expected
+    uint8_t *fake_register = malloc(n_bytes);
+    for (int i = 0; i < n_bytes; i++) {
+        fake_register[i] = (uint8_t)( (i*2) % 256 ); 
     }
 #else
     int spifd = open("/dev/spidev2.0", O_RDWR);
     LOG(logINFO, ("SPI Read: opened spidev2.0 with fd=%d\n", spifd));
-    //TODO! check spifd for errors
+    if(spifd < 0){
+        ret = FAIL;
+        sprintf(mess, "Could not open /dev/spidev2.0\n");
+        LOG(logERROR, (mess));
+        return Server_SendResult(file_des, INT32, NULL, 0);
+    }
 #endif
 
-
-    
-
-    // 1. Allocate dummy data to shif in, we keep a copy of this 
+    // Allocate dummy data to shif in, we keep a copy of this 
     // to double check that we access a register of the correct size
-    uint8_t *dummy_data = (uint8_t*)malloc(n_bytes);
+    uint8_t *dummy_data = malloc(n_bytes);
     for(int i=0; i<n_bytes; i++){
         dummy_data[i] = (uint8_t)(i % 256);
     }
 
-    // 2. Allocate actual data buffer this holds the data we read out 
+    // Allocate actual data buffer this holds the data we read out 
     // and that we need to write back to restore the register
-    uint8_t *actual_data = (uint8_t*)malloc(n_bytes);
+    uint8_t *actual_data = malloc(n_bytes);
     memset(actual_data, 0, n_bytes);
     
 
-    // 3. Setup sending and receiving buffers and the spi_ioc_transfer struct.
+    // Setup sending and receiving buffers and the spi_ioc_transfer struct.
     // We need one more byte before the actual data to send chip_id and register_id
-	unsigned char* local_tx = malloc(n_bytes+1);
-	unsigned char* local_rx = malloc(n_bytes+1);
+	uint8_t* local_tx = malloc(n_bytes+1);
+	uint8_t* local_rx = malloc(n_bytes+1);
 
     struct spi_ioc_transfer send_cmd[1];
     memset(send_cmd, 0, sizeof(send_cmd));
@@ -11173,24 +11195,41 @@ int spi_read(int file_des){
 	send_cmd[0].tx_buf = (unsigned long) local_tx;
 	send_cmd[0].rx_buf = (unsigned long) local_rx;
 
-    // 0 - Normal operation, 1 - CSn remains zero after operation
-    // we need CSn to remain low to not close the SPI transaction
+    // 0 - Normal operation, 1 - CSN remains zero after operation
+    // We use cs_change = 1 to not close the SPI transaction and
+    // allow for shifting the read out data back in to restore the
+    // regitster
 	send_cmd[0].cs_change = 1; 
+
+    // First byte of the message is 4 bits chip_id then 4 bits register_id
     local_tx[0] = ((chip_id & 0xF) << 4) | (register_id & 0xF);
+
+    // Then the data follows
 	for (int i=0; i < n_bytes; i++)
 		local_tx[i+1] = dummy_data[i];
 
 #ifdef VIRTUAL
-    // For the virtual detector we just copy the dummy data to the rx buffer
+    // For the virtual detector we have to copy the data 
+
+    // First byte shuuld be 0x00
     local_rx[0] = 0;
+
+    // Then we copy the data from the fake register to the local_rx buffer
+    // and the local_tx data to the fake register to emulate the shifting in and out of the data
     for (int i=0; i < n_bytes; i++){
         local_rx[i+1] = fake_register[i];
-        fake_register[i] = local_tx[i+1]; // save shifted in data in the fake register
+        fake_register[i] = local_tx[i+1]; 
     }
 
 #else
     // For the real detector we do the transfer here
-    ioctl(spifd, SPI_IOC_MESSAGE(1), &send_cmd);
+    if(ioctl(spifd, SPI_IOC_MESSAGE(1), &send_cmd)<0){
+        ret = FAIL;
+        sprintf(mess, "SPI write failed with %d:%s\n", errno, strerror(errno));
+        LOG(logERROR, (mess));
+        close(spifd);
+        return Server_SendResult(file_des, INT32, NULL, 0);
+    }
 #endif
 
     // Copy everything but the first received byte to the user. First byte should be 0x00 anyway
@@ -11204,29 +11243,26 @@ int spi_read(int file_des){
 		local_tx[i+1] = actual_data[i];
 
 #ifdef VIRTUAL
-    local_rx[0] = 0;
+    // Copy the data from the fake register to the local_rx buffer
     for (int i=0; i < n_bytes; i++){
         local_rx[i+1] = fake_register[i];
-        fake_register[i] = local_tx[i+1]; // save shifted in data in the fake register
     }
+    free(fake_register); // we are done with the fake register
 #else
-    ioctl(spifd, SPI_IOC_MESSAGE(1), &send_cmd);
+    if(ioctl(spifd, SPI_IOC_MESSAGE(1), &send_cmd)<0){
+        ret = FAIL;
+        sprintf(mess, "SPI write failed with %d:%s\n", errno, strerror(errno));
+        LOG(logERROR, (mess));
+        close(spifd);
+        return Server_SendResult(file_des, INT32, NULL, 0);
+    }
     close(spifd);
 #endif
-        
 	free(local_tx);
 	free(local_rx);
 
-#ifdef VIRTUAL
-    free(fake_register);
-#endif
-    // //send back the same data 
-    // sendData(file_des, data, n_bytes, OTHER);
-    // free(data);
     ret = OK;
     LOG(logDEBUG1, ("SPI Read Complete\n"));
-    
-    //If ret is ok we will send back the data, otherwise an error message.
     Server_SendResult(file_des, INT32, NULL, 0);
     sendData(file_des, actual_data, n_bytes, OTHER);
     free(dummy_data);
@@ -11235,30 +11271,53 @@ int spi_read(int file_des){
 
 }
 
+
+
+/**
+ * Write to SPI register. 
+ */
 int spi_write(int file_des){
 #if !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
-    return FAIL;
+    return Server_SendResult(file_des, INT32, NULL, 0);
 #endif
+
     int chip_id = 0;
+    if (receiveData(file_des, &chip_id, sizeof(chip_id), INT32) < 0){
+        return printSocketReadError();
+    }
+    if(chip_id < 0 || chip_id > 15){
+        ret = FAIL;
+        sprintf(mess, "Invalid chip_id %d. Must be 0-15\n", chip_id);
+        LOG(logERROR, (mess));
+        return Server_SendResult(file_des, INT32, NULL, 0);
+    }
+
     int register_id = 0;
+    if (receiveData(file_des, &register_id, sizeof(register_id), INT32) < 0){
+        return printSocketReadError();
+    }
+    if(register_id < 0 || register_id > 15){
+        ret = FAIL;
+        sprintf(mess, "Invalid register_id %d. Must be 0-15\n", register_id);
+        LOG(logERROR, (mess));
+        return Server_SendResult(file_des, INT32, NULL, 0);
+    }
+
     int n_bytes = 0;
-    if (receiveData(file_des, &chip_id, sizeof(chip_id), INT32) < 0)
+    if (receiveData(file_des, &n_bytes, sizeof(n_bytes), INT32) < 0){
         return printSocketReadError();
-    if (receiveData(file_des, &register_id, sizeof(register_id), INT32) < 0)
-        return printSocketReadError();
-    if (receiveData(file_des, &n_bytes, sizeof(n_bytes), INT32) < 0)
-        return printSocketReadError();
+    }
 
     LOG(logINFO, ("SPI Write Requested: chip_id=%d, register_id=%d, n_bytes=%d\n",
                     chip_id, register_id, n_bytes));
     
-    uint8_t *data = (uint8_t*)malloc(n_bytes);
+    uint8_t *data = malloc(n_bytes);
     if (receiveData(file_des, data, n_bytes, OTHER) < 0)
         return printSocketReadError();
     
-    unsigned char* local_tx = malloc(n_bytes+1);
-	unsigned char* local_rx = malloc(n_bytes+1);
+    uint8_t* local_tx = malloc(n_bytes+1);
+	uint8_t* local_rx = malloc(n_bytes+1);
 
     struct spi_ioc_transfer send_cmd[1];
     memset(send_cmd, 0, sizeof(send_cmd));
@@ -11273,12 +11332,23 @@ int spi_write(int file_des){
 		local_tx[i+1] = data[i];
 
 #ifdef VIRTUAL
-
+    // For the virtual detector we have nothing to do
 #else
     int spifd = open("/dev/spidev2.0", O_RDWR);
     LOG(logINFO, ("SPI Read: opened spidev2.0 with fd=%d\n", spifd));
-    //TODO! check spifd for errors
-    ioctl(spifd, SPI_IOC_MESSAGE(1), &send_cmd);
+    if(spifd < 0){
+        ret = FAIL;
+        sprintf(mess, "Could not open /dev/spidev2.0\n");
+        LOG(logERROR, (mess));
+        return Server_SendResult(file_des, INT32, NULL, 0);
+    }
+    if(ioctl(spifd, SPI_IOC_MESSAGE(1), &send_cmd)<0){
+        ret = FAIL;
+        sprintf(mess, "SPI write failed with %d:%s\n", errno, strerror(errno));
+        LOG(logERROR, (mess));
+        close(spifd);
+        return Server_SendResult(file_des, INT32, NULL, 0);
+    }
     close(spifd);
 #endif
 

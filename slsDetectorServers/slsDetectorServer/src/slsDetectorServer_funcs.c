@@ -11112,18 +11112,6 @@ int set_pattern_wait_interval(int file_des) {
  */
 
 int spi_read(int file_des){
-
-    while(1){
-        char* ptr = malloc(1024*1024); // 1MB allocation
-        if(ptr == NULL){
-            ret = FAIL;
-            sprintf(mess, "Could not allocate memory for SPI read\n");
-            LOG(logERROR, (mess));
-            return Server_SendResult(file_des, INT32, NULL, 0);
-        }
-    }
-    
-
 #if !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
     return Server_SendResult(file_des, INT32, NULL, 0);

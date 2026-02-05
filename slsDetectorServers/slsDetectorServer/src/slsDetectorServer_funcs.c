@@ -11114,7 +11114,7 @@ int set_pattern_wait_interval(int file_des) {
 int spi_read(int file_des){
 
     while(1){
-        char* ptr = malloc(8);
+        char* ptr = malloc(4096);
         if(ptr == NULL){
             ret = FAIL;
             sprintf(mess, "Could not allocate memory for SPI read\n");

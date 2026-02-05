@@ -11346,9 +11346,11 @@ int spi_write(int file_des){
         exit(EXIT_FAILURE);
     }
     memset(data, 0, n_bytes);
-    if (receiveData(file_des, data, n_bytes, OTHER) < 0)
+    if (receiveData(file_des, data, n_bytes, OTHER) < 0){
+        free(data);
         return printSocketReadError();
-    
+    }
+
     uint8_t* local_tx = malloc(n_bytes+1);
     if(local_tx == NULL){
         LOG(logERROR, ("Could not allocate memory for local_tx\n"));

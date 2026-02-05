@@ -589,6 +589,8 @@ void setupDetector() {
                        DAC_MAX_MV); // has to be before setvchip
     LTC2620_Disable();
     LTC2620_Configure();
+
+    // dacs only
     LOG(logINFOBLUE, ("Powering down all dacs\n"));
     for (int idac = 0; idac < NDAC_ONLY; ++idac) {
         initError = setDAC(idac, LTC2620_GetPowerDownValue(), 0, initErrorMessage);
@@ -596,7 +598,7 @@ void setupDetector() {
             return;
     }
 
-    // power regulators (set min dac values, still power disabled)
+    // power regulators
     LOG(logINFOBLUE, ("Setting power dacs to minimum (power disabled)\n"));
     for (int idac = NDAC_ONLY; idac < NDAC; ++idac) {
         initError = initPower(idac, initErrorMessage);
@@ -1259,7 +1261,7 @@ int getADCVpp(int mV, int* retval, char* mess) {
 
 int validateDAC(enum DACINDEX ind, int val, int mV, char* mess) {
     // validate index
-    if (ind < D0 || ind > D_PWR_IO) {
+    if (ind < 0 || ind >= NDAC) {
         sprintf(mess, "Could not set DAC %d. Invalid index.\n", ind);
         LOG(logERROR, (mess));
         return FAIL;
@@ -1271,7 +1273,8 @@ int validateDAC(enum DACINDEX ind, int val, int mV, char* mess) {
             LOG(logERROR, (mess));
             return FAIL;
         }
-        if (ind >= D_PWR_D) {
+        // power regulators are converted to dacs at setPower with diff conv.
+        if (ind >= NDAC_ONLY) {
             sprintf(mess, "Could not set DAC %d. Cannot convert to dac units for power regulator at this stage. Should have been earlier.\n");
             LOG(logERROR, (mess));
             return FAIL;
@@ -1280,9 +1283,9 @@ int validateDAC(enum DACINDEX ind, int val, int mV, char* mess) {
     // validate min value
     if (val < 0) {
         // dacs only: allow power down value (-100)
-        if ((ind < D_PWR_D && val != LTC2620_GetPowerDownValue()) ||
+        if ((ind < NDAC_ONLY && val != LTC2620_GetPowerDownValue()) ||
             // power regulators: allow no negative values
-            (ind >= D_PWR_D)) {
+            (ind >= NDAC_ONLY)) {
             sprintf(mess, "Could not set DAC %d. Invalid value %d\n", ind, val);
             LOG(logERROR, (mess));
             return FAIL;
@@ -1298,7 +1301,7 @@ int validateDAC(enum DACINDEX ind, int val, int mV, char* mess) {
                 return FAIL;
             }
             // check vLimit - only dacs, convert to mV
-            if (vLimit > 0 && ind < PWR_D) {
+            if (vLimit > 0 && ind < NDAC_ONLY) {
                 int dacmV = 0;
                 if (LTC2620_DacToVoltage(val, &dacmV) == FAIL) {
                     sprintf(mess, "Could not set DAC %d. Could not convert input %d to mV\n", ind, val);
@@ -1357,13 +1360,13 @@ int setDAC(enum DACINDEX ind, int val, int mV, char* mess) {
 
 int getDAC(enum DACINDEX ind, int mV, int* retval, char* mess) {
     // validate index
-    if (ind < D0 || ind > D_PWR_IO) {
+    if (ind < 0 || ind > NDAC) {
         sprintf(mess, "Could not get DAC %d. Invalid index.\n", ind);
         LOG(logERROR, (mess));
         return FAIL;
     }
     // validate mV
-    if (mV && ind >= D_PWR_D) {
+    if (mV && ind >= NDAC_ONLY) {
         sprintf(mess, "Could not get DAC %d. Cannot convert to dac units for power regulator at this stage. Should have been earlier.\n");
         LOG(logERROR, (mess));
         return FAIL;
@@ -1626,35 +1629,7 @@ int getPower(enum DACINDEX ind, int* retval, char* mess) {
         return OK;
     }
 
-    // power enabled but not set yet
-    // should never happen for ctb as one cannot turn on without setting it
-    // but can be set using just the dac command maybe
-    if (dacValues[ind] == -1) {
-        sprintf(mess, "Power enabled, but unknown dac value for %s", powerNames[pwrIndex]);
-        LOG(logERROR, (mess));
-        return FAIL;
-    }
-
-    // dac powered off
-    if (dacValues[ind] == LTC2620_GetPowerDownValue()) {
-        LOG(logWARNING,
-            ("Power %d enabled, dac value %d, voltage at minimum or 0\n", ind,
-             LTC2620_GetPowerDownValue()));
-        *retval = LTC2620_GetPowerDownValue();
-        return OK;
-    }
-
-    // vchip not set 
-    // should not happen (as vchip set to max in the beginning) 
-    // unless user set vchip to power down value (-100) using dac command 
-    // and then tried to get a power regulator value
-    if (dacValues[D_PWR_CHIP] == -1 ||
-        dacValues[D_PWR_CHIP] == LTC2620_GetPowerDownValue()) {
-        sprintf(mess, "Cannot read %s (vchip not set). Set a power regulator, which will also set vchip.\n", powerNames[pwrIndex]);
-        LOG(logERROR, (mess));
-        return FAIL;
-    }
-
+    // to mV
     if (convertPowerRegDACtoVoltage(pwrIndex, dacValues[ind], retval, mess) == FAIL)
         return FAIL;
 

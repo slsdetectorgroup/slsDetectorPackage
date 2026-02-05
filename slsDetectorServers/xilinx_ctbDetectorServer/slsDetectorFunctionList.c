@@ -406,15 +406,25 @@ void setupDetector() {
     LTC2620_D_SetDefines(DAC_MIN_MV, DAC_MAX_MV, DAC_DRIVER_FILE_NAME, NDAC,
                          NPWR, DAC_POWERDOWN_DRIVER_FILE_NAME);
 
-    // power LTC2620 before talking to it:
+    // power LTC2620 before talking to it
     initError = XILINX_FMC_enable_all(initErrorMessage, MAX_STR_LENGTH);
     if (initError == FAIL) {
         return;
     }
-
+    // dacs only
     LOG(logINFOBLUE, ("Powering down all dacs\n"));
-    for (int idac = 0; idac < NDAC; ++idac) {
-        setDAC(idac, LTC2620_D_GetPowerDownValue(), 0);
+    for (int idac = 0; idac < NDAC_ONLY; ++idac) {
+        initError = setDAC(idac, LTC2620_D_GetPowerDownValue(), 0, initErrorMessage);
+        if (initError == FAIL)
+            return;
+    }
+
+    // power regulators
+    LOG(logINFOBLUE, ("Setting power dacs to minimum (power disabled)\n"));
+    for (int idac = NDAC_ONLY; idac < NDAC; ++idac) {
+        initError = initPower(idac, initErrorMessage);
+        if (initError == FAIL)
+            return;
     }
 
     resetFlow();
@@ -1150,84 +1160,133 @@ int64_t getMeasurementTime() {
 }
 
 /* parameters - dac, adc, hv */
-
-int setPower(enum DACINDEX ind, int val, int mV, char* mess) {
-
-    serverdacindex
-    if (checkVLimitCompliant(val) == FAIL) {
-        sprintf(mess, "Could not set power. Power regulator %d exceeds voltage limit %d.\n", ind, getVLimit());
+int validateDAC(enum DACINDEX ind, int val, int mV, char* mess) {
+    // validate index
+    if (ind < 0 || ind >= NDAC) {
+        sprintf(mess, "Could not set DAC %d. Invalid index.\n", ind);
         LOG(logERROR, (mess));
         return FAIL;
     }
-    if (!isPowerValid(ind, val)) {
-        sprintf(mess, "Could not set power. Power regulator %d should be between %d and %d mV\n", ind, (ind == D_PWR_IO ? VIO_MIN_MV : POWER_RGLTR_MIN), POWER_RGLTR_MAX);
-        LOG(logERROR, (mess));
-        return FAIL;
+    // validate mV
+    if (mV) {
+        if (val == LTC2620_D_GetPowerDownValue()) {
+            sprintf(mess, "Could not set DAC %d. Cannot use power down value and use 'mV'\n", ind);
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
+        // power regulators are converted to dacs at setPower with diff conv.
+        if (ind >= NDAC_ONLY) {
+            sprintf(mess, "Could not set DAC %d. Cannot convert to dac units for power regulator at this stage. Should have been earlier.\n");
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
     }
-    setPower(ind, val);
-    int retval = getPower(ind);
-    validate(&ret, mess, val, retval, "set power regulator", DEC);
-}
-
-int getPower(enum DACINDEX ind, int* retval, char* mess) {
-    *retval = getPower(ind);
-    LOG(logDEBUG1, ("Power regulator(%d): %d\n", ind, retval));
-}
-
-
-
-void setDAC(enum DACINDEX ind, int val, int mV) {
-    char dacName[MAX_STR_LENGTH] = {0};
-    memset(dacName, 0, MAX_STR_LENGTH);
-    sprintf(dacName, "dac%d", (int)ind);
-
-    if (val < 0 && val != LTC2620_D_GetPowerDownValue())
-        return;
-
-    LOG(logDEBUG1, ("Setting dac[%d - %s]: %d %s \n", (int)ind, dacName, val,
-                    (mV ? "mV" : "dac units")));
-    int dacval = val;
-    if (LTC2620_D_SetDACValue((int)ind, val, mV, dacName, &dacval) == OK)
-        dacValues[ind] = dacval;
-}
-
-int getDAC(enum DACINDEX ind, int mV) {
-    if (!mV) {
-        LOG(logDEBUG1, ("Getting DAC %d : %d dac\n", ind, dacValues[ind]));
-        return dacValues[ind];
+    // validate min value
+    if (val < 0) {
+        // dacs only: allow power down value (-100)
+        if ((ind < NDAC_ONLY && val != LTC2620_D_GetPowerDownValue()) ||
+            // power regulators: allow no negative values
+            (ind >= NDAC_ONLY)) {
+            sprintf(mess, "Could not set DAC %d. Invalid value %d\n", ind, val);
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
+    }    
+    // validate max value
+    if (val != LTC2620_D_GetPowerDownValue()) {
+        if (!mV) {
+            // dacs and power regs
+            if (val > LTC2620_D_GetMaxInput()) {
+                sprintf("Could not set DAC %d. Input %d exceeds max dac value %d\n", ind, val, LTC2620_D_GetMaxInput());
+                LOG(logERROR, (mess))
+                return FAIL;
+            }
+            // check vLimit - only dacs, convert to mV
+            if (vLimit > 0 && ind < NDAC_ONLY) {
+                int dacmV = 0;
+                if (LTC2620_D_DacToVoltage(val, &dacmV) == FAIL) {
+                    sprintf(mess, "Could not set DAC %d. Could not convert input %d to mV\n", ind, val);
+                    log(logERROR, (mess));
+                    return FAIL;
+                }
+                if (dacmV > vLimit) {
+                    sprintf(mess, "Could not set DAC %d. Input %d (%d mV) exceeds vLimit value %d\n", ind, val, vLimit);
+                    LOG(logERROR, (mess));
+                    return FAIL;
+                }
+            }
+        } 
+        // only dacs in mV here
+        else {
+            if (val > DAC_MAX_MV) {
+                sprintf("Could not set DAC %d. Input %d mV exceeds max dac value %d mV\n", ind, val, DAC_MAX_MV);
+                LOG(logERROR, (mess))
+                return FAIL;
+            }
+            if (vLimit > 0 && val > vLimit) {
+                sprintf("Could not set DAC %d. Input %d mV exceeds vLimit %d mV\n", ind, val, vLimit);
+                LOG(logERROR, (mess))
+                return FAIL;
+            }
+        }
     }
-    int voltage = -1;
-    LTC2620_D_DacToVoltage(dacValues[ind], &voltage);
-    LOG(logDEBUG1,
-        ("Getting DAC %d : %d dac (%d mV)\n", ind, dacValues[ind], voltage));
-    return voltage;
-}
-
-int getMaxDacSteps() { return LTC2620_D_GetMaxNumSteps(); }
-
-int dacToVoltage(int dac) {
-    int val;
-    if (LTC2620_D_DacToVoltage(dac, &val) == FAIL) {
-        return -1;
-    }
-    return val;
-}
-
-int checkVLimitCompliant(int mV) {
-    if (vLimit > 0 && mV > vLimit)
-        return FAIL;
     return OK;
 }
 
-int checkVLimitDacCompliant(int dac) {
-    if (vLimit > 0 && dac != -1 && dac != LTC2620_D_GetPowerDownValue()) {
-        int mv = 0;
-        // could not convert
-        if (LTC2620_D_DacToVoltage(dac, &mv) == FAIL)
+int setDAC(enum DACINDEX ind, int val, int mV, char* mess) {
+    if (validateDAC(ind, val, mV, mess) == FAIL)
+        return FAIL;
+
+    LOG(logINFO, ("Setting dac[%d]: %d %s \n", (int)ind, val, (mV ? "mV" : "dac units")));
+
+    // dacs only, mV, convert to dac value
+    int dacval = val;
+    if (mV && ind < NDAC_ONLY) {
+        if (LTC2620_D_VoltageToDac(val, &dacval) == FAIL) {
+            sprintf(mess, "Could not set DAC %d. Could not convert %d mV to dac units.\n", ind, val);
+            LOG(logERROR, (mess));
             return FAIL;
-        if (mv > vLimit)
-            return FAIL;
+        }
     }
+
+    if (LTC2620_D_SetDACValue((int)ind, dacval) == FAIL) {
+        sprintf(mess, "Could not set DAC %d. Failed to convert\n", ind);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    
+    dacValues[ind] = dacval;
+    return OK;
+}
+
+int getDAC(enum DACINDEX ind, int mV, int* retval, char* mess) {
+    // validate index
+    if (ind < 0 || ind > NDAC) {
+        sprintf(mess, "Could not get DAC %d. Invalid index.\n", ind);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    // validate mV
+    if (mV && ind >= NDAC_ONLY) {
+        sprintf(mess, "Could not get DAC %d. Cannot convert to dac units for power regulator at this stage. Should have been earlier.\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    // get in dac units
+    if (!mV) {
+        LOG(logDEBUG1, ("Getting DAC %d : %d dac\n", ind, dacValues[ind]));
+        *retval = dacValues[ind];
+        return OK;
+    }
+    // convert to mV
+    *retval = -1;
+    if (LTC2620_D_DacToVoltage(dacValues[ind], retval) == FAIL) {
+        sprintf(mess, "Could not get DAC %d. Could not convert %d dac units to mV\n", ind, dacValues[ind]);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    LOG(logDEBUG1,
+        ("Getting DAC %d : %d dac (%d mV)\n", ind, dacValues[ind], *retval));
     return OK;
 }
 
@@ -1242,150 +1301,217 @@ int setVLimit(int val, char* mess) {
     vLimit = val;
 }
 
-int getBitOffsetFromDACIndex(enum DACINDEX ind) {
+int isPowerValid(enum PWRINDEX ind, int val, char* mess) {
+    char *powerNames[] = {PWR_NAMES};
+
+    int min = (ind == PWR_IO) ? VIO_MIN_MV : POWER_RGLTR_MIN;
+    int max = POWER_RGLTR_MAX;
+    // also checking vlimit if set
+    if (vLimit > 0 && vLimit < max)
+        max = vLimit;
+    
+    if (val != 0 && (val < min || val > max)) {
+        sprintf(mess, "Could not set %s. Invalid value. Must be between %d and %d mV\n", powerNames[ind], min, max);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    return OK;
+}
+
+int getPowerRailMask(enum PWRINDEX ind, uint32_t* mask, char* mess) {
+    mask = 0;
+    switch (ind) {
+    case PWR_IO:
+        *mask = POWER_VIO_MSK;
+        break;
+    case PWR_A:
+        *mask = POWER_VCC_A_MSK;
+        break;
+    case PWR_B:
+        *mask = POWER_VCC_B_MSK;
+        break;
+    case PWR_C:
+        *mask = POWER_VCC_C_MSK;
+        break;
+    case PWR_D:
+        *mask = POWER_VCC_D_MSK;
+        break;
+    default:
+        sprintf(mess, "Index %d has no power rail index\n", ind);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    return OK;
+}
+
+
+int EnablePowerRail(enum PWRINDEX ind, char* mess) {
+    char *powerNames[] = {PWR_NAMES};
+    uint32_t addr = CTRL_REG;
+    uint32_t mask = 0;
+
+    if (getPowerRailMask(ind, &mask, mess) == FAIL)
+        return FAIL;
+
+    LOG(logINFO, ("\tSwitching off power for %s\n", powerNames[ind]));
+    bus_w(addr, bus_r(addr) & ~(mask));
+    return OK;
+}
+
+int DisablePowerRail(enum PWRINDEX ind, char* mess) {
+    char *powerNames[] = {PWR_NAMES};
+    uint32_t addr = CTRL_REG;
+    uint32_t mask = 0;
+
+    if (getPowerRailMask(ind, &mask, mess) == FAIL)
+        return FAIL;
+
+    LOG(logINFO, ("\tSwitching on power for %s\n", powerNames[ind]));
+    bus_w(addr, bus_r(addr) | mask);
+    return OK;
+}
+
+int getPowerRail(enum PWRINDEX ind, int* retval, char* mess) {
+    char *powerNames[] = {PWR_NAMES};
+    uint32_t addr = CTRL_REG;
+    uint32_t mask = 0;
+
+    if (getPowerRailMask(ind, &mask, mess) == FAIL)
+        return FAIL;
+
+    *retval = (bus_r(addr) & mask);
+    LOG(logDEBUG1, ("Power rail retval for %s: %s\n", powerNames[ind], ((*retval > 0) ? "Enabled" : "Disabled")));
+
+    return OK;   
+}
+
+// for power rail index and name debugging
+int getPowerIndex(enum DACINDEX ind, enum PWRINDEX* pwrIndex, char* mess) {
+    pwrIndex = -1;
     switch (ind) {
     case D_PWR_IO:
-        return POWER_VIO_OFST;
+        *pwrIndex = PWR_IO;
+        break;
     case D_PWR_A:
-        return POWER_VCC_A_OFST;
+        *pwrIndex = PWR_A;
+        break;
     case D_PWR_B:
-        return POWER_VCC_B_OFST;
+        *pwrIndex = PWR_B;
+        break;
     case D_PWR_C:
-        return POWER_VCC_C_OFST;
+        *pwrIndex = PWR_C;
+        break;
     case D_PWR_D:
-        return POWER_VCC_D_OFST;
+        *pwrIndex = PWR_D;
+        break;
     default:
-        LOG(logERROR,
-            ("DAC index %d is not defined to get offset in ctrl register\n",
-             ind));
-        return -1;
+        sprintf(mess, "Index %d has no power index\n", ind);
+        LOG(logERROR, (mess));
+        return FAIL;
     }
+    return OK;
 }
 
-int isPowerValid(enum DACINDEX ind, int val) {
+
+
+int getPower(enum DACINDEX ind, int* retval, char* mess) {
+    enum PWRINDEX pwrIndex = 0;
     char *powerNames[] = {PWR_NAMES};
-    int pwrIndex = (int)(ind - D_PWR_D);
+    *retval = -1;
 
-    int min = POWER_RGLTR_MIN;
-    if (!strcmp(powerNames[pwrIndex], "IO")) {
-        min = VIO_MIN_MV;
-    }
-
-    // not power_rgltr_max because it is allowed only upto vchip max - 200
-    if (val != 0 && (val != LTC2620_D_GetPowerDownValue()) &&
-        (val < min || val > POWER_RGLTR_MAX)) {
-        LOG(logERROR,
-            ("Invalid value of %d mV for Power V%s. Is not between %d and "
-             "%d mV\n",
-             val, powerNames[pwrIndex], min, POWER_RGLTR_MAX));
-        return 0;
-    }
-    return 1;
-}
-
-int getPower(enum DACINDEX ind) {
-    // get bit offset in ctrl register
-    int bitOffset = getBitOffsetFromDACIndex(ind);
-    if (bitOffset == -1) {
-        return -1;
-    }
+    // validate index
+    if (getPowerIndex(ind, pwrIndex, mess) == FAIL)
+        return FAIL;
 
     // powered enable off
-    {
-        uint32_t addr = CTRL_REG;
-        uint32_t mask = (1 << bitOffset);
-        if (!(bus_r(addr) & mask))
-            return 0;
+    int pwrRetval = 0;
+    if (getPowerRail(pwrIndex, &pwrRetval, mess) == FAIL)
+        return FAIL;
+    if (pwrRetval == 0) {
+        *retval = 0;
+        return OK;
     }
 
-    char *powerNames[] = {PWR_NAMES};
-    int pwrIndex = (int)(ind - D_PWR_D);
+    // mV
+    if (convertPowerRegDACtoVoltage(pwrIndex, dacValues[ind], retval, mess) == FAIL)
+        return FAIL;
 
-    // not set yet
-    if (dacValues[ind] == -1) {
-        LOG(logERROR,
-            ("Unknown dac value for Power V%s!\n", powerNames[pwrIndex]));
-        return -1;
-    }
-
-    // dac powered off
-    if (dacValues[ind] == LTC2620_D_GetPowerDownValue()) {
-        LOG(logWARNING, ("Power V%s enabled, but voltage is at minimum or 0.\n",
-                         powerNames[pwrIndex]));
-        return LTC2620_D_GetPowerDownValue();
-    }
-
-    // get dac in mV
-    int retval = -1;
-    ConvertToDifferentRange(LTC2620_D_GetMaxInput(), LTC2620_D_GetMinInput(),
-                            POWER_RGLTR_MIN, POWER_RGLTR_MAX, dacValues[ind],
-                            &retval);
-
-    return retval;
+    return OK;
 }
 
-void setPower(enum DACINDEX ind, int val) {
-    // validate index and get bit offset in ctrl register
-    int bitOffset = getBitOffsetFromDACIndex(ind);
-    if (bitOffset == -1) {
-        return;
-    }
-    uint32_t addr = CTRL_REG;
-    uint32_t mask = (1 << bitOffset);
-
-    if (val == -1)
-        return;
-
+int convertPowerRegDACtoVoltage(enum PWRINDEX ind, int val, int* retval, char* mess) {
     char *powerNames[] = {PWR_NAMES};
-    int pwrIndex = (int)(ind - D_PWR_D);
-    LOG(logINFO, ("Setting Power V%s to %d mV\n", powerNames[pwrIndex], val));
-
-    // validate value (already checked at tcp (funcs.c))
-    if (!isPowerValid(ind, val)) {
-        LOG(logERROR, ("Invalid power value for V%s: %d mV\n",
-                       powerNames[pwrIndex], val));
-        return;
-    }
-
-    // Switch off power enable
-    LOG(logDEBUG1, ("Switching off power enable\n"));
-    bus_w(addr, bus_r(addr) & ~(mask));
-
-    // power down dac
-    LOG(logINFO, ("\tPowering down V%d\n", powerNames[pwrIndex]));
-    setDAC(ind, LTC2620_D_GetPowerDownValue(), 0);
-
-    //(power off is anyway done with power enable)
-    if (val == 0)
-        val = LTC2620_D_GetPowerDownValue();
-
-    // convert voltage to dac (power off is anyway done with power enable)
-    if (val != LTC2620_D_GetPowerDownValue()) {
-
-        int dacval = -1;
-        if (ConvertToDifferentRange(
-                POWER_RGLTR_MIN, POWER_RGLTR_MAX, LTC2620_D_GetMaxInput(),
-                LTC2620_D_GetMinInput(), val, &dacval) == FAIL) {
-            LOG(logERROR,
-                ("\tCannot convert Power V%s to dac value. Invalid value of %d "
-                 "mV. Is not between "
-                 "%d and %d mV\n",
-                 powerNames[pwrIndex], val, POWER_RGLTR_MIN, POWER_RGLTR_MAX));
-            return;
-        }
-
-        // set and power on/ update dac
-        LOG(logINFO, ("Setting Power V%s: %d mV (%d dac)\n",
-                      powerNames[pwrIndex], val, dacval));
-        setDAC(ind, dacval, 0);
-
-        // if valid, enable power
-        if (dacval >= 0) {
-            LOG(logDEBUG1, ("Switching on power enable\n"));
-            bus_w(addr, bus_r(addr) | mask);
-        }
+    if (ConvertToDifferentRange(LTC2620_D_GetMaxInput(), LTC2620_D_GetMinInput(), POWER_RGLTR_MIN, POWER_RGLTR_MAX, val, retval) == FAIL) {
+        sprintf(mess, "Could not get %s. Could not convert %d dac to mV\n", powerNames[ind], val);
+        LOG(logERROR, (mess));
+        return FAIL;
     }
 }
+
+int convertPowerRegVoltagetoDAC(enum PWRINDEX ind, int val, int* retval, char* mess) {
+    char *powerNames[] = {PWR_NAMES};
+    if (ConvertToDifferentRange(POWER_RGLTR_MIN, POWER_RGLTR_MAX, LTC2620_D_GetMaxInput(), LTC2620_D_GetMinInput(), val, retval) == FAIL) {
+        sprintf(mess, "Could not set %s. Invalid value %d mV to convert to dac units.\n", powerNames[ind], val);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+}
+
+int initPower(enum DACINDEX ind, char* mess) {
+    if (ind == D_PWR_EMPTY)
+        return OK;
+
+    enum PWRINDEX pwrIndex = 0;
+    if (getPowerIndex(ind, pwrIndex, initErrorMessage) == FAIL)
+        return FAIL;
+
+    int dacval = 0;
+    int min = (ind == D_PWR_IO) ? VIO_MIN_MV : POWER_RGLTR_MIN;
+    if (convertPowerRegVoltagetoDAC(pwrIndex, min, &dacval, initErrorMessage) == FAIL)
+        return FAIL;
+
+    if (setDAC(ind, dacval, 0, initErrorMessage) == FAIL)
+        return FAIL;
+    
+    return OK;
+}
+
+int setPower(enum DACINDEX ind, int val, char* mess) {
+    enum PWRINDEX pwrIndex = 0;
+    char *powerNames[] = {PWR_NAMES};
+
+    // validate index
+    if (getPowerIndex(ind, pwrIndex, mess) == FAIL)
+        return FAIL;
+
+    // validate values (invalidate power down)
+    if (!isPowerValid(pwrIndex, val, mess) == FAIL)
+        return FAIL;
+    
+    LOG(logINFOBLUE, ("Setting %s to %d mV\n", val));
+
+    if (DisablePowerRail(pwrIndex, mess) == FAIL)
+        return FAIL;
+
+    // convert to dac units
+    int dacval = val;
+    if (val != LTC2620_GetPowerDownValue()) {
+        if (convertPowerRegVoltagetoDAC(pwrIndex, val, &dacval, mess) == FAIL)
+            return FAIL;
+    }
+
+    LOG(logINFO, ("Setting %s (DAC %d): %d dac (%d mV)\n", powerNames[pwrIndex], dacval, val));
+    if (setDAC(ind, dacval, 0, mess) == FAIL)
+        return FAIL;
+
+    if (val != 0) {
+        if (EnablePowerRail(pwrIndex, mess) == FAIL)
+            return FAIL;
+    }
+
+    return OK;
+}
+
 
 int getADC(enum ADCINDEX ind, int *value) {
     *value = 0;

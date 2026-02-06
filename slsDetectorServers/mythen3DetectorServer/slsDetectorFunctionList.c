@@ -1715,12 +1715,16 @@ int getDAC(enum DACINDEX ind, int mV, int *retval, char *mess) {
                 }
                 // different values for enabled counters
                 else if (retval1 != *retval) {
-                    sprintf(mess, "Could not get vthrehsold DAC. Different "
-                                  "values for enabled counters.\n");
-                    LOG(logERROR, (mess));
-                    return FAIL;
+                    LOG(logWARNING,("Could not get threhsold dac. Different values for enabled counters.\n"));
+                    *retval = -1;
+                    return OK;
                 }
             }
+        }
+        if (*retval == -1) {
+            sprintf(mess, "Could not get vthreshold dac.\n");
+            LOG(logERROR, (mess));
+            return FAIL;
         }
         LOG(logINFO, ("\tvthreshold match %d\n", retval));
         return OK;

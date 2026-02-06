@@ -1525,29 +1525,26 @@ int getDAC(enum DACINDEX ind, int mV, int *retval, char *mess) {
     }
 
     if (ind == E_VTHRESHOLD) {
-        int retval[5] = {0};
-        if (getDAC(E_VCMP_LL, mV, &retval[0], mess) == FAIL)
+        int retvals[5] = {0};
+        if (getDAC(E_VCMP_LL, mV, &retvals[0], mess) == FAIL)
             return FAIL;
-        if (getDAC(E_VCMP_LR, mV, &retval[1], mess) == FAIL)
+        if (getDAC(E_VCMP_LR, mV, &retvals[1], mess) == FAIL)
             return FAIL;
-        if (getDAC(E_VCMP_RL, mV, &retval[2], mess) == FAIL)
+        if (getDAC(E_VCMP_RL, mV, &retvals[2], mess) == FAIL)
             return FAIL;
-        if (getDAC(E_VCMP_RR, mV, &retval[3], mess) == FAIL)
+        if (getDAC(E_VCMP_RR, mV, &retvals[3], mess) == FAIL)
             return FAIL;
-        if (getDAC(E_VCP, mV, &retval[4], mess) == FAIL)
+        if (getDAC(E_VCP, mV, &retvals[4], mess) == FAIL)
             return FAIL;
 
-        if ((retval[0] != retval[1]) || (retval[1] != retval[2]) ||
-            (retval[2] != retval[3]) || (retval[3] != retval[4])) {
-            sprintf(mess,
-                    "Vthreshold mismatch. vcmp_ll:%d vcmp_lr:%d vcmp_rl:%d "
-                    "vcmp_rr:%d vcp:%d\n",
-                    retval[0], retval[1], retval[2], retval[3], retval[4]);
-            LOG(logERROR, (mess));
-            return FAIL;
+        if ((retvals[0] != retvals[1]) || (retvals[1] != retvals[2]) ||
+            (retvals[2] != retvals[3]) || (retvals[3] != retvals[4])) {
+            LOG(logWARNING, ("Vthreshold mismatch. vcmp_ll:%d vcmp_lr:%d vcmp_rl:%d vcmp_rr:%d vcp:%d\n",retvals[0], retvals[1], retvals[2], retvals[3], retvals[4]));
+            *retval = -1;
+            return OK;
         }
-        LOG(logINFO, ("\tvthreshold match\n"));
-        *retval = retval[0];
+        *retval = retvals[0];
+        LOG(logINFO, ("\tvthreshold match %d\n"), retval);
         return OK;
     }
 

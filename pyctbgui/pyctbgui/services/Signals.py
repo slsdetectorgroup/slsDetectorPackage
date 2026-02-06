@@ -112,7 +112,7 @@ class SignalsTab(QtWidgets.QWidget):
                     bit_index += (8 - (bit_index % 8))
                 if not isPlottedArray[i]:
                     bit_index += nbitsPerDBit
-                    samples_per_bit[idx, :] = np.nan
+                    samples_per_bit[idx, :] = 0.0
                     continue
                 for iSample in range(dSamples):
                     # all samples for digital bit together from slsReceiver
@@ -130,7 +130,7 @@ class SignalsTab(QtWidgets.QWidget):
                 for idx, i in enumerate(rx_dbitlist): 
                     if not isPlottedArray[i]:
                         bit_index += 1
-                        bits_per_sample[iSample, idx] = np.nan
+                        bits_per_sample[iSample, idx] = 0.0
 
                     index = int(bit_index/8)
                     iBit = idx % 8
@@ -161,9 +161,9 @@ class SignalsTab(QtWidgets.QWidget):
         irow = 0
         for idx, i in enumerate(self.rx_dbitlist): 
             # bits enabled but not plotting
-            waveform = digital_array[idx, :]
-            if np.isnan(waveform[0]):
+            if not isPlottedArray[i]:
                 continue
+            waveform = digital_array[idx, :]
             self.mainWindow.digitalPlots[i].setData(waveform)
             plotName = getattr(self.view, f"labelBIT{i}").text()
             waveforms[plotName] = waveform

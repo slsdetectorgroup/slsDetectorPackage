@@ -1,0 +1,62 @@
+name: Run Simulator Tests on local RHEL8
+
+on:
+  push:
+    branches:
+      - developer
+      - main
+      - 'dev/*'
+      - '*.*.*.rc'
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Debug  
+
+
+jobs:
+  build:
+    runs-on: "detectors-software-RH8"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure CMake
+        run: |
+          source /home/gitea_runner/.bashrc
+          conda activate det
+          cmake -B build \
+          -DCMAKE_BUILD_TYPE=Debug \
+          -DSLS_USE_TESTS=ON \
+          -DSLS_USE_SIMULATOR=ON \
+          -DSLS_USE_PYTHON=On \
+          -DSLS_USE_HDF5=ON
+
+      - name: Build
+          # Build your program with the given configuration
+        run: |
+          source /home/gitea_runner/.bashrc
+          conda activate det
+          cmake --build build -j4 --config Debug
+
+      - name: Python unit tests with simulators
+        run: |
+          source /home/gitea_runner/.bashrc
+          conda activate det
+          export PYTHONPATH=$PWD/build/bin:$PYTHONPATH
+          export SLSDETNAME=gitea_runner_tests
+          python -m pytest -m detectorintegration python/tests --detector-integration 
+          python -m pytest python/tests
+
+
+      - name: Simulator unit tests
+        run: |
+          source /home/gitea_runner/.bashrc
+          conda activate det
+          cd build/bin
+          python test_simulators.py -g
+
+      - name: Run frame synchronizer tests
+        run: |
+          source /home/gitea_runner/.bashrc
+          conda activate det
+          cd build/bin
+          python test_frame_synchronizer.py 

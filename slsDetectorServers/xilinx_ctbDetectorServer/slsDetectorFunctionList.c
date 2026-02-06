@@ -427,6 +427,13 @@ void setupDetector() {
         if (initError == FAIL)
             return;
     }
+    for (int idac = NDAC_ONLY; idac < NDAC; ++idac) {
+        if (idac == D_PWR_EMPTY)
+            continue;
+        int min = (idac == D_PWR_IO) ? VIO_MIN_MV : POWER_RGLTR_MIN;
+        // will not enable power at startup (dacValues = -1)
+        setPower(idac, min);
+    }
 
     resetFlow();
     cleanFifos();

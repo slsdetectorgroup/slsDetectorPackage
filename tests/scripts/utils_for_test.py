@@ -3,18 +3,23 @@
 '''
 This file is used for common utils used for integration tests between simulators and receivers.
 '''
-
+import os
 from pathlib import Path
 import sys, subprocess, time, argparse
 from enum import Enum
 from colorama import Fore, Style, init
 from datetime import timedelta
+from contextlib import contextmanager
 
 from slsdet import Detector, Ctb, detectorSettings, burstMode
 from slsdet.defines import DEFAULT_TCP_RX_PORTNO, DEFAULT_UDP_DST_PORTNO
 SERVER_START_PORTNO=1900
 
+LOG_PREFIX_FNAME = "/tmp/slsDetectorPackage_"
+
 init(autoreset=True)
+
+build_dir = Path(__file__).resolve().parents[2] / "build" / "bin"
 
 class LogLevel(Enum):
     INFO = 0
@@ -44,10 +49,13 @@ LOG_COLORS = {
 }
 
 
-def Log(level: LogLevel, message: str, stream=sys.stdout):
+def Log(level: LogLevel, message: str, stream=sys.stdout, both=False):
     color = LOG_COLORS.get(level, Fore.WHITE)
     label = LOG_LABELS.get(level, "")
     print(f"{color}{label}{message}{Style.RESET_ALL}", file=stream, flush=True)
+    if both and stream != sys.stdout:
+        print(f"{color}{label}{message}{Style.RESET_ALL}", file=sys.stdout, flush=True)
+
 
 
 class RuntimeException (Exception):
@@ -56,9 +64,27 @@ class RuntimeException (Exception):
         super().__init__(message)
 
 
+@contextmanager
+def optional_file(file_path=None, mode='w', quiet_mode=False):
+    if file_path:
+        f = open(file_path, mode)
+        try:
+            yield f
+        finally:
+            f.close()
+    else:
+        if quiet_mode:
+            f = open(os.devnull, mode)
+            try:
+                yield f
+            finally:
+                f.close()
+        else:
+            yield sys.stdout
+
+
 def checkIfProcessRunning(processName):
-    cmd = f"pgrep -f {processName}"
-    res = subprocess.getoutput(cmd)
+    res = subprocess.getoutput(f"pgrep -f {processName}")
     return res.strip().splitlines()
 
 
@@ -80,18 +106,13 @@ def killProcess(name, fp):
 def cleanSharedmemory(fp):
     Log(LogLevel.INFO, 'Cleaning up shared memory', fp)
     try:
-        p = subprocess.run(['sls_detector_get', 'free'], stdout=fp, stderr=fp, check = False)
-    except FileNotFoundError:
-        # Binary not available (e.g. on CI) → ignore
-        Log(LogLevel.INFO, 'sls_detector_get not found, skipping shared memory cleanup', fp)
+        p = subprocess.run([build_dir / 'sls_detector_get', 'free'], stdout=fp, stderr=fp)
     except Exception as e:
-        # Any other cleanup failure should NEVER fail tests
-        Log(LogLevel.WARN, f'Ignoring shared memory cleanup error: {e}', fp)
+        raise RuntimeException(f'Could not free shared memory: {str(e)}')
 
 
 def cleanup(fp):
-    Log(LogLevel.INFO, 'Cleaning up')
-    Log(LogLevel.INFO, 'Cleaning up', fp)
+    Log(LogLevel.INFO, 'Cleaning up', fp, True)
     killProcess('DetectorServer_virtual', fp)
     killProcess('slsReceiver', fp)
     killProcess('slsMultiReceiver', fp)
@@ -100,20 +121,15 @@ def cleanup(fp):
     cleanSharedmemory(fp)
 
 
-def startProcessInBackground(cmd, fp):
-    Log(LogLevel.INFO, 'Starting up ' + ' '.join(cmd))
-    Log(LogLevel.INFO, 'Starting up ' + ' '.join(cmd), fp)
-    try:
-        p = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, restore_signals=False) 
-    except Exception as e:
-        raise RuntimeException(f'Failed to start {cmd}:{str(e)}') from e
+def startProcessInBackground(cmd, fp, log_file_name: str, quiet_mode=False):
+    info_text = 'Starting up ' + ' '.join(cmd)
+    if log_file_name:
+        info_text += '. Log: ' +  log_file_name
 
+    Log(LogLevel.INFO, f'{info_text}', fp, True)
 
-def startProcessInBackgroundWithLogFile(cmd, fp, log_file_name: str):
-    Log(LogLevel.INFOBLUE, 'Starting up ' +  ' '.join(cmd) + '. Log: ' +  log_file_name)
-    Log(LogLevel.INFOBLUE, 'Starting up ' +  ' '.join(cmd) + '. Log: ' +  log_file_name, fp)
     try:
-        with open(log_file_name, 'w') as log_fp:
+        with optional_file(log_file_name, 'w', quiet_mode) as log_fp:
             subprocess.Popen(cmd, stdout=log_fp, stderr=log_fp, text=True)
     except Exception as e:
         raise RuntimeException(f'Failed to start {cmd}:{str(e)}') from e
@@ -124,8 +140,7 @@ def checkLogForErrors(fp, log_file_path: str):
         with open(log_file_path, 'r') as log_file:
             for line in log_file:
                 if 'Error' in line:
-                    Log(LogLevel.ERROR, f"Error found in log: {line.strip()}")
-                    Log(LogLevel.ERROR, f"Error found in log: {line.strip()}", fp)
+                    Log(LogLevel.ERROR, f"Error found in log: {line.strip()}", fp, True)
                     raise RuntimeException("Error found in log file")
     except FileNotFoundError:
         print(f"Log file not found: {log_file_path}")
@@ -135,33 +150,92 @@ def checkLogForErrors(fp, log_file_path: str):
         raise
 
 
-def runProcessWithLogFile(name, cmd, fp, log_file_name):
-    Log(LogLevel.INFOBLUE, 'Running ' +  name + '. Log: ' +  log_file_name)
-    Log(LogLevel.INFOBLUE, 'Running ' +  name + '. Log: ' +  log_file_name, fp)
-    Log(LogLevel.INFOBLUE, 'Cmd: ' + ' '.join(cmd), fp)
+def checkLogForErrorsOrSummary(fp, lines, source_name=""):
+    failed = False # if it found "failed" or "FAILED" in file
+    failed_msg = ""
+    printing_error = False # print every line in file after failure
+    printing_summary = False # print summary if no failure
+
+
+    for line in lines:
+        line_stripped = line.rstrip()
+
+        # Detect failure (case-insensitive)
+        if not failed and (": FAILED:" in line or " failed\nassertions" in line):
+            failed = True
+            failed_msg = line_stripped
+            printing_error = True
+            Log(LogLevel.ERROR, line_stripped, fp)
+            if source_name:
+                Log(LogLevel.ERROR, f"Error log from file: {source_name}")
+            Log(LogLevel.ERROR, "="*79)
+
+        # After failure, log everything as ERROR
+        if printing_error:
+            print(f"{line_stripped}")
+            continue
+
+        # Summary delimiter
+        if line_stripped.startswith("====="):
+            printing_summary = True
+
+        # No failure - print summary lines 
+        if printing_summary:
+            print(f"{line_stripped}")
+
+
+    if failed:
+        Log(LogLevel.ERROR, "="*79)
+        raise RuntimeException(f'Test failed: {failed_msg}')
+    else:
+        print("="*79)
+
+
+
+def runProcess(name, cmd, fp, log_file_name = None, quiet_mode=False):
+    
+    info_text = 'Running ' +  name + '.'
+    if log_file_name:
+        info_text += ' Log: ' +  log_file_name
+    Log(LogLevel.INFOBLUE, info_text, fp, True)
+    Log(LogLevel.INFOBLUE, 'Cmd: ' + ' '.join(cmd), fp, True)
+
+    error_log = None
+
     try:
-        with open(log_file_name, 'w') as log_fp:
-            subprocess.run(cmd, stdout=log_fp, stderr=log_fp, check=True, text=True)
+        if log_file_name:
+            with optional_file(log_file_name, 'w', quiet_mode) as log_fp:
+                subprocess.run(cmd, stdout=log_fp, stderr=log_fp, check=True, text=True)
+        else:
+            capture = subprocess.run(cmd, check=True, text=True, capture_output=True)
+            captured_log = capture.stdout.splitlines()
+
     except subprocess.CalledProcessError as e:
-        pass    
+        print("error: ", str(e))
+        captured_log = e.stdout.splitlines()
+        pass
     except Exception as e:
+        print("something else failed")
         Log(LogLevel.ERROR, f'Failed to run {name}:{str(e)}', fp)
         raise RuntimeException(f'Failed to run {name}:{str(e)}')
     
-    with open (log_file_name, 'r') as f:
-        for line in f:
-            if "FAILED" in line:
-                raise RuntimeException(f'{line}')
+    if log_file_name:
+        with optional_file(log_file_name, 'r') as log_fp:
+            checkLogForErrorsOrSummary(fp, log_fp, log_file_name)
+    else:
+        checkLogForErrorsOrSummary(fp, captured_log)
 
-    Log(LogLevel.INFOGREEN, name + ' successful!\n')
-    Log(LogLevel.INFOGREEN, name + ' successful!\n', fp)
+    Log(LogLevel.INFOGREEN, name + ' successful!\n', fp, True)
 
 
-def startDetectorVirtualServer(name :str, num_mods, fp):
+def startDetectorVirtualServer(name :str, num_mods, fp, no_log_file = False, quiet_mode=False):
     for i in range(num_mods):
         port_no = SERVER_START_PORTNO + (i * 2)
-        cmd = [name + 'DetectorServer_virtual', '-p', str(port_no)]
-        startProcessInBackgroundWithLogFile(cmd, fp, "/tmp/virtual_det_" + name + "_" + str(i) + ".txt")
+        cmd = [str(build_dir / (name + 'DetectorServer_virtual')), '-p', str(port_no)]
+        fname = LOG_PREFIX_FNAME + "virtual_det_" + name + "_" + str(SERVER_START_PORTNO) + ".txt"
+        if no_log_file: 
+            fname = None
+        startProcessInBackground(cmd, fp, fname, quiet_mode)
         match name:
             case 'jungfrau':
                 time.sleep(7)
@@ -196,20 +270,23 @@ def connectToVirtualServers(name, num_mods, ctb_object=False):
 
     return d
 
-def startReceiver(num_mods, fp):
+def startReceiver(num_mods, fp, no_log_file = False, quiet_mode=False):
     if num_mods == 1:
-        cmd = ['slsReceiver']
+        cmd = [str(build_dir / 'slsReceiver')]
+        fname = LOG_PREFIX_FNAME + "slsReceiver.txt"
     else:
-        cmd = ['slsMultiReceiver', str(DEFAULT_TCP_RX_PORTNO), str(num_mods)]
+        cmd = [str(build_dir / 'slsMultiReceiver'), str(DEFAULT_TCP_RX_PORTNO), str(num_mods)]
+        fname = LOG_PREFIX_FNAME + "slsMultiReceiver.txt"
         # in 10.0.0
         #cmd = ['slsMultiReceiver', '-p', str(DEFAULT_TCP_RX_PORTNO), '-n', str(num_mods)]
-    startProcessInBackground(cmd, fp)
+
+    if no_log_file: 
+        fname = None
+    startProcessInBackground(cmd, fp, fname, quiet_mode)
     time.sleep(1)
 
-
 def loadConfig(name, rx_hostname = 'localhost', settingsdir = None, log_file_fp = None, num_mods = 1, num_frames = 1, num_interfaces = 1):
-    Log(LogLevel.INFO, 'Loading config')
-    Log(LogLevel.INFO, 'Loading config', log_file_fp)
+    Log(LogLevel.INFO, 'Loading config', log_file_fp, True)
     try:
         d = connectToVirtualServers(name, num_mods)
 
@@ -217,17 +294,15 @@ def loadConfig(name, rx_hostname = 'localhost', settingsdir = None, log_file_fp 
             d.numinterfaces = num_interfaces
 
         d.udp_dstport = DEFAULT_UDP_DST_PORTNO
-        if name == 'eiger' or name == 'jungfrau' or name == 'moench':
+        if name == 'eiger' or num_interfaces == 2: 
             d.udp_dstport2 = DEFAULT_UDP_DST_PORTNO + 1
 
         d.rx_hostname = rx_hostname
-
         d.udp_dstip = 'auto'
-
         if name != "eiger":
             d.udp_srcip = 'auto'
 
-        if name == "jungfrau" or name == "moench":  
+        if num_interfaces == 2: 
             d.udp_dstip2 = 'auto'
 
         if name == "jungfrau" or name == "moench" or name == "xilinx_ctb":
@@ -241,6 +316,7 @@ def loadConfig(name, rx_hostname = 'localhost', settingsdir = None, log_file_fp 
             d.trimen = [4500, 5400, 6400] if name == 'eiger' else [4000, 6000, 8000, 12000]
             d.setThresholdEnergy(4500, detectorSettings.STANDARD) 
         
+
         d.frames = num_frames
       
     except Exception as e:
@@ -248,10 +324,11 @@ def loadConfig(name, rx_hostname = 'localhost', settingsdir = None, log_file_fp 
     
     return d
 
+
+
 # for easy acquire
 def loadBasicSettings(name, d, fp):
-    Log(LogLevel.INFO, 'Loading basic settings for ' + name)
-    Log(LogLevel.INFO, 'Loading basic settings for ' + name, fp)
+    Log(LogLevel.INFO, 'Loading basic settings for ' + name, fp, True)
     try:
         # basic settings for easy acquire
         if name == "jungfrau":
@@ -278,7 +355,7 @@ def loadBasicSettings(name, d, fp):
     except Exception as e:
         raise RuntimeException(f'Could not load config for {name}. Error: {str(e)}') from e
     
-def ParseArguments(description, default_num_mods=1, markers=False, general_tests_option=False):
+def ParseArguments(description, default_num_mods=2, specific_tests=False, general_tests_option=False):
     parser = argparse.ArgumentParser(description)
 
     default_settings_path = Path(__file__).resolve().parents[2] / "settingsdir"
@@ -293,15 +370,20 @@ def ParseArguments(description, default_num_mods=1, markers=False, general_tests
                         help='Number of frames to test with')
     parser.add_argument('-s', '--servers', nargs='*',
                         help='Detector servers to run')
-    if markers:
-        parser.add_argument('-m', '--markers', nargs='?', default ='[.cmdcall]',
-                        help = 'Markers to use for cmd tests, default: [.cmdcall]')
-
+    parser.add_argument('-nlf', '--no-log-file', action='store_true',
+                        help='Dont write output to log file')
+    parser.add_argument('-q', '--quiet', action='store_true',
+                        help='Dont write to stdout when possible.')   
+    if specific_tests:
+        parser.add_argument('-t', '--tests', nargs='?', default ='[.detectorintegration]',
+                        help = 'Test markers or specific test name to use for tests, default: [.detectorintegration]')
+        
     if general_tests_option:
-        parser.add_argument('-g', '--general_tests', action='store_true',
+        parser.add_argument('-g', '--general-tests', action='store_true',
                         help = 'Enable general tests (no value needed)')
         
     args = parser.parse_args()
+
 
     # Set default server list if not provided
     if args.servers is None:
@@ -323,8 +405,19 @@ def ParseArguments(description, default_num_mods=1, markers=False, general_tests
         f"num_mods: '{args.num_mods}'\n"
         f"num_frames: '{args.num_frames}'"
     )
-    if markers:
-        msg += f"\nmarkers: '{args.markers}'"
+
+    if args.no_log_file:
+        msg += f"\nLog File: Disabled"
+    else:
+        msg += f"\nLog File: Enabled"
+
+    if args.quiet:
+        msg += f"\nQuiet mode: Enabled"
+    else:
+        msg += f"\nQuiet mode: Disabled"
+
+    if specific_tests:
+        msg += f"\ntests: '{args.tests}'"
 
     if general_tests_option:
         msg += f"\ngeneral_tests: '{args.general_tests}'"

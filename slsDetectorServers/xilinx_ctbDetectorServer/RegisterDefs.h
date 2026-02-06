@@ -131,7 +131,7 @@
 
 /* REG no_Samples_X_Reg */
 #define NO_SAMPLES_X_REG 0xa00cUL
-#define NO_SAMPLES_X_MSK 0x7FFFFFFFUL
+#define NO_SAMPLES_X_MSK 0xffffUL
 #define NO_SAMPLES_X_OFST 0
 
 /* REG count_Frames_From_Reg_1 */
@@ -149,6 +149,39 @@
 /* REG local_Frame_Number_Reg_2 */
 #define LOCAL_FRAME_NUMBER_REG_2 0xa01cUL
 #define LOCAL_FRAME_NUMBER_REG_2_PRESET 0x0UL
+
+/* REG X0_FIFO_read */
+#define X0_FIFO_READ 0xa020UL
+#define X0_FIFO_READ_PRESET 0x0UL
+
+/* REG X1_FIFO_read */
+#define X1_FIFO_READ 0xa024UL
+#define X1_FIFO_READ_PRESET 0x0UL
+
+/* REG X2_FIFO_read */
+#define X2_FIFO_READ 0xa028UL
+#define X2_FIFO_READ_PRESET 0x0UL
+
+/* REG X3_FIFO_read */
+#define X3_FIFO_READ 0xa02cUL
+#define X3_FIFO_READ_PRESET 0x0UL
+
+/* REG D_FIFO_read */
+#define D_FIFO_READ 0xa030UL
+#define D_FIFO_READ_PRESET 0x0UL
+
+/* REG A_FIFO_select */
+#define A_FIFO_SELECT 0xa034UL
+#define A_FIFO_SELECT_PRESET 0x0UL
+
+/* REG A_FIFO_read */
+#define A_FIFO_READ 0xa038UL
+#define A_FIFO_READ_PRESET 0x0UL
+
+/* REG enable_1G */
+#define ENABLE_1G 0xa03cUL
+#define ENABLE_1G_MSK 0x1UL
+#define ENABLE_1G_OFST 0
 
 /* REG TransceiverRXCTRL0Reg1 */
 #define TRANSCEIVERRXCTRL0REG1 0xc100UL
@@ -301,21 +334,21 @@
 #define RXDATACH3_OFST 0
 
 /* REG PktPacketLengthReg */
-#define PKTPACKETLENGTHREG 0xa020UL
+#define PKTPACKETLENGTHREG 0xa100UL
 #define PACKETLENGTH1G_MSK 0xffffUL
 #define PACKETLENGTH1G_OFST 0
 #define PACKETLENGTH10G_MSK 0xffff0000UL
 #define PACKETLENGTH10G_OFST 16
 
 /* REG PktNoPacketsReg */
-#define PKTNOPACKETSREG 0xa024UL
+#define PKTNOPACKETSREG 0xa104UL
 #define NOPACKETS1G_MSK 0x3fUL
 #define NOPACKETS1G_OFST 0
 #define NOPACKETS10G_MSK 0x3f0000UL
 #define NOPACKETS10G_OFST 16
 
 /* REG PktCtrlReg */
-#define PKTCTRLREG 0xa028UL
+#define PKTCTRLREG 0xa108UL
 #define NOSERVERS_MSK 0x3fUL
 #define NOSERVERS_OFST 0
 #define SERVERSTART_MSK 0x1f00UL
@@ -325,14 +358,14 @@
 #define ETHINTERF_OFST 16
 
 /* REG PktCoordReg1 */
-#define PKTCOORDREG1 0xa02cUL
+#define PKTCOORDREG1 0xa10cUL
 #define COORDX_MSK 0xffffUL
 #define COORDX_OFST 0
 #define COORDY_MSK 0xffff0000UL
 #define COORDY_OFST 16
 
 /* REG PktCoordReg2 */
-#define PKTCOORDREG2 0xa030UL
+#define PKTCOORDREG2 0xa110UL
 #define COORDZ_MSK 0xffffUL
 #define COORDZ_OFST 0
 
@@ -638,6 +671,11 @@
 /* REG MISO_select */
 #define MISO_SELECT 0xc018UL
 #define MISO_SELECT_PRESET 0x0UL
+
+/* REG OBUFDTS_ena */
+#define OBUFDTS_ENA 0xc01cUL
+#define OBUFDTS_ENA_MSK 0xffffUL
+#define OBUFDTS_ENA_OFST 0
 
 /* REG A_FIFO_Overflow_Status_Reg */
 #define A_FIFO_OVERFLOW_STATUS_REG 0x9000UL

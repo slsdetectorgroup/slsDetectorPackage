@@ -163,7 +163,7 @@ class SignalsTab(QtWidgets.QWidget):
             # bits enabled but not plotting
             if not isPlottedArray[i]:
                 continue
-            waveform = digital_array[idx, :]
+            waveform = digital_array[i, :]
             self.mainWindow.digitalPlots[i].setData(waveform)
             plotName = getattr(self.view, f"labelBIT{i}").text()
             waveforms[plotName] = waveform

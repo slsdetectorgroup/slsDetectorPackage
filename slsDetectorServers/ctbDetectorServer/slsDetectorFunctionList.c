@@ -1940,13 +1940,14 @@ int setHighVoltage(int val, char *mess) {
         LOG(logERROR, (mess));
         return FAIL;
     }
-    LOG(logINFO, ("Setting High voltage: %d V", val));
+    LOG(logINFO, ("Setting High voltage: %d V\n", val));
     uint32_t addr = POWER_REG;
 
     // switch to external high voltage
     bus_w(addr, bus_r(addr) & (~POWER_HV_INTERNAL_SLCT_MSK));
 
-    MAX1932_Set(&val);
+    if (MAX1932_Set(val, mess) == FAIL)
+        return FAIL;
 
     // switch on internal high voltage, if set
     if (val > 0)
@@ -1958,7 +1959,8 @@ int setHighVoltage(int val, char *mess) {
 
 int getHighVoltage(int *retval, char *mess) {
     LOG(logDEBUG1, ("High Voltage: %d\n", retval));
-    return highvoltage;
+    *retval = highvoltage;
+    return OK;
 }
 
 /* parameters - timing, extsig */

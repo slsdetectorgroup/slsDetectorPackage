@@ -1539,7 +1539,10 @@ int getDAC(enum DACINDEX ind, int mV, int *retval, char *mess) {
 
         if ((retvals[0] != retvals[1]) || (retvals[1] != retvals[2]) ||
             (retvals[2] != retvals[3]) || (retvals[3] != retvals[4])) {
-            LOG(logWARNING, ("Vthreshold mismatch. vcmp_ll:%d vcmp_lr:%d vcmp_rl:%d vcmp_rr:%d vcp:%d\n",retvals[0], retvals[1], retvals[2], retvals[3], retvals[4]));
+            LOG(logWARNING,
+                ("Vthreshold mismatch. vcmp_ll:%d vcmp_lr:%d vcmp_rl:%d "
+                 "vcmp_rr:%d vcp:%d\n",
+                 retvals[0], retvals[1], retvals[2], retvals[3], retvals[4]));
             *retval = -1;
             return OK;
         }

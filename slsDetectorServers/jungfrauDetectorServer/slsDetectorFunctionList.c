@@ -1474,20 +1474,17 @@ int getADC(enum ADCINDEX ind) {
 }
 
 int setHighVoltage(int val, char *mess) {
-    if (val < 0) {
-        sprintf(mess, "Could not set high voltage. Invalid value:%d\n", val);
-        LOG(logERROR, (mess));
+    LOG(logINFO, ("Setting High voltage: %d V\n", val));
+    if (MAX1932_Set(val, mess) == FAIL)
         return FAIL;
-    }
-    LOG(logINFO, ("Setting High voltage: %d V", val));
-    MAX1932_Set(&val);
     highvoltage = val;
     return OK;
 }
 
 int getHighVoltage(int *retval, char *mess) {
     LOG(logDEBUG1, ("High Voltage: %d\n", retval));
-    return highvoltage;
+    *retval = highvoltage;
+    return OK;
 }
 
 /* parameters - timing, extsig */

@@ -1715,7 +1715,8 @@ int getDAC(enum DACINDEX ind, int mV, int *retval, char *mess) {
                 }
                 // different values for enabled counters
                 else if (retval1 != *retval) {
-                    LOG(logWARNING,("Could not get threhsold dac. Different values for enabled counters.\n"));
+                    LOG(logWARNING, ("Could not get threhsold dac. Different "
+                                     "values for enabled counters.\n"));
                     *retval = -1;
                     return OK;
                 }

@@ -1733,17 +1733,15 @@ int setPower(enum DACINDEX ind, int val, char *mess) {
 
     // convert to dac units
     int dacval = val;
-    if (val != LTC2620_GetPowerDownValue()) {
+    if (val != 0) {
         if (convertPowerRegVoltagetoDAC(pwrIndex, val, &dacval, mess) == FAIL)
             return FAIL;
-    }
 
-    LOG(logINFO, ("Setting %s (DAC %d): %d dac (%d mV)\n", powerNames[pwrIndex],
-                  dacval, val));
-    if (setDAC(ind, dacval, 0, mess) == FAIL)
-        return FAIL;
+        LOG(logINFO, ("Setting %s (DAC %d): %d dac (%d mV)\n",
+                      powerNames[pwrIndex], dacval, val));
+        if (setDAC(ind, dacval, 0, mess) == FAIL)
+            return FAIL;
 
-    if (val != 0) {
         if (EnablePowerRail(pwrIndex, mess) == FAIL)
             return FAIL;
     }
@@ -1762,10 +1760,10 @@ int initPower(enum DACINDEX ind, char *mess) {
     char *powerNames[] = {PWR_NAMES};
     int dacval = 0;
     int min = (ind == D_PWR_IO) ? VIO_MIN_MV : POWER_RGLTR_MIN;
-    LOG(logINFO, ("Initializing %s to %d mV (power disabled)\n", powerNames[pwrIndex], min));
+    LOG(logINFO, ("Initializing %s to %d mV (power disabled)\n",
+                  powerNames[pwrIndex], min));
 
-    if (convertPowerRegVoltagetoDAC(pwrIndex, min, &dacval, mess) ==
-        FAIL)
+    if (convertPowerRegVoltagetoDAC(pwrIndex, min, &dacval, mess) == FAIL)
         return FAIL;
 
     if (setDAC(ind, dacval, 0, mess) == FAIL)

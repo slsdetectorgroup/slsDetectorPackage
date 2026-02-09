@@ -2250,7 +2250,7 @@ class Detector {
     Result<std::vector<uint8_t>> readSpi(int chip_id, int register_id,
                                         int n_bytes, Positions pos = {}) const;
 
-    void writeSpi(int chip_id, int register_id,
+    Result<std::vector<uint8_t>> writeSpi(int chip_id, int register_id,
                                         const std::vector<uint8_t> &data, Positions pos = {});
 
   private:

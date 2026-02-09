@@ -11375,7 +11375,10 @@ int spi_write(int file_des){
 		local_tx[i+1] = data[i];
 
 #ifdef VIRTUAL
-    // For the virtual detector we have nothing to do
+    // For the virtual detector copy the data from local_tx to local_rx
+    for (int i=0; i < n_bytes+1; i++){
+        local_rx[i] = local_tx[i];
+    }
 #else
     int spifd = open("/dev/spidev2.0", O_RDWR);
     LOG(logINFO, ("SPI Read: opened spidev2.0 with fd=%d\n", spifd));
@@ -11397,11 +11400,13 @@ int spi_write(int file_des){
     close(spifd);
 #endif
 
+    ret = OK;
+    LOG(logDEBUG1, ("SPI Write Complete\n"));
+    Server_SendResult(file_des, INT32, NULL, 0);
+    sendData(file_des, local_rx+1, n_bytes, OTHER);
+
     free(data);
     free(local_tx);
     free(local_rx);
-
-    ret = OK;
-    LOG(logDEBUG1, ("SPI Write Complete\n"));
-    return Server_SendResult(file_des, INT32, NULL, 0);
+    return ret;
 }

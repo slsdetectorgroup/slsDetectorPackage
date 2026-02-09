@@ -1355,7 +1355,7 @@ int isPowerValid(enum PWRINDEX ind, int val, char *mess) {
 }
 
 int getPowerRailMask(enum PWRINDEX ind, uint32_t *mask, char *mess) {
-    mask = 0;
+    *mask = 0;
     switch (ind) {
     case PWR_IO:
         *mask = POWER_VIO_MSK;
@@ -1423,7 +1423,7 @@ int getPowerRail(enum PWRINDEX ind, int *retval, char *mess) {
 
 // for power rail index and name debugging
 int getPowerIndex(enum DACINDEX ind, enum PWRINDEX *pwrIndex, char *mess) {
-    pwrIndex = 0;
+    *pwrIndex = 0;
     switch (ind) {
     case D_PWR_IO:
         *pwrIndex = PWR_IO;
@@ -1483,16 +1483,20 @@ int initPower(enum DACINDEX ind, char *mess) {
         return OK;
 
     enum PWRINDEX pwrIndex = 0;
-    if (getPowerIndex(ind, &pwrIndex, initErrorMessage) == FAIL)
+    if (getPowerIndex(ind, &pwrIndex, mess) == FAIL)
         return FAIL;
 
+
+    char *powerNames[] = {PWR_NAMES};
     int dacval = 0;
     int min = (ind == D_PWR_IO) ? VIO_MIN_MV : POWER_RGLTR_MIN;
-    if (convertPowerRegVoltagetoDAC(pwrIndex, min, &dacval, initErrorMessage) ==
+    LOG(logINFO, ("Initializing %s to %d mV (power disabled)\n", powerNames[pwrIndex], min));
+
+    if (convertPowerRegVoltagetoDAC(pwrIndex, min, &dacval, mess) ==
         FAIL)
         return FAIL;
 
-    if (setDAC(ind, dacval, 0, initErrorMessage) == FAIL)
+    if (setDAC(ind, dacval, 0, mess) == FAIL)
         return FAIL;
 
     return OK;

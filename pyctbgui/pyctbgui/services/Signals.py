@@ -89,6 +89,11 @@ class SignalsTab(QtWidgets.QWidget):
             for plot, name in self.getEnabledPlots():
                 self.legend.addItem(plot, name)
 
+    def updatePlotRange(self): 
+        vb = self.mainWindow.plotDigitalWaveform.getViewBox()
+        vb.enableAutoRange(enable=True)  # Enable auto-range
+        vb.updateAutoRange()  # Force immediate update
+        
     @recordOrApplyPedestal
     def _processWaveformData(self, data, aSamples, dSamples, rx_dbitreorder, rx_dbitlist, romode,
                              nADCEnabled):
@@ -145,7 +150,6 @@ class SignalsTab(QtWidgets.QWidget):
         self.refresh()
         
         waveforms = {}
-        isPlottedArray = {i: getattr(self.view, f"checkBoxBIT{i}Plot").isChecked() for i in self.rx_dbitlist}
 
         digital_array = self._processWaveformData(data, aSamples, dSamples, self.rx_dbitreorder, self.rx_dbitlist, 
                                                   self.mainWindow.romode.value,
@@ -163,7 +167,9 @@ class SignalsTab(QtWidgets.QWidget):
                 irow += 1
             else:
                 self.mainWindow.digitalPlots[i].setY(0)
-            
+
+        self.updatePlotRange()  # Call after all data is set
+        
         return waveforms
 
 
@@ -266,6 +272,8 @@ class SignalsTab(QtWidgets.QWidget):
         self.EnableBitPlotRange()
         self.plotTab.addSelectedDigitalPlots(i)
         self.updateLegend()
+        self.updatePlotRange()
+        
 
     def EnableBitPlotRange(self):
         self.view.checkBoxBIT0_31Plot.stateChanged.disconnect()

@@ -79,7 +79,7 @@ int LTC2620_D_SetDACValue(int dacnum, int val) {
 
     LOG(logINFO, ("\tSetting DAC %d: %d dac\n", dacnum, val));
 
-#ifndef VIRTUAL
+#ifdef VIRTUAL
     return OK;
 #else
     char fname[MAX_STR_LENGTH];

@@ -2206,8 +2206,8 @@ void init_det(py::module &m) {
                        py::arg() = Positions{});
     CppDetectorApi.def(
         "writeSpi",
-        (void (Detector::*)(int, int, const std::vector<uint8_t> &,
-                            sls::Positions)) &
+        (Result<std::vector<uint8_t>>(Detector::*)(
+            int, int, const std::vector<uint8_t> &, sls::Positions)) &
             Detector::writeSpi,
         py::arg(), py::arg(), py::arg(), py::arg() = Positions{});
     ;

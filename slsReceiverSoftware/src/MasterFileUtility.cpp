@@ -9,16 +9,17 @@ namespace sls {
 
 namespace masterFileUtility {
 
-std::string CreateMasterBinaryFile(const std::string &filePath,
+std::string CreateMasterBinaryFile(const std::filesystem::path &filePath,
                                    const std::string &fileNamePrefix,
                                    const uint64_t fileIndex,
                                    const bool overWriteEnable,
                                    const bool silentMode,
                                    MasterAttributes *attr) {
-    std::ostringstream os;
-    os << filePath << "/" << fileNamePrefix << "_master"
-       << "_" << fileIndex << ".json";
-    std::string fileName = os.str();
+
+    std::filesystem::path p = filePath / (fileNamePrefix + "_master_" +
+                                          std::to_string(fileIndex) + ".json");
+
+    std::string fileName = p.string();
 
     std::string mode = "w";
     if (!overWriteEnable)
@@ -112,17 +113,16 @@ void LinkHDF5FileInMaster(std::string &masterFileName,
     }
 }
 
-std::string CreateMasterHDF5File(const std::string &filePath,
+std::string CreateMasterHDF5File(const std::filesystem::path &filePath,
                                  const std::string &fileNamePrefix,
                                  const uint64_t fileIndex,
                                  const bool overWriteEnable,
                                  const bool silentMode, MasterAttributes *attr,
                                  std::mutex *hdf5LibMutex) {
 
-    std::ostringstream os;
-    os << filePath << "/" << fileNamePrefix << "_master"
-       << "_" << fileIndex << ".h5";
-    std::string fileName = os.str();
+    std::filesystem::path p = filePath / (fileNamePrefix + "_master_" +
+                                          std::to_string(fileIndex) + ".json");
+    std::string fileName = p.string();
 
     std::lock_guard<std::mutex> lock(*hdf5LibMutex);
 

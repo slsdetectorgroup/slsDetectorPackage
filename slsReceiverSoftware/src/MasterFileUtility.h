@@ -4,13 +4,14 @@
 
 #include "MasterAttributes.h"
 
+#include <filesystem>
 #include <mutex>
 
 namespace sls {
 
 namespace masterFileUtility {
 
-std::string CreateMasterBinaryFile(const std::string &filePath,
+std::string CreateMasterBinaryFile(const std::filesystem::path &filePath,
                                    const std::string &fileNamePrefix,
                                    const uint64_t fileIndex,
                                    const bool overWriteEnable,
@@ -24,7 +25,7 @@ void LinkHDF5FileInMaster(std::string &masterFileName,
                           const bool silentMode, std::mutex *hdf5LibMutex,
                           size_t multiRoiSize);
 
-std::string CreateMasterHDF5File(const std::string &filePath,
+std::string CreateMasterHDF5File(const std::filesystem::path &filePath,
                                  const std::string &fileNamePrefix,
                                  const uint64_t fileIndex,
                                  const bool overWriteEnable,

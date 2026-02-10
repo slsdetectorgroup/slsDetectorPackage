@@ -4,6 +4,7 @@
 
 #include "File.h"
 
+#include <filesystem>
 #include <mutex>
 
 namespace sls {
@@ -23,7 +24,8 @@ class HDF5DataFile : private virtual slsDetectorDefs, public File {
 
     void CloseFile() override;
 
-    void CreateFirstHDF5DataFile(const std::string &fNamePrefix,
+    void CreateFirstHDF5DataFile(const std::filesystem::path &filePath,
+                                 const std::string &fNamePrefix,
                                  const uint64_t fIndex, const bool owEnable,
                                  const bool sMode, const uint16_t uPortNumber,
                                  const uint32_t mFramesPerFile,
@@ -65,7 +67,8 @@ class HDF5DataFile : private virtual slsDetectorDefs, public File {
     uint32_t nPixelsY{0};
     uint32_t dynamicRange{0};
 
-    std::string fileNamePrefix;
+    std::filesystem::path m_filePath{};
+    std::string fileNamePrefix{};
     uint64_t fileIndex{0};
     bool overWriteEnable{false};
     bool silentMode{false};

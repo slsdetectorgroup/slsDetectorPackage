@@ -126,7 +126,7 @@ enum detectorSettings getSettings();
 int setADCVpp(int val, int mV, char *mess);
 int getADCVpp(int mV, int *retval, char *mess);
 
-int validateDAC(enum DACINDEX ind, int val, int mV, char *mess);
+int isDACValid(enum DACINDEX ind, int val, int mV, char *mess);
 int setDAC(enum DACINDEX ind, int val, int mV, char *mess);
 int getDAC(enum DACINDEX ind, int mV, int *retval, char *mess);
 int getVLimit();

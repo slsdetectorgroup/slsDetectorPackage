@@ -1257,7 +1257,7 @@ int getADCVpp(int mV, int *retval, char *mess) {
     return OK;
 }
 
-int validateDAC(enum DACINDEX ind, int val, int mV, char *mess) {
+int isDACValid(enum DACINDEX ind, int val, int mV, char *mess) {
     // validate index
     if (ind < 0 || ind >= NDAC) {
         sprintf(mess, "Could not set DAC %d. Invalid index.\n", ind);
@@ -1353,7 +1353,7 @@ int validateDAC(enum DACINDEX ind, int val, int mV, char *mess) {
 }
 
 int setDAC(enum DACINDEX ind, int val, int mV, char *mess) {
-    if (validateDAC(ind, val, mV, mess) == FAIL)
+    if (isDACValid(ind, val, mV, mess) == FAIL)
         return FAIL;
 
     LOG(logINFO, ("Setting dac[%d]: %d %s \n", (int)ind, val,

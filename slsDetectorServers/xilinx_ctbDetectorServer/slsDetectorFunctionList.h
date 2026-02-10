@@ -119,7 +119,7 @@ int64_t getMeasurementTime();
 int setModule(sls_detector_module myMod, char *mess);
 
 // parameters - dac, adc, hv
-int validateDAC(enum DACINDEX ind, int val, int mV, char *mess);
+int isDACValid(enum DACINDEX ind, int val, int mV, char *mess);
 int setDAC(enum DACINDEX ind, int val, int mV, char *mess);
 int getDAC(enum DACINDEX ind, int mV, int *retval, char *mess);
 int getVLimit();

@@ -16,6 +16,7 @@
 #include <cstdlib> //system
 #include <cstring>
 #include <cstring> //strcpy
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <sys/stat.h> // stat
@@ -483,10 +484,14 @@ void Implementation::setFileFormat(const fileFormat f) {
     LOG(logINFO) << "File Format: " << ToString(fileFormatType);
 }
 
-std::string Implementation::getFilePath() const { return filePath; }
+std::string Implementation::getFilePath() const { return filePath.string(); }
 
 void Implementation::setFilePath(const std::string &c) {
-    filePath = c;
+    // check if filePath empty and throw error
+    if (c.empty()) {
+        throw ReceiverError("File path cannot be empty");
+    }
+    filePath = std::filesystem::path(c);
     LOG(logINFO) << "File path: " << filePath;
 }
 
@@ -873,21 +878,24 @@ void Implementation::CreateUDPSockets() {
 void Implementation::SetupWriter() {
 
     try {
-        // check if filePath empty and throw error
-        if (filePath.empty()) {
-            throw ReceiverError("File path cannot be empty");
-        }
         // check if folder exists and throw if it cant create
-        mkdir_p(filePath);
+        if (!std::filesystem::exists(filePath)) {
+            try {
+                std::filesystem::create_directories(filePath);
+            } catch (const std::filesystem::filesystem_error &e) {
+                throw RuntimeError("Could not create directory: " +
+                                   filePath.string() + ". Error: " + e.what());
+            }
+        }
         // create first files
         for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
-            std::ostringstream os;
-            os << filePath << "/" << fileName << "_d"
-               << (modulePos * generalData->numUDPInterfaces + i);
-            std::string fileNamePrefix = os.str();
-            dataProcessor[i]->CreateFirstFiles(fileNamePrefix, fileIndex,
-                                               overwriteEnable, silentMode,
-                                               detectorDataStream[i]);
+
+            std::string fileNamePrefix =
+                fileName + "_d" +
+                std::to_string(modulePos * generalData->numUDPInterfaces + i);
+            dataProcessor[i]->CreateFirstFiles(
+                filePath, fileNamePrefix, fileIndex, overwriteEnable,
+                silentMode, detectorDataStream[i]);
         }
     } catch (const RuntimeError &e) {
         shutDownUDPSockets();

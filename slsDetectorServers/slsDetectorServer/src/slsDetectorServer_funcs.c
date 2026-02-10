@@ -1270,24 +1270,19 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
 #elif defined(EIGERD)
             ret = setDAC(serverDacIndex, val, mV, mess);
             // handle if set by user individually
-            if (getSettings() != UNDEFINED) {
-                switch (serverDacIndex) {
-                case E_VCMP_LL:
-                case E_VCMP_LR:
-                case E_VCMP_RL:
-                case E_VCMP_RR:
-                case E_VRPREAMP:
-                case E_VCP:
-                    if (setSettings(UNDEFINED, mess) == FAIL) {
-                        ret = FAIL;
-                        return retval;
-                    }
-                    LOG(logERROR, ("Settings has been changed "
-                                   "to undefined (changed specific dacs)\n"));
-                    break;
-                default:
-                    break;
-                }
+            switch (serverDacIndex) {
+            case E_VCMP_LL:
+            case E_VCMP_LR:
+            case E_VCMP_RL:
+            case E_VCMP_RR:
+            case E_VRPREAMP:
+            case E_VCP:
+                setSettings(UNDEFINED, mess);
+                LOG(logERROR, ("Settings has been changed "
+                               "to undefined (changed specific dacs)\n"));
+                break;
+            default:
+                break;
             }
 #else
             ret = setDAC(serverDacIndex, val, mV, mess);

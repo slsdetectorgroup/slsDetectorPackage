@@ -1313,8 +1313,7 @@ int setModule(sls_detector_module myMod, char *mess) {
         sprintf(mess, "Could not set module. Could not set iodelay %d\n",
                 myMod.iodelay);
         LOG(logERROR, (mess));
-        if (setSettings(UNDEFINED, mess) == FAIL)
-            return FAIL;
+        setSettings(UNDEFINED, mess);
         LOG(logERROR, ("Settings has been changed to undefined\n"));
         return FAIL;
     }
@@ -1324,8 +1323,7 @@ int setModule(sls_detector_module myMod, char *mess) {
         setThresholdEnergy(myMod.eV[0]);
     else {
         // (loading a random trim file) (dont return fail)
-        if (setSettings(UNDEFINED, mess) == FAIL)
-            return FAIL;
+        setSettings(UNDEFINED, mess);
         LOG(logERROR,
             ("Settings has been changed to undefined (random trim file)\n"));
     }
@@ -1337,8 +1335,7 @@ int setModule(sls_detector_module myMod, char *mess) {
         if (myMod.dacs[i] != (detectorModules)->dacs[i]) {
             sprintf(mess, "Could not set module. Could not set dac %d\n", i);
             LOG(logERROR, (mess));
-            if (setSettings(UNDEFINED, mess) == FAIL)
-                return FAIL;
+            setSettings(UNDEFINED, mess);
             LOG(logERROR, ("Settings has been changed to undefined\n"));
             return FAIL;
         }
@@ -1365,8 +1362,7 @@ int setModule(sls_detector_module myMod, char *mess) {
                     "Cannot set module. Cannot set Rate correction. "
                     "No default tau provided. Deactivating Rate Correction\n");
             LOG(logERROR, (mess));
-            if (setSettings(UNDEFINED, mess) == FAIL)
-                return FAIL;
+            setSettings(UNDEFINED, mess);
             LOG(logERROR, ("Settings has been changed to undefined (random "
                            "trim file)\n"));
             return FAIL;
@@ -1379,8 +1375,7 @@ int setModule(sls_detector_module myMod, char *mess) {
             if (setRateCorrection(myMod.tau) == FAIL) {
                 sprintf(mess, "Cannot set module. Rate correction failed.\n");
                 LOG(logERROR, (mess));
-                if (setSettings(UNDEFINED, mess) == FAIL)
-                    return FAIL;
+                setSettings(UNDEFINED, mess);
                 LOG(logERROR, ("Settings has been changed to undefined (random "
                                "trim file)\n"));
                 return FAIL;
@@ -1391,8 +1386,7 @@ int setModule(sls_detector_module myMod, char *mess) {
                         mess,
                         "Cannot set module. Could not set rate correction\n");
                     LOG(logERROR, (mess));
-                    if (setSettings(UNDEFINED, mess) == FAIL)
-                        return FAIL;
+                    setSettings(UNDEFINED, mess);
                     LOG(logERROR, ("Settings has been changed to undefined "
                                    "(random trim file)\n"));
                     return FAIL;
@@ -2219,8 +2213,7 @@ int validateAndSetRateCorrection(int64_t tau_ns, char *mess) {
     }
     // user defined value (settings become undefined)
     else if (tau_ns > 0) {
-        if (setSettings(UNDEFINED, mess) == FAIL)
-            return FAIL;
+        setSettings(UNDEFINED, mess);
         LOG(logERROR,
             ("Settings has been changed to undefined (tau changed)\n"));
         eiger_tau_ns = tau_ns;
@@ -2423,8 +2416,7 @@ int setTrimbits(int *chanregs, char *mess) {
     if (!Feb_Control_SetTrimbits(tt, top)) {
         sprintf(mess, "Could not set module. Could not set trimbits\n");
         LOG(logERROR, (mess));
-        if (setSettings(UNDEFINED, mess) == FAIL)
-            return FAIL;
+        setSettings(UNDEFINED, mess);
         LOG(logERROR, ("Settings has been changed to undefined (random "
                        "trim file)\n"));
 

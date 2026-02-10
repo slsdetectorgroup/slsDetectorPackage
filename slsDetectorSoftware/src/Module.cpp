@@ -4097,7 +4097,7 @@ std::vector<uint8_t> Module::readSpi(int chip_id, int register_id,
 }
 
 std::vector<uint8_t> Module::writeSpi(int chip_id, int register_id,
-                      const std::vector<uint8_t> &data){
+                                      const std::vector<uint8_t> &data) {
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(F_SPI_WRITE);
     client.setFnum(F_SPI_WRITE);
@@ -4113,7 +4113,8 @@ std::vector<uint8_t> Module::writeSpi(int chip_id, int register_id,
         throw DetectorError(os.str());
     }
 
-    // Read the output from the SPI write. This contains the data before the write.
+    // Read the output from the SPI write. This contains the data before the
+    // write.
     std::vector<uint8_t> ret(data.size());
     client.Receive(ret);
     return ret;

@@ -11223,7 +11223,7 @@ int spi_write(int file_des) {
 
 #ifdef VIRTUAL
     // For the virtual detector copy the data from local_tx to local_rx
-    for (int i=0; i < n_bytes+1; i++){
+    for (int i = 0; i < n_bytes + 1; i++) {
         local_rx[i] = local_tx[i];
     }
 #else
@@ -11250,7 +11250,7 @@ int spi_write(int file_des) {
     ret = OK;
     LOG(logDEBUG1, ("SPI Write Complete\n"));
     Server_SendResult(file_des, INT32, NULL, 0);
-    sendData(file_des, local_rx+1, n_bytes, OTHER);
+    sendData(file_des, local_rx + 1, n_bytes, OTHER);
 
     free(data);
     free(local_tx);

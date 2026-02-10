@@ -28,3 +28,4 @@ jobs:
         run: |
             sftp -r gitea_runner@mpc2935:/slsDetectorSoftware/RH9 <<< $'put build/bin'
             sftp -r gitea_runner@mpc2935:/slsDetectorSoftware/RH9 <<< $'put pyctbgui'
+            sftp -r gitea_runner@mpc2935:/slsDetectorSoftware/RH9 <<< $'put slsDetectorServers/ctbDetectorServer/bin/ctbDetectorServer_developer'

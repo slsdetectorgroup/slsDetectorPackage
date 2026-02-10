@@ -4076,7 +4076,7 @@ void Module::simulatingActivityinDetector(const std::string &functionType,
 }
 
 std::vector<uint8_t> Module::readSpi(int chip_id, int register_id,
-                                               int n_bytes) const{
+                                     int n_bytes) const {
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(F_SPI_READ);
     client.setFnum(F_SPI_READ);
@@ -4084,7 +4084,7 @@ std::vector<uint8_t> Module::readSpi(int chip_id, int register_id,
     client.Send(register_id);
     client.Send(n_bytes);
 
-    if (client.Receive<int>() == FAIL) {   
+    if (client.Receive<int>() == FAIL) {
         std::ostringstream os;
         os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
            << " returned error: " << client.readErrorMessage();
@@ -4094,11 +4094,10 @@ std::vector<uint8_t> Module::readSpi(int chip_id, int register_id,
     std::vector<uint8_t> data(n_bytes);
     client.Receive(data);
     return data;
-    
 }
 
 std::vector<uint8_t> Module::writeSpi(int chip_id, int register_id,
-                      const std::vector<uint8_t> &data){
+                                      const std::vector<uint8_t> &data) {
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(F_SPI_WRITE);
     client.setFnum(F_SPI_WRITE);
@@ -4114,7 +4113,8 @@ std::vector<uint8_t> Module::writeSpi(int chip_id, int register_id,
         throw DetectorError(os.str());
     }
 
-    // Read the output from the SPI write. This contains the data before the write.
+    // Read the output from the SPI write. This contains the data before the
+    // write.
     std::vector<uint8_t> ret(data.size());
     client.Receive(ret);
     return ret;

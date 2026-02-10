@@ -1962,7 +1962,7 @@ int setHighVoltage(int val, char *mess) {
 }
 
 int getHighVoltage(int *retval, char *mess) {
-    LOG(logDEBUG1, ("High Voltage: %d\n", retval));
+    LOG(logDEBUG1, ("High Voltage: %d\n", *retval));
     *retval = highvoltage;
     return OK;
 }

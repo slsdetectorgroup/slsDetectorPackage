@@ -1666,7 +1666,7 @@ int setGeneralDAC(enum DACINDEX ind, int val, int mV, char *mess) {
         }
     }
 
-    if (LTC2620_D_SetDACValue((int)ind, val) == FAIL) {
+    if (LTC2620_D_SetDACValue((int)ind, dacval) == FAIL) {
         sprintf(mess, "Could not set DAC %s.\n", dacNames[ind]);
         LOG(logERROR, (mess));
         return FAIL;
@@ -1727,7 +1727,7 @@ int getDAC(enum DACINDEX ind, int mV, int *retval, char *mess) {
             LOG(logERROR, (mess));
             return FAIL;
         }
-        LOG(logINFO, ("\tvthreshold match %d\n", retval));
+        LOG(logINFO, ("\tvthreshold match %d\n", *retval));
         return OK;
     }
 
@@ -1793,7 +1793,7 @@ int setHighVoltage(int val, char *mess) {
 
 int getHighVoltage(int *retval, char *mess) {
     int ret = DAC6571_Get(retval, mess);
-    LOG(logDEBUG1, ("High Voltage: %d\n", retval));
+    LOG(logDEBUG1, ("High Voltage: %d\n", *retval));
     return ret;
 }
 

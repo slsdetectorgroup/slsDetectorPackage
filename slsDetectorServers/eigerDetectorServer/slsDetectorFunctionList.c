@@ -1541,7 +1541,7 @@ int getDAC(enum DACINDEX ind, int mV, int *retval, char *mess) {
             return OK;
         }
         *retval = retvals[0];
-        LOG(logINFO, ("\tvthreshold match %d\n"), retval);
+        LOG(logINFO, ("\tvthreshold match %d\n", *retval));
         return OK;
     }
 

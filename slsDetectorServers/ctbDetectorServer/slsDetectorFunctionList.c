@@ -1431,25 +1431,28 @@ int setVLimit(int val, char *mess) {
 }
 
 int getVchip(int *retval, char *mess) {
-    *retval = -1;
+    *retval = dacValues[D_PWR_CHIP];
+
     // not set yet
-    if (dacValues[D_PWR_CHIP] == -1) {
+    if (*retval == -1) {
         LOG(logWARNING, ("Retrieving Vchip that has not been set yet.\n"));
-        return dacValues[D_PWR_CHIP];
+        return OK;
     }
-    if (dacValues[D_PWR_CHIP] == LTC2620_GetPowerDownValue()) {
-        return dacValues[D_PWR_CHIP];
+    if (*retval == LTC2620_GetPowerDownValue()) {
+        LOG(logWARNING, ("Vchip dac at power down value\n"));
+        return OK;
     }
     // dac to voltage
+    int dacval = dacValues[D_PWR_CHIP];
     if (ConvertToDifferentRange(LTC2620_GetMaxInput(), LTC2620_GetMinInput(),
-                                VCHIP_MIN_MV, VCHIP_MAX_MV,
-                                dacValues[D_PWR_CHIP], retval) == FAIL) {
+                                VCHIP_MIN_MV, VCHIP_MAX_MV, dacval,
+                                retval) == FAIL) {
         sprintf(mess, "Could not convert to voltage. Input value for vchip "
                       "outside bounds.\n");
         LOG(logERROR, (mess));
         return FAIL;
     }
-    LOG(logDEBUG1, ("Vchip: %d\n", retval));
+    LOG(logDEBUG1, ("Vchip: %d\n", *retval));
     return OK;
 }
 

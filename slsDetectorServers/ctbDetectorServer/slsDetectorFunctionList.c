@@ -1296,59 +1296,59 @@ int isDACValid(enum DACINDEX ind, int val, int mV, char *mess) {
             return FAIL;
         }
     }
-    // validate max value
-    if (val != LTC2620_GetPowerDownValue()) {
-        if (!mV) {
-            // dacs and power regs
-            if (val > LTC2620_GetMaxInput()) {
-                sprintf(
-                    mess,
-                    "Could not set DAC %d. Input %d exceeds max dac value %d\n",
-                    (int)ind, val, LTC2620_GetMaxInput());
-                LOG(logERROR, (mess))
-                return FAIL;
-            }
-            // check vLimit - only dacs, convert to mV
-            if (vLimit > 0 && ind < NDAC_ONLY) {
-                int dacmV = 0;
-                if (LTC2620_DacToVoltage(val, &dacmV) == FAIL) {
-                    sprintf(mess,
-                            "Could not set DAC %d. Could not convert input %d "
-                            "to mV\n",
-                            ind, val);
-                    LOG(logERROR, (mess));
-                    return FAIL;
-                }
-                if (dacmV > vLimit) {
-                    sprintf(mess,
-                            "Could not set DAC %d. Input %d (%d mV) exceeds "
-                            "vLimit value %d\n",
-                            ind, val, dacmV, vLimit);
-                    LOG(logERROR, (mess));
-                    return FAIL;
-                }
-            }
+    if (val == LTC2620_GetPowerDownValue())
+        return OK;
+    // validate max value/ vlimit
+
+    // only dacs here in mV
+    if (mV) {
+        if (val > DAC_MAX_MV) {
+            sprintf(mess,
+                    "Could not set DAC %d. Input %d mV exceeds max dac "
+                    "value %d mV\n",
+                    ind, val, DAC_MAX_MV);
+            LOG(logERROR, (mess))
+            return FAIL;
         }
-        // only dacs in mV here
-        else {
-            if (val > DAC_MAX_MV) {
-                sprintf(mess,
-                        "Could not set DAC %d. Input %d mV exceeds max dac "
-                        "value %d mV\n",
-                        ind, val, DAC_MAX_MV);
-                LOG(logERROR, (mess))
-                return FAIL;
-            }
-            if (vLimit > 0 && val > vLimit) {
-                sprintf(
-                    mess,
+        if (vLimit > 0 && val > vLimit) {
+            sprintf(mess,
                     "Could not set DAC %d. Input %d mV exceeds vLimit %d mV\n",
                     (int)ind, val, vLimit);
-                LOG(logERROR, (mess))
-                return FAIL;
-            }
+            LOG(logERROR, (mess))
+            return FAIL;
+        }
+        return OK;
+    }
+
+    // dacs and power regs
+    if (val > LTC2620_GetMaxInput()) {
+        sprintf(mess,
+                "Could not set DAC %d. Input %d exceeds max dac value %d\n",
+                (int)ind, val, LTC2620_GetMaxInput());
+        LOG(logERROR, (mess))
+        return FAIL;
+    }
+    // vlimit check for only dacs, convert to mV (power regs checked before)
+    if (vLimit > 0 && ind < NDAC_ONLY) {
+        int dacmV = 0;
+        if (LTC2620_DacToVoltage(val, &dacmV) == FAIL) {
+            sprintf(mess,
+                    "Could not set DAC %d. Could not convert input %d "
+                    "to mV\n",
+                    ind, val);
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
+        if (dacmV > vLimit) {
+            sprintf(mess,
+                    "Could not set DAC %d. Input %d (%d mV) exceeds "
+                    "vLimit value %d\n",
+                    ind, val, dacmV, vLimit);
+            LOG(logERROR, (mess));
+            return FAIL;
         }
     }
+
     return OK;
 }
 

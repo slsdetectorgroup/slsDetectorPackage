@@ -57,7 +57,7 @@ int DAC6571_Set(int val, char *mess) {
     // open file
     FILE *fd = fopen(DAC6571_DriverFileName, "w");
     if (fd == NULL) {
-        sprintg(mess,
+        sprintf(mess,
                 "Could not open file %s for writing to set high voltage\n",
                 DAC6571_DriverFileName);
         LOG(logERROR, (mess));

@@ -1388,8 +1388,8 @@ int EnablePowerRail(enum PWRINDEX ind, char *mess) {
     if (getPowerRailMask(ind, &mask, mess) == FAIL)
         return FAIL;
 
-    LOG(logINFO, ("\tSwitching off power for %s\n", powerNames[ind]));
-    bus_w(addr, bus_r(addr) & ~(mask));
+    LOG(logINFO, ("\tSwitching on power for %s\n", powerNames[ind]));
+    bus_w(addr, bus_r(addr) | mask);
     return OK;
 }
 
@@ -1401,8 +1401,8 @@ int DisablePowerRail(enum PWRINDEX ind, char *mess) {
     if (getPowerRailMask(ind, &mask, mess) == FAIL)
         return FAIL;
 
-    LOG(logINFO, ("\tSwitching on power for %s\n", powerNames[ind]));
-    bus_w(addr, bus_r(addr) | mask);
+    LOG(logINFO, ("\tSwitching off power for %s\n", powerNames[ind]));
+    bus_w(addr, bus_r(addr) & ~(mask));
     return OK;
 }
 
@@ -1538,7 +1538,7 @@ int setPower(enum DACINDEX ind, int val, char *mess) {
     if (isPowerValid(pwrIndex, val, mess) == FAIL)
         return FAIL;
 
-    LOG(logINFOBLUE, ("Setting %s to %d mV\n", val));
+    LOG(logINFOBLUE, ("Setting %s to %d mV\n", powerNames[pwrIndex], val));
 
     if (DisablePowerRail(pwrIndex, mess) == FAIL)
         return FAIL;

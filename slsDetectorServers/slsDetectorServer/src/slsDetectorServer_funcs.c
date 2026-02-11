@@ -1159,7 +1159,7 @@ enum DACINDEX getDACIndex(enum dacIndex ind) {
     return serverDacIndex;
 }
 
-int validateAndSetDac(enum dacIndex ind, int val, int mV) {
+int validateAndSetDac(enum dacIndex ind, int val, bool mV) {
 
     int retval = -1;
     enum DACINDEX serverDacIndex = 0;
@@ -1305,7 +1305,7 @@ int set_dac(int file_des) {
         return printSocketReadError();
 
     enum dacIndex ind = args[0];
-    int mV = args[1];
+    bool mV = (args[1] != 0);
     int val = args[2];
 
     LOG(logDEBUG1,
@@ -1944,7 +1944,7 @@ void *start_state_machine(void *arg) {
             else {
                 LOG(logINFOBLUE, ("Dac [%d] scan %d/%d: [%d]\n",
                                   scanGlobalIndex, i, times, scanSteps[i]));
-                validateAndSetDac(scanGlobalIndex, scanSteps[i], 0);
+                validateAndSetDac(scanGlobalIndex, scanSteps[i], false);
                 if (ret == FAIL) {
                     sprintf(scanErrMessage, "Cannot scan dac %d at %d. ",
                             scanGlobalIndex, scanSteps[i]);

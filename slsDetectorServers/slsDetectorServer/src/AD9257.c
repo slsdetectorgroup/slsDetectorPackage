@@ -195,7 +195,7 @@ void AD9257_Disable() {
 }
 
 int AD9257_GetVrefVoltage(int mV) {
-    if (mV == 0)
+    if (!mV)
         return AD9257_VrefVoltage;
     switch (AD9257_VrefVoltage) {
     case 0:

@@ -6,6 +6,7 @@
 #include <stdio.h> // FILE
 #include <stdlib.h>
 #include <sys/types.h>
+#include <stdbool.h>
 
 /****************************************************
 This functions are used by the slsDetectroServer_funcs interface.
@@ -123,9 +124,19 @@ int getThresholdEnergy();
 int setThresholdEnergy(int ev);
 
 // parameters - dac, adc, hv
-int validateDAC(enum DACINDEX ind, int val, int mV, char *mess);
-int setDAC(enum DACINDEX ind, int val, int mV, char *mess);
-int getDAC(enum DACINDEX ind, int mV, int *retval, char *mess);
+int validateDACIndex(enum DACINDEX ind, char *mess);
+int validateDACValue(enum DACINDEX ind, int dacval, char *mess);
+int validateDACVoltage(enum DACINDEX ind, int voltage, char *mess);
+int convertVoltageToDACValue(enum DACINDEX ind, int voltage, int* retval_dacval, char *mess);
+int convertDACValueToVoltage(enum DACINDEX ind, int dacval, int* retval_voltage, char *mess);
+int getDAC(enum DACINDEX ind, bool mV, int *retval, char *mess);
+/** @param val value can be in mV or dac units */
+int setDAC(enum DACINDEX ind, int val, bool mV, char *mess);
+/** @param dacval in dac units */
+int writeDACSpi(enum DACINDEX ind, int dacval, char *mess);
+
+int setThresholdDACs(int val, bool mV, char *mess);
+int getThresholdDACs(bool mV, int *retval, char *mess);
 
 int getADC(enum ADCINDEX ind);
 int setHighVoltage(int val, char *mess);

@@ -11300,35 +11300,15 @@ int spi_read(int file_des) {
 }
 
 /**
- * Write to SPI register.
+ * Generic write to a SPI register. For Matterhorn and similar detectors
+ * the client packs the chip_id and register_id in the first byte.
+ * ((chip_id & 0xF) << 4) | (register_id & 0xF)
  */
 int spi_write(int file_des) {
 #if !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
     return Server_SendResult(file_des, INT32, NULL, 0);
 #endif
-
-    int chip_id = 0;
-    if (receiveData(file_des, &chip_id, sizeof(chip_id), INT32) < 0) {
-        return printSocketReadError();
-    }
-    if (chip_id < 0 || chip_id > 15) {
-        ret = FAIL;
-        sprintf(mess, "Invalid chip_id %d. Must be 0-15\n", chip_id);
-        LOG(logERROR, (mess));
-        return Server_SendResult(file_des, INT32, NULL, 0);
-    }
-
-    int register_id = 0;
-    if (receiveData(file_des, &register_id, sizeof(register_id), INT32) < 0) {
-        return printSocketReadError();
-    }
-    if (register_id < 0 || register_id > 15) {
-        ret = FAIL;
-        sprintf(mess, "Invalid register_id %d. Must be 0-15\n", register_id);
-        LOG(logERROR, (mess));
-        return Server_SendResult(file_des, INT32, NULL, 0);
-    }
 
     int n_bytes = 0;
     if (receiveData(file_des, &n_bytes, sizeof(n_bytes), INT32) < 0) {
@@ -11341,9 +11321,7 @@ int spi_write(int file_des) {
         return sendError(file_des);
     }
 
-    LOG(logINFO,
-        ("SPI Write Requested: chip_id=%d, register_id=%d, n_bytes=%d\n",
-         chip_id, register_id, n_bytes));
+    LOG(logINFO, ("SPI Write Requested: n_bytes=%d\n", n_bytes));
 
     uint8_t *data = malloc(n_bytes);
     if (data == NULL) {
@@ -11356,49 +11334,40 @@ int spi_write(int file_des) {
         return printSocketReadError();
     }
 
-    uint8_t *local_tx = malloc(n_bytes + 1);
-    if (local_tx == NULL) {
-        LOG(logERROR, ("Could not allocate memory for local_tx\n"));
-        exit(EXIT_FAILURE);
-    }
-    uint8_t *local_rx = malloc(n_bytes + 1);
-    if (local_rx == NULL) {
+
+    uint8_t *rx = malloc(n_bytes);
+    if (rx == NULL) {
         LOG(logERROR, ("Could not allocate memory for local_rx\n"));
         exit(EXIT_FAILURE);
     }
 
     struct spi_ioc_transfer send_cmd[1];
     memset(send_cmd, 0, sizeof(send_cmd));
-    send_cmd[0].len = n_bytes + 1;
-    send_cmd[0].tx_buf = (unsigned long)local_tx;
-    send_cmd[0].rx_buf = (unsigned long)local_rx;
+    send_cmd[0].len = n_bytes;
+    send_cmd[0].tx_buf = (unsigned long)data;
+    send_cmd[0].rx_buf = (unsigned long)rx;
 
-    // 0 - Normal operation, 1 - CSn remains zero after operation
+    // 0 = Normal operation
     send_cmd[0].cs_change = 0;
-    local_tx[0] = ((chip_id & 0xF) << 4) | (register_id & 0xF);
-    for (int i = 0; i < n_bytes; i++)
-        local_tx[i + 1] = data[i];
 
 #ifdef VIRTUAL
-    // For the virtual detector copy the data from local_tx to local_rx
-    for (int i = 0; i < n_bytes + 1; i++) {
-        local_rx[i] = local_tx[i];
+    // For the virtual detector copy the data to rx
+    for (int i = 0; i < n_bytes; i++) {
+        rx[i] = data[i];
     }
 #else
     int spifd = open("/dev/spidev2.0", O_RDWR);
     LOG(logINFO, ("SPI Read: opened spidev2.0 with fd=%d\n", spifd));
     if (spifd < 0) {
         free(data);
-        free(local_tx);
-        free(local_rx);
+        free(rx);
         sprintf(mess, "Could not open /dev/spidev2.0\n");
         return sendError(file_des);
     }
     if (ioctl(spifd, SPI_IOC_MESSAGE(1), &send_cmd) < 0) {
         close(spifd);
         free(data);
-        free(local_tx);
-        free(local_rx);
+        free(rx);
         sprintf(mess, "SPI write failed with %d:%s\n", errno, strerror(errno));
         return sendError(file_des);
     }
@@ -11408,10 +11377,9 @@ int spi_write(int file_des) {
     ret = OK;
     LOG(logDEBUG1, ("SPI Write Complete\n"));
     Server_SendResult(file_des, INT32, NULL, 0);
-    sendData(file_des, local_rx + 1, n_bytes, OTHER);
+    sendData(file_des, rx, n_bytes, OTHER);
 
     free(data);
-    free(local_tx);
-    free(local_rx);
+    free(rx);
     return ret;
 }

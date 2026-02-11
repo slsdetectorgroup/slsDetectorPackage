@@ -2964,7 +2964,11 @@ Result<std::vector<uint8_t>> Detector::readSpi(int chip_id, int register_id,
 Result<std::vector<uint8_t>>
 Detector::writeSpi(int chip_id, int register_id,
                    const std::vector<uint8_t> &data, Positions pos) {
-    return pimpl->Parallel(&Module::writeSpi, pos, chip_id, register_id, data);
+    return pimpl->Parallel(
+        static_cast<std::vector<uint8_t> (Module::*)(int, int,
+                                                      const std::vector<uint8_t>&)>(
+            &Module::writeSpi),
+        pos, chip_id, register_id, data);
 }
 
 } // namespace sls

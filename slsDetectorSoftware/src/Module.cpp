@@ -4098,11 +4098,41 @@ std::vector<uint8_t> Module::readSpi(int chip_id, int register_id,
 
 std::vector<uint8_t> Module::writeSpi(int chip_id, int register_id,
                                       const std::vector<uint8_t> &data) {
+    
+    //At the moment we only support one module and spi data is always
+    //small so a clean API is more important than the extra copy
+    std::vector<uint8_t> message = data;
+    message.insert(message.begin(), ((chip_id & 0xF) << 4) | (register_id & 0xF));
+
+    auto ret = writeSpi(message);
+    // auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    // client.Send(F_SPI_WRITE);
+    // client.setFnum(F_SPI_WRITE);
+    // client.Send(static_cast<int>(message.size()));
+    // client.Send(message);
+
+    // if (client.Receive<int>() == FAIL) {
+    //     std::ostringstream os;
+    //     os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
+    //        << " returned error: " << client.readErrorMessage();
+    //     throw DetectorError(os.str());
+    // }
+
+    // // Read the output from the SPI write. This contains the data before the
+    // // write.
+    // std::vector<uint8_t> ret(message.size());
+    // client.Receive(ret);
+    ret.erase(ret.begin()); //The first value is 0xFF so we drop it
+    return ret;
+}
+
+std::vector<uint8_t> Module::writeSpi(const std::vector<uint8_t> &data) {
+    
+
+
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(F_SPI_WRITE);
     client.setFnum(F_SPI_WRITE);
-    client.Send(chip_id);
-    client.Send(register_id);
     client.Send(static_cast<int>(data.size()));
     client.Send(data);
 

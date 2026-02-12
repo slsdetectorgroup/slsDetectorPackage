@@ -1457,16 +1457,13 @@ int writeDACSpi(enum DACINDEX ind, int dacval, char *mess) {
     if (validateDACValue(ind, dacval, mess) == FAIL)
         return FAIL;
 
-#ifdef VIRTUAL
-    dacValues[ind] = dacval;
-    return OK;
-#else
     if (LTC2620_SetDACValue((int)ind, dacval) == FAIL) {
         char *dacNames[] = {DAC_NAMES};
         sprintf(mess, "Could not set DAC %s.\n", dacNames[ind]);
         LOG(logERROR, (mess));
         return FAIL;
     }
+    
     dacValues[ind] = dacval;
 
     // ext daq ctrl
@@ -1476,9 +1473,7 @@ int writeDACSpi(enum DACINDEX ind, int dacval, char *mess) {
         bus_w(addr, (bus_r(addr) | ((dacval << EXT_DAQ_CTRL_VREF_COMP_OFST) &
                                     EXT_DAQ_CTRL_VREF_COMP_MSK)));
     }
-
     return OK;
-#endif
 }
 
 

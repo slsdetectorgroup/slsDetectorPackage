@@ -1678,10 +1678,6 @@ int writeDACSpi(enum DACINDEX ind, int dacval, char *mess) {
     if (validateDACValue(ind, dacval, mess) == FAIL)
         return FAIL;
 
-#ifdef VIRTUAL
-    detectorDacs[ind] = dacval;
-    return OK;
-#else
     if (LTC2620_D_SetDACValue((int)ind, dacval) == FAIL) {
         char *dacNames[] = {DAC_NAMES};
         sprintf(mess, "Could not set DAC %s.\n", dacNames[ind]);
@@ -1698,7 +1694,6 @@ int writeDACSpi(enum DACINDEX ind, int dacval, char *mess) {
         }
     }
     return OK;
-#endif
 }
 
 int getCounterIndex (enum DACINDEX ind) {

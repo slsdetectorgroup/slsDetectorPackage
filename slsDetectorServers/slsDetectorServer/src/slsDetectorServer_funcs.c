@@ -1258,7 +1258,7 @@ int validateAndSetDac(enum dacIndex ind, int val, bool mV) {
         if (val != GET_FLAG) {
 #if defined(MYTHEN3D)
             // ignore counter enable to force vth dac values
-            ret = setDAC(serverDacIndex, val, mV, 0, mess);
+            ret = setDAC(serverDacIndex, val, mV, false, mess);
             // changed for setsettings (direct),
             // custom trimbit file (setmodule with myMod.reg as -1),
             // change of dac (direct)

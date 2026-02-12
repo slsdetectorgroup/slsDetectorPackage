@@ -1439,6 +1439,7 @@ int validateDACIndex(enum DACINDEX ind, char *mess) {
 
 int validateDACValue(enum DACINDEX ind, int dacval, char *mess) {
     char *dacNames[] = {DAC_NAMES};
+    // validate min value
     if (dacval < 0) {
         sprintf(mess,
                 "Could not set DAC %s. Input value %d cannot be negative\n",
@@ -1525,9 +1526,11 @@ int getDAC(enum DACINDEX ind, bool mV, int *retval, char *mess) {
 
 // uses LTC2620 with 2.048V (implementation different to others not bit banging)
 int setDAC(enum DACINDEX ind, int val, bool mV, char *mess) {
-    char *dacNames[] = {DAC_NAMES};
-    LOG(logINFO, ("Setting DAC %s: %d %s \n", dacNames[ind], val,
+    {
+        char *dacNames[] = {DAC_NAMES};
+        LOG(logINFO, ("Setting DAC %s: %d %s \n", dacNames[ind], val,
                   (mV ? "mV" : "dac units")));
+    }
 
     if (ind == E_VTHRESHOLD) {
         return setThresholdDACs(val, mV, mess);
@@ -1591,7 +1594,6 @@ int getThresholdDACs(bool mV, int *retval, char *mess) {
     if (getDAC(indices[0], mV, &retvals[0], mess) == FAIL)
         return FAIL;
 
-    bool allEqual = true;
     for (int i = 1; i != 5; ++i) {
         if (getDAC(indices[i], mV, &retvals[i], mess) == FAIL)
             return FAIL;

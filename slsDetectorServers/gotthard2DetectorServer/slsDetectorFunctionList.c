@@ -571,7 +571,7 @@ int resetToDefaultDacs(int hardReset, char *mess) {
     LOG(logINFOBLUE, ("Setting Default Dac values\n"));
     for (int i = 0; i < NDAC; ++i) {
         if (defaultDacValues[i] != -1) {
-            if (setDAC((enum DACINDEX)i, defaultDacValues[i], 0, mess) == FAIL)
+            if (setDAC((enum DACINDEX)i, defaultDacValues[i], false, mess) == FAIL)
                 return FAIL;
         }
     }
@@ -948,7 +948,7 @@ int readConfigFile() {
             hardCodedDefaultDacValues[idac] = value;
 
             // set dac
-            if (setDAC(idac, value, 0, initErrorMessage) == FAIL) {
+            if (setDAC(idac, value, false, initErrorMessage) == FAIL) {
                 ;
                 sprintf(initErrorMessage,
                         "Set dac %s failed from on-board server config file. "
@@ -1520,90 +1520,141 @@ int getOnChipDAC(enum ONCHIP_DACINDEX ind, int chipIndex) {
     // specific chip
     return onChipdacValues[ind][chipIndex];
 }
-int validateDAC(enum DACINDEX ind, int val, int mV, char *mess) {
-    char *dacNames[] = {DAC_NAMES};
 
-    // validate index
+int validateDACIndex(enum DACINDEX ind, char *mess) {
     if (ind < 0 || ind >= NDAC) {
         sprintf(mess, "Could not set DAC. Invalid index %d\n", ind);
-        LOG(logERROR, (mess));
-        return FAIL;
-    }
-    // validate min value
-    if (val < 0) {
-        sprintf(mess,
-                "Could not set DAC %s. Input value %d cannot be negative\n",
-                dacNames[ind], val);
-        LOG(logERROR, (mess));
-        return FAIL;
-    }
-    // validate max value
-    if (mV && val > DAC_MAX_MV) {
-        sprintf(mess,
-                "Could not set DAC %s. Input value %d exceed maximum %d mV\n",
-                dacNames[ind], val, DAC_MAX_MV);
-        LOG(logERROR, (mess));
-        return FAIL;
-    } else if (!mV && val > LTC2620_D_GetMaxInput()) {
-        sprintf(mess,
-                "Could not set DAC %s. Input value %d exceed maximum %d \n",
-                dacNames[ind], val, LTC2620_D_GetMaxInput());
         LOG(logERROR, (mess));
         return FAIL;
     }
     return OK;
 }
 
-int setDAC(enum DACINDEX ind, int val, int mV, char *mess) {
-    if (validateDAC(ind, val, mV, mess) == FAIL)
+int validateDACValue(enum DACINDEX ind, int dacval, char *mess) {
+    char *dacNames[] = {DAC_NAMES};
+    // validate min value
+    if (dacval < 0) {
+        sprintf(mess,
+                "Could not set DAC %s. Input value %d cannot be negative\n",
+                dacNames[ind], dacval);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    // validate max value
+    if (dacval > LTC2620_D_GetMaxInput()) {
+        sprintf(mess,
+                "Could not set DAC %s. Input value %d exceed maximum %d \n",
+                dacNames[ind], dacval, LTC2620_D_GetMaxInput());
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    return OK;
+}
+
+int validateDACVoltage(enum DACINDEX ind, int voltage, char *mess) {
+    char *dacNames[] = {DAC_NAMES};
+    // validate min value
+    if (voltage < 0) {
+        sprintf(mess,
+                "Could not set DAC %s. Input value %d cannot be negative\n",
+                dacNames[ind], voltage);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    // validate max value
+    if (voltage > DAC_MAX_MV) {
+        sprintf(mess,
+                "Could not set DAC %s. Input value %d mV exceed maximum %d mV\n", dacNames[ind], voltage, DAC_MAX_MV);
+        LOG(logERROR, (mess));
+        return FAIL;
+    } 
+    return OK;
+}
+
+int convertVoltageToDACValue(enum DACINDEX ind, int voltage, int* retval_dacval, char *mess) {
+    if (LTC2620_D_VoltageToDac(voltage, retval_dacval) == FAIL) {
+        char *dacNames[] = {DAC_NAMES};
+        sprintf(
+            mess,
+            "Could not set DAC %s. Could not convert %d mV to dac units.\n",
+            dacNames[ind], voltage);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    return OK;
+}
+
+int convertDACValueToVoltage(enum DACINDEX ind, int dacval, int* retval_voltage, char *mess) {
+    *retval_voltage = -1;
+    if (LTC2620_D_DacToVoltage(dacval, retval_voltage) == FAIL) {
+        char *dacNames[] = {DAC_NAMES};
+        sprintf(mess,
+                "Could not get DAC %s. Could not convert %d dac units to mV\n",
+                dacNames[ind], dacval);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    return OK;
+}
+
+int getDAC(enum DACINDEX ind, bool mV, int *retval, char *mess) {
+    if (validateDACIndex(ind, mess) == FAIL)
         return FAIL;
 
-    char *dacNames[] = {DAC_NAMES};
-    LOG(logINFO, ("Setting DAC %s: %d %s \n", dacNames[ind], val,
-                  (mV ? "mV" : "dac units")));
-
-    // mV: convert to dac value
-    int dacval = val;
+    int dacval = dacValues[ind];
     if (mV) {
-        if (LTC2620_D_VoltageToDac(val, &dacval) == FAIL) {
-            sprintf(
-                mess,
-                "Could not set DAC %s. Could not convert %d mV to dac units.\n",
-                dacNames[ind], val);
-            LOG(logERROR, (mess));
+        if (convertDACValueToVoltage(ind, dacval, retval, mess) == FAIL)
             return FAIL;
-        }
+        return OK;
     }
 
+    *retval = dacval;
+    return OK;
+}
+
+
+int setDAC(enum DACINDEX ind, int val, bool mV, char *mess) {
+    {
+        char *dacNames[] = {DAC_NAMES};
+        LOG(logINFO, ("Setting DAC %s: %d %s \n", dacNames[ind], val,
+                  (mV ? "mV" : "dac units")));
+    }
+
+    if (validateDACIndex(ind, mess) == FAIL)
+        return FAIL;
+    
+    int dacval = val;
+    if (mV) {
+        if (validateDACVoltage(ind, val, mess) == FAIL)
+            return FAIL;
+
+        if (convertVoltageToDACValue(ind, val, &dacval, mess) == FAIL)
+            return FAIL;
+    }
+
+    if (writeDACSpi(ind, dacval, mess) == FAIL)
+        return FAIL;
+
+    return OK;
+}
+
+int writeDACSpi(enum DACINDEX ind, int dacval, char *mess) {
+    if (validateDACValue(ind, dacval, mess) == FAIL)
+        return FAIL;
+
+#ifdef VIRTUAL
+    dacValues[ind] = dacval;
+    return OK;
+#else
     if (LTC2620_D_SetDACValue((int)ind, dacval) == FAIL) {
+        char *dacNames[] = {DAC_NAMES};
         sprintf(mess, "Could not set DAC %s.\n", dacNames[ind]);
         LOG(logERROR, (mess));
         return FAIL;
     }
     dacValues[ind] = dacval;
     return OK;
-}
-
-int getDAC(enum DACINDEX ind, int mV, int *retval, char *mess) {
-    char *dacNames[] = {DAC_NAMES};
-    if (!mV) {
-        LOG(logDEBUG1,
-            ("Getting DAC %s : %d dac\n", dacNames[ind], dacValues[ind]));
-        *retval = dacValues[ind];
-        return OK;
-    }
-    // convert to mV
-    *retval = -1;
-    if (LTC2620_D_DacToVoltage(dacValues[ind], retval) == FAIL) {
-        sprintf(mess,
-                "Could not get DAC %s. Could not convert %d dac units to mV\n",
-                dacNames[ind], dacValues[ind]);
-        LOG(logERROR, (mess));
-        return FAIL;
-    }
-    LOG(logDEBUG1, ("Getting DAC %s : %d dac (%d mV)\n", dacNames[ind],
-                    dacValues[ind], *retval));
-    return OK;
+#endif
 }
 
 int getADC(enum ADCINDEX ind, int *value) {

@@ -46,6 +46,9 @@
 #define DEFAULT_UDP_SRC_PORTNO   32410
 #define DEFAULT_UDP_DST_PORTNO   50001
 
+/** for virtual detectors */
+#define LOCALHOSTIP_INT 2130706433
+
 #define MAX_UDP_DESTINATION 32
 
 #define SLS_DETECTOR_HEADER_VERSION      0x2
@@ -84,6 +87,10 @@
 #define NUM_RX_THREAD_IDS 9
 // NOLINTEND(cppcoreguidelines-macro-usage)
 #ifdef __cplusplus
+
+// TODO: why are all these defs inside a class? - why not static
+enum ReturnCode { OK = 0, FAIL = 1 };
+
 class slsDetectorDefs {
   public:
 #endif

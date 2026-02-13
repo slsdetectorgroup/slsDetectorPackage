@@ -137,7 +137,8 @@ int getVLimit();
 int setVLimit(int val, char *mess);
 
 int validatePower(enum PWRINDEX ind, int val, char *mess);
-int getPowerIndex(enum DACINDEX ind, enum PWRINDEX *pwrIndex, char *mess);
+int getPowerIndexFromDACIndex(enum DACINDEX ind, enum PWRINDEX *pwrIndex,
+                              char *mess);
 int getPowerRailMask(enum PWRINDEX ind, uint32_t *mask, char *mess);
 int EnablePowerRail(enum PWRINDEX ind, char *mess);
 int DisablePowerRail(enum PWRINDEX ind, char *mess);

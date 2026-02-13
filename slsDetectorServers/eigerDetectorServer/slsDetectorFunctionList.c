@@ -54,7 +54,6 @@ int top = 0;
 int master = 0;
 int normal = 0;
 
-int eiger_highvoltage = 0;
 int eiger_theo_highvoltage = 0;
 int eiger_iodelay = 0;
 int eiger_dynamicrange = 0;
@@ -1679,6 +1678,7 @@ int getHighVoltage(int *retval, char *mess) {
     return OK;
 #else
     // get
+    int eiger_highvoltage = 0;
     sharedMemory_lockLocalLink();
     if (!Feb_Control_GetHighVoltage(&eiger_highvoltage)) {
         LOG(logERROR, ("Could not read high voltage\n"));

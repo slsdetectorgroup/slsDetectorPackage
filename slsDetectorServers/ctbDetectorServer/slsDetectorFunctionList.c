@@ -594,7 +594,7 @@ void setupDetector() {
     LOG(logINFOBLUE, ("Powering down all dacs\n"));
     for (int idac = 0; idac < NDAC_ONLY; ++idac) {
         initError =
-            setDAC(idac, LTC2620_GetPowerDownValue(), 0, initErrorMessage);
+            setDAC(idac, LTC2620_GetPowerDownValue(), false, initErrorMessage);
         if (initError == FAIL)
             return;
     }

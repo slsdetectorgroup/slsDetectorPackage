@@ -165,6 +165,30 @@ else()
 
 endif()
 
+if (SLS_FETCH_FMT_FROM_GITHUB)
+    set(FMT_TEST OFF CACHE INTERNAL "disabling fmt tests")
+    FetchContent_Declare(
+            fmt
+            GIT_REPOSITORY  https://github.com/fmtlib/fmt.git
+            GIT_TAG         10.2.1
+            GIT_PROGRESS    TRUE
+            USES_TERMINAL_DOWNLOAD TRUE
+    )
+    set(FMT_INSTALL ON CACHE BOOL "")
+    # set(FMT_CMAKE_DIR "")
+    FetchContent_MakeAvailable(fmt)
+    set_property(TARGET fmt PROPERTY POSITION_INDEPENDENT_CODE ON)
+    install(TARGETS fmt 
+        EXPORT ${project}-targets
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}   
+    )  
+else()
+      find_package(fmt 6 REQUIRED)
+endif()
+
 include(GNUInstallDirs)
 
 # If conda build, always set lib dir to 'lib'
@@ -422,6 +446,11 @@ endif()
 # TODO refactor with simulators 
 if (SLS_USE_SERVER) 
     add_subdirectory(slsDetectorServers/slsDetectorServer_cpp)
+endif()
+
+# TODO refactor with simulators 
+if (SLS_USE_SERVER) 
+    add_subdirectory(slsDetectorServers/slsDetectorServer)
 endif()
 
 if (SLS_USE_RECEIVER)

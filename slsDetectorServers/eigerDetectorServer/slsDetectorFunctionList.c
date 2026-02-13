@@ -1585,7 +1585,7 @@ int writeDACSpi(enum DACINDEX ind, int dacval, char *mess) {
 int setThresholdDACs(int val, bool mV, char *mess) {
     enum DACINDEX indices[5] = {E_VCMP_LL, E_VCMP_LR, E_VCMP_RL, E_VCMP_RR,
                                 E_VCP};
-    for (int i = 1; i != 5; ++i) {
+    for (int i = 0; i != 5; ++i) {
         if (setDAC(indices[i], val, mV, mess) == FAIL)
             return FAIL;
     }

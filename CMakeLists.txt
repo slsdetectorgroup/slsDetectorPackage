@@ -39,6 +39,7 @@ option(SLS_USE_SYSTEM_ZMQ "Use system installed libzmq" OFF)
 include(FetchContent)
 option(SLS_FETCH_ZMQ_FROM_GITHUB "Fetch zmq from github" OFF)
 option(SLS_FETCH_PYBIND11_FROM_GITHUB "Fetch pybind11 from github" OFF)
+option(SLS_FETCH_FTMT_FROM_GITHUB "Fetch ftmt from github" ON)
 
 # Allow FetchContent_Populate to be called with a single argument
 # otherwise deprecated warning is issued
@@ -163,6 +164,30 @@ else()
 
 endif()
 
+if (SLS_FETCH_FMT_FROM_GITHUB)
+    set(FMT_TEST OFF CACHE INTERNAL "disabling fmt tests")
+    FetchContent_Declare(
+            fmt
+            GIT_REPOSITORY  https://github.com/fmtlib/fmt.git
+            GIT_TAG         10.2.1
+            GIT_PROGRESS    TRUE
+            USES_TERMINAL_DOWNLOAD TRUE
+    )
+    set(FMT_INSTALL ON CACHE BOOL "")
+    # set(FMT_CMAKE_DIR "")
+    FetchContent_MakeAvailable(fmt)
+    set_property(TARGET fmt PROPERTY POSITION_INDEPENDENT_CODE ON)
+    install(TARGETS fmt 
+        EXPORT ${project}-targets
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}   
+    )  
+else()
+      find_package(fmt 6 REQUIRED)
+endif()
+
 include(GNUInstallDirs)
 
 # If conda build, always set lib dir to 'lib'
@@ -194,6 +219,7 @@ option(SLS_BUILD_SHARED_LIBRARIES "Build shared libaries" OFF)
 option(SLS_USE_TEXTCLIENT "Text Client" ON)
 option(SLS_USE_DETECTOR "Detector libs" ON)
 option(SLS_USE_RECEIVER "Receiver" ON)
+option(SLS_USE_SERVER "Server" ON)
 option(SLS_USE_RECEIVER_BINARIES "Receiver binaries" ON)
 option(SLS_USE_GUI "GUI" OFF)
 option(SLS_USE_SIMULATOR "Simulator" OFF)
@@ -394,6 +420,11 @@ endif()
 if (SLS_USE_DETECTOR OR SLS_USE_TEXTCLIENT)
     add_subdirectory(slsDetectorSoftware)
 endif ()
+
+# TODO refactor with simulators 
+if (SLS_USE_SERVER) 
+    add_subdirectory(slsDetectorServers/slsDetectorServer)
+endif()
 
 if (SLS_USE_RECEIVER)
     add_subdirectory(slsReceiverSoftware) 

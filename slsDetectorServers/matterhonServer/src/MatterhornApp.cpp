@@ -1,0 +1,116 @@
+#include "CommandLineOptions.h"
+#include "MatterhornServer.h"
+#include "StopServer.h"
+#include "sls/logger.h"
+#include "sls/sls_detector_exceptions.h"
+#include <semaphore.h>
+
+#include <csignal>
+#include <signal.h>
+#include <sys/wait.h>
+#include <unistd.h>
+
+// gettid added in glibc 2.30
+#if __GLIBC__ == 2 && __GLIBC_MINOR__ < 30
+#include <sys/syscall.h>
+#define gettid() syscall(SYS_gettid)
+#endif
+
+using namespace sls;
+
+sem_t semaphore;
+
+pid_t child_pid = -1;
+
+/**
+ * Control+C Interrupt Handler
+ * to let all the other process know to exit properly
+ */
+void sigInterruptHandler(int signal) {
+    (void)signal; // suppress unused warning if needed
+    if (child_pid > 0) {
+        kill(child_pid, SIGTERM); // tell child to exit
+    }
+    sem_post(&semaphore);
+}
+
+void childSigTermHandler(int signal) {
+    (void)signal; // suppress unused warning if needed
+    sem_post(&semaphore);
+}
+
+// TODO: should be a generic ServerApp for all detectors
+int main(int argc, char *argv[]) {
+
+    CommandLineOptions cli;
+    DetectorServerOptions opts{};
+    try {
+        opts = cli.parse(argc, argv);
+    } catch (sls::RuntimeError &e) {
+        return EXIT_FAILURE;
+    }
+    if (opts.versionRequested || opts.helpRequested) {
+        return EXIT_SUCCESS;
+    }
+
+    // LOG(sls::logINFOBLUE) << "Current Process [ Tid: " << gettid() << " ]";
+
+    // handle locally on socket crash
+    // sls::setupSignalHandler(SIGPIPE, SIG_IGN); / what is this?
+
+    sem_init(&semaphore, 1, 0);
+
+    child_pid = fork(); // fork process for control and stop server
+
+    if (child_pid == 0) {
+        // Stop server Process
+        std::signal(SIGTERM, childSigTermHandler);
+        LOG(TLogLevel::logINFOBLUE) << "Stop Server [" << opts.port + 1 << "]";
+        try {
+            // StopServer stopServer(opts.port + 1); TODO: forget the stop
+            // server for now
+            sem_wait(&semaphore); // wait until parent signals to exit
+            sem_destroy(&semaphore);
+        } catch (...) {
+            sem_destroy(&semaphore);
+            LOG(TLogLevel::logINFOBLUE)
+                << "Exiting Stop Server [ Tid: " << gettid() << " ]";
+            // TODO: maybe also terminate the control server !!!!
+            std::exit(EXIT_FAILURE);
+        }
+        LOG(TLogLevel::logINFOBLUE)
+            << "Exiting Stop Server [ Tid: " << gettid() << " ]";
+        LOG(sls::logINFO) << "Exiting Stop Server";
+        exit(EXIT_SUCCESS);
+    } else if (child_pid > 0) {
+        // Control Server Process
+        LOG(TLogLevel::logINFOBLUE) << "Control Server [" << opts.port << "]\n";
+
+        if (opts.updateFlag == 0) {
+            // update flag if update file exists (command line arg overwrites)
+        }
+
+        try {
+            sls::MatterhornServer server(opts.port);
+            LOG(sls::logINFO) << "[ Press \'Ctrl+c\' to exit ]";
+            // exit upon ctr + c
+            sem_wait(&semaphore);
+            sem_destroy(&semaphore);
+        } catch (...) {
+            sem_destroy(&semaphore);
+            kill(child_pid, SIGTERM); // tell child to exit
+            LOG(sls::logINFOBLUE) << "Exiting [ Tid: " << gettid() << " ]";
+            std::exit(EXIT_FAILURE);
+        }
+        waitpid(child_pid, nullptr, 0); // wait for child to exit
+        LOG(sls::logINFOBLUE) << "Exiting [ Tid: " << gettid() << " ]";
+        LOG(sls::logINFO) << "Exiting Detector Server";
+        exit(EXIT_SUCCESS);
+    } else {
+        LOG(sls::logERROR)
+            << "Failed to fork process for control and stop server";
+        return EXIT_FAILURE;
+    }
+
+    return EXIT_SUCCESS;
+}

@@ -950,7 +950,6 @@ int readConfigFile() {
 
             // set dac
             if (setDAC(idac, value, false, initErrorMessage) == FAIL) {
-                ;
                 sprintf(initErrorMessage,
                         "Set dac %s failed from on-board server config file. "
                         "Could not set %d.\n",

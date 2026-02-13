@@ -1772,19 +1772,19 @@ int getThresholdDACs(bool mV, int *retval, char *mess) {
         if (counterMask & (1 << i)) {
             if (getDAC(indices[i], mV, &retvals[i], mess) == FAIL)
                 return FAIL;
-        }
-        // set retval to first value
-        if (*retval == -1) {
-            *retval = retvals[i];
-        }
-        // other values should match the first value
-        else if (retvals[i] != retvals[0]) {
-            char *dacNames[] = {DAC_NAMES};
-            LOG(logWARNING,
-                ("Vthreshold mismatch.%s:%d %s:%d\n", dacNames[indices[i]],
-                 retvals[i], dacNames[indices[0]], retvals[0]));
-            *retval = -1;
-            return OK;
+            // set retval to first value
+            if (*retval == -1) {
+                *retval = retvals[i];
+            }
+            // other values should match the first value
+            else if (retvals[i] != retvals[0]) {
+                char *dacNames[] = {DAC_NAMES};
+                LOG(logWARNING,
+                    ("Vthreshold mismatch.%s:%d %s:%d\n", dacNames[indices[i]],
+                     retvals[i], dacNames[indices[0]], retvals[0]));
+                *retval = -1;
+                return OK;
+            }
         }
     }
     if (*retval == -1) {

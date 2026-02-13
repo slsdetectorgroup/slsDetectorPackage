@@ -1521,7 +1521,7 @@ int getVchipToSet(enum DACINDEX ind, int pwr_val, int *retval_vchip,
         if (ipwr == (int)ind) {
             val = pwr_val;
         } else {
-            if (getPower(ipwr, &val, mess) == FAIL)
+            if (getPower(ind, &val, mess) == FAIL)
                 return FAIL;
         }
         if (val > max)
@@ -1556,7 +1556,7 @@ int validatePower(enum PWRINDEX ind, int val, char *mess) {
     char *powerNames[] = {PWR_NAMES};
     // validate min value
     int min = (ind == PWR_IO) ? VIO_MIN_MV : POWER_RGLTR_MIN;
-    if (val < min) {
+    if (val < min && val != 0) {
         sprintf(
             mess,
             "Could not set %s. Input value %d mV must be greater than %d mV.\n",

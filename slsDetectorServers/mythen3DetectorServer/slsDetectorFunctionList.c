@@ -1312,7 +1312,8 @@ int setModule(sls_detector_module myMod, char *mess) {
     for (int i = 0; i < NDAC; ++i) {
         if (myMod.dacs[i] != -1) {
             // set to default (ensure counter check)
-            if (setDAC((enum DACINDEX)i, myMod.dacs[i], false, true, mess) == FAIL) {
+            if (setDAC((enum DACINDEX)i, myMod.dacs[i], false, true, mess) ==
+                FAIL) {
                 // dont complain if that counter was disabled
                 if ((i == M_VTH1 || i == M_VTH2 || i == M_VTH3) &&
                     (detectorDacs[i] == DEFAULT_COUNTER_DISABLED_VTH_VAL)) {
@@ -1561,7 +1562,7 @@ int validateDACValue(enum DACINDEX ind, int dacval, char *mess) {
     // validate max value
     if (dacval > LTC2620_D_GetMaxInput()) {
         sprintf(mess,
-                "Could not set DAC %s. Input value %d exceed maximum %d \n",
+                "Could not set DAC %s. Input value %d exceeds maximum %d \n",
                 dacNames[ind], dacval, LTC2620_D_GetMaxInput());
         LOG(logERROR, (mess));
         return FAIL;
@@ -1581,28 +1582,31 @@ int validateDACVoltage(enum DACINDEX ind, int voltage, char *mess) {
     }
     // validate max value
     if (voltage > DAC_MAX_MV) {
-        sprintf(mess,
-                "Could not set DAC %s. Input value %d mV exceed maximum %d mV\n", dacNames[ind], voltage, DAC_MAX_MV);
-        LOG(logERROR, (mess));
-        return FAIL;
-    } 
-    return OK;
-}
-
-int convertVoltageToDACValue(enum DACINDEX ind, int voltage, int* retval_dacval, char *mess) {
-    if (LTC2620_D_VoltageToDac(voltage, retval_dacval) == FAIL) {
-        char *dacNames[] = {DAC_NAMES};
         sprintf(
             mess,
-            "Could not set DAC %s. Could not convert %d mV to dac units.\n",
-            dacNames[ind], voltage);
+            "Could not set DAC %s. Input value %d mV exceeds maximum %d mV\n",
+            dacNames[ind], voltage, DAC_MAX_MV);
         LOG(logERROR, (mess));
         return FAIL;
     }
     return OK;
 }
 
-int convertDACValueToVoltage(enum DACINDEX ind, int dacval, int* retval_voltage, char *mess) {
+int convertVoltageToDACValue(enum DACINDEX ind, int voltage, int *retval_dacval,
+                             char *mess) {
+    if (LTC2620_D_VoltageToDac(voltage, retval_dacval) == FAIL) {
+        char *dacNames[] = {DAC_NAMES};
+        sprintf(mess,
+                "Could not set DAC %s. Could not convert %d mV to dac units.\n",
+                dacNames[ind], voltage);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    return OK;
+}
+
+int convertDACValueToVoltage(enum DACINDEX ind, int dacval, int *retval_voltage,
+                             char *mess) {
     *retval_voltage = -1;
     if (LTC2620_D_DacToVoltage(dacval, retval_voltage) == FAIL) {
         char *dacNames[] = {DAC_NAMES};
@@ -1619,7 +1623,7 @@ int getDAC(enum DACINDEX ind, bool mV, int *retval, char *mess) {
     if (ind == M_VTHRESHOLD) {
         return getThresholdDACs(mV, retval, mess);
     }
-    
+
     if (validateDACIndex(ind, mess) == FAIL)
         return FAIL;
 
@@ -1634,18 +1638,17 @@ int getDAC(enum DACINDEX ind, bool mV, int *retval, char *mess) {
     return OK;
 }
 
-
 // counterEnableCheck false only if setDAC called directly from client
 int setDAC(enum DACINDEX ind, int val, bool mV, bool counterCheck, char *mess) {
     {
         char *dacNames[] = {DAC_NAMES};
         LOG(logINFO, ("Setting DAC %s: %d %s \n", dacNames[ind], val,
-                  (mV ? "mV" : "dac units")));
+                      (mV ? "mV" : "dac units")));
     }
 
     if (validateDACIndex(ind, mess) == FAIL)
         return FAIL;
-    
+
     int dacval = val;
     if (mV) {
         if (validateDACVoltage(ind, val, mess) == FAIL)
@@ -1653,25 +1656,25 @@ int setDAC(enum DACINDEX ind, int val, bool mV, bool counterCheck, char *mess) {
 
         if (convertVoltageToDACValue(ind, val, &dacval, mess) == FAIL)
             return FAIL;
-    } 
-    
+    }
+
     switch (ind) {
-        case M_VTHRESHOLD:
-            // all threshold dacs: 
-            // store values for all dacs for pump probe and interpolation mode
-            // only set for enabled counters
-            return setThresholdDACs(val, mV, dacval, mess);
-        case M_VTH1:
-        case M_VTH2:
-        case M_VTH3:
-            // threshold dacs: 
-            // store values for pump probe and interpolation mode
-            // change dacval for disabled counter to 2800
-            return setSingleThresholdDAC(ind, val, mV, dacval, counterCheck, mess);
-        default:
-            return writeDACSpi(ind, dacval, mess);
-            break;
-    }   
+    case M_VTHRESHOLD:
+        // all threshold dacs:
+        // store values for all dacs for pump probe and interpolation mode
+        // only set for enabled counters
+        return setThresholdDACs(val, mV, dacval, mess);
+    case M_VTH1:
+    case M_VTH2:
+    case M_VTH3:
+        // threshold dacs:
+        // store values for pump probe and interpolation mode
+        // change dacval for disabled counter to 2800
+        return setSingleThresholdDAC(ind, val, mV, dacval, counterCheck, mess);
+    default:
+        return writeDACSpi(ind, dacval, mess);
+        break;
+    }
 }
 
 int writeDACSpi(enum DACINDEX ind, int dacval, char *mess) {
@@ -1696,21 +1699,21 @@ int writeDACSpi(enum DACINDEX ind, int dacval, char *mess) {
     return OK;
 }
 
-int getCounterIndex (enum DACINDEX ind) {
+int getCounterIndex(enum DACINDEX ind) {
     switch (ind) {
-        case M_VTH1:
-            return 0;
-        case M_VTH2:
-            return 1;
-        case M_VTH3:
-            return 2;
-        default:
-            return -1;
+    case M_VTH1:
+        return 0;
+    case M_VTH2:
+        return 1;
+    case M_VTH3:
+        return 2;
+    default:
+        return -1;
     }
-}   
+}
 
-
-int setSingleThresholdDAC(enum DACINDEX ind, int val, bool mV, int dacval, bool counterCheck, char* mess) {
+int setSingleThresholdDAC(enum DACINDEX ind, int val, bool mV, int dacval,
+                          bool counterCheck, char *mess) {
     char *dacNames[] = {DAC_NAMES};
     uint32_t counterMask = getCounterMask();
 
@@ -1724,7 +1727,7 @@ int setSingleThresholdDAC(enum DACINDEX ind, int val, bool mV, int dacval, bool 
     // if not disabled value, remember value
     if (mV || val != DEFAULT_COUNTER_DISABLED_VTH_VAL) {
         LOG(logINFO, ("Remembering %s [%d]\n", dacNames[ind], dacval));
-        vthEnabledVals[iCounter] = dacval; 
+        vthEnabledVals[iCounter] = dacval;
     }
     // if counter disabled, change value
     if (counterCheck && (counterMask & (1 << iCounter))) {
@@ -1733,11 +1736,11 @@ int setSingleThresholdDAC(enum DACINDEX ind, int val, bool mV, int dacval, bool 
     // set value
     if (writeDACSpi(ind, dacval, mess) == FAIL)
         return FAIL;
-    
+
     return OK;
 }
 
-int setThresholdDACs(int val, bool mV, int dacval, char* mess) {
+int setThresholdDACs(int val, bool mV, int dacval, char *mess) {
     char *dacNames[] = {DAC_NAMES};
     int indices[] = {M_VTH1, M_VTH2, M_VTH3};
     uint32_t counterMask = getCounterMask();
@@ -1745,18 +1748,18 @@ int setThresholdDACs(int val, bool mV, int dacval, char* mess) {
     for (int iCounter = 0; iCounter != NCOUNTERS; ++iCounter) {
         // if not disabled value, remember value
         if (mV || val != DEFAULT_COUNTER_DISABLED_VTH_VAL) {
-            LOG(logINFO, ("Remembering %s [%d]\n", dacNames[indices[iCounter]], dacval));
-            vthEnabledVals[iCounter] = dacval; 
+            LOG(logINFO,
+                ("Remembering %s [%d]\n", dacNames[indices[iCounter]], dacval));
+            vthEnabledVals[iCounter] = dacval;
         }
         // if counter enabled, set value
         if (counterMask & (1 << iCounter)) {
-             if (writeDACSpi(indices[iCounter], dacval, mess) == FAIL)
+            if (writeDACSpi(indices[iCounter], dacval, mess) == FAIL)
                 return FAIL;
         }
     }
     return OK;
 }
-
 
 int getThresholdDACs(bool mV, int *retval, char *mess) {
     int indices[] = {M_VTH1, M_VTH2, M_VTH3};
@@ -1769,28 +1772,30 @@ int getThresholdDACs(bool mV, int *retval, char *mess) {
         if (counterMask & (1 << i)) {
             if (getDAC(indices[i], mV, &retvals[i], mess) == FAIL)
                 return FAIL;
-            }
+        }
         // set retval to first value
         if (*retval == -1) {
             *retval = retvals[i];
-        } 
+        }
         // other values should match the first value
         else if (retvals[i] != retvals[0]) {
             char *dacNames[] = {DAC_NAMES};
-            LOG(logWARNING, ("Vthreshold mismatch.%s:%d %s:%d\n", dacNames[indices[i]], retvals[i], dacNames[indices[0]], retvals[0]));
+            LOG(logWARNING,
+                ("Vthreshold mismatch.%s:%d %s:%d\n", dacNames[indices[i]],
+                 retvals[i], dacNames[indices[0]], retvals[0]));
             *retval = -1;
             return OK;
         }
     }
     if (*retval == -1) {
-        sprintf(mess, "All counters are disabled. Vthreshold value is undefined.\n");
+        sprintf(mess,
+                "All counters are disabled. Vthreshold value is undefined.\n");
         LOG(logERROR, (mess));
         return FAIL;
     }
     LOG(logINFO, ("\tvthreshold match %d\n", *retval));
     return OK;
 }
-
 
 void setVthDac(int index, int enable) {
     LOG(logINFO, ("\t%s vth%d\n", (enable ? "Enabling" : "Disabing"), index));
@@ -1805,7 +1810,6 @@ void setVthDac(int index, int enable) {
     char msg[MAX_STR_LENGTH] = {0};
     writeDACSpi(vthdacs[index], value, msg);
 }
-
 
 int getADC(enum ADCINDEX ind, int *value) {
     LOG(logDEBUG1, ("Reading FPGA temperature...\n"));

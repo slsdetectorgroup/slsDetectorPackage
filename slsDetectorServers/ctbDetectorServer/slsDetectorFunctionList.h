@@ -7,6 +7,7 @@
 #include "blackfin.h"
 #include "programViaBlackfin.h"
 
+#include <stdbool.h>
 #include <stdio.h> // FILE
 #include <stdlib.h>
 #include <sys/types.h>
@@ -126,31 +127,36 @@ enum detectorSettings getSettings();
 int setADCVpp(int val, int mV, char *mess);
 int getADCVpp(int mV, int *retval, char *mess);
 
-int isDACValid(enum DACINDEX ind, int val, int mV, char *mess);
-int setDAC(enum DACINDEX ind, int val, int mV, char *mess);
-int getDAC(enum DACINDEX ind, int mV, int *retval, char *mess);
+int validateDACIndex(enum DACINDEX ind, char *mess);
+int validateDACValue(enum DACINDEX ind, int dacval, char *mess);
+int validateDACVoltage(enum DACINDEX ind, int voltage, char *mess);
+int convertVoltageToDACValue(enum DACINDEX ind, int voltage, int *retval_dacval,
+                             char *mess);
+int convertDACValueToVoltage(enum DACINDEX ind, int dacval, int *retval_voltage,
+                             char *mess);
+int getDAC(enum DACINDEX ind, bool mV, int *retval, char *mess);
+/** @param val value can be in mV or dac units */
+int setDAC(enum DACINDEX ind, int val, bool mV, char *mess);
+/** @param dacval in dac units */
+int writeDACSpi(enum DACINDEX ind, int dacval, char *mess);
+
 int getVLimit();
 int setVLimit(int val, char *mess);
 
+int validateVchip(int val, char *mess);
 int getVchip(int *retval, char *mess);
 int setVchip(int val, char *mess);
-int getVChipToSet(enum DACINDEX ind, int val, int *vchip, char *mess);
+int getVchipToSet(enum DACINDEX ind, int pwr_val, int *retval_vchip,
+                  char *mess);
 
+int validatePower(enum PWRINDEX ind, int val, char *mess);
+int getPowerIndex(enum DACINDEX ind, enum PWRINDEX *pwrIndex, char *mess);
 int getPowerRailMask(enum PWRINDEX ind, uint32_t *mask, char *mess);
 int EnablePowerRail(enum PWRINDEX ind, char *mess);
 int DisablePowerRail(enum PWRINDEX ind, char *mess);
 int getPowerRail(enum PWRINDEX ind, int *retval, char *mess);
-
-int isPowerValid(enum PWRINDEX ind, int val, char *mess);
-int getPowerIndex(enum DACINDEX ind, enum PWRINDEX *pwrIndex, char *mess);
-
-int convertPowerRegDACtoVoltage(enum PWRINDEX ind, int val, int *retval,
-                                char *mess);
-int convertPowerRegVoltagetoDAC(enum PWRINDEX ind, int val, int *retval,
-                                char *mess);
 int getPower(enum DACINDEX ind, int *retval, char *mess);
 int setPower(enum DACINDEX ind, int val, char *mess);
-int initPower(enum DACINDEX ind, char *mess);
 void powerOff();
 
 int getADC(enum ADCINDEX ind);

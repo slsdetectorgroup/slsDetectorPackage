@@ -3,10 +3,10 @@
 #include "sls/sls_detector_defs.h"
 #include "slsDetectorServer_defs.h" // DAC_INDEX, ADC_INDEX, also include RegisterDefs.h
 
+#include <stdbool.h>
 #include <stdio.h> // FILE
 #include <stdlib.h>
 #include <sys/types.h>
-#include <stdbool.h>
 
 /****************************************************
 This functions are used by the slsDetectroServer_funcs interface.
@@ -127,8 +127,10 @@ int setThresholdEnergy(int ev);
 int validateDACIndex(enum DACINDEX ind, char *mess);
 int validateDACValue(enum DACINDEX ind, int dacval, char *mess);
 int validateDACVoltage(enum DACINDEX ind, int voltage, char *mess);
-int convertVoltageToDACValue(enum DACINDEX ind, int voltage, int* retval_dacval, char *mess);
-int convertDACValueToVoltage(enum DACINDEX ind, int dacval, int* retval_voltage, char *mess);
+int convertVoltageToDACValue(enum DACINDEX ind, int voltage, int *retval_dacval,
+                             char *mess);
+int convertDACValueToVoltage(enum DACINDEX ind, int dacval, int *retval_voltage,
+                             char *mess);
 int getDAC(enum DACINDEX ind, bool mV, int *retval, char *mess);
 /** @param val value can be in mV or dac units */
 int setDAC(enum DACINDEX ind, int val, bool mV, char *mess);

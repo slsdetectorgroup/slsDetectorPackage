@@ -1450,7 +1450,7 @@ int validateDACValue(enum DACINDEX ind, int dacval, char *mess) {
     // validate max value
     if (dacval > LTC2620_MAX_VAL) {
         sprintf(mess,
-                "Could not set DAC %s. Input value %d exceed maximum %d \n",
+                "Could not set DAC %s. Input value %d exceeds maximum %d \n",
                 dacNames[ind], dacval, LTC2620_MAX_VAL);
         LOG(logERROR, (mess));
         return FAIL;
@@ -1470,27 +1470,33 @@ int validateDACVoltage(enum DACINDEX ind, int voltage, char *mess) {
     }
     // validate max value
     if (voltage > DAC_MAX_MV) {
-        sprintf(mess,
-                "Could not set DAC %s. Input value %d mV exceed maximum %d mV\n", dacNames[ind], voltage, DAC_MAX_MV);
-        LOG(logERROR, (mess));
-        return FAIL;
-    } 
-    return OK;
-}
-
-int convertVoltageToDACValue(enum DACINDEX ind, int voltage, int* retval_dacval, char *mess) {
-    char *dacNames[] = {DAC_NAMES};
-    if (ConvertToDifferentRange(DAC_MIN_MV, DAC_MAX_MV, LTC2620_MIN_VAL,  LTC2620_MAX_VAL, voltage, retval_dacval) == FAIL) { 
         sprintf(
             mess,
-            "Could not set DAC %s. Could not convert %d mV to dac units.\n", dacNames[ind], voltage);
+            "Could not set DAC %s. Input value %d mV exceeds maximum %d mV\n",
+            dacNames[ind], voltage, DAC_MAX_MV);
         LOG(logERROR, (mess));
         return FAIL;
     }
     return OK;
 }
 
-int convertDACValueToVoltage(enum DACINDEX ind, int dacval, int* retval_voltage, char *mess) {
+int convertVoltageToDACValue(enum DACINDEX ind, int voltage, int *retval_dacval,
+                             char *mess) {
+    char *dacNames[] = {DAC_NAMES};
+    if (ConvertToDifferentRange(DAC_MIN_MV, DAC_MAX_MV, LTC2620_MIN_VAL,
+                                LTC2620_MAX_VAL, voltage,
+                                retval_dacval) == FAIL) {
+        sprintf(mess,
+                "Could not set DAC %s. Could not convert %d mV to dac units.\n",
+                dacNames[ind], voltage);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    return OK;
+}
+
+int convertDACValueToVoltage(enum DACINDEX ind, int dacval, int *retval_voltage,
+                             char *mess) {
     *retval_voltage = -1;
     if (ConvertToDifferentRange(LTC2620_MIN_VAL, LTC2620_MAX_VAL, DAC_MIN_MV,
                                 DAC_MAX_MV, dacval, retval_voltage) == FAIL) {
@@ -1500,7 +1506,7 @@ int convertDACValueToVoltage(enum DACINDEX ind, int dacval, int* retval_voltage,
                 dacNames[ind], dacval);
         LOG(logERROR, (mess));
         return FAIL;
-    } 
+    }
     return OK;
 }
 
@@ -1523,13 +1529,12 @@ int getDAC(enum DACINDEX ind, bool mV, int *retval, char *mess) {
     return OK;
 }
 
-
 // uses LTC2620 with 2.048V (implementation different to others not bit banging)
 int setDAC(enum DACINDEX ind, int val, bool mV, char *mess) {
     {
         char *dacNames[] = {DAC_NAMES};
         LOG(logINFO, ("Setting DAC %s: %d %s \n", dacNames[ind], val,
-                  (mV ? "mV" : "dac units")));
+                      (mV ? "mV" : "dac units")));
     }
 
     if (ind == E_VTHRESHOLD) {
@@ -1538,7 +1543,7 @@ int setDAC(enum DACINDEX ind, int val, bool mV, char *mess) {
 
     if (validateDACIndex(ind, mess) == FAIL)
         return FAIL;
-    
+
     int dacval = val;
     if (mV) {
         if (validateDACVoltage(ind, val, mess) == FAIL)
@@ -1565,7 +1570,8 @@ int writeDACSpi(enum DACINDEX ind, int dacval, char *mess) {
     sharedMemory_lockLocalLink();
     if (!Feb_Control_SetDAC(ind, dacval)) {
         char *dacNames[] = {DAC_NAMES};
-        sprintf(mess, "Could not set DAC %s. Trouble writing to register\n", dacNames[ind]);
+        sprintf(mess, "Could not set DAC %s. Trouble writing to register\n",
+                dacNames[ind]);
         LOG(logERROR, (mess));
         sharedMemory_unlockLocalLink();
         return FAIL;
@@ -1576,11 +1582,9 @@ int writeDACSpi(enum DACINDEX ind, int dacval, char *mess) {
 #endif
 }
 
-
-
-
 int setThresholdDACs(int val, bool mV, char *mess) {
-    enum DACINDEX indices[5] = {E_VCMP_LL, E_VCMP_LR, E_VCMP_RL, E_VCMP_RR, E_VCP};
+    enum DACINDEX indices[5] = {E_VCMP_LL, E_VCMP_LR, E_VCMP_RL, E_VCMP_RR,
+                                E_VCP};
     for (int i = 1; i != 5; ++i) {
         if (setDAC(indices[i], val, mV, mess) == FAIL)
             return FAIL;
@@ -1589,21 +1593,24 @@ int setThresholdDACs(int val, bool mV, char *mess) {
 }
 
 int getThresholdDACs(bool mV, int *retval, char *mess) {
-    enum DACINDEX indices[5] = {E_VCMP_LL, E_VCMP_LR, E_VCMP_RL, E_VCMP_RR, E_VCP};
+    enum DACINDEX indices[5] = {E_VCMP_LL, E_VCMP_LR, E_VCMP_RL, E_VCMP_RR,
+                                E_VCP};
     int retvals[5] = {0};
     *retval = -1; // default to mismatch
-    
+
     for (int i = 0; i != 5; ++i) {
         if (getDAC(indices[i], mV, &retvals[i], mess) == FAIL)
             return FAIL;
         // set retval to first value
         if (*retval == -1) {
             *retval = retvals[i];
-        } 
+        }
         // other values should match the first value
         else if (retvals[i] != retvals[0]) {
             char *dacNames[] = {DAC_NAMES};
-            LOG(logWARNING, ("Vthreshold mismatch.%s:%d %s:%d\n", dacNames[indices[i]], retvals[i], dacNames[indices[0]], retvals[0]));
+            LOG(logWARNING,
+                ("Vthreshold mismatch.%s:%d %s:%d\n", dacNames[indices[i]],
+                 retvals[i], dacNames[indices[0]], retvals[0]));
             *retval = -1;
             return OK;
         }

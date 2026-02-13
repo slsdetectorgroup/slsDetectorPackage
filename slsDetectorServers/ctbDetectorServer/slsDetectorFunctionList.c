@@ -1536,7 +1536,7 @@ int getVchipToSet(enum DACINDEX ind, int pwr_val, int *retval_vchip,
 
     // max checked earlier, should not happen
     if (*retval_vchip > VCHIP_MAX_MV) {
-        enum PWRINDEX pwrIndex = 0;
+        enum PWRINDEX pwrIndex = PWR_IO;
         if (getPowerIndex(ind, &pwrIndex, mess) == FAIL)
             return FAIL;
         char *powerNames[] = {PWR_NAMES};
@@ -1586,7 +1586,7 @@ int validatePower(enum PWRINDEX ind, int val, char *mess) {
 
 // for power rail index and name debugging
 int getPowerIndex(enum DACINDEX ind, enum PWRINDEX *pwrIndex, char *mess) {
-    *pwrIndex = 0;
+    *pwrIndex = PWR_IO;
     switch (ind) {
     case D_PWR_IO:
         *pwrIndex = PWR_IO;
@@ -1679,7 +1679,7 @@ int getPowerRail(enum PWRINDEX ind, int *retval, char *mess) {
 }
 
 int getPower(enum DACINDEX ind, int *retval, char *mess) {
-    enum PWRINDEX pwrIndex = 0;
+    enum PWRINDEX pwrIndex = PWR_IO;
     if (getPowerIndex(ind, &pwrIndex, mess) == FAIL)
         return FAIL;
 
@@ -1696,7 +1696,7 @@ int getPower(enum DACINDEX ind, int *retval, char *mess) {
 }
 
 int setPower(enum DACINDEX ind, int val, char *mess) {
-    enum PWRINDEX pwrIndex = 0;
+    enum PWRINDEX pwrIndex = PWR_IO;
     if (getPowerIndex(ind, &pwrIndex, mess) == FAIL)
         return FAIL;
 

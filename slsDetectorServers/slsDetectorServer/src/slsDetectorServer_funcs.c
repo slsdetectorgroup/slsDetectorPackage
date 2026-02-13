@@ -1159,41 +1159,190 @@ enum DACINDEX getDACIndex(enum dacIndex ind) {
     return serverDacIndex;
 }
 
-int validateAndSetDac(enum dacIndex ind, int val, bool mV) {
-
+#ifdef EIGERD
+int processDACEnums(enum dacIndex ind, int val, bool mV) {
     int retval = -1;
     enum DACINDEX serverDacIndex = 0;
-
     switch (ind) {
 
-#ifdef EIGERD
     case IO_DELAY:
         retval = setIODelay(val);
         LOG(logDEBUG1, ("IODelay: %d\n", retval));
         validate(&ret, mess, val, retval, "set iodelay", DEC);
         return retval;
-#endif
 
-#if defined(CHIPTESTBOARDD)
-    case ADC_VPP:
-        if (val != GET_FLAG)
-            ret = setADCVpp(val, mV, mess);
-        else
-            ret = getADCVpp(mV, &retval, mess);
-        return retval;
-#endif
-
-#if defined(MYTHEN3D) || defined(GOTTHARD2D) || defined(EIGERD) ||             \
-    defined(JUNGFRAUD) || defined(MOENCHD) || defined(CHIPTESTBOARDD)
     case HIGH_VOLTAGE:
         if (val != GET_FLAG)
             ret = setHighVoltage(val, mess);
         else
             ret = getHighVoltage(&retval, mess);
         return retval;
+
+        // actual dacs
+    default:
+        serverDacIndex = getDACIndex(ind);
+        if (ret == FAIL)
+            return retval;
+        // set
+        if (val != GET_FLAG) {
+            ret = setDAC(serverDacIndex, val, mV, mess);
+            // handle if set by user individually
+            if (serverDacIndex == E_VCMP_LL || serverDacIndex == E_VCMP_LR ||
+                serverDacIndex == E_VCMP_RL || serverDacIndex == E_VCMP_RR ||
+                serverDacIndex == E_VRPREAMP || serverDacIndex == E_VCP) {
+                setSettings(UNDEFINED, mess);
+                LOG(logERROR, ("Settings has been changed "
+                               "to undefined (changed specific dacs)\n"));
+            }
+        }
+        // get
+        else
+            ret = getDAC(serverDacIndex, mV, &retval, mess);
+        return retval;
+    }
+}
 #endif
 
-#ifdef CHIPTESTBOARDD
+#if MYTHEN3D
+int processDACEnums(enum dacIndex ind, int val, bool mV) {
+    int retval = -1;
+    enum DACINDEX serverDacIndex = 0;
+    switch (ind) {
+
+    case HIGH_VOLTAGE:
+        if (val != GET_FLAG)
+            ret = setHighVoltage(val, mess);
+        else
+            ret = getHighVoltage(&retval, mess);
+        return retval;
+
+    // actual dacs
+    default:
+        serverDacIndex = getDACIndex(ind);
+        if (ret == FAIL)
+            return retval;
+        // set
+        if (val != GET_FLAG) {
+            // ignore counter enable to force vth dac values
+            ret = setDAC(serverDacIndex, val, mV, false, mess);
+            // changed for setsettings (direct),
+            // custom trimbit file (setmodule with myMod.reg as -1),
+            // change of dac (direct)
+            if (ret == OK) {
+                for (int i = 0; i < NCOUNTERS; ++i) {
+                    setThresholdEnergy(i, -1);
+                }
+            }
+        }
+        // get
+        else
+            ret = getDAC(serverDacIndex, mV, &retval, mess);
+        return retval;
+    }
+}
+#endif
+
+#if GOTTHARD2D
+int processDACEnums(enum dacIndex ind, int val, bool mV) {
+    int retval = -1;
+    enum DACINDEX serverDacIndex = 0;
+    switch (ind) {
+
+    case HIGH_VOLTAGE:
+        if (val != GET_FLAG)
+            ret = setHighVoltage(val, mess);
+        else
+            ret = getHighVoltage(&retval, mess);
+        return retval;
+
+    // actual dacs
+    default:
+        serverDacIndex = getDACIndex(ind);
+        if (ret == FAIL)
+            return retval;
+        if (val != GET_FLAG)
+            ret = setDAC(serverDacIndex, val, mV, mess);
+        else
+            ret = getDAC(serverDacIndex, mV, &retval, mess);
+        return retval;
+    }
+}
+#endif
+
+#if JUNGFRAUD
+int processDACEnums(enum dacIndex ind, int val, bool mV) {
+    int retval = -1;
+    enum DACINDEX serverDacIndex = 0;
+    switch (ind) {
+
+    case HIGH_VOLTAGE:
+        if (val != GET_FLAG)
+            ret = setHighVoltage(val, mess);
+        else
+            ret = getHighVoltage(&retval, mess);
+        return retval;
+
+    // actual dacs
+    default:
+        serverDacIndex = getDACIndex(ind);
+        if (ret == FAIL)
+            return retval;
+        if (val != GET_FLAG)
+            ret = setDAC(serverDacIndex, val, mV, mess);
+        else
+            ret = getDAC(serverDacIndex, mV, &retval, mess);
+        return retval;
+    }
+}
+#endif
+
+#if MOENCHD
+int processDACEnums(enum dacIndex ind, int val, bool mV) {
+    int retval = -1;
+    enum DACINDEX serverDacIndex = 0;
+    switch (ind) {
+
+    case HIGH_VOLTAGE:
+        if (val != GET_FLAG)
+            ret = setHighVoltage(val, mess);
+        else
+            ret = getHighVoltage(&retval, mess);
+        return retval;
+
+    // actual dacs
+    default:
+        serverDacIndex = getDACIndex(ind);
+        if (ret == FAIL)
+            return retval;
+        if (val != GET_FLAG)
+            ret = setDAC(serverDacIndex, val, mV, mess);
+        else
+            ret = getDAC(serverDacIndex, mV, &retval, mess);
+        return retval;
+    }
+}
+#endif
+
+#if CHIPTESTBOARDD
+int processDACEnums(enum dacIndex ind, int val, bool mV) {
+    int retval = -1;
+    enum DACINDEX serverDacIndex = 0;
+    switch (ind) {
+
+    case ADC_VPP:
+        if (val != GET_FLAG)
+            ret = setADCVpp(val, mV, mess);
+        else
+            ret = getADCVpp(mV, &retval, mess);
+        return retval;
+
+    case HIGH_VOLTAGE:
+        if (val != GET_FLAG)
+            ret = setHighVoltage(val, mess);
+        else
+            ret = getHighVoltage(&retval, mess);
+        return retval;
+
     case V_POWER_CHIP:
         if (val != GET_FLAG) {
             ret = FAIL;
@@ -1206,9 +1355,7 @@ int validateAndSetDac(enum dacIndex ind, int val, bool mV) {
         }
         ret = getVchip(&retval, mess);
         return retval;
-#endif
 
-#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
     case V_LIMIT:
         if (val != GET_FLAG) {
             if (!mV) {
@@ -1222,9 +1369,7 @@ int validateAndSetDac(enum dacIndex ind, int val, bool mV) {
         } else
             retval = getVLimit();
         return retval;
-#endif
 
-#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
     case V_POWER_A:
     case V_POWER_B:
     case V_POWER_C:
@@ -1247,53 +1392,77 @@ int validateAndSetDac(enum dacIndex ind, int val, bool mV) {
         } else
             ret = getPower(serverDacIndex, &retval, mess);
         return retval;
-#endif
 
     // actual dacs
     default:
         serverDacIndex = getDACIndex(ind);
         if (ret == FAIL)
             return retval;
-        // set
-        if (val != GET_FLAG) {
-#if defined(MYTHEN3D)
-            // ignore counter enable to force vth dac values
-            ret = setDAC(serverDacIndex, val, mV, false, mess);
-            // changed for setsettings (direct),
-            // custom trimbit file (setmodule with myMod.reg as -1),
-            // change of dac (direct)
-            if (ret == OK) {
-                for (int i = 0; i < NCOUNTERS; ++i) {
-                    setThresholdEnergy(i, -1);
-                }
-            }
-#elif defined(EIGERD)
+        if (val != GET_FLAG)
             ret = setDAC(serverDacIndex, val, mV, mess);
-            // handle if set by user individually
-            switch (serverDacIndex) {
-            case E_VCMP_LL:
-            case E_VCMP_LR:
-            case E_VCMP_RL:
-            case E_VCMP_RR:
-            case E_VRPREAMP:
-            case E_VCP:
-                setSettings(UNDEFINED, mess);
-                LOG(logERROR, ("Settings has been changed "
-                               "to undefined (changed specific dacs)\n"));
-                break;
-            default:
-                break;
-            }
-#else
-            ret = setDAC(serverDacIndex, val, mV, mess);
-#endif
-        }
-        // get
         else
             ret = getDAC(serverDacIndex, mV, &retval, mess);
         return retval;
     }
 }
+#endif
+
+#if XILINX_CHIPTESTBOARDD
+int processDACEnums(enum dacIndex ind, int val, bool mV) {
+    int retval = -1;
+    enum DACINDEX serverDacIndex = 0;
+    switch (ind) {
+
+    case V_LIMIT:
+        if (val != GET_FLAG) {
+            if (!mV) {
+                ret = FAIL;
+                strcpy(mess, "Could not set vlimit. VLimit should be in "
+                             "mV and not dac units.\n");
+                LOG(logERROR, (mess));
+                return retval;
+            }
+            ret = setVLimit(val, mess);
+        } else
+            retval = getVLimit();
+        return retval;
+
+    case V_POWER_A:
+    case V_POWER_B:
+    case V_POWER_C:
+    case V_POWER_D:
+    case V_POWER_IO:
+        serverDacIndex = getDACIndex(ind);
+        if (ret == FAIL)
+            return retval;
+        if (val != GET_FLAG) {
+            if (!mV) {
+                ret = FAIL;
+                sprintf(mess,
+                        "Could not set power. Power regulator %d should be in "
+                        "mV and not dac units.\n",
+                        ind);
+                LOG(logERROR, (mess));
+                return retval;
+            }
+            ret = setPower(serverDacIndex, val, mess);
+        } else
+            ret = getPower(serverDacIndex, &retval, mess);
+        return retval;
+
+    // actual dacs
+    default:
+        serverDacIndex = getDACIndex(ind);
+        if (ret == FAIL)
+            return retval;
+        if (val != GET_FLAG)
+            ret = setDAC(serverDacIndex, val, mV, mess);
+        else
+            ret = getDAC(serverDacIndex, mV, &retval, mess);
+        return retval;
+    }
+}
+#endif
 
 int set_dac(int file_des) {
     ret = OK;
@@ -1312,7 +1481,7 @@ int set_dac(int file_des) {
         ("Setting DAC %d to %d %s\n", ind, val, (mV ? "mV" : "dac units")));
     // set & get
     if ((val == GET_FLAG) || (Server_VerifyLock() == OK)) {
-        retval = validateAndSetDac(ind, val, mV);
+        retval = processDACEnums(ind, val, mV);
     }
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
@@ -1944,7 +2113,7 @@ void *start_state_machine(void *arg) {
             else {
                 LOG(logINFOBLUE, ("Dac [%d] scan %d/%d: [%d]\n",
                                   scanGlobalIndex, i, times, scanSteps[i]));
-                validateAndSetDac(scanGlobalIndex, scanSteps[i], false);
+                processDACEnums(scanGlobalIndex, scanSteps[i], false);
                 if (ret == FAIL) {
                     sprintf(scanErrMessage, "Cannot scan dac %d at %d. ",
                             scanGlobalIndex, scanSteps[i]);

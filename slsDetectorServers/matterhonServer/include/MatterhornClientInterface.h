@@ -13,6 +13,8 @@ class MatterhornClientInterface : public ClientInterface {
   private:
     ReturnCode get_version(ServerInterface &socket);
 
+    ReturnCode get_detector_type(ServerInterface &socket);
+
     static std::string getMatterhornServerVersion();
 };
 

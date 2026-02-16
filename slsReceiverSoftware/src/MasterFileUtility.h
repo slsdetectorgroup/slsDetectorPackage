@@ -36,7 +36,7 @@ defs::ROI GetGlobalPortRoi(const int iPort, const defs::xy portSize,
 int GetNumPortsInRoi(const defs::ROI roi, const defs::xy portSize);
 
 std::string CreateVirtualHDF5File(
-    const std::string &filePath, const std::string &fileNamePrefix,
+    const std::filesystem::path &filePath, const std::string &fileNamePrefix,
     const uint64_t fileIndex, const bool overWriteEnable, const bool silentMode,
     const int modulePos, const int numUnitsPerReadout,
     const uint32_t maxFramesPerFile, const int nPixelsX, const int nPixelsY,

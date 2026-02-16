@@ -66,7 +66,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
                           const bool silentMode, const bool detectorDataStream);
 #ifdef HDF5C
     uint32_t GetFilesInAcquisition() const;
-    std::string CreateVirtualFile(const std::string &filePath,
+    std::string CreateVirtualFile(const std::filesystem::path &filePath,
                                   const std::string &fileNamePrefix,
                                   const uint64_t fileIndex,
                                   const bool overWriteEnable,

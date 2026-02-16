@@ -85,6 +85,7 @@
 #define DEFAULT_STREAMING_TIMER_IN_MS 500
 
 #define NUM_RX_THREAD_IDS 9
+
 // NOLINTEND(cppcoreguidelines-macro-usage)
 #ifdef __cplusplus
 
@@ -105,7 +106,9 @@ class slsDetectorDefs {
         MOENCH,
         MYTHEN3,
         GOTTHARD2,
-        XILINX_CHIPTESTBOARD
+        XILINX_CHIPTESTBOARD,
+        MATTERHORN // TODO: maybe better to have it under a namespace
+                   // slsDetectorDefs instead of grouped in a class
     };
 
     /**  return values */
@@ -760,6 +763,13 @@ struct detParameters {
             nChipX = 10;
             nChipY = 1;
             nDacs = 14;
+            break;
+        case slsDetectorDefs::detectorType::MATTERHORN:
+            nChanX = 256;
+            nChanY = 256;
+            nChipX = 4;
+            nChipY = 2;
+            nDacs = 31;
             break;
         default:
             throw sls::RuntimeError("Unknown detector type! " +

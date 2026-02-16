@@ -713,6 +713,8 @@ template <> defs::detectorType StringTo(const std::string &s) {
         return defs::GOTTHARD2;
     if (s == "Xilinx_ChipTestBoard")
         return defs::XILINX_CHIPTESTBOARD;
+    if (s == "Matterhorn")
+        return defs::MATTERHORN;
     throw RuntimeError("Unknown detector type " + s);
 }
 

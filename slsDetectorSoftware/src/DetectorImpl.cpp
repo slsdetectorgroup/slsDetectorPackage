@@ -204,6 +204,9 @@ void DetectorImpl::addModule(const std::string &name) {
     // get type by connecting
     detectorType type = Module::getTypeFromDetector(hostname, port);
 
+    LOG(logDEBUG) << "Detector type of module " << name << " is "
+                  << std::to_string(type);
+
     // gotthard2 cannot have more than 2 modules (50um=1, 25um=2
     if (type == GOTTHARD2 && modules.size() > 2) {
         throw RuntimeError("GotthardII cannot have more than 2 modules. Please "

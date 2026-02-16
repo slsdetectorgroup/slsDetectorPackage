@@ -13,7 +13,7 @@ namespace sls {
  * @brief ClientInterface class handles communication and processing of commands
  * from Client to Server.
  */
-class ClientInterface : private virtual slsDetectorDefs {
+class ClientInterface {
 
   protected:
     // TODO probably requires std::variant

@@ -27,11 +27,6 @@ enum TLogLevel {
     logDEBUG5
 };
 
-// Compiler should optimize away anything below this value
-#ifndef LOG_MAX_REPORTING_LEVEL
-#define LOG_MAX_REPORTING_LEVEL sls::logINFO
-#endif
-
 #define __AT__                                                                 \
     std::string(__FILE__) + std::string("::") + std::string(__func__) +        \
         std::string("(): ")

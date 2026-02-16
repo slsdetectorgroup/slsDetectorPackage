@@ -3,8 +3,6 @@
 #pragma once
 
 #include "File.h"
-
-#include <filesystem>
 #include <mutex>
 
 namespace sls {

@@ -16,7 +16,6 @@
 #include <cstdlib> //system
 #include <cstring>
 #include <cstring> //strcpy
-#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <sys/stat.h> // stat
@@ -656,7 +655,7 @@ void Implementation::startReceiver() {
                 generalData->dynamicRange,
                 numPorts,
                 static_cast<size_t>(generalData->imageSize),
-                filePath,
+                filePath.string(),
                 fileName,
                 fileIndex,
                 quadEnable,
@@ -855,9 +854,7 @@ void Implementation::ResetParametersforNewAcquisition() {
         it->ResetParametersforNewAcquisition();
 
     if (dataStreamEnable) {
-        std::ostringstream os;
-        os << filePath << '/' << fileName;
-        std::string fnametostream = os.str();
+        std::string fnametostream = (filePath / fileName).string();
         for (const auto &it : dataStreamer)
             it->ResetParametersforNewAcquisition(fnametostream);
     }
@@ -879,6 +876,10 @@ void Implementation::SetupWriter() {
 
     try {
         // check if folder exists and throw if it cant create
+        if (filePath.empty()) {
+            throw RuntimeError("File path cannot be empty. Please set file "
+                               "path before starting acquisition.");
+        }
         if (!std::filesystem::exists(filePath)) {
             try {
                 std::filesystem::create_directories(filePath);

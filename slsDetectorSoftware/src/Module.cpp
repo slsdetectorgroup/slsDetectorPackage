@@ -803,6 +803,10 @@ void Module::resetToDefaultDacs(const bool hardReset) {
 }
 
 void Module::setDAC(int val, dacIndex index, bool mV) {
+    // -1 reserved for get at the moment (get_dac also calls F_SET_DAC)
+    if (val == -1) {
+        throw RuntimeError("Invalid input. DAC value cannot be set to -1.");
+    }
     int args[]{static_cast<int>(index), static_cast<int>(mV), val};
     sendToDetector<int>(F_SET_DAC, args);
 }

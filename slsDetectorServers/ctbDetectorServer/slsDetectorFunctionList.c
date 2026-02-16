@@ -1435,8 +1435,10 @@ int setDAC(enum DACINDEX ind, int val, bool mV, char *mess) {
 
     int dacval = val;
     if (mV) {
-        if (validateDACVoltage(ind, val, mess) == FAIL)
-            return FAIL;
+        if (ind < NDAC_ONLY) {
+            if (validateDACVoltage(ind, val, mess) == FAIL)
+                return FAIL;
+        }
 
         if (convertVoltageToDACValue(ind, val, &dacval, mess) == FAIL)
             return FAIL;

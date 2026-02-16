@@ -18,11 +18,10 @@ target_compile_definitions(matterhornDetectorServer_virtual
 
 target_link_libraries(matterhornDetectorServer_virtual
     PUBLIC 
-        slsProjectCSettings
         slsSupportStatic
         slsDetectorStatic
         slsServerStatic
-        fmt::fmt
+        fmt::fmt # TODO should not be here !!! 
 )
 
 set_target_properties(matterhornDetectorServer_virtual PROPERTIES

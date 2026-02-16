@@ -332,13 +332,8 @@ std::string CreateVirtualHDF5File(
                         H5S_SELECT_SET, numBlocksPara, startLocationPara,
                         strideBetweenBlocksPara, blockSizePara);
 
-                    // source file name
-                    std::ostringstream os;
-                    os << filePath << "/" << fileNamePrefix << "_d"
-                       << (modulePos * numUnitsPerReadout + iReadout) << "_f"
-                       << iFile << '_' << fileIndex << ".h5";
                     std::filesystem::path p =
-                        m_filePath /
+                        filePath /
                         (fileNamePrefix + "_d" +
                          std::to_string(modulePos * numUnitsPerReadout +
                                         iReadout) +

@@ -53,6 +53,9 @@ int main(int argc, char *argv[]) {
         return EXIT_SUCCESS;
     }
 
+    // Register Ctrl+C handler
+    std::signal(SIGINT, sigInterruptHandler);
+
     // LOG(sls::logINFOBLUE) << "Current Process [ Tid: " << gettid() << " ]";
 
     // handle locally on socket crash

@@ -1273,10 +1273,9 @@ int validateDACIndex(enum DACINDEX ind, char *mess) {
 int validateDACValue(enum DACINDEX ind, int dacval, char *mess) {
     // validate min value
     if (dacval < 0 && dacval != LTC2620_GetPowerDownValue()) {
-        sprintf(
-            mess,
-            "Could not set DAC %d. Input value %d must be positive or -100.\n",
-            ind, dacval);
+        sprintf(mess,
+                "Could not set DAC %d. Input value %d must be positive or %d\n",
+                ind, dacval, LTC2620_GetPowerDownValue());
         LOG(logERROR, (mess));
         return FAIL;
     }

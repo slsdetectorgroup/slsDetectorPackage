@@ -3,10 +3,18 @@
 /** API versions */
 #define APILIB       "0.0.0 0x250909"
 #define APIRECEIVER  "0.0.0 0x250822"
+<<<<<<< Updated upstream
 #define APICTB       "0.0.0 0x260216"
 #define APIGOTTHARD2 "0.0.0 0x260213"
 #define APIMOENCH    "0.0.0 0x260213"
 #define APIEIGER     "0.0.0 0x260213"
 #define APIXILINXCTB "0.0.0 0x260216"
+=======
+#define APICTB       "0.0.0 0x260217"
+#define APIGOTTHARD2 "0.0.0 0x260213"
+#define APIMOENCH    "0.0.0 0x260213"
+#define APIEIGER     "0.0.0 0x260213"
+#define APIXILINXCTB "0.0.0 0x260217"
+>>>>>>> Stashed changes
 #define APIJUNGFRAU  "0.0.0 0x260213"
 #define APIMYTHEN3   "0.0.0 0x260213"

@@ -6,6 +6,7 @@
 #include "sls/sls_detector_defs.h"
 
 #include <array>
+#include <filesystem>
 
 #ifdef HDF5C
 #include "H5Cpp.h"
@@ -56,6 +57,7 @@ class File : private virtual slsDetectorDefs {
     };
 
     virtual void CreateFirstHDF5DataFile(
+        const std::filesystem::path &filePath,
         const std::string &fileNamePrefix, const uint64_t fileIndex,
         const bool overWriteEnable, const bool silentMode,
         const uint16_t udpPortNumber, const uint32_t maxFramesPerFile,
@@ -66,12 +68,11 @@ class File : private virtual slsDetectorDefs {
                "should be overloaded by a derived class";
     };
 #endif
-    virtual void CreateFirstBinaryDataFile(const std::string &fileNamePrefix,
-                                           const uint64_t fileIndex,
-                                           const bool overWriteEnable,
-                                           const bool silentMode,
-                                           const uint16_t udpPortNumber,
-                                           const uint32_t maxFramesPerFile) {
+    virtual void CreateFirstBinaryDataFile(
+        const std::filesystem::path &filePath,
+        const std::string &fileNamePrefix, const uint64_t fileIndex,
+        const bool overWriteEnable, const bool silentMode,
+        const uint16_t udpPortNumber, const uint32_t maxFramesPerFile) {
         LOG(logERROR)
             << "This is a generic function CreateFirstBinaryDataFile that "
                "should be overloaded by a derived class";

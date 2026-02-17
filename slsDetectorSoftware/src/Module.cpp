@@ -4074,4 +4074,50 @@ void Module::simulatingActivityinDetector(const std::string &functionType,
     }
     printf("\n");
 }
+
+std::vector<uint8_t> Module::readSpi(int chip_id, int register_id,
+                                     int n_bytes) const {
+    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    client.Send(F_SPI_READ);
+    client.setFnum(F_SPI_READ);
+    client.Send(chip_id);
+    client.Send(register_id);
+    client.Send(n_bytes);
+
+    if (client.Receive<int>() == FAIL) {
+        std::ostringstream os;
+        os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
+           << " returned error: " << client.readErrorMessage();
+        throw DetectorError(os.str());
+    }
+
+    std::vector<uint8_t> data(n_bytes);
+    client.Receive(data);
+    return data;
+}
+
+std::vector<uint8_t> Module::writeSpi(int chip_id, int register_id,
+                                      const std::vector<uint8_t> &data) {
+    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    client.Send(F_SPI_WRITE);
+    client.setFnum(F_SPI_WRITE);
+    client.Send(chip_id);
+    client.Send(register_id);
+    client.Send(static_cast<int>(data.size()));
+    client.Send(data);
+
+    if (client.Receive<int>() == FAIL) {
+        std::ostringstream os;
+        os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
+           << " returned error: " << client.readErrorMessage();
+        throw DetectorError(os.str());
+    }
+
+    // Read the output from the SPI write. This contains the data before the
+    // write.
+    std::vector<uint8_t> ret(data.size());
+    client.Receive(ret);
+    return ret;
+}
+
 } // namespace sls

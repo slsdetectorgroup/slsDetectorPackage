@@ -9,16 +9,17 @@ namespace sls {
 
 namespace masterFileUtility {
 
-std::string CreateMasterBinaryFile(const std::string &filePath,
+std::string CreateMasterBinaryFile(const std::filesystem::path &filePath,
                                    const std::string &fileNamePrefix,
                                    const uint64_t fileIndex,
                                    const bool overWriteEnable,
                                    const bool silentMode,
                                    MasterAttributes *attr) {
-    std::ostringstream os;
-    os << filePath << "/" << fileNamePrefix << "_master"
-       << "_" << fileIndex << ".json";
-    std::string fileName = os.str();
+
+    std::filesystem::path p = filePath / (fileNamePrefix + "_master_" +
+                                          std::to_string(fileIndex) + ".json");
+
+    std::string fileName = p.string();
 
     std::string mode = "w";
     if (!overWriteEnable)
@@ -112,17 +113,16 @@ void LinkHDF5FileInMaster(std::string &masterFileName,
     }
 }
 
-std::string CreateMasterHDF5File(const std::string &filePath,
+std::string CreateMasterHDF5File(const std::filesystem::path &filePath,
                                  const std::string &fileNamePrefix,
                                  const uint64_t fileIndex,
                                  const bool overWriteEnable,
                                  const bool silentMode, MasterAttributes *attr,
                                  std::mutex *hdf5LibMutex) {
 
-    std::ostringstream os;
-    os << filePath << "/" << fileNamePrefix << "_master"
-       << "_" << fileIndex << ".h5";
-    std::string fileName = os.str();
+    std::filesystem::path p = filePath / (fileNamePrefix + "_master_" +
+                                          std::to_string(fileIndex) + ".json");
+    std::string fileName = p.string();
 
     std::lock_guard<std::mutex> lock(*hdf5LibMutex);
 
@@ -185,7 +185,7 @@ int GetNumPortsInRoi(const defs::ROI roi, const defs::xy portSize) {
 
 /** Will not be called if dynamic range is 4 and roi enabled */
 std::string CreateVirtualHDF5File(
-    const std::string &filePath, const std::string &fileNamePrefix,
+    const std::filesystem::path &filePath, const std::string &fileNamePrefix,
     const uint64_t fileIndex, const bool overWriteEnable, const bool silentMode,
     const int modulePos, const int numUnitsPerReadout,
     const uint32_t maxFramesPerFile, const int nPixelsX, const int nPixelsY,
@@ -202,10 +202,11 @@ std::string CreateVirtualHDF5File(
     }
 
     // virtual file name
-    std::ostringstream osfn;
-    osfn << filePath << "/" << fileNamePrefix << "_virtual"
-         << "_" << fileIndex << ".h5";
-    std::string fileName = osfn.str();
+    std::filesystem::path p = filePath / (fileNamePrefix + "_virtual_" +
+                                          std::to_string(fileIndex) + ".h5");
+
+    std::string fileName = p.string();
+
     unsigned int paraSize = parameterNames.size();
     std::lock_guard<std::mutex> lock(*hdf5LibMutex);
     std::unique_ptr<H5::H5File> fd{nullptr};
@@ -331,12 +332,15 @@ std::string CreateVirtualHDF5File(
                         H5S_SELECT_SET, numBlocksPara, startLocationPara,
                         strideBetweenBlocksPara, blockSizePara);
 
-                    // source file name
-                    std::ostringstream os;
-                    os << filePath << "/" << fileNamePrefix << "_d"
-                       << (modulePos * numUnitsPerReadout + iReadout) << "_f"
-                       << iFile << '_' << fileIndex << ".h5";
-                    std::string srcFileName = os.str();
+                    std::filesystem::path p =
+                        filePath /
+                        (fileNamePrefix + "_d" +
+                         std::to_string(modulePos * numUnitsPerReadout +
+                                        iReadout) +
+                         "_f" + std::to_string(iFile) + '_' +
+                         std::to_string(fileIndex) + ".h5");
+
+                    std::string srcFileName = p.string();
                     LOG(logDEBUG1) << srcFileName;
 
                     // find relative path

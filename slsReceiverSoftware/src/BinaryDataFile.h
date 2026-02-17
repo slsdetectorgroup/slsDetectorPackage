@@ -14,7 +14,8 @@ class BinaryDataFile : private virtual slsDetectorDefs, public File {
 
     fileFormat GetFileFormat() const override;
     void CloseFile() override;
-    void CreateFirstBinaryDataFile(const std::string &fNamePrefix,
+    void CreateFirstBinaryDataFile(const std::filesystem::path &filePath,
+                                   const std::string &fNamePrefix,
                                    const uint64_t fIndex, const bool ovEnable,
                                    const bool sMode, const uint16_t uPortNumber,
                                    const uint32_t mFramesPerFile) override;
@@ -29,6 +30,7 @@ class BinaryDataFile : private virtual slsDetectorDefs, public File {
     uint32_t index;
     FILE *fd{nullptr};
     std::string fileName;
+    std::filesystem::path m_filePath;
     uint32_t numFramesInFile{0};
     uint32_t subFileIndex{0};
 

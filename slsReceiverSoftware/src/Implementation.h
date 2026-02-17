@@ -11,6 +11,7 @@
 #include <atomic>
 #include <chrono>
 #include <exception>
+#include <filesystem>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -316,7 +317,7 @@ class Implementation : private virtual slsDetectorDefs {
 
     // file parameters
     fileFormat fileFormatType{BINARY};
-    std::string filePath{};
+    std::filesystem::path filePath{};
     std::string fileName{"run"};
     uint64_t fileIndex{0};
     bool fileWriteEnable{false};

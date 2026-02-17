@@ -15,6 +15,7 @@
 #include "receiver_defs.h"
 
 #include <atomic>
+#include <filesystem>
 #include <mutex>
 #include <vector>
 
@@ -59,12 +60,13 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
                          const fileFormat fileFormatType,
                          std::mutex *hdf5LibMutex);
 
-    void CreateFirstFiles(const std::string &fileNamePrefix,
+    void CreateFirstFiles(const std::filesystem::path &filePath,
+                          const std::string &fileNamePrefix,
                           const uint64_t fileIndex, const bool overWriteEnable,
                           const bool silentMode, const bool detectorDataStream);
 #ifdef HDF5C
     uint32_t GetFilesInAcquisition() const;
-    std::string CreateVirtualFile(const std::string &filePath,
+    std::string CreateVirtualFile(const std::filesystem::path &filePath,
                                   const std::string &fileNamePrefix,
                                   const uint64_t fileIndex,
                                   const bool overWriteEnable,
@@ -76,7 +78,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
                           const bool silentMode, std::mutex *hdf5LibMutex);
 #endif
 
-    std::string CreateMasterFile(const std::string &filePath,
+    std::string CreateMasterFile(const std::filesystem::path &filePath,
                                  const std::string &fileNamePrefix,
                                  const uint64_t fileIndex,
                                  const bool overWriteEnable, bool silentMode,

@@ -148,7 +148,8 @@ void DataProcessor::SetupFileWriter(const bool filewriteEnable,
     }
 }
 
-void DataProcessor::CreateFirstFiles(const std::string &fileNamePrefix,
+void DataProcessor::CreateFirstFiles(const std::filesystem::path &filePath,
+                                     const std::string &fileNamePrefix,
                                      const uint64_t fileIndex,
                                      const bool overWriteEnable,
                                      const bool silentMode,
@@ -178,14 +179,14 @@ void DataProcessor::CreateFirstFiles(const std::string &fileNamePrefix,
 #ifdef HDF5C
     case HDF5:
         dataFile->CreateFirstHDF5DataFile(
-            fileNamePrefix, fileIndex, overWriteEnable, silentMode,
+            filePath, fileNamePrefix, fileIndex, overWriteEnable, silentMode,
             udpPortNumber, generalData->framesPerFile, nTotalFrames, nx, ny,
             generalData->dynamicRange);
         break;
 #endif
     case BINARY:
         dataFile->CreateFirstBinaryDataFile(
-            fileNamePrefix, fileIndex, overWriteEnable, silentMode,
+            filePath, fileNamePrefix, fileIndex, overWriteEnable, silentMode,
             udpPortNumber, generalData->framesPerFile);
         break;
     default:
@@ -203,7 +204,7 @@ uint32_t DataProcessor::GetFilesInAcquisition() const {
 }
 
 std::string DataProcessor::CreateVirtualFile(
-    const std::string &filePath, const std::string &fileNamePrefix,
+    const std::filesystem::path &filePath, const std::string &fileNamePrefix,
     const uint64_t fileIndex, const bool overWriteEnable, const bool silentMode,
     const int modulePos, const int numModX, const int numModY,
     std::mutex *hdf5LibMutex, bool gotthard25um) {
@@ -247,7 +248,7 @@ void DataProcessor::LinkFileInMaster(const std::string &masterFileName,
 #endif
 
 std::string DataProcessor::CreateMasterFile(
-    const std::string &filePath, const std::string &fileNamePrefix,
+    const std::filesystem::path &filePath, const std::string &fileNamePrefix,
     const uint64_t fileIndex, const bool overWriteEnable, bool silentMode,
     const fileFormat fileFormatType, MasterAttributes *attr,
     std::mutex *hdf5LibMutex) {

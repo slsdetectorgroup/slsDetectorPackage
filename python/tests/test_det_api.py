@@ -1,10 +1,3 @@
-'''
-cd python/tests
-Specific test: pytest -s -x test_CtbAPI.py::test_define_bit  #-x=abort on first failure
-Specific test with specific server: pytest -s -x test_CtbAPI.py::test_define_reg[ctb]
-
-'''
-
 import pytest, sys, traceback
 
 from pathlib import Path
@@ -16,48 +9,20 @@ print(sys.path)
 from utils_for_test import (
     Log,
     LogLevel,
-    cleanup,
-    startDetectorVirtualServer,
-    connectToVirtualServers,
-    SERVER_START_PORTNO, 
 )
-
-from slsdet import Detector, detectorType
-
-
-@pytest.fixture(
-    scope="session", 
-    params=['ctb', 'xilinx_ctb', 'mythen3']
-)
-def simulator(request):
-    """Fixture to start the detector server once and clean up at the end."""
-    det_name = request.param
-    num_mods = 1
-    fp = sys.stdout
-
-    # set up: once per server
-    Log(LogLevel.INFOBLUE, f'---- {det_name} ----')
-    cleanup(fp)
-    startDetectorVirtualServer(det_name, num_mods, fp)
-
-    Log(LogLevel.INFOBLUE, f'Waiting for server to start up and connect')
-    connectToVirtualServers(det_name, num_mods)
-
-    yield det_name # tests run here
-
-    cleanup(fp)
+from slsdet import Detector
 
 
-@pytest.mark.withdetectorsimulators
-def test_define_reg(simulator, request):
+
+@pytest.mark.detectorintegration
+def test_define_reg(session_simulator, request):
     """ Test setting define_reg for ctb and xilinx_ctb."""
-    det_name = simulator
+    det_type, num_interfaces, num_mods, d = session_simulator
+    assert d is not None
+
     from slsdet import RegisterAddress
 
-    d = Detector()
-    d.hostname = f"localhost:{SERVER_START_PORTNO}" 
-
-    if det_name in ['ctb', 'xilinx_ctb']:
+    if det_type in ['ctb', 'xilinx_ctb']:
         prev_reg_defs = d.getRegisterDefinitions()
         prev_bit_defs = d.getBitDefinitions()
         d.clearRegisterDefinitions()
@@ -109,17 +74,15 @@ def test_define_reg(simulator, request):
     Log(LogLevel.INFOGREEN, f"✅ {request.node.name} passed")
 
 
-@pytest.mark.withdetectorsimulators
-def test_define_bit(simulator, request):
+@pytest.mark.detectorintegration
+def test_define_bit(session_simulator, request):
     """ Test setting define_bit for ctb and xilinx_ctb."""
-    det_name = simulator
+    det_type, num_interfaces, num_mods, d = session_simulator
+    assert d is not None
+
     from slsdet import RegisterAddress, BitAddress
 
-    # setup
-    d = Detector()
-    d.hostname = f"localhost:{SERVER_START_PORTNO}" 
-
-    if det_name in ['ctb', 'xilinx_ctb']:
+    if det_type in ['ctb', 'xilinx_ctb']:
         prev_reg_defs = d.getRegisterDefinitions()
         prev_bit_defs = d.getBitDefinitions()
         d.clearRegisterDefinitions()
@@ -201,17 +164,15 @@ def test_define_bit(simulator, request):
     Log(LogLevel.INFOGREEN, f"✅ {request.node.name} passed")
 
 
-@pytest.mark.withdetectorsimulators
-def test_using_defined_reg_and_bit(simulator, request):
+@pytest.mark.detectorintegration
+def test_using_defined_reg_and_bit(session_simulator, request):
     """ Test using defined reg and bit define_bit for ctb and xilinx_ctb."""
-    det_name = simulator
+    det_type, num_interfaces, num_mods, d = session_simulator
+    assert d is not None
+
     from slsdet import RegisterAddress, BitAddress, RegisterValue
 
-    # setup
-    d = Detector()
-    d.hostname = f"localhost:{SERVER_START_PORTNO}" 
-
-    if det_name in ['ctb', 'xilinx_ctb']:
+    if det_type in ['ctb', 'xilinx_ctb']:
         prev_reg_defs = d.getRegisterDefinitions()
         prev_bit_defs = d.getBitDefinitions()
         d.clearRegisterDefinitions()
@@ -287,17 +248,15 @@ def test_using_defined_reg_and_bit(simulator, request):
     Log(LogLevel.INFOGREEN, f"✅ {request.node.name} passed")
 
 
-@pytest.mark.withdetectorsimulators
-def test_definelist_reg(simulator, request):
+@pytest.mark.detectorintegration
+def test_definelist_reg(session_simulator, request):
     """ Test using definelist_reg for ctb and xilinx_ctb."""
-    det_name = simulator
+    det_type, num_interfaces, num_mods, d = session_simulator
+    assert d is not None
+
     from slsdet import RegisterAddress, BitAddress, RegisterValue
 
-    # setup
-    d = Detector()
-    d.hostname = f"localhost:{SERVER_START_PORTNO}" 
-
-    if det_name in ['ctb', 'xilinx_ctb']:
+    if det_type in ['ctb', 'xilinx_ctb']:
         prev_reg_defs = d.getRegisterDefinitions()
         prev_bit_defs = d.getBitDefinitions()
         d.clearRegisterDefinitions()
@@ -332,17 +291,15 @@ def test_definelist_reg(simulator, request):
     Log(LogLevel.INFOGREEN, f"✅ {request.node.name} passed")
 
 
-@pytest.mark.withdetectorsimulators
-def test_definelist_bit(simulator, request):
+@pytest.mark.detectorintegration
+def test_definelist_bit(session_simulator, request):
     """ Test using definelist_bit for ctb and xilinx_ctb."""
-    det_name = simulator
+    det_type, num_interfaces, num_mods, d = session_simulator
+    assert d is not None
+
     from slsdet import RegisterAddress, BitAddress, RegisterValue
 
-    # setup
-    d = Detector()
-    d.hostname = f"localhost:{SERVER_START_PORTNO}" 
-
-    if det_name in ['ctb', 'xilinx_ctb']:
+    if det_type in ['ctb', 'xilinx_ctb']:
         prev_reg_defs = d.getRegisterDefinitions()
         prev_bit_defs = d.getBitDefinitions()
         d.clearRegisterDefinitions()
@@ -381,5 +338,59 @@ def test_definelist_bit(simulator, request):
         with pytest.raises(Exception) as exc_info:
             d.define_bit(name="test_bit", addr=0x300, bit_position=1)
         assert "Bit Definitions only for CTB" in str(exc_info.value)
+
+    Log(LogLevel.INFOGREEN, f"✅ {request.node.name} passed")
+
+
+@pytest.mark.detectorintegration
+def test_parameters_file(session_simulator, request):
+    """ Test using test_parameters_file."""
+    det_type, num_interfaces, num_mods, d = session_simulator
+    assert d is not None
+
+    with open("/tmp/params.det", "w") as f:
+        f.write("frames 2\n")
+        f.write("fwrite 1\n")
+
+    # this should not throw
+    d.parameters = "/tmp/params.det"
+
+    assert d.frames == 2    
+    assert d.fwrite == 1
+
+    Log(LogLevel.INFOGREEN, f"✅ Test passed. Command: parameters")
+
+
+@pytest.mark.detectorintegration
+def test_include_file(session_simulator, request):
+    """ Test using test_include_file."""
+    det_type, num_interfaces, num_mods, d = session_simulator
+    assert d is not None
+    
+    with open("/tmp/params.det", "w") as f:
+        f.write("frames 3\n")
+        f.write("fwrite 0\n")
+
+    # this should not throw
+    d.include = "/tmp/params.det"
+
+    assert d.frames == 3    
+    assert d.fwrite == 0
+
+    Log(LogLevel.INFOGREEN, f"✅ Test passed. Command: include")
+
+
+@pytest.mark.detectorintegration
+def test_patternstart(session_simulator, request):
+    """ Test using patternstart for ctb, xilinx_ctb and mythen3."""
+    det_type, num_interfaces, num_mods, d = session_simulator
+    assert d is not None
+
+    if det_type in ['ctb', 'xilinx_ctb', 'mythen3']:
+        d.patternstart()
+    else:
+        with pytest.raises(Exception) as exc_info:
+            d.patternstart()
+        assert "not implemented" in str(exc_info.value)
 
     Log(LogLevel.INFOGREEN, f"✅ {request.node.name} passed")

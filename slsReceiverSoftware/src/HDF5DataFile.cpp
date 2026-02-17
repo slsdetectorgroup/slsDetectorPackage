@@ -87,8 +87,9 @@ void HDF5DataFile::CloseFile() {
 }
 
 void HDF5DataFile::CreateFirstHDF5DataFile(
-    const std::string &fNamePrefix, const uint64_t fIndex, const bool owEnable,
-    const bool sMode, const uint16_t uPortNumber, const uint32_t mFramesPerFile,
+    const std::filesystem::path &filePath, const std::string &fNamePrefix,
+    const uint64_t fIndex, const bool owEnable, const bool sMode,
+    const uint16_t uPortNumber, const uint32_t mFramesPerFile,
     const uint64_t nImages, const uint32_t nX, const uint32_t nY,
     const uint32_t dr) {
 
@@ -103,6 +104,7 @@ void HDF5DataFile::CreateFirstHDF5DataFile(
     nPixelsY = nY;
     dynamicRange = dr;
 
+    m_filePath = filePath;
     fileNamePrefix = fNamePrefix;
     fileIndex = fIndex;
     overWriteEnable = owEnable;
@@ -129,9 +131,10 @@ void HDF5DataFile::CreateFile() {
     numFramesInFile = 0;
     numFilesInAcquisition++;
 
-    std::ostringstream os;
-    os << fileNamePrefix << "_f" << subFileIndex << '_' << fileIndex << ".h5";
-    fileName = os.str();
+    std::filesystem::path p =
+        m_filePath / (fileNamePrefix + "_f" + std::to_string(subFileIndex) +
+                      '_' + std::to_string(fileIndex) + ".h5");
+    fileName = p.string();
 
     std::lock_guard<std::mutex> lock(*hdf5Lib);
 

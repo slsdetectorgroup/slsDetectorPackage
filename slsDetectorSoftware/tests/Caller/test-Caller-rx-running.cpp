@@ -12,7 +12,7 @@ namespace sls {
 using test::PUT;
 
 TEST_CASE("Ctb and xilinx - cant put if receiver is not idle",
-          "[.cmdcall][.rx]") {
+          "[.detectorintegration][.rx]") {
 
     Detector det;
     Caller caller(&det);
@@ -60,7 +60,8 @@ TEST_CASE("Ctb and xilinx - cant put if receiver is not idle",
     }
 }
 
-TEST_CASE("adcenable - cant put if receiver is not idle", "[.cmdcall][.rx]") {
+TEST_CASE("adcenable - cant put if receiver is not idle",
+          "[.detectorintegration][.rx]") {
 
     Detector det;
     Caller caller(&det);
@@ -83,7 +84,8 @@ TEST_CASE("adcenable - cant put if receiver is not idle", "[.cmdcall][.rx]") {
     }
 }
 
-TEST_CASE("bursts - cant put if receiver is not idle", "[.cmdcall][.rx]") {
+TEST_CASE("bursts - cant put if receiver is not idle",
+          "[.detectorintegration][.rx]") {
 
     Detector det;
     Caller caller(&det);
@@ -105,7 +107,8 @@ TEST_CASE("bursts - cant put if receiver is not idle", "[.cmdcall][.rx]") {
     }
 }
 
-TEST_CASE("counters - cant put if receiver is not idle", "[.cmdcall][.rx]") {
+TEST_CASE("counters - cant put if receiver is not idle",
+          "[.detectorintegration][.rx]") {
 
     Detector det;
     Caller caller(&det);
@@ -129,30 +132,30 @@ TEST_CASE("counters - cant put if receiver is not idle", "[.cmdcall][.rx]") {
 }
 
 TEST_CASE("numinterfaces - cant put if receiver is not idle",
-          "[.cmdcall][.rx]") {
+          "[.detectorintegration][.rx]") {
 
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
     if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
-        auto prev_numinterfaces = det.getNumberofUDPInterfaces();
+        auto prev_numinterfaces = det.getNumberofUDPInterfaces().tsquash(
+            "Number of UDP Interfaces is not consistent among modules");
 
         // start receiver
         REQUIRE_NOTHROW(caller.call("rx_start", {}, -1, PUT));
 
-        REQUIRE_THROWS(caller.call("numinterafaces", {"2"}, -1, PUT));
+        REQUIRE_THROWS(caller.call("numinterfaces", {"2"}, -1, PUT));
 
         // stop receiver
         REQUIRE_NOTHROW(caller.call("rx_stop", {}, -1, PUT));
 
-        for (int i = 0; i != det.size(); ++i) {
-            det.setNumberofUDPInterfaces(prev_numinterfaces[i], {i});
-        }
+        det.setNumberofUDPInterfaces(prev_numinterfaces);
     }
 }
 
-TEST_CASE("dr - cant put if receiver is not idle", "[.cmdcall][.rx]") {
+TEST_CASE("dr - cant put if receiver is not idle",
+          "[.detectorintegration][.rx]") {
 
     Detector det;
     Caller caller(&det);
@@ -174,7 +177,8 @@ TEST_CASE("dr - cant put if receiver is not idle", "[.cmdcall][.rx]") {
     }
 }
 
-TEST_CASE("tengiga - cant put if receiver is not idle", "[.cmdcall][.rx]") {
+TEST_CASE("tengiga - cant put if receiver is not idle",
+          "[.detectorintegration][.rx]") {
 
     Detector det;
     Caller caller(&det);
@@ -198,7 +202,8 @@ TEST_CASE("tengiga - cant put if receiver is not idle", "[.cmdcall][.rx]") {
     }
 }
 
-TEST_CASE("general - cant put if receiver is not idle", "[.cmdcall][.rx]") {
+TEST_CASE("general - cant put if receiver is not idle",
+          "[.detectorintegration][.rx]") {
 
     Detector det;
     Caller caller(&det);

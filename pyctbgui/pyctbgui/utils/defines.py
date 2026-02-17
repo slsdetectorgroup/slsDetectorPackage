@@ -50,10 +50,18 @@ class Defines:
         Matterhorn = 0
         Moench04 = 1
 
-    class Matterhorn:
+    class Matterhorn02:
         nRows = 48
         nHalfCols = 24
         nCols = 48
+        nTransceivers = 2
+        tranceiverEnable = 0x3
+        nPixelsPerTransceiver = 4
+
+    class Matterhorn1:
+        nRows = 256
+        nHalfCols = 24
+        nCols = 256
         nTransceivers = 2
         tranceiverEnable = 0x3
         nPixelsPerTransceiver = 4

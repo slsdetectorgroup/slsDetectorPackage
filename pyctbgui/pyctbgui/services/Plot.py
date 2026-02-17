@@ -1,5 +1,6 @@
 import logging
 from functools import partial
+import pyctbgui.utils.pixelmap as pm
 import random
 from pathlib import Path
 
@@ -415,12 +416,25 @@ class PlotTab(QtWidgets.QWidget):
             self.mainWindow.read_timer.start(Defines.Time_Plot_Refresh_ms)
 
     def setPixelMap(self):
-        if self.view.comboBoxPlot.currentText() == "Matterhorn":
-            self.mainWindow.nTransceiverRows = Defines.Matterhorn.nRows
-            self.mainWindow.nTransceiverCols = Defines.Matterhorn.nCols
+        if self.view.comboBoxPlot.currentText() == "Matterhorn02":
+            print("Setting pixel map for Matterhorn02")
+            self.mainWindow.nTransceiverRows = Defines.Matterhorn02.nRows
+            self.mainWindow.nTransceiverCols = Defines.Matterhorn02.nCols
+            self.mainWindow.pixel_map = pm.matterhorn_transceiver()
+        elif self.view.comboBoxPlot.currentText() == "Matterhorn1_16bit_1_counter":
+            print("Setting pixel map for Matterhorn1")
+            self.mainWindow.nTransceiverRows = Defines.Matterhorn1.nRows
+            self.mainWindow.nTransceiverCols = Defines.Matterhorn1.nCols
+            self.mainWindow.pixel_map = pm.matterhorn1_transceiver_16bit_1_counter()
+        elif self.view.comboBoxPlot.currentText() == "Matterhorn1_16bit_4_counters":
+            print("Setting pixel map for Matterhorn1 with 4 counters")
+            self.mainWindow.nTransceiverRows = Defines.Matterhorn1.nRows*4
+            self.mainWindow.nTransceiverCols = Defines.Matterhorn1.nCols
+            self.mainWindow.pixel_map = pm.matterhorn1_transceiver_16bit_4_counters()
         elif self.view.comboBoxPlot.currentText() == "Moench04":
             self.mainWindow.nAnalogRows = Defines.Moench04.nRows
             self.mainWindow.nAnalogCols = Defines.Moench04.nCols
+
 
     def showPatternViewer(self, enable):
         if enable:

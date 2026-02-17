@@ -45,10 +45,11 @@ This document describes the differences between v10.0.1 and v10.0.0
 1.2.2 Resolved or Changed Features
 ===================================
 
-    Client & Receiver
-    -------
+    Receiver
+    --------
 
-    * setFilePath handles and resolves trailing "/". 
+    * filepath
+      resolves trailing "/" for filepaths
 
 
 1.2.3 New Features

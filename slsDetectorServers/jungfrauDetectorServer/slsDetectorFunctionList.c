@@ -1345,27 +1345,6 @@ int validateDACIndex(enum DACINDEX ind, char *mess) {
     return OK;
 }
 
-int validateDACValue(enum DACINDEX ind, int dacval, char *mess) {
-    char *dacNames[] = {DAC_NAMES};
-    // validate min value
-    if (dacval < 0) {
-        sprintf(mess,
-                "Could not set DAC %s. Input value %d cannot be negative\n",
-                dacNames[ind], dacval);
-        LOG(logERROR, (mess));
-        return FAIL;
-    }
-    // validate max value
-    if (dacval > LTC2620_GetMaxInput()) {
-        sprintf(mess,
-                "Could not set DAC %s. Input value %d exceeds maximum %d \n",
-                dacNames[ind], dacval, LTC2620_GetMaxInput());
-        LOG(logERROR, (mess));
-        return FAIL;
-    }
-    return OK;
-}
-
 int validateDACVoltage(enum DACINDEX ind, int voltage, char *mess) {
     char *dacNames[] = {DAC_NAMES};
     // validate min value
@@ -1436,7 +1415,6 @@ int setDAC(enum DACINDEX ind, int val, bool mV, char *mess) {
         LOG(logINFO, ("Setting DAC %s: %d %s \n", dacNames[ind], val,
                       (mV ? "mV" : "dac units")));
     }
-
     if (validateDACIndex(ind, mess) == FAIL)
         return FAIL;
 
@@ -1444,28 +1422,14 @@ int setDAC(enum DACINDEX ind, int val, bool mV, char *mess) {
     if (mV) {
         if (validateDACVoltage(ind, val, mess) == FAIL)
             return FAIL;
-
         if (convertVoltageToDACValue(ind, val, &dacval, mess) == FAIL)
             return FAIL;
     }
-
-    if (writeDACSpi(ind, dacval, mess) == FAIL)
-        return FAIL;
-
-    return OK;
-}
-
-int writeDACSpi(enum DACINDEX ind, int dacval, char *mess) {
-    if (validateDACValue(ind, dacval, mess) == FAIL)
-        return FAIL;
-
-    if (LTC2620_SetDACValue((int)ind, dacval) == FAIL) {
+    {
         char *dacNames[] = {DAC_NAMES};
-        sprintf(mess, "Could not set DAC %s.\n", dacNames[ind]);
-        LOG(logERROR, (mess));
-        return FAIL;
+        if (LTC2620_SetDacValue((int)ind, dacval, dacNames[ind], mess) == FAIL)
+            return FAIL;
     }
-
     dacValues[ind] = dacval;
 
     // ext daq ctrl

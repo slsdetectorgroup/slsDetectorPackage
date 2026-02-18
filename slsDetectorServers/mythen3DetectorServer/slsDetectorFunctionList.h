@@ -135,7 +135,6 @@ void setThresholdEnergy(int counterIndex, int eV);
 
 // parameters - dac, adc, hv
 int validateDACIndex(enum DACINDEX ind, char *mess);
-int validateDACValue(enum DACINDEX ind, int dacval, char *mess);
 int validateDACVoltage(enum DACINDEX ind, int voltage, char *mess);
 int convertVoltageToDACValue(enum DACINDEX ind, int voltage, int *retval_dacval,
                              char *mess);
@@ -147,7 +146,8 @@ int setDAC(enum DACINDEX ind, int val, bool mV, bool counterCheck, char *mess);
 /** @param dacval in dac units */
 int writeDACSpi(enum DACINDEX ind, int dacval, char *mess);
 
-int getCounterIndex(enum DACINDEX ind);
+int getCounterIndexFromDacIndex(enum DACINDEX ind, int *retval_counterIndex,
+                                char *mess);
 int setSingleThresholdDAC(enum DACINDEX ind, int val, bool mV, int dacval,
                           bool counterCheck, char *mess);
 int setThresholdDACs(int val, bool mV, int dacval, char *mess);

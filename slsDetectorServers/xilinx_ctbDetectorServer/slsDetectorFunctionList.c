@@ -1174,27 +1174,6 @@ int validateDACIndex(enum DACINDEX ind, char *mess) {
     return OK;
 }
 
-int validateDACValue(enum DACINDEX ind, int dacval, char *mess) {
-    // validate min value
-    if (dacval < 0 && dacval != LTC2620_D_GetPowerDownValue()) {
-        sprintf(
-            mess,
-            "Could not set DAC %d. Input value %d must be positive or %d.\n",
-            ind, dacval, LTC2620_D_GetPowerDownValue());
-        LOG(logERROR, (mess));
-        return FAIL;
-    }
-    // validate max value
-    if (dacval > LTC2620_D_GetMaxInput()) {
-        sprintf(mess,
-                "Could not set DAC %d. Input value %d exceeds maximum %d \n",
-                ind, dacval, LTC2620_D_GetMaxInput());
-        LOG(logERROR, (mess));
-        return FAIL;
-    }
-    return OK;
-}
-
 int validateDACVoltage(enum DACINDEX ind, int voltage, char *mess) {
     // validate min value
     if (voltage < 0) {
@@ -1305,7 +1284,6 @@ int getDAC(enum DACINDEX ind, bool mV, int *retval, char *mess) {
 int setDAC(enum DACINDEX ind, int val, bool mV, char *mess) {
     LOG(logINFO,
         ("Setting DAC %d: %d %s \n", ind, val, (mV ? "mV" : "dac units")));
-
     if (validateDACIndex(ind, mess) == FAIL)
         return FAIL;
 
@@ -1315,27 +1293,15 @@ int setDAC(enum DACINDEX ind, int val, bool mV, char *mess) {
             if (validateDACVoltage(ind, val, mess) == FAIL)
                 return FAIL;
         }
-
         if (convertVoltageToDACValue(ind, val, &dacval, mess) == FAIL)
             return FAIL;
     }
-
-    if (writeDACSpi(ind, dacval, mess) == FAIL)
-        return FAIL;
-
-    return OK;
-}
-
-int writeDACSpi(enum DACINDEX ind, int dacval, char *mess) {
-    if (validateDACValue(ind, dacval, mess) == FAIL)
-        return FAIL;
-
-    if (LTC2620_D_SetDACValue((int)ind, dacval) == FAIL) {
-        sprintf(mess, "Could not set DAC %d.\n", ind);
-        LOG(logERROR, (mess));
-        return FAIL;
+    {
+        char dacName[20] = {0};
+        snprintf(dacName, sizeof(dacName), "dac %d", ind);
+        if (LTC2620_D_SetDacValue((int)ind, dacval, dacName, mess) == FAIL)
+            return FAIL;
     }
-
     dacValues[ind] = dacval;
     return OK;
 }

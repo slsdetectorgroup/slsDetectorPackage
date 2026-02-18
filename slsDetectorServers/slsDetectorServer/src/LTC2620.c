@@ -222,24 +222,35 @@ void LTC2620_SetDAC(int dacnum, int data) {
     LTC2620_Set(cmd, data, addr, ichip);
 }
 
-int LTC2620_SetDACValue(int dacnum, int val) {
-    LOG(logDEBUG1, ("dacnum:%d, val:%d\n", dacnum, val));
+int LTC2620_SetDacValue(int dacnum, int val, char *dacname, char *mess) {
+    LOG(logDEBUG1, ("dacnum:%s [%d], val:%d\n", dacname, dacnum, val));
     // validate index
     if (dacnum < 0 || dacnum >= LTC2620_Ndac) {
-        LOG(logERROR, ("Dac index %d is out of bounds (0 to %d)\n", dacnum,
-                       LTC2620_Ndac - 1));
+        snprintf(mess, MAX_STR_LENGTH, "Could not set DAC. Invalid index %d\n",
+                 dacnum);
+        LOG(logERROR, (mess));
         return FAIL;
     }
-
-    // validate value
-    if ((val < 0 && val != LTC2620_PWR_DOWN_VAL) || val > LTC2620_MAX_VAL) {
-        LOG(logERROR, ("Could not set DAC %d. Input value %d is out of bounds "
-                       "(0 to %d)\n",
-                       val, LTC2620_MAX_VAL));
+    // validate min value
+    if (val < 0 && val != LTC2620_PWR_DOWN_VAL) {
+        snprintf(
+            mess, MAX_STR_LENGTH,
+            "Could not set DAC %s [%d]. Input value %d must be positive or %d "
+            "(power down)\n",
+            dacname, dacnum, val, LTC2620_PWR_DOWN_VAL);
+        LOG(logERROR, (mess));
         return FAIL;
     }
-
-    LOG(logINFO, ("\tSetting DAC %d: %d dac\n", dacnum, val));
+    // validate maxvalue
+    if (val > LTC2620_MAX_VAL) {
+        snprintf(
+            mess, MAX_STR_LENGTH,
+            "Could not set DAC %s [%d]. Input value %d exceeds maximum %d.\n",
+            dacname, dacnum, val, LTC2620_MAX_VAL);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    LOG(logINFO, ("\tSetting DAC %s [%d]: %d dac\n", dacname, dacnum, val));
 #ifndef VIRTUAL
     LTC2620_SetDAC(dacnum, val);
 #endif

@@ -58,60 +58,66 @@ int LTC2620_D_DacToVoltage(int dacval, int *voltage) {
                                    LTC2620_D_HardMaxVoltage, dacval, voltage);
 }
 
-int LTC2620_D_SetDACValue(int dacnum, int val) {
-    LOG(logDEBUG1, ("dacnum:%d, val:%d\n", dacnum, val));
-
+int LTC2620_D_SetDacValue(int dacnum, int val, char *dacname, char *mess) {
+    LOG(logDEBUG1, ("dacnum:%s [%d], val:%d\n", dacname, dacnum, val));
     // validate index
     if (dacnum < 0 || dacnum >= LTC2620_D_NumDacs) {
-        LOG(logERROR, ("Dac index %d is out of bounds (0 to %d)\n", dacnum,
-                       LTC2620_D_NumDacs - 1));
+        snprintf(mess, MAX_STR_LENGTH, "Could not set DAC. Invalid index %d\n",
+                 dacnum);
+        LOG(logERROR, (mess));
         return FAIL;
     }
-
-    // validate value
-    if ((val < 0 && val != LTC2620_D_PWR_DOWN_VAL) ||
-        val > LTC2620_D_MAX_DAC_VAL) {
-        LOG(logERROR, ("Could not set DAC %d. Input value %d is out of bounds "
-                       "(0 to %d)\n",
-                       val, LTC2620_D_MAX_DAC_VAL));
+    // validate min value
+    if (val < 0 && val != LTC2620_D_PWR_DOWN_VAL) {
+        snprintf(
+            mess, MAX_STR_LENGTH,
+            "Could not set DAC %s [%d]. Input value %d must be positive or %d "
+            "(power down)\n",
+            dacname, dacnum, val, LTC2620_D_PWR_DOWN_VAL);
+        LOG(logERROR, (mess));
         return FAIL;
     }
-
-    LOG(logINFO, ("\tSetting DAC %d: %d dac\n", dacnum, val));
+    // validate maxvalue
+    if (val > LTC2620_D_MAX_DAC_VAL) {
+        snprintf(
+            mess, MAX_STR_LENGTH,
+            "Could not set DAC %s [%d]. Input value %d exceeds maximum %d.\n",
+            dacname, dacnum, val, LTC2620_D_MAX_DAC_VAL);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    LOG(logINFO, ("\tSetting DAC %s [%d]: %d dac\n", dacname, dacnum, val));
 
 #ifdef VIRTUAL
     return OK;
 #else
+    // fname to write to
     char fname[MAX_STR_LENGTH];
     memset(fname, 0, MAX_STR_LENGTH);
     char fnameFormat[MAX_STR_LENGTH];
     memset(fnameFormat, 0, MAX_STR_LENGTH);
     strcpy(fnameFormat, LTC2620_D_DriverFileName);
+    sprintf(fname, "%s%d", fnameFormat, dacnum);
 #if defined(XILINX_CHIPTESTBOARDD)
     if (val == LTC2620_D_PWR_DOWN_VAL) {
-        LOG(logINFO, ("Powering down DAC %2d\n", dacnum));
         strcpy(fnameFormat, LTC2620_D_PowerDownDriverFileName);
+        val = 1; //-100?:Invalid Argument
     }
     sprintf(fname, fnameFormat, dacnum);
-#else
-    sprintf(fname, "%s%d", fnameFormat, dacnum);
 #endif
     LOG(logDEBUG1, ("fname %s\n", fname));
 
     // open file
     FILE *fd = fopen(fname, "w");
     if (fd == NULL) {
-        LOG(logERROR, ("Could not open file %s for writing to set dac %d\n",
-                       fname, dacnum));
+        snprintf(mess, MAX_STR_LENGTH,
+                 "Could not open file %s for writing to set DAC %s[%d]\n",
+                 fname, dacname, dacnum);
+        LOG(logERROR, (mess));
         return FAIL;
     }
-#ifdef XILINX_CHIPTESTBOARDD
-    if (val == LTC2620_D_PWR_DOWN_VAL)
-        fprintf(fd, "1\n"); //-100?:Invalid Argument
-    else
-#endif
-        fprintf(fd, "%d\n", val);
+    fprintf(fd, "%d\n", val);
     fclose(fd);
-#endif
     return OK;
+#endif
 }

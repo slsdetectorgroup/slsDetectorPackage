@@ -103,11 +103,11 @@ void LTC2620_Set(int cmd, int data, int dacaddr, int chipIndex);
 void LTC2620_Configure();
 
 /**
- * Set Dac (obtains dacaddr, command and ichip and calls LTC2620_Set)
+ * Sets the ichip, address and command, Calls LTC2620_Set)
  * @param dacnum dac number
  * @param data dac value to set
  */
 void LTC2620_SetDAC(int dacnum, int data);
 
-/** Set dac in dac units */
-int LTC2620_SetDACValue(int dacnum, int val);
+/** From  */
+int LTC2620_SetDacValue(int dacnum, int val, char *dacname, char *mess);

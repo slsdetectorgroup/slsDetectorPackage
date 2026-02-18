@@ -45,11 +45,11 @@ added patternstart to python (ctb, xilinx_ctb , mythen3), only the detector clas
 ==========================================
 
 
-    Eiger       {{VERSION}}
-    Jungfrau    {{VERSION}}
-    Mythen3     {{VERSION}}
-    Gotthard2   {{VERSION}}
-    Moench      {{VERSION}}
+    Eiger       10.0.0
+    Jungfrau    10.0.0
+    Mythen3     10.0.0
+    Gotthard2   10.0.0
+    Moench      10.0.0
   
 
     On-board Detector Server Upgrade

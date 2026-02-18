@@ -78,12 +78,6 @@ jobs:
                 python docs/main_index/render_main_index.py \
                 --version "${{ steps.version.outputs.version }}" \
                 --date "$(date +'%d.%m.%Y')" 
-
-            # update paths to documentation version etc in release notes 
-            - name: Update Release Notes
-              if: github.event_name == 'release'
-              run: |
-                python etc/generate_release_notes.py --version "${{ steps.version.outputs.version }}"
             
             - name: Checkout gh-pages
               uses: actions/checkout@v4
@@ -98,8 +92,8 @@ jobs:
                 VERSION="${{ steps.version.outputs.version }}"
                 mkdir -p "gh-pages/${VERSION}"
                 cp -r build/docs/html/. "gh-pages/${VERSION}/"
-                cp docs/main_index/index.html "gh-pages/index.html"
-                cp docs/main_index/index.html "gh-pages/_sources/index.html.txt"
+                cp docs/main_index/index.html gh-pages/index.html
+                cp docs/main_index/index.html gh-pages/_sources/index.html.txt
                 if [ "${{ github.event_name }}" == "release" ]; then
                   cp  RELEASE.md "gh-pages/releases/RELEASE_v${VERSION}.md" 
                 fi 

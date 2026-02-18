@@ -105,8 +105,9 @@ int64_t getExpTime(int gateIndex);
 int setGateDelay(int gateIndex, int64_t val);
 int64_t getGateDelay(int gateIndex);
 
-void setCounterMask(uint32_t arg);
-void setCounterMaskWithUpdateFlag(uint32_t arg, int updateMaskFlag);
+int updateVthAndCounterMask(char *mess);
+int setCounterMask(uint32_t arg, char *mess);
+int setCounterMaskWithUpdateFlag(uint32_t arg, bool updateMaskFlag, char *mess);
 uint32_t getCounterMask();
 void updatePacketizing();
 
@@ -165,8 +166,8 @@ enum timingMode getTiming();
 void setInitialExtSignals();
 int setChipStatusRegister(int csr);
 int setGainCaps(int caps);
-int setInterpolation(int enable);
-int setPumpProbe(int enable);
+int setInterpolation(bool enable, char *mess);
+int setPumpProbe(bool enable, char *mess);
 int setDigitalPulsing(int enable);
 int setAnalogPulsing(int enable);
 int setNegativePolarity(int enable);

@@ -1095,19 +1095,21 @@ int64_t getGateDelay(int gateIndex) {
     return retval / (1E-9 * getFrequency(SYSTEM_C0));
 }
 
-void updateVthAndCounterMask() {
+int updateVthAndCounterMask(char *mess) {
     LOG(logINFO, ("\tUpdating Vth and countermask\n"));
     int interpolation = getInterpolation();
     int pumpProbe = getPumpProbe();
 
     if (interpolation) {
         // enable all counters
-        setCounterMaskWithUpdateFlag(MAX_COUNTER_MSK, 0);
+        if (setCounterMaskWithUpdateFlag(MAX_COUNTER_MSK, false, mess) == FAIL)
+            return FAIL;
         // disable vth3
         setVthDac(2, 0);
     } else {
         // previous counter values
-        setCounterMaskWithUpdateFlag(counterMask, 0);
+        if (setCounterMaskWithUpdateFlag(counterMask, false, mess) == FAIL)
+            return FAIL;
     }
     if (pumpProbe) {
         // enable only vth2
@@ -1121,16 +1123,31 @@ void updateVthAndCounterMask() {
     if (!interpolation && !pumpProbe) {
         setVthDac(2, (counterMask & (1 << 2)));
     }
+    return OK;
 }
 
-void setCounterMask(uint32_t arg) {
-    setCounterMaskWithUpdateFlag(arg, 1);
-    updateVthAndCounterMask();
+int setCounterMask(uint32_t arg, char *mess) {
+    if (setCounterMaskWithUpdateFlag(arg, true, mess) == FAIL)
+        return FAIL;
+    if (updateVthAndCounterMask(mess) == FAIL)
+        return FAIL;
+    if (getCounterMask() != arg) {
+        sprintf(mess, "Failed to set counter mask to 0x%x\n", arg);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    return OK;
 }
 
-void setCounterMaskWithUpdateFlag(uint32_t arg, int updateMaskFlag) {
-    if (arg == 0 || arg > MAX_COUNTER_MSK) {
-        return;
+int setCounterMaskWithUpdateFlag(uint32_t arg, bool updateMaskFlag,
+                                 char *mess) {
+    if (arg <= 0 || arg > MAX_COUNTER_MSK) {
+        snprintf(mess, MAX_STR_LENGTH,
+                 "Could not set counter mask to 0x%x. Valid values are between "
+                 "0 and 0x%x\n",
+                 arg, MAX_COUNTER_MSK);
+        LOG(logERROR, (mess));
+        return FAIL;
     }
     LOG(logINFO, ("\tSetting counter mask to  0x%x\n", arg));
     uint32_t addr = CONFIG_REG;
@@ -1151,6 +1168,7 @@ void setCounterMaskWithUpdateFlag(uint32_t arg, int updateMaskFlag) {
     if (updateMaskFlag) {
         counterMask = arg;
     }
+    return OK;
 }
 
 uint32_t getCounterMask() {
@@ -1320,7 +1338,8 @@ int setModule(sls_detector_module myMod, char *mess) {
     }
 
     // update vth and countermask
-    updateVthAndCounterMask();
+    if (updateVthAndCounterMask(mess) == FAIL)
+        return FAIL;
 
     // threshold energy
     for (int i = 0; i < NCOUNTERS; ++i) {
@@ -1933,27 +1952,55 @@ int setGainCaps(int caps) {
     return setChipStatusRegister(csr);
 }
 
-int setInterpolation(int enable) {
+int setInterpolation(bool enable, char *mess) {
     LOG(logINFO,
         ("%s Interpolation\n", enable == 0 ? "Disabling" : "Enabling"));
 
     int csr = M3SetInterpolation(enable);
-    int ret = setChipStatusRegister(csr);
-    if (ret == OK) {
-        updateVthAndCounterMask();
+    if (setChipStatusRegister(csr) == FAIL) {
+        snprintf(mess, MAX_STR_LENGTH,
+                 "Could not set interpolation to %d. Setting chip status "
+                 "register failed.\n",
+                 enable);
+        LOG(logERROR, (mess));
+        return FAIL;
     }
-    return ret;
+    if (updateVthAndCounterMask(mess) == FAIL)
+        return FAIL;
+    bool retval = getInterpolation();
+    if (retval != enable) {
+        snprintf(mess, MAX_STR_LENGTH,
+                 "Could not set interpolation to %d. Current value is %d\n",
+                 enable, retval);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    return OK;
 }
 
-int setPumpProbe(int enable) {
+int setPumpProbe(int enable, char *mess) {
     LOG(logINFO, ("%s Pump Probe\n", enable == 0 ? "Disabling" : "Enabling"));
 
     int csr = M3SetPumpProbe(enable);
-    int ret = setChipStatusRegister(csr);
-    if (ret == OK) {
-        updateVthAndCounterMask();
+    if (setChipStatusRegister(csr) == FAIL) {
+        snprintf(mess, MAX_STR_LENGTH,
+                 "Could not set pump probe to %d. Setting chip status register "
+                 "failed.\n",
+                 enable);
+        LOG(logERROR, (mess));
+        return FAIL;
     }
-    return ret;
+    if (updateVthAndCounterMask(mess) == FAIL)
+        return FAIL;
+    bool retval = getPumpProbe();
+    if (retval != enable) {
+        snprintf(mess, MAX_STR_LENGTH,
+                 "Could not set pump probe to %d. Current value is %d\n",
+                 enable, retval);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    return OK;
 }
 
 int setDigitalPulsing(int enable) {

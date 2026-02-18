@@ -6693,17 +6693,7 @@ int set_counter_mask(int file_des) {
                     NCOUNTERS);
             LOG(logERROR, (mess));
         } else {
-            setCounterMask(arg);
-            uint32_t retval = getCounterMask();
-            LOG(logDEBUG, ("counter mask retval: 0x%x\n", retval));
-            if (retval != arg) {
-                ret = FAIL;
-                sprintf(mess,
-                        "Could not set counter mask. Set 0x%x mask, got 0x%x "
-                        "mask\n",
-                        arg, retval);
-                LOG(logERROR, (mess));
-            }
+            ret = setCounterMask(arg, mess);
         }
     }
 #endif

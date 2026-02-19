@@ -1223,7 +1223,7 @@ int processDACEnums(enum dacIndex ind, int val, bool mV) {
             return retval;
         // set
         if (val != GET_FLAG) {
-            if ((int)ind == (int)M_VTHRESHOLD)
+            if ((int)serverDacIndex == (int)M_VTHRESHOLD)
                 ret = setThresholdDACs(val, mV, mess);
             else {
                 ret = rememberValueIfVthDac(serverDacIndex, val, mV, mess);
@@ -1242,7 +1242,7 @@ int processDACEnums(enum dacIndex ind, int val, bool mV) {
         }
         // get
         else {
-            if ((int)ind == (int)M_VTHRESHOLD)
+            if ((int)serverDacIndex == (int)M_VTHRESHOLD)
                 ret = getThresholdDACs(mV, &retval, mess);
             else
                 ret = getDAC(serverDacIndex, mV, &retval, mess);

@@ -1223,20 +1223,30 @@ int processDACEnums(enum dacIndex ind, int val, bool mV) {
             return retval;
         // set
         if (val != GET_FLAG) {
-            // ignore counter enable to force vth dac values
-            ret = setDAC(serverDacIndex, val, mV, false, mess);
-            // changed for setsettings (direct),
-            // custom trimbit file (setmodule with myMod.reg as -1),
-            // change of dac (direct)
-            if (ret == OK) {
-                for (int i = 0; i < NCOUNTERS; ++i) {
-                    setThresholdEnergy(i, -1);
+            if ((int)ind == (int)M_VTHRESHOLD)
+                ret = setThresholdDACs(val, mV, mess);
+            else {
+                ret = rememberValueIfVthDac(serverDacIndex, val, mV, mess);
+                if (ret == FAIL)
+                    return retval;
+                ret = setDAC(serverDacIndex, val, mV, mess);
+                // changed for setsettings (direct),
+                // custom trimbit file (setmodule with myMod.reg as -1),
+                // change of dac (direct)
+                if (ret == OK) {
+                    for (int i = 0; i < NCOUNTERS; ++i) {
+                        setThresholdEnergy(i, -1);
+                    }
                 }
             }
         }
         // get
-        else
-            ret = getDAC(serverDacIndex, mV, &retval, mess);
+        else {
+            if ((int)ind == (int)M_VTHRESHOLD)
+                ret = getThresholdDACs(mV, &retval, mess);
+            else
+                ret = getDAC(serverDacIndex, mV, &retval, mess);
+        }
         return retval;
     }
 }
@@ -6681,20 +6691,7 @@ int set_counter_mask(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        if (arg == 0) {
-            ret = FAIL;
-            sprintf(mess, "Could not set counter mask. Cannot set it to 0.\n");
-            LOG(logERROR, (mess));
-        } else if (arg > MAX_COUNTER_MSK) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Could not set counter mask. Invalid counter bit enabled. "
-                    "Max number of counters: %d\n",
-                    NCOUNTERS);
-            LOG(logERROR, (mess));
-        } else {
-            ret = setCounterMask(arg, mess);
-        }
+        ret = setCounterMask(arg, mess);
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
@@ -10159,27 +10156,7 @@ int set_interpolation(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        if (getPumpProbe() && arg) {
-            ret = FAIL;
-            sprintf(mess, "Could not set interpolation. Disable pump probe "
-                          "mode first.\n");
-            LOG(logERROR, (mess));
-        } else {
-            ret = setInterpolation(arg);
-            if (ret == FAIL) {
-                if (arg)
-                    sprintf(mess, "Could not set interpolation or enable all "
-                                  "counters for it.\n");
-                else
-                    sprintf(mess, "Could not set interpolation\n");
-                LOG(logERROR, (mess));
-            } else {
-                int retval = getInterpolation();
-                validate(&ret, mess, (int)arg, (int)retval, "set interpolation",
-                         DEC);
-                LOG(logDEBUG1, ("interpolation retval: %u\n", retval));
-            }
-        }
+        ret = setInterpolation((arg != 0), mess);
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
@@ -10216,23 +10193,7 @@ int set_pump_probe(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        if (getInterpolation() && arg) {
-            ret = FAIL;
-            sprintf(mess, "Could not set pump probe mode. Disable "
-                          "interpolation mode first.\n");
-            LOG(logERROR, (mess));
-        } else {
-            ret = setPumpProbe(arg);
-            if (ret == FAIL) {
-                sprintf(mess, "Could not set pump probe\n");
-                LOG(logERROR, (mess));
-            } else {
-                int retval = getPumpProbe();
-                validate(&ret, mess, (int)arg, (int)retval, "set pump probe",
-                         DEC);
-                LOG(logDEBUG1, ("pump probe retval: %u\n", retval));
-            }
-        }
+        ret = setPumpProbe((arg != 0), mess);
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);

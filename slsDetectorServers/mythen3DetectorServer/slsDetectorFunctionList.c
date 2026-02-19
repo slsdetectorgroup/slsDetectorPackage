@@ -504,7 +504,9 @@ void setupDetector() {
     initializePatternAddresses();
 
     // enable all counters before setting dacs (vthx)
-    setCounterMask(MAX_COUNTER_MSK);
+    initError = setCounterMask(MAX_COUNTER_MSK, initErrorMessage);
+    if (initError == FAIL)
+        return;
     initError = resetToDefaultDacs(0, initErrorMessage);
     if (initError == FAIL)
         return;
@@ -608,8 +610,11 @@ int resetToDefaultDacs(int hardReset, char *mess) {
             }
         }
 
-        // set to default (last arg to ensure counter check)
-        if (setDAC((enum DACINDEX)i, value, false, true, mess) == FAIL)
+        // set to default
+        if (updateValueForVthDac(i, &value, mess) == FAIL)
+            return FAIL;
+
+        if (setDAC((enum DACINDEX)i, value, false, mess) == FAIL)
             return FAIL;
     }
     return OK;
@@ -911,10 +916,10 @@ int getNumGates() { return bus_r(ASIC_EXP_EXT_GATE_NUMBER_REG); }
 
 void updateGatePeriod() {
     uint64_t max = 0;
-    uint32_t countermask = getCounterMask();
+    uint32_t mask = getCounterMask();
     for (int i = 0; i != NCOUNTERS; ++i) {
         // only if counter enabled
-        if (countermask & (1 << i)) {
+        if (mask & (1 << i)) {
             uint64_t sum = getExpTime(i) + getGateDelay(i);
             if (sum > max) {
                 max = sum;
@@ -1102,35 +1107,52 @@ int updateVthAndCounterMask(char *mess) {
 
     if (interpolation) {
         // enable all counters
-        if (setCounterMaskWithUpdateFlag(MAX_COUNTER_MSK, false, mess) == FAIL)
+        if (setCounterMaskAndTimeRegisters(MAX_COUNTER_MSK, mess) == FAIL)
             return FAIL;
-        // disable vth3
-        setVthDac(2, 0);
+        if (setVthEnabled(M_VTH3, false, mess) == FAIL)
+            return FAIL;
     } else {
         // previous counter values
-        if (setCounterMaskWithUpdateFlag(counterMask, false, mess) == FAIL)
+        if (setCounterMaskAndTimeRegisters(counterMask, mess) == FAIL)
             return FAIL;
     }
+
     if (pumpProbe) {
         // enable only vth2
-        setVthDac(0, 0);
-        setVthDac(1, 1);
-        setVthDac(2, 0);
+        if (setVthEnabled(M_VTH1, false, mess) == FAIL)
+            return FAIL;
+        if (setVthEnabled(M_VTH2, true, mess) == FAIL)
+            return FAIL;
+        if (setVthEnabled(M_VTH3, false, mess) == FAIL)
+            return FAIL;
     } else {
-        setVthDac(0, (counterMask & (1 << 0)));
-        setVthDac(1, (counterMask & (1 << 1)));
+        // enable vth1 and vth2 as per counter mask
+        bool counterEnabled = (counterMask & (1 << 0));
+        if (setVthEnabled(M_VTH1, counterEnabled, mess) == FAIL)
+            return FAIL;
+        counterEnabled = (counterMask & (1 << 1));
+        if (setVthEnabled(M_VTH2, counterEnabled, mess) == FAIL)
+            return FAIL;
     }
+
+    // normal mode, enable vth3 as per counter mask
     if (!interpolation && !pumpProbe) {
-        setVthDac(2, (counterMask & (1 << 2)));
+        bool counterEnabled = (counterMask & (1 << 2));
+        if (setVthEnabled(M_VTH3, counterEnabled, mess) == FAIL)
+            return FAIL;
     }
     return OK;
 }
 
 int setCounterMask(uint32_t arg, char *mess) {
-    if (setCounterMaskWithUpdateFlag(arg, true, mess) == FAIL)
+
+    if (setCounterMaskAndTimeRegisters(arg, mess) == FAIL)
         return FAIL;
+    counterMask = arg;
+
     if (updateVthAndCounterMask(mess) == FAIL)
         return FAIL;
+
     if (getCounterMask() != arg) {
         sprintf(mess, "Failed to set counter mask to 0x%x\n", arg);
         LOG(logERROR, (mess));
@@ -1139,8 +1161,7 @@ int setCounterMask(uint32_t arg, char *mess) {
     return OK;
 }
 
-int setCounterMaskWithUpdateFlag(uint32_t arg, bool updateMaskFlag,
-                                 char *mess) {
+int setCounterMaskAndTimeRegisters(uint32_t arg, char *mess) {
     if (arg <= 0 || arg > MAX_COUNTER_MSK) {
         snprintf(mess, MAX_STR_LENGTH,
                  "Could not set counter mask to 0x%x. Valid values are between "
@@ -1149,6 +1170,7 @@ int setCounterMaskWithUpdateFlag(uint32_t arg, bool updateMaskFlag,
         LOG(logERROR, (mess));
         return FAIL;
     }
+
     LOG(logINFO, ("\tSetting counter mask to  0x%x\n", arg));
     uint32_t addr = CONFIG_REG;
     bus_w(addr, bus_r(addr) & ~CONFIG_COUNTERS_ENA_MSK);
@@ -1157,16 +1179,13 @@ int setCounterMaskWithUpdateFlag(uint32_t arg, bool updateMaskFlag,
     LOG(logDEBUG, ("Config Reg: 0x%x\n", bus_r(addr)));
 
     updatePacketizing();
+
     LOG(logINFO, ("\tUpdating Exptime and Gate Delay\n"));
     for (int i = 0; i < NCOUNTERS; ++i) {
         uint64_t ns = exptimeReg[i] / (1E-9 * getFrequency(SYSTEM_C0));
         setExpTime(i, ns);
         ns = gateDelayReg[i] / (1E-9 * getFrequency(SYSTEM_C0));
         setGateDelay(i, ns);
-    }
-
-    if (updateMaskFlag) {
-        counterMask = arg;
     }
     return OK;
 }
@@ -1327,11 +1346,12 @@ int setModule(sls_detector_module myMod, char *mess) {
     }
 
     // dacs myMod.dacs
-    for (int i = 0; i < NDAC; ++i) {
+    for (enum DACINDEX i = 0; i < NDAC; ++i) {
         if (myMod.dacs[i] != -1) {
-            // set to default (ensure counter check)
-            if (setDAC((enum DACINDEX)i, myMod.dacs[i], false, true, mess) ==
-                FAIL) {
+            if (updateValueForVthDac(i, &(myMod.dacs[i]), mess) == FAIL)
+                return FAIL;
+            // set to default
+            if (setDAC(i, myMod.dacs[i], false, mess) == FAIL) {
                 return FAIL;
             }
         }
@@ -1485,8 +1505,7 @@ int setSettings(enum detectorSettings sett, char *mess) {
     // set special dacs
     const int specialDacs[] = SPECIALDACINDEX;
     for (int i = 0; i < NSPECIALDACS; ++i) {
-        // set to default (ensure counter check)
-        if (setDAC(specialDacs[i], dacVals[i], false, true, mess) == FAIL)
+        if (setDAC(specialDacs[i], dacVals[i], false, mess) == FAIL)
             return FAIL;
     }
 
@@ -1631,8 +1650,7 @@ int getDAC(enum DACINDEX ind, bool mV, int *retval, char *mess) {
     return OK;
 }
 
-// counterEnableCheck false only if setDAC called directly from client
-int setDAC(enum DACINDEX ind, int val, bool mV, bool counterCheck, char *mess) {
+int setDAC(enum DACINDEX ind, int val, bool mV, char *mess) {
     {
         char *dacNames[] = {DAC_NAMES};
         LOG(logINFO, ("Setting DAC %s: %d %s \n", dacNames[ind], val,
@@ -1650,30 +1668,12 @@ int setDAC(enum DACINDEX ind, int val, bool mV, bool counterCheck, char *mess) {
         if (convertVoltageToDACValue(ind, val, &dacval, mess) == FAIL)
             return FAIL;
     }
-
-    switch (ind) {
-    case M_VTHRESHOLD:
-        // all threshold dacs:
-        // store values for all dacs for pump probe and interpolation mode
-        // only set for enabled counters
-        return setThresholdDACs(val, mV, dacval, mess);
-    case M_VTH1:
-    case M_VTH2:
-    case M_VTH3:
-        // threshold dacs:
-        // store values for pump probe and interpolation mode
-        // change dacval for disabled counter to 2800
-        return setSingleThresholdDAC(ind, val, mV, dacval, counterCheck, mess);
-    default:
-        return writeDACSpi(ind, dacval, mess);
-        break;
+    {
+        char *dacNames[] = {DAC_NAMES};
+        if (LTC2620_D_SetDacValue((int)ind, dacval, dacNames[ind], mess) ==
+            FAIL)
+            return FAIL;
     }
-}
-
-int writeDACSpi(enum DACINDEX ind, int dacval, char *mess) {
-    char *dacNames[] = {DAC_NAMES};
-    if (LTC2620_D_SetDacValue((int)ind, dacval, dacNames[ind], mess) == FAIL)
-        return FAIL;
     detectorDacs[ind] = dacval;
 
     // validate settings
@@ -1683,6 +1683,7 @@ int writeDACSpi(enum DACINDEX ind, int dacval, char *mess) {
             validateSettings();
         }
     }
+
     return OK;
 }
 
@@ -1706,46 +1707,17 @@ int getCounterIndexFromDacIndex(enum DACINDEX ind, int *retval_counterIndex,
     }
 }
 
-int setSingleThresholdDAC(enum DACINDEX ind, int val, bool mV, int dacval,
-                          bool counterCheck, char *mess) {
-    char *dacNames[] = {DAC_NAMES};
-    uint32_t counterMask = getCounterMask();
-
-    int iCounter;
-    if (getCounterIndexFromDacIndex(ind, &iCounter, mess) == FAIL)
-        return FAIL;
-
-    // if not disabled value, remember value
-    if (mV || val != DEFAULT_COUNTER_DISABLED_VTH_VAL) {
-        LOG(logINFO, ("Remembering %s [%d]\n", dacNames[ind], dacval));
-        vthEnabledVals[iCounter] = dacval;
-    }
-    // if counter disabled, change value
-    if (counterCheck && (counterMask & (1 << iCounter))) {
-        dacval = DEFAULT_COUNTER_DISABLED_VTH_VAL;
-    }
-    // set value
-    if (writeDACSpi(ind, dacval, mess) == FAIL)
-        return FAIL;
-
-    return OK;
-}
-
-int setThresholdDACs(int val, bool mV, int dacval, char *mess) {
-    char *dacNames[] = {DAC_NAMES};
+int setThresholdDACs(int val, bool mV, char *mess) {
     int indices[] = {M_VTH1, M_VTH2, M_VTH3};
-    uint32_t counterMask = getCounterMask();
+    uint32_t mask = getCounterMask();
 
     for (int iCounter = 0; iCounter != NCOUNTERS; ++iCounter) {
-        // if not disabled value, remember value
-        if (mV || val != DEFAULT_COUNTER_DISABLED_VTH_VAL) {
-            LOG(logINFO,
-                ("Remembering %s [%d]\n", dacNames[indices[iCounter]], dacval));
-            vthEnabledVals[iCounter] = dacval;
-        }
-        // if counter enabled, set value
-        if (counterMask & (1 << iCounter)) {
-            if (writeDACSpi(indices[iCounter], dacval, mess) == FAIL)
+        if (rememberValueIfVthDac(indices[iCounter], val, mV, mess) == FAIL)
+            return FAIL;
+
+        // set value for enabled counter
+        if (mask & (1 << iCounter)) {
+            if (setDAC(indices[iCounter], val, mV, mess) == FAIL)
                 return FAIL;
         }
     }
@@ -1754,13 +1726,13 @@ int setThresholdDACs(int val, bool mV, int dacval, char *mess) {
 
 int getThresholdDACs(bool mV, int *retval, char *mess) {
     int indices[] = {M_VTH1, M_VTH2, M_VTH3};
+    uint32_t mask = getCounterMask();
+
     int retvals[NCOUNTERS] = {0};
     *retval = -1; // default to mismatch
 
-    uint32_t counterMask = getCounterMask();
-
     for (int i = 0; i != NCOUNTERS; ++i) {
-        if (counterMask & (1 << i)) {
+        if (mask & (1 << i)) {
             if (getDAC(indices[i], mV, &retvals[i], mess) == FAIL)
                 return FAIL;
             // set retval to first value
@@ -1788,18 +1760,71 @@ int getThresholdDACs(bool mV, int *retval, char *mess) {
     return OK;
 }
 
-void setVthDac(int index, int enable) {
-    LOG(logINFO, ("\t%s vth%d\n", (enable ? "Enabling" : "Disabing"), index));
-    // enables (from remembered values) or disables vthx
-    enum DACINDEX vthdacs[] = {M_VTH1, M_VTH2, M_VTH3};
-    // disable value
-    int value = DEFAULT_COUNTER_DISABLED_VTH_VAL;
-    // enable, set saved values
-    if (enable) {
-        value = vthEnabledVals[index];
+int updateValueForVthDac(enum DACINDEX index, int *dacval, char *mess) {
+    // do nothing if not vth dacs
+    if (index != M_VTH1 && index != M_VTH2 && index != M_VTH3) {
+        return OK;
     }
-    char msg[MAX_STR_LENGTH] = {0};
-    writeDACSpi(vthdacs[index], value, msg);
+    // also validate index: only vth1, vth2, vth3 allowed
+    int iCounter = 0;
+    if (getCounterIndexFromDacIndex(index, &iCounter, mess) == FAIL)
+        return FAIL;
+
+    // remember vth dac
+    if (*dacval != DEFAULT_COUNTER_DISABLED_VTH_VAL) {
+        LOG(logINFO, ("\tRemembering vth%d\n", iCounter + 1));
+        vthEnabledVals[iCounter] = *dacval;
+    }
+
+    // set value for disabled counter
+    uint32_t mask = getCounterMask();
+    if (!(mask & (1 << iCounter))) {
+        *dacval = DEFAULT_COUNTER_DISABLED_VTH_VAL;
+    }
+
+    return OK;
+}
+
+// from user setting dac individually
+int rememberValueIfVthDac(enum DACINDEX index, int val, bool mV, char *mess) {
+    // do nothing if not vth dacs
+    if (index != M_VTH1 && index != M_VTH2 && index != M_VTH3) {
+        return OK;
+    }
+    // also validate index: only vth1, vth2, vth3 allowed
+    int iCounter = 0;
+    if (getCounterIndexFromDacIndex(index, &iCounter, mess) == FAIL)
+        return FAIL;
+
+    if (mV || val != DEFAULT_COUNTER_DISABLED_VTH_VAL) {
+        LOG(logINFO, ("\tRemembering vth%d\n", iCounter + 1));
+        int dacval = val;
+        if (mV) {
+            char *dacNames[] = {DAC_NAMES};
+            if (convertVoltageToDACValue(index, val, &dacval, mess) == FAIL) {
+                LOG(logERROR,
+                    ("Could not convert voltage to dac value for %s\n",
+                     dacNames[index]));
+                return FAIL;
+            }
+        }
+        vthEnabledVals[iCounter] = dacval;
+    }
+    return OK;
+}
+
+int setVthEnabled(enum DACINDEX index, bool enable, char *mess) {
+    // alsovalidate index: only vth1, vth2, vth3 allowed
+    int iCounter = 0;
+    if (getCounterIndexFromDacIndex(index, &iCounter, mess) == FAIL)
+        return FAIL;
+
+    LOG(logINFO,
+        ("\t%s vth%d\n", (enable ? "Enabling" : "Disabling"), iCounter + 1));
+    int value = DEFAULT_COUNTER_DISABLED_VTH_VAL;
+    if (enable)
+        value = vthEnabledVals[iCounter];
+    return setDAC(index, value, false, mess);
 }
 
 int getADC(enum ADCINDEX ind, int *value) {
@@ -1956,6 +1981,14 @@ int setInterpolation(bool enable, char *mess) {
     LOG(logINFO,
         ("%s Interpolation\n", enable == 0 ? "Disabling" : "Enabling"));
 
+    if (getPumpProbe() && enable) {
+        snprintf(
+            mess, MAX_STR_LENGTH,
+            "Could not set interpolation. Disable pump probe mode first.\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+
     int csr = M3SetInterpolation(enable);
     if (setChipStatusRegister(csr) == FAIL) {
         snprintf(mess, MAX_STR_LENGTH,
@@ -1965,8 +1998,10 @@ int setInterpolation(bool enable, char *mess) {
         LOG(logERROR, (mess));
         return FAIL;
     }
+
     if (updateVthAndCounterMask(mess) == FAIL)
         return FAIL;
+
     bool retval = getInterpolation();
     if (retval != enable) {
         snprintf(mess, MAX_STR_LENGTH,
@@ -1978,8 +2013,16 @@ int setInterpolation(bool enable, char *mess) {
     return OK;
 }
 
-int setPumpProbe(int enable, char *mess) {
+int setPumpProbe(bool enable, char *mess) {
     LOG(logINFO, ("%s Pump Probe\n", enable == 0 ? "Disabling" : "Enabling"));
+
+    if (getInterpolation() && enable) {
+        snprintf(mess, MAX_STR_LENGTH,
+                 "Could not set pump probe mode. Disable interpolation mode "
+                 "first.\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
 
     int csr = M3SetPumpProbe(enable);
     if (setChipStatusRegister(csr) == FAIL) {
@@ -1990,8 +2033,10 @@ int setPumpProbe(int enable, char *mess) {
         LOG(logERROR, (mess));
         return FAIL;
     }
+
     if (updateVthAndCounterMask(mess) == FAIL)
         return FAIL;
+
     bool retval = getPumpProbe();
     if (retval != enable) {
         snprintf(mess, MAX_STR_LENGTH,

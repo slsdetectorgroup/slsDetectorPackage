@@ -107,7 +107,7 @@ int64_t getGateDelay(int gateIndex);
 
 int updateVthAndCounterMask(char *mess);
 int setCounterMask(uint32_t arg, char *mess);
-int setCounterMaskWithUpdateFlag(uint32_t arg, bool updateMaskFlag, char *mess);
+int setCounterMaskAndTimeRegisters(uint32_t arg, char *mess);
 uint32_t getCounterMask();
 void updatePacketizing();
 
@@ -143,17 +143,19 @@ int convertDACValueToVoltage(enum DACINDEX ind, int dacval, int *retval_voltage,
                              char *mess);
 int getDAC(enum DACINDEX ind, bool mV, int *retval, char *mess);
 /** @param val value can be in mV or dac units */
-int setDAC(enum DACINDEX ind, int val, bool mV, bool counterCheck, char *mess);
-/** @param dacval in dac units */
-int writeDACSpi(enum DACINDEX ind, int dacval, char *mess);
+int setDAC(enum DACINDEX ind, int val, bool mV, char *mess);
 
 int getCounterIndexFromDacIndex(enum DACINDEX ind, int *retval_counterIndex,
                                 char *mess);
 int setSingleThresholdDAC(enum DACINDEX ind, int val, bool mV, int dacval,
                           bool counterCheck, char *mess);
-int setThresholdDACs(int val, bool mV, int dacval, char *mess);
+int setThresholdDACs(int val, bool mV, char *mess);
 int getThresholdDACs(bool mV, int *retval, char *mess);
-void setVthDac(int index, int enable);
+
+/** If 1 */
+int updateValueForVthDac(enum DACINDEX index, int *dacval, char *mess);
+int rememberValueIfVthDac(enum DACINDEX index, int val, bool mV, char *mess);
+int setVthEnabled(enum DACINDEX index, bool enable, char *mess);
 
 int getADC(enum ADCINDEX ind, int *value);
 int setHighVoltage(int val, char *mess);

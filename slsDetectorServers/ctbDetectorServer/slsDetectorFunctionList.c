@@ -1496,14 +1496,13 @@ int getVchipToSet(enum DACINDEX ind, int pwr_val, int *retval_vchip,
             max = val;
     }
     // increment to get vchip value
-    *retval_vchip = max + VCHIP_POWER_INCRMNT;
+    int retval = max + VCHIP_POWER_INCRMNT;
 
     // use min value, dont complain
-    if (*retval_vchip < VCHIP_MIN_MV)
-        *retval_vchip = VCHIP_MIN_MV;
-
+    if (retval < VCHIP_MIN_MV)
+        retval = VCHIP_MIN_MV;
     // max checked earlier, should not happen
-    if (*retval_vchip > VCHIP_MAX_MV) {
+    if (retval > VCHIP_MAX_MV) {
         enum PWRINDEX pwrIndex = PWR_IO;
         if (getPowerIndexFromDACIndex(ind, &pwrIndex, mess) == FAIL)
             return FAIL;
@@ -1511,10 +1510,11 @@ int getVchipToSet(enum DACINDEX ind, int pwr_val, int *retval_vchip,
         sprintf(
             mess,
             "Could not set %s. Vchip value to set %d is beyond itsmaximum %d\n",
-            powerNames[pwrIndex], *retval_vchip, VCHIP_MAX_MV);
+            powerNames[pwrIndex], retval, VCHIP_MAX_MV);
         LOG(logERROR, (mess));
         return FAIL;
     }
+    *retval_vchip = retval;
 
     LOG(logDEBUG1, ("\tVchip to set:%d\n", *retval_vchip));
     return OK;

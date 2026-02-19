@@ -1009,7 +1009,7 @@ Document parse_binary_master_attributes(std::string file_path) {
 
     Document doc;
     ParseResult result = doc.Parse(json_str.c_str());
-    if (result == 0) {
+    if (!result) {
         std::cout << "JSON parse error: " << GetParseError_En(result.Code())
                   << " (at offset " << result.Offset() << ")" << std::endl;
 
@@ -1019,7 +1019,7 @@ Document parse_binary_master_attributes(std::string file_path) {
             json_str.substr(std::max(0, (int)offset - 20), 40);
         std::cout << "Context around error: \"" << context << "\"" << std::endl;
     }
-    REQUIRE(result != 0);
+    REQUIRE(result);
     return doc;
 }
 

@@ -133,7 +133,8 @@ class TransceiverTab(QtWidgets.QWidget):
                 nbitsPerDBit += (8 - (dSamples % 8))
             transceiverOffset += nDBitEnabled * (nbitsPerDBit // 8)
         trans_array = np.array(np.frombuffer(data, offset=transceiverOffset, dtype=np.uint16))
-        return decoder.decode(trans_array, pm.matterhorn_transceiver())
+        tmp = np.take(trans_array, self.mainWindow.pixel_map)
+        return tmp
 
     def processImageData(self, data, dSamples):
         """

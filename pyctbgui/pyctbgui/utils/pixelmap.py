@@ -59,3 +59,34 @@ def matterhorn_transceiver():
                 offset += nSamples
 
     return out
+
+
+def matterhorn1_transceiver_16bit_1_counter():
+    pixel_map = np.zeros((256,256), np.uint32)
+    n_cols = 256
+    n_rows = 256
+    for row in range(n_rows):
+        col = 0
+        for offset in range(0,64,4):
+            for pkg in range(offset,256,64):
+                for pixel in range(4):
+                    pixel_map[row, col] = pixel+pkg+row*n_cols
+                    col += 1
+    
+    return pixel_map
+
+def matterhorn1_transceiver_16bit_4_counters():
+    n_counters = 4
+    n_cols = 256
+    n_rows = 256
+    pixel_map = np.zeros((n_rows*n_counters,n_cols), np.uint32)
+
+    for row in range(n_rows):
+        for counter in range(n_counters):
+            col = 0
+            for offset in range(0,64,4):
+                for pkg in range(offset,256,64):
+                    for pixel in range(4):
+                        pixel_map[row+n_rows*counter, col] = pixel+pkg+row*n_cols*n_counters+n_cols*counter
+                        col += 1
+    return pixel_map

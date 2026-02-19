@@ -36,16 +36,16 @@ class SignalsTab(QtWidgets.QWidget):
         for i in range(Defines.signals.count):
             getattr(self.view, f"checkBoxBIT{i}DB").stateChanged.connect(partial(self.setDigitalBitEnable, i))
             getattr(self.view, f"checkBoxBIT{i}Out").stateChanged.connect(partial(self.setIOOut, i))
-            getattr(self.view, f"checkBoxBIT{i}Plot").stateChanged.connect(partial(self.setEnableBitPlot, i))
+            getattr(self.view, f"checkBoxBIT{i}Plot").stateChanged.connect(partial(self.setBitPlot, i))
             getattr(self.view, f"pushButtonBIT{i}").clicked.connect(partial(self.selectBitColor, i))
         self.view.checkBoxBIT0_31DB.stateChanged.connect(
             partial(self.setDigitalBitEnableRange, 0, Defines.signals.half))
         self.view.checkBoxBIT32_63DB.stateChanged.connect(
             partial(self.setDigitalBitEnableRange, Defines.signals.half, Defines.signals.count))
-        self.view.checkBoxBIT0_31Plot.stateChanged.connect(partial(self.setEnableBitPlotRange, 0,
+        self.view.checkBoxBIT0_31Plot.stateChanged.connect(partial(self.setBitPlotRange, 0,
                                                                    Defines.signals.half))
         self.view.checkBoxBIT32_63Plot.stateChanged.connect(
-            partial(self.setEnableBitPlotRange, Defines.signals.half, Defines.signals.count))
+            partial(self.setBitPlotRange, Defines.signals.half, Defines.signals.count))
         self.view.checkBoxBIT0_31Out.stateChanged.connect(partial(self.setIOOutRange, 0, Defines.signals.half))
         self.view.checkBoxBIT32_63Out.stateChanged.connect(
             partial(self.setIOOutRange, Defines.signals.half, Defines.signals.count))
@@ -89,8 +89,13 @@ class SignalsTab(QtWidgets.QWidget):
             for plot, name in self.getEnabledPlots():
                 self.legend.addItem(plot, name)
 
+    def updatePlotRange(self): 
+        vb = self.mainWindow.plotDigitalWaveform.getViewBox()
+        vb.enableAutoRange(enable=True)  # Enable auto-range
+        vb.updateAutoRange()  # Force immediate update
+        
     @recordOrApplyPedestal
-    def _processWaveformData(self, data, aSamples, dSamples, rx_dbitreorder, rx_dbitlist, isPlottedArray, romode,
+    def _processWaveformData(self, data, aSamples, dSamples, rx_dbitreorder, rx_dbitlist, romode,
                              nADCEnabled):
         
         #transform raw waveform data into a processed numpy array
@@ -110,10 +115,7 @@ class SignalsTab(QtWidgets.QWidget):
                 # where numbits * numsamples is not a multiple of 8
                 if bit_index % 8 != 0:
                     bit_index += (8 - (bit_index % 8))
-                if not isPlottedArray[i]:
-                    bit_index += nbitsPerDBit
-                    samples_per_bit[idx, :] = np.nan
-                    continue
+            
                 for iSample in range(dSamples):
                     # all samples for digital bit together from slsReceiver
                     index = int(bit_index / 8)
@@ -128,10 +130,6 @@ class SignalsTab(QtWidgets.QWidget):
             for iSample in range(dSamples): 
                 bit_index = nbitsPerSample * iSample
                 for idx, i in enumerate(rx_dbitlist): 
-                    if not isPlottedArray[i]:
-                        bit_index += 1
-                        bits_per_sample[iSample, idx] = np.nan
-
                     index = int(bit_index/8)
                     iBit = idx % 8
                     bit = (digital_array[index] >> iBit) & 1
@@ -152,18 +150,14 @@ class SignalsTab(QtWidgets.QWidget):
         self.refresh()
         
         waveforms = {}
-        isPlottedArray = {i: getattr(self.view, f"checkBoxBIT{i}Plot").isChecked() for i in self.rx_dbitlist}
 
-        digital_array = self._processWaveformData(data, aSamples, dSamples, self.rx_dbitreorder, self.rx_dbitlist, isPlottedArray,
+        digital_array = self._processWaveformData(data, aSamples, dSamples, self.rx_dbitreorder, self.rx_dbitlist, 
                                                   self.mainWindow.romode.value,
                                                   self.mainWindow.nADCEnabled)
 
         irow = 0
         for idx, i in enumerate(self.rx_dbitlist): 
-            # bits enabled but not plotting
             waveform = digital_array[idx, :]
-            if np.isnan(waveform[0]):
-                continue
             self.mainWindow.digitalPlots[i].setData(waveform)
             plotName = getattr(self.view, f"labelBIT{i}").text()
             waveforms[plotName] = waveform
@@ -173,7 +167,9 @@ class SignalsTab(QtWidgets.QWidget):
                 irow += 1
             else:
                 self.mainWindow.digitalPlots[i].setY(0)
-            
+
+        self.updatePlotRange()  # Call after all data is set
+        
         return waveforms
 
 
@@ -215,11 +211,11 @@ class SignalsTab(QtWidgets.QWidget):
         self.mainWindow.nDBitEnabled = len(list(retval))
         for i in range(Defines.signals.count):
             self.getDigitalBitEnable(i, retval)
-            self.getEnableBitPlot(i)
+            self.EnableBitPlot(i)
             self.getEnableBitColor(i)
             self.plotTab.addSelectedDigitalPlots(i)
         self.getDigitalBitEnableRange(retval)
-        self.getEnableBitPlotRange()
+        self.EnableBitPlotRange()
 
     def setDigitalBitEnable(self, i):
         bitList = self.det.rx_dbitlist
@@ -257,21 +253,29 @@ class SignalsTab(QtWidgets.QWidget):
 
         self.updateDigitalBitEnable()
 
-    def getEnableBitPlot(self, i):
+    def EnableBitPlot(self, i):
+        """ enables plot check box if bit is enabled, otherwise unchecks and disables plot check box """
+
         checkBox = getattr(self.view, f"checkBoxBIT{i}DB")
         checkBoxPlot = getattr(self.view, f"checkBoxBIT{i}Plot")
+        if(checkBoxPlot.isChecked()): 
+            checkBoxPlot.setChecked(checkBox.isChecked())
+
         checkBoxPlot.setEnabled(checkBox.isChecked())
 
-    def setEnableBitPlot(self, i):
+    def setBitPlot(self, i): 
+        """ sets plot check box e.g. adds plots to plot tab """ 
         pushButton = getattr(self.view, f"pushButtonBIT{i}")
         checkBox = getattr(self.view, f"checkBoxBIT{i}Plot")
         pushButton.setEnabled(checkBox.isChecked())
 
-        self.getEnableBitPlotRange()
+        self.EnableBitPlotRange()
         self.plotTab.addSelectedDigitalPlots(i)
         self.updateLegend()
+        self.updatePlotRange()
+        
 
-    def getEnableBitPlotRange(self):
+    def EnableBitPlotRange(self):
         self.view.checkBoxBIT0_31Plot.stateChanged.disconnect()
         self.view.checkBoxBIT32_63Plot.stateChanged.disconnect()
         self.view.checkBoxBIT0_31Plot.setEnabled(
@@ -286,12 +290,12 @@ class SignalsTab(QtWidgets.QWidget):
             all(
                 getattr(self.view, f"checkBoxBIT{i}Plot").isChecked()
                 for i in range(Defines.signals.half, Defines.signals.count)))
-        self.view.checkBoxBIT0_31Plot.stateChanged.connect(partial(self.setEnableBitPlotRange, 0,
+        self.view.checkBoxBIT0_31Plot.stateChanged.connect(partial(self.setBitPlotRange, 0,
                                                                    Defines.signals.half))
         self.view.checkBoxBIT32_63Plot.stateChanged.connect(
-            partial(self.setEnableBitPlotRange, Defines.signals.half, Defines.signals.count))
+            partial(self.setBitPlotRange, Defines.signals.half, Defines.signals.count))
 
-    def setEnableBitPlotRange(self, start_nr, end_nr):
+    def setBitPlotRange(self, start_nr, end_nr):
         checkBox = getattr(self.view, f"checkBoxBIT{start_nr}_{end_nr - 1}Plot")
         enable = checkBox.isChecked()
         for i in range(start_nr, end_nr):

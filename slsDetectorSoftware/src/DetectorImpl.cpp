@@ -193,10 +193,12 @@ void DetectorImpl::setHostname(const std::vector<std::string> &name) {
         }
         ctb_shm.createSharedMemory();
     }
+
+    LOG(logDEBUG) << "created shared memory";
 }
 
 void DetectorImpl::addModule(const std::string &name) {
-    LOG(logINFO) << "Adding module " << name;
+    LOG(TLogLevel::logDEBUG) << "Adding module " << name;
     auto host = verifyUniqueDetHost(name);
     std::string hostname = host.first;
     uint16_t port = host.second;

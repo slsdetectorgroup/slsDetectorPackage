@@ -3,6 +3,8 @@
 #pragma once
 
 #include "sls/DataSocket.h"
+#include "sls/logger.h"
+
 namespace sls {
 class ServerInterface;
 }
@@ -25,6 +27,9 @@ class ServerInterface : public DataSocket {
 
     template <typename T> int sendResult(T &&retval) {
         Send(defs::OK);
+        LOG(TLogLevel::logDEBUG1)
+            << "Sending result to Datasocket::Send: " << sizeof(retval)
+            << " bytes";
         Send(retval);
         return defs::OK;
     }

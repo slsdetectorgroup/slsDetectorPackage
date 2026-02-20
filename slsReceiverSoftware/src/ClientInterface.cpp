@@ -96,7 +96,7 @@ void ClientInterface::startTCPServer() {
                 // We had an error needs to be sent to client
                 char mess[MAX_STR_LENGTH]{};
                 strcpy_safe(mess, e.what());
-                socket.Send(FAIL);
+                socket.Send(slsDetectorDefs::FAIL);
                 socket.Send(mess);
             }
             // if tcp command was to exit server

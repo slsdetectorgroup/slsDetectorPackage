@@ -21,6 +21,9 @@ class ClientInterface {
     std::unordered_map<detFuncs, std::function<ReturnCode(ServerInterface &)>>
         functionTable{}; // set in constructor of child process
 
+    /// @brief starts the TCP/IP server to listen for client commands
+    void startTCPServer();
+
   private:
     /// @brief listener thread for TCP/IP communication with the client
     std::unique_ptr<std::thread> tcpThread;
@@ -45,10 +48,7 @@ class ClientInterface {
     // std::string getReceiverVersion();
 
   private:
-    /// @brief starts the TCP/IP server to listen for client commands
-    void startTCPServer();
-
-    /**
+        /**
      *  @brief decodes the received command and calls the corresponding function
      *  @param function_id The ID of the function recived by the server and to
      * be executed

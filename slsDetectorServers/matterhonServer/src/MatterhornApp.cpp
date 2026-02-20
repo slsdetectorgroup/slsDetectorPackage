@@ -31,12 +31,12 @@ void sigInterruptHandler(int signal) {
     if (child_pid > 0) {
         kill(child_pid, SIGTERM); // tell child to exit
     }
-    sem_post(&semaphore);
+    // sem_post(&semaphore);
 }
 
 void childSigTermHandler(int signal) {
     (void)signal; // suppress unused warning if needed
-    sem_post(&semaphore);
+    // sem_post(&semaphore);
 }
 
 // TODO: should be a generic ServerApp for all detectors
@@ -54,28 +54,29 @@ int main(int argc, char *argv[]) {
     }
 
     // Register Ctrl+C handler
-    std::signal(SIGINT, sigInterruptHandler);
+    // std::signal(SIGINT, sigInterruptHandler);
 
     // LOG(sls::logINFOBLUE) << "Current Process [ Tid: " << gettid() << " ]";
 
     // handle locally on socket crash
     // sls::setupSignalHandler(SIGPIPE, SIG_IGN); / what is this?
 
-    sem_init(&semaphore, 1, 0);
+    // sem_init(&semaphore, 1, 0);
 
     child_pid = fork(); // fork process for control and stop server
 
     if (child_pid == 0) {
         // Stop server Process
-        std::signal(SIGTERM, childSigTermHandler);
+        signal(SIGPIPE, SIG_IGN);
+
+        // std::signal(SIGTERM, childSigTermHandler);
         LOG(TLogLevel::logINFOBLUE) << "Stop Server [" << opts.port + 1 << "]";
         try {
-            // StopServer stopServer(opts.port + 1); TODO: forget the stop
-            // server for now
-            sem_wait(&semaphore); // wait until parent signals to exit
-            sem_destroy(&semaphore);
+            MatterhornServer stopServer(opts.port + 1);
+            // sem_wait(&semaphore); // wait until parent signals to exit
+            // sem_destroy(&semaphore);
         } catch (...) {
-            sem_destroy(&semaphore);
+            // sem_destroy(&semaphore);
             LOG(TLogLevel::logINFOBLUE)
                 << "Exiting Stop Server [ Tid: " << gettid() << " ]";
             // TODO: maybe also terminate the control server !!!!
@@ -87,6 +88,8 @@ int main(int argc, char *argv[]) {
         exit(EXIT_SUCCESS);
     } else if (child_pid > 0) {
         // Control Server Process
+        signal(SIGPIPE, SIG_IGN);
+
         LOG(TLogLevel::logINFOBLUE) << "Control Server [" << opts.port << "]\n";
 
         if (opts.updateFlag == 0) {
@@ -96,11 +99,10 @@ int main(int argc, char *argv[]) {
         try {
             sls::MatterhornServer server(opts.port);
             LOG(sls::logINFO) << "[ Press \'Ctrl+c\' to exit ]";
-            // exit upon ctr + c
-            sem_wait(&semaphore);
-            sem_destroy(&semaphore);
+            // sem_wait(&semaphore);
+            // sem_destroy(&semaphore);
         } catch (...) {
-            sem_destroy(&semaphore);
+            // sem_destroy(&semaphore);
             kill(child_pid, SIGTERM); // tell child to exit
             LOG(sls::logINFOBLUE) << "Exiting [ Tid: " << gettid() << " ]";
             std::exit(EXIT_FAILURE);

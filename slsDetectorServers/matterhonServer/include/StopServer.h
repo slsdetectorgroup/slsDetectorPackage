@@ -1,9 +1,14 @@
+#include "MatterhornServer.h"
 #include <cstdint>
 
-// TODO: should this inherit from MatterhornServer?
-class StopServer {
+namespace sls {
+
+// TODO: should this inherit from MatterhornServer or a base class
+class StopServer : public MatterhornServer {
   public:
     StopServer(uint16_t port);
 
-    ~StopServer();
+    ~StopServer() = default;
 };
+
+} // namespace sls

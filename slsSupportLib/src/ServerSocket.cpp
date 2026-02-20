@@ -52,9 +52,15 @@ ServerInterface ServerSocket::accept() {
     if (newSocket == -1) {
         throw SocketError("Server ERROR: socket accept failed\n");
     }
+
     char tc[INET_ADDRSTRLEN]{};
     inet_ntop(AF_INET, &(clientAddr.sin_addr), tc, INET_ADDRSTRLEN);
     thisClient = IpAddr{tc};
+    LOG(logDEBUG1) << "Accepted connection from: " << tc << ":"
+                   << ntohs(clientAddr.sin_port);
+    LOG(logDEBUG1) << "Last client was: " << lastClient.str();
+    LOG(logDEBUG1) << "new client is: " << thisClient.str();
+    // Set socket buffer size
     return ServerInterface(newSocket);
 }
 

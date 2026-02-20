@@ -67,7 +67,9 @@ int ClientSocket::sendCommandThenRead(int fnum, const void *args,
     int ret = slsDetectorDefs::FAIL;
     Send(&fnum, sizeof(fnum));
     setFnum(fnum);
+    LOG(logDEBUG1) << "Sent command fnum: " << fnum << " to " << socketType;
     Send(args, args_size);
+    LOG(logDEBUG1) << "About to read reply";
     readReply(ret, retval, retval_size);
     return ret;
 }
@@ -76,6 +78,7 @@ void ClientSocket::readReply(int &ret, void *retval, size_t retval_size) {
 
     try {
         Receive(&ret, sizeof(ret));
+        // Receive<int>()
         if (ret == slsDetectorDefs::FAIL) {
             std::string mess = readErrorMessage();
             // Do we need to know hostname here?
@@ -90,6 +93,8 @@ void ClientSocket::readReply(int &ret, void *retval, size_t retval_size) {
         }
         // get retval
         Receive(retval, retval_size);
+        LOG(logDEBUG1) << "Received size " << retval_size << " bytes from "
+                       << socketType << " with return code: " << ret;
     }
     // debugging
     catch (SocketError &e) {

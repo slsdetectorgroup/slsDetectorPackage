@@ -32,7 +32,8 @@ if(NOT CMAKE_USE_PTHREADS_INIT)
     message(FATAL_ERROR "A POSIX threads (pthread) implementation is required, but was not found.")
 endif()
 
-set(SLS_LOG_MAX_REPORTING_LEVEL sls::logINFO CACHE STRING "set logging level")
+set(SLS_LOG_MAX_REPORTING_LEVEL sls::TLogLevel::logINFO CACHE STRING "set logging level")
+#set(LOG_MAX_REPORTING_LEVEL "${SLS_LOG_MAX_REPORTING_LEVEL}" CACHE STRING "set logging level" FORCE)
 
 option(SLS_USE_SYSTEM_ZMQ "Use system installed libzmq" OFF)
 
@@ -309,17 +310,15 @@ if(SLS_EXT_BUILD)
 endif()
 
 
-
 # slsProjectOptions and slsProjectWarnings are used
 # to control options for the libraries
 if(NOT TARGET slsProjectOptions)
     add_library(slsProjectOptions INTERFACE)
    target_compile_features(slsProjectOptions INTERFACE cxx_std_17)
+   target_compile_definitions(slsProjectOptions
+    INTERFACE LOG_MAX_REPORTING_LEVEL=${SLS_LOG_MAX_REPORTING_LEVEL})
 endif()
 
-target_compile_definitions(slsProjectOptions
-    INTERFACE LOG_MAX_REPORTING_LEVEL=${SLS_LOG_MAX_REPORTING_LEVEL}
-)
 
 if (NOT TARGET slsProjectWarnings)
     add_library(slsProjectWarnings INTERFACE)

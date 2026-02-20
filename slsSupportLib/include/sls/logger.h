@@ -38,7 +38,7 @@ enum TLogLevel {
 
 class Logger {
     std::ostringstream os;
-    TLogLevel level = LOG_MAX_REPORTING_LEVEL;
+    TLogLevel level = ReportingLevel();
 
   public:
     Logger() = default;
@@ -50,7 +50,7 @@ class Logger {
     }
 
     static TLogLevel &ReportingLevel() { // singelton eeh
-        static TLogLevel reportingLevel = logINFO;
+        static TLogLevel reportingLevel = LOG_MAX_REPORTING_LEVEL;
         return reportingLevel;
     }
 

@@ -50,6 +50,7 @@ int DataSocket::Receive(void *buffer, size_t size) {
     // TODO!(Erik) Add sleep? how many reties?
     int bytes_expected = static_cast<int>(size); // signed size
     int bytes_read = 0;
+    LOG(logDEBUG1) << "Receiving " << bytes_expected << " bytes on socket ";
     while (bytes_read < bytes_expected) {
         auto this_read =
             ::read(getSocketId(), reinterpret_cast<char *>(buffer) + bytes_read,
@@ -80,6 +81,7 @@ std::string DataSocket::Receive(size_t length) {
 int DataSocket::Send(const void *buffer, size_t size) {
     int bytes_sent = 0;
     int data_size = static_cast<int>(size); // signed size
+    LOG(logDEBUG1) << "Sending " << data_size << " bytes on socket ";
     while (bytes_sent < (data_size)) {
         auto this_send = ::write(getSocketId(), buffer, size);
         if (this_send <= 0)
@@ -96,7 +98,10 @@ int DataSocket::Send(const void *buffer, size_t size) {
     return bytes_sent;
 }
 
-int DataSocket::Send(const std::string &s) { return Send(&s[0], s.size()); }
+int DataSocket::Send(const std::string &s) {
+    LOG(logDEBUG1) << "Sending string of size: " << sizeof(s) << " bytes";
+    return Send(&s[0], s.size());
+}
 
 int DataSocket::write(void *buffer, size_t size) {
     return ::write(getSocketId(), buffer, size);

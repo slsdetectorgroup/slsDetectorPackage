@@ -193,6 +193,8 @@ void DetectorImpl::setHostname(const std::vector<std::string> &name) {
         }
         ctb_shm.createSharedMemory();
     }
+
+    LOG(logDEBUG) << "created shared memory";
 }
 
 void DetectorImpl::addModule(const std::string &name) {

@@ -91,10 +91,13 @@ std::string Module::getControlServerLongVersion() const {
         }
 
         throw;
+        LOG(logINFORED) << "Well it should have thrown by now";
     }
+    LOG(logINFORED) << "After catch, should not be here";
 }
 
 void Module::throwDeprecatedServerVersion() const {
+    LOG(logDEBUG1) << "throw deprecated version error";
     uint64_t res = sendToDetectorStop<int64_t>(F_GET_SERVER_VERSION);
     std::cout << std::endl;
     std::ostringstream os;
@@ -104,6 +107,7 @@ void Module::throwDeprecatedServerVersion() const {
 }
 
 std::string Module::getStopServerLongVersion() const {
+    LOG(logDEBUG1) << "Getting Stop Server Version";
     char retval[MAX_STR_LENGTH]{};
     sendToDetectorStop(F_GET_SERVER_VERSION, nullptr, retval);
     return retval;
@@ -3098,7 +3102,10 @@ void Module::sendToDetector(int fnum, const void *args, size_t args_size,
     // the other versions use templates to deduce sizes and create
     // the return type
     checkArgs(args, args_size, retval, retval_size);
+    LOG(logDEBUG1) << "Creating DetectorSocket on: " << shm()->hostname << ":"
+                   << shm()->controlPort;
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    LOG(logDEBUG1) << "sending command then read to DetectorSocket";
     client.sendCommandThenRead(fnum, args, args_size, retval, retval_size);
     client.close();
 }
@@ -3111,6 +3118,7 @@ void Module::sendToDetector(int fnum, const void *args, size_t args_size,
 
 template <typename Arg, typename Ret>
 void Module::sendToDetector(int fnum, const Arg &args, Ret &retval) const {
+    std::cout << "in line 3075\n";
     LOG(logDEBUG1) << "Sending: ["
                    << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
                    << ", nullptr, 0, " << typeid(Ret).name() << ", "
@@ -3143,6 +3151,7 @@ void Module::sendToDetector(int fnum, const Arg &args, std::nullptr_t) {
 
 template <typename Ret>
 void Module::sendToDetector(int fnum, std::nullptr_t, Ret &retval) const {
+    std::cout << "in line 3107\n";
     LOG(logDEBUG1) << "Sending: ["
                    << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
                    << ", nullptr, 0, " << typeid(Ret).name() << ", "
@@ -3169,6 +3178,7 @@ void Module::sendToDetector(int fnum) {
 }
 
 template <typename Ret> Ret Module::sendToDetector(int fnum) const {
+    std::cout << "in line 3135\n";
     LOG(logDEBUG1) << "Sending: ["
                    << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
                    << ", nullptr, 0, " << typeid(Ret).name() << ", "
@@ -3210,8 +3220,10 @@ void Module::sendToDetectorStop(int fnum, const void *args, size_t args_size,
     // This is the only function that actually sends data to the detector stop
     // the other versions use templates to deduce sizes and create
     // the return type
+    LOG(logINFORED) << "Sending command to Detector Stop Socket";
     checkArgs(args, args_size, retval, retval_size);
     auto stop = DetectorSocket(shm()->hostname, shm()->stopPort);
+    LOG(logDEBUG1) << "sending command then read to Detector Stop Socket";
     stop.sendCommandThenRead(fnum, args, args_size, retval, retval_size);
     stop.close();
 }
@@ -3334,6 +3346,7 @@ void Module::sendToReceiver(int fnum, const void *args, size_t args_size,
     }
     checkArgs(args, args_size, retval, retval_size);
     auto receiver = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
+    LOG(logDEBUG1) << "sending command then read to ReceiverSocket";
     receiver.sendCommandThenRead(fnum, args, args_size, retval, retval_size);
     receiver.close();
 }
@@ -3512,6 +3525,7 @@ void Module::initialDetectorServerChecks() {
 }
 
 void Module::checkDetectorVersionCompatibility() {
+    LOG(logDEBUG) << "Checking detector version compatibility with client...";
     std::string detServers[2] = {getControlServerLongVersion(),
                                  getStopServerLongVersion()};
     LOG(logDEBUG1)

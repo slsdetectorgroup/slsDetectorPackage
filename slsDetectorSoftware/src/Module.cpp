@@ -85,20 +85,17 @@ std::string Module::getControlServerLongVersion() const {
     // throw with old server version (sends 8 bytes)
     catch (RuntimeError &e) {
         std::string emsg = std::string(e.what());
-        LOG(logDEBUG) << "Error message: " << emsg;
 
-        /*
         if (emsg.find(F_GET_SERVER_VERSION) && emsg.find("8 bytes")) {
             throwDeprecatedServerVersion();
         }
-        */
 
         throw;
     }
 }
 
 void Module::throwDeprecatedServerVersion() const {
-    LOG(logDEBUG1) << "throw deprecated version error";
+    LOG(logDEBUG3) << "throw deprecated version error";
     uint64_t res = sendToDetectorStop<int64_t>(F_GET_SERVER_VERSION);
     std::cout << std::endl;
     std::ostringstream os;
@@ -108,7 +105,6 @@ void Module::throwDeprecatedServerVersion() const {
 }
 
 std::string Module::getStopServerLongVersion() const {
-    LOG(logDEBUG1) << "Getting Stop Server Version";
     char retval[MAX_STR_LENGTH]{};
     sendToDetectorStop(F_GET_SERVER_VERSION, nullptr, retval);
     return retval;
@@ -152,8 +148,6 @@ std::string Module::getReceiverSoftwareVersion() const {
 slsDetectorDefs::detectorType
 Module::getTypeFromDetector(const std::string &hostname, uint16_t cport) {
     LOG(logDEBUG1) << "Getting Module type ";
-    LOG(logDEBUG1) << "ClientSocket: Hostname: " << hostname
-                   << " Port: " << cport;
     ClientSocket socket("Detector", hostname, cport);
     socket.Send(F_GET_DETECTOR_TYPE);
     socket.setFnum(F_GET_DETECTOR_TYPE);
@@ -3062,10 +3056,7 @@ void Module::sendToDetector(int fnum, const void *args, size_t args_size,
     // the other versions use templates to deduce sizes and create
     // the return type
     checkArgs(args, args_size, retval, retval_size);
-    LOG(logDEBUG1) << "Creating DetectorSocket on: " << shm()->hostname << ":"
-                   << shm()->controlPort;
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    LOG(logDEBUG1) << "sending command then read to DetectorSocket";
     client.sendCommandThenRead(fnum, args, args_size, retval, retval_size);
     client.close();
 }
@@ -3177,10 +3168,8 @@ void Module::sendToDetectorStop(int fnum, const void *args, size_t args_size,
     // This is the only function that actually sends data to the detector stop
     // the other versions use templates to deduce sizes and create
     // the return type
-    LOG(logINFORED) << "Sending command to Detector Stop Socket";
     checkArgs(args, args_size, retval, retval_size);
     auto stop = DetectorSocket(shm()->hostname, shm()->stopPort);
-    LOG(logDEBUG1) << "sending command then read to Detector Stop Socket";
     stop.sendCommandThenRead(fnum, args, args_size, retval, retval_size);
     stop.close();
 }
@@ -3303,7 +3292,6 @@ void Module::sendToReceiver(int fnum, const void *args, size_t args_size,
     }
     checkArgs(args, args_size, retval, retval_size);
     auto receiver = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
-    LOG(logDEBUG1) << "sending command then read to ReceiverSocket";
     receiver.sendCommandThenRead(fnum, args, args_size, retval, retval_size);
     receiver.close();
 }
@@ -3485,7 +3473,7 @@ void Module::checkDetectorVersionCompatibility() {
     LOG(logDEBUG) << "Checking detector version compatibility with client...";
     std::string detServers[2] = {getControlServerLongVersion(),
                                  getStopServerLongVersion()};
-    LOG(logINFO)
+    LOG(logDEBUG1)
         << "Checking detector version compatibility with client version "
         << detServers[0] << " and " << detServers[1];
     for (int i = 0; i != 2; ++i) {

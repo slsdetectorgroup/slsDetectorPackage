@@ -85,7 +85,6 @@ void ClientInterface::startTCPServer() {
                  << '\n';
 
     while (!killTcpThread) {
-        LOG(logDEBUG1) << "Start accept loop";
         try {
             auto socket = server.accept();
             try {

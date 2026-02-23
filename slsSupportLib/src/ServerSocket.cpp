@@ -44,7 +44,6 @@ ServerSocket::ServerSocket(int port)
 }
 
 ServerInterface ServerSocket::accept() {
-    LOG(logDEBUG1) << "In accept function, waiting for client to connect...";
     lastClient = thisClient; // update from previous connection
     struct sockaddr_in clientAddr;
     socklen_t addr_size = sizeof clientAddr;
@@ -57,7 +56,7 @@ ServerInterface ServerSocket::accept() {
     char tc[INET_ADDRSTRLEN]{};
     inet_ntop(AF_INET, &(clientAddr.sin_addr), tc, INET_ADDRSTRLEN);
     thisClient = IpAddr{tc};
-    LOG(logDEBUG1) << "Accepted connection from: " << tc << ":"
+    LOG(logDEBUG3) << "Accepted connection from: " << tc << ":"
                    << ntohs(clientAddr.sin_port);
     // Set socket buffer size
     return ServerInterface(newSocket);

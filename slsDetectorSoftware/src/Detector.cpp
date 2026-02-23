@@ -174,20 +174,17 @@ Result<std::string> Detector::getHostname(Positions pos) const {
 }
 
 void Detector::setHostname(const std::vector<std::string> &hostname) {
-    LOG(logINFORED) << "test";
-    LOG(logDEBUG) << "Checking if hostname is already in shared memory";
     if (pimpl->hasModulesInSharedMemory()) {
         LOG(logWARNING) << "There are already module(s) in shared memory."
                            "Freeing Shared memory now.";
         auto numChannels = getDetectorSize();
-        LOG(logDEBUG) << "Current detector size: " << numChannels;
         auto initialChecks = getInitialChecks();
         freeSharedMemory(getShmId());
         pimpl = make_unique<DetectorImpl>(getShmId());
         setDetectorSize(numChannels);
         setInitialChecks(initialChecks);
     }
-    LOG(logDEBUG) << "not in shared memory yet, setting hostname";
+    LOG(logDEBUG3) << "not in shared memory yet, setting hostname";
     pimpl->setHostname(hostname);
 }
 

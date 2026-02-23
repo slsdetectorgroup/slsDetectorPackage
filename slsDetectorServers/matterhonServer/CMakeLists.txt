@@ -2,7 +2,6 @@
 add_executable(matterhornDetectorServer_virtual
     ${CMAKE_CURRENT_SOURCE_DIR}/src/MatterhornApp.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/MatterhornServer.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/MatterhornClientInterface.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/StopServer.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/CommandLineOptions.cpp
 )

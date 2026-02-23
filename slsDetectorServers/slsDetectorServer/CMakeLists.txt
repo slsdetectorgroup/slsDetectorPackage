@@ -1,5 +1,5 @@
 set(SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ClientInterface.cpp 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/TCPInterface.cpp 
 )
 
 add_library(slsServerObject OBJECT
@@ -23,7 +23,7 @@ target_link_libraries(slsServerObject
 set(DETECTOR_LIBRARY_TARGETS slsServerObject)
 
 set(PUBLICHEADERS
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/ClientInterface.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/TCPInterface.h
 )
 
 #Shared library

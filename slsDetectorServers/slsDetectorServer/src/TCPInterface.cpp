@@ -1,4 +1,4 @@
-#include "ClientInterface.h"
+#include "TCPInterface.h"
 
 #include "fmt/format.h"
 #include "sls/logger.h"
@@ -7,19 +7,22 @@
 
 namespace sls {
 
-ClientInterface::ClientInterface(const uint16_t portNumber)
-    : portNumber(portNumber), server(portNumber) {
+TCPInterface::TCPInterface(
+    std::unordered_map<detFuncs, std::function<ReturnCode(ServerInterface &)>>
+        &functionTable_,
+    const uint16_t portNumber)
+    : functionTable(functionTable_), portNumber(portNumber),
+      server(portNumber) {
     validatePortNumber(portNumber);
 }
 
-ClientInterface::~ClientInterface() {
-    killTcpThread = true;
+TCPInterface::~TCPInterface() {
     LOG(logINFORED) << "Shutting down TCP Socket on port " << portNumber;
     server.shutdown();
     LOG(logDEBUG) << "TCP Socket closed on port " << portNumber;
 }
 
-void ClientInterface::startTCPServer() {
+void TCPInterface::startTCPServer() {
 
     LOG(logINFO) << "SLS Server starting TCP Server on port " << portNumber
                  << '\n';
@@ -63,8 +66,8 @@ void ClientInterface::startTCPServer() {
     LOG(logINFOBLUE) << "Exiting TCP Server";
 }
 
-ReturnCode ClientInterface::processReceivedData(const detFuncs function_id,
-                                                ServerInterface &socket) {
+ReturnCode TCPInterface::processReceivedData(const detFuncs function_id,
+                                             ServerInterface &socket) {
     // TODO: is NUM_DET_FUNCTIONS correct?
 
     LOG(logDEBUG1) << "calling function fnum: " << function_id << " ("

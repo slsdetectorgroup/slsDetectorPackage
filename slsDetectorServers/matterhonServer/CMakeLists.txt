@@ -21,9 +21,7 @@ target_link_libraries(matterhornDetectorServer_virtual
     PUBLIC 
         slsSupportStatic
         slsDetectorStatic
-        slsServerStatic
-        fmt::fmt # TODO should not be here !!! 
-)
+        slsServerStatic) 
 
 set_target_properties(matterhornDetectorServer_virtual PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin

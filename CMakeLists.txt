@@ -340,6 +340,7 @@ if(NOT TARGET slsProjectOptions)
    target_compile_features(slsProjectOptions INTERFACE cxx_std_17)
    target_compile_definitions(slsProjectOptions
     INTERFACE LOG_MAX_REPORTING_LEVEL=${SLS_LOG_MAX_REPORTING_LEVEL})
+    target_link_libraries(slsProjectOptions INTERFACE fmt::fmt)
 endif()
 
 

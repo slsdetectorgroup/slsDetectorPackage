@@ -12,6 +12,12 @@ slsDetectorPackage
     For further detector specific documentation, visit `this page <https://www.psi.ch/en/detectors/documentation>`__. 
 
 .. toctree::
+    :maxdepth: 2
+    :hidden:
+
+    sls_namespace
+
+.. toctree::
     :maxdepth: 3
     :caption: Installation:
 

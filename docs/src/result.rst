@@ -4,3 +4,4 @@ Result
 ==============================================
 
 .. doxygenfile:: Result.h
+   :noindex:

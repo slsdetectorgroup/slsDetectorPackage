@@ -12,3 +12,4 @@ Any reoccurring container operation should probably be added to
 this file.  
 
 .. doxygenfile:: container_utils.h
+   :no-link:

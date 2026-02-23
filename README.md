@@ -71,8 +71,8 @@ pip install .
 
 While we value few dependencies some libraries are required in order to not have to reinvent the wheel. Due to the state of package management in C++ we decided to bundle some of them with our source code. These are found in the libs/ directory.
 
-Core
------
+#### Core
+
 To use the basic building blocks, meaning sls_detector_get/put and the shared libraries these are needed:
 
 * Linux, preferably recent kernel (currently no cross platform support)
@@ -83,33 +83,33 @@ To use the basic building blocks, meaning sls_detector_get/put and the shared li
 
 > **Note:** For v9.x.x of slsDetectorPackage and older, C++11 compatible compiler.
 
-Python bindings
-----------------
+#### Python bindings
+
 * Python >= 3.8
 
 * pybind11 2.13.6 (packaged in libs)
 
 > **Note:** Refer [pybind11 notes](#4-pybind-and-zeromq).
 
-ZeroMQ
--------
+#### ZeroMQ
+
 * Zeromq 4.3.4 (packaged in libs)
 
 > **Note:** Refer [zeromq notes](#4-pybind-and-zeromq).
 
-GUI
------
+#### GUI
+
 * Qt 5.9
 
 * Qwt 6.1.5 (packaged in libs)
 
-Moench executables
--------------------
+#### Moench executables
+
 * libtiff
 
-Documentation
---------------
-The documentation that you are reading now is built with
+#### Documentation
+
+The documentation is built with
 
 * Doxygen (to extract C++ classes etc.)
 
@@ -117,8 +117,8 @@ The documentation that you are reading now is built with
 
 * Sphinx with sphinx_rtd_theme
 
-Packaged in libs/
-------------------
+#### Packaged in libs/
+
 * catch2 (unit testing)
 
 * rapidjson (streaming from receiver)

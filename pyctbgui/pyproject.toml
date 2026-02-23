@@ -2,6 +2,41 @@
 requires = ["setuptools", "numpy"]
 build-backend = "setuptools.build_meta"
 
+[project]
+name = "pyctbgui"
+description = "Experimental GUI for the chip test board"
+version = "0.0.0" 
+requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+    "pyzmq",
+    "pillow",
+    "PyQt5",
+    "pyqtgraph",
+    "matplotlib",
+    "aare",
+    "slsdet",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==7.4.0",
+    "ruff==0.0.285",
+    "yapf==0.40.1",
+    "pytest-ruff==0.1.1",
+    "pre-commit",
+    "pytest-qt",
+]
+
+[tool.setuptools]
+package-dir = {"" = "pyctbgui"}
+
+[tool.setuptools.packages.find]
+where = ["pyctbgui"]
+
+[project.scripts]
+CtbGui = "pyctbgui.main:main"
+
 [tool.ruff]
 line-length = 119
 select = ["E","F","UP","PT","RET","SLF","TID","PTH","NPY"]
@@ -38,9 +73,7 @@ exclude = [
 target-version = "py311"
 
 [tool.ruff.per-file-ignores]
-"__init__.py" = ["F401"]
-"pyctbgui/utils/decoder.py" = ["F403"]
-
+"__init__.py" = ["F401"] # ignore unused import warnings
 
 [tool.yapf]
 based_on_style = "pep8"
@@ -53,3 +86,4 @@ branch = false
 include = [
     "pyctbgui/*"
 ]
+

@@ -33,7 +33,6 @@ if(NOT CMAKE_USE_PTHREADS_INIT)
 endif()
 
 set(SLS_LOG_MAX_REPORTING_LEVEL sls::TLogLevel::logINFO CACHE STRING "set logging level")
-#set(LOG_MAX_REPORTING_LEVEL "${SLS_LOG_MAX_REPORTING_LEVEL}" CACHE STRING "set logging level" FORCE)
 
 option(SLS_USE_SYSTEM_ZMQ "Use system installed libzmq" OFF)
 
@@ -317,6 +316,7 @@ if(NOT TARGET slsProjectOptions)
    target_compile_features(slsProjectOptions INTERFACE cxx_std_17)
    target_compile_definitions(slsProjectOptions
     INTERFACE LOG_MAX_REPORTING_LEVEL=${SLS_LOG_MAX_REPORTING_LEVEL})
+    target_link_libraries(slsProjectOptions INTERFACE fmt::fmt)
 endif()
 
 

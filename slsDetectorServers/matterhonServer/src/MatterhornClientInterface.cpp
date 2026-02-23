@@ -19,7 +19,10 @@ MatterhornClientInterface::MatterhornClientInterface(const uint16_t portNumber)
         {detFuncs::F_GET_DETECTOR_TYPE,
          [this](ServerInterface &si) { return this->get_detector_type(si); }},
         {detFuncs::F_INITIAL_CHECKS,
-         [this](ServerInterface &si) { return this->initial_checks(si); }}};
+         [this](ServerInterface &si) { return this->initial_checks(si); }},
+        {detFuncs::F_GET_NUM_INTERFACES, [this](ServerInterface &si) {
+             return this->get_num_udp_interfaces(si);
+         }}};
 
     startTCPServer();
 }
@@ -50,6 +53,12 @@ ReturnCode MatterhornClientInterface::initial_checks(ServerInterface &socket) {
     // the should check firmware -client compatibility
     bool initial_checks_passed = true;
     return static_cast<ReturnCode>(socket.sendResult(initial_checks_passed));
+}
+
+ReturnCode
+MatterhornClientInterface::get_num_udp_interfaces(ServerInterface &socket) {
+    int numUDPInterfaces = 1;
+    return static_cast<ReturnCode>(socket.sendResult(numUDPInterfaces));
 }
 
 } // namespace sls

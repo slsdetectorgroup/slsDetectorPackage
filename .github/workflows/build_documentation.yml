@@ -1,0 +1,122 @@
+name: Build and upload Documentation 
+
+on: 
+    workflow_dispatch: 
+    pull_request:
+        branches:
+            - developer
+            - main
+    release:
+        types:
+            - published
+
+env: 
+    BUILD_TYPE: RELEASE 
+
+permissions:
+  contents: write  # Required to push to gh-pages branch
+  pages: write     # Required for GitHub Pages deployment
+  id-token: write  # Required for GitHub Pages deployment
+
+jobs:
+    build-and-deploy:
+        strategy: 
+            matrix:
+                patform: [ubuntu-latest]
+                python-version: ["3.12"]
+        runs-on: ${{ matrix.patform }}
+
+        defaults:
+            run:
+                shell: "bash -l {0}"
+
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                fetch-depth: 0  # Fetch all history for proper git operations
+                token: ${{ secrets.GITHUB_TOKEN }}  # Use the default token
+
+            # Extract release version (if triggered by release)
+            - name: Get Release Version
+              id: version
+              run: |
+                if [ "${{ github.event_name }}" == "release" ]; then
+                  VERSION="${{ github.event.release.tag_name }}"
+                  echo "version=${VERSION}" >> $GITHUB_OUTPUT
+                else
+                  echo "version=developer" >> $GITHUB_OUTPUT
+                fi
+
+            - name: Install System Packages
+              uses: awalsh128/cache-apt-pkgs-action@latest
+              with:
+                packages: libhdf5-dev doxygen
+                version: 1.0
+
+            - name: Setup Python
+              uses: actions/setup-python@v5
+              with:
+                python-version: 3.12
+                cache: 'pip'
+            
+            - name: Install Python Packages
+              run: pip install sphinx sphinx_rtd_theme breathe pyyaml jinja2
+               
+
+            - name: Build Documentation
+              run: |
+                mkdir build
+                cd build
+                cmake -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DSLS_BUILD_DOCS=ON -DSLS_USE_HDF5=ON -DSLS_USE_PYTHON=ON ..
+                make -j4 
+                make docs
+        
+            # Update main index if this is a release
+            - name: Update version index
+              if: github.event_name == 'release'
+              run: |
+                python docs/main_index/render_main_index.py \
+                --version "${{ steps.version.outputs.version }}" \
+                --date "$(date +'%d.%m.%Y')" 
+            
+            - name: Checkout gh-pages
+              uses: actions/checkout@v4
+              with:
+                ref: gh-pages
+                path: gh-pages
+                
+            
+            - name: Copy documentation and Release notes to versioned folder
+              if: github.event_name == 'release' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+              run: |
+                VERSION="${{ steps.version.outputs.version }}"
+                mkdir -p "gh-pages/${VERSION}"
+                cp -r build/docs/html/. "gh-pages/${VERSION}/"
+                cp docs/main_index/index.html gh-pages/index.html
+                cp docs/main_index/index.html gh-pages/_sources/index.html.txt
+                if [ "${{ github.event_name }}" == "release" ]; then
+                  cp  RELEASE.md "gh-pages/releases/RELEASE_v${VERSION}.md" 
+                fi 
+              
+            - name: Commit and Push changes to gh-pages
+              if: github.event_name == 'release' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+              run: |
+                cd gh-pages
+                git config --global user.name 'github-actions'
+                git config --global user.email 'github-actions@github.com'
+                git add .
+                git commit -m "Update Documentation for ${{ steps.version.outputs.version }}"
+                git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
+                git push origin gh-pages 
+              env: 
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
+
+
+
+
+
+
+
+

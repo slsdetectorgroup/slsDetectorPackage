@@ -1,6 +1,6 @@
 name: Native CMake Build
 
-on: [push, pull_request]
+on: [push, pull_request] 
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
@@ -43,6 +43,11 @@ jobs:
         # Build your program with the given configuration
         run: cmake --build ${{github.workspace}}/build -j4 --config ${{env.BUILD_TYPE}}
 
+
+
+
+  
+      
 
 
 

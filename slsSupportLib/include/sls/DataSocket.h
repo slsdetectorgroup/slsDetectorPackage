@@ -44,8 +44,6 @@ class DataSocket {
                           std::string>::value,
         int>::type
     Send(T &&data) {
-        LOG(TLogLevel::logDEBUG1)
-            << "Sending result in DataSocket: " << sizeof(data) << " bytes";
         return Send(&data, sizeof(data));
     }
 

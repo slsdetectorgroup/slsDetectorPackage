@@ -6,11 +6,9 @@ from PyQt5 import QtWidgets, uic
 import pyqtgraph as pg
 from pyqtgraph import LegendItem
 
-from pyctbgui.utils import decoder
 from pyctbgui.utils.defines import Defines
 
 from pyctbgui.utils.bit_utils import bit_is_set, manipulate_bit
-import pyctbgui.utils.pixelmap as pm
 from pyctbgui.utils.recordOrApplyPedestal import recordOrApplyPedestal
 
 
@@ -132,8 +130,10 @@ class TransceiverTab(QtWidgets.QWidget):
             if dSamples % 8 != 0:
                 nbitsPerDBit += (8 - (dSamples % 8))
             transceiverOffset += nDBitEnabled * (nbitsPerDBit // 8)
-        trans_array = np.array(np.frombuffer(data, offset=transceiverOffset, dtype=np.uint16))
-        tmp = np.take(trans_array, self.mainWindow.pixel_map)
+        trans_array = np.array(np.frombuffer(data, offset=transceiverOffset, dtype=np.uint8))
+        
+        tmp = self.mainWindow.decoder(trans_array)
+
         return tmp
 
     def processImageData(self, data, dSamples):
@@ -151,14 +151,11 @@ class TransceiverTab(QtWidgets.QWidget):
                                                                        self.mainWindow.nDBitEnabled)
             self.plotTab.ignoreHistogramSignal = True
             self.mainWindow.plotTransceiverImage.setImage(self.mainWindow.transceiver_frame)
-        except Exception:
+        except Exception as e:
             self.mainWindow.statusbar.setStyleSheet("color:red")
-            message = f'Warning: Invalid size for Transceiver Image. Expected' \
-                      f' {self.mainWindow.nTransceiverRows * self.mainWindow.nTransceiverCols} size,' \
-                      f' got {self.mainWindow.transceiver_frame.size} instead.'
             self.acquisitionTab.updateCurrentFrame('Invalid Image')
-            self.mainWindow.statusbar.showMessage(message)
-            print(message)
+            self.mainWindow.statusbar.showMessage(str(e))
+            print("Error: ", str(e))
 
         self.plotTab.setFrameLimits(self.mainWindow.transceiver_frame)
 

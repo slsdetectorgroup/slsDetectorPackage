@@ -200,7 +200,7 @@ def runProcess(name, cmd, fp, log_file_name = None, quiet_mode=False):
     Log(LogLevel.INFOBLUE, info_text, fp, True)
     Log(LogLevel.INFOBLUE, 'Cmd: ' + ' '.join(cmd), fp, True)
 
-    error_log = None
+    captured_log = []
 
     try:
         if log_file_name:
@@ -212,8 +212,8 @@ def runProcess(name, cmd, fp, log_file_name = None, quiet_mode=False):
 
     except subprocess.CalledProcessError as e:
         print("error: ", str(e))
-        captured_log = e.stdout.splitlines()
-        pass
+        if not log_file_name and e.stdout:
+            captured_log = e.stdout.splitlines()
     except Exception as e:
         print("something else failed")
         Log(LogLevel.ERROR, f'Failed to run {name}:{str(e)}', fp)

@@ -28,14 +28,4 @@ int LTC2620_D_VoltageToDac(int voltage, int *dacval);
  */
 int LTC2620_D_DacToVoltage(int dacval, int *voltage);
 
-/**
- * Set value
- * @param dacnum dac index
- * @param val value to set
- * @param mV 1 for mv, else 0
- * @paam dacname dac name
- * @param dacval pointer to dac value
- * @return OK or FAIL
- */
-int LTC2620_D_SetDACValue(int dacnum, int val, int mV, char *dacname,
-                          int *dacval);
+int LTC2620_D_SetDacValue(int dacnum, int val, char *dacname, char *mess);

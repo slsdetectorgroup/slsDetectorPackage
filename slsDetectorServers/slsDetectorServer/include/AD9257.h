@@ -3,6 +3,7 @@
 #pragma once
 
 #include <inttypes.h>
+#include <stdbool.h>
 
 #ifdef JUNGFRAUD
 void AD9257_Set_Jungfrau_Hardware_Version_1_0(int val);
@@ -27,7 +28,7 @@ void AD9257_Disable();
 /**
  * Get vref voltage
  */
-int AD9257_GetVrefVoltage(int mV);
+int AD9257_GetVrefVoltage(bool mV);
 
 /**
  * Set vref voltage
@@ -35,7 +36,7 @@ int AD9257_GetVrefVoltage(int mV);
  * for 1.6V, 4 for 2.0V
  * @returns ok or fail
  */
-int AD9257_SetVrefVoltage(int val, int mV);
+int AD9257_SetVrefVoltage(int val, bool mV);
 
 /**
  * Set SPI reg value

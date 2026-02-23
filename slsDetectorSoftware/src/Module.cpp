@@ -50,9 +50,6 @@ std::string Module::getHostname() const { return shm()->hostname; }
 void Module::setHostname(const std::string &hostname,
                          const bool initialChecks) {
     strcpy_safe(shm()->hostname, hostname.c_str());
-    LOG(logDEBUG1) << "control port: " << shm()->controlPort;
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.close();
     try {
         checkDetectorVersionCompatibility();
         initialDetectorServerChecks();
@@ -96,11 +93,8 @@ std::string Module::getControlServerLongVersion() const {
         }
         */
 
-        LOG(logINFORED) << "Before throw";
         throw;
-        LOG(logINFORED) << "Well it should have thrown by now";
     }
-    LOG(logINFORED) << "After catch, should not be here";
 }
 
 void Module::throwDeprecatedServerVersion() const {
@@ -3080,7 +3074,6 @@ void Module::sendToDetector(int fnum, const void *args, size_t args_size,
 
 template <typename Arg, typename Ret>
 void Module::sendToDetector(int fnum, const Arg &args, Ret &retval) const {
-    std::cout << "in line 3075\n";
     LOG(logDEBUG1) << "Sending: ["
                    << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
                    << ", nullptr, 0, " << typeid(Ret).name() << ", "
@@ -3113,7 +3106,6 @@ void Module::sendToDetector(int fnum, const Arg &args, std::nullptr_t) {
 
 template <typename Ret>
 void Module::sendToDetector(int fnum, std::nullptr_t, Ret &retval) const {
-    std::cout << "in line 3107\n";
     LOG(logDEBUG1) << "Sending: ["
                    << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
                    << ", nullptr, 0, " << typeid(Ret).name() << ", "
@@ -3140,7 +3132,6 @@ void Module::sendToDetector(int fnum) {
 }
 
 template <typename Ret> Ret Module::sendToDetector(int fnum) const {
-    std::cout << "in line 3135\n";
     LOG(logDEBUG1) << "Sending: ["
                    << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
                    << ", nullptr, 0, " << typeid(Ret).name() << ", "
@@ -3541,6 +3532,8 @@ const std::string Module::getDetectorAPI() const {
         return APIGOTTHARD2;
     case XILINX_CHIPTESTBOARD:
         return APIXILINXCTB;
+    case MATTERHORN:
+        return APIMATTERHORN;
     default:
         throw NotImplementedError(
             "Detector type not implemented to get Detector API");

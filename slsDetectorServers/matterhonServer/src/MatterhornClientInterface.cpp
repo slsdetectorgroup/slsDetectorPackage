@@ -17,17 +17,9 @@ MatterhornClientInterface::MatterhornClientInterface(const uint16_t portNumber)
         {detFuncs::F_GET_SERVER_VERSION,
          [this](ServerInterface &si) { return this->get_version(si); }},
         {detFuncs::F_GET_DETECTOR_TYPE,
-         [this](ServerInterface &si) { return this->get_detector_type(si); }}};
-
-    LOG(logDEBUG1)
-        << "Function table from child class MatterhornClientInterface: ";
-    std::for_each(functionTable.begin(), functionTable.end(),
-                  [](const auto &pair) {
-                      LOG(logDEBUG1)
-                          << "Function id: " << pair.first
-                          << ", Function name: "
-                          << getFunctionNameFromEnum((enum detFuncs)pair.first);
-                  });
+         [this](ServerInterface &si) { return this->get_detector_type(si); }},
+        {detFuncs::F_INITIAL_CHECKS,
+         [this](ServerInterface &si) { return this->initial_checks(si); }}};
 
     startTCPServer();
 }
@@ -37,10 +29,7 @@ ReturnCode MatterhornClientInterface::get_version(ServerInterface &socket) {
     auto version = getMatterhornServerVersion();
     char version_cstr[MAX_STR_LENGTH]{};
     strncpy(version_cstr, version.c_str(), version.size());
-    // version.resize(MAX_STR_LENGTH);
-    LOG(TLogLevel::logINFO) << "Matterhorn Server Version: " << version;
-    LOG(TLogLevel::logDEBUG1)
-        << "size of version: " << sizeof(version) << " bytes";
+    LOG(TLogLevel::logDEBUG) << "Matterhorn Server Version: " << version;
     return static_cast<ReturnCode>(socket.sendResult(
         version_cstr)); // TODO: check what would be possible return codes!!!
 }
@@ -53,6 +42,14 @@ MatterhornClientInterface::get_detector_type(ServerInterface &socket) {
 
 std::string MatterhornClientInterface::getMatterhornServerVersion() {
     return APIMATTERHORN;
+}
+
+ReturnCode MatterhornClientInterface::initial_checks(ServerInterface &socket) {
+
+    // TODO: add more checks here, for now just return true to be able to test
+    // the should check firmware -client compatibility
+    bool initial_checks_passed = true;
+    return static_cast<ReturnCode>(socket.sendResult(initial_checks_passed));
 }
 
 } // namespace sls

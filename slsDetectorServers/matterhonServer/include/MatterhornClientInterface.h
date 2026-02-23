@@ -15,6 +15,10 @@ class MatterhornClientInterface : public ClientInterface {
 
     ReturnCode get_detector_type(ServerInterface &socket);
 
+    ReturnCode initial_checks(ServerInterface &socket);
+
+    ReturnCode get_num_udp_interfaces(ServerInterface &socket);
+
     static std::string getMatterhornServerVersion();
 };
 

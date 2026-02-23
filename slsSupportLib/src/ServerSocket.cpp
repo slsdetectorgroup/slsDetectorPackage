@@ -44,7 +44,6 @@ ServerSocket::ServerSocket(int port)
 }
 
 ServerInterface ServerSocket::accept() {
-    LOG(logDEBUG1) << "In accept function, waiting for client to connect...";
     lastClient = thisClient; // update from previous connection
     struct sockaddr_in clientAddr;
     socklen_t addr_size = sizeof clientAddr;

@@ -29,7 +29,6 @@ void TCPInterface::startTCPServer() {
 
     int function_id{}; // TODO should it be an enum type
     while (true) {
-        LOG(logDEBUG1) << "Start accept loop";
         try {
             auto socket = server.accept();
             try {

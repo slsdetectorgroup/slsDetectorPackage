@@ -95,7 +95,7 @@ std::string Module::getControlServerLongVersion() const {
 }
 
 void Module::throwDeprecatedServerVersion() const {
-    LOG(logDEBUG1) << "throw deprecated version error";
+    LOG(logDEBUG3) << "throw deprecated version error";
     uint64_t res = sendToDetectorStop<int64_t>(F_GET_SERVER_VERSION);
     std::cout << std::endl;
     std::ostringstream os;
@@ -105,7 +105,6 @@ void Module::throwDeprecatedServerVersion() const {
 }
 
 std::string Module::getStopServerLongVersion() const {
-    LOG(logDEBUG1) << "Getting Stop Server Version";
     char retval[MAX_STR_LENGTH]{};
     sendToDetectorStop(F_GET_SERVER_VERSION, nullptr, retval);
     return retval;
@@ -3100,10 +3099,7 @@ void Module::sendToDetector(int fnum, const void *args, size_t args_size,
     // the other versions use templates to deduce sizes and create
     // the return type
     checkArgs(args, args_size, retval, retval_size);
-    LOG(logDEBUG1) << "Creating DetectorSocket on: " << shm()->hostname << ":"
-                   << shm()->controlPort;
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    LOG(logDEBUG1) << "sending command then read to DetectorSocket";
     client.sendCommandThenRead(fnum, args, args_size, retval, retval_size);
     client.close();
 }
@@ -3215,10 +3211,8 @@ void Module::sendToDetectorStop(int fnum, const void *args, size_t args_size,
     // This is the only function that actually sends data to the detector stop
     // the other versions use templates to deduce sizes and create
     // the return type
-    LOG(logINFORED) << "Sending command to Detector Stop Socket";
     checkArgs(args, args_size, retval, retval_size);
     auto stop = DetectorSocket(shm()->hostname, shm()->stopPort);
-    LOG(logDEBUG1) << "sending command then read to Detector Stop Socket";
     stop.sendCommandThenRead(fnum, args, args_size, retval, retval_size);
     stop.close();
 }
@@ -3341,7 +3335,6 @@ void Module::sendToReceiver(int fnum, const void *args, size_t args_size,
     }
     checkArgs(args, args_size, retval, retval_size);
     auto receiver = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
-    LOG(logDEBUG1) << "sending command then read to ReceiverSocket";
     receiver.sendCommandThenRead(fnum, args, args_size, retval, retval_size);
     receiver.close();
 }

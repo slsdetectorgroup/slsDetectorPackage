@@ -193,8 +193,6 @@ void DetectorImpl::setHostname(const std::vector<std::string> &name) {
         }
         ctb_shm.createSharedMemory();
     }
-
-    LOG(logDEBUG) << "created shared memory";
 }
 
 void DetectorImpl::addModule(const std::string &name) {
@@ -205,9 +203,6 @@ void DetectorImpl::addModule(const std::string &name) {
 
     // get type by connecting
     detectorType type = Module::getTypeFromDetector(hostname, port);
-
-    LOG(logDEBUG) << "Detector type of module " << name << " is "
-                  << std::to_string(type);
 
     // gotthard2 cannot have more than 2 modules (50um=1, 25um=2
     if (type == GOTTHARD2 && modules.size() > 2) {

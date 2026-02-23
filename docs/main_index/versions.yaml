@@ -1,0 +1,77 @@
+versions:
+- version: 10.0.0
+  type: Major
+  date: 10.09.2025
+  has_docs: true
+- version: 9.2.0
+  type: Minor
+  date: 02.06.2025
+  has_docs: true
+- version: 9.1.1
+  type: Bug Fix
+  date: 22.05.2025
+  has_docs: true
+- version: 9.1.0
+  type: Minor
+  date: 28.03.2025
+  has_docs: true
+- version: 9.0.0
+  type: Major
+  date: 26.11.2024
+  has_docs: true
+- version: 8.0.2
+  type: Bug Fix
+  date: 18.09.2024
+  has_docs: false
+- version: 8.0.1
+  type: Bug Fix
+  date: 16.01.2024
+  has_docs: false
+- version: 8.0.0
+  type: Major
+  date: 13.11.2023
+  has_docs: false
+- version: 7.0.3
+  type: Bug Fix
+  date: 14.11.2023
+  has_docs: false
+- version: 7.0.2
+  type: Bug Fix
+  date: 12.07.2023
+  has_docs: false
+- version: 7.0.1
+  type: Bug Fix
+  date: 24.03.2023
+  has_docs: false
+- version: 7.0.0
+  type: Major
+  date: 24.02.2023
+  has_docs: false
+- version: 6.1.2
+  type: Bug Fix
+  date: 25.11.2022
+  has_docs: false
+- version: 6.1.1
+  type: Bug Fix
+  date: 04.01.2022
+  has_docs: false
+- version: 6.1.0
+  type: Minor
+  date: 25.11.2021
+  has_docs: false
+- version: 6.0.0
+  type: Major
+  date: 20.10.2021
+  has_docs: false
+- version: 5.1.0
+  type: Minor
+  date: 22.03.2021
+  has_docs: false
+- version: 5.0.1
+  type: Bug Fix
+  date: 25.11.2020
+  has_docs: false
+- version: 5.0.0
+  type: Major
+  date: 18.11.2020
+  has_docs: false

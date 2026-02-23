@@ -19,16 +19,15 @@ void BinaryDataFile::CloseFile() {
     fd = nullptr;
 }
 
-void BinaryDataFile::CreateFirstBinaryDataFile(const std::string &fNamePrefix,
-                                               const uint64_t fIndex,
-                                               const bool ovEnable,
-                                               const bool sMode,
-                                               const uint16_t uPortNumber,
-                                               const uint32_t mFramesPerFile) {
+void BinaryDataFile::CreateFirstBinaryDataFile(
+    const std::filesystem::path &filePath, const std::string &fNamePrefix,
+    const uint64_t fIndex, const bool ovEnable, const bool sMode,
+    const uint16_t uPortNumber, const uint32_t mFramesPerFile) {
 
     subFileIndex = 0;
     numFramesInFile = 0;
 
+    m_filePath = filePath;
     fileNamePrefix = fNamePrefix;
     fileIndex = fIndex;
     overWriteEnable = ovEnable;
@@ -42,9 +41,10 @@ void BinaryDataFile::CreateFirstBinaryDataFile(const std::string &fNamePrefix,
 void BinaryDataFile::CreateFile() {
     numFramesInFile = 0;
 
-    std::ostringstream os;
-    os << fileNamePrefix << "_f" << subFileIndex << '_' << fileIndex << ".raw";
-    fileName = os.str();
+    std::filesystem::path p =
+        m_filePath / (fileNamePrefix + "_f" + std::to_string(subFileIndex) +
+                      '_' + std::to_string(fileIndex) + ".raw");
+    fileName = p.string();
 
     if (!overWriteEnable) {
         if (nullptr == (fd = fopen(fileName.c_str(), "wx"))) {

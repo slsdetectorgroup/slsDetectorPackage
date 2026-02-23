@@ -1,18 +1,19 @@
 #pragma once
-#include "MatterhornClientInterface.h"
+#include "TCPInterface.h"
 #include "sls/sls_detector_defs.h"
+#include <array>
 #include <memory>
 
 namespace sls {
 
 /// @brief struct saving udp details (one UDP port per module)
 struct UDPInfo {
-    uint16_t srcport;
-    uint16_t dstport;
-    uint64_t srcmac;
-    uint64_t dstmac;
-    uint32_t srcip;
-    uint32_t dstip;
+    uint16_t srcport{};
+    uint16_t dstport{};
+    uint64_t srcmac{};
+    uint64_t dstmac{};
+    uint32_t srcip{};
+    uint32_t dstip{};
 };
 
 class MatterhornServer {
@@ -29,9 +30,41 @@ class MatterhornServer {
 
     ~MatterhornServer() = default;
 
+    ReturnCode get_version(ServerInterface &socket);
+
+    ReturnCode get_detector_type(ServerInterface &socket);
+
+    ReturnCode initial_checks(ServerInterface &socket);
+
+    ReturnCode get_num_udp_interfaces(ServerInterface &socket);
+
   private:
-    std::unique_ptr<MatterhornClientInterface> tcpipInterface;
-    UDPInfo udpDetails{}; // TODO: for now only one receiver per module
+    static std::string getMatterhornServerVersion();
+
+    size_t num_udp_interfaces() const;
+
+  private:
+    /// @brief  @brief TCP/IP interface for communication with the client
+    std::unique_ptr<TCPInterface> tcpInterface;
+    std::array<UDPInfo, 1>
+        udpDetails{}; // TODO: for now only one receiver per module
+
+  private:
+    /// @brief map of function IDs and corresponding functions
+    // maybe load from additional file cleaner
+    std::unordered_map<detFuncs, std::function<ReturnCode(ServerInterface &)>>
+        function_table = {
+            {detFuncs::F_GET_SERVER_VERSION,
+             [this](ServerInterface &si) { return this->get_version(si); }},
+            {detFuncs::F_GET_DETECTOR_TYPE,
+             [this](ServerInterface &si) {
+                 return this->get_detector_type(si);
+             }},
+            {detFuncs::F_INITIAL_CHECKS,
+             [this](ServerInterface &si) { return this->initial_checks(si); }},
+            {detFuncs::F_GET_NUM_INTERFACES, [this](ServerInterface &si) {
+                 return this->get_num_udp_interfaces(si);
+             }}};
 };
 
 } // namespace sls

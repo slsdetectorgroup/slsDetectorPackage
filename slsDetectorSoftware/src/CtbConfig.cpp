@@ -80,6 +80,13 @@ CtbConfig::getNames(size_t expected_size,
 
 void CtbConfig::setDacName(size_t index, const std::string &name) {
     check_index(index, num_dacs, "DAC");
+    std::vector<std::string> powers = {"v_a", "v_b", "v_c", "v_d", "v_io", "va", "vb", "vc", "vd", "vio"};
+    std::string lower = name;
+    std::transform(lower.begin(), lower.end(), lower.begin(),
+        [](unsigned char c){ return std::tolower(c); });
+    if (std::find(powers.begin(), powers.end(), lower) != powers.end()) {
+       throw RuntimeError("DAC name cannot be a power name (VA, VB, VC, VD, VIO, V_A, V_B, V_C, V_D, V_IO)");
+    }
     set_name(name, dacnames, index);
 }
 

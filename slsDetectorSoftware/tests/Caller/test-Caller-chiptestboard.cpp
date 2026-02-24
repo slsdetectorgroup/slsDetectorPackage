@@ -46,6 +46,11 @@ TEST_CASE("dacname", "[.detectorintegration]") {
             REQUIRE(oss.str() ==
                     std::string("dacname ") + str_dac_index + " bname\n");
         }
+        REQUIRE_THROWS(caller.call("dacname", {str_dac_index, "v_a"}, -1, PUT));
+        REQUIRE_THROWS(caller.call("dacname", {str_dac_index, "v_b"}, -1, PUT));
+        REQUIRE_THROWS(caller.call("dacname", {str_dac_index, "v_c"}, -1, PUT));
+        REQUIRE_THROWS(caller.call("dacname", {str_dac_index, "v_d"}, -1, PUT));
+        REQUIRE_THROWS(caller.call("dacname", {str_dac_index, "v_io"}, -1, PUT));
         det.setDacName(ind, prev);
 
     } else {

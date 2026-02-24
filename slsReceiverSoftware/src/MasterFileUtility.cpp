@@ -121,7 +121,7 @@ std::string CreateMasterHDF5File(const std::filesystem::path &filePath,
                                  std::mutex *hdf5LibMutex) {
 
     std::filesystem::path p = filePath / (fileNamePrefix + "_master_" +
-                                          std::to_string(fileIndex) + ".json");
+                                          std::to_string(fileIndex) + ".h5");
     std::string fileName = p.string();
 
     std::lock_guard<std::mutex> lock(*hdf5LibMutex);

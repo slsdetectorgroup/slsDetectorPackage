@@ -38,10 +38,17 @@ class MatterhornServer {
 
     ReturnCode get_num_udp_interfaces(ServerInterface &socket);
 
+    ReturnCode get_update_mode(ServerInterface &socket);
+
+    ReturnCode get_source_udp_mac(ServerInterface &socket);
+
   private:
     static std::string getMatterhornServerVersion();
 
     size_t num_udp_interfaces() const;
+
+    /// @brief  TODO what is this?
+    bool updateMode{true};
 
   private:
     /// @brief  @brief TCP/IP interface for communication with the client
@@ -62,8 +69,14 @@ class MatterhornServer {
              }},
             {detFuncs::F_INITIAL_CHECKS,
              [this](ServerInterface &si) { return this->initial_checks(si); }},
-            {detFuncs::F_GET_NUM_INTERFACES, [this](ServerInterface &si) {
+            {detFuncs::F_GET_NUM_INTERFACES,
+             [this](ServerInterface &si) {
                  return this->get_num_udp_interfaces(si);
+             }},
+            {detFuncs::F_GET_UPDATE_MODE,
+             [this](ServerInterface &si) { return this->get_update_mode(si); }},
+            {detFuncs::F_GET_SOURCE_UDP_MAC, [this](ServerInterface &si) {
+                 return this->get_source_udp_mac(si);
              }}};
 };
 

@@ -66,4 +66,14 @@ ReturnCode MatterhornServer::get_num_udp_interfaces(ServerInterface &socket) {
     return static_cast<ReturnCode>(socket.sendResult(numUDPInterfaces));
 }
 
+ReturnCode MatterhornServer::get_update_mode(ServerInterface &socket) {
+    return static_cast<ReturnCode>(
+        socket.sendResult(static_cast<int>(updateMode)));
+}
+
+ReturnCode MatterhornServer::get_source_udp_mac(ServerInterface &socket) {
+    uint64_t srcMac = udpDetails[0].srcmac;
+    return static_cast<ReturnCode>(socket.sendResult(srcMac));
+}
+
 } // namespace sls

@@ -1482,11 +1482,8 @@ int setPower(enum DACINDEX ind, int val, char *mess) {
     return OK;
 }
 
-int getADC(enum ADCINDEX ind, int *value) {
+int getADC(enum ADCINDEX ind, int *value, char *mess) {
     *value = 0;
-#ifdef VIRTUAL
-    return OK;
-#endif
     switch (ind) {
         // slow adcs
     case S_ADC0:
@@ -1498,44 +1495,60 @@ int getADC(enum ADCINDEX ind, int *value) {
     case S_ADC6:
     case S_ADC7:
         LOG(logDEBUG1, ("Reading Slow ADC Channel %d\n", (int)ind - S_ADC0));
-        return getSlowADC((int)ind - S_ADC0, value);
+        return getSlowADC((int)ind - S_ADC0, value, mess);
     case TEMP_FPGA:
         LOG(logDEBUG1, ("Reading FPGA Temperature\n"));
-        return getTemperature(value);
+        return getTemperature(value, mess);
     default:
-        LOG(logERROR, ("Adc Index %d not defined \n", (int)ind));
+        snprintf(mess, MAX_STR_LENGTH, "Adc Index %d not defined\n", (int)ind);
+        LOG(logERROR, (mess));
         return FAIL;
     }
 }
 
-int getSlowADC(int ichan, int *retval) {
+int getSlowADC(int ichan, int *retval, char *mess) {
     *retval = 0;
-#ifndef VIRTUAL
+    int fval = 0;
+
+#ifdef VIRTUAL
+    fval = 1;
+#else
     char fname[MAX_STR_LENGTH];
     memset(fname, 0, MAX_STR_LENGTH);
     sprintf(fname, SLOWADC_DRIVER_FILE_NAME, ichan);
     LOG(logDEBUG1, ("fname %s\n", fname));
-
-    if (readParameterFromFile(fname, "slow adc", retval) == FAIL) {
-        LOG(logERROR, ("Could not get slow adc\n"));
+    if (readParameterFromFile(fname, "slow adc", &fval) == FAIL) {
+        snprintf(mess, MAX_STR_LENGTH, "Could not read slow adc channel %d\n",
+                 ichan);
+        LOG(logERROR, (mess));
         return FAIL;
     }
-    // TODO assuming already converted to uV
-    // convert to uV
-    // double value = SLOWDAC_CONVERTION_FACTOR_TO_UV * (double)(*retval);
-    // LOG(logINFO, ("Slow ADC [%d]: %f uV\n", ichan, value));
-    //*retval = (int)value;
-
-    LOG(logINFO, ("Slow ADC [%d]: %d uV\n", ichan, (*retval)));
 #endif
+
+    // value in uV
+    int refMaxuv = 3000 * 1000;
+    int regMinuv = 0;
+    int maxSteps = SLOW_ADC_MAX_STEPS;
+    if (ConvertToDifferentRange(0, maxSteps, regMinuv, refMaxuv, fval,
+                                retval) == FAIL) {
+        snprintf(mess, MAX_STR_LENGTH,
+                 "Could not convert slow adc channel (fval:0x%x) to uv\n",
+                 fval);
+        LOG(logERROR, (mess));
+        return -1;
+    }
+
+    LOG(logINFO,
+        ("\tSlow adc [%d]: %d uV (reg: 0x%x)\n", ichan, *retval, fval));
     return OK;
 }
 
-int getTemperature(int *retval) {
+int getTemperature(int *retval, char *mess) {
     *retval = 0;
 #ifndef VIRTUAL
     if (readParameterFromFile(TEMP_DRIVER_FILE_NAME, "temperature", retval) ==
         FAIL) {
+        snprintf(mess, MAX_STR_LENGTH, "Could not read temperature\n");
         LOG(logERROR, ("Could not get temperature\n"));
         return FAIL;
     }

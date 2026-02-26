@@ -143,9 +143,9 @@ int getPowerRail(enum PWRINDEX ind, int *retval, char *mess);
 int getPower(enum DACINDEX ind, int *retval, char *mess);
 int setPower(enum DACINDEX ind, int val, char *mess);
 
-int getADC(enum ADCINDEX ind, int *value);
-int getSlowADC(int ichan, int *retval);
-int getTemperature(int *retval);
+int getADC(enum ADCINDEX ind, int *value, char *mess);
+int getSlowADC(int ichan, int *retval, char *mess);
+int getTemperature(int *retval, char *mess);
 int setHighVoltage(int val);
 
 // parameters - timing, extsig

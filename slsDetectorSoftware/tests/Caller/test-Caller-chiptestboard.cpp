@@ -1108,6 +1108,14 @@ TEST_CASE("v_abcd", "[.detectorintegration]") {
                 caller.call(cmds[i], {}, -1, GET, oss2);
                 REQUIRE(oss2.str() == cmds[i] + " 1200\n");
             }
+            {
+                auto vlimit = det.getDAC(defs::V_LIMIT)[0];
+                det.setDAC(defs::V_LIMIT, 1500, true, {0});
+                REQUIRE_NOTHROW(caller.call(cmds[i], {"1200"}, -1, PUT));
+                if (vlimit < 0)
+                    vlimit = 0;
+                det.setDAC(defs::V_LIMIT, vlimit, true, {0});
+            }
             for (int imod = 0; imod != det.size(); ++imod) {
                 if (det_type == defs::XILINX_CHIPTESTBOARD &&
                     prev_val[imod] == -100) {

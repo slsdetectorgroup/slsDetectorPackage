@@ -1526,7 +1526,7 @@ int getSlowADC(int ichan, int *retval, char *mess) {
 #endif
 
     // value in uV
-    int refMaxuv = 3000 * 1000;
+    int refMaxuv = SLOW_ADC_MAX_MV * 1000;
     int regMinuv = 0;
     int maxSteps = SLOW_ADC_MAX_STEPS;
     if (ConvertToDifferentRange(0, maxSteps, regMinuv, refMaxuv, fval,

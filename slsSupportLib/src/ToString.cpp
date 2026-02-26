@@ -508,6 +508,18 @@ std::string ToString(const defs::dacIndex s) {
         return std::string("vipre_cds");
     case defs::IBIAS_SFP:
         return std::string("ibias_sfp");
+    case defs::V_POWER_A:
+        return std::string("v_a");
+    case defs::V_POWER_B:
+        return std::string("v_b");
+    case defs::V_POWER_C:
+        return std::string("v_c");
+    case defs::V_POWER_D:
+        return std::string("v_d");
+    case defs::V_POWER_IO:
+        return std::string("v_io");
+    case defs::V_POWER_CHIP:
+        return std::string("v_chip");
     case defs::TRIMBIT_SCAN:
         return std::string("trimbits");
     case defs::HIGH_VOLTAGE:
@@ -989,6 +1001,18 @@ template <> defs::dacIndex StringTo(const std::string &s) {
         return defs::VIPRE_CDS;
     if (s == "ibias_sfp")
         return defs::IBIAS_SFP;
+    if (s == "v_a")
+        return defs::V_POWER_A;
+    if (s == "v_b")
+        return defs::V_POWER_B;
+    if (s == "v_c")
+        return defs::V_POWER_C;
+    if (s == "v_d")
+        return defs::V_POWER_D;
+    if (s == "v_io")
+        return defs::V_POWER_IO;
+    if (s == "v_chip")
+        return defs::V_POWER_CHIP;
     if (s == "trimbits")
         return defs::TRIMBIT_SCAN;
     if (s == "highvoltage")

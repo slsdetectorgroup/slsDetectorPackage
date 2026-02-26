@@ -313,12 +313,6 @@ class InferAction {
     int updatekernel();
     int updatemode();
     int user();
-    int v_a();
-    int v_b();
-    int v_c();
-    int v_chip();
-    int v_d();
-    int v_io();
     int v_limit();
     int vchip_comp_adc();
     int vchip_comp_fe();
@@ -654,12 +648,6 @@ class InferAction {
         {"updatekernel", &InferAction::updatekernel},
         {"updatemode", &InferAction::updatemode},
         {"user", &InferAction::user},
-        {"v_a", &InferAction::v_a},
-        {"v_b", &InferAction::v_b},
-        {"v_c", &InferAction::v_c},
-        {"v_chip", &InferAction::v_chip},
-        {"v_d", &InferAction::v_d},
-        {"v_io", &InferAction::v_io},
         {"v_limit", &InferAction::v_limit},
         {"vchip_comp_adc", &InferAction::vchip_comp_adc},
         {"vchip_comp_fe", &InferAction::vchip_comp_fe},

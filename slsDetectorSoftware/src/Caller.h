@@ -358,12 +358,6 @@ class Caller {
     std::string updatekernel(int action);
     std::string updatemode(int action);
     std::string user(int action);
-    std::string v_a(int action);
-    std::string v_b(int action);
-    std::string v_c(int action);
-    std::string v_chip(int action);
-    std::string v_d(int action);
-    std::string v_io(int action);
     std::string v_limit(int action);
     std::string vchip_comp_adc(int action);
     std::string vchip_comp_fe(int action);
@@ -396,6 +390,7 @@ class Caller {
 
   private:
     bool ReplaceIfDeprecated(std::string &command);
+    void SuggestIfRemoved(const std::string &command);
     using FunctionMap = std::map<std::string, std::string (Caller::*)(int)>;
     using StringMap = std::map<std::string, std::string>;
     Detector *ptr; // pointer to the detector that executes the command
@@ -729,12 +724,6 @@ class Caller {
         {"updatekernel", &Caller::updatekernel},
         {"updatemode", &Caller::updatemode},
         {"user", &Caller::user},
-        {"v_a", &Caller::v_a},
-        {"v_b", &Caller::v_b},
-        {"v_c", &Caller::v_c},
-        {"v_chip", &Caller::v_chip},
-        {"v_d", &Caller::v_d},
-        {"v_io", &Caller::v_io},
         {"v_limit", &Caller::v_limit},
         {"vchip_comp_adc", &Caller::vchip_comp_adc},
         {"vchip_comp_fe", &Caller::vchip_comp_fe},
@@ -900,6 +889,14 @@ class Caller {
         {"now", "runtime"},
         {"timestamp", "frametime"},
         {"frameindex", "rx_frameindex"},
+
+    };
+
+    StringMap removed_functions{
+
+        {"v_a", "dac and power"},  {"v_b", "dac and power"},
+        {"v_c", "dac and power"},  {"v_d", "dac and power"},
+        {"v_io", "dac and power"}, {"v_chip", "dac"},
 
     };
 };

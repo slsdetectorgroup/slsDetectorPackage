@@ -50,7 +50,8 @@ TEST_CASE("dacname", "[.detectorintegration]") {
         REQUIRE_THROWS(caller.call("dacname", {str_dac_index, "v_b"}, -1, PUT));
         REQUIRE_THROWS(caller.call("dacname", {str_dac_index, "v_c"}, -1, PUT));
         REQUIRE_THROWS(caller.call("dacname", {str_dac_index, "v_d"}, -1, PUT));
-        REQUIRE_THROWS(caller.call("dacname", {str_dac_index, "v_io"}, -1, PUT));
+        REQUIRE_THROWS(
+            caller.call("dacname", {str_dac_index, "v_io"}, -1, PUT));
         det.setDacName(ind, prev);
 
     } else {
@@ -503,89 +504,6 @@ TEST_CASE("dac", "[.detectorintegration][.dacs]") {
         det_type == defs::XILINX_CHIPTESTBOARD) {
 
         // normal dacs
-        for (int idac = 0; idac < 18; ++idac) {
-            SECTION("dac " + std::to_string(idac)) {
-                test_dac_caller(static_cast<defs::dacIndex>(idac), "dac", 0);
-                test_dac_caller(static_cast<defs::dacIndex>(idac), "dac", 1200);
-                test_dac_caller(static_cast<defs::dacIndex>(idac), "dac", 1200, true);
-                test_dac_caller(static_cast<defs::dacIndex>(idac), "dac", -100);
-            }
-            REQUIRE_THROWS(
-                caller.call("dac", {std::to_string(idac), "-2"}, -1, PUT));
-            REQUIRE_THROWS(
-                caller.call("dac", {std::to_string(idac), "-1"}, -1, PUT));
-        }
-
-        // power dacs
-        if (det.isVirtualDetectorServer().tsquash("Inconsistent virtual servers")) {
-            std::vector<std::string> names{"v_a", "v_b", "v_c", "v_d", "v_io"};
-            std::vector<defs::dacIndex> indices{defs::V_POWER_A, defs::V_POWER_B, defs::V_POWER_C, defs::V_POWER_D, defs::V_POWER_IO};
-            for (size_t iPower = 0; iPower < names.size(); ++iPower) {
-                auto prev_val = det.getDAC(indices[iPower]);
-
-                // this is the first command touching power dacs, should not be
-                // -100
-                if (det_type == defs::XILINX_CHIPTESTBOARD) {
-                    REQUIRE(prev_val.any(-100) == false);
-                    REQUIRE(prev_val.any(-1) == false);
-                }
-
-                REQUIRE_THROWS(caller.call("dac", {names[iPower], "-2"}, -1, PUT));
-                REQUIRE_THROWS(caller.call("dac", {names[iPower], "-100"}, -1, PUT));
-                REQUIRE_THROWS(caller.call("dac", {names[iPower], "-1"}, -1, PUT));
-                REQUIRE_THROWS(caller.call("dac", {names[iPower], "0"}, -1, PUT));
-                REQUIRE_THROWS(caller.call("dac", {names[iPower], "4096"}, -1, PUT));
-                // min
-                if (names[iPower] == "v_io")
-                    REQUIRE_THROWS(caller.call("dac", {names[iPower], "1199", "mV"}, -1, PUT));
-                else {
-                    if (det_type == defs::XILINX_CHIPTESTBOARD) {
-                        REQUIRE_THROWS(
-                            caller.call("dac", {names[iPower], "1040", "mV"}, -1, PUT));
-                    } else {
-                        REQUIRE_THROWS(
-                            caller.call("dac", {names[iPower], "635", "mV"}, -1, PUT));
-                    }
-                }
-                // max
-                if (det_type == defs::XILINX_CHIPTESTBOARD) {
-                    REQUIRE_THROWS(caller.call("dac", {names[iPower], "2662", "mV"}, -1, PUT));
-                } else {
-                    REQUIRE_THROWS(caller.call("dac", {names[iPower], "2469", "mV"}, -1, PUT));
-                }
-                {
-                    std::ostringstream oss;
-                    caller.call("dac", {names[iPower], "800", "mV"}, -1, PUT, oss);
-                    REQUIRE(oss.str() == "dac " + names[iPower] + " 800 mV\n");
-                }
-                {
-                    std::ostringstream oss1, oss2;
-                    caller.call("dac", {names[iPower], "1200", "mV"}, -1, PUT, oss1);
-                    REQUIRE(oss1.str() == "dac " + names[iPower] + " 1200 mV\n");
-                    caller.call("dac", {names[iPower], "1200", "mV"}, -1, GET, oss2);
-                    REQUIRE(oss2.str() == "dac " + names[iPower] + " 1200 mV\n");
-                }
-                {
-                    std::ostringstream oss1, oss2;
-                    caller.call("dac", {names[iPower], "1200"}, -1, PUT, oss1);
-                    REQUIRE(oss1.str() == "dac " + names[iPower] + " 1200\n");
-                    caller.call("dac", {names[iPower], "1200"}, -1, GET, oss2);
-                    REQUIRE(oss2.str() == "dac " + names[iPower] + " 1200\n");
-                }
-                // Reset all dacs to previous value
-                for (int imod = 0; imod != det.size(); ++imod) {
-                    det.setDAC(indices[iPower], prev_val[imod], false, {imod});
-                }
-            }
-        }
-
-        REQUIRE_THROWS(caller.call("dac", {"18"}, -1, GET));
-        REQUIRE_THROWS(caller.call("dac", {"5", "4096"}, -1, PUT));
-        if (det_type == defs::CHIPTESTBOARD)
-            REQUIRE_THROWS(caller.call("dac", {"5", "2501", "mV"}, -1, PUT));
-        else
-            REQUIRE_THROWS(caller.call("dac", {"5", "2049", "mV"}, -1, PUT));
-
         // eiger
         // REQUIRE_THROWS(caller.call("dac", {"vthreshold"}, -1, GET));
         // REQUIRE_THROWS(caller.call("dac", {"vsvp"}, -1, GET));
@@ -645,6 +563,107 @@ TEST_CASE("dac", "[.detectorintegration][.dacs]") {
         REQUIRE_THROWS(caller.call("dac", {"vb_cs"}, -1, GET));
         REQUIRE_THROWS(caller.call("dac", {"vb_opa_fd"}, -1, GET));
         REQUIRE_THROWS(caller.call("dac", {"vcom_adc2"}, -1, GET));
+
+        // ctb and xilinx
+        REQUIRE_THROWS(caller.call("dac", {"18"}, -1, GET));
+        REQUIRE_THROWS(caller.call("dac", {"5", "4096"}, -1, PUT));
+        if (det_type == defs::CHIPTESTBOARD)
+            REQUIRE_THROWS(caller.call("dac", {"5", "2501", "mV"}, -1, PUT));
+        else
+            REQUIRE_THROWS(caller.call("dac", {"5", "2049", "mV"}, -1, PUT));
+
+        for (int idac = 0; idac < 18; ++idac) {
+            SECTION("dac " + std::to_string(idac)) {
+                test_dac_caller(static_cast<defs::dacIndex>(idac), "dac", 0);
+                test_dac_caller(static_cast<defs::dacIndex>(idac), "dac", 1200);
+                test_dac_caller(static_cast<defs::dacIndex>(idac), "dac", 1200,
+                                true);
+                test_dac_caller(static_cast<defs::dacIndex>(idac), "dac", -100);
+            }
+            REQUIRE_THROWS(
+                caller.call("dac", {std::to_string(idac), "-2"}, -1, PUT));
+            REQUIRE_THROWS(
+                caller.call("dac", {std::to_string(idac), "-1"}, -1, PUT));
+        }
+
+        // power dacs
+        if (det.isVirtualDetectorServer().tsquash(
+                "Inconsistent virtual servers")) {
+            std::vector<std::string> names{"v_a", "v_b", "v_c", "v_d", "v_io"};
+            std::vector<defs::dacIndex> indices{
+                defs::V_POWER_A, defs::V_POWER_B, defs::V_POWER_C,
+                defs::V_POWER_D, defs::V_POWER_IO};
+            for (size_t iPower = 0; iPower < names.size(); ++iPower) {
+                auto prev_val = det.getDAC(indices[iPower]);
+
+                // this is the first command touching power dacs, should not be
+                // -100
+                if (det_type == defs::XILINX_CHIPTESTBOARD) {
+                    REQUIRE(prev_val.any(-100) == false);
+                    REQUIRE(prev_val.any(-1) == false);
+                }
+
+                REQUIRE_THROWS(
+                    caller.call("dac", {names[iPower], "-2"}, -1, PUT));
+                REQUIRE_THROWS(
+                    caller.call("dac", {names[iPower], "-100"}, -1, PUT));
+                REQUIRE_THROWS(
+                    caller.call("dac", {names[iPower], "-1"}, -1, PUT));
+                REQUIRE_THROWS(
+                    caller.call("dac", {names[iPower], "0"}, -1, PUT));
+                REQUIRE_THROWS(
+                    caller.call("dac", {names[iPower], "4096"}, -1, PUT));
+                // min
+                if (names[iPower] == "v_io")
+                    REQUIRE_THROWS(caller.call(
+                        "dac", {names[iPower], "1199", "mV"}, -1, PUT));
+                else {
+                    if (det_type == defs::XILINX_CHIPTESTBOARD) {
+                        REQUIRE_THROWS(caller.call(
+                            "dac", {names[iPower], "1040", "mV"}, -1, PUT));
+                    } else {
+                        REQUIRE_THROWS(caller.call(
+                            "dac", {names[iPower], "635", "mV"}, -1, PUT));
+                    }
+                }
+                // max
+                if (det_type == defs::XILINX_CHIPTESTBOARD) {
+                    REQUIRE_THROWS(caller.call(
+                        "dac", {names[iPower], "2662", "mV"}, -1, PUT));
+                } else {
+                    REQUIRE_THROWS(caller.call(
+                        "dac", {names[iPower], "2469", "mV"}, -1, PUT));
+                }
+                {
+                    std::ostringstream oss;
+                    caller.call("dac", {names[iPower], "800", "mV"}, -1, PUT,
+                                oss);
+                    REQUIRE(oss.str() == "dac " + names[iPower] + " 800 mV\n");
+                }
+                {
+                    std::ostringstream oss1, oss2;
+                    caller.call("dac", {names[iPower], "1200", "mV"}, -1, PUT,
+                                oss1);
+                    REQUIRE(oss1.str() ==
+                            "dac " + names[iPower] + " 1200 mV\n");
+                    caller.call("dac", {names[iPower], "1200", "mV"}, -1, GET,
+                                oss2);
+                    REQUIRE(oss2.str() ==
+                            "dac " + names[iPower] + " 1200 mV\n");
+                }
+                {
+                    std::ostringstream oss1, oss2;
+                    caller.call("dac", {names[iPower], "1200"}, -1, PUT, oss1);
+                    REQUIRE(oss1.str() == "dac " + names[iPower] + " 1200\n");
+                    caller.call("dac", {names[iPower], "1200"}, -1, GET, oss2);
+                    REQUIRE(oss2.str() == "dac " + names[iPower] + " 1200\n");
+                }
+                // Reset all dacs to previous value
+                for (int imod = 0; imod != det.size(); ++imod) {
+                    det.setDAC(indices[iPower], prev_val[imod], false, {imod});
+                }
+            }
+        }
     }
 }
 
@@ -1117,94 +1136,21 @@ TEST_CASE("dbitclk", "[.detectorintegration]") {
 TEST_CASE("v_abcd", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
-    auto det_type = det.getDetectorType().squash();
 
-    std::vector<std::string> cmds{"v_a", "v_b", "v_c", "v_d"};
-    std::vector<defs::dacIndex> indices{defs::V_POWER_A, defs::V_POWER_B,
-                                        defs::V_POWER_C, defs::V_POWER_D};
-
-    if (det.isVirtualDetectorServer().tsquash("Inconsistent virtual servers")) {
-        cmds.push_back("v_io");
-        indices.push_back(defs::V_POWER_IO);
-    }
+    // removed in favor of "dac" and "power" commands
+    std::vector<std::string> cmds{"v_a", "v_b", "v_c", "v_d", "v_io", "v_chip"};
+    std::vector<defs::dacIndex> indices{defs::V_POWER_A,  defs::V_POWER_B,
+                                        defs::V_POWER_C,  defs::V_POWER_D,
+                                        defs::V_POWER_IO, defs::V_POWER_CHIP};
 
     for (size_t i = 0; i < cmds.size(); ++i) {
-        if (det_type == defs::CHIPTESTBOARD ||
-            det_type == defs::XILINX_CHIPTESTBOARD) {
-            auto prev_val = det.getPower(indices[i]);
-            // this is the first command touching power dacs, should not be
-            // -100
-            if (det_type == defs::XILINX_CHIPTESTBOARD) {
-                REQUIRE(prev_val.any(-100) == false);
-                REQUIRE(prev_val.any(-1) == false);
-            }
-            REQUIRE_THROWS(caller.call(cmds[i], {"-2"}, -1, PUT));
-            REQUIRE_THROWS(caller.call(cmds[i], {"-100"}, -1, PUT));
-            REQUIRE_THROWS(caller.call(cmds[i], {"-1"}, -1, PUT));
-            if (cmds[i] == "v_io")
-                REQUIRE_THROWS(caller.call(cmds[i], {"1199"}, -1, PUT)); // min
-            else {
-                if (det_type == defs::XILINX_CHIPTESTBOARD) {
-                    REQUIRE_THROWS(
-                        caller.call(cmds[i], {"1040"}, -1, PUT)); // min v_a
-                } else {
-                    REQUIRE_THROWS(
-                        caller.call(cmds[i], {"635"}, -1, PUT)); // min v_a
-                }
-            }
-            if (det_type == defs::XILINX_CHIPTESTBOARD) {
-                REQUIRE_THROWS(caller.call(cmds[i], {"2662"}, -1, PUT)); // max
-            } else {
-                REQUIRE_THROWS(caller.call(cmds[i], {"2469"}, -1, PUT)); // max
-            }
-            {
-                std::ostringstream oss;
-                caller.call(cmds[i], {"0"}, -1, PUT, oss);
-                REQUIRE(oss.str() == cmds[i] + " 0\n");
-            }
-            {
-                std::ostringstream oss1, oss2;
-                caller.call(cmds[i], {"1200"}, -1, PUT, oss1);
-                REQUIRE(oss1.str() == cmds[i] + " 1200\n");
-                caller.call(cmds[i], {}, -1, GET, oss2);
-                REQUIRE(oss2.str() == cmds[i] + " 1200\n");
-            }
-            for (int imod = 0; imod != det.size(); ++imod) {
-                if (det_type == defs::XILINX_CHIPTESTBOARD &&
-                    prev_val[imod] == -100) {
-                    prev_val[imod] = 0;
-                }
-                det.setPower(indices[i], prev_val[imod], {imod});
-            }
-
-        } else {
-            REQUIRE_THROWS(caller.call(cmds[i], {}, -1, GET));
+        try {
+            caller.call(cmds[i], {}, -1, GET);
+        } catch (const std::exception &e) {
+            REQUIRE(std::string(e.what()).find(
+                        "removed and is no longer available") !=
+                    std::string::npos);
         }
-    }
-}
-
-TEST_CASE("v_io", "[.detectorintegration]") {
-    Detector det;
-    Caller caller(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::CHIPTESTBOARD ||
-        det_type == defs::XILINX_CHIPTESTBOARD) {
-        // better not to play with setting it
-        REQUIRE_NOTHROW(caller.call("v_io", {}, -1, GET));
-    } else {
-        REQUIRE_THROWS(caller.call("v_io", {}, -1, GET));
-    }
-}
-
-TEST_CASE("v_chip", "[.detectorintegration]") {
-    Detector det;
-    Caller caller(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::CHIPTESTBOARD) {
-        // better not to play with setting it
-        REQUIRE_NOTHROW(caller.call("v_chip", {}, -1, GET));
-    } else {
-        REQUIRE_THROWS(caller.call("v_chip", {}, -1, GET));
     }
 }
 

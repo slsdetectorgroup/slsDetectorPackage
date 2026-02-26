@@ -49,7 +49,8 @@ void test_dac_caller(defs::dacIndex index, const std::string &dacname,
         if (mV)
             args.push_back("mV");
         caller.call("dac", args, -1, PUT, oss);
-        REQUIRE(oss.str() == std::string("dac ") + dac + " " + value + (mV ? " mV\n" : "\n"));
+        REQUIRE(oss.str() == std::string("dac ") + dac + " " + value +
+                                 (mV ? " mV\n" : "\n"));
     }
     {
         std::ostringstream oss;
@@ -57,7 +58,8 @@ void test_dac_caller(defs::dacIndex index, const std::string &dacname,
         if (mV)
             args.push_back("mV");
         caller.call(dacname, args, -1, GET, oss);
-        REQUIRE(oss.str() == "dac " + dac + " " + value + (mV ? " mV\n" : "\n")); 
+        REQUIRE(oss.str() ==
+                "dac " + dac + " " + value + (mV ? " mV\n" : "\n"));
     }
     // Reset all dacs to previous value
     for (int i = 0; i != det.size(); ++i) {

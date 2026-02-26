@@ -25,6 +25,7 @@ void Caller::call(const std::string &command,
                   int action, std::ostream &os, int receiver_id) {
     cmd = command;
     args = arguments; // copy args before replacing
+    SuggestIfRemoved(cmd);
     std::string temp;
     while (temp != cmd) {
         temp = cmd;
@@ -64,6 +65,16 @@ bool Caller::ReplaceIfDeprecated(std::string &command) {
         return true;
     }
     return false;
+}
+
+void Caller::SuggestIfRemoved(const std::string &command) {
+    auto r_it = removed_functions.find(command);
+    if (r_it != removed_functions.end()) {
+        std::ostringstream oss;
+        oss << command << " is removed and is no longer available. Please use: "
+            << r_it->second;
+        throw RuntimeError(oss.str());
+    }
 }
 
 std::string Caller::list(int action) {

@@ -1450,12 +1450,6 @@ int validateVchip(int val, char *mess) {
         LOG(logERROR, (mess));
         return FAIL;
     }
-    if (vLimit > 0 && val > vLimit) {
-        sprintf(mess, "Invalid vchip value %d mV. Exceeds vLimit %d mV\n", val,
-                vLimit);
-        LOG(logERROR, (mess));
-        return FAIL;
-    }
     return OK;
 }
 

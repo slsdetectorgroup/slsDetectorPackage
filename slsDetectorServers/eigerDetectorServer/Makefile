@@ -28,7 +28,7 @@ boot: $(OBJS)
 version_name=APIEIGER
 version_path=slsDetectorServers/eigerDetectorServer
 versioning: 
-	cd ../../ && echo $(PWD) && echo `tput setaf 6; python updateAPIVersion.py $(version_name) $(version_path);  tput sgr0;`
+	cd ../../ && echo $(PWD) && echo `tput setaf 6; python etc/updateAPIVersion.py $(version_name) $(version_path);  tput sgr0;`
 
 
 $(PROGS):  $(OBJS)

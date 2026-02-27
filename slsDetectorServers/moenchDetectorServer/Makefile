@@ -27,7 +27,7 @@ boot: $(OBJS)
 version_name=APIMOENCH
 version_path=slsDetectorServers/moenchDetectorServer
 versioning: 
-	cd ../../ && echo $(PWD) && echo `tput setaf 6; python updateAPIVersion.py $(version_name) $(version_path);  tput sgr0;`
+	cd ../../ && echo $(PWD) && echo `tput setaf 6; python etc/updateAPIVersion.py $(version_name) $(version_path);  tput sgr0;`
 
 
 $(PROGS): $(OBJS)

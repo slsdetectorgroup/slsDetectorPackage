@@ -23,8 +23,6 @@ jobs:
             conda activate det
             cmake .. -DSLS_USE_PYTHON=ON
             make -j 2 
-            cd ../pyctbgui
-            make
 
       - name: Deploy to NFS update server
         if: gitea.ref == 'refs/heads/developer'

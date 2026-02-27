@@ -27,3 +27,12 @@ jobs:
       - name: C++ unit tests
         working-directory: ${{gitea.workspace}}/build
         run: ctest -j1  --rerun-failed --output-on-failure
+
+      - name: Install Python dependencies
+        run: |
+          python3.12 -m pip install --upgrade pip
+          python3.12 -m pip install pytest
+
+      - name: Python unit tests
+        working-directory: ${{gitea.workspace}}
+        run: python3.12 -m pytest python/tests

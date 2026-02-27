@@ -21,7 +21,7 @@ jobs:
             conda activate det
             mkdir build && cd build
             conda activate det
-            cmake .. -DSLS_USE_PYTHON=ON
+            cmake .. -DSLS_USE_PYTHON=ON -DSLS_USE_SIMULATOR=ON -DSLS_USE_GUI=ON
             make -j 2 
 
       - name: Deploy to NFS update server

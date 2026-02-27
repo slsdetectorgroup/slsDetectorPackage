@@ -1,12 +1,8 @@
 name: Run Simulator Tests on local RHEL8
 
 on:
-  pull_request:
   push:
-    branches:
-      - developer
-      - main
-      - '*.*.*.rc'
+  workflow_dispatch:
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)

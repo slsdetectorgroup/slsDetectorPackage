@@ -70,7 +70,7 @@
 #define POWER_RGLTR_MIN    (1041)
 #define POWER_RGLTR_MAX    (2661)
 #define VIO_MIN_MV         (1200)       // for fpga to function
-#define SLOW_ADC_MAX_MV    (3000)       // AD7689
+#define SLOW_ADC_MAX_MV    (2500)       // AD7689
 #define SLOW_ADC_MAX_STEPS (0xFFFF + 1) // AD7689
 
 /* Defines in the Firmware */

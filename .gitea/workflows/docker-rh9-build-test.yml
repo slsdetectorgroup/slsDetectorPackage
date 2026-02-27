@@ -35,4 +35,6 @@ jobs:
 
       - name: Python unit tests
         working-directory: ${{gitea.workspace}}
-        run: python3.12 -m pytest python/tests
+        run: |
+          export PYTHONPATH=$PWD/build/bin:$PYTHONPATH
+          python3.12 -m pytest python/tests

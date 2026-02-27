@@ -1,4 +1,4 @@
-name: Build on local RHEL8
+name: Build and Deploy on local RHEL8
 
 on:
   push:

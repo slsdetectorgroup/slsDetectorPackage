@@ -1,4 +1,4 @@
-name: Build on RHEL8
+name: Build on RHEL8 docker image
 
 on:
   push:
@@ -27,3 +27,16 @@ jobs:
       - name: C++ unit tests
         working-directory: ${{gitea.workspace}}/build
         run: ctest -j1  --rerun-failed --output-on-failure
+
+      - name: Install Python dependencies
+        run: |
+          python3.12 -m pip install --upgrade pip
+          python3.12 -m pip install pytest
+          python3.12 -m pip install colorama
+          python3.12 -m pip install numpy
+
+      - name: Python unit tests
+        working-directory: ${{gitea.workspace}}
+        run: | 
+          export PYTHONPATH=$PWD/build/bin:$PYTHONPATH
+          python3.12 -m pytest python/tests

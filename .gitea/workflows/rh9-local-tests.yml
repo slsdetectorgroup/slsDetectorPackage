@@ -2,11 +2,7 @@ name: Run Simulator Tests on local RHEL9
 
 on:
   push:
-    branches:
-      - developer
-      - main
-      - 'dev/*'
-      - '*.*.*.rc'
+  workflow_dispatch:
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)

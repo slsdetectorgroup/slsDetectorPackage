@@ -1,4 +1,4 @@
-name: Build on local RHEL9
+name: Build and Deploy on local RHEL9
 
 on:
   push:
@@ -18,7 +18,7 @@ jobs:
       - name: Build library 
         run: |
             mkdir build && cd build
-            cmake  -DSLS_USE_PYTHON=ON -DPython_EXECUTABLE=/usr/bin/python3.13 -DPython_INCLUDE_DIR=/usr/include/python3.13 -DPython_LIBRARY=/usr/lib64/libpython3.13.so ..
+            cmake  -DSLS_USE_PYTHON=ON -DPython_EXECUTABLE=/usr/bin/python3.13 -DPython_INCLUDE_DIR=/usr/include/python3.13 -DPython_LIBRARY=/usr/lib64/libpython3.13.so -DSLS_USE_SIMULATOR=ON -DSLS_USE_GUI=ON ..
             make -j 2 
             cd ../pyctbgui
             make

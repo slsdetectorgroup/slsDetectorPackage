@@ -5,12 +5,21 @@ def Ip_core_name_to_enum_type(ip_core_name : str) -> str:
     """Convert IP core name to enum type IPCore."""
     if pd.isna(ip_core_name): 
         return "IPCore::UNKNOWN"
+<<<<<<< HEAD
     
     return f"IPCore::{ip_core_name.upper()}"
 
 def create_bitmask_and_offset(from_bit : int, to_bit : int) -> tuple[int, int]: 
     """Create a bitmask for a register field given the from_bit and to_bit."""
     if from_bit < 0 or to_bit < 0 or from_bit > to_bit or from_bit >= 32 or to_bit >= 32:
+=======
+    else:
+        return f"IPCore::{ip_core_name.upper()}"
+
+def create_bitmask_and_offset(from_bit : int, to_bit : int) -> tuple[int, int]: 
+    """Create a bitmask for a register field given the from_bit and to_bit."""
+    if from_bit < 0 or to_bit < 0 or from_bit > to_bit:
+>>>>>>> 370aada49 (generated register defs from csv file)
         raise ValueError(f"Invalid bit range: from_bit={from_bit}, to_bit={to_bit}")
     
     offset = from_bit
@@ -32,6 +41,7 @@ def argument_parser():
 
 # TODO: should be configurable 
 header = r"""
+<<<<<<< HEAD
 // clang-format off
 #include "RegisterHelperStructs.hpp"
 
@@ -39,6 +49,12 @@ namespace sls {
 
 /// @brief Enum for IP cores, value are adresses
 enum class IPCore : uint32_t {
+=======
+#include "RegisterHelperStructs.hpp"
+
+/// @brief Enum for IP cores, value are adresses
+constexpr enum class IPCore : uint32_t {
+>>>>>>> 370aada49 (generated register defs from csv file)
     MH_RO_SM_AXI = 0, // dummy adresses for now
     FHDR_AXI = 1,
     AURORA_STATUS = 2,
@@ -48,11 +64,14 @@ enum class IPCore : uint32_t {
 };
 """
 
+<<<<<<< HEAD
 postpend = r""" 
 } // namespace sls
 // clang-format on
 """
 
+=======
+>>>>>>> 370aada49 (generated register defs from csv file)
 def main():
 
     args = argument_parser()
@@ -76,10 +95,14 @@ def main():
         register_name = row["Reg_name"]
         ip_core_name = row["Interface"]
 
+<<<<<<< HEAD
         define_register_string = (
             f"constexpr Register {register_name}{{"
             f"{Ip_core_name_to_enum_type(ip_core_name)}, {hex(int(local_address_offset_in_bytes, 16))}}};"
         )
+=======
+        define_register_string = f'constexpr Register {register_name}{{{Ip_core_name_to_enum_type(ip_core_name)}, {local_address_offset_in_bytes}}};'
+>>>>>>> 370aada49 (generated register defs from csv file)
 
         header_file.write(f"{define_register_string}\n")
         header_file.write("\n") 
@@ -97,15 +120,22 @@ def main():
         to_bit = row["To_bit"]
         mask, offset = create_bitmask_and_offset(from_bit, to_bit)
 
+<<<<<<< HEAD
         define_registerfield_string = (
             f"constexpr RegisterField {field_name}{{\n"
             f"     {register_name}, {offset}, {hex(mask)}}};"
             )
+=======
+        define_registerfield_string = f"constexpr RegisterField {field_name}{{{register_name}, {hex(mask)}, {offset}}};"
+>>>>>>> 370aada49 (generated register defs from csv file)
 
         header_file.write(f"{define_registerfield_string}\n")
         header_file.write("\n")
 
+<<<<<<< HEAD
     header_file.write(postpend) # TODO: have to take care xof it manually when in append mode - ugly  
+=======
+>>>>>>> 370aada49 (generated register defs from csv file)
     header_file.close()
 
 

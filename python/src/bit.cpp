@@ -26,7 +26,10 @@ void init_bit(py::module &m) {
         .def("__str__", &RegisterAddress::str)
         .def("value", &RegisterAddress::value)
         .def(py::self == py::self)
-        .def(py::self != py::self);
+        .def(py::self != py::self)
+        .def("__add__",&RegisterAddress::operator+)
+        .def("__radd__",&RegisterAddress::operator+)
+        .def("__iadd__",&RegisterAddress::operator+=, py::return_value_policy::reference_internal);
 
     py::class_<BitAddress>(m, "BitAddress")
         .def(py::init())

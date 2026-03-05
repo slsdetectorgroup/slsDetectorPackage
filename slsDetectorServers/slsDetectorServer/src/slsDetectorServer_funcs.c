@@ -1641,7 +1641,9 @@ int get_adc(int file_des) {
     // valid index
     if (ret == OK) {
         LOG(logDEBUG1, ("Getting ADC %d\n", serverAdcIndex));
-#if defined(MYTHEN3D) || defined(GOTTHARD2D) || defined(XILINX_CHIPTESTBOARDD)
+#if defined(XILINX_CHIPTESTBOARDD)
+        ret = getADC(serverAdcIndex, &retval, mess);
+#elif defined(MYTHEN3D) || defined(GOTTHARD2D)
         ret = getADC(serverAdcIndex, &retval);
         if (ret == FAIL) {
             if (ind == TEMPERATURE_FPGA) {

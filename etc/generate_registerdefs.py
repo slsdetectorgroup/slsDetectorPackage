@@ -68,7 +68,7 @@ def main():
         register_name = row["Reg_name"]
         ip_core_name = row["Interface"]
 
-        define_register_string = f'constexpr Register {register_name}{{{Ip_core_name_to_enum_type(ip_core_name)}, {local_address_offset_in_bytes}}};'
+        define_register_string = f'constexpr Register {register_name}{{{Ip_core_name_to_enum_type(ip_core_name)}, {hex(int(local_address_offset_in_bytes, 16))}}};'
 
         header_file.write(f"{define_register_string}\n")
         header_file.write("\n") 

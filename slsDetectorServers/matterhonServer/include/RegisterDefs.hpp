@@ -13,71 +13,71 @@ constexpr enum class IPCore : uint32_t {
 
 
 // Register definitions
-constexpr Register CTRL_Reg{IPCore::UNKNOWN, 0};
+constexpr Register CTRL_Reg{IPCore::UNKNOWN, 0x0};
 
-constexpr Register Status_Reg{IPCore::UNKNOWN, 4};
+constexpr Register Status_Reg{IPCore::UNKNOWN, 0x4};
 
-constexpr Register FPGAVersionReg{IPCore::UNKNOWN, 8};
+constexpr Register FPGAVersionReg{IPCore::UNKNOWN, 0x8};
 
-constexpr Register FPGA_GIT_HEAD{IPCore::UNKNOWN, C};
+constexpr Register FPGA_GIT_HEAD{IPCore::UNKNOWN, 0xc};
 
-constexpr Register FixedPatternReg{IPCore::UNKNOWN, 10};
+constexpr Register FixedPatternReg{IPCore::UNKNOWN, 0x10};
 
-constexpr Register ApiVersionReg{IPCore::UNKNOWN, 14};
+constexpr Register ApiVersionReg{IPCore::UNKNOWN, 0x14};
 
-constexpr Register Chip_ID_Reg{IPCore::UNKNOWN, 18};
+constexpr Register Chip_ID_Reg{IPCore::UNKNOWN, 0x18};
 
-constexpr Register MH_SM_Ctrl_Reg{IPCore::MH_RO_SM_AXI, 0};
+constexpr Register MH_SM_Ctrl_Reg{IPCore::MH_RO_SM_AXI, 0x0};
 
-constexpr Register MH_SM_Exposure_Reg{IPCore::MH_RO_SM_AXI, 4};
+constexpr Register MH_SM_Exposure_Reg{IPCore::MH_RO_SM_AXI, 0x4};
 
-constexpr Register MH_SM_Period_Reg{IPCore::MH_RO_SM_AXI, 8};
+constexpr Register MH_SM_Period_Reg{IPCore::MH_RO_SM_AXI, 0x8};
 
-constexpr Register MH_SM_Frames_Reg{IPCore::MH_RO_SM_AXI, C};
+constexpr Register MH_SM_Frames_Reg{IPCore::MH_RO_SM_AXI, 0xc};
 
-constexpr Register MH_SM_StoreLength_Reg{IPCore::MH_RO_SM_AXI, 10};
+constexpr Register MH_SM_StoreLength_Reg{IPCore::MH_RO_SM_AXI, 0x10};
 
-constexpr Register MH_SM_ResetMHLength_Reg{IPCore::MH_RO_SM_AXI, 14};
+constexpr Register MH_SM_ResetMHLength_Reg{IPCore::MH_RO_SM_AXI, 0x14};
 
-constexpr Register Frame_HDR_Set_Reg{IPCore::FHDR_AXI, 0};
+constexpr Register Frame_HDR_Set_Reg{IPCore::FHDR_AXI, 0x0};
 
-constexpr Register Frame_HDR_FrameNumLSB_Reg{IPCore::FHDR_AXI, 4};
+constexpr Register Frame_HDR_FrameNumLSB_Reg{IPCore::FHDR_AXI, 0x4};
 
-constexpr Register Frame_HDR_FrameNumMSB_Reg{IPCore::FHDR_AXI, 8};
+constexpr Register Frame_HDR_FrameNumMSB_Reg{IPCore::FHDR_AXI, 0x8};
 
-constexpr Register Frame_HDR_TimestampLSB_Reg{IPCore::FHDR_AXI, C};
+constexpr Register Frame_HDR_TimestampLSB_Reg{IPCore::FHDR_AXI, 0xc};
 
-constexpr Register Frame_HDR_TimestampMSB_Reg{IPCore::FHDR_AXI, 10};
+constexpr Register Frame_HDR_TimestampMSB_Reg{IPCore::FHDR_AXI, 0x10};
 
-constexpr Register Frame_HDR_ModCoord_LSB_Reg{IPCore::FHDR_AXI, 14};
+constexpr Register Frame_HDR_ModCoord_LSB_Reg{IPCore::FHDR_AXI, 0x14};
 
-constexpr Register Frame_HDR_ModCoord_MSB_Reg{IPCore::FHDR_AXI, 18};
+constexpr Register Frame_HDR_ModCoord_MSB_Reg{IPCore::FHDR_AXI, 0x18};
 
-constexpr Register Frame_HDR_PktctrMax_Reg{IPCore::FHDR_AXI, 1C};
+constexpr Register Frame_HDR_PktctrMax_Reg{IPCore::FHDR_AXI, 0x1c};
 
-constexpr Register Aurora_Valid_DW_Reg{IPCore::AURORA_STATUS, 0};
+constexpr Register Aurora_Valid_DW_Reg{IPCore::AURORA_STATUS, 0x0};
 
-constexpr Register Aurora_Valid_Bytes_Reg{IPCore::AURORA_STATUS, 4};
+constexpr Register Aurora_Valid_Bytes_Reg{IPCore::AURORA_STATUS, 0x4};
 
-constexpr Register Aurora_Busy_Up_Cycles_Reg{IPCore::AURORA_STATUS, 8};
+constexpr Register Aurora_Busy_Up_Cycles_Reg{IPCore::AURORA_STATUS, 0x8};
 
-constexpr Register Aurora_Hard_Errors_Reg{IPCore::AURORA_STATUS, C};
+constexpr Register Aurora_Hard_Errors_Reg{IPCore::AURORA_STATUS, 0xc};
 
-constexpr Register Aurora_Soft_Errors_Reg{IPCore::AURORA_STATUS, 10};
+constexpr Register Aurora_Soft_Errors_Reg{IPCore::AURORA_STATUS, 0x10};
 
-constexpr Register Aurora_Channel_n_Lanes_Up_Reg{IPCore::AURORA_STATUS, 14};
+constexpr Register Aurora_Channel_n_Lanes_Up_Reg{IPCore::AURORA_STATUS, 0x14};
 
-constexpr Register Aurora_GT_PLL_Lock_Reg{IPCore::AURORA_STATUS2, 0};
+constexpr Register Aurora_GT_PLL_Lock_Reg{IPCore::AURORA_STATUS2, 0x0};
 
-constexpr Register PktPacketLengthReg{IPCore::PACKETIZERREG, A100};
+constexpr Register PktPacketLengthReg{IPCore::PACKETIZERREG, 0xa100};
 
-constexpr Register PktNoPacketsReg{IPCore::PACKETIZERREG, A104};
+constexpr Register PktNoPacketsReg{IPCore::PACKETIZERREG, 0xa104};
 
-constexpr Register PktCtrlReg{IPCore::PACKETIZERREG, A108};
+constexpr Register PktCtrlReg{IPCore::PACKETIZERREG, 0xa108};
 
-constexpr Register PktCoordReg1{IPCore::PACKETIZERREG, A10C};
+constexpr Register PktCoordReg1{IPCore::PACKETIZERREG, 0xa10c};
 
-constexpr Register PktCoordReg2{IPCore::PACKETIZERREG, A110};
+constexpr Register PktCoordReg2{IPCore::PACKETIZERREG, 0xa110};
 
 
 

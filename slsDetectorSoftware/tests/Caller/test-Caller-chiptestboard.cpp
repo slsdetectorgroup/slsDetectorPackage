@@ -488,7 +488,7 @@ TEST_CASE("slowadcindex", "[.detectorintegration]") {
 
 /* dacs */
 
-TEST_CASE("dac", "[.detectorintegration][.dacs]") {
+TEST_CASE("dac", "[.detectorintegration][dacs]") {
     // dac 0 to dac 17
 
     Detector det;
@@ -1395,7 +1395,7 @@ TEST_CASE("led", "[.detectorintegration]") {
     }
 }
 
-TEST_CASE("define_reg", "[.cmdcall][.definecmds]") {
+TEST_CASE("define_reg", "[.detectorintegration][reg]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1473,7 +1473,7 @@ TEST_CASE("define_reg", "[.cmdcall][.definecmds]") {
     }
 }
 
-TEST_CASE("define_bit", "[.cmdcall][.definecmds]") {
+TEST_CASE("define_bit", "[.detectorintegration][reg]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1570,7 +1570,7 @@ TEST_CASE("define_bit", "[.cmdcall][.definecmds]") {
 }
 
 TEST_CASE("using define for reg, setbit, getbit and clearbit",
-          "[.cmdcall][.definecmds]") {
+          "[.detectorintegration][reg]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1684,7 +1684,7 @@ TEST_CASE("using define for reg, setbit, getbit and clearbit",
     }
 }
 
-TEST_CASE("definelist_reg", "[.cmdcall][.definecmds]") {
+TEST_CASE("definelist_reg", "[.detectorintegration][reg]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1717,7 +1717,7 @@ TEST_CASE("definelist_reg", "[.cmdcall][.definecmds]") {
     }
 }
 
-TEST_CASE("definelist_bit", "[.cmdcall][.definecmds]") {
+TEST_CASE("definelist_bit", "[.detectorintegration][reg]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();

@@ -3,11 +3,16 @@ bool  hasallpede;
 TH1F * his102;TH1F * his101;
 int processedf;
 sls::zmqHeader zHeader;
+sls::zmqHeader zHeader2;
 #define PEDEFNAME "current_pede.dat"
 #define NPRO 50
 #define NPRI 50
 
-#define JFSTRX
+#include "sls/sls_detector_defs.h"
+#include "slsDetectorData.h"
+//#define JFSTRX // comment for JF
+#define JF1M
+
 #ifdef JFSTRX
 #include "jungfrauLGADStrixelsData_new.h"
 #include "sls/sls_detector_defs.h"
@@ -59,8 +64,14 @@ int main(int argc, char* argv[])
 
 
 #else
-    nx = 1024; ny= 512;
-
+    nx = 1024;
+#ifdef JF1M
+    scaler=2 ;
+   ny= 1024;
+#else
+   scaler=1;
+   ny=512;
+#endif
 
 #endif
 
@@ -73,10 +84,10 @@ int main(int argc, char* argv[])
  
   HDraw_every=20;
   fixranges=false;
-  int group;
-  
+ 
   hchptr = (short*) malloc(NCH*sizeof(short)); 
 
+  
   startsocket(); //create and connect ZMQ 
 
   for (ipx=0;ipx<NCH;ipx++) hchptr[(ipx)]=0;
@@ -123,16 +134,19 @@ int main(int argc, char* argv[])
   his2000->GetZaxis()->SetRangeUser(0,4);
 
   if (dophotonmap) {
-    his3000= new TH2F("his3000"," photon map  ",1024,-0.5,1024-0.5,512,-0.5,512-0.5);
+    his3000= new TH2F("his3000"," photon map  ",nx,-0.5,nx-0.5,ny,-0.5,ny-0.5);
+  his1000->SetOption("colz");
   }
   else {
-    his3000= new TH2F("his3000"," raw adc  ",1024,-0.5,1024-0.5,512,-0.5,512-0.5);
+    his3000= new TH2F("his3000"," raw adc  ",nx,-0.5,nx-0.5,ny,-0.5,ny-0.5);
+  his1000->SetOption("colz");
+
   }
  
-  his4500= new TH2F("his4500","T vs B",101,-500,MAX_POS,101,-500,MAX_POS);
-  hchip=new TH1I*[8];
+  his4500= new TH2F("his4500","T vs B",101,-300,MAX_POS/2,101,-300,MAX_POS/2);
+  hchip=new TH1I*[16];
 #ifdef JFSTRX
-  for (i=0;i<8;i++) {
+  for (i=0;i<16;i++) {
     if(i<3)
       sprintf(hname,"%d_hchip1group%d",i,i+1);
     else if (i>4)
@@ -142,14 +156,14 @@ int main(int argc, char* argv[])
     hchip[i] = new TH1I(hname,hname,NBIN,MIN_POS,MAX_POS);
   }
 #else
-  for (i=0;i<8;i++) {
+  for (i=0;i<16;i++) {
     sprintf(hname,"hchip%d",i);
     hchip[i] = new TH1I(hname,hname,NBIN,MIN_POS,MAX_POS);
   }
 #endif
 
   cout <<"end of histo booking" <<endl;
-  if  (A2==NULL)  A2 = new TCanvas("A2","Plotting Canvas gain",150,10,500,250);
+  if  (A2==NULL)  A2 = new TCanvas("A2","Plotting Canvas gain",150,10,500,250*scaler);
   if  (A3==NULL)  {
 #ifdef JFSTRX
     A3 = new TCanvas("A3","Plotting Canvas ADC",150,360,1200,750);
@@ -172,13 +186,18 @@ int main(int argc, char* argv[])
     //  g=A3->cd(6);
     // g->SetCanvasSize( g->GetWw(), 2*g->GetWw());
 #else
-    A3 = new TCanvas("A3","Plotting Canvas ADC",150,360,1200,550);
+    A3 = new TCanvas("A3","Plotting Canvas ADC",150,360,1200,550*scaler);
 #endif
     }
-  if  (A4==NULL)  A4 = new TCanvas("A4","Plotting Canvas PHs",750,300,1000,800);
+  if  (A4==NULL)  A4 = new TCanvas("A4","Plotting Canvas PHs",750,300,1000,800*scaler);
   A4->Clear();
+#ifdef JF1M
+  A4->Divide(4,4,0.005,0.005);
+#else
   A4->Divide(4,2,0.005,0.005);
-  if  (A5==NULL)  A5 = new TCanvas("A5","Plotting Canvas Photon Map",750,300,1000,600);
+#endif
+  
+  if  (A5==NULL)  A5 = new TCanvas("A5","Plotting Canvas Photon Map",750,300,1000,600*scaler);
   if  (A6==NULL)  A6 = new TCanvas("A6","Plotting Canvas LvsR",650,250,650,660);
 
   gSystem->ProcessEvents();
@@ -198,8 +217,14 @@ int main(int argc, char* argv[])
     else {
 	
       //   if (((icount++)%10)==0) cout <<"recived frameindex "<<zHeader.frameIndex <<endl; 
-      //cout <<"there" <<endl;
-      zmqSocket->ReceiveData(0, (char *)(&image_data), NCH*2);
+     
+      zmqSocket->ReceiveData(0, (char *)(&image_data), NCH ); //(NCH/2*2)
+      #ifdef JF1M
+      zmqSocket2->ReceiveHeader(0,zHeader2,  SLS_DETECTOR_JSON_HEADER_VERSION);
+      zmqSocket2->ReceiveData(0, (char *)(&image_data)+ NCH, NCH );//(NCH/2*2)
+      #endif 
+    
+   
     }
 
     {
@@ -210,14 +235,14 @@ int main(int argc, char* argv[])
       ROIxmax=croi.xmax;
       ROIymin=croi.ymin;
       ROIymax=croi.ymax;
-      cout<<" ROIymin "<<  ROIymin<<endl;
+      if  (ROIymin>0)     cout<<" ROIymin "<<  ROIymin<<endl;
       framesinstream++;
       running++;
-     
+      
       fill1Ds=true; //alway fill 1d and LR plots 
       //if  (((framesinstream%(int(HDraw_every)))==(int (HDraw_every)-1))) {fill1Ds=true;}else{fill1Ds=false;} 
       if  (((framesinstream%(HDraw_every))==(HDraw_every)-1)) {show2Ds=true;}else{show2Ds=false;} 
-      if  (((framesinstream%NPRI)==NPRI-1))  { cout<<"\r   "<<"frame (from start):   "<<framesinstream<<" " << runc[((running/NPRI)%5)]<<  "   discarded frames %=" << (1-float(processedf)/float(zHeader.frameIndex-frameIndex_old))*100  << " current framenumber= "  <<zHeader.frameIndex  << "       "<<std::flush; processedf=0;frameIndex_old=zHeader.frameIndex;}
+      if  (((framesinstream%NPRI)==NPRI-1))  { cout<<"\r   "<<"frame (from start):   "<<framesinstream<<" " << runc[((running/NPRI)%5)]<<  "   processed frames %=" << (float(processedf)/float(zHeader.frameIndex-frameIndex_old))*100  << " current framenumber= "  <<zHeader.frameIndex  << "       "<<std::flush; processedf=0;frameIndex_old=zHeader.frameIndex;}
 
  
       npacket=0;
@@ -244,7 +269,7 @@ int main(int argc, char* argv[])
 	processedf++;
 
 	for (i=0 ;i<NCH;i++) {
-      
+       
 	  adcvalue= (image_data[i]) & 0x3fff;
      
 	  if ((image_data[i] & 0xc000)!=0){ gain = (image_data[i]>>14) & 0x3;} else {gain=0;}
@@ -299,7 +324,7 @@ int main(int argc, char* argv[])
 	      hchip[ichip]->Fill(adcpedecorr,1);
 #endif
 	    
-	      //	      if (((i%256)<253)&&((i%256)>2)) his4500->Fill(adcpedecorrold,adcpedecorr,1);
+	      if (ichip<8) if (((i%256)<253)&&((i%256)>2)) his4500->Fill(adcpedecorrold,adcpedecorr,1);
 	      adcpedecorrold=adcpedecorr;
 	    
 	    
@@ -335,6 +360,8 @@ int main(int argc, char* argv[])
 
 
 		value= ((image_data[i]) & 0x3fff) -fpeded[i];
+                gain = (image_data[i]>>14) & 0x3;
+
 #ifndef JFSTRX
 		if ((i%256==0)||(i%256==255)) value=int(value/factor);
 		if ((i/1024==255)||(i/1024==256)||(i/1024==767)||(i/1024==768)) value=int(value/factor);
@@ -375,15 +402,27 @@ int main(int argc, char* argv[])
 	 
 #else
 
-	his1000->Fill(float(ipx),float(ipy),value);
-	
+
+		if (ipy>512) {
+		  his1000->Fill(float(ipx),float(ipy+36),value);
+
+		}
+		else {
+		  his1000->Fill(float(ipx),float(ipy),value);
+		}
 
 
 #endif
 
 	
+		if (ipy>512) {
+		   his2000->Fill(float(ipx),float(ipy+36) ,gain);
+		}
+		else {
+		  his2000->Fill(float(ipx),float(ipy) ,gain);
+	
+		}
 
-	his2000->Fill(float(ipx),float(ipy) ,gain);
 
 		// if (!dophotonmap)his3000->Fill(float(ipx),float(ipy) ,value);
 		// value=(int)(hchptr[i]);
@@ -393,12 +432,18 @@ int main(int argc, char* argv[])
 	  } //for ipy
 
 	  for (ipx=0;ipx<1024;ipx++){
+#ifdef JF1M
+	    for (ipy=0;ipy<1024;ipy++){
+#else
 	    for (ipy=0;ipy<512;ipy++){
+#endif
+	      
 	      i=ipx+ipy*1024;
 	      value= ((image_data[i]) & 0x3fff) -fpeded[i];
 	      if (!dophotonmap)his3000->Fill(float(ipx),float(ipy) ,value);
 	      value=(int)(hchptr[i]);
-	      if (dophotonmap) his3000->Fill(float(ipx),float(ipy),float(value));
+	      if (ipy>512) {	if (dophotonmap) his3000->Fill(float(ipx),float(ipy+36),float(value));   }
+	      else {if (dophotonmap) his3000->Fill(float(ipx),float(ipy),float(value)); }
 	    }
 	  }
 
@@ -518,7 +563,12 @@ void loadpede(void){
 
     cout <<"received frameindex "<<zHeader.frameIndex << endl; 
  
-    zmqSocket->ReceiveData(0,  (char *)(&image_data), NCH*2);
+    zmqSocket->ReceiveData(0,  (char *)(&image_data), NCH);
+#ifdef JF1M
+    zmqSocket2->ReceiveHeader(0,zHeader2,  SLS_DETECTOR_JSON_HEADER_VERSION);
+    zmqSocket2->ReceiveData(0,  (char *)(&image_data)+NCH, NCH);
+#endif
+    
     framesinstream++;nframes++;
     for (ipx=0;ipx<NCH;ipx++) fpeded[ipx]=(fpeded[ipx]*(nframes-1)+(float)(image_data[ipx]&0x3fff))/(float)(nframes);
   
@@ -570,7 +620,7 @@ void historeset(){
  
   his4500->Reset();
   his3000->Reset();
-  for (i=0;i<8;i++) {
+  for (i=0;i<16;i++) {
     hchip[i]->Reset();
   
   }
@@ -635,7 +685,7 @@ void axisreset(){
 
   his3000->GetZaxis()->UnZoom();
   
-  for (i=0;i<8;i++) {
+  for (i=0;i<16;i++) {
     hchip[i]->GetXaxis()->UnZoom();
     hchip[i]->GetYaxis()->UnZoom();
   }
@@ -725,21 +775,29 @@ void Plot1DHistos(void){
 
   if (hchip[0]->GetXaxis()->GetLast()!=oldh0xlast){
     oldh0xlast=hchip[0]->GetXaxis()->GetLast();
+    cout << oldh0xlast << endl;
     oldh0xfirst=hchip[0]->GetXaxis()->GetFirst();
-    for (int ipad=1; ipad<8;ipad++) {
+    for (int ipad=1; ipad<16;ipad++) {
       hchip[ipad]->GetXaxis()->SetRange(oldh0xfirst,oldh0xlast);
      
     
     }
   }    
   
+#ifdef JF1M  
+  for (int ipad=0; ipad<16;ipad++) {
+#else
+ for (int ipad=0; ipad<8;ipad++) {
+#endif
 
-  for (int ipad=0; ipad<8;ipad++) {
     A4->cd(ipad+1);  
     gStyle->SetOptStat(1);    gPad->SetLogy();
+#ifdef JF1M   
+    hchip[ipad%4+(3-int(ipad/4))*4]->Draw();
+#else    
      hchip[ipad%4+(1-int(ipad/4))*4]->Draw();
-  
-  }
+#endif
+ }
   A4->cd();
   A4->Update();
 }
@@ -801,6 +859,7 @@ void Plot2DHistos(void){
  
   A6->cd();
   his4500->Draw("colz");
+  gPad->SetLogz();
   A6->Update();
   
 
@@ -816,6 +875,9 @@ void startsocket(void) {
   try {
     zmqSocket = new sls::ZmqSocket(serverip, portnum);
 
+    
+
+    
   } catch (...) {
     cprintf(RED,
 	    "Error: Could not create Zmq socket on port %d with ip %s\n",
@@ -824,12 +886,37 @@ void startsocket(void) {
     return;
   }
   zmqSocket->SetReceiveHighWaterMark(3);
-  zmqSocket->SetReceiveBuffer(1024*1024); 
+  zmqSocket->SetReceiveBuffer(1024*5012*2); 
   zmqSocket->Connect();
 
 
   cout<<"Zmq Client[] "<< zmqSocket->GetZmqServerAddress()<<endl;
 
+#ifdef JF1M
+  try {
+    zmqSocket2 = new sls::ZmqSocket(serverip, portnum+1);
+
+    
+
+    
+  } catch (...) {
+    cprintf(RED,
+	    "Error: Could not create Zmq socket on port %d with ip %s\n",
+	    portnum, serverip);
+    delete zmqSocket2;
+    return;
+  }
+  zmqSocket2->SetReceiveHighWaterMark(3);
+  zmqSocket2->SetReceiveBuffer(1024*5012*2); 
+  zmqSocket2->Connect();
+
+
+  cout<<"Zmq Client[] "<< zmqSocket2->GetZmqServerAddress()<<endl;
+
+#endif
+
+
+  
 
   haveconnection=true;
  
@@ -867,6 +954,12 @@ void stopsocket(void) {
   zmqSocket=0;
   //zmqSocket->~ZmqSocket ();
 
+#ifdef JF1M
+  delete zmqSocket2;
+  zmqSocket2=0;
+
+#endif
+  
     
 
   haveconnection=false;

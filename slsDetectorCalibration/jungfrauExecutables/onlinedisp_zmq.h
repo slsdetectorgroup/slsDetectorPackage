@@ -80,12 +80,12 @@ using namespace sls;
 
 #define FALSE              0
 #define OFFSET 0
-#define NBIN 500  
+#define NBIN 250  
 #define MIN_POS  -500.5   // 400.5   
-#define MAX_POS 8499.5   //-100.5
+#define MAX_POS 3500.5   //-100.5
 
 
-#define NCH 524288
+#define NCH 2*524288
 // #define NCH 262144 in case of half_frames 
 
 char serverip[256];
@@ -220,6 +220,7 @@ int ix,iy;
 int adcmin,adcmax;
 int pmmin,pmmax; //min/mnx for the photon map
 bool fixranges;
-
+int scaler;
 
 sls::ZmqSocket *zmqSocket= NULL;
+sls::ZmqSocket *zmqSocket2= NULL;

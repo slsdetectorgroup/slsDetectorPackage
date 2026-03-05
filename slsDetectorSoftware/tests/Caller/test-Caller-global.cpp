@@ -48,6 +48,7 @@ void test_dac_caller(defs::dacIndex index, const std::string &dacname,
         std::vector<std::string> args = {dac, value};
         if (mV)
             args.push_back("mV");
+        std::cout << "args:" << ToString(args) << std::endl;
         caller.call("dac", args, -1, PUT, oss);
         REQUIRE(oss.str() == std::string("dac ") + dac + " " + value +
                                  (mV ? " mV\n" : "\n"));
@@ -57,7 +58,7 @@ void test_dac_caller(defs::dacIndex index, const std::string &dacname,
         std::vector<std::string> args = {dac};
         if (mV)
             args.push_back("mV");
-        caller.call(dacname, args, -1, GET, oss);
+        caller.call("dac", args, -1, GET, oss);
         REQUIRE(oss.str() ==
                 "dac " + dac + " " + value + (mV ? " mV\n" : "\n"));
     }

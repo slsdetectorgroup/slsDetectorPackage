@@ -7,7 +7,4 @@ namespace sls {
 
 std::string GetHelpDac(std::string dac);
 
-std::string GetHelpDacWrapper(const std::string &cmd,
-                              const std::vector<std::string> &args);
-
 } // namespace sls

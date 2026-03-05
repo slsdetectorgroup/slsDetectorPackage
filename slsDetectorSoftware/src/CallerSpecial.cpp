@@ -1809,4 +1809,84 @@ BitAddress Caller::getBitAddress() const {
     throw RuntimeError("Invalid number of parameters for bit address.");
 }
 
+std::string Caller::dac(int action) {
+    std::ostringstream os;
+
+    if (action == defs::HELP_ACTION) {
+        if (args.size() == 0)
+            os << GetHelpDac("");
+        else
+            os << args[0] << GetHelpDac(args[0]) << '\n';
+        return os.str();
+    }
+
+    bool isCtb = false;
+    auto detType = det->getDetectorType().squash(defs::GENERIC);
+    if (detType == defs::CHIPTESTBOARD ||
+        detType == defs::XILINX_CHIPTESTBOARD) {
+        isCtb = true;
+    }
+
+    if (action == defs::GET_ACTION) {
+        auto index = parseDacIndex(0, isCtb);
+        auto mV = parseMV(1);
+        auto t = det->getDAC(index, mV, std::vector<int>{det_id});
+        os << args[0] << ' ' << OutString(t) << (mV ? " mV" : "") << '\n';
+    }
+
+    else if (action == defs::PUT_ACTION) {
+        auto index = parseDacIndex(0, isCtb);
+        if (args.size() < 2) {
+            WrongNumberOfParameters(2);
+        }
+        auto val = StringTo<int>(args[1]);
+        auto mV = parseMV(2);
+        det->setDAC(index, val, mV, std::vector<int>{det_id});
+        os << args[0] << ' ' << args[1] << (mV ? " mV" : "") << '\n';
+    }
+
+    else {
+        throw RuntimeError("Unknown action");
+    }
+
+    return os.str();
+}
+
+defs::dacIndex Caller::parseDacIndex(int argIndex, bool isCtb) {
+    if (argIndex >= (int)args.size()) {
+        throw RuntimeError("Invalid arguments. DAC index is required.");
+    }
+    auto arg = args[argIndex];
+
+    if (isCtb) {
+        // dac index or power dacs
+        if (is_int(arg) || arg == "v_a" || arg == "v_b" || arg == "v_c" ||
+            arg == "v_d" || arg == "v_io" || arg == "v_chip") {
+            return StringTo<defs::dacIndex>(arg);
+        }
+        // dac name for ctb gui
+        return det->getDacIndex(arg);
+    }
+
+    // not ctb
+    if (is_int(arg)) {
+        throw RuntimeError("DAC index is not supported for your detector. "
+                           "Please use dac name. Use daclist command to get "
+                           "the list of dac names for your detector.");
+    }
+    return StringTo<defs::dacIndex>(arg);
+}
+
+bool Caller::parseMV(int argIndex) {
+    if (argIndex < (int)args.size()) {
+        auto arg = args[argIndex];
+        if (arg != "mv" && arg != "mV") {
+            throw RuntimeError("Unknown argument " + arg +
+                               ". Did you mean mV?");
+        }
+        return true;
+    }
+    return false;
+}
+
 } // namespace sls

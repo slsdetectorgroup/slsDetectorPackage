@@ -1363,6 +1363,15 @@ int processDACEnums(enum dacIndex ind, int val, bool mV) {
             LOG(logERROR, (mess));
             return retval;
         }
+        if (!mV) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not set power. Can get Vchip only in mV and not dac "
+                    "units.\n",
+                    ind);
+            LOG(logERROR, (mess));
+            return retval;
+        }
         ret = getVchip(&retval, mess);
         return retval;
 
@@ -1370,8 +1379,8 @@ int processDACEnums(enum dacIndex ind, int val, bool mV) {
         if (val != GET_FLAG) {
             if (!mV) {
                 ret = FAIL;
-                strcpy(mess, "Could not set vlimit. VLimit should be in "
-                             "mV and not dac units.\n");
+                strcpy(mess, "Could not set vlimit. VLimit should be in mV and "
+                             "not dac units.\n");
                 LOG(logERROR, (mess));
                 return retval;
             }
@@ -1388,18 +1397,18 @@ int processDACEnums(enum dacIndex ind, int val, bool mV) {
         serverDacIndex = getDACIndex(ind);
         if (ret == FAIL)
             return retval;
-        if (val != GET_FLAG) {
-            if (!mV) {
-                ret = FAIL;
-                sprintf(mess,
-                        "Could not set power. Power regulator %d should be in "
-                        "mV and not dac units.\n",
-                        ind);
-                LOG(logERROR, (mess));
-                return retval;
-            }
+        if (!mV) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not set/get power. Power regulator %d is in mV and "
+                    "not dac units.\n",
+                    ind);
+            LOG(logERROR, (mess));
+            return retval;
+        }
+        if (val != GET_FLAG)
             ret = setPower(serverDacIndex, val, mess);
-        } else
+        else
             ret = getPower(serverDacIndex, &retval, mess);
         return retval;
 
@@ -1427,8 +1436,8 @@ int processDACEnums(enum dacIndex ind, int val, bool mV) {
         if (val != GET_FLAG) {
             if (!mV) {
                 ret = FAIL;
-                strcpy(mess, "Could not set vlimit. VLimit should be in "
-                             "mV and not dac units.\n");
+                strcpy(mess, "Could not set vlimit. VLimit should be in mV and "
+                             "not dac units.\n");
                 LOG(logERROR, (mess));
                 return retval;
             }
@@ -1445,18 +1454,18 @@ int processDACEnums(enum dacIndex ind, int val, bool mV) {
         serverDacIndex = getDACIndex(ind);
         if (ret == FAIL)
             return retval;
-        if (val != GET_FLAG) {
-            if (!mV) {
-                ret = FAIL;
-                sprintf(mess,
-                        "Could not set power. Power regulator %d should be in "
-                        "mV and not dac units.\n",
-                        ind);
-                LOG(logERROR, (mess));
-                return retval;
-            }
+        if (!mV) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not set/get power. Power regulator %d is in mV and "
+                    "not dac units.\n",
+                    ind);
+            LOG(logERROR, (mess));
+            return retval;
+        }
+        if (val != GET_FLAG)
             ret = setPower(serverDacIndex, val, mess);
-        } else
+        else
             ret = getPower(serverDacIndex, &retval, mess);
         return retval;
 

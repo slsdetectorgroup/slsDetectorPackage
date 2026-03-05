@@ -594,13 +594,15 @@ TEST_CASE("dac", "[.detectorintegration][.dacs]") {
                 defs::V_POWER_A, defs::V_POWER_B, defs::V_POWER_C,
                 defs::V_POWER_D, defs::V_POWER_IO};
             for (size_t iPower = 0; iPower < names.size(); ++iPower) {
-                auto prev_val = det.getDAC(indices[iPower]);
+                auto prev_val = det.getDAC(indices[iPower], true);
 
                 // this is the first command touching power dacs, should not be
                 // -100
-                if (det_type == defs::XILINX_CHIPTESTBOARD) {
+                if (det_type == defs::XILINX_CHIPTESTBOARD ||
+                    det_type == defs::CHIPTESTBOARD) {
                     REQUIRE(prev_val.any(-100) == false);
                     REQUIRE(prev_val.any(-1) == false);
+                    REQUIRE(prev_val.any(0) == false);
                 }
 
                 REQUIRE_THROWS(
@@ -613,6 +615,11 @@ TEST_CASE("dac", "[.detectorintegration][.dacs]") {
                     caller.call("dac", {names[iPower], "0"}, -1, PUT));
                 REQUIRE_THROWS(
                     caller.call("dac", {names[iPower], "4096"}, -1, PUT));
+                // not mV
+                REQUIRE_THROWS(
+                    caller.call("dac", {names[iPower], "1200"}, -1, PUT));
+                REQUIRE_THROWS(caller.call("dac", {names[iPower]}, -1, GET));
+
                 // min
                 if (names[iPower] == "v_io")
                     REQUIRE_THROWS(caller.call(
@@ -635,32 +642,18 @@ TEST_CASE("dac", "[.detectorintegration][.dacs]") {
                         "dac", {names[iPower], "2469", "mV"}, -1, PUT));
                 }
                 {
-                    std::ostringstream oss;
-                    caller.call("dac", {names[iPower], "800", "mV"}, -1, PUT,
-                                oss);
-                    REQUIRE(oss.str() == "dac " + names[iPower] + " 800 mV\n");
-                }
-                {
                     std::ostringstream oss1, oss2;
                     caller.call("dac", {names[iPower], "1200", "mV"}, -1, PUT,
                                 oss1);
                     REQUIRE(oss1.str() ==
                             "dac " + names[iPower] + " 1200 mV\n");
-                    caller.call("dac", {names[iPower], "1200", "mV"}, -1, GET,
-                                oss2);
+                    caller.call("dac", {names[iPower], "mV"}, -1, GET, oss2);
                     REQUIRE(oss2.str() ==
                             "dac " + names[iPower] + " 1200 mV\n");
                 }
-                {
-                    std::ostringstream oss1, oss2;
-                    caller.call("dac", {names[iPower], "1200"}, -1, PUT, oss1);
-                    REQUIRE(oss1.str() == "dac " + names[iPower] + " 1200\n");
-                    caller.call("dac", {names[iPower], "1200"}, -1, GET, oss2);
-                    REQUIRE(oss2.str() == "dac " + names[iPower] + " 1200\n");
-                }
                 // Reset all dacs to previous value
                 for (int imod = 0; imod != det.size(); ++imod) {
-                    det.setDAC(indices[iPower], prev_val[imod], false, {imod});
+                    det.setDAC(indices[iPower], prev_val[imod], true, {imod});
                 }
             }
         }

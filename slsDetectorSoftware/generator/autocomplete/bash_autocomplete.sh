@@ -524,21 +524,21 @@ __dac() {
 FCN_RETURN=""
 if [[ ${IS_GET} -eq 1 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN=""
 fi
 if [[ "${cword}" == "3" ]]; then
-FCN_RETURN="mV mv"
+FCN_RETURN="0 1"
 fi
 fi
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN=""
 fi
 if [[ "${cword}" == "3" ]]; then
 FCN_RETURN=""
 fi
 if [[ "${cword}" == "4" ]]; then
-FCN_RETURN="mV mv"
+FCN_RETURN="0 1"
 fi
 fi
 return 0

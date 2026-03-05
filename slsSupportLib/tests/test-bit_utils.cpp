@@ -121,8 +121,7 @@ TEST_CASE("Convert BitAddress using classes", "[support]") {
     }
 }
 
-TEST_CASE("Output operator gives same result as string",
-          "[support]") {
+TEST_CASE("Output operator gives same result as string", "[support]") {
     {
         RegisterAddress addr{0x3456af};
         std::ostringstream os;

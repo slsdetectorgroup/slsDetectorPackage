@@ -415,6 +415,8 @@ class Caller {
     // applicable
     RegisterAddress getRegisterAddress(const std::string &saddr) const;
     BitAddress getBitAddress() const;
+    defs::dacIndex parseDacIndex(int argIndex, bool isCtb);
+    bool parseMV(int argIndex);
 
     FunctionMap functions{
         {"list", &Caller::list},

@@ -7,7 +7,7 @@
 namespace sls {
 
 std::string GetHelpDac(std::string dac) {
-    if (sls::is_int(dac)) {
+    if (dac.empty() || sls::is_int(dac)) {
         return std::string("[dac name] [dac or mV value] [(optional unit) mV] "
                            "\n\t[Ctb] Use dac index for dac name.");
     }
@@ -280,24 +280,52 @@ std::string GetHelpDac(std::string dac) {
         return std::string(
             "[dac or mV value][(optional unit) mV] \n\t[Moench] Dac for 7");
     }
+    if (dac == "vtgstv") {
+        return std::string("");
+    }
 
-    // clang-format off
-    if (dac == "vtgstv") { return std::string(""); }
-    // clang-format on
+    if (dac == "v_a") {
+        return std::string(
+            "[mV value] mV \n\t[Ctb][Xilinx Ctb] Dac for Power supply a. Can "
+            "only be set in mV. Default to minimum values. To switch off must "
+            "switch off power rails using 'power' command.\n\t[Ctb] Changes "
+            "vchip (max of power supply voltages + 200mV).");
+    }
+    if (dac == "v_b") {
+        return std::string(
+            "[mV value] mV \n\t[Ctb][Xilinx Ctb] Dac for Power supply b. Can "
+            "only be set in mV. Default to minimum values. To switch off must "
+            "switch off power rails using 'power' command.\n\t[Ctb] Changes "
+            "vchip (max of power supply voltages + 200mV).");
+    }
+    if (dac == "v_c") {
+        return std::string(
+            "[mV value] mV \n\t[Ctb][Xilinx Ctb] Dac for Power supply c. Can "
+            "only be set in mV. Default to minimum values. To switch off must "
+            "switch off power rails using 'power' command.\n\t[Ctb] Changes "
+            "vchip (max of power supply voltages + 200mV).");
+    }
+    if (dac == "v_d") {
+        return std::string(
+            "[mV value] mV \n\t[Ctb][Xilinx Ctb] Dac for Power supply d. Can "
+            "only be set in mV. Default to minimum values. To switch off must "
+            "switch off power rails using 'power' command.\n\t[Ctb] Changes "
+            "vchip (max of power supply voltages + 200mV).");
+    }
+    if (dac == "v_io") {
+        return std::string(
+            "[mV value] mV \n\t[Ctb][Xilinx Ctb] Dac for Power supply IO. Can "
+            "only be set in mV. Default to minimum values. To switch off must "
+            "switch off power rails using 'power' command.\n\t[Ctb] Changes "
+            "vchip (max of power supply voltages + 200mV).");
+    }
+    if (dac == "v_chip") {
+        return std::string("mV \n\t[Ctb] Dac for Vchip. Can only get. Default "
+                           "to minimum values. Vchip is set in the background "
+                           "when v_a, b, c, d or io are set.");
+    }
 
     throw sls::RuntimeError("Unknown dac command");
-}
-
-std::string GetHelpDacWrapper(const std::string &cmd,
-                              const std::vector<std::string> &args) {
-    std::ostringstream os;
-    os << cmd << ' ';
-    if (args.size() == 0) {
-        os << GetHelpDac(std::to_string(0)) << '\n';
-    } else {
-        os << args[0] << ' ' << GetHelpDac(args[0]) << '\n';
-    }
-    return os.str();
 }
 
 } // namespace sls

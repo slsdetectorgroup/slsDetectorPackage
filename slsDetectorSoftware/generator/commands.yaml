@@ -2788,6 +2788,25 @@ clearbit:
               arg_types: [ std::string, std::string, special::validate ]
 
 
+dac:
+    is_description: true
+    actions:
+        PUT:
+          args:
+            - argc: 2
+              arg_types: [ std::string, int ]
+            - argc: 3
+              arg_types: [ std::string, int, bool ]
+        GET:
+          args:
+            - argc: 1
+              arg_types: [ std::string ]
+            - argc: 2
+              arg_types: [ std::string, bool ]
+
+
+
+
 ################# special commands ##########################
 
 virtual:
@@ -3268,56 +3287,6 @@ extsig:
       cast_input: [ true, true ]
       output: [ 'args[0]', "' '", 'args[1]' ]
 
-dac:
-  help: "code: return GetHelpDacWrapper(cmd, args);\n" # this is a special case
-  actions:
-    GET:
-      exceptions:
-        - condition: "is_int(args[0]) && det->getDetectorType().squash() != defs::CHIPTESTBOARD && det->getDetectorType().squash() != defs::XILINX_CHIPTESTBOARD"
-          message: '"Dac indices can only be used for chip test board. Use daclist to get list of dac names for current detector."'
-      extra_variables:
-        - name: dacIndex
-          type: defs::dacIndex
-          value: "((det->getDetectorType().squash() == defs::CHIPTESTBOARD || det->getDetectorType().squash() == defs::XILINX_CHIPTESTBOARD) && !is_int(args[0])) ? det->getDacIndex(args[0]) : StringTo<defs::dacIndex>(args[0])"
-      function: getDAC
-      require_det_id: true
-      input_types: [ defs::dacIndex, bool ]
-      cast_input: [ false, true ]
-      args:
-        - argc: 1
-          arg_types: [defs::dacIndex]
-          input: [ dacIndex, '"0"' ]
-          output: [ 'args[0]', "' '", OutString(t) ]
-        - argc: 2
-          exceptions:
-            - condition: "is_int(args[0]) && det->getDetectorType().squash() != defs::CHIPTESTBOARD && det->getDetectorType().squash() != defs::XILINX_CHIPTESTBOARD"
-              message: '"Dac indices can only be used for chip test board. Use daclist to get list of dac names for current detector."'
-            - condition: 'args[1] != "mv" && args[1] != "mV"'
-              message: '"Unknown argument " + args[1] + ". Did you mean mV?"'
-          arg_types: [defs::dacIndex, special::mv]
-          input: [ dacIndex, '"1"' ]
-          output: [ 'args[0]', "' '" , OutString(t), '" mV"' ]
-    PUT:
-      exceptions:
-        - condition: "is_int(args[0]) && det->getDetectorType().squash() != defs::CHIPTESTBOARD && det->getDetectorType().squash() != defs::XILINX_CHIPTESTBOARD"
-          message: '"Dac indices can only be used for chip test board. Use daclist to get list of dac names for current detector."'
-      extra_variables:
-        - name: dacIndex
-          type: defs::dacIndex
-          value: "((det->getDetectorType().squash() == defs::CHIPTESTBOARD || det->getDetectorType().squash() == defs::XILINX_CHIPTESTBOARD) && !is_int(args[0])) ? det->getDacIndex(args[0]) : StringTo<defs::dacIndex>(args[0])"
-      function: setDAC
-      require_det_id: true
-      input_types: [ defs::dacIndex, int, bool ]
-      cast_input: [ false, true, true ]
-      args:
-        - argc: 2
-          arg_types: [defs::dacIndex, int]
-          input: [ dacIndex, "args[1]", '"0"' ]
-          output: [ "args[0]", "' '", "args[1]" ]
-        - argc: 3
-          arg_types: [defs::dacIndex, int, special::mv]
-          input: [ dacIndex, "args[1]", '"1"' ]
-          output: [ "args[0]", "' '", "args[1]", '" mV"' ]
 
 resetdacs:
   help: "[(optional) hard] \n\t[Eiger][Jungfrau][Moench][Gotthard2][Mythen3]Reset dac values to the defaults. A 'hard' optional reset will reset the dacs to the hardcoded defaults in on-board detector server."

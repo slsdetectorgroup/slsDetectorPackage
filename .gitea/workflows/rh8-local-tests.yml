@@ -2,6 +2,8 @@ name: Run Simulator Tests on local RHEL8
 
 on:
   push:
+    branches-ignore:
+      - dev/xilinx_power_cmd
   workflow_dispatch:
 
 env:

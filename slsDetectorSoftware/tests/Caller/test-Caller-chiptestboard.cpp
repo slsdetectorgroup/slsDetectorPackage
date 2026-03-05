@@ -488,7 +488,7 @@ TEST_CASE("slowadcindex", "[.detectorintegration]") {
 
 /* dacs */
 
-TEST_CASE("dac", "[.detectorintegration][.dacs]") {
+TEST_CASE("dac", "[.detectorintegration][dacs]") {
     // dac 0 to dac 17
 
     Detector det;

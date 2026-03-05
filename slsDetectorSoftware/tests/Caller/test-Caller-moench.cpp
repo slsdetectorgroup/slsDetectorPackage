@@ -18,7 +18,7 @@ using test::PUT;
 /* dacs */
 
 TEST_CASE("Setting and reading back moench dacs",
-          "[.detectorintegration][.dacs]") {
+          "[.detectorintegration][dacs]") {
     // vbp_colbuf, vipre, vin_cm, vb_sda, vcasc_sfp, vout_cm, vipre_cds,
     // ibias_sfp
     Detector det;

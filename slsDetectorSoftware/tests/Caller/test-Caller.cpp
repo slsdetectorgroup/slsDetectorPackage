@@ -519,7 +519,7 @@ TEST_CASE("trimval", "[.detectorintegration]") {
     }
 }
 
-TEST_CASE("trimen", "[.detectorintegration][.this]") {
+TEST_CASE("trimen", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -839,7 +839,7 @@ TEST_CASE("triggers", "[.detectorintegration]") {
     det.setNumberOfTriggers(prev_val);
 }
 
-TEST_CASE("exptime", "[.detectorintegration][.time]") {
+TEST_CASE("exptime", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -3292,7 +3292,7 @@ TEST_CASE("update", "[.detectorintegration]") {
     }
 }
 
-TEST_CASE("reg", "[.detectorintegration][.definecmds]") {
+TEST_CASE("reg", "[.detectorintegration][reg]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -3351,7 +3351,7 @@ TEST_CASE("adcreg", "[.detectorintegration]") {
     }
 }
 
-TEST_CASE("setbit", "[.detectorintegration][.definecmds]") {
+TEST_CASE("setbit", "[.detectorintegration][reg]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -3381,7 +3381,7 @@ TEST_CASE("setbit", "[.detectorintegration][.definecmds]") {
     }
 }
 
-TEST_CASE("clearbit", "[.detectorintegration][.definecmds]") {
+TEST_CASE("clearbit", "[.detectorintegration][reg]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -3411,7 +3411,7 @@ TEST_CASE("clearbit", "[.detectorintegration][.definecmds]") {
     }
 }
 
-TEST_CASE("getbit", "[.detectorintegration][.definecmds]") {
+TEST_CASE("getbit", "[.detectorintegration][reg]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();

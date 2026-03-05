@@ -68,7 +68,7 @@ If you want to run them for a specific virtual detector or a specific test use t
 
 .. code-block:: console
     cd build
-    python bin/test_simulators.py --servers jungfrau --test "[.rx]"
+    python bin/test_simulators.py --servers jungfrau --test "[dacs]"
 
 You can exclude specific tests by adding the option ``~[<disable_test_name>]``. Again, we assume that this marker is added to the tests that you want to exclude. 
 

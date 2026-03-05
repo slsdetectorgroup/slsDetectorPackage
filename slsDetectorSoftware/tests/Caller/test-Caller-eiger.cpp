@@ -127,7 +127,7 @@ TEST_CASE("temp_fpgafr", "[.detectorintegration]") {
 /* dacs */
 
 TEST_CASE("Setting and reading back EIGER dacs",
-          "[.detectorintegration][.dacs]") {
+          "[.detectorintegration][dacs]") {
     // vsvp, vtr, vrf, vrs, vsvn, vtgstv, vcmp_ll, vcmp_lr, vcal, vcmp_rl,
     // rxb_rb, rxb_lb, vcmp_rr, vcp, vcn, vis, vthreshold
     Detector det;

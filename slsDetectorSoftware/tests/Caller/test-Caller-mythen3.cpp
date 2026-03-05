@@ -20,7 +20,7 @@ using test::PUT;
 /* dacs */
 
 TEST_CASE("Setting and reading back MYTHEN3 dacs",
-          "[.detectorintegration][.dacs]") {
+          "[.detectorintegration][dacs]") {
     // vcassh, vth2, vshaper, vshaperneg, vipre_out, vth3, vth1,
     // vicin, vcas, vpreamp, vpl, vipre, viinsh, vph, vtrim, vdcsh,
 

@@ -501,6 +501,29 @@ TEST_CASE("dac", "[.detectorintegration][.dacs]") {
                 test_dac_caller(static_cast<defs::dacIndex>(i), "dac", 0);
             }
         }
+        // normal dacs
+        {
+            defs::dacIndex idac = defs::DAC_5;
+            auto previous = det.getDAC(idac, false);
+
+            REQUIRE_THROWS(
+                caller.call("dac", {std::to_string(idac), "-2"}, -1, PUT));
+            REQUIRE_THROWS(
+                caller.call("dac", {std::to_string(idac), "-1"}, -1, PUT));
+            REQUIRE_NOTHROW(
+                caller.call("dac", {std::to_string(idac), "-100"}, -1, PUT));
+
+            // Reset all dacs to previous value
+            for (int i = 0; i != det.size(); ++i) {
+                det.setDAC(idac, previous[i], false, {i});
+            }
+        }
+        REQUIRE_THROWS(caller.call("dac", {"18"}, -1, GET));
+        REQUIRE_THROWS(caller.call("dac", {"5", "4096"}, -1, PUT));
+        if (det_type == defs::CHIPTESTBOARD)
+            REQUIRE_THROWS(caller.call("dac", {"5", "2501", "mV"}, -1, PUT));
+        else
+            REQUIRE_THROWS(caller.call("dac", {"5", "2049", "mV"}, -1, PUT));
 
         // eiger
         // REQUIRE_THROWS(caller.call("dac", {"vthreshold"}, -1, GET));
@@ -1054,6 +1077,25 @@ TEST_CASE("v_abcd", "[.detectorintegration]") {
                 REQUIRE(prev_val.any(-100) == false);
                 REQUIRE(prev_val.any(-1) == false);
             }
+            REQUIRE_THROWS(caller.call(cmds[i], {"-2"}, -1, PUT));
+            REQUIRE_THROWS(caller.call(cmds[i], {"-100"}, -1, PUT));
+            REQUIRE_THROWS(caller.call(cmds[i], {"-1"}, -1, PUT));
+            if (cmds[i] == "v_io")
+                REQUIRE_THROWS(caller.call(cmds[i], {"1199"}, -1, PUT)); // min
+            else {
+                if (det_type == defs::XILINX_CHIPTESTBOARD) {
+                    REQUIRE_THROWS(
+                        caller.call(cmds[i], {"1040"}, -1, PUT)); // min v_a
+                } else {
+                    REQUIRE_THROWS(
+                        caller.call(cmds[i], {"635"}, -1, PUT)); // min v_a
+                }
+            }
+            if (det_type == defs::XILINX_CHIPTESTBOARD) {
+                REQUIRE_THROWS(caller.call(cmds[i], {"2662"}, -1, PUT)); // max
+            } else {
+                REQUIRE_THROWS(caller.call(cmds[i], {"2469"}, -1, PUT)); // max
+            }
             {
                 std::ostringstream oss;
                 caller.call(cmds[i], {"0"}, -1, PUT, oss);
@@ -1065,6 +1107,14 @@ TEST_CASE("v_abcd", "[.detectorintegration]") {
                 REQUIRE(oss1.str() == cmds[i] + " 1200\n");
                 caller.call(cmds[i], {}, -1, GET, oss2);
                 REQUIRE(oss2.str() == cmds[i] + " 1200\n");
+            }
+            {
+                auto vlimit = det.getDAC(defs::V_LIMIT)[0];
+                det.setDAC(defs::V_LIMIT, 1500, true, {0});
+                REQUIRE_NOTHROW(caller.call(cmds[i], {"1200"}, -1, PUT));
+                if (vlimit < 0)
+                    vlimit = 0;
+                det.setDAC(defs::V_LIMIT, vlimit, true, {0});
             }
             for (int imod = 0; imod != det.size(); ++imod) {
                 if (det_type == defs::XILINX_CHIPTESTBOARD &&

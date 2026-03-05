@@ -43,7 +43,7 @@ TEST_CASE("Get set bits from 523") {
     REQUIRE(vec == std::vector<int>{0, 1, 3, 9});
 }
 
-TEST_CASE("Convert RegisterAddress using classes ", "[support][.bit_utils]") {
+TEST_CASE("Convert RegisterAddress using classes ", "[support]") {
     std::vector<uint32_t> vec_addr{0x305, 0xffffffff, 0x0, 0x34550987,
                                    0x1fff1fff};
     std::vector<std::string> vec_ans{"0x305", "0xffffffff", "0x0", "0x34550987",
@@ -64,7 +64,7 @@ TEST_CASE("Convert RegisterAddress using classes ", "[support][.bit_utils]") {
     }
 }
 
-TEST_CASE("Convert RegisterValue using classes ", "[support][.bit_utils]") {
+TEST_CASE("Convert RegisterValue using classes ", "[support]") {
     std::vector<uint32_t> vec_addr{0x305, 0xffffffff, 0x0, 500254562,
                                    0x1fff1fff};
     std::vector<std::string> vec_ans{"0x305", "0xffffffff", "0x0", "0x1dd14762",
@@ -80,11 +80,10 @@ TEST_CASE("Convert RegisterValue using classes ", "[support][.bit_utils]") {
         CHECK(reg0.str() == vec_ans[i]);
         CHECK((reg0 | 0xffffffffu) == RegisterValue(0xffffffffu));
         CHECK((reg0 | 0x0) == reg0);
-        CHECK((reg0 | 0x1) == reg0);
     }
 }
 
-TEST_CASE("Convert BitAddress using classes", "[support][.bit_utils]") {
+TEST_CASE("Convert BitAddress using classes", "[support]") {
     std::vector<RegisterAddress> vec_addr{
         RegisterAddress(0x305), RegisterAddress(0xffffffffu),
         RegisterAddress(0x0), RegisterAddress(0x34550987),
@@ -123,7 +122,7 @@ TEST_CASE("Convert BitAddress using classes", "[support][.bit_utils]") {
 }
 
 TEST_CASE("Output operator gives same result as string",
-          "[support][.bit_utils]") {
+          "[support]") {
     {
         RegisterAddress addr{0x3456af};
         std::ostringstream os;
@@ -148,3 +147,23 @@ TEST_CASE("Output operator gives same result as string",
 }
 
 } // namespace sls
+
+TEST_CASE("RegisterAddress addition with uint", "[support]") {
+    using sls::RegisterAddress;
+
+    RegisterAddress r{0x10u};
+
+    // member operator+
+    auto r_plus = r + 5u;
+    CHECK(r_plus == RegisterAddress(0x15u));
+    // original unchanged
+    CHECK(r == RegisterAddress(0x10u));
+
+    // operator+=
+    r += 2u;
+    CHECK(r == RegisterAddress(0x12u));
+
+    // non-member uint + RegisterAddress
+    auto uint_plus = 3u + r; // 0x12 + 3 == 0x15
+    CHECK(uint_plus == RegisterAddress(0x15u));
+}

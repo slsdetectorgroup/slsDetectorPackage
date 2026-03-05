@@ -6,6 +6,7 @@
 #include "arm64.h"
 #include "programViaArm.h"
 
+#include <stdbool.h>
 #include <stdio.h> // FILE
 #include <stdlib.h>
 #include <sys/types.h>
@@ -119,21 +120,32 @@ int64_t getMeasurementTime();
 int setModule(sls_detector_module myMod, char *mess);
 
 // parameters - dac, adc, hv
-void setDAC(enum DACINDEX ind, int val, int mV);
-int getDAC(enum DACINDEX ind, int mV);
-int getMaxDacSteps();
-int dacToVoltage(int dac);
-int checkVLimitCompliant(int mV);
-int checkVLimitDacCompliant(int dac);
+int validateDACIndex(enum DACINDEX ind, char *mess);
+int validateDACVoltage(enum DACINDEX ind, int voltage, char *mess);
+int convertVoltageToDACValue(enum DACINDEX ind, int voltage, int *retval_dacval,
+                             char *mess);
+int convertDACValueToVoltage(enum DACINDEX ind, int dacval, int *retval_voltage,
+                             char *mess);
+int getDAC(enum DACINDEX ind, bool mV, int *retval, char *mess);
+/** @param val value can be in mV or dac units */
+int setDAC(enum DACINDEX ind, int val, bool mV, char *mess);
+
 int getVLimit();
-void setVLimit(int l);
-int getBitOffsetFromDACIndex(enum DACINDEX ind);
-int isPowerValid(enum DACINDEX ind, int val);
-int getPower();
-void setPower(enum DACINDEX ind, int val);
-int getADC(enum ADCINDEX ind, int *value);
-int getSlowADC(int ichan, int *retval);
-int getTemperature(int *retval);
+int setVLimit(int val, char *mess);
+
+int validatePower(enum PWRINDEX ind, int val, char *mess);
+int getPowerIndexFromDACIndex(enum DACINDEX ind, enum PWRINDEX *pwrIndex,
+                              char *mess);
+int getPowerRailMask(enum PWRINDEX ind, uint32_t *mask, char *mess);
+int EnablePowerRail(enum PWRINDEX ind, char *mess);
+int DisablePowerRail(enum PWRINDEX ind, char *mess);
+int getPowerRail(enum PWRINDEX ind, int *retval, char *mess);
+int getPower(enum DACINDEX ind, int *retval, char *mess);
+int setPower(enum DACINDEX ind, int val, char *mess);
+
+int getADC(enum ADCINDEX ind, int *value, char *mess);
+int getSlowADC(int ichan, int *retval, char *mess);
+int getTemperature(int *retval, char *mess);
 int setHighVoltage(int val);
 
 // parameters - timing, extsig

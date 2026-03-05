@@ -30,6 +30,7 @@ requirements:
     - zlib
     - expat
     - zeromq
+    - fmt
   
   run:
     - libstdcxx-ng

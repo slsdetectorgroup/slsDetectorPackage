@@ -1,6 +1,8 @@
 #include <cstdint>
 #include <string_view>
 
+namespace sls {
+
 enum class IPCore : uint32_t; // forward declaration of IPCore enum class
 
 struct Register {
@@ -16,10 +18,12 @@ struct RegisterField {
     /// @brief Register to which the field belongs
     const Register register_{};
 
-    /// @brief Bitmask for the field
-    const uint32_t bitmask{};
-
     /// @brief Bit position of the least significant bit of the field in the
     /// register
     const uint32_t bit_position{};
+
+    /// @brief Bitmask for the field
+    const uint32_t bitmask{};
 };
+
+} // namespace sls

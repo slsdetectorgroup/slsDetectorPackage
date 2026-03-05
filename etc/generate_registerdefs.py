@@ -77,6 +77,11 @@ constexpr RegisterField ModuleIndex{
 // clang-format on
 """
 
+postpend = r""" 
+} // namespace sls
+// clang-format on
+"""
+
 def main():
 
     args = argument_parser()

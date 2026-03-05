@@ -36,6 +36,15 @@ class RegisterAddress {
     constexpr bool operator!=(const RegisterAddress &other) const {
         return (value_ != other.value_);
     }
+    constexpr RegisterAddress &operator+=(uint32_t offset) noexcept {
+        value_ += offset;
+        return *this;
+    }
+    constexpr RegisterAddress operator+(uint32_t offset) const noexcept {
+        RegisterAddress tmp(*this);
+        tmp += offset;
+        return tmp;
+    }
 };
 
 class BitAddress {
@@ -101,5 +110,10 @@ class RegisterValue {
 std::ostream &operator<<(std::ostream &os, const RegisterAddress &r);
 std::ostream &operator<<(std::ostream &os, const BitAddress &r);
 std::ostream &operator<<(std::ostream &os, const RegisterValue &r);
+
+constexpr RegisterAddress operator+(uint32_t offset,
+                                    const RegisterAddress &addr) noexcept {
+    return addr + offset;
+}
 
 } // namespace sls

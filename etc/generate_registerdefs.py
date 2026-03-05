@@ -32,7 +32,10 @@ def argument_parser():
 
 # TODO: should be configurable 
 header = r"""
+// clang-format off
 #include "RegisterHelperStructs.hpp"
+
+namespace sls {
 
 /// @brief Enum for IP cores, value are adresses
 constexpr enum class IPCore : uint32_t {
@@ -43,6 +46,11 @@ constexpr enum class IPCore : uint32_t {
     PACKETIZERREG = 4,
     UNKNOWN = 5
 };
+"""
+
+postpend = r""" 
+} // namespace sls
+// clang-format on
 """
 
 def main():
@@ -68,7 +76,10 @@ def main():
         register_name = row["Reg_name"]
         ip_core_name = row["Interface"]
 
-        define_register_string = f'constexpr Register {register_name}{{{Ip_core_name_to_enum_type(ip_core_name)}, {hex(int(local_address_offset_in_bytes, 16))}}};'
+        define_register_string = (
+            f"constexpr Register {register_name}{{"
+            f"{Ip_core_name_to_enum_type(ip_core_name)}, {hex(int(local_address_offset_in_bytes, 16))}}};"
+        )
 
         header_file.write(f"{define_register_string}\n")
         header_file.write("\n") 
@@ -86,11 +97,15 @@ def main():
         to_bit = row["To_bit"]
         mask, offset = create_bitmask_and_offset(from_bit, to_bit)
 
-        define_registerfield_string = f"constexpr RegisterField {field_name}{{{register_name}, {hex(mask)}, {offset}}};"
+        define_registerfield_string = (
+            f"constexpr RegisterField {field_name}{{\n"
+            f"     {register_name}, {offset}, {hex(mask)}}};"
+            )
 
         header_file.write(f"{define_registerfield_string}\n")
         header_file.write("\n")
 
+    header_file.write(postpend) # TODO: have to take care xof it manually when in append mode - ugly  
     header_file.close()
 
 

@@ -496,7 +496,7 @@ TEST_CASE("trimval", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("trimen", "[.cmdcall][.this]") {
+TEST_CASE("trimen", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -816,7 +816,7 @@ TEST_CASE("triggers", "[.cmdcall]") {
     det.setNumberOfTriggers(prev_val);
 }
 
-TEST_CASE("exptime", "[.cmdcall][.time]") {
+TEST_CASE("exptime", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -3267,7 +3267,7 @@ TEST_CASE("update", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("reg", "[.cmdcall]") {
+TEST_CASE("reg", "[.detectorintegration][reg]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -3326,7 +3326,7 @@ TEST_CASE("adcreg", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("setbit", "[.cmdcall]") {
+TEST_CASE("setbit", "[.detectorintegration][reg]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -3356,7 +3356,7 @@ TEST_CASE("setbit", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("clearbit", "[.cmdcall]") {
+TEST_CASE("clearbit", "[.detectorintegration][reg]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -3386,7 +3386,7 @@ TEST_CASE("clearbit", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("getbit", "[.cmdcall]") {
+TEST_CASE("getbit", "[.detectorintegration][reg]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();

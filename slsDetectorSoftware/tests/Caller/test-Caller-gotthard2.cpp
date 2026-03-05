@@ -106,7 +106,8 @@ TEST_CASE("timegotthard2", "[.cmdcall]") {
 }
 /* dacs */
 
-TEST_CASE("Setting and reading back GOTTHARD2 dacs", "[.cmdcall][.dacs]") {
+TEST_CASE("Setting and reading back GOTTHARD2 dacs",
+          "[.detectorintegration][dacs]") {
     // vref_h_adc,   vb_comp_fe, vb_comp_adc,  vcom_cds,
     // vref_restore, vb_opa_1st, vref_comp_fe, vcom_adc1,
     // vref_prech,   vref_l_adc, vref_cds,     vb_cs,
@@ -215,7 +216,7 @@ TEST_CASE("Setting and reading back GOTTHARD2 dacs", "[.cmdcall][.dacs]") {
 
 /* on chip dacs */
 
-TEST_CASE("vchip_comp_fe", "[.cmdcall][.onchipdacs]") {
+TEST_CASE("vchip_comp_fe", "[.detectorintegration][dacs]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -228,7 +229,7 @@ TEST_CASE("vchip_comp_fe", "[.cmdcall][.onchipdacs]") {
     }
 }
 
-TEST_CASE("vchip_opa_1st", "[.cmdcall][.onchipdacs]") {
+TEST_CASE("vchip_opa_1st", "[.detectorintegration][dacs]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -241,7 +242,7 @@ TEST_CASE("vchip_opa_1st", "[.cmdcall][.onchipdacs]") {
     }
 }
 
-TEST_CASE("vchip_opa_fd", "[.cmdcall][.onchipdacs]") {
+TEST_CASE("vchip_opa_fd", "[.detectorintegration][dacs]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -254,7 +255,7 @@ TEST_CASE("vchip_opa_fd", "[.cmdcall][.onchipdacs]") {
     }
 }
 
-TEST_CASE("vchip_comp_adc", "[.cmdcall][.onchipdacs]") {
+TEST_CASE("vchip_comp_adc", "[.detectorintegration][dacs]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -267,7 +268,7 @@ TEST_CASE("vchip_comp_adc", "[.cmdcall][.onchipdacs]") {
     }
 }
 
-TEST_CASE("vchip_ref_comp_fe", "[.cmdcall][.onchipdacs]") {
+TEST_CASE("vchip_ref_comp_fe", "[.detectorintegration][dacs]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -281,7 +282,7 @@ TEST_CASE("vchip_ref_comp_fe", "[.cmdcall][.onchipdacs]") {
     }
 }
 
-TEST_CASE("vchip_cs", "[.cmdcall][.onchipdacs]") {
+TEST_CASE("vchip_cs", "[.detectorintegration][dacs]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();

@@ -25,7 +25,7 @@ python/scripts/list_tested_cmd.py to check if all commands are covered
 
 /* configuration */
 
-TEST_CASE("rx_version", "[.cmdcall][.rx]") {
+TEST_CASE("rx_version", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     std::ostringstream oss;
@@ -39,7 +39,7 @@ TEST_CASE("rx_version", "[.cmdcall][.rx]") {
 }
 
 /* acquisition */
-TEST_CASE("rx_start", "[.cmdcall][.rx]") {
+TEST_CASE("rx_start", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     det.setFileWrite(false); // avoid writing or error on file creation
@@ -57,7 +57,7 @@ TEST_CASE("rx_start", "[.cmdcall][.rx]") {
     }
 }
 
-TEST_CASE("rx_stop", "[.cmdcall][.rx]") {
+TEST_CASE("rx_stop", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     // PUT only command
@@ -74,7 +74,7 @@ TEST_CASE("rx_stop", "[.cmdcall][.rx]") {
     }
 }
 
-TEST_CASE("rx_status", "[.cmdcall][.rx]") {
+TEST_CASE("rx_status", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     det.setFileWrite(false); // avoid writing or error on file creation
@@ -92,7 +92,7 @@ TEST_CASE("rx_status", "[.cmdcall][.rx]") {
     }
 }
 
-TEST_CASE("rx_framescaught", "[.cmdcall][.rx]") {
+TEST_CASE("rx_framescaught", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     // This ensures 0 caught frames
@@ -126,7 +126,7 @@ TEST_CASE("rx_framescaught", "[.cmdcall][.rx]") {
     }
 }
 
-TEST_CASE("rx_missingpackets", "[.cmdcall][.rx]") {
+TEST_CASE("rx_missingpackets", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getFileWrite();
@@ -171,7 +171,7 @@ TEST_CASE("rx_missingpackets", "[.cmdcall][.rx]") {
     det.setNumberOfFrames(prev_frames);
 }
 
-TEST_CASE("rx_frameindex", "[.cmdcall][.rx]") {
+TEST_CASE("rx_frameindex", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     caller.call("rx_frameindex", {}, -1, GET);
@@ -182,7 +182,7 @@ TEST_CASE("rx_frameindex", "[.cmdcall][.rx]") {
 
 /* Network Configuration (Detector<->Receiver) */
 
-TEST_CASE("rx_printconfig", "[.cmdcall][.rx]") {
+TEST_CASE("rx_printconfig", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     REQUIRE_NOTHROW(caller.call("rx_printconfig", {}, -1, GET));
@@ -190,7 +190,7 @@ TEST_CASE("rx_printconfig", "[.cmdcall][.rx]") {
 
 /* Receiver Config */
 
-TEST_CASE("rx_hostname", "[.cmdcall][.rx]") {
+TEST_CASE("rx_hostname", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getRxHostname();
@@ -222,7 +222,7 @@ TEST_CASE("rx_hostname", "[.cmdcall][.rx]") {
     }
 }
 
-TEST_CASE("rx_tcpport", "[.cmdcall][.rx]") {
+TEST_CASE("rx_tcpport", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getRxPort();
@@ -261,7 +261,7 @@ TEST_CASE("rx_tcpport", "[.cmdcall][.rx]") {
     }
 }
 
-TEST_CASE("rx_fifodepth", "[.cmdcall][.rx]") {
+TEST_CASE("rx_fifodepth", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getRxFifoDepth();
@@ -285,7 +285,7 @@ TEST_CASE("rx_fifodepth", "[.cmdcall][.rx]") {
     }
 }
 
-TEST_CASE("rx_silent", "[.cmdcall][.rx]") {
+TEST_CASE("rx_silent", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getRxSilentMode();
@@ -309,7 +309,7 @@ TEST_CASE("rx_silent", "[.cmdcall][.rx]") {
     }
 }
 
-TEST_CASE("rx_discardpolicy", "[.cmdcall][.rx]") {
+TEST_CASE("rx_discardpolicy", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getRxFrameDiscardPolicy();
@@ -338,7 +338,7 @@ TEST_CASE("rx_discardpolicy", "[.cmdcall][.rx]") {
     }
 }
 
-TEST_CASE("rx_padding", "[.cmdcall][.rx]") {
+TEST_CASE("rx_padding", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getPartialFramesPadding();
@@ -362,7 +362,7 @@ TEST_CASE("rx_padding", "[.cmdcall][.rx]") {
     }
 }
 
-TEST_CASE("rx_udpsocksize", "[.cmdcall][.rx]") {
+TEST_CASE("rx_udpsocksize", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     int64_t prev_val = det.getRxUDPSocketBufferSize().tsquash(
@@ -382,7 +382,7 @@ TEST_CASE("rx_udpsocksize", "[.cmdcall][.rx]") {
     det.setRxUDPSocketBufferSize(prev_val);
 }
 
-TEST_CASE("rx_realudpsocksize", "[.cmdcall][.rx]") {
+TEST_CASE("rx_realudpsocksize", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     uint64_t val = 0;
@@ -401,7 +401,7 @@ TEST_CASE("rx_realudpsocksize", "[.cmdcall][.rx]") {
     }
 }
 
-TEST_CASE("rx_lock", "[.cmdcall][.rx]") {
+TEST_CASE("rx_lock", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getRxLock();
@@ -425,7 +425,7 @@ TEST_CASE("rx_lock", "[.cmdcall][.rx]") {
     }
 }
 
-TEST_CASE("rx_lastclient", "[.cmdcall][.rx]") {
+TEST_CASE("rx_lastclient", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     std::ostringstream oss;
@@ -435,14 +435,14 @@ TEST_CASE("rx_lastclient", "[.cmdcall][.rx]") {
     }
 }
 
-TEST_CASE("rx_threads", "[.cmdcall][.rx]") {
+TEST_CASE("rx_threads", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     std::ostringstream oss;
     REQUIRE_NOTHROW(caller.call("rx_threads", {}, -1, GET, oss));
 }
 
-TEST_CASE("rx_arping", "[.cmdcall][.rx]") {
+TEST_CASE("rx_arping", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getRxArping();
@@ -970,7 +970,7 @@ TEST_CASE("foverwrite", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("rx_framesperfile", "[.cmdcall][.rx]") {
+TEST_CASE("rx_framesperfile", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getFramesPerFile();
@@ -1001,7 +1001,7 @@ TEST_CASE("rx_framesperfile", "[.cmdcall][.rx]") {
 
 /* ZMQ Streaming Parameters (Receiver<->Client) */
 
-TEST_CASE("rx_zmqstream", "[.cmdcall][.rx]") {
+TEST_CASE("rx_zmqstream", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getRxZmqDataStream();
@@ -1027,7 +1027,7 @@ TEST_CASE("rx_zmqstream", "[.cmdcall][.rx]") {
     }
 }
 
-TEST_CASE("rx_zmqfreq", "[.cmdcall][.rx]") {
+TEST_CASE("rx_zmqfreq", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getRxZmqFrequency();
@@ -1051,7 +1051,7 @@ TEST_CASE("rx_zmqfreq", "[.cmdcall][.rx]") {
     }
 }
 
-TEST_CASE("rx_zmqstartfnum", "[.cmdcall][.rx]") {
+TEST_CASE("rx_zmqstartfnum", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getRxZmqStartingFrame();
@@ -1075,7 +1075,7 @@ TEST_CASE("rx_zmqstartfnum", "[.cmdcall][.rx]") {
     }
 }
 
-TEST_CASE("rx_zmqport", "[.cmdcall][.rx]") {
+TEST_CASE("rx_zmqport", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto prev_val_zmqport = det.getRxZmqPort();
@@ -1153,7 +1153,7 @@ TEST_CASE("rx_zmqhwm", "[.cmdcall]") {
 
 /* CTB Specific */
 
-TEST_CASE("rx_dbitlist", "[.cmdcall][.rx]") {
+TEST_CASE("rx_dbitlist", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1183,7 +1183,7 @@ TEST_CASE("rx_dbitlist", "[.cmdcall][.rx]") {
     }
 }
 
-TEST_CASE("rx_dbitoffset", "[.cmdcall][.rx]") {
+TEST_CASE("rx_dbitoffset", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1218,7 +1218,7 @@ TEST_CASE("rx_dbitoffset", "[.cmdcall][.rx]") {
     }
 }
 
-TEST_CASE("rx_dbitreorder", "[.cmdcall][.rx]") {
+TEST_CASE("rx_dbitreorder", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1249,7 +1249,7 @@ TEST_CASE("rx_dbitreorder", "[.cmdcall][.rx]") {
     }
 }
 
-TEST_CASE("rx_jsonaddheader", "[.cmdcall][.rx]") {
+TEST_CASE("rx_jsonaddheader", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getAdditionalJsonHeader();
@@ -1275,7 +1275,7 @@ TEST_CASE("rx_jsonaddheader", "[.cmdcall][.rx]") {
     }
 }
 
-TEST_CASE("rx_jsonpara", "[.cmdcall][.rx]") {
+TEST_CASE("rx_jsonpara", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getAdditionalJsonHeader();

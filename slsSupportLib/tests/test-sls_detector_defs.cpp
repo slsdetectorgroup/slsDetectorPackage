@@ -7,7 +7,7 @@ namespace sls {
 
 using dt = slsDetectorDefs::detectorType;
 
-TEST_CASE("sls_detector_module default construction", "[support][new]") {
+TEST_CASE("sls_detector_module default construction", "[support]") {
     sls_detector_module m;
     CHECK(m.serialnumber == 0);
     CHECK(m.nchan == 0);

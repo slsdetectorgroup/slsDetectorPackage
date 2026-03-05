@@ -194,8 +194,8 @@ void AD9257_Disable() {
                           ~(AD9257_DigMask));
 }
 
-int AD9257_GetVrefVoltage(int mV) {
-    if (mV == 0)
+int AD9257_GetVrefVoltage(bool mV) {
+    if (!mV)
         return AD9257_VrefVoltage;
     switch (AD9257_VrefVoltage) {
     case 0:
@@ -214,7 +214,7 @@ int AD9257_GetVrefVoltage(int mV) {
     }
 }
 
-int AD9257_SetVrefVoltage(int val, int mV) {
+int AD9257_SetVrefVoltage(int val, bool mV) {
     int mode = val;
     // convert to mode
     if (mV) {

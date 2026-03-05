@@ -5,7 +5,7 @@
 
 namespace sls {
 
-TEST_CASE("check if version is semantic", "[.version]") {
+TEST_CASE("check if version is semantic", "[version]") {
 
     auto [version_string, has_semantic_version] =
         GENERATE(std::make_tuple("developer 0x250512", false),

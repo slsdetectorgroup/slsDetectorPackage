@@ -19,7 +19,7 @@ using test::PUT;
 
 /* dacs */
 
-TEST_CASE("dacname", "[.cmdcall]") {
+TEST_CASE("dacname", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -54,7 +54,7 @@ TEST_CASE("dacname", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("dacindex", "[.cmdcall]") {
+TEST_CASE("dacindex", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -80,7 +80,7 @@ TEST_CASE("dacindex", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("adclist", "[.cmdcall]") {
+TEST_CASE("adclist", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -113,7 +113,7 @@ TEST_CASE("adclist", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("adcname", "[.cmdcall]") {
+TEST_CASE("adcname", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -148,7 +148,7 @@ TEST_CASE("adcname", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("adcindex", "[.cmdcall]") {
+TEST_CASE("adcindex", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -174,7 +174,7 @@ TEST_CASE("adcindex", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("signallist", "[.cmdcall]") {
+TEST_CASE("signallist", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -207,7 +207,7 @@ TEST_CASE("signallist", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("signalname", "[.cmdcall]") {
+TEST_CASE("signalname", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -242,7 +242,7 @@ TEST_CASE("signalname", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("signalindex", "[.cmdcall]") {
+TEST_CASE("signalindex", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -269,7 +269,7 @@ TEST_CASE("signalindex", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("powerlist", "[.cmdcall]") {
+TEST_CASE("powerlist", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -302,7 +302,7 @@ TEST_CASE("powerlist", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("powername", "[.cmdcall]") {
+TEST_CASE("powername", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -337,7 +337,7 @@ TEST_CASE("powername", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("powerindex", "[.cmdcall]") {
+TEST_CASE("powerindex", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -364,7 +364,7 @@ TEST_CASE("powerindex", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("powervalues", "[.cmdcall]") {
+TEST_CASE("powervalues", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -377,7 +377,7 @@ TEST_CASE("powervalues", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("slowadcvalues", "[.cmdcall]") {
+TEST_CASE("slowadcvalues", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -390,7 +390,7 @@ TEST_CASE("slowadcvalues", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("slowadclist", "[.cmdcall]") {
+TEST_CASE("slowadclist", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -423,7 +423,7 @@ TEST_CASE("slowadclist", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("slowadcname", "[.cmdcall]") {
+TEST_CASE("slowadcname", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -459,7 +459,7 @@ TEST_CASE("slowadcname", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("slowadcindex", "[.cmdcall]") {
+TEST_CASE("slowadcindex", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -488,7 +488,7 @@ TEST_CASE("slowadcindex", "[.cmdcall]") {
 
 /* dacs */
 
-TEST_CASE("dac", "[.cmdcall][.dacs]") {
+TEST_CASE("dac", "[.detectorintegration][dacs]") {
     // dac 0 to dac 17
 
     Detector det;
@@ -501,6 +501,29 @@ TEST_CASE("dac", "[.cmdcall][.dacs]") {
                 test_dac_caller(static_cast<defs::dacIndex>(i), "dac", 0);
             }
         }
+        // normal dacs
+        {
+            defs::dacIndex idac = defs::DAC_5;
+            auto previous = det.getDAC(idac, false);
+
+            REQUIRE_THROWS(
+                caller.call("dac", {std::to_string(idac), "-2"}, -1, PUT));
+            REQUIRE_THROWS(
+                caller.call("dac", {std::to_string(idac), "-1"}, -1, PUT));
+            REQUIRE_NOTHROW(
+                caller.call("dac", {std::to_string(idac), "-100"}, -1, PUT));
+
+            // Reset all dacs to previous value
+            for (int i = 0; i != det.size(); ++i) {
+                det.setDAC(idac, previous[i], false, {i});
+            }
+        }
+        REQUIRE_THROWS(caller.call("dac", {"18"}, -1, GET));
+        REQUIRE_THROWS(caller.call("dac", {"5", "4096"}, -1, PUT));
+        if (det_type == defs::CHIPTESTBOARD)
+            REQUIRE_THROWS(caller.call("dac", {"5", "2501", "mV"}, -1, PUT));
+        else
+            REQUIRE_THROWS(caller.call("dac", {"5", "2049", "mV"}, -1, PUT));
 
         // eiger
         // REQUIRE_THROWS(caller.call("dac", {"vthreshold"}, -1, GET));
@@ -564,7 +587,7 @@ TEST_CASE("dac", "[.cmdcall][.dacs]") {
     }
 }
 
-TEST_CASE("adcvpp", "[.cmdcall]") {
+TEST_CASE("adcvpp", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -596,7 +619,7 @@ TEST_CASE("adcvpp", "[.cmdcall]") {
 
 /* CTB Specific */
 
-TEST_CASE("samples", "[.cmdcall]") {
+TEST_CASE("samples", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -640,7 +663,7 @@ TEST_CASE("samples", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("asamples", "[.cmdcall]") {
+TEST_CASE("asamples", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -671,7 +694,7 @@ TEST_CASE("asamples", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("adcclk", "[.cmdcall]") {
+TEST_CASE("adcclk", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -702,7 +725,7 @@ TEST_CASE("adcclk", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("runclk", "[.cmdcall]") {
+TEST_CASE("runclk", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -733,7 +756,7 @@ TEST_CASE("runclk", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("syncclk", "[.cmdcall]") {
+TEST_CASE("syncclk", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -745,7 +768,7 @@ TEST_CASE("syncclk", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("v_limit", "[.cmdcall]") {
+TEST_CASE("v_limit", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -784,7 +807,7 @@ TEST_CASE("v_limit", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("adcenable", "[.cmdcall]") {
+TEST_CASE("adcenable", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -814,7 +837,7 @@ TEST_CASE("adcenable", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("adcenable10g", "[.cmdcall]") {
+TEST_CASE("adcenable10g", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -845,7 +868,7 @@ TEST_CASE("adcenable10g", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("transceiverenable", "[.cmdcall]") {
+TEST_CASE("transceiverenable", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -878,7 +901,7 @@ TEST_CASE("transceiverenable", "[.cmdcall]") {
 
 /* CTB Specific */
 
-TEST_CASE("dsamples", "[.cmdcall]") {
+TEST_CASE("dsamples", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -909,7 +932,7 @@ TEST_CASE("dsamples", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("tsamples", "[.cmdcall]") {
+TEST_CASE("tsamples", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -932,6 +955,11 @@ TEST_CASE("tsamples", "[.cmdcall]") {
             caller.call("tsamples", {}, -1, GET, oss);
             REQUIRE(oss.str() == "tsamples 450\n");
         }
+        if (det_type == defs::XILINX_CHIPTESTBOARD) {
+            std::ostringstream oss;
+            caller.call("tsamples", {"10000"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "tsamples 10000\n");
+        }
         for (int i = 0; i != det.size(); ++i) {
             det.setNumberOfTransceiverSamples(prev_val[i], {i});
         }
@@ -940,7 +968,7 @@ TEST_CASE("tsamples", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("romode", "[.cmdcall]") {
+TEST_CASE("romode", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -994,7 +1022,7 @@ TEST_CASE("romode", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("dbitclk", "[.cmdcall]") {
+TEST_CASE("dbitclk", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1025,51 +1053,84 @@ TEST_CASE("dbitclk", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("v_abcd", "[.cmdcall]") {
+TEST_CASE("v_abcd", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
+    std::vector<std::string> cmds{"v_a", "v_b", "v_c", "v_d"};
+    std::vector<defs::dacIndex> indices{defs::V_POWER_A, defs::V_POWER_B,
+                                        defs::V_POWER_C, defs::V_POWER_D};
+
     if (det.isVirtualDetectorServer().tsquash("Inconsistent virtual servers")) {
+        cmds.push_back("v_io");
+        indices.push_back(defs::V_POWER_IO);
+    }
 
-        std::vector<std::string> cmds{"v_a", "v_b", "v_c", "v_d", "v_io"};
-        std::vector<defs::dacIndex> indices{defs::V_POWER_A, defs::V_POWER_B,
-                                            defs::V_POWER_C, defs::V_POWER_D,
-                                            defs::V_POWER_IO};
-
-        for (size_t i = 0; i < cmds.size(); ++i) {
-            if (det_type == defs::CHIPTESTBOARD ||
-                det_type == defs::XILINX_CHIPTESTBOARD) {
-                auto prev_val = det.getPower(indices[i]);
-                {
-                    std::ostringstream oss;
-                    caller.call(cmds[i], {"0"}, -1, PUT, oss);
-                    REQUIRE(oss.str() == cmds[i] + " 0\n");
-                }
-                {
-                    std::ostringstream oss1, oss2;
-                    caller.call(cmds[i], {"1200"}, -1, PUT, oss1);
-                    REQUIRE(oss1.str() == cmds[i] + " 1200\n");
-                    caller.call(cmds[i], {}, -1, GET, oss2);
-                    REQUIRE(oss2.str() == cmds[i] + " 1200\n");
-                }
-                for (int i = 0; i != det.size(); ++i) {
-                    if (det_type == defs::XILINX_CHIPTESTBOARD &&
-                        prev_val[i] == -100) {
-                        prev_val[i] = 0;
-                        continue;
-                    }
-                    det.setPower(indices[i], prev_val[i], {i});
-                }
-
-            } else {
-                REQUIRE_THROWS(caller.call(cmds[i], {}, -1, GET));
+    for (size_t i = 0; i < cmds.size(); ++i) {
+        if (det_type == defs::CHIPTESTBOARD ||
+            det_type == defs::XILINX_CHIPTESTBOARD) {
+            auto prev_val = det.getPower(indices[i]);
+            // this is the first command touching power dacs, should not be
+            // -100
+            if (det_type == defs::XILINX_CHIPTESTBOARD) {
+                REQUIRE(prev_val.any(-100) == false);
+                REQUIRE(prev_val.any(-1) == false);
             }
+            REQUIRE_THROWS(caller.call(cmds[i], {"-2"}, -1, PUT));
+            REQUIRE_THROWS(caller.call(cmds[i], {"-100"}, -1, PUT));
+            REQUIRE_THROWS(caller.call(cmds[i], {"-1"}, -1, PUT));
+            if (cmds[i] == "v_io")
+                REQUIRE_THROWS(caller.call(cmds[i], {"1199"}, -1, PUT)); // min
+            else {
+                if (det_type == defs::XILINX_CHIPTESTBOARD) {
+                    REQUIRE_THROWS(
+                        caller.call(cmds[i], {"1040"}, -1, PUT)); // min v_a
+                } else {
+                    REQUIRE_THROWS(
+                        caller.call(cmds[i], {"635"}, -1, PUT)); // min v_a
+                }
+            }
+            if (det_type == defs::XILINX_CHIPTESTBOARD) {
+                REQUIRE_THROWS(caller.call(cmds[i], {"2662"}, -1, PUT)); // max
+            } else {
+                REQUIRE_THROWS(caller.call(cmds[i], {"2469"}, -1, PUT)); // max
+            }
+            {
+                std::ostringstream oss;
+                caller.call(cmds[i], {"0"}, -1, PUT, oss);
+                REQUIRE(oss.str() == cmds[i] + " 0\n");
+            }
+            {
+                std::ostringstream oss1, oss2;
+                caller.call(cmds[i], {"1200"}, -1, PUT, oss1);
+                REQUIRE(oss1.str() == cmds[i] + " 1200\n");
+                caller.call(cmds[i], {}, -1, GET, oss2);
+                REQUIRE(oss2.str() == cmds[i] + " 1200\n");
+            }
+            {
+                auto vlimit = det.getDAC(defs::V_LIMIT)[0];
+                det.setDAC(defs::V_LIMIT, 1500, true, {0});
+                REQUIRE_NOTHROW(caller.call(cmds[i], {"1200"}, -1, PUT));
+                if (vlimit < 0)
+                    vlimit = 0;
+                det.setDAC(defs::V_LIMIT, vlimit, true, {0});
+            }
+            for (int imod = 0; imod != det.size(); ++imod) {
+                if (det_type == defs::XILINX_CHIPTESTBOARD &&
+                    prev_val[imod] == -100) {
+                    prev_val[imod] = 0;
+                }
+                det.setPower(indices[i], prev_val[imod], {imod});
+            }
+
+        } else {
+            REQUIRE_THROWS(caller.call(cmds[i], {}, -1, GET));
         }
     }
 }
 
-TEST_CASE("v_io", "[.cmdcall]") {
+TEST_CASE("v_io", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1082,7 +1143,7 @@ TEST_CASE("v_io", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("v_chip", "[.cmdcall]") {
+TEST_CASE("v_chip", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1094,7 +1155,7 @@ TEST_CASE("v_chip", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("vm_a", "[.cmdcall]") {
+TEST_CASE("vm_a", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1105,7 +1166,7 @@ TEST_CASE("vm_a", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("vm_b", "[.cmdcall]") {
+TEST_CASE("vm_b", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1116,7 +1177,7 @@ TEST_CASE("vm_b", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("vm_c", "[.cmdcall]") {
+TEST_CASE("vm_c", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1127,7 +1188,7 @@ TEST_CASE("vm_c", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("vm_d", "[.cmdcall]") {
+TEST_CASE("vm_d", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1138,7 +1199,7 @@ TEST_CASE("vm_d", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("vm_io", "[.cmdcall]") {
+TEST_CASE("vm_io", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1149,7 +1210,7 @@ TEST_CASE("vm_io", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("im_a", "[.cmdcall]") {
+TEST_CASE("im_a", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1160,7 +1221,7 @@ TEST_CASE("im_a", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("im_b", "[.cmdcall]") {
+TEST_CASE("im_b", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1171,7 +1232,7 @@ TEST_CASE("im_b", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("im_c", "[.cmdcall]") {
+TEST_CASE("im_c", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1182,7 +1243,7 @@ TEST_CASE("im_c", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("im_d", "[.cmdcall]") {
+TEST_CASE("im_d", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1193,7 +1254,7 @@ TEST_CASE("im_d", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("im_io", "[.cmdcall]") {
+TEST_CASE("im_io", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1204,7 +1265,7 @@ TEST_CASE("im_io", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("slowadc", "[.cmdcall]") {
+TEST_CASE("slowadc", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1220,7 +1281,7 @@ TEST_CASE("slowadc", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("extsampling", "[.cmdcall]") {
+TEST_CASE("extsampling", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1250,7 +1311,7 @@ TEST_CASE("extsampling", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("extsamplingsrc", "[.cmdcall]") {
+TEST_CASE("extsamplingsrc", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1281,7 +1342,7 @@ TEST_CASE("extsamplingsrc", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("diodelay", "[.cmdcall]") {
+TEST_CASE("diodelay", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1304,7 +1365,7 @@ TEST_CASE("diodelay", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("led", "[.cmdcall]") {
+TEST_CASE("led", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1334,7 +1395,7 @@ TEST_CASE("led", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("define_reg", "[.cmdcall][.definecmds]") {
+TEST_CASE("define_reg", "[.detectorintegration][reg]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1412,7 +1473,7 @@ TEST_CASE("define_reg", "[.cmdcall][.definecmds]") {
     }
 }
 
-TEST_CASE("define_bit", "[.cmdcall][.definecmds]") {
+TEST_CASE("define_bit", "[.detectorintegration][reg]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1509,7 +1570,7 @@ TEST_CASE("define_bit", "[.cmdcall][.definecmds]") {
 }
 
 TEST_CASE("using define for reg, setbit, getbit and clearbit",
-          "[.cmdcall][.definecmds]") {
+          "[.detectorintegration][reg]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1623,7 +1684,7 @@ TEST_CASE("using define for reg, setbit, getbit and clearbit",
     }
 }
 
-TEST_CASE("definelist_reg", "[.cmdcall][.definecmds]") {
+TEST_CASE("definelist_reg", "[.detectorintegration][reg]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1656,7 +1717,7 @@ TEST_CASE("definelist_reg", "[.cmdcall][.definecmds]") {
     }
 }
 
-TEST_CASE("definelist_bit", "[.cmdcall][.definecmds]") {
+TEST_CASE("definelist_bit", "[.detectorintegration][reg]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();

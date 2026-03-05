@@ -16,8 +16,11 @@ namespace sls {
 using test::GET;
 using test::PUT;
 
+// disable for jungfrau as it requires higher maximum receive buffer size
+//  sysctl net.core.rmem_max=$((100*1024*1024))
+//  sysctl net.core.rmem_default=$((100*1024*1024))
 TEST_CASE("jungfrau_or_moench_acquire_check_file_size",
-          "[.cmdcall][.cmdacquire]") {
+          "[.detectorintegration][.disable_check_data_file]") {
 
     Detector det;
     Caller caller(&det);
@@ -47,7 +50,8 @@ TEST_CASE("jungfrau_or_moench_acquire_check_file_size",
     }
 }
 
-TEST_CASE("eiger_acquire_check_file_size", "[.cmdcall][.cmdacquire]") {
+TEST_CASE("eiger_acquire_check_file_size",
+          "[.detectorintegration][.disable_check_data_file]") {
     Detector det;
     Caller caller(&det);
     auto det_type =
@@ -78,7 +82,8 @@ TEST_CASE("eiger_acquire_check_file_size", "[.cmdcall][.cmdacquire]") {
     }
 }
 
-TEST_CASE("mythen3_acquire_check_file_size", "[.cmdcall][.cmdacquire]") {
+TEST_CASE("mythen3_acquire_check_file_size",
+          "[.detectorintegration][.disable_check_data_file]") {
     Detector det;
     Caller caller(&det);
     auto det_type =
@@ -111,7 +116,8 @@ TEST_CASE("mythen3_acquire_check_file_size", "[.cmdcall][.cmdacquire]") {
     }
 }
 
-TEST_CASE("gotthard2_acquire_check_file_size", "[.cmdcall][.cmdacquire]") {
+TEST_CASE("gotthard2_acquire_check_file_size",
+          "[.detectorintegration][.disable_check_data_file]") {
     Detector det;
     Caller caller(&det);
     auto det_type =
@@ -150,7 +156,11 @@ void test_ctb_file_size_with_acquire(Detector &det, Caller &caller,
                                                   expected_image_size));
 }
 
-TEST_CASE("ctb_acquire_check_file_size", "[.cmdcall][.cmdacquire]") {
+// disable for xilinx_ctb as it requires higher maximum receive buffer size
+//  sysctl net.core.rmem_max=$((100*1024*1024))
+//  sysctl net.core.rmem_default=$((100*1024*1024))
+TEST_CASE("ctb_acquire_check_file_size",
+          "[.detectorintegration][.disable_check_data_file]") {
     Detector det;
     Caller caller(&det);
     auto det_type =

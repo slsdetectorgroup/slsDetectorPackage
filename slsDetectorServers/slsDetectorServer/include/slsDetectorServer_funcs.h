@@ -4,6 +4,7 @@
 #include "clogger.h"
 #include "common.h"
 #include "sls/sls_detector_defs.h"
+#include <stdbool.h>
 
 #define GOODBYE (-200)
 #define REBOOT  (-400)
@@ -39,7 +40,7 @@ int set_bus_test(int);
 int set_image_test_mode(int);
 int get_image_test_mode(int);
 enum DACINDEX getDACIndex(enum dacIndex ind);
-int validateAndSetDac(enum dacIndex ind, int val, int mV);
+int processDACEnums(enum dacIndex ind, int val, bool mV);
 int set_dac(int);
 int get_adc(int);
 int write_register(int);
@@ -338,3 +339,5 @@ int get_collection_mode(int);
 int set_collection_mode(int);
 int get_pattern_wait_interval(int);
 int set_pattern_wait_interval(int);
+int spi_read(int);
+int spi_write(int);

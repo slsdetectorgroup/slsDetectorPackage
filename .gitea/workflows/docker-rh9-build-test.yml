@@ -1,0 +1,40 @@
+name: Build on RHEL9 docker image
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: "ubuntu-latest"
+    container:
+      image: gitea.psi.ch/detectors/rhel9-detectors-dev
+    steps:
+      - uses: actions/checkout@v4
+
+
+      - name: Build library 
+        run: |
+            mkdir build && cd build
+            cmake .. -DSLS_USE_PYTHON=ON -DSLS_USE_TESTS=ON  -DSLS_USE_SIMULATOR=ON
+            make -j 2 
+
+      - name: C++ unit tests
+        working-directory: ${{gitea.workspace}}/build
+        run: ctest -j1  --rerun-failed --output-on-failure
+
+      - name: Install Python dependencies
+        run: |
+          python3.12 -m pip install --upgrade pip
+          python3.12 -m pip install pytest
+          python3.12 -m pip install colorama
+          python3.12 -m pip install numpy
+
+      - name: Python unit tests
+        working-directory: ${{gitea.workspace}}
+        run: |
+          export PYTHONPATH=$PWD/build/bin:$PYTHONPATH
+          python3.12 -m pytest python/tests

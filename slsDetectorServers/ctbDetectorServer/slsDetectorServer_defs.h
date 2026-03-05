@@ -173,5 +173,9 @@ enum DACINDEX {
     D_PWR_A,
     D_PWR_IO
 };
+
+enum PWRINDEX { PWR_IO, PWR_A, PWR_B, PWR_C, PWR_D };
+#define PWR_NAMES "VIO", "VA", "VB", "VC", "VD"
+
 enum CLKINDEX { RUN_CLK, ADC_CLK, SYNC_CLK, DBIT_CLK, NUM_CLOCKS };
 #define CLK_NAMES "run", "adc", "sync", "dbit"

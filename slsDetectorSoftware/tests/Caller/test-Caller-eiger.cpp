@@ -19,7 +19,7 @@ using test::PUT;
 
 /** temperature */
 
-TEST_CASE("temp_fpgaext", "[.cmdcall]") {
+TEST_CASE("temp_fpgaext", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -34,7 +34,7 @@ TEST_CASE("temp_fpgaext", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("temp_10ge", "[.cmdcall]") {
+TEST_CASE("temp_10ge", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -49,7 +49,7 @@ TEST_CASE("temp_10ge", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("temp_dcdc", "[.cmdcall]") {
+TEST_CASE("temp_dcdc", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -64,7 +64,7 @@ TEST_CASE("temp_dcdc", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("temp_sodl", "[.cmdcall]") {
+TEST_CASE("temp_sodl", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -79,7 +79,7 @@ TEST_CASE("temp_sodl", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("temp_sodr", "[.cmdcall]") {
+TEST_CASE("temp_sodr", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -94,7 +94,7 @@ TEST_CASE("temp_sodr", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("temp_fpgafl", "[.cmdcall]") {
+TEST_CASE("temp_fpgafl", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -109,7 +109,7 @@ TEST_CASE("temp_fpgafl", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("temp_fpgafr", "[.cmdcall]") {
+TEST_CASE("temp_fpgafr", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -126,7 +126,8 @@ TEST_CASE("temp_fpgafr", "[.cmdcall]") {
 
 /* dacs */
 
-TEST_CASE("Setting and reading back EIGER dacs", "[.cmdcall][.dacs]") {
+TEST_CASE("Setting and reading back EIGER dacs",
+          "[.detectorintegration][dacs]") {
     // vsvp, vtr, vrf, vrs, vsvn, vtgstv, vcmp_ll, vcmp_lr, vcal, vcmp_rl,
     // rxb_rb, rxb_lb, vcmp_rr, vcp, vcn, vis, vthreshold
     Detector det;
@@ -232,7 +233,7 @@ TEST_CASE("Setting and reading back EIGER dacs", "[.cmdcall][.dacs]") {
 
 /* Network Configuration (Detector<->Receiver) */
 
-TEST_CASE("txdelay_left", "[.cmdcall]") {
+TEST_CASE("txdelay_left", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -253,7 +254,7 @@ TEST_CASE("txdelay_left", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("txdelay_right", "[.cmdcall]") {
+TEST_CASE("txdelay_right", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -276,7 +277,7 @@ TEST_CASE("txdelay_right", "[.cmdcall]") {
 
 /* Eiger Specific */
 
-TEST_CASE("subexptime", "[.cmdcall]") {
+TEST_CASE("subexptime", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
 
@@ -297,7 +298,7 @@ TEST_CASE("subexptime", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("subdeadtime", "[.cmdcall]") {
+TEST_CASE("subdeadtime", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
 
@@ -318,7 +319,7 @@ TEST_CASE("subdeadtime", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("overflow", "[.cmdcall]") {
+TEST_CASE("overflow", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -339,7 +340,7 @@ TEST_CASE("overflow", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("ratecorr", "[.cmdcall]") {
+TEST_CASE("ratecorr", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -373,7 +374,7 @@ TEST_CASE("ratecorr", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("interruptsubframe", "[.cmdcall]") {
+TEST_CASE("interruptsubframe", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -397,7 +398,7 @@ TEST_CASE("interruptsubframe", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("measuredperiod", "[.cmdcall]") {
+TEST_CASE("measuredperiod", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -434,7 +435,7 @@ TEST_CASE("measuredperiod", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("measuredsubperiod", "[.cmdcall]") {
+TEST_CASE("measuredsubperiod", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -474,7 +475,7 @@ TEST_CASE("measuredsubperiod", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("activate", "[.cmdcall]") {
+TEST_CASE("activate", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -505,7 +506,7 @@ TEST_CASE("activate", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("partialreset", "[.cmdcall]") {
+TEST_CASE("partialreset", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -527,7 +528,7 @@ TEST_CASE("partialreset", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("pulse", "[.cmdcall]") {
+TEST_CASE("pulse", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -542,7 +543,7 @@ TEST_CASE("pulse", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("pulsenmove", "[.cmdcall]") {
+TEST_CASE("pulsenmove", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -557,7 +558,7 @@ TEST_CASE("pulsenmove", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("pulsechip", "[.cmdcall]") {
+TEST_CASE("pulsechip", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -572,7 +573,7 @@ TEST_CASE("pulsechip", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("quad", "[.cmdcall]") {
+TEST_CASE("quad", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -588,7 +589,7 @@ TEST_CASE("quad", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("datastream", "[.cmdcall]") {
+TEST_CASE("datastream", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -628,7 +629,7 @@ TEST_CASE("datastream", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("top", "[.cmdcall]") {
+TEST_CASE("top", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();

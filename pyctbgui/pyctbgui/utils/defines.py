@@ -50,24 +50,6 @@ class Defines:
         Matterhorn = 0
         Moench04 = 1
 
-    class Matterhorn:
-        nRows = 48
-        nHalfCols = 24
-        nCols = 48
-        nTransceivers = 2
-        tranceiverEnable = 0x3
-        nPixelsPerTransceiver = 4
-
-    class Moench04:
-        nRows = 400
-        nCols = 400
-        adcNumbers = [
-            9, 8, 11, 10, 13, 12, 15, 14, 1, 0, 3, 2, 5, 4, 7, 6, 23, 22, 21, 20, 19, 18, 17, 16, 31, 30, 29, 28, 27,
-            26, 25, 24
-        ]
-        nPixelsPerSuperColumn = 5000
-        superColumnWidth = 25
-
     Color_map = [
         'viridis', 'plasma', 'inferno', 'magma', 'cividis', 'binary', 'gist_yarg', 'gist_gray', 'gray', 'bone', 'pink',
         'spring', 'summer', 'autumn', 'winter', 'cool', 'Wistia', 'hot', 'afmhot', 'gist_heat', 'copper',

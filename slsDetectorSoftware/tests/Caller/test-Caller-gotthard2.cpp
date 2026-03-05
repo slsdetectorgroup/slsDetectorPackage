@@ -18,7 +18,7 @@ using test::GET;
 using test::PUT;
 
 // time specific measurements for gotthard2
-TEST_CASE("timegotthard2", "[.cmdcall]") {
+TEST_CASE("timegotthard2", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -106,7 +106,8 @@ TEST_CASE("timegotthard2", "[.cmdcall]") {
 }
 /* dacs */
 
-TEST_CASE("Setting and reading back GOTTHARD2 dacs", "[.cmdcall][.dacs]") {
+TEST_CASE("Setting and reading back GOTTHARD2 dacs",
+          "[.detectorintegration][dacs]") {
     // vref_h_adc,   vb_comp_fe, vb_comp_adc,  vcom_cds,
     // vref_restore, vb_opa_1st, vref_comp_fe, vcom_adc1,
     // vref_prech,   vref_l_adc, vref_cds,     vb_cs,
@@ -215,7 +216,7 @@ TEST_CASE("Setting and reading back GOTTHARD2 dacs", "[.cmdcall][.dacs]") {
 
 /* on chip dacs */
 
-TEST_CASE("vchip_comp_fe", "[.cmdcall][.onchipdacs]") {
+TEST_CASE("vchip_comp_fe", "[.detectorintegration][dacs]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -228,7 +229,7 @@ TEST_CASE("vchip_comp_fe", "[.cmdcall][.onchipdacs]") {
     }
 }
 
-TEST_CASE("vchip_opa_1st", "[.cmdcall][.onchipdacs]") {
+TEST_CASE("vchip_opa_1st", "[.detectorintegration][dacs]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -241,7 +242,7 @@ TEST_CASE("vchip_opa_1st", "[.cmdcall][.onchipdacs]") {
     }
 }
 
-TEST_CASE("vchip_opa_fd", "[.cmdcall][.onchipdacs]") {
+TEST_CASE("vchip_opa_fd", "[.detectorintegration][dacs]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -254,7 +255,7 @@ TEST_CASE("vchip_opa_fd", "[.cmdcall][.onchipdacs]") {
     }
 }
 
-TEST_CASE("vchip_comp_adc", "[.cmdcall][.onchipdacs]") {
+TEST_CASE("vchip_comp_adc", "[.detectorintegration][dacs]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -267,7 +268,7 @@ TEST_CASE("vchip_comp_adc", "[.cmdcall][.onchipdacs]") {
     }
 }
 
-TEST_CASE("vchip_ref_comp_fe", "[.cmdcall][.onchipdacs]") {
+TEST_CASE("vchip_ref_comp_fe", "[.detectorintegration][dacs]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -281,7 +282,7 @@ TEST_CASE("vchip_ref_comp_fe", "[.cmdcall][.onchipdacs]") {
     }
 }
 
-TEST_CASE("vchip_cs", "[.cmdcall][.onchipdacs]") {
+TEST_CASE("vchip_cs", "[.detectorintegration][dacs]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -296,7 +297,7 @@ TEST_CASE("vchip_cs", "[.cmdcall][.onchipdacs]") {
 
 /* Gotthard2 Specific */
 
-TEST_CASE("bursts", "[.cmdcall]") {
+TEST_CASE("bursts", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -370,7 +371,7 @@ TEST_CASE("bursts", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("burstperiod", "[.cmdcall]") {
+TEST_CASE("burstperiod", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -392,7 +393,7 @@ TEST_CASE("burstperiod", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("burstsl", "[.cmdcall]") {
+TEST_CASE("burstsl", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -403,7 +404,7 @@ TEST_CASE("burstsl", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("inj_ch", "[.cmdcall]") {
+TEST_CASE("inj_ch", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -428,7 +429,7 @@ TEST_CASE("inj_ch", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("vetophoton", "[.cmdcall]") {
+TEST_CASE("vetophoton", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -450,7 +451,7 @@ TEST_CASE("vetophoton", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("vetoref", "[.cmdcall]") {
+TEST_CASE("vetoref", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -465,7 +466,7 @@ TEST_CASE("vetoref", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("vetofile", "[.cmdcall]") {
+TEST_CASE("vetofile", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -479,7 +480,7 @@ TEST_CASE("vetofile", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("burstmode", "[.cmdcall]") {
+TEST_CASE("burstmode", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -510,7 +511,7 @@ TEST_CASE("burstmode", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("cdsgain", "[.cmdcall]") {
+TEST_CASE("cdsgain", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -540,7 +541,7 @@ TEST_CASE("cdsgain", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("timingsource", "[.cmdcall]") {
+TEST_CASE("timingsource", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -570,7 +571,7 @@ TEST_CASE("timingsource", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("veto", "[.cmdcall]") {
+TEST_CASE("veto", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -600,7 +601,7 @@ TEST_CASE("veto", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("vetostream", "[.cmdcall]") {
+TEST_CASE("vetostream", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -646,7 +647,7 @@ TEST_CASE("vetostream", "[.cmdcall]") {
     REQUIRE_THROWS(caller.call("vetostream", {"dfgd"}, -1, GET));
 }
 
-TEST_CASE("vetoalg", "[.cmdcall]") {
+TEST_CASE("vetoalg", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -702,7 +703,7 @@ TEST_CASE("vetoalg", "[.cmdcall]") {
     REQUIRE_THROWS(caller.call("vetoalg", {"dfgd"}, -1, GET));
 }
 
-TEST_CASE("confadc", "[.cmdcall]") {
+TEST_CASE("confadc", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();

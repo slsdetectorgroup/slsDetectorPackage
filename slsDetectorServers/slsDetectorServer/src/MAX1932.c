@@ -43,33 +43,33 @@ void MAX1932_Disable() {
                            ~(MAX1932_DigMask));
 }
 
-int MAX1932_Set(int *val) {
-    LOG(logDEBUG1, ("Setting high voltage to %d\n", *val));
-    if (*val < 0)
-        return FAIL;
-
-    int dacvalue = 0;
+int MAX1932_Set(int val, char *mess) {
+    LOG(logDEBUG1, ("Setting high voltage to %d\n", val));
 
     // limit values (normally < 60 => 0 (off))
-    if (*val < MAX1932_MinVoltage) {
+    if ((val != 0 && val < MAX1932_MinVoltage) || val > MAX1932_MaxVoltage) {
+        sprintf(mess,
+                "Could not set high voltage. Invalid value:%d. Should bet be 0 "
+                "or between %d and %d\n",
+                val, MAX1932_MinVoltage, MAX1932_MaxVoltage);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    int dacvalue = 0;
+    if (val == 0)
         dacvalue = MAX1932_POWER_OFF_DAC_VAL;
-        *val = 0;
+    else if (ConvertToDifferentRange(MAX1932_MinVoltage, MAX1932_MaxVoltage,
+                                     MAX1932_MIN_DAC_VAL, MAX1932_MAX_DAC_VAL,
+                                     val, &dacvalue) == FAIL) {
+        sprintf(
+            mess,
+            "Could not set high voltage %d. Could not convert to dac units\n",
+            val);
+        LOG(logERROR, (mess));
+        return FAIL;
     }
-    // limit values (normally > 200 => 0x1 (max))
-    else if (*val > MAX1932_MaxVoltage) {
-        dacvalue = MAX1932_MAX_DAC_VAL;
-        *val = MAX1932_MaxVoltage;
-    }
-    // convert value
-    else {
-        // no failure in conversion as limits handled (range from 0x1 to 0xFF)
-        ConvertToDifferentRange(MAX1932_MinVoltage, MAX1932_MaxVoltage,
-                                MAX1932_MIN_DAC_VAL, MAX1932_MAX_DAC_VAL, *val,
-                                &dacvalue);
-        dacvalue &= MAX1932_HV_DATA_MSK;
-    }
-
-    LOG(logINFO, ("\t%dV (dacval %d)\n", *val, dacvalue));
+    dacvalue &= MAX1932_HV_DATA_MSK;
+    LOG(logINFO, ("\t%dV (dacval %d)\n", val, dacvalue));
     serializeToSPI(MAX1932_Reg, dacvalue, MAX1932_CsMask, MAX1932_HV_NUMBITS,
                    MAX1932_ClkMask, MAX1932_DigMask, MAX1932_DigOffset, 0);
     return OK;

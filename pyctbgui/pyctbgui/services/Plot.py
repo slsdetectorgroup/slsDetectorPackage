@@ -6,8 +6,11 @@ from pathlib import Path
 import numpy as np
 from PyQt5 import QtWidgets, QtGui, uic
 
+from aare import transform, ReadoutMode 
+from aare._aare import Matterhorn10, Matterhorn02, Moench04
+
 import pyqtgraph as pg
-from pyctbgui.utils import recordOrApplyPedestal
+from pyctbgui.utils import recordOrApplyPedestal 
 from pyqtgraph import PlotWidget
 
 from pyctbgui.utils.defines import Defines
@@ -58,7 +61,7 @@ class PlotTab(QtWidgets.QWidget):
         self.view.radioButtonWaveform.clicked.connect(self.plotOptions)
         self.view.radioButtonDistribution.clicked.connect(self.plotOptions)
         self.view.radioButtonImage.clicked.connect(self.plotOptions)
-        self.view.comboBoxPlot.currentIndexChanged.connect(self.setPixelMap)
+        self.view.comboBoxPlot.currentIndexChanged.connect(self.setDecoder)
         self.view.comboBoxColorMap.currentIndexChanged.connect(self.setColorMap)
         self.view.comboBoxZMQHWM.currentIndexChanged.connect(self.setZMQHWM)
         self.view.spinBoxSerialOffset.editingFinished.connect(self.setSerialOffset)
@@ -403,7 +406,7 @@ class PlotTab(QtWidgets.QWidget):
 
         elif self.view.radioButtonImage.isChecked():
             self.view.stackedWidgetPlotType.setCurrentIndex(2)
-            self.setPixelMap()
+            self.setDecoder()
 
         if self.view.radioButtonNoPlot.isChecked():
             self.view.labelPlotOptions.hide()
@@ -414,13 +417,55 @@ class PlotTab(QtWidgets.QWidget):
             self.view.stackedWidgetPlotType.show()
             self.mainWindow.read_timer.start(Defines.Time_Plot_Refresh_ms)
 
-    def setPixelMap(self):
-        if self.view.comboBoxPlot.currentText() == "Matterhorn":
-            self.mainWindow.nTransceiverRows = Defines.Matterhorn.nRows
-            self.mainWindow.nTransceiverCols = Defines.Matterhorn.nCols
+    def setDecoder(self):
+        if self.view.comboBoxPlot.currentText() == "Matterhorn02":
+            print("Initializing decoder for Matterhorn02")
+            self.mainWindow.nTransceiverRows = Matterhorn02.nRows
+            self.mainWindow.nTransceiverCols = Matterhorn02.nCols
+            self.mainWindow.decoder = transform.Matterhorn02TransceiverTransform() 
+        elif self.view.comboBoxPlot.currentText() == "Matterhorn1_16bit_1_counter":
+            print("Initializing decoder for Matterhorn1 with 1 counter 16 bit dynamic range")
+            self.mainWindow.nTransceiverRows = Matterhorn10.nRows
+            self.mainWindow.nTransceiverCols = Matterhorn10.nCols
+            self.mainWindow.decoder = transform.Matterhorn10Transform(16, 1)
+        elif self.view.comboBoxPlot.currentText() == "Matterhorn1_16bit_4_counters":
+            print("Initializing decoder for Matterhorn1 with 4 counters 16 bit dynamic range")
+            self.mainWindow.nTransceiverRows = Matterhorn10.nRows*4
+            self.mainWindow.nTransceiverCols = Matterhorn10.nCols
+            self.mainWindow.decoder = transform.Matterhorn10Transform(16, 4)
+        elif self.view.comboBoxPlot.currentText() == "Matterhorn1_8bit_1_counter":
+            print("Initializing decoder for Matterhorn1 with 1 counter 8 bit dynamic range")
+            self.mainWindow.nTransceiverRows = Matterhorn10.nRows
+            self.mainWindow.nTransceiverCols = Matterhorn10.nCols
+            self.mainWindow.decoder = transform.Matterhorn10Transform(8, 1)
+        elif self.view.comboBoxPlot.currentText() == "Matterhorn1_8bit_4_counters":
+            print("Initializing decoder for Matterhorn1 with 4 counters 8 bit dynamic range")
+            self.mainWindow.nTransceiverRows = Matterhorn10.nRows*4
+            self.mainWindow.nTransceiverCols = Matterhorn10.nCols
+            self.mainWindow.decoder = transform.Matterhorn10Transform(8, 4)
+        elif self.view.comboBoxPlot.currentText() == "Matterhorn1_4bit_4_counters":
+            print("Initializing decoder for Matterhorn1 with 4 counters 4 bit dynamic range")
+            self.mainWindow.nTransceiverRows = Matterhorn10.nRows*4
+            self.mainWindow.nTransceiverCols = Matterhorn10.nCols
+            self.mainWindow.decoder = transform.Matterhorn10Transform(4, 4)
+        elif self.view.comboBoxPlot.currentText() == "Matterhorn1_4bit_1_counter":
+            print("Initializing decoder for Matterhorn1 with 1 counter 4 bit dynamic range")
+            self.mainWindow.nTransceiverRows = Matterhorn10.nRows
+            self.mainWindow.nTransceiverCols = Matterhorn10.nCols
+            self.mainWindow.decoder = transform.Matterhorn10Transform(4, 1)
         elif self.view.comboBoxPlot.currentText() == "Moench04":
-            self.mainWindow.nAnalogRows = Defines.Moench04.nRows
-            self.mainWindow.nAnalogCols = Defines.Moench04.nCols
+            self.mainWindow.nAnalogRows = Moench04.nRows
+            self.mainWindow.nAnalogCols = Moench04.nCols
+            self.mainWindow.decoder = transform.Moench04AnalogTransform() 
+
+        try: 
+            if hasattr(self.mainWindow.decoder, "compatibility") and callable(getattr(self.mainWindow.decoder, "compatibility")):
+                self.mainWindow.decoder.compatibility(ReadoutMode(self.mainWindow.romode.value))
+        except Exception as e:
+            self.mainWindow.statusbar.setStyleSheet("color:red")
+            self.mainWindow.statusbar.showMessage(str(e))
+            print("Error: ", str(e))
+    
 
     def showPatternViewer(self, enable):
         if enable:

@@ -128,6 +128,8 @@ int setADCVpp(int val, int mV, char *mess);
 int getADCVpp(int mV, int *retval, char *mess);
 
 int validateDACIndex(enum DACINDEX ind, char *mess);
+int validateDACValue(enum DACINDEX ind, int voltage, char *mess);
+
 int validateDACVoltage(enum DACINDEX ind, int voltage, char *mess);
 int convertVoltageToDACValue(enum DACINDEX ind, int voltage, int *retval_dacval,
                              char *mess);
@@ -150,12 +152,12 @@ int validatePower(enum PWRINDEX ind, int val, char *mess);
 int getPowerIndexFromDACIndex(enum DACINDEX ind, enum PWRINDEX *pwrIndex,
                               char *mess);
 int getPowerRailMask(enum PWRINDEX ind, uint32_t *mask, char *mess);
-int EnablePowerRail(enum PWRINDEX ind, char *mess);
-int DisablePowerRail(enum PWRINDEX ind, char *mess);
-int getPowerRail(enum PWRINDEX ind, int *retval, char *mess);
-int getPower(enum DACINDEX ind, int *retval, char *mess);
-int setPower(enum DACINDEX ind, int val, char *mess);
-void powerOff();
+int setPowerRailEnabled(enum DACINDEX indices[], int count, bool enable,
+                        char *mess);
+int isPowerRailEnabled(enum DACINDEX ind, bool *retval, char *mess);
+int verifyPowerRailDisabled(enum DACINDEX ind, char *mess);
+void powerChip(bool enable);
+int getPowerChip();
 
 int getADC(enum ADCINDEX ind);
 int getSlowADC(int ichan);

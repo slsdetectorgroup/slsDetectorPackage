@@ -819,6 +819,25 @@ void Module::setPowerChip(bool on) {
     sendToDetector<int>(F_POWER_CHIP, static_cast<int>(on));
 }
 
+bool Module::isPowerEnabled(defs::dacIndex index) const {
+    return sendToDetector<int>(F_GET_POWER, index);
+}
+
+void Module::setPowerEnabled(const std::vector<defs::dacIndex> &indices,
+                             bool value) {
+    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    client.Send(F_SET_POWER);
+    client.setFnum(F_SET_POWER);
+    int count = indices.size();
+    client.Send(count);
+    client.Send(indices);
+    client.Send(static_cast<int>(value));
+    if (client.Receive<int>() == FAIL) {
+        throw DetectorError("Detector " + std::to_string(moduleIndex) +
+                            " returned error: " + client.readErrorMessage());
+    }
+}
+
 int Module::getImageTestMode() const {
     return sendToDetector<int>(F_GET_IMAGE_TEST_MODE);
 }

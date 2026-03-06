@@ -535,6 +535,9 @@ class Detector {
     Result<int> getDAC(defs::dacIndex index, bool mV = false,
                        Positions pos = {}) const;
 
+    /** Sets dac in dac units or mV
+     * [Ctb][Xilinx Ctb] also includes V_LIMIT, V_POWER_A, V_POWER_B, V_POWER_C,
+     * V_POWER_D, V_POWER_IO, V_POWER_CHIP (get only)*/
     void setDAC(defs::dacIndex index, int value, bool mV = false,
                 Positions pos = {});
 
@@ -1635,14 +1638,14 @@ class Detector {
     std::vector<defs::dacIndex> getSlowADCList() const;
 
     /** [CTB][Xilinx CTB] */
-    Result<int> getPower(defs::dacIndex index, Positions pos = {}) const;
+    Result<bool> isPowerEnabled(defs::dacIndex index, Positions pos = {}) const;
 
     /**
-     * [CTB][Xilinx CTB] mV
-     * [Ctb][Xilinx CTB] Options: V_LIMIT, V_POWER_A, V_POWER_B, V_POWER_C,
-     * V_POWER_D, V_POWER_IO, V_POWER_CHIP
+     * [Ctb][Xilinx CTB] Options: V_POWER_A, V_POWER_B, V_POWER_C,
+     * V_POWER_D, V_POWER_IO
      */
-    void setPower(defs::dacIndex index, int value, Positions pos = {});
+    void setPowerEnabled(const std::vector<defs::dacIndex> &indices,
+                         bool enable, Positions pos = {});
 
     /**
      * [CTB] Options: [0- 4] or [1V, 1.14V, 1.33V, 1.6V, 2V]

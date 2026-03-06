@@ -104,6 +104,8 @@ class slsDetectorDefs {
     /**  return values */
     enum { OK, FAIL };
 
+    enum boolFormat { TrueFalse, OnOff, OneZero };
+
     /** staus mask */
     enum runStatus {
         IDLE,

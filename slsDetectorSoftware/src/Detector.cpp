@@ -2188,36 +2188,26 @@ std::vector<defs::dacIndex> Detector::getSlowADCList() const {
         defs::SLOW_ADC4, defs::SLOW_ADC5, defs::SLOW_ADC6, defs::SLOW_ADC7};
 }
 
-Result<int> Detector::getPower(defs::dacIndex index, Positions pos) const {
-    switch (index) {
-    case defs::V_LIMIT:
-    case defs::V_POWER_A:
-    case defs::V_POWER_B:
-    case defs::V_POWER_C:
-    case defs::V_POWER_D:
-    case defs::V_POWER_IO:
-    case defs::V_POWER_CHIP:
-        break;
-    default:
+Result<bool> Detector::isPowerEnabled(defs::dacIndex index,
+                                      Positions pos) const {
+    std::vector<defs::dacIndex> valid_indices = getPowerList();
+    if (std::find(valid_indices.begin(), valid_indices.end(), index) ==
+        valid_indices.end()) {
         throw RuntimeError("Unknown Power Index");
     }
-    return pimpl->Parallel(&Module::getDAC, pos, index, true);
+    return pimpl->Parallel(&Module::getPower, pos, index);
 }
 
-void Detector::setPower(defs::dacIndex index, int value, Positions pos) {
-    switch (index) {
-    case defs::V_LIMIT:
-    case defs::V_POWER_A:
-    case defs::V_POWER_B:
-    case defs::V_POWER_C:
-    case defs::V_POWER_D:
-    case defs::V_POWER_IO:
-    case defs::V_POWER_CHIP:
-        break;
-    default:
-        throw RuntimeError("Unknown Power Index");
+void Detector::setPowerEnabled(const std::vector<defs::dacIndex> &indices,
+                               bool value, Positions pos) {
+    std::vector<defs::dacIndex> valid_indices = getPowerList();
+    for (const auto &index : indices) {
+        if (std::find(valid_indices.begin(), valid_indices.end(), index) ==
+            valid_indices.end()) {
+            throw RuntimeError("Unknown Power Index");
+        }
     }
-    pimpl->Parallel(&Module::setDAC, pos, value, index, true);
+    pimpl->Parallel(&Module::setPower, pos, value, indices);
 }
 
 Result<int> Detector::getADCVpp(bool mV, Positions pos) const {

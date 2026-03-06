@@ -523,6 +523,8 @@ void function_table() {
     flist[F_SET_PATTERN_WAIT_INTERVAL] = &set_pattern_wait_interval;
     flist[F_SPI_READ] = &spi_read;
     flist[F_SPI_WRITE] = &spi_write;
+    flist[F_GET_POWER] = &get_power;
+    flist[F_SET_POWER] = &set_power;
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
         LOG(logERROR, ("The last detector function enum has reached its "
@@ -1389,14 +1391,12 @@ int processDACEnums(enum dacIndex ind, int val, bool mV) {
             retval = getVLimit();
         return retval;
 
+    // power dacs
     case V_POWER_A:
     case V_POWER_B:
     case V_POWER_C:
     case V_POWER_D:
     case V_POWER_IO:
-        serverDacIndex = getDACIndex(ind);
-        if (ret == FAIL)
-            return retval;
         if (!mV) {
             ret = FAIL;
             sprintf(mess,
@@ -1406,17 +1406,12 @@ int processDACEnums(enum dacIndex ind, int val, bool mV) {
             LOG(logERROR, (mess));
             return retval;
         }
-        if (val != GET_FLAG)
-            ret = setPower(serverDacIndex, val, mess);
-        else
-            ret = getPower(serverDacIndex, &retval, mess);
-        return retval;
-
     // actual dacs
     default:
         serverDacIndex = getDACIndex(ind);
         if (ret == FAIL)
             return retval;
+
         if (val != GET_FLAG)
             ret = setDAC(serverDacIndex, val, mV, mess);
         else
@@ -1446,14 +1441,12 @@ int processDACEnums(enum dacIndex ind, int val, bool mV) {
             retval = getVLimit();
         return retval;
 
+    // power dacs
     case V_POWER_A:
     case V_POWER_B:
     case V_POWER_C:
     case V_POWER_D:
     case V_POWER_IO:
-        serverDacIndex = getDACIndex(ind);
-        if (ret == FAIL)
-            return retval;
         if (!mV) {
             ret = FAIL;
             sprintf(mess,
@@ -1463,12 +1456,6 @@ int processDACEnums(enum dacIndex ind, int val, bool mV) {
             LOG(logERROR, (mess));
             return retval;
         }
-        if (val != GET_FLAG)
-            ret = setPower(serverDacIndex, val, mess);
-        else
-            ret = getPower(serverDacIndex, &retval, mess);
-        return retval;
-
     // actual dacs
     default:
         serverDacIndex = getDACIndex(ind);
@@ -4018,7 +4005,8 @@ int power_chip(int file_des) {
     LOG(logDEBUG1, ("Powering chip to %d\n", arg));
 
 #if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(MYTHEN3D) &&          \
-    !defined(GOTTHARD2D) && !defined(XILINX_CHIPTESTBOARDD)
+    !defined(GOTTHARD2D) && !defined(XILINX_CHIPTESTBOARDD) &&                 \
+    !defined(CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // set & get
@@ -4037,7 +4025,8 @@ int power_chip(int file_des) {
             }
         }
 #endif
-#if defined(XILINX_CHIPTESTBOARDD) || defined(GOTTHARD2D)
+#if defined(XILINX_CHIPTESTBOARDD) || defined(CHIPTESTBOARDD) ||               \
+    defined(GOTTHARD2D)
         if (ret == OK) {
             if (arg != -1) {
                 if (arg != 0 && arg != 1) {
@@ -11382,4 +11371,68 @@ int spi_write(int file_des) {
     free(local_tx);
     free(local_rx);
     return ret;
+}
+
+int get_power(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = -1;
+    int retval = -1;
+
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
+    functionNotImplemented();
+#else
+    // index
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+
+    LOG(logDEBUG1, ("Getting power rail enable for power %d\n", arg));
+
+    enum dacIndex serverDacIndex = getDACIndex(dacIndex(arg));
+    if (ret == FAIL) {
+        return Server_SendResult(file_des, INT32, NULL, 0);
+    }
+
+    ret = isPowerRailEnabled(serverDacIndex, &retval, mess);
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_power(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
+    functionNotImplemented();
+#else
+    int count = 0;
+    if (receiveData(file_des, &count, sizeof(count), INT32) < 0)
+        return printSocketReadError();
+
+    int args[count];
+    if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+        return printSocketReadError();
+
+    int arg = 0;
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    bool enable = (arg != 0);
+
+    LOG(logDEBUG1, ("Setting %d Power rails to %d\n", count, enable));
+
+    if (Server_VerifyLock() == OK) {
+
+        enum dacIndex serverDacIndices[count] = {0};
+        for (int iPower = 0; iPower != count; ++iPower) {
+            enum dacIndex ind = (dacIndex)args[iPower];
+            serverDacIndices[iPower] = getDACIndex(ind);
+            if (ret == FAIL) {
+                return Server_SendResult(file_des, INT32, NULL, 0);
+            }
+        }
+
+        ret = setPowerRailEnabled(serverDacIndices, count, enable, mess);
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
 }

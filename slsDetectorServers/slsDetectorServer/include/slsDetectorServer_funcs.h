@@ -341,3 +341,5 @@ int get_pattern_wait_interval(int);
 int set_pattern_wait_interval(int);
 int spi_read(int);
 int spi_write(int);
+int get_power(int);
+int set_power(int);

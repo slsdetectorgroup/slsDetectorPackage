@@ -7,6 +7,17 @@ namespace sls {
 
 std::string ToString(bool value) { return value ? "1" : "0"; }
 
+std::string ToString(bool value, defs::boolFormat format) {
+    switch (format) {
+    case defs::boolFormat::TrueFalse:
+        return value ? "true" : "false";
+    case defs::boolFormat::OnOff:
+        return value ? "on" : "off";
+    default:
+        return value ? "1" : "0";
+    }
+}
+
 std::string ToString(const slsDetectorDefs::xy &coord) {
     std::ostringstream oss;
     oss << '[' << coord.x << ", " << coord.y << ']';
@@ -1189,14 +1200,38 @@ template <> int StringTo(const std::string &s) {
 }
 
 template <> bool StringTo(const std::string &s) {
-    int i = std::stoi(s, nullptr, 10);
-    switch (i) {
-    case 0:
-        return false;
-    case 1:
-        return true;
+    return StringTo(s, defs::boolFormat::OneZero);
+}
+
+bool StringTo(const std::string &s, defs::boolFormat format) {
+    switch (format) {
+    case defs::boolFormat::TrueFalse: {
+        if (s == "true")
+            return true;
+        if (s == "false")
+            return false;
+        throw RuntimeError("Unknown boolean. Expecting 'true' or 'false'.");
+    }
+    case defs::boolFormat::OnOff: {
+        if (s == "on")
+            return true;
+        if (s == "off")
+            return false;
+        throw RuntimeError("Unknown boolean. Expecting 'on' or 'off'.");
+    }
+    case defs::boolFormat::OneZero: {
+        int i = std::stoi(s, nullptr, 10);
+        switch (i) {
+        case 0:
+            return false;
+        case 1:
+            return true;
+        default:
+            throw RuntimeError("Unknown boolean. Expecting 0 or 1.");
+        }
+    }
     default:
-        throw RuntimeError("Unknown boolean. Expecting be 0 or 1.");
+        throw RuntimeError("Unknown boolean format.");
     }
 }
 

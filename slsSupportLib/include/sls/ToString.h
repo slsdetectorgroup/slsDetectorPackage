@@ -49,6 +49,7 @@ std::string ToString(const defs::timingInfoDecoder s);
 std::string ToString(const defs::collectionMode s);
 
 std::string ToString(bool value);
+std::string ToString(bool value, defs::boolFormat format);
 
 std::string ToString(const slsDetectorDefs::xy &coord);
 std::ostream &operator<<(std::ostream &os, const slsDetectorDefs::xy &coord);
@@ -335,6 +336,7 @@ template <> uint32_t StringTo(const std::string &s);
 template <> uint64_t StringTo(const std::string &s);
 template <> int StringTo(const std::string &s);
 template <> bool StringTo(const std::string &s);
+bool StringTo(const std::string &s, defs::boolFormat format);
 template <> int64_t StringTo(const std::string &s);
 
 /** For types with a .str() method use this for conversion */

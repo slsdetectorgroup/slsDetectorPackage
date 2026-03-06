@@ -595,6 +595,10 @@ TEST_CASE("dac", "[.detectorintegration][.dacs]") {
                 defs::V_POWER_D, defs::V_POWER_IO};
             for (size_t iPower = 0; iPower < names.size(); ++iPower) {
                 auto prev_val = det.getDAC(indices[iPower], true);
+                auto prev_val_power = det.isPowerEnabled(indices[iPower]);
+
+                // turn them off to be able to set the power dacs without issue
+                det.setPowerEnabled(std::vector{indices[iPower]}, false);
 
                 // this is the first command touching power dacs, should not be
                 // -100
@@ -651,9 +655,17 @@ TEST_CASE("dac", "[.detectorintegration][.dacs]") {
                     REQUIRE(oss2.str() ==
                             "dac " + names[iPower] + " 1200 mV\n");
                 }
+                // throw if trying to set dac when power is on
+                {
+                    det.setPowerEnabled(std::vector{indices[iPower]}, true);
+                    REQUIRE_THROWS(caller.call(
+                        "dac", {names[iPower], "1200", "mV"}, -1, PUT));
+                }
                 // Reset all dacs to previous value
                 for (int imod = 0; imod != det.size(); ++imod) {
                     det.setDAC(indices[iPower], prev_val[imod], true, {imod});
+                    det.setPowerEnabled(std::vector{indices[iPower]},
+                                        prev_val_power[imod], {imod});
                 }
             }
         }
@@ -848,32 +860,38 @@ TEST_CASE("v_limit", "[.detectorintegration]") {
 
     if (det_type == defs::CHIPTESTBOARD ||
         det_type == defs::XILINX_CHIPTESTBOARD) {
-        auto prev_val = det.getPower(defs::V_LIMIT);
+        auto prev_val = det.getDAC(defs::V_LIMIT, true);
+        REQUIRE_THROWS(caller.call("v_limit", {"1200"}, -1, PUT));
+        REQUIRE_THROWS(caller.call("v_limit", {"-100"}, -1, PUT));
+        REQUIRE_THROWS(caller.call("v_limit", {"0"}, -1, PUT));
+        REQUIRE_THROWS(caller.call("v_limit", {"-100", "mV"}, -1, PUT));
+        REQUIRE_THROWS(caller.call("v_limit", {"0", "mV"}, -1, PUT));
+
         {
             std::ostringstream oss;
-            caller.call("v_limit", {"1500"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "v_limit 1500\n");
+            caller.call("v_limit", {"1500", "mV"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "v_limit 1500 mV\n");
         }
         {
             std::ostringstream oss;
-            caller.call("v_limit", {"0"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "v_limit 0\n");
+            caller.call("v_limit", {"0", "mV"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "v_limit 0 mV\n");
         }
         {
             std::ostringstream oss;
-            caller.call("v_limit", {"0"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "v_limit 0\n");
+            caller.call("v_limit", {"0", "mV"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "v_limit 0 mV\n");
         }
         {
             std::ostringstream oss;
             caller.call("v_limit", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "v_limit 0\n");
+            REQUIRE(oss.str() == "v_limit 0 mV\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             if (prev_val[i] == -100) {
                 prev_val[i] = 0;
             }
-            det.setPower(defs::V_LIMIT, prev_val[i], {i});
+            det.setDAC(defs::V_LIMIT, prev_val[i], true, {i});
         }
     } else {
         REQUIRE_THROWS(caller.call("v_limit", {}, -1, GET));
@@ -1144,6 +1162,63 @@ TEST_CASE("v_abcd", "[.detectorintegration]") {
                         "removed and is no longer available") !=
                     std::string::npos);
         }
+    }
+}
+
+TEST_CASE("power", "[.detectorintegration]") {
+    Detector det;
+    Caller caller(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
+
+        std::vector<std::string> cmds{"v_a", "v_b",  "v_c",
+                                      "v_d", "v_io", "v_chip"};
+        std::vector<defs::dacIndex> indices{
+            defs::V_POWER_A, defs::V_POWER_B,  defs::V_POWER_C,
+            defs::V_POWER_D, defs::V_POWER_IO, defs::V_POWER_CHIP};
+
+        for (size_t iPower = 0; iPower < cmds.size(); ++iPower) {
+            auto prev_val = det.isPowerEnabled(indices[iPower]);
+
+            REQUIRE_THROWS(caller.call("power", {"vrandom"}, -1, GET));
+            REQUIRE_THROWS(caller.call("power", {"v_chip"}, -1, GET));
+            REQUIRE_THROWS(caller.call("power", {"on", "v_a"}, -1, PUT));
+            {
+                std::ostringstream oss;
+                caller.call("power", {"v_a", "on"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "power v_a on\n");
+            }
+            {
+                std::ostringstream oss;
+                caller.call("power", {"v_a"}, -1, GET, oss);
+                REQUIRE(oss.str() == "power v_a on\n");
+            }
+            {
+                std::ostringstream oss;
+                caller.call("power", {"v_a", "v_c", "on"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "power [v_a, v_c] on\n");
+            }
+            {
+                std::ostringstream oss;
+                caller.call("power", {"v_a", "v_b", "off"}, -1, PUT);
+                caller.call("power", {"v_a", "v_b", "v_c"}, -1, GET, oss);
+                REQUIRE(oss.str() == "power [v_a, v_b, v_c] [on, off, on]\n");
+            }
+            { // power chip
+                caller.call("powerchip", {"1"}, -1, PUT);
+                std::ostringstream oss;
+                caller.call("power", {"v_a", "v_b", "v_c", "v_d", "v_io"}, -1,
+                            GET, oss);
+                REQUIRE(oss.str() == "power [v_a, v_b, v_c, v_d, v_io] on\n");
+            }
+            for (int imod = 0; imod != det.size(); ++imod) {
+                det.setPowerEnabled(std::vector{indices[iPower]},
+                                    prev_val[imod], {imod});
+            }
+        }
+    } else {
+        REQUIRE_THROWS(caller.call("power", {"v_a"}, -1, GET));
     }
 }
 

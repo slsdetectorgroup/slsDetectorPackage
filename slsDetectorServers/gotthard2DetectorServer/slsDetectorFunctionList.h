@@ -153,7 +153,7 @@ int *getDetectorPosition();
 
 // very detector specific
 int checkDetectorType(char *mess);
-int powerChip(int on, char *mess);
+int powerChip(bool on, char *mess);
 int getPowerChip();
 int isChipConfigured();
 int configureChip(char *mess);

@@ -1284,7 +1284,7 @@ int validateDACValue(enum DACINDEX ind, int voltage, char *mess) {
         return OK;
     }
     // power dacs
-    if (validatePowerDACVoltage(ind, voltage, mess) == FAIL)
+    if (validatePower(ind, voltage, mess) == FAIL)
         return FAIL;
     return OK;
 }
@@ -1512,7 +1512,7 @@ int getVchipToSet(enum DACINDEX ind, int pwr_val, int *retval_vchip,
         if (ipwr == (int)ind) {
             val = pwr_val;
         } else {
-            if (getPower(ind, &val, mess) == FAIL)
+            if ((getDAC, ind, true, &val, mess) == FAIL)
                 return FAIL;
         }
         if (val > max)
@@ -1665,8 +1665,8 @@ int isPowerRailEnabled(enum DACINDEX ind, bool *retval, char *mess) {
     if (getPowerIndexFromDACIndex(ind, &pwrIndex, mess) == FAIL)
         return FAIL;
 
-    int mask = 0;
-    if (getPowerRailMask(ind, &mask, mess) == FAIL)
+    uint32_t mask = 0;
+    if (getPowerRailMask(pwrIndex, &mask, mess) == FAIL)
         return FAIL;
 
     *retval = (bus_r(POWER_REG) & mask) != 0;

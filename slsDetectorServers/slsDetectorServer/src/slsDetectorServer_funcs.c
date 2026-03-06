@@ -1368,9 +1368,8 @@ int processDACEnums(enum dacIndex ind, int val, bool mV) {
         if (!mV) {
             ret = FAIL;
             sprintf(mess,
-                    "Could not set power. Can get Vchip only in mV and not dac "
-                    "units.\n",
-                    ind);
+                    "Could not get vchip. Can get Vchip only in mV and not dac "
+                    "units.\n");
             LOG(logERROR, (mess));
             return retval;
         }
@@ -1406,6 +1405,7 @@ int processDACEnums(enum dacIndex ind, int val, bool mV) {
             LOG(logERROR, (mess));
             return retval;
         }
+        [[fallthrough]];
     // actual dacs
     default:
         serverDacIndex = getDACIndex(ind);
@@ -4034,7 +4034,11 @@ int power_chip(int file_des) {
                     sprintf(mess, "Power chip %d should be 0 or 1\n", arg);
                     LOG(logERROR, (mess));
                 } else {
-                    ret = powerChip(arg, mess);
+#ifdef GOTTHARD2D
+                    powerChip(arg, mess);
+#else
+                    powerChip(arg);
+#endif
                 }
             }
             if (ret == OK) {
@@ -11376,24 +11380,26 @@ int spi_write(int file_des) {
 int get_power(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    int arg = -1;
     int retval = -1;
 
 #if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // index
+    int arg = -1;
     if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
         return printSocketReadError();
 
     LOG(logDEBUG1, ("Getting power rail enable for power %d\n", arg));
 
-    enum dacIndex serverDacIndex = getDACIndex(dacIndex(arg));
+    enum DACINDEX serverDacIndex = getDACIndex((enum dacIndex)arg);
     if (ret == FAIL) {
         return Server_SendResult(file_des, INT32, NULL, 0);
     }
 
-    ret = isPowerRailEnabled(serverDacIndex, &retval, mess);
+    bool b_retval = false;
+    ret = isPowerRailEnabled(serverDacIndex, &b_retval, mess);
+    retval = (int)b_retval;
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
@@ -11422,9 +11428,9 @@ int set_power(int file_des) {
 
     if (Server_VerifyLock() == OK) {
 
-        enum dacIndex serverDacIndices[count] = {0};
+        enum DACINDEX serverDacIndices[count] = {};
         for (int iPower = 0; iPower != count; ++iPower) {
-            enum dacIndex ind = (dacIndex)args[iPower];
+            enum dacIndex ind = (enum dacIndex)args[iPower];
             serverDacIndices[iPower] = getDACIndex(ind);
             if (ret == FAIL) {
                 return Server_SendResult(file_des, INT32, NULL, 0);

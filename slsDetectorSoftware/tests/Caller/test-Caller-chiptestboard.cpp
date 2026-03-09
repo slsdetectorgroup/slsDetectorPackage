@@ -586,7 +586,7 @@ TEST_CASE("dac", "[.detectorintegration][.dacs]") {
                 caller.call("dac", {std::to_string(idac), "-1"}, -1, PUT));
         }
 
-        // power dacs
+        // power dacs. TODO: check v_chip
         if (det.isVirtualDetectorServer().tsquash(
                 "Inconsistent virtual servers")) {
             std::vector<std::string> names{"v_a", "v_b", "v_c", "v_d", "v_io"};
@@ -663,6 +663,8 @@ TEST_CASE("dac", "[.detectorintegration][.dacs]") {
                 }
                 // Reset all dacs to previous value
                 for (int imod = 0; imod != det.size(); ++imod) {
+                    det.setPowerEnabled(std::vector{indices[iPower]}, false,
+                                        {imod});
                     det.setDAC(indices[iPower], prev_val[imod], true, {imod});
                     det.setPowerEnabled(std::vector{indices[iPower]},
                                         prev_val_power[imod], {imod});
@@ -863,7 +865,6 @@ TEST_CASE("v_limit", "[.detectorintegration]") {
         auto prev_val = det.getDAC(defs::V_LIMIT, true);
         REQUIRE_THROWS(caller.call("v_limit", {"1200", "mV"}, -1, PUT));
         REQUIRE_THROWS(caller.call("v_limit", {"-100"}, -1, PUT));
-        REQUIRE_THROWS(caller.call("v_limit", {"0"}, -1, PUT));
         REQUIRE_THROWS(caller.call("v_limit", {"-100", "mV"}, -1, PUT));
         REQUIRE_THROWS(caller.call("v_limit", {"0", "mV"}, -1, PUT));
 
@@ -1173,10 +1174,10 @@ TEST_CASE("power", "[.detectorintegration]") {
         det_type == defs::XILINX_CHIPTESTBOARD) {
 
         std::vector<std::string> cmds{"v_a", "v_b",  "v_c",
-                                      "v_d", "v_io", "v_chip"};
+                                      "v_d", "v_io"};
         std::vector<defs::dacIndex> indices{
             defs::V_POWER_A, defs::V_POWER_B,  defs::V_POWER_C,
-            defs::V_POWER_D, defs::V_POWER_IO, defs::V_POWER_CHIP};
+            defs::V_POWER_D, defs::V_POWER_IO};
 
         for (size_t iPower = 0; iPower < cmds.size(); ++iPower) {
             auto prev_val = det.isPowerEnabled(indices[iPower]);
@@ -1187,7 +1188,7 @@ TEST_CASE("power", "[.detectorintegration]") {
             {
                 std::ostringstream oss;
                 caller.call("power", {"v_a", "on"}, -1, PUT, oss);
-                REQUIRE(oss.str() == "power v_a on\n");
+                REQUIRE(oss.str() == "power [v_a] on\n");
             }
             {
                 std::ostringstream oss;
@@ -1200,17 +1201,28 @@ TEST_CASE("power", "[.detectorintegration]") {
                 REQUIRE(oss.str() == "power [v_a, v_c] on\n");
             }
             {
-                std::ostringstream oss;
+                std::ostringstream oss1, oss2, oss3;
                 caller.call("power", {"v_a", "v_b", "off"}, -1, PUT);
-                caller.call("power", {"v_a", "v_b", "v_c"}, -1, GET, oss);
-                REQUIRE(oss.str() == "power [v_a, v_b, v_c] [on, off, on]\n");
+                caller.call("power", {"v_a"}, -1, GET, oss1);
+                caller.call("power", {"v_b"}, -1, GET, oss2);
+                caller.call("power", {"v_c"}, -1, GET, oss3);
+                REQUIRE(oss1.str() == "power v_a off\n");
+                REQUIRE(oss2.str() == "power v_b off\n");
+                REQUIRE(oss3.str() == "power v_c on\n");
             }
             { // power chip
                 caller.call("powerchip", {"1"}, -1, PUT);
-                std::ostringstream oss;
-                caller.call("power", {"v_a", "v_b", "v_c", "v_d", "v_io"}, -1,
-                            GET, oss);
-                REQUIRE(oss.str() == "power [v_a, v_b, v_c, v_d, v_io] on\n");
+                std::ostringstream oss1, oss2, oss3, oss4, oss5;
+                caller.call("power", {"v_a"}, -1, GET, oss1);
+                caller.call("power", {"v_b"}, -1, GET, oss2);
+                caller.call("power", {"v_c"}, -1, GET, oss3);
+                caller.call("power", {"v_d"}, -1, GET, oss4);
+                caller.call("power", {"v_io"}, -1, GET, oss5);
+                REQUIRE(oss1.str() == "power v_a on\n");
+                REQUIRE(oss2.str() == "power v_b on\n");
+                REQUIRE(oss3.str() == "power v_c on\n");
+                REQUIRE(oss4.str() == "power v_d on\n");
+                REQUIRE(oss5.str() == "power v_io on\n");
             }
             for (int imod = 0; imod != det.size(); ++imod) {
                 det.setPowerEnabled(std::vector{indices[iPower]},

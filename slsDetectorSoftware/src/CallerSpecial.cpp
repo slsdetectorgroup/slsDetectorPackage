@@ -1915,7 +1915,7 @@ std::string Caller::v_limit(int action) {
     }
 
     else if (action == defs::PUT_ACTION) {
-        if (args.size() < 1) {
+        if (args.size() != 1) {
             WrongNumberOfParameters(1);
         }
         auto val = StringTo<int>(args[0]);

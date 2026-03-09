@@ -1436,7 +1436,7 @@ int setDAC(enum DACINDEX ind, int val, bool mV, char *mess) {
             return FAIL;
 
         // power dacs (power should be disabled)
-        if (ind > NDAC_ONLY && ind != D_PWR_CHIP) {
+        if (ind >= NDAC_ONLY && ind != D_PWR_CHIP) {
             if (verifyPowerRailDisabled(ind, mess) == FAIL)
                 return FAIL;
         }

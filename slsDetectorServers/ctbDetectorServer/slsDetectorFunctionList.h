@@ -145,10 +145,9 @@ int setVLimit(int val, char *mess);
 int validateVchip(int val, char *mess);
 int getVchip(int *retval, char *mess);
 int setVchip(int val, char *mess);
-int getVchipToSet(enum DACINDEX ind, int pwr_val, int *retval_vchip,
-                  char *mess);
+int getVchipToSet(int *retval_vchip, char *mess);
 
-int validatePower(enum PWRINDEX ind, int val, char *mess);
+int validatePower(enum DACINDEX ind, int val, char *mess);
 int getPowerIndexFromDACIndex(enum DACINDEX ind, enum PWRINDEX *pwrIndex,
                               char *mess);
 int getPowerRailMask(enum PWRINDEX ind, uint32_t *mask, char *mess);

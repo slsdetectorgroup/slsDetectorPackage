@@ -2195,7 +2195,7 @@ Result<bool> Detector::isPowerEnabled(defs::dacIndex index,
         valid_indices.end()) {
         throw RuntimeError("Unknown Power Index");
     }
-    return pimpl->Parallel(&Module::getPower, pos, index);
+    return pimpl->Parallel(&Module::isPowerEnabled, pos, index);
 }
 
 void Detector::setPowerEnabled(const std::vector<defs::dacIndex> &indices,
@@ -2207,7 +2207,7 @@ void Detector::setPowerEnabled(const std::vector<defs::dacIndex> &indices,
             throw RuntimeError("Unknown Power Index");
         }
     }
-    pimpl->Parallel(&Module::setPower, pos, value, indices);
+    pimpl->Parallel(&Module::setPowerEnabled, pos, indices, value);
 }
 
 Result<int> Detector::getADCVpp(bool mV, Positions pos) const {

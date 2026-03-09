@@ -1889,4 +1889,143 @@ bool Caller::parseMV(int argIndex) {
     return false;
 }
 
+std::string Caller::v_limit(int action) {
+    std::ostringstream os;
+
+    if (action == defs::HELP_ACTION) {
+        os << "[n_value]\n\t[Ctb][Xilinx Ctb] Soft limit for power supplies "
+              "and DACS in mV."
+           << '\n';
+        return os.str();
+    }
+
+    auto detType = det->getDetectorType().squash(defs::GENERIC);
+    if (detType != defs::CHIPTESTBOARD &&
+        detType != defs::XILINX_CHIPTESTBOARD) {
+        throw RuntimeError("v_limit command is only applicable for "
+                           "ChipTestBoard and Xilinx ChipTestBoard.");
+    }
+
+    if (action == defs::GET_ACTION) {
+        if (!args.empty()) {
+            WrongNumberOfParameters(0);
+        }
+        auto t = det->getDAC(defs::V_LIMIT, true, std::vector<int>{det_id});
+        os << OutString(t) << " mV" << '\n';
+    }
+
+    else if (action == defs::PUT_ACTION) {
+        if (args.size() < 1) {
+            WrongNumberOfParameters(1);
+        }
+        auto val = StringTo<int>(args[0]);
+        det->setDAC(defs::V_LIMIT, val, true, std::vector<int>{det_id});
+        os << args[0] << " mV" << '\n';
+    }
+
+    else {
+        throw RuntimeError("Unknown action");
+    }
+
+    return os.str();
+}
+
+std::string Caller::power(int action) {
+    std::ostringstream os;
+
+    if (action == defs::HELP_ACTION) {
+        os << "[list of power names] [on|off]\n\t[Ctb][Xilinx Ctb] Enable or "
+              "disable power rails. Power name can be v_a, v_b, v_c, v_d or "
+              "v_io. If none provided, all of them are set to on or off. One "
+              "can retrieve only one at a time."
+           << '\n';
+        return os.str();
+    }
+
+    auto detType = det->getDetectorType().squash(defs::GENERIC);
+    if (detType != defs::CHIPTESTBOARD &&
+        detType != defs::XILINX_CHIPTESTBOARD) {
+        throw RuntimeError("This command is only applicable for ChipTestBoard "
+                           "and Xilinx ChipTestBoard.");
+    }
+
+    if (action == defs::GET_ACTION) {
+        if (args.size() != 1) {
+            WrongNumberOfParameters(1);
+        }
+        auto t = det->isPowerEnabled(StringTo<defs::dacIndex>(args[0]),
+                                     std::vector<int>{det_id})
+                     .tsquash("Inconsistent across modules");
+        os << args[0] << ' ' << ToString(t, defs::OnOff) << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() < 1 || args.size() > 6) {
+            WrongNumberOfParameters(1);
+        }
+        std::string lastArg = args.back();
+        if (lastArg != "on" && lastArg != "off") {
+            throw RuntimeError("Last argument '" + lastArg +
+                               "' must be on or off");
+        }
+        bool enable = StringTo(lastArg, defs::OnOff);
+        std::vector<defs::dacIndex> powerIndices;
+        for (size_t i = 0; i < args.size() - 1; ++i) {
+            powerIndices.push_back(StringTo<defs::dacIndex>(args[i]));
+        }
+
+        det->setPowerEnabled(powerIndices, enable, std::vector<int>{det_id});
+        args.pop_back();
+        os << ToString(args) << ' ' << ToString(enable, defs::OnOff) << '\n';
+    } else {
+        throw RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
+std::string Caller::powervalues(int action) {
+    std::ostringstream os;
+    if (action == defs::HELP_ACTION) {
+        os << "\n\t\t[Ctb][Xilinx_Ctb] Get dac values of all powers if "
+              "enabled, else '0'."
+           << '\n';
+        return os.str();
+    }
+
+    auto detType = det->getDetectorType().squash(defs::GENERIC);
+    if (detType != defs::CHIPTESTBOARD &&
+        detType != defs::XILINX_CHIPTESTBOARD) {
+        throw RuntimeError("This command is only applicable for ChipTestBoard "
+                           "and Xilinx ChipTestBoard.");
+    }
+
+    if (action == defs::GET_ACTION) {
+        if (!args.empty()) {
+            WrongNumberOfParameters(0);
+        }
+        auto t = det->getPowerList();
+        auto names = det->getPowerNames();
+        auto name_it = names.begin();
+        os << '[';
+        auto it = t.cbegin();
+        while (it != t.cend()) {
+            if (it != t.cbegin())
+                os << ", ";
+            os << ToString(*name_it++) << ' ';
+            if (det->isPowerEnabled(*it, std::vector<int>{det_id}).squash(0)) {
+                os << OutString(
+                          det->getDAC(*it, true, std::vector<int>{det_id}))
+                   << " mV";
+            } else {
+                os << "0 mV";
+            }
+            ++it;
+        }
+        os << "]" << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        throw RuntimeError("Cannot put");
+    } else {
+        throw RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
 } // namespace sls

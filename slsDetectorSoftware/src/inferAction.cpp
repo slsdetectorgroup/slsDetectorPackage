@@ -2256,6 +2256,12 @@ int InferAction::port() {
     }
 }
 
+int InferAction::power() {
+
+    throw RuntimeError("sls_detector is disabled for command: power. Use "
+                       "sls_detector_get or sls_detector_put");
+}
+
 int InferAction::powerchip() {
 
     if (args.size() == 0) {

@@ -215,6 +215,7 @@ class Caller {
     std::string periodl(int action);
     std::string polarity(int action);
     std::string port(int action);
+    std::string power(int action);
     std::string powerchip(int action);
     std::string powerindex(int action);
     std::string powerlist(int action);
@@ -582,6 +583,7 @@ class Caller {
         {"periodl", &Caller::periodl},
         {"polarity", &Caller::polarity},
         {"port", &Caller::port},
+        {"power", &Caller::power},
         {"powerchip", &Caller::powerchip},
         {"powerindex", &Caller::powerindex},
         {"powerlist", &Caller::powerlist},

@@ -170,6 +170,7 @@ class InferAction {
     int periodl();
     int polarity();
     int port();
+    int power();
     int powerchip();
     int powerindex();
     int powerlist();
@@ -504,6 +505,7 @@ class InferAction {
         {"periodl", &InferAction::periodl},
         {"polarity", &InferAction::polarity},
         {"port", &InferAction::port},
+        {"power", &InferAction::power},
         {"powerchip", &InferAction::powerchip},
         {"powerindex", &InferAction::powerindex},
         {"powerlist", &InferAction::powerlist},

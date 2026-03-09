@@ -603,7 +603,7 @@ void setupDetector() {
     LOG(logINFOBLUE,
         ("Setting power dacs to min dac value (power disabled)\n"));
     for (int idac = NDAC_ONLY; idac < NDAC; ++idac) {
-        if (idac == D_PWR_CHIP)
+        if (idac == (int)D_PWR_CHIP)
             continue;
         int min = (idac == D_PWR_IO) ? VIO_MIN_MV : POWER_RGLTR_MIN;
         initError = setDAC(idac, min, true, initErrorMessage);
@@ -1435,17 +1435,9 @@ int setDAC(enum DACINDEX ind, int val, bool mV, char *mess) {
         if (validateDACValue(ind, val, mess) == FAIL)
             return FAIL;
 
-        // power dacs
+        // power dacs (power should be disabled)
         if (ind > NDAC_ONLY && ind != D_PWR_CHIP) {
-
             if (verifyPowerRailDisabled(ind, mess) == FAIL)
-                return FAIL;
-
-            // set vchip accordingly
-            int vchip = 0;
-            if (getVchipToSet(ind, val, &vchip, mess) == FAIL)
-                return FAIL;
-            if (setVchip(vchip, mess) == FAIL)
                 return FAIL;
         }
 
@@ -1500,21 +1492,14 @@ int setVchip(int val, char *mess) {
     return OK;
 }
 
-int getVchipToSet(enum DACINDEX ind, int pwr_val, int *retval_vchip,
-                  char *mess) {
+int getVchipToSet(int *retval_vchip, char *mess) {
     // get the max of all the power regulators
     int max = 0;
-    for (int ipwr = NDAC_ONLY; ipwr <= NDAC; ++ipwr) {
-        if (ipwr == D_PWR_CHIP)
-            continue;
+    enum DACINDEX pwrDacs[] = {D_PWR_A, D_PWR_B, D_PWR_C, D_PWR_D, D_PWR_IO};
+    for (int ipwr = 0; ipwr != (NPWR - 1); ++ipwr) {
         int val = 0;
-        // current index, use the value to be set
-        if (ipwr == (int)ind) {
-            val = pwr_val;
-        } else {
-            if ((getDAC, ind, true, &val, mess) == FAIL)
-                return FAIL;
-        }
+        if (getDAC(pwrDacs[ipwr], true, &val, mess) == FAIL)
+            return FAIL;
         if (val > max)
             max = val;
     }
@@ -1526,14 +1511,10 @@ int getVchipToSet(enum DACINDEX ind, int pwr_val, int *retval_vchip,
         retval = VCHIP_MIN_MV;
     // max checked earlier, should not happen
     if (retval > VCHIP_MAX_MV) {
-        enum PWRINDEX pwrIndex = PWR_IO;
-        if (getPowerIndexFromDACIndex(ind, &pwrIndex, mess) == FAIL)
-            return FAIL;
-        char *powerNames[] = {PWR_NAMES};
-        sprintf(
-            mess,
-            "Could not set %s. Vchip value to set %d is beyond itsmaximum %d\n",
-            powerNames[pwrIndex], retval, VCHIP_MAX_MV);
+        sprintf(mess,
+                "Could not set power enable. Vchip value to set %d is beyond "
+                "its maximum %d\n",
+                retval, VCHIP_MAX_MV);
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -1543,15 +1524,19 @@ int getVchipToSet(enum DACINDEX ind, int pwr_val, int *retval_vchip,
     return OK;
 }
 
-int validatePower(enum PWRINDEX ind, int voltage, char *mess) {
+int validatePower(enum DACINDEX ind, int voltage, char *mess) {
     char *powerNames[] = {PWR_NAMES};
+    enum PWRINDEX pwrIndex = PWR_IO;
+    if (getPowerIndexFromDACIndex(ind, &pwrIndex, mess) == FAIL)
+        return FAIL;
+
     // validate min value
-    int min = (ind == PWR_IO) ? VIO_MIN_MV : POWER_RGLTR_MIN;
+    int min = (pwrIndex == PWR_IO) ? VIO_MIN_MV : POWER_RGLTR_MIN;
     if (voltage < min && voltage != 0) {
         sprintf(
             mess,
             "Could not set %s. Input value %d mV must be greater than %d mV.\n",
-            powerNames[ind], voltage, min);
+            powerNames[pwrIndex], voltage, min);
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -1561,14 +1546,14 @@ int validatePower(enum PWRINDEX ind, int voltage, char *mess) {
         sprintf(
             mess,
             "Could not set %s. Input value %d mV must be less than %d mV.\n",
-            powerNames[ind], voltage, max);
+            powerNames[pwrIndex], voltage, max);
         LOG(logERROR, (mess));
         return FAIL;
     }
     // validate vlimit
     if (vLimit > 0 && voltage > vLimit) {
         sprintf(mess, "Could not set %s. Input %d mV exceeds vLimit %d mV\n",
-                powerNames[ind], voltage, vLimit);
+                powerNames[pwrIndex], voltage, vLimit);
         LOG(logERROR, (mess))
         return FAIL;
     }
@@ -1651,6 +1636,14 @@ int setPowerRailEnabled(enum DACINDEX indices[], int count, bool enable,
         LOG(logINFO, ("%s", message));
     }
 
+    // set vchip accordingly
+    int vchip = 0;
+    if (getVchipToSet(&vchip, mess) == FAIL)
+        return FAIL;
+    if (setVchip(vchip, mess) == FAIL)
+        return FAIL;
+
+    // enable/disable power rails
     uint32_t addr = POWER_REG;
     if (enable) {
         bus_w(addr, bus_r(addr) | mask);

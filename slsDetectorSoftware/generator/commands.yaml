@@ -186,29 +186,6 @@ INTEGER_COMMAND_NOID:
       input_types: [ int ]
       output: [ 'args.front()' ]
 
-INTEGER_IND_COMMAND:
-  template: true
-  infer_action: true
-  help: ""
-  actions:
-    GET:
-      # extra variable to store the index
-      require_det_id: true
-      function: ''
-      argc: 0
-      input: [ 'INDEX' ]
-      input_types: [ int ]
-      cast_input: [ false ]
-      output: [ OutString(t) ]
-    PUT:
-      # extra variable to store the index
-      function: ''
-      require_det_id: true
-      argc: 1
-      input: [ 'INDEX', 'args[0]' ]
-      input_types: [ int, int ]
-      cast_input: [ false, true ]
-      output: [ 'args.front()' ]
 
 INTEGER_USER_IND_COMMAND:
   template: true
@@ -1565,18 +1542,6 @@ fmaster:
       function: setMasterFileWrite
       input_types: [ bool ]
 
-################# INTEGER_IND_COMMAND #######################
-v_limit:
-  inherit_actions: INTEGER_IND_COMMAND
-  help: "[n_value]\n\t[Ctb][Xilinx Ctb] Soft limit for power supplies (ctb only) and DACS in mV."
-  actions:
-    GET:
-      function: getPower
-      input: [ 'defs::V_LIMIT' ]
-    PUT:
-      function: setPower
-      input: [ 'defs::V_LIMIT', 'args[0]' ]
-
 
 ################# INTEGER_USER_IND_COMMAND ###################
 vchip_comp_fe:
@@ -2241,17 +2206,6 @@ slowadclist:
         function: setSlowADCNames
 
 ################# CTB_VALUES ################################
-powervalues:
-  help: "[name] \n\t\t[Ctb][Xilinx_Ctb] Get values of all powers."
-  actions:
-    GET:
-      argc: 0
-      ctb_output_list:
-        GETFCNLIST: getPowerList
-        GETFCNNAME: getPowerNames
-        GETFCN: getPower
-        suffix: "mV"
-        printable_name: "*name_it++"
 
 slowadcvalues:
   help: "[name] \n\t\t[Ctb][Xilinx_Ctb] Get values of all slow adcs."
@@ -2805,7 +2759,30 @@ dac:
               arg_types: [ std::string, bool ]
 
 
+v_limit:
+    is_description: true
+    actions:
+        GET:
+          argc: 0
+        PUT:
+          argc: 1
+          arg_types: [ int ]
 
+power:
+    is_description: true
+    actions:
+        GET:
+          argc: 0
+        PUT:
+          argc: -1
+          arg_types: [ std::string ]
+
+powervalues:
+    is_description: true
+    actions:
+        GET:
+          args:
+            - argc: 0
 
 ################# special commands ##########################
 

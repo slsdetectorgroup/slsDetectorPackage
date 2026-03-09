@@ -516,7 +516,7 @@ class Detector(CppDetectorApi):
     @element
     def powerchip(self):
         """
-        [Jungfrau][Moench][Mythen3][Gotthard2][Xilinx Ctb] Power the chip. 
+        [Jungfrau][Moench][Mythen3][Gotthard2][Xilinx Ctb][Ctb] Power the chip. 
 
         Note
         ----
@@ -4171,74 +4171,14 @@ class Detector(CppDetectorApi):
 
     @property
     @element
-    def v_a(self):
-        """[Ctb][Xilinx Ctb] Power supply a in mV."""
-        return self.getPower(dacIndex.V_POWER_A)
-
-    @v_a.setter
-    def v_a(self, value):
-        value = ut.merge_args(dacIndex.V_POWER_A, value)
-        ut.set_using_dict(self.setPower, *value)
-
-    @property
-    @element
-    def v_b(self):
-        """[Ctb][Xilinx Ctb] Power supply b in mV."""
-        return self.getPower(dacIndex.V_POWER_B)
-
-    @v_b.setter
-    def v_b(self, value):
-        value = ut.merge_args(dacIndex.V_POWER_B, value)
-        ut.set_using_dict(self.setPower, *value)
-
-    @property
-    @element
-    def v_c(self):
-        """[Ctb][Xilinx Ctb] Power supply c in mV."""
-        return self.getPower(dacIndex.V_POWER_C)
-
-    @v_c.setter
-    def v_c(self, value):
-        value = ut.merge_args(dacIndex.V_POWER_C, value)
-        ut.set_using_dict(self.setPower, *value)
-
-    @property
-    @element
-    def v_d(self):
-        """[Ctb][Xilinx Ctb] Power supply d in mV."""
-        return self.getPower(dacIndex.V_POWER_D)
-
-    @v_d.setter
-    def v_d(self, value):
-        value = ut.merge_args(dacIndex.V_POWER_D, value)
-        ut.set_using_dict(self.setPower, *value)
-
-    @property
-    @element
-    def v_io(self):
-        """[Ctb][Xilinx Ctb] Power supply io in mV. Minimum 1200 mV. 
-        
-        Note
-        ----
-        Must be the first power regulator to be set after fpga reset (on-board detector server start up).
-        """
-        return self.getPower(dacIndex.V_POWER_IO)
-
-    @v_io.setter
-    def v_io(self, value):
-        value = ut.merge_args(dacIndex.V_POWER_IO, value)
-        ut.set_using_dict(self.setPower, *value)
-
-    @property
-    @element
     def v_limit(self):
         """[Ctb][Xilinx Ctb] Soft limit for power supplies (ctb only) and DACS in mV."""
-        return self.getPower(dacIndex.V_LIMIT)
+        return self.getDAC(dacIndex.V_LIMIT, True)
 
     @v_limit.setter
     def v_limit(self, value):
-        value = ut.merge_args(dacIndex.V_LIMIT, value)
-        ut.set_using_dict(self.setPower, *value)
+        value = ut.merge_args(dacIndex.V_LIMIT, value, True)
+        ut.set_using_dict(self.setDAC, *value)
 
 
     @property

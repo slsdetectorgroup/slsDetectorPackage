@@ -1555,15 +1555,15 @@ void init_det(py::module &m) {
                        (std::vector<defs::dacIndex>(Detector::*)() const) &
                            Detector::getSlowADCList);
     CppDetectorApi.def(
-        "getPower",
-        (Result<int>(Detector::*)(defs::dacIndex, sls::Positions) const) &
-            Detector::getPower,
+        "isPowerEnabled",
+        (Result<bool>(Detector::*)(defs::dacIndex, sls::Positions) const) &
+            Detector::isPowerEnabled,
         py::arg(), py::arg() = Positions{});
-    CppDetectorApi.def(
-        "setPower",
-        (void (Detector::*)(defs::dacIndex, int, sls::Positions)) &
-            Detector::setPower,
-        py::arg(), py::arg(), py::arg() = Positions{});
+    CppDetectorApi.def("setPowerEnabled",
+                       (void (Detector::*)(const std::vector<defs::dacIndex> &,
+                                           bool, sls::Positions)) &
+                           Detector::setPowerEnabled,
+                       py::arg(), py::arg(), py::arg() = Positions{});
     CppDetectorApi.def("getADCVpp",
                        (Result<int>(Detector::*)(bool, sls::Positions) const) &
                            Detector::getADCVpp,

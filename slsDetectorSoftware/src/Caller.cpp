@@ -9130,65 +9130,6 @@ std::string Caller::powername(int action) {
     return os.str();
 }
 
-std::string Caller::powervalues(int action) {
-
-    std::ostringstream os;
-    // print help
-    if (action == slsDetectorDefs::HELP_ACTION) {
-        os << R"V0G0N([name] 
-		[Ctb][Xilinx_Ctb] Get values of all powers. )V0G0N"
-           << std::endl;
-        return os.str();
-    }
-
-    // check if action and arguments are valid
-    if (action == slsDetectorDefs::GET_ACTION) {
-        if (1 && args.size() != 0) {
-            throw RuntimeError("Wrong number of arguments for action GET");
-        }
-
-        if (args.size() == 0) {
-        }
-
-    }
-
-    else {
-
-        throw RuntimeError(
-            "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
-    }
-
-    // generate code for each action
-    if (action == slsDetectorDefs::GET_ACTION) {
-        if (args.size() == 0) {
-
-            std::string suffix = " mV";
-            auto t = det->getPowerList();
-
-            auto names = det->getPowerNames();
-            auto name_it = names.begin();
-            os << '[';
-            if (t.size() > 0) {
-
-                auto it = t.cbegin();
-                os << ToString(*name_it++) << ' ';
-                os << OutString(det->getPower(*it++, std::vector<int>{det_id}))
-                   << suffix;
-                while (it != t.cend()) {
-                    os << ", " << ToString(*name_it++) << ' ';
-                    os << OutString(
-                              det->getPower(*it++, std::vector<int>{det_id}))
-                       << suffix;
-                }
-            }
-
-            os << "]\n";
-        }
-    }
-
-    return os.str();
-}
-
 std::string Caller::programfpga(int action) {
 
     std::ostringstream os;
@@ -15806,68 +15747,6 @@ std::string Caller::updatemode(int action) {
         if (args.size() == 1) {
             auto arg0 = StringTo<int>(args[0]);
             det->setUpdateMode(arg0, std::vector<int>{det_id});
-            os << args.front() << '\n';
-        }
-    }
-
-    return os.str();
-}
-
-std::string Caller::v_limit(int action) {
-
-    std::ostringstream os;
-    // print help
-    if (action == slsDetectorDefs::HELP_ACTION) {
-        os << R"V0G0N([n_value]
-	[Ctb][Xilinx Ctb] Soft limit for power supplies (ctb only) and DACS in mV. )V0G0N"
-           << std::endl;
-        return os.str();
-    }
-
-    // check if action and arguments are valid
-    if (action == slsDetectorDefs::GET_ACTION) {
-        if (1 && args.size() != 0) {
-            throw RuntimeError("Wrong number of arguments for action GET");
-        }
-
-        if (args.size() == 0) {
-        }
-
-    }
-
-    else if (action == slsDetectorDefs::PUT_ACTION) {
-        if (1 && args.size() != 1) {
-            throw RuntimeError("Wrong number of arguments for action PUT");
-        }
-
-        if (args.size() == 1) {
-            try {
-                StringTo<int>(args[0]);
-            } catch (...) {
-                throw RuntimeError("Could not convert argument 1 to int");
-            }
-        }
-
-    }
-
-    else {
-
-        throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
-                           "are ['GET', 'PUT']");
-    }
-
-    // generate code for each action
-    if (action == slsDetectorDefs::GET_ACTION) {
-        if (args.size() == 0) {
-            auto t = det->getPower(defs::V_LIMIT, std::vector<int>{det_id});
-            os << OutString(t) << '\n';
-        }
-    }
-
-    if (action == slsDetectorDefs::PUT_ACTION) {
-        if (args.size() == 1) {
-            auto arg1 = StringTo<int>(args[0]);
-            det->setPower(defs::V_LIMIT, arg1, std::vector<int>{det_id});
             os << args.front() << '\n';
         }
     }

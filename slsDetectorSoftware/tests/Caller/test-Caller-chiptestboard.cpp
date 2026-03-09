@@ -861,7 +861,7 @@ TEST_CASE("v_limit", "[.detectorintegration]") {
     if (det_type == defs::CHIPTESTBOARD ||
         det_type == defs::XILINX_CHIPTESTBOARD) {
         auto prev_val = det.getDAC(defs::V_LIMIT, true);
-        REQUIRE_THROWS(caller.call("v_limit", {"1200"}, -1, PUT));
+        REQUIRE_THROWS(caller.call("v_limit", {"1200", "mV"}, -1, PUT));
         REQUIRE_THROWS(caller.call("v_limit", {"-100"}, -1, PUT));
         REQUIRE_THROWS(caller.call("v_limit", {"0"}, -1, PUT));
         REQUIRE_THROWS(caller.call("v_limit", {"-100", "mV"}, -1, PUT));
@@ -869,17 +869,17 @@ TEST_CASE("v_limit", "[.detectorintegration]") {
 
         {
             std::ostringstream oss;
-            caller.call("v_limit", {"1500", "mV"}, -1, PUT, oss);
+            caller.call("v_limit", {"1500"}, -1, PUT, oss);
             REQUIRE(oss.str() == "v_limit 1500 mV\n");
         }
         {
             std::ostringstream oss;
-            caller.call("v_limit", {"0", "mV"}, -1, PUT, oss);
+            caller.call("v_limit", {"0"}, -1, PUT, oss);
             REQUIRE(oss.str() == "v_limit 0 mV\n");
         }
         {
             std::ostringstream oss;
-            caller.call("v_limit", {"0", "mV"}, -1, PUT, oss);
+            caller.call("v_limit", {"0"}, -1, PUT, oss);
             REQUIRE(oss.str() == "v_limit 0 mV\n");
         }
         {

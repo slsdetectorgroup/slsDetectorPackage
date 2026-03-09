@@ -22,6 +22,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def __init__(self, *args, **kwargs):
         parser = argparse.ArgumentParser()
+        pg.setConfigOptions(imageAxisOrder="row-major")  
         parser.add_argument('-a', '--alias', help="Alias file complete path")
         arglist, __ = parser.parse_known_args()
         self.alias_file = arglist.alias

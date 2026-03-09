@@ -16,6 +16,7 @@ class TransceiverTab(QtWidgets.QWidget):
 
     def __init__(self, parent):
         super().__init__(parent)
+        pg.setConfigOptions(imageAxisOrder="row-major")  
         uic.loadUi(Path(__file__).parent.parent / 'ui' / "transceiver.ui", parent)
         self.view = parent
         self.mainWindow = None
@@ -145,6 +146,7 @@ class TransceiverTab(QtWidgets.QWidget):
         """
         # get zoom state
         viewBox = self.mainWindow.plotTransceiverImage.getView()
+
         state = viewBox.getState()
         try:
             self.mainWindow.transceiver_frame = self._processImageData(data, dSamples, self.mainWindow.romode.value,
@@ -185,8 +187,8 @@ class TransceiverTab(QtWidgets.QWidget):
         self.mainWindow.nTransceiverCols = 0
         self.mainWindow.transceiver_frame = np.zeros(
             (self.mainWindow.nTransceiverRows, self.mainWindow.nTransceiverCols))
-        self.mainWindow.plotTransceiverImage.setImage(self.mainWindow.transceiver_frame)
-        self.mainWindow.verticalLayoutPlot.addWidget(self.mainWindow.plotTransceiverImage, 6)
+        self.mainWindow.plotTransceiverImage.setImage(self.mainWindow.transceiver_frame) 
+        self.mainWindow.verticalLayoutPlot.addWidget(self.mainWindow.plotTransceiverImage, 6) 
 
         cm = pg.colormap.get('CET-L9')  # prepare a linear color map
         self.mainWindow.plotTransceiverImage.setColorMap(cm)

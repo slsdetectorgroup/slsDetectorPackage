@@ -22,6 +22,7 @@ class AdcTab(QtWidgets.QWidget):
 
     def __init__(self, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
+        pg.setConfigOptions(imageAxisOrder="row-major")  
         uic.loadUi(Path(__file__).parent.parent / 'ui' / "adc.ui", parent)
         self.view = parent
         self.mainWindow = None

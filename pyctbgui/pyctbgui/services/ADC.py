@@ -182,7 +182,7 @@ class AdcTab(QtWidgets.QWidget):
         try:
             self.mainWindow.analog_frame = self._processImageData(data, aSamples, self.mainWindow.nADCEnabled)
             self.plotTab.ignoreHistogramSignal = True
-            self.mainWindow.plotAnalogImage.setImage(self.mainWindow.analog_frame.T)
+            self.mainWindow.plotAnalogImage.setImage(self.mainWindow.analog_frame)
         except Exception:
             self.logger.exception('Exception Caught')
             self.mainWindow.statusbar.setStyleSheet("color:red")

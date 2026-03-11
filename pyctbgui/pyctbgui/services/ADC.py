@@ -69,7 +69,6 @@ class AdcTab(QtWidgets.QWidget):
         self.mainWindow.nAnalogRows = 0
         self.mainWindow.nAnalogCols = 0
         self.mainWindow.analog_frame = np.zeros((self.mainWindow.nAnalogRows, self.mainWindow.nAnalogCols))
-        self.mainWindow.plotAnalogImage.getView().invertY(False)
         self.mainWindow.plotAnalogImage.setImage(self.mainWindow.analog_frame)
         self.mainWindow.verticalLayoutPlot.addWidget(self.mainWindow.plotAnalogImage, 2)
 

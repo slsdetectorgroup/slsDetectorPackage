@@ -550,7 +550,7 @@ class PlotTab(QtWidgets.QWidget):
             frame = self.mainWindow.transceiver_frame
         if 0 <= x < nMaxX and 0 <= y < nMaxY and not np.array_equal(frame, []):
             val = frame[int(y), int(x)]
-            message = f'[{y:.2f}, {x:.2f}] = {val:.2f}'
+            message = f'[row, col]: [{y:.2f}, {x:.2f}] = {val:.2f}'
             sender.setToolTip(message)
             # print(message)
         else:

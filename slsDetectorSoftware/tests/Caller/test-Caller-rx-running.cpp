@@ -12,7 +12,7 @@ namespace sls {
 using test::PUT;
 
 TEST_CASE("Ctb and xilinx - cant put if receiver is not idle",
-          "[.detectorintegration][.rx]") {
+          "[.detectorintegration]") {
 
     Detector det;
     Caller caller(&det);
@@ -61,7 +61,7 @@ TEST_CASE("Ctb and xilinx - cant put if receiver is not idle",
 }
 
 TEST_CASE("adcenable - cant put if receiver is not idle",
-          "[.detectorintegration][.rx]") {
+          "[.detectorintegration]") {
 
     Detector det;
     Caller caller(&det);
@@ -85,7 +85,7 @@ TEST_CASE("adcenable - cant put if receiver is not idle",
 }
 
 TEST_CASE("bursts - cant put if receiver is not idle",
-          "[.detectorintegration][.rx]") {
+          "[.detectorintegration]") {
 
     Detector det;
     Caller caller(&det);
@@ -108,7 +108,7 @@ TEST_CASE("bursts - cant put if receiver is not idle",
 }
 
 TEST_CASE("counters - cant put if receiver is not idle",
-          "[.detectorintegration][.rx]") {
+          "[.detectorintegration]") {
 
     Detector det;
     Caller caller(&det);
@@ -132,7 +132,7 @@ TEST_CASE("counters - cant put if receiver is not idle",
 }
 
 TEST_CASE("numinterfaces - cant put if receiver is not idle",
-          "[.detectorintegration][.rx]") {
+          "[.detectorintegration]") {
 
     Detector det;
     Caller caller(&det);
@@ -154,8 +154,7 @@ TEST_CASE("numinterfaces - cant put if receiver is not idle",
     }
 }
 
-TEST_CASE("dr - cant put if receiver is not idle",
-          "[.detectorintegration][.rx]") {
+TEST_CASE("dr - cant put if receiver is not idle", "[.detectorintegration]") {
 
     Detector det;
     Caller caller(&det);
@@ -178,7 +177,7 @@ TEST_CASE("dr - cant put if receiver is not idle",
 }
 
 TEST_CASE("tengiga - cant put if receiver is not idle",
-          "[.detectorintegration][.rx]") {
+          "[.detectorintegration]") {
 
     Detector det;
     Caller caller(&det);
@@ -203,7 +202,7 @@ TEST_CASE("tengiga - cant put if receiver is not idle",
 }
 
 TEST_CASE("general - cant put if receiver is not idle",
-          "[.detectorintegration][.rx]") {
+          "[.detectorintegration]") {
 
     Detector det;
     Caller caller(&det);

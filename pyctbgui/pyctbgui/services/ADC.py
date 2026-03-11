@@ -22,6 +22,7 @@ class AdcTab(QtWidgets.QWidget):
 
     def __init__(self, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
+        pg.setConfigOptions(imageAxisOrder="row-major")  
         uic.loadUi(Path(__file__).parent.parent / 'ui' / "adc.ui", parent)
         self.view = parent
         self.mainWindow = None
@@ -68,7 +69,6 @@ class AdcTab(QtWidgets.QWidget):
         self.mainWindow.nAnalogRows = 0
         self.mainWindow.nAnalogCols = 0
         self.mainWindow.analog_frame = np.zeros((self.mainWindow.nAnalogRows, self.mainWindow.nAnalogCols))
-        self.mainWindow.plotAnalogImage.getView().invertY(False)
         self.mainWindow.plotAnalogImage.setImage(self.mainWindow.analog_frame)
         self.mainWindow.verticalLayoutPlot.addWidget(self.mainWindow.plotAnalogImage, 2)
 
@@ -181,7 +181,7 @@ class AdcTab(QtWidgets.QWidget):
         try:
             self.mainWindow.analog_frame = self._processImageData(data, aSamples, self.mainWindow.nADCEnabled)
             self.plotTab.ignoreHistogramSignal = True
-            self.mainWindow.plotAnalogImage.setImage(self.mainWindow.analog_frame.T)
+            self.mainWindow.plotAnalogImage.setImage(self.mainWindow.analog_frame)
         except Exception:
             self.logger.exception('Exception Caught')
             self.mainWindow.statusbar.setStyleSheet("color:red")

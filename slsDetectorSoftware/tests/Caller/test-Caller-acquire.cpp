@@ -20,7 +20,7 @@ using test::PUT;
 //  sysctl net.core.rmem_max=$((100*1024*1024))
 //  sysctl net.core.rmem_default=$((100*1024*1024))
 TEST_CASE("jungfrau_or_moench_acquire_check_file_size",
-          "[.detectorintegration][.cmdacquire][.disable_check_data_file]") {
+          "[.detectorintegration][.disable_check_data_file]") {
 
     Detector det;
     Caller caller(&det);
@@ -51,7 +51,7 @@ TEST_CASE("jungfrau_or_moench_acquire_check_file_size",
 }
 
 TEST_CASE("eiger_acquire_check_file_size",
-          "[.detectorintegration][.cmdacquire][.disable_check_data_file]") {
+          "[.detectorintegration][.disable_check_data_file]") {
     Detector det;
     Caller caller(&det);
     auto det_type =
@@ -83,7 +83,7 @@ TEST_CASE("eiger_acquire_check_file_size",
 }
 
 TEST_CASE("mythen3_acquire_check_file_size",
-          "[.detectorintegration][.cmdacquire][.disable_check_data_file]") {
+          "[.detectorintegration][.disable_check_data_file]") {
     Detector det;
     Caller caller(&det);
     auto det_type =
@@ -117,7 +117,7 @@ TEST_CASE("mythen3_acquire_check_file_size",
 }
 
 TEST_CASE("gotthard2_acquire_check_file_size",
-          "[.detectorintegration][.cmdacquire][.disable_check_data_file]") {
+          "[.detectorintegration][.disable_check_data_file]") {
     Detector det;
     Caller caller(&det);
     auto det_type =
@@ -160,7 +160,7 @@ void test_ctb_file_size_with_acquire(Detector &det, Caller &caller,
 //  sysctl net.core.rmem_max=$((100*1024*1024))
 //  sysctl net.core.rmem_default=$((100*1024*1024))
 TEST_CASE("ctb_acquire_check_file_size",
-          "[.detectorintegration][.cmdacquire][.disable_check_data_file]") {
+          "[.detectorintegration][.disable_check_data_file]") {
     Detector det;
     Caller caller(&det);
     auto det_type =

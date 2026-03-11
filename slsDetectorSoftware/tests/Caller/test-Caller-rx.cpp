@@ -25,7 +25,7 @@ python/scripts/list_tested_cmd.py to check if all commands are covered
 
 /* configuration */
 
-TEST_CASE("rx_version", "[.detectorintegration][.rx]") {
+TEST_CASE("rx_version", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     std::ostringstream oss;
@@ -39,7 +39,7 @@ TEST_CASE("rx_version", "[.detectorintegration][.rx]") {
 }
 
 /* acquisition */
-TEST_CASE("rx_start", "[.detectorintegration][.rx]") {
+TEST_CASE("rx_start", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     det.setFileWrite(false); // avoid writing or error on file creation
@@ -57,7 +57,7 @@ TEST_CASE("rx_start", "[.detectorintegration][.rx]") {
     }
 }
 
-TEST_CASE("rx_stop", "[.detectorintegration][.rx]") {
+TEST_CASE("rx_stop", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     // PUT only command
@@ -74,7 +74,7 @@ TEST_CASE("rx_stop", "[.detectorintegration][.rx]") {
     }
 }
 
-TEST_CASE("rx_status", "[.detectorintegration][.rx]") {
+TEST_CASE("rx_status", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     det.setFileWrite(false); // avoid writing or error on file creation
@@ -92,7 +92,7 @@ TEST_CASE("rx_status", "[.detectorintegration][.rx]") {
     }
 }
 
-TEST_CASE("rx_framescaught", "[.detectorintegration][.rx]") {
+TEST_CASE("rx_framescaught", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     // This ensures 0 caught frames
@@ -126,7 +126,7 @@ TEST_CASE("rx_framescaught", "[.detectorintegration][.rx]") {
     }
 }
 
-TEST_CASE("rx_missingpackets", "[.detectorintegration][.rx]") {
+TEST_CASE("rx_missingpackets", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getFileWrite();
@@ -171,7 +171,7 @@ TEST_CASE("rx_missingpackets", "[.detectorintegration][.rx]") {
     det.setNumberOfFrames(prev_frames);
 }
 
-TEST_CASE("rx_frameindex", "[.detectorintegration][.rx]") {
+TEST_CASE("rx_frameindex", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     caller.call("rx_frameindex", {}, -1, GET);
@@ -182,7 +182,7 @@ TEST_CASE("rx_frameindex", "[.detectorintegration][.rx]") {
 
 /* Network Configuration (Detector<->Receiver) */
 
-TEST_CASE("rx_printconfig", "[.detectorintegration][.rx]") {
+TEST_CASE("rx_printconfig", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     REQUIRE_NOTHROW(caller.call("rx_printconfig", {}, -1, GET));
@@ -190,7 +190,7 @@ TEST_CASE("rx_printconfig", "[.detectorintegration][.rx]") {
 
 /* Receiver Config */
 
-TEST_CASE("rx_hostname", "[.detectorintegration][.rx]") {
+TEST_CASE("rx_hostname", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getRxHostname();
@@ -222,7 +222,7 @@ TEST_CASE("rx_hostname", "[.detectorintegration][.rx]") {
     }
 }
 
-TEST_CASE("rx_tcpport", "[.detectorintegration][.rx]") {
+TEST_CASE("rx_tcpport", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getRxPort();
@@ -261,7 +261,7 @@ TEST_CASE("rx_tcpport", "[.detectorintegration][.rx]") {
     }
 }
 
-TEST_CASE("rx_fifodepth", "[.detectorintegration][.rx]") {
+TEST_CASE("rx_fifodepth", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getRxFifoDepth();
@@ -285,7 +285,7 @@ TEST_CASE("rx_fifodepth", "[.detectorintegration][.rx]") {
     }
 }
 
-TEST_CASE("rx_silent", "[.detectorintegration][.rx]") {
+TEST_CASE("rx_silent", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getRxSilentMode();
@@ -309,7 +309,7 @@ TEST_CASE("rx_silent", "[.detectorintegration][.rx]") {
     }
 }
 
-TEST_CASE("rx_discardpolicy", "[.detectorintegration][.rx]") {
+TEST_CASE("rx_discardpolicy", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getRxFrameDiscardPolicy();
@@ -338,7 +338,7 @@ TEST_CASE("rx_discardpolicy", "[.detectorintegration][.rx]") {
     }
 }
 
-TEST_CASE("rx_padding", "[.detectorintegration][.rx]") {
+TEST_CASE("rx_padding", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getPartialFramesPadding();
@@ -362,7 +362,7 @@ TEST_CASE("rx_padding", "[.detectorintegration][.rx]") {
     }
 }
 
-TEST_CASE("rx_udpsocksize", "[.detectorintegration][.rx]") {
+TEST_CASE("rx_udpsocksize", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     int64_t prev_val = det.getRxUDPSocketBufferSize().tsquash(
@@ -382,7 +382,7 @@ TEST_CASE("rx_udpsocksize", "[.detectorintegration][.rx]") {
     det.setRxUDPSocketBufferSize(prev_val);
 }
 
-TEST_CASE("rx_realudpsocksize", "[.detectorintegration][.rx]") {
+TEST_CASE("rx_realudpsocksize", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     uint64_t val = 0;
@@ -401,7 +401,7 @@ TEST_CASE("rx_realudpsocksize", "[.detectorintegration][.rx]") {
     }
 }
 
-TEST_CASE("rx_lock", "[.detectorintegration][.rx]") {
+TEST_CASE("rx_lock", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getRxLock();
@@ -425,7 +425,7 @@ TEST_CASE("rx_lock", "[.detectorintegration][.rx]") {
     }
 }
 
-TEST_CASE("rx_lastclient", "[.detectorintegration][.rx]") {
+TEST_CASE("rx_lastclient", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     std::ostringstream oss;
@@ -435,14 +435,14 @@ TEST_CASE("rx_lastclient", "[.detectorintegration][.rx]") {
     }
 }
 
-TEST_CASE("rx_threads", "[.detectorintegration][.rx]") {
+TEST_CASE("rx_threads", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     std::ostringstream oss;
     REQUIRE_NOTHROW(caller.call("rx_threads", {}, -1, GET, oss));
 }
 
-TEST_CASE("rx_arping", "[.detectorintegration][.rx]") {
+TEST_CASE("rx_arping", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getRxArping();
@@ -540,6 +540,16 @@ TEST_CASE("rx_roi", "[.detectorintegration][.disable_check_data_file]") {
                 REQUIRE(oss.str() == "rx_roi [[5, 10], [" + stringMin + ", " +
                                          stringMax + "]]\n");
 
+                // setting to only one port and verify individual roi
+                {
+                    REQUIRE_NOTHROW(
+                        caller.call("rx_roi", {"[5, 10, -1, -1]"}, -1, PUT));
+                    std::ostringstream oss, oss1;
+                    REQUIRE_NOTHROW(caller.call("rx_roi", {}, 0, GET, oss));
+                    REQUIRE_NOTHROW(caller.call("rx_roi", {}, 1, GET, oss1));
+                    REQUIRE(oss.str() == "rx_roi [[5, 10]]\n");
+                    REQUIRE(oss1.str() == "rx_roi [[0, 0]]\n");
+                }
                 // verify individual roi
                 {
                     stringMin = std::to_string(moduleSize.x - 50);
@@ -643,6 +653,38 @@ TEST_CASE("rx_roi", "[.detectorintegration][.disable_check_data_file]") {
                 REQUIRE(oss.str() == "rx_roi [[5, 10, 20, 30], [" + stringMin +
                                          ", " + stringMax + ", 20, 30]]\n");
 
+                // setting to only one port and verify individual roi
+                {
+                    REQUIRE_NOTHROW(
+                        caller.call("rx_roi", {"[5, 10, 20, 30]"}, -1, PUT));
+                    std::ostringstream oss, oss1;
+                    REQUIRE_NOTHROW(caller.call("rx_roi", {}, 0, GET, oss));
+                    // eiger returns 2 values for 2 ports per module
+                    if (det_type == defs::EIGER) {
+                        REQUIRE(oss.str() ==
+                                "rx_roi [[5, 10, 20, 30], [0, 0, 0, 0]]\n");
+
+                    }
+                    // others return only 1 roi per module (1 port per module)
+                    else {
+                        REQUIRE(oss.str() == "rx_roi [[5, 10, 20, 30]]\n");
+                    }
+                    if (det.size() > 1) {
+                        REQUIRE_NOTHROW(
+                            caller.call("rx_roi", {}, 1, GET, oss1));
+                        // eiger returns 2 values for 2 ports per module
+                        if (det_type == defs::EIGER) {
+                            REQUIRE(oss1.str() ==
+                                    "rx_roi [[0, 0, 0, 0], [0, 0, 0, 0]]\n");
+
+                        }
+                        // others return only 1 roi per module (1 port per
+                        // module)
+                        else {
+                            REQUIRE(oss1.str() == "rx_roi [[0, 0, 0, 0]]\n");
+                        }
+                    }
+                }
                 // verify individual roi
                 {
                     stringMin = std::to_string(portSize.x - delta);
@@ -710,6 +752,43 @@ TEST_CASE("rx_roi", "[.detectorintegration][.disable_check_data_file]") {
                 REQUIRE(oss.str() == "rx_roi [[5, 10, 20, 30], [25, 28, " +
                                          stringMin + ", " + stringMax + "]]\n");
 
+                // setting to only one port and verify individual roi
+                {
+                    REQUIRE_NOTHROW(
+                        caller.call("rx_roi", {"[ 5, 10, 20, 30]"}, -1, PUT));
+                    std::ostringstream oss, oss1;
+                    REQUIRE_NOTHROW(caller.call("rx_roi", {}, 0, GET, oss));
+
+                    // 2 ports
+                    if (((det_type == defs::JUNGFRAU ||
+                          det_type == defs::MOENCH) &&
+                         (numinterfaces == 2)) ||
+                        (det_type == defs::EIGER)) {
+                        REQUIRE(oss.str() ==
+                                "rx_roi [[5, 10, 20, 30], [0, 0, 0, 0]]\n");
+                    }
+                    // others return only 1 roi per module (1 port per module)
+                    else {
+                        REQUIRE(oss.str() == "rx_roi [[5, 10, 20, 30]]\n");
+                    }
+                    if (det.size() > 2) {
+                        REQUIRE_NOTHROW(
+                            caller.call("rx_roi", {}, 1, GET, oss1));
+                        // 2 ports
+                        if (((det_type == defs::JUNGFRAU ||
+                              det_type == defs::MOENCH) &&
+                             (numinterfaces == 2)) ||
+                            (det_type == defs::EIGER)) {
+                            REQUIRE(oss1.str() ==
+                                    "rx_roi [[0, 0, 0, 0], [0, 0, 0, 0]]\n");
+                        }
+                        // others return only 1 roi per module (1 port per
+                        // module)
+                        else {
+                            REQUIRE(oss1.str() == "rx_roi [[0, 0, 0, 0]]\n");
+                        }
+                    }
+                }
                 // verify individual roi
                 {
                     stringMin = std::to_string(portSize.y - delta);
@@ -741,7 +820,7 @@ TEST_CASE("rx_roi", "[.detectorintegration][.disable_check_data_file]") {
                             REQUIRE(oss1.str() ==
                                     "rx_roi [[20, 30, " + stringMin + ", " +
                                         std::to_string(portSize.y - 1) +
-                                        "], [-1, -1]]\n");
+                                        "], [0, 0, 0, 0]]\n");
                         } else {
                             REQUIRE(oss1.str() ==
                                     "rx_roi [[20, 30, " + stringMin + ", " +
@@ -970,7 +1049,7 @@ TEST_CASE("foverwrite", "[.detectorintegration]") {
     }
 }
 
-TEST_CASE("rx_framesperfile", "[.detectorintegration][.rx]") {
+TEST_CASE("rx_framesperfile", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getFramesPerFile();
@@ -1001,7 +1080,7 @@ TEST_CASE("rx_framesperfile", "[.detectorintegration][.rx]") {
 
 /* ZMQ Streaming Parameters (Receiver<->Client) */
 
-TEST_CASE("rx_zmqstream", "[.detectorintegration][.rx]") {
+TEST_CASE("rx_zmqstream", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getRxZmqDataStream();
@@ -1027,7 +1106,7 @@ TEST_CASE("rx_zmqstream", "[.detectorintegration][.rx]") {
     }
 }
 
-TEST_CASE("rx_zmqfreq", "[.detectorintegration][.rx]") {
+TEST_CASE("rx_zmqfreq", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getRxZmqFrequency();
@@ -1051,7 +1130,7 @@ TEST_CASE("rx_zmqfreq", "[.detectorintegration][.rx]") {
     }
 }
 
-TEST_CASE("rx_zmqstartfnum", "[.detectorintegration][.rx]") {
+TEST_CASE("rx_zmqstartfnum", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getRxZmqStartingFrame();
@@ -1075,7 +1154,7 @@ TEST_CASE("rx_zmqstartfnum", "[.detectorintegration][.rx]") {
     }
 }
 
-TEST_CASE("rx_zmqport", "[.detectorintegration][.rx]") {
+TEST_CASE("rx_zmqport", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto prev_val_zmqport = det.getRxZmqPort();
@@ -1153,7 +1232,7 @@ TEST_CASE("rx_zmqhwm", "[.detectorintegration]") {
 
 /* CTB Specific */
 
-TEST_CASE("rx_dbitlist", "[.detectorintegration][.rx]") {
+TEST_CASE("rx_dbitlist", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1183,7 +1262,7 @@ TEST_CASE("rx_dbitlist", "[.detectorintegration][.rx]") {
     }
 }
 
-TEST_CASE("rx_dbitoffset", "[.detectorintegration][.rx]") {
+TEST_CASE("rx_dbitoffset", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1218,7 +1297,7 @@ TEST_CASE("rx_dbitoffset", "[.detectorintegration][.rx]") {
     }
 }
 
-TEST_CASE("rx_dbitreorder", "[.detectorintegration][.rx]") {
+TEST_CASE("rx_dbitreorder", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1249,7 +1328,7 @@ TEST_CASE("rx_dbitreorder", "[.detectorintegration][.rx]") {
     }
 }
 
-TEST_CASE("rx_jsonaddheader", "[.detectorintegration][.rx]") {
+TEST_CASE("rx_jsonaddheader", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getAdditionalJsonHeader();
@@ -1275,7 +1354,7 @@ TEST_CASE("rx_jsonaddheader", "[.detectorintegration][.rx]") {
     }
 }
 
-TEST_CASE("rx_jsonpara", "[.detectorintegration][.rx]") {
+TEST_CASE("rx_jsonpara", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getAdditionalJsonHeader();

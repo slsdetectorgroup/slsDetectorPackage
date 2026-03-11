@@ -1,4 +1,5 @@
 from slsdet.bits import clearbit, clearbit_arr, setbit, setbit_arr
+from slsdet import RegisterAddress
 import numpy as np
 
 
@@ -48,3 +49,12 @@ def test_clearbit_arr():
     arr = np.array((5, 5, 5), dtype=np.int8)
     clearbit_arr(0, arr)
     assert all(arr == (4, 4, 4))
+
+def test_RegisterAddress_addition():
+    r = RegisterAddress(0x10)
+    r2 = r + 0x5
+    assert r2.value() == 0x15
+    r3 = 0x5 + r
+    assert r3.value() == 0x15
+    r += 0x5
+    assert r.value() == 0x15

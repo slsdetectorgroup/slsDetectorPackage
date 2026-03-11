@@ -130,7 +130,8 @@ uint32_t ALTERA_PLL_Cntrl_WrPrmtrMask = 0x0;
 #if defined(JUNGFRAUD)
 uint32_t ALTERA_PLL_Cntrl_DBIT_PLL_WrPrmtrMask = 0x0;
 int ALTERA_PLL_Cntrl_DBIT_ClkIndex = 0;
-
+#elif defined(CHIPTESTBOARDD)
+uint32_t ALTERA_PLL_FREQ_MEASURE_BASE = 0x0;
 #endif
 uint32_t ALTERA_PLL_Cntrl_PLLRstMask = 0x0;
 uint32_t ALTERA_PLL_Cntrl_AddrMask = 0x0;
@@ -149,6 +150,19 @@ void ALTERA_PLL_SetDefines(uint32_t creg, uint32_t preg, uint32_t rprmsk,
     ALTERA_PLL_Cntrl_AddrOfst = aofst;
     ALTERA_PLL_Cntrl_DBIT_PLL_WrPrmtrMask = wd2msk;
     ALTERA_PLL_Cntrl_DBIT_ClkIndex = clk2Index;
+}
+#elif defined(CHIPTESTBOARDD)
+void ALTERA_PLL_SetDefines(uint32_t creg, uint32_t preg, uint32_t rprmsk,
+                           uint32_t wpmsk, uint32_t prmsk, uint32_t amsk,
+                           int aofst, uint32_t freqreg) {
+    ALTERA_PLL_Cntrl_Reg = creg;
+    ALTERA_PLL_Param_Reg = preg;
+    ALTERA_PLL_Cntrl_RcnfgPrmtrRstMask = rprmsk;
+    ALTERA_PLL_Cntrl_WrPrmtrMask = wpmsk;
+    ALTERA_PLL_Cntrl_PLLRstMask = prmsk;
+    ALTERA_PLL_Cntrl_AddrMask = amsk;
+    ALTERA_PLL_Cntrl_AddrOfst = aofst;
+    ALTERA_PLL_FREQ_MEASURE_BASE = freqreg;
 }
 #else
 void ALTERA_PLL_SetDefines(uint32_t creg, uint32_t preg, uint32_t rprmsk,
@@ -269,12 +283,12 @@ void ALTERA_PLL_SetModePolling() {
                                  ALTERA_PLL_MODE_PLLNG_MD_VAL, 0);
 }
 
-int ALTERA_PLL_SetOuputFrequency(int clkIndex, int pllVCOFreqMhz, int value) {
+int ALTERA_PLL_SetOutputFrequency(int clkIndex, int pllVCOFreqMhz, int value) {
     LOG(logDEBUG1, ("C%d: Setting output frequency to %d (pllvcofreq: %dMhz)\n",
                     clkIndex, value, pllVCOFreqMhz));
 
-    // calculate output frequency
-    uint32_t total_div = (float)pllVCOFreqMhz / (float)value;
+    // calculate output frequency, round to next closest integer division
+    uint32_t total_div = (pllVCOFreqMhz + value / 2) / value;
 
     // assume 50% duty cycle
     uint32_t low_count = total_div / 2;
@@ -315,3 +329,15 @@ int ALTERA_PLL_SetOuputFrequency(int clkIndex, int pllVCOFreqMhz, int value) {
         */
     return value;
 }
+
+#if defined(CHIPTESTBOARDD)
+uint32_t ALTERA_PLL_getFrequency(uint32_t clk_index) {
+
+    uint32_t base_addr = ALTERA_PLL_FREQ_MEASURE_BASE;
+    uint32_t addr = base_addr + clk_index * 2;
+    uint32_t counter_val = bus_r(addr);
+    // Hz => round to nearest kHz
+    uint32_t freq_kHz = (counter_val + 500) / 1000;
+    return freq_kHz;
+}
+#endif

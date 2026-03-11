@@ -554,7 +554,7 @@ void setupDetector() {
     ALTERA_PLL_SetDefines(PLL_CNTRL_REG, PLL_PARAM_REG,
                           PLL_CNTRL_RCNFG_PRMTR_RST_MSK, PLL_CNTRL_WR_PRMTR_MSK,
                           PLL_CNTRL_PLL_RST_MSK, PLL_CNTRL_ADDR_MSK,
-                          PLL_CNTRL_ADDR_OFST);
+                          PLL_CNTRL_ADDR_OFST, PLL_FREQ_MEASURE_REG);
     ALTERA_PLL_ResetPLLAndReconfiguration();
 
     resetCore();
@@ -2179,7 +2179,7 @@ int setFrequency(enum CLKINDEX ind, int val) {
 
     // Calculate and set output frequency
     clkFrequency[ind] =
-        ALTERA_PLL_SetOuputFrequency(ind, PLL_VCO_FREQ_MHZ, val);
+        ALTERA_PLL_SetOutputFrequency(ind, PLL_VCO_FREQ_MHZ, val);
     LOG(logINFO, ("\t%s clock (%d) frequency set to %d MHz\n", clock_names[ind],
                   ind, clkFrequency[ind]));
 
@@ -2208,6 +2208,10 @@ int getFrequency(enum CLKINDEX ind) {
         LOG(logERROR, ("Unknown clock index %d to get frequency\n", ind));
         return -1;
     }
+    #ifndef VIRTUAL
+        // get the measured frequency from the firmware, round to next closest MHz (should we round at all ?)
+        clkFrequency[ind] = (ALTERA_PLL_getFrequency(ind) + 500) / 1000;
+    #endif VIRTUAL
     return clkFrequency[ind];
 }
 

@@ -20,6 +20,10 @@
 void ALTERA_PLL_SetDefines(uint32_t creg, uint32_t preg, uint32_t rprmsk,
                            uint32_t wpmsk, uint32_t prmsk, uint32_t amsk,
                            int aofst, uint32_t wd2msk, int clk2Index);
+#elif defined(CHIPTESTBOARDD)
+void ALTERA_PLL_SetDefines(uint32_t creg, uint32_t preg, uint32_t rprmsk,
+                           uint32_t wpmsk, uint32_t prmsk, uint32_t amsk,
+                           int aofst, uint32_t freqreg);
 #else
 /**
  * Set Defines
@@ -75,4 +79,11 @@ void ALTERA_PLL_SetModePolling();
  * @param value frequency to set to
  * @param frequency set
  */
-int ALTERA_PLL_SetOuputFrequency(int clkIndex, int pllVCOFreqMhz, int value);
+int ALTERA_PLL_SetOutputFrequency(int clkIndex, int pllVCOFreqMhz, int value);
+
+/**
+ * get measured clock frequency
+ */
+#if defined(CHIPTESTBOARDD)
+uint32_t ALTERA_PLL_getFrequency(uint32_t clkIDX);
+#endif

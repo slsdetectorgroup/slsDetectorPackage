@@ -628,6 +628,9 @@
 #define ADC_SLOW_CTRL_DONE_OFST (1)
 #define ADC_SLOW_CTRL_DONE_MSK  (0x00000001 << ADC_SLOW_CTRL_DONE_OFST)
 
+/* Clock Measurement base reg */
+#define PLL_FREQ_MEASURE_REG (0x44 << MEM_MAP_SHIFT)
+
 /** I2C Control register */
 #define I2C_TRANSFER_COMMAND_FIFO_REG (0x100 << MEM_MAP_SHIFT)
 #define I2C_RX_DATA_FIFO_REG          (0x101 << MEM_MAP_SHIFT)

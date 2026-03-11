@@ -47,7 +47,7 @@
 #define DEFAULT_PERIOD                (1 * 1000 * 1000) // ns
 #define DEFAULT_DELAY                 (0)
 #define DEFAULT_HIGH_VOLTAGE          (0)
-#define DEFAULT_VLIMIT                (-100)
+#define DEFAULT_VLIMIT                (0)
 #define DEFAULT_TIMING_MODE           (AUTO_TIMING)
 #define DEFAULT_TX_UDP_PORT           (0x7e9a)
 #define DEFAULT_RUN_CLK               (200) // 40

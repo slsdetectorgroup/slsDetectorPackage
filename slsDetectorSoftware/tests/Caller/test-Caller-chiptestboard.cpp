@@ -579,6 +579,11 @@ TEST_CASE("dac", "[.detectorintegration][.dacs]") {
                 test_dac_caller(static_cast<defs::dacIndex>(idac), "dac", 1200,
                                 true);
                 test_dac_caller(static_cast<defs::dacIndex>(idac), "dac", -100);
+                det.setDacName(static_cast<defs::dacIndex>(idac),
+                               "dacname" + std::to_string(idac));
+
+                test_dac_caller(defs::DAC_0, "dacname" + std::to_string(idac),
+                                -100);
             }
             REQUIRE_THROWS(
                 caller.call("dac", {std::to_string(idac), "-2"}, -1, PUT));
@@ -873,21 +878,12 @@ TEST_CASE("v_limit", "[.detectorintegration]") {
     if (det_type == defs::CHIPTESTBOARD ||
         det_type == defs::XILINX_CHIPTESTBOARD) {
         auto prev_val = det.getDAC(defs::V_LIMIT, true);
+        auto prev_dac_val = det.getDAC(defs::DAC_0, false);
+
         REQUIRE_THROWS(caller.call("v_limit", {"1200", "mV"}, -1, PUT));
         REQUIRE_THROWS(caller.call("v_limit", {"-100"}, -1, PUT));
         REQUIRE_THROWS(caller.call("v_limit", {"-100", "mV"}, -1, PUT));
         REQUIRE_THROWS(caller.call("v_limit", {"0", "mV"}, -1, PUT));
-
-        {
-            std::ostringstream oss;
-            caller.call("v_limit", {"1500"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "v_limit 1500 mV\n");
-        }
-        {
-            std::ostringstream oss;
-            caller.call("v_limit", {"0"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "v_limit 0 mV\n");
-        }
         {
             std::ostringstream oss;
             caller.call("v_limit", {"0"}, -1, PUT, oss);
@@ -898,11 +894,15 @@ TEST_CASE("v_limit", "[.detectorintegration]") {
             caller.call("v_limit", {}, -1, GET, oss);
             REQUIRE(oss.str() == "v_limit 0 mV\n");
         }
+        {
+            std::ostringstream oss;
+            caller.call("v_limit", {"1500"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "v_limit 1500 mV\n");
+            REQUIRE_THROWS(caller.call("dac", {"0", "1501", "mV"}, -1, PUT));
+        }
         for (int i = 0; i != det.size(); ++i) {
-            if (prev_val[i] == -100) {
-                prev_val[i] = 0;
-            }
             det.setDAC(defs::V_LIMIT, prev_val[i], true, {i});
+            det.setDAC(defs::DAC_0, prev_dac_val[i], false, {i});
         }
     } else {
         REQUIRE_THROWS(caller.call("v_limit", {}, -1, GET));

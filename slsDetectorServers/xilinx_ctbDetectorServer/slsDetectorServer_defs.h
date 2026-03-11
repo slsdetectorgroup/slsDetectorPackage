@@ -56,7 +56,7 @@
 #define DEFAULT_NUM_DSAMPLES          (1)
 #define DEFAULT_NUM_TSAMPLES          (200)
 #define DEFAULT_STARTING_FRAME_NUMBER (1)
-#define DEFAULT_VLIMIT                (-100)
+#define DEFAULT_VLIMIT                (0)
 #define DEFAULT_DELAY                 (0)
 
 #define MAX_TRANSCEIVER_MASK    (0xF)

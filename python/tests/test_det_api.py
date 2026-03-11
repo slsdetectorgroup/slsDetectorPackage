@@ -394,3 +394,85 @@ def test_patternstart(session_simulator, request):
         assert "not implemented" in str(exc_info.value)
 
     Log(LogLevel.INFOGREEN, f"✅ {request.node.name} passed")
+
+
+@pytest.mark.detectorintegration
+def test_v_limit(session_simulator, request):
+    """Test v_limit."""
+    det_type, num_interfaces, num_mods, d = session_simulator
+    assert d is not None
+
+    if det_type in ['ctb', 'xilinx_ctb']:
+
+        # save previous value
+        from slsdet import dacIndex
+        prev_val = d.getDAC(dacIndex.V_LIMIT, True)
+        prev_dac_val = d.getDAC(dacIndex.DAC_0, False)
+
+        with pytest.raises(Exception):
+            d.v_limit = (1200, 'mV') #mV unit not supported, should be 'no unit'
+
+        with pytest.raises(Exception):
+            d.v_limit = -100
+
+        d.v_limit = 0
+        assert d.v_limit == 0
+        d.setDAC(dacIndex.DAC_0, 1200, True, [0])
+
+        d.v_limit = 1500
+        assert d.v_limit == 1500
+
+        with pytest.raises(Exception):
+            d.setDAC(dacIndex.DAC_0, 1501, True, [0])
+
+        # restore previous value
+        for i in range(len(d)):
+            d.setDAC(dacIndex.V_LIMIT, prev_val[i], True, [i])
+            d.setDAC(dacIndex.DAC_0, prev_dac_val[i], False, [i])
+
+    else:
+        with pytest.raises(Exception) as exc_info:
+            d.v_limit
+        assert "not implemented" in str(exc_info.value)
+
+    Log(LogLevel.INFOGREEN, f"✅ {request.node.name} passed")
+
+
+'''
+@pytest.mark.detectorintegration
+def test_dac(session_simulator, request):
+    """Test dac."""
+    det_type, num_interfaces, num_mods, d = session_simulator
+    assert d is not None
+
+    if det_type in ['ctb', 'xilinx_ctb']:
+
+        # save previous value
+        from slsdet import dacIndex
+        prev_val = d.getDAC(dacIndex.V_LIMIT, True)
+        prev_dac_val = d.getDAC(dacIndex.DAC_0, True)
+
+        with pytest.raises(Exception):
+            d.v_limit = (1200, 'mV') #mV unit not supported, should be 'no unit'
+
+        with pytest.raises(Exception):
+            d.v_limit = -100
+
+        d.v_limit = 0
+        assert d.v_limit == 0
+        d.setDAC(dacIndex.DAC_0, 1200, True, {0})
+
+        d.v_limit = 1500
+        assert d.v_limit == 1500
+
+        with pytest.raises(Exception):
+            d.setDAC(dacIndex.DAC_0, 1501, True, {0})
+
+        # restore previous value
+        for i in range(len(d)):
+            d.setDAC(dacIndex.V_LIMIT, prev_val[i], True, {i})
+            d.setDAC(dacIndex.DAC_0, prev_dac_val[i], True, {i})
+
+
+    Log(LogLevel.INFOGREEN, f"✅ {request.node.name} passed")
+'''

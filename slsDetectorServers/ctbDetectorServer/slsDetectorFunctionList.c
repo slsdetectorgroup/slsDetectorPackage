@@ -605,7 +605,7 @@ void setupDetector() {
     for (int idac = NDAC_ONLY; idac < NDAC; ++idac) {
         if (idac == (int)D_PWR_CHIP)
             continue;
-        int min = (idac == D_PWR_IO) ? VIO_MIN_MV : POWER_RGLTR_MIN;
+        int min = (idac == (int)D_PWR_IO) ? VIO_MIN_MV : POWER_RGLTR_MIN;
         initError = setDAC(idac, min, true, initErrorMessage);
         if (initError == FAIL)
             return;
@@ -1701,7 +1701,7 @@ void powerChip(bool enable) {
 int getPowerChip() {
     int retval = bus_r(POWER_REG) & POWER_ENBL_VLTG_RGLTR_MSK;
     if (retval == 0)
-        return retval;
+        return 0;
     if (retval == POWER_ENBL_VLTG_RGLTR_MSK)
         return 1;
     LOG(logINFO, ("Power chip state is neither fully on nor fully off. Value "

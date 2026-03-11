@@ -1456,6 +1456,7 @@ int processDACEnums(enum dacIndex ind, int val, bool mV) {
             LOG(logERROR, (mess));
             return retval;
         }
+        [[fallthrough]];
     // actual dacs
     default:
         serverDacIndex = getDACIndex(ind);
@@ -4034,8 +4035,8 @@ int power_chip(int file_des) {
                     sprintf(mess, "Power chip %d should be 0 or 1\n", arg);
                     LOG(logERROR, (mess));
                 } else {
-#ifdef GOTTHARD2D
-                    powerChip(arg, mess);
+#if defined(GOTTHARD2D) || defined(XILINX_CHIPTESTBOARDD)
+                    ret = powerChip(arg, mess);
 #else
                     powerChip(arg);
 #endif

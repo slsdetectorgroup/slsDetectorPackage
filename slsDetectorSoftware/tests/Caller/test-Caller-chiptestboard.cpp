@@ -586,7 +586,7 @@ TEST_CASE("dac", "[.detectorintegration][.dacs]") {
                 caller.call("dac", {std::to_string(idac), "-1"}, -1, PUT));
         }
 
-        // power dacs. TODO: check v_chip
+        // power dacs
         if (det.isVirtualDetectorServer().tsquash(
                 "Inconsistent virtual servers")) {
             std::vector<std::string> names{"v_a", "v_b", "v_c", "v_d", "v_io"};
@@ -669,6 +669,16 @@ TEST_CASE("dac", "[.detectorintegration][.dacs]") {
                     det.setPowerEnabled(std::vector{indices[iPower]},
                                         prev_val_power[imod], {imod});
                 }
+            }
+
+            // test get of vchip
+            if (det_type == defs::CHIPTESTBOARD) {
+                REQUIRE_THROWS(
+                    caller.call("dac", {"v_chip", "1700", "mV"}, -1, PUT));
+                REQUIRE_THROWS(caller.call("dac", {"v_chip"}, -1, GET));
+                REQUIRE_NOTHROW(caller.call("dac", {"v_chip", "mV"}, -1, GET));
+            } else {
+                REQUIRE_THROWS(caller.call("dac", {"v_chip", "mV"}, -1, GET));
             }
         }
     }
@@ -1173,11 +1183,10 @@ TEST_CASE("power", "[.detectorintegration]") {
     if (det_type == defs::CHIPTESTBOARD ||
         det_type == defs::XILINX_CHIPTESTBOARD) {
 
-        std::vector<std::string> cmds{"v_a", "v_b",  "v_c",
-                                      "v_d", "v_io"};
-        std::vector<defs::dacIndex> indices{
-            defs::V_POWER_A, defs::V_POWER_B,  defs::V_POWER_C,
-            defs::V_POWER_D, defs::V_POWER_IO};
+        std::vector<std::string> cmds{"v_a", "v_b", "v_c", "v_d", "v_io"};
+        std::vector<defs::dacIndex> indices{defs::V_POWER_A, defs::V_POWER_B,
+                                            defs::V_POWER_C, defs::V_POWER_D,
+                                            defs::V_POWER_IO};
 
         for (size_t iPower = 0; iPower < cmds.size(); ++iPower) {
             auto prev_val = det.isPowerEnabled(indices[iPower]);

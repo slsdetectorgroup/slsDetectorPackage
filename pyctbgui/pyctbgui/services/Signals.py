@@ -15,6 +15,7 @@ class SignalsTab(QtWidgets.QWidget):
 
     def __init__(self, parent):
         super().__init__(parent)
+        pg.setConfigOptions(imageAxisOrder="row-major")  
         uic.loadUi(Path(__file__).parent.parent / 'ui' / "signals.ui", parent)
         self.view = parent
         self.mainWindow = None

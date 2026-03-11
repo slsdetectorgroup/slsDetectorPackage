@@ -20,6 +20,7 @@ class PlotTab(QtWidgets.QWidget):
 
     def __init__(self, parent):
         super().__init__(parent)
+        pg.setConfigOptions(imageAxisOrder="row-major")  
         self.frame_min: float = 0.0
         self.frame_max: float = 0.0
         uic.loadUi(Path(__file__).parent.parent / 'ui' / "plot.ui", parent)
@@ -139,7 +140,7 @@ class PlotTab(QtWidgets.QWidget):
     def togglePedestalRecord(self):
         """
         slot function for pedestal record radio button
-        toggle pedestal record variable and disables the frames spinboxes in acquisition tab or plot tab depenging on
+        toggle pedestal record variable and disables the frames spinboxes in acquisition tab or plot tab depending on
         the mode
         """
         self.pedestalRecord = not self.pedestalRecord
@@ -548,8 +549,8 @@ class PlotTab(QtWidgets.QWidget):
             nMaxX = self.mainWindow.nTransceiverCols
             frame = self.mainWindow.transceiver_frame
         if 0 <= x < nMaxX and 0 <= y < nMaxY and not np.array_equal(frame, []):
-            val = frame[int(x), int(y)]
-            message = f'[{x:.2f}, {y:.2f}] = {val:.2f}'
+            val = frame[int(y), int(x)]
+            message = f'[row, col]: [{y:.2f}, {x:.2f}] = {val:.2f}'
             sender.setToolTip(message)
             # print(message)
         else:

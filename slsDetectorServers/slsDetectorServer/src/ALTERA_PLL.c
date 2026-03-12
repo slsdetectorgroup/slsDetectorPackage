@@ -327,6 +327,11 @@ int ALTERA_PLL_SetOutputFrequency(int clkIndex, int pllVCOFreqMhz, int value) {
         }
         return (int)temp;
         */
+
+    #if defined(CHIPTESTBOARDD)
+        // wait for firmware to measure the actual frequency
+        usleep(2 * 1000 * 1000);
+    #endif
     return value;
 }
 

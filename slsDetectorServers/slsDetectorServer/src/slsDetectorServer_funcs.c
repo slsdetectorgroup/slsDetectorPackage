@@ -5882,8 +5882,8 @@ int set_clock_frequency(int file_des) {
                         ("retval %s: %d %s\n", modeName, retval,
                          myDetectorType == XILINX_CHIPTESTBOARD ? "kHz"
                                                                 : "MHz"));
-#if !defined(XILINX_CHIPTESTBOARDD)
-                    // XCTB will give the actual frequency, which is not
+#if !defined(XILINX_CHIPTESTBOARDD) && !defined(CHIPTESTBOARDD)
+                    // both CTB's will give the actual frequency, which is not
                     // 100% identical to the set frequency
                     validate(&ret, mess, val, retval, modeName, DEC);
 #endif

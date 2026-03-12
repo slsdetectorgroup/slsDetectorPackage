@@ -2209,8 +2209,14 @@ int getFrequency(enum CLKINDEX ind) {
         return -1;
     }
     #ifndef VIRTUAL
-        // get the measured frequency from the firmware, round to next closest MHz (should we round at all ?)
-        clkFrequency[ind] = (ALTERA_PLL_getFrequency(ind) + 500) / 1000;
+        // get the measured frequency from the firmware
+        int measuredFreqkHz = ALTERA_PLL_getFrequency(ind);
+
+        // checking against 0 here ensures compatibility with old firmware, TODO: remove this check at some point
+        if (measuredFreqkHz != 0) {
+            // Round to nearest MHz. (should we round at all ?)
+            clkFrequency[ind] = (measuredFreqkHz + 500) / 1000;
+        }
     #endif VIRTUAL
     return clkFrequency[ind];
 }

@@ -590,14 +590,14 @@ int powerChip(bool on, char *mess) {
     uint32_t mask = POWER_VIO_MSK | POWER_VCC_A_MSK | POWER_VCC_B_MSK |
                     POWER_VCC_C_MSK | POWER_VCC_D_MSK;
     if (on) {
-        LOG(logINFOBLUE, ("Powering chip: on\n"));
+        LOG(logINFOBLUE, ("Powering ON all\n"));
         bus_w(addr, bus_r(addr) | mask);
 
         if (configureChip(mess) == FAIL)
             return FAIL;
 
     } else {
-        LOG(logINFOBLUE, ("Powering chip: off\n"));
+        LOG(logINFOBLUE, ("Powering OFF all\n"));
         bus_w(addr, bus_r(addr) & ~mask);
         chipConfigured = 0;
         if (FAIL == XILINX_FMC_disable_all(mess, MAX_STR_LENGTH)) {
@@ -1306,25 +1306,38 @@ int setDAC(enum DACINDEX ind, int val, bool mV, char *mess) {
         return FAIL;
 
     int dacval = val;
+    char dacName[20] = {0};
+    snprintf(dacName, sizeof(dacName), "dac %d", ind);
+
     if (mV) {
         if (validateDACValue(ind, val, mess) == FAIL)
             return FAIL;
 
+        if (ind == (int)D_PWR_EMPTY) {
+            snprintf(mess, MAX_STR_LENGTH, "Invalid dac index %d\n", (int)ind);
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
         // power dacs (power should be disabled)
         if (ind >= NDAC_ONLY && ind != (int)D_PWR_EMPTY) {
-            if (verifyPowerRailDisabled(ind, mess) == FAIL)
+            // power dac name
+            {
+                enum PWRINDEX pwrIndex = PWR_IO;
+                if (getPowerIndexFromDACIndex(ind, &pwrIndex, mess) == FAIL)
+                    return FAIL;
+                char *powerNames[] = {PWR_NAMES};
+                snprintf(dacName, sizeof(dacName), "%s", powerNames[pwrIndex]);
+            }
+
+            if (verifyPowerRailDisabled(ind, dacName, mess) == FAIL)
                 return FAIL;
         }
 
         if (convertVoltageToDACValue(ind, val, &dacval, mess) == FAIL)
             return FAIL;
     }
-    {
-        char dacName[20] = {0};
-        snprintf(dacName, sizeof(dacName), "dac %d", ind);
-        if (LTC2620_D_SetDacValue((int)ind, dacval, dacName, mess) == FAIL)
-            return FAIL;
-    }
+    if (LTC2620_D_SetDacValue((int)ind, dacval, dacName, mess) == FAIL)
+        return FAIL;
     dacValues[ind] = dacval;
     return OK;
 }
@@ -1471,23 +1484,20 @@ int isPowerRailEnabled(enum DACINDEX ind, bool *retval, char *mess) {
         return FAIL;
 
     *retval = (bus_r(CTRL_REG) & mask) != 0;
+    LOG(logDEBUG1, ("get power %d:%d\n", pwrIndex, *retval));
     return OK;
 }
 
-int verifyPowerRailDisabled(enum DACINDEX ind, char *mess) {
+int verifyPowerRailDisabled(enum DACINDEX ind, char *dacName, char *mess) {
     bool isEnabled = false;
     if (isPowerRailEnabled(ind, &isEnabled, mess) == FAIL)
         return FAIL;
 
     if (isEnabled) {
-        enum PWRINDEX pwrIndex = PWR_IO;
-        if (getPowerIndexFromDACIndex(ind, &pwrIndex, mess) == FAIL)
-            return FAIL;
-        char *powerNames[] = {PWR_NAMES};
         sprintf(mess,
                 "Could not set dac for %s. Please disable the power rail "
                 "before setting the dac value.\n",
-                powerNames[pwrIndex]);
+                dacName);
         LOG(logERROR, (mess));
         return FAIL;
     }

@@ -141,7 +141,7 @@ int getPowerRailMask(enum PWRINDEX ind, uint32_t *mask, char *mess);
 int setPowerRailEnabled(enum DACINDEX indices[], int count, bool enable,
                         char *mess);
 int isPowerRailEnabled(enum DACINDEX ind, bool *retval, char *mess);
-int verifyPowerRailDisabled(enum DACINDEX ind, char *mess);
+int verifyPowerRailDisabled(enum DACINDEX ind, char *dacName, char *mess);
 
 int getADC(enum ADCINDEX ind, int *value, char *mess);
 int getSlowADC(int ichan, int *retval, char *mess);

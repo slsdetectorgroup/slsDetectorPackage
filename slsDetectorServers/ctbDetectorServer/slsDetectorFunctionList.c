@@ -1433,16 +1433,18 @@ int setDAC(enum DACINDEX ind, int val, bool mV, char *mess) {
     int dacval = val;
     char dacName[20] = {0};
     snprintf(dacName, sizeof(dacName), "dac %d", ind);
+
     if (mV) {
         if (validateDACValue(ind, val, mess) == FAIL)
             return FAIL;
 
         // vchip dac (dacname only())
-        if (ind == D_PWR_CHIP) {
+        if (ind == (int)D_PWR_CHIP) {
             snprintf(dacName, sizeof(dacName), "v_chip");
         }
         // power dacs (dacname and power should be disabled)
         else if (ind >= NDAC_ONLY) {
+            // power dac name
             {
                 enum PWRINDEX pwrIndex = PWR_IO;
                 if (getPowerIndexFromDACIndex(ind, &pwrIndex, mess) == FAIL)
@@ -1450,6 +1452,7 @@ int setDAC(enum DACINDEX ind, int val, bool mV, char *mess) {
                 char *powerNames[] = {PWR_NAMES};
                 snprintf(dacName, sizeof(dacName), "%s", powerNames[pwrIndex]);
             }
+
             if (verifyPowerRailDisabled(ind, dacName, mess) == FAIL)
                 return FAIL;
         }
@@ -1627,24 +1630,15 @@ int setPowerRailEnabled(enum DACINDEX indices[], int count, bool enable,
     // get power indices for log messages and mask
     uint32_t mask = 0;
     enum PWRINDEX pwrIndices[count];
-    char *powerNames[] = {PWR_NAMES};
     for (int i = 0; i != count; ++i) {
-        if (getPowerIndexFromDACIndex(indices[i], &pwrIndices[i], mess) ==
-            FAIL) {
-            sprintf(mess,
-                    "Cannot set power rail for %s. Use powerlist to see whats "
-                    "available.\n",
-                    powerNames[pwrIndices[i]]);
+        if (getPowerIndexFromDACIndex(indices[i], &pwrIndices[i], mess) == FAIL)
             return FAIL;
-        }
-
-        LOG(logDEBUG1,
-            ("Setting power rail for %s\n", powerNames[pwrIndices[i]]));
         if (getPowerRailMask(pwrIndices[i], &mask, mess) == FAIL)
             return FAIL;
     }
     // log message
     {
+        char *powerNames[] = {PWR_NAMES};
         char message[256] = {0};
         sprintf(message, "Switching %s power for ", enable ? "on" : "off");
         for (int i = 0; i != count; ++i) {
@@ -1674,14 +1668,8 @@ int setPowerRailEnabled(enum DACINDEX indices[], int count, bool enable,
 
 int isPowerRailEnabled(enum DACINDEX ind, bool *retval, char *mess) {
     enum PWRINDEX pwrIndex = PWR_IO;
-    if (getPowerIndexFromDACIndex(ind, &pwrIndex, mess) == FAIL) {
-        char *powerNames[] = {PWR_NAMES};
-        sprintf(mess,
-                "Cannot set power rail for %s. Use powerlist to see whats "
-                "available.\n",
-                powerNames[pwrIndex]);
+    if (getPowerIndexFromDACIndex(ind, &pwrIndex, mess) == FAIL)
         return FAIL;
-    }
 
     uint32_t mask = 0;
     if (getPowerRailMask(pwrIndex, &mask, mess) == FAIL)
@@ -1710,11 +1698,11 @@ int verifyPowerRailDisabled(enum DACINDEX ind, char *dacName, char *mess) {
 void powerChip(bool enable) {
     uint32_t addr = POWER_REG;
     if (enable) {
-        LOG(logINFOBLUE, ("Powering on all voltage regulators\n"));
+        LOG(logINFOBLUE, ("Powering ON all\n"));
         bus_w(addr, bus_r(addr) | POWER_ENBL_VLTG_RGLTR_MSK);
         return;
     } else {
-        LOG(logINFOBLUE, ("Powering off all voltage regulators\n"));
+        LOG(logINFOBLUE, ("Powering OFF all\n"));
         bus_w(addr, bus_r(addr) & (~POWER_ENBL_VLTG_RGLTR_MSK));
     }
 }

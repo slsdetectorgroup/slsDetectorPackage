@@ -1266,6 +1266,14 @@ TEST_CASE("power", "[.detectorintegration]") {
             REQUIRE(oss[6].str() == "power v_d on\n");
             REQUIRE(oss[7].str() == "power v_io off\n");
         }
+        // all
+        {
+            std::ostringstream oss;
+            caller.call("power", {"all"}, -1, GET, oss);
+            REQUIRE(
+                oss.str() ==
+                "power {v_a: off, v_b: off, v_c: on, v_d: on, v_io: off}\n");
+        }
         { // power on all
             caller.call("power", {"all", "on"}, -1, PUT);
             std::ostringstream oss1, oss2, oss3, oss4, oss5;
@@ -1279,8 +1287,10 @@ TEST_CASE("power", "[.detectorintegration]") {
             REQUIRE(oss3.str() == "power v_c on\n");
             REQUIRE(oss4.str() == "power v_d on\n");
             REQUIRE(oss5.str() == "power v_io on\n");
+            std::ostringstream oss;
+            caller.call("power", {"all"}, -1, GET, oss);
+            REQUIRE(oss.str() == "power all on\n");
         }
-        REQUIRE_THROWS(caller.call("power", {"all"}, -1, GET));
         for (size_t iPower = 0; iPower < cmds.size(); ++iPower) {
             det.setPowerEnabled(std::vector{indices[iPower]}, prev_val[iPower]);
         }

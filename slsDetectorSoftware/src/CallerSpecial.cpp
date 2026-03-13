@@ -1970,8 +1970,9 @@ std::string Caller::power(int action) {
         os << "[list of power names] [on|off]\n\t[Ctb][Xilinx Ctb] Enable or "
               "disable power rails. Power name can be v_a, v_b, v_c, v_d or "
               "v_io or any defines using 'powername'. If power name is set to "
-              "'all', the command applies to all 'powers'. Only one power can "
-              "be queried at a time."
+              "'all', the command applies to all 'powers'. When retrieving the "
+              "states of multiple power rails, they are queried sequentially "
+              "(one after another), not in parallel."
            << '\n';
         return os.str();
     }
@@ -1983,27 +1984,56 @@ std::string Caller::power(int action) {
                            "and Xilinx ChipTestBoard.");
     }
 
-    if (action == defs::GET_ACTION) {
-        if (args.size() != 1) {
-            WrongNumberOfParameters(1);
+    // 'all' argument
+    bool all = false;
+    if (std::find(args.begin(), args.end(), "all") != args.end()) {
+        all = true;
+    }
+
+    // number of args
+    if (action == defs::GET_ACTION && args.size() != 1)
+        WrongNumberOfParameters(1);
+    if (all) {
+        if (action == defs::PUT_ACTION && args.size() != 2) {
+            WrongNumberOfParameters(2);
         }
-        auto t =
-            det->isPowerEnabled(parsePowerIndex(0), std::vector<int>{det_id})
-                .tsquash("Inconsistent across modules");
-        os << args[0] << ' ' << ToString(t, defs::OnOff) << '\n';
+    } else {
+        if (args.size() < 1 || args.size() > 6)
+            WrongNumberOfParameters(1);
+    }
+
+    if (action == defs::GET_ACTION) {
+        if (!all) {
+            auto t = det->isPowerEnabled(parsePowerIndex(0),
+                                         std::vector<int>{det_id})
+                         .tsquash("Inconsistent across modules");
+            os << args[0] << ' ' << ToString(t, defs::OnOff) << '\n';
+        } else {
+            // get each state and store in map
+            std::map<std::string, std::string> m;
+            auto powerIndices = det->getPowerList();
+            for (const auto &index : powerIndices) {
+                auto name = ToString(index);
+                auto state =
+                    det->isPowerEnabled(index, std::vector<int>{det_id})
+                        .tsquash("Inconsistent across modules");
+                m[name] = ToString(state, defs::OnOff);
+            }
+            if (m.empty()) {
+                throw RuntimeError("Could not get power states.");
+            }
+            auto first = m.begin()->second;
+            // if all the same, print in short form, else print all states
+            if (std::all_of(m.begin(), m.end(),
+                            [&](const auto &p) { return p.second == first; })) {
+                os << "all " << first << '\n';
+            } else {
+                os << ToString(m) << '\n';
+            }
+        }
     }
 
     else if (action == defs::PUT_ACTION) {
-        bool all = false;
-        if (std::find(args.begin(), args.end(), "all") != args.end()) {
-            if (args.size() != 2)
-                WrongNumberOfParameters(2);
-            all = true;
-        }
-        if (args.size() < 1 || args.size() > 6) {
-            WrongNumberOfParameters(1);
-        }
-
         // enable arg
         std::string lastArg = args.back();
         if (lastArg != "on" && lastArg != "off") {

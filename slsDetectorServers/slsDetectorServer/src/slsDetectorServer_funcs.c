@@ -1957,7 +1957,7 @@ int acquire(int blocking, int file_des) {
     }
     // only set
     if (Server_VerifyLock() == OK) {
-#if defined(XILINX_CHIPTESTBOARDD) || defined(GOTTHARD2D)
+#if defined(GOTTHARD2D)
         if (!isChipConfigured()) {
             ret = FAIL;
             strcpy(mess, "Could not start acquisition. Chip is not configured. "
@@ -4006,8 +4006,7 @@ int power_chip(int file_des) {
     LOG(logDEBUG1, ("Powering chip to %d\n", arg));
 
 #if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(MYTHEN3D) &&          \
-    !defined(GOTTHARD2D) && !defined(XILINX_CHIPTESTBOARDD) &&                 \
-    !defined(CHIPTESTBOARDD)
+    !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // set & get
@@ -4026,8 +4025,7 @@ int power_chip(int file_des) {
             }
         }
 #endif
-#if defined(XILINX_CHIPTESTBOARDD) || defined(CHIPTESTBOARDD) ||               \
-    defined(GOTTHARD2D)
+#if defined(GOTTHARD2D)
         if (ret == OK) {
             if (arg != -1) {
                 if (arg != 0 && arg != 1) {
@@ -4035,16 +4033,11 @@ int power_chip(int file_des) {
                     sprintf(mess, "Power chip %d should be 0 or 1\n", arg);
                     LOG(logERROR, (mess));
                 } else {
-#if defined(GOTTHARD2D) || defined(XILINX_CHIPTESTBOARDD)
                     ret = powerChip(arg, mess);
-#else
-                    powerChip(arg);
-#endif
                 }
             }
             if (ret == OK) {
                 retval = getPowerChip();
-                LOG(logDEBUG1, ("Power chip: %d\n", retval));
                 validate(&ret, mess, arg, retval, "power on/off chip", DEC);
             }
         }
@@ -10871,17 +10864,9 @@ int config_transceiver(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
 
-#if !defined(XILINX_CHIPTESTBOARDD)
+    // currently not implemented anymore.
     functionNotImplemented();
-#else
-    if (Server_VerifyLock() == OK) {
-        LOG(logINFO, ("Configuring Transceiver\n"));
-        ret = configureTransceiver(mess);
-        if (ret == FAIL) {
-            LOG(logERROR, (mess));
-        }
-    }
-#endif
+
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
 

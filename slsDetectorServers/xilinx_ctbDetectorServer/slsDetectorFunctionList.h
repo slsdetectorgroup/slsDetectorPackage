@@ -63,18 +63,7 @@ void setupDetector();
 void cleanFifos();
 void resetFlow();
 int waitTransceiverReset(char *mess);
-#ifdef VIRTUAL
-void setTransceiverAlignment(int align);
-#endif
 int isTransceiverAligned();
-int waitTransceiverAligned(char *mess);
-int configureTransceiver(char *mess);
-int isChipConfigured();
-int powerChip(bool on, char *mess);
-int getPowerChip();
-int configureChip(char *mess);
-int readConfigFile(char *mess, char *fileName, char *fileType);
-int resetChip(char *mess);
 
 // parameters - dr, roi
 int setDynamicRange(int dr);
@@ -138,6 +127,8 @@ int validatePower(enum DACINDEX ind, int val, char *mess);
 int getPowerIndexFromDACIndex(enum DACINDEX ind, enum PWRINDEX *pwrIndex,
                               char *mess);
 int getPowerRailMask(enum PWRINDEX ind, uint32_t *mask, char *mess);
+
+int powerOff(char *mess);
 int setPowerRailEnabled(enum DACINDEX indices[], int count, bool enable,
                         char *mess);
 int isPowerRailEnabled(enum DACINDEX ind, bool *retval, char *mess);

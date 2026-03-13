@@ -1547,9 +1547,7 @@ TEST_CASE("powerchip", "[.detectorintegration]") {
     auto det_type = det.getDetectorType().squash();
 
     if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
-        det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD2 ||
-        det_type == defs::XILINX_CHIPTESTBOARD ||
-        det_type == defs::CHIPTESTBOARD) {
+        det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD2) {
         auto prev_val =
             det.getPowerChip().tsquash("Inconsistent power chip values");
         {

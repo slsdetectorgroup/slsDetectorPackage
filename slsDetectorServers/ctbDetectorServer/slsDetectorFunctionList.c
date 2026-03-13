@@ -572,8 +572,8 @@ void setupDetector() {
     if (initError == FAIL)
         return;
 
-    // power off voltage regulators
-    powerChip(false);
+    // power regulators
+    powerOff();
 
     // adcs
     AD9257_SetDefines(ADC_SPI_REG, ADC_SPI_SRL_CS_OTPT_MSK,
@@ -1623,6 +1623,13 @@ int getPowerRailMask(enum PWRINDEX index, uint32_t *mask, char *mess) {
         return FAIL;
     }
     return OK;
+}
+
+void powerOff() {
+    LOG(logINFOBLUE, ("Powering OFF all rails\n"));
+    // cannot call setPowerRailEnabled because of vchip dependency
+    uint32_t mask = POWER_ENBL_VLTG_RGLTR_MSK;
+    bus_w(POWER_REG, bus_r(POWER_REG) & ~(mask));
 }
 
 int setPowerRailEnabled(enum DACINDEX indices[], int count, bool enable,

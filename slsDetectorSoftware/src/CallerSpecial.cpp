@@ -1969,8 +1969,9 @@ std::string Caller::power(int action) {
     if (action == defs::HELP_ACTION) {
         os << "[list of power names] [on|off]\n\t[Ctb][Xilinx Ctb] Enable or "
               "disable power rails. Power name can be v_a, v_b, v_c, v_d or "
-              "v_io or any names set using powername. One can retrieve only "
-              "one at a time."
+              "v_io or any defines using 'powername'. If power name is set to "
+              "'all', the command applies to all 'powers'. Only one power can "
+              "be queried at a time."
            << '\n';
         return os.str();
     }
@@ -1993,18 +1994,33 @@ std::string Caller::power(int action) {
     }
 
     else if (action == defs::PUT_ACTION) {
+        bool all = false;
+        if (std::find(args.begin(), args.end(), "all") != args.end()) {
+            if (args.size() != 2)
+                WrongNumberOfParameters(2);
+            all = true;
+        }
         if (args.size() < 1 || args.size() > 6) {
             WrongNumberOfParameters(1);
         }
+
+        // enable arg
         std::string lastArg = args.back();
         if (lastArg != "on" && lastArg != "off") {
             throw RuntimeError("Last argument '" + lastArg +
-                               "' must be on or off");
+                               "' is enable. Options: 'on' or 'off'");
         }
         bool enable = StringTo(lastArg, defs::OnOff);
+
+        // power indices
         std::vector<defs::dacIndex> powerIndices;
-        for (size_t i = 0; i < args.size() - 1; ++i) {
-            powerIndices.push_back(parsePowerIndex(i));
+        if (all) {
+            powerIndices = det->getPowerList();
+        } else {
+            // push back indices from command line
+            for (size_t i = 0; i < args.size() - 1; ++i) {
+                powerIndices.push_back(parsePowerIndex(i));
+            }
         }
 
         det->setPowerEnabled(powerIndices, enable, std::vector<int>{det_id});

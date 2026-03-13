@@ -151,12 +151,12 @@ int validatePower(enum DACINDEX ind, int val, char *mess);
 int getPowerIndexFromDACIndex(enum DACINDEX ind, enum PWRINDEX *pwrIndex,
                               char *mess);
 int getPowerRailMask(enum PWRINDEX ind, uint32_t *mask, char *mess);
+
+void powerOff();
 int setPowerRailEnabled(enum DACINDEX indices[], int count, bool enable,
                         char *mess);
 int isPowerRailEnabled(enum DACINDEX ind, bool *retval, char *mess);
 int verifyPowerRailDisabled(enum DACINDEX ind, char *dacName, char *mess);
-void powerChip(bool enable);
-int getPowerChip();
 
 int getADC(enum ADCINDEX ind);
 int getSlowADC(int ichan);

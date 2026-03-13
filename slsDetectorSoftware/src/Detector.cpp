@@ -2200,6 +2200,9 @@ Result<bool> Detector::isPowerEnabled(defs::dacIndex index,
 
 void Detector::setPowerEnabled(const std::vector<defs::dacIndex> &indices,
                                bool value, Positions pos) {
+    if (indices.empty()) {
+        throw RuntimeError("No Power Index provided");
+    }
     std::vector<defs::dacIndex> valid_indices = getPowerList();
     for (const auto &index : indices) {
         if (std::find(valid_indices.begin(), valid_indices.end(), index) ==

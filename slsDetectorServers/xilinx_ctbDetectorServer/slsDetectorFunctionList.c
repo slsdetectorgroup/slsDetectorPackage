@@ -41,7 +41,6 @@ char initErrorMessage[MAX_STR_LENGTH];
 int detPos[2] = {0, 0};
 
 uint32_t clkFrequency[NUM_CLOCKS] = {};
-int chipConfigured = 0;
 int analogEnable = 0;
 int digitalEnable = 0;
 int transceiverEnable = 0;
@@ -379,7 +378,6 @@ void setupDetector() {
     clkFrequency[ADC_CLK] = DEFAULT_ADC_CLK;
     clkFrequency[SYNC_CLK] = DEFAULT_SYNC_CLK;
     clkFrequency[DBIT_CLK] = DEFAULT_DBIT_CLK;
-    chipConfigured = 0;
     analogEnable = 0;
     digitalEnable = 0;
     transceiverEnable = 0;
@@ -397,11 +395,11 @@ void setupDetector() {
     if (initError == FAIL) {
         return;
     }
-    // power off chip
-    initError = powerChip(false, initErrorMessage);
-    if (initError == FAIL) {
+
+    // power regulators
+    initError = powerOff(initErrorMessage);
+    if (initError == FAIL)
         return;
-    }
 
     LTC2620_D_SetDefines(DAC_MIN_MV, DAC_MAX_MV, DAC_DRIVER_FILE_NAME, NDAC,
                          NPWR, DAC_POWERDOWN_DRIVER_FILE_NAME);
@@ -511,18 +509,6 @@ int waitTransceiverReset(char *mess) {
     return OK;
 }
 
-#ifdef VIRTUAL
-void setTransceiverAlignment(int align) {
-    if (align) {
-        bus_w(TRANSCEIVERSTATUS,
-              (bus_r(TRANSCEIVERSTATUS) | RXBYTEISALIGNED_MSK));
-    } else {
-        bus_w(TRANSCEIVERSTATUS,
-              (bus_r(TRANSCEIVERSTATUS) & ~RXBYTEISALIGNED_MSK));
-    }
-}
-#endif
-
 int isTransceiverAligned() {
 #ifdef VIRTUAL
     return 1;
@@ -537,300 +523,6 @@ int isTransceiverAligned() {
             return 1;
     }
     return retval;
-}
-
-int waitTransceiverAligned(char *mess) {
-#ifdef VIRTUAL
-    setTransceiverAlignment(1);
-#else
-
-    // no module: transceiver will never get aligned
-    if (!checkModuleFlag) {
-        LOG(logWARNING, ("No module: Transceiver will never get aligned. "
-                         "Ignoring alignment check.\n"));
-        return OK;
-    }
-
-    int transceiverWordAligned = isTransceiverAligned();
-    int times = 0;
-    while (transceiverWordAligned == 0) {
-        if (times++ > WAIT_TIME_OUT_0US_TIMES) {
-            sprintf(mess, "Transceiver alignment timed out. Check connection, "
-                          "p-n inversions, LSB-MSB inversions, link error "
-                          "counters and channel enable settings\n");
-            LOG(logERROR, (mess));
-            return FAIL;
-        }
-        usleep(0);
-        transceiverWordAligned = isTransceiverAligned();
-    }
-#endif
-    LOG(logINFOBLUE, ("Transceiver alignment done\n"));
-    return OK;
-}
-
-int configureTransceiver(char *mess) {
-    LOG(logINFOBLUE, ("\tConfiguring transceiver\n"));
-
-    if (chipConfigured == 0) {
-        sprintf(mess,
-                "Chip not configured. Use powerchip to power on chip first.\n");
-        LOG(logERROR, (mess));
-        return FAIL;
-    }
-    return waitTransceiverAligned(mess);
-}
-
-int isChipConfigured() { return chipConfigured; }
-
-// TODO powerchip and configurechip should be separate commands (not
-// requirement) in the future
-int powerChip(bool on, char *mess) {
-    uint32_t addr = CTRL_REG;
-    uint32_t mask = POWER_VIO_MSK | POWER_VCC_A_MSK | POWER_VCC_B_MSK |
-                    POWER_VCC_C_MSK | POWER_VCC_D_MSK;
-    if (on) {
-        LOG(logINFOBLUE, ("Powering ON all\n"));
-        bus_w(addr, bus_r(addr) | mask);
-
-        if (configureChip(mess) == FAIL)
-            return FAIL;
-
-    } else {
-        LOG(logINFOBLUE, ("Powering OFF all\n"));
-        bus_w(addr, bus_r(addr) & ~mask);
-        chipConfigured = 0;
-        if (FAIL == XILINX_FMC_disable_all(mess, MAX_STR_LENGTH)) {
-            return FAIL;
-        }
-#ifdef VIRTUAL
-        setTransceiverAlignment(0);
-#endif
-        // transceiver alignment should be reset at power off
-        if (isTransceiverAligned()) {
-            sprintf(mess, "Transceiver alignment not reset\n");
-            LOG(logERROR, (mess));
-
-            // to be removed when fixed later
-            LOG(logWARNING,
-                ("Bypassing this error for now. To be fixed later...\n"));
-            return OK;
-
-            return FAIL;
-        }
-        LOG(logINFO, ("\tTransceiver alignment has been reset\n"));
-    }
-    return OK;
-}
-
-int getPowerChip() {
-    uint32_t mask = POWER_VIO_MSK | POWER_VCC_A_MSK | POWER_VCC_B_MSK |
-                    POWER_VCC_C_MSK | POWER_VCC_D_MSK;
-    uint32_t retval = bus_r(CTRL_REG) & mask;
-    if (retval == 0)
-        return 0;
-    if (retval == mask)
-        return 1;
-    LOG(logINFO, ("Power chip state is neither fully on nor fully off. Value "
-                  "read: 0x%x\n",
-                  retval));
-    return -1;
-}
-
-int configureChip(char *mess) {
-    LOG(logINFOBLUE, ("\tConfiguring chip\n"));
-    chipConfigured = 0;
-    if (readConfigFile(mess, CONFIG_CHIP_FILE, "chip config") == FAIL) {
-        return FAIL;
-    }
-    if (readConfigFile(mess, RESET_CHIP_FILE, "reset chip") == FAIL) {
-        return FAIL;
-    }
-    LOG(logINFOBLUE, ("Chip configured.\n"));
-    chipConfigured = 1;
-    return OK;
-}
-
-int readConfigFile(char *mess, char *fileName, char *fileType) {
-    const int fileNameSize = 128;
-    char fname[fileNameSize];
-    if (getAbsPath(fname, fileNameSize, fileName) == FAIL) {
-        sprintf(mess, "Could not get full path for %s file [%s].\n", fileType,
-                fname);
-        LOG(logERROR, (mess));
-        return FAIL;
-    }
-    if (access(fname, F_OK) != 0) {
-        sprintf(mess, "Could not find %s file [%s].\n", fileType, fname);
-        LOG(logERROR, (mess));
-        return FAIL;
-    }
-    FILE *fd = fopen(fname, "r");
-    if (fd == NULL) {
-        sprintf(mess, "Could not open on-board detector server %s file [%s].\n",
-                fileType, fname);
-        LOG(logERROR, (mess));
-        return FAIL;
-    }
-    LOG(logINFOBLUE, ("Reading %s file %s\n", fileType, fname));
-
-    const size_t LZ = 256;
-    char line[LZ];
-    memset(line, 0, LZ);
-    char command[LZ];
-
-    // keep reading a line
-    while (fgets(line, LZ, fd)) {
-
-        // ignore comments
-        if (line[0] == '#') {
-            LOG(logDEBUG1, ("Ignoring Comment\n"));
-            continue;
-        }
-
-        // ignore empty lines
-        if (strlen(line) <= 1) {
-            LOG(logDEBUG1, ("Ignoring Empty line\n"));
-            continue;
-        }
-
-        // removing leading spaces
-        if (line[0] == ' ' || line[0] == '\t') {
-            int len = strlen(line);
-            // find first valid character
-            int i = 0;
-            for (i = 0; i < len; ++i) {
-                if (line[i] != ' ' && line[i] != '\t') {
-                    break;
-                }
-            }
-            // ignore the line full of spaces (last char \n)
-            if (i >= len - 1) {
-                LOG(logDEBUG1, ("Ignoring line full of spaces\n"));
-                continue;
-            }
-            // copying only valid char
-            char temp[LZ];
-            memset(temp, 0, LZ);
-            memcpy(temp, line + i, strlen(line) - i);
-            memset(line, 0, LZ);
-            memcpy(line, temp, strlen(temp));
-            LOG(logDEBUG1, ("Removing leading spaces.\n"));
-        }
-
-        LOG(logDEBUG1, ("Command to process: (size:%d) %.*s\n", strlen(line),
-                        strlen(line) - 1, line));
-        memset(command, 0, LZ);
-
-        // reg command
-        if (!strncmp(line, "reg", strlen("reg"))) {
-            uint32_t addr = 0;
-            uint32_t val = 0;
-            if (sscanf(line, "%s %x %x", command, &addr, &val) != 3) {
-                sprintf(mess, "Could not scan reg command. Line:[%s].\n", line);
-                LOG(logERROR, (mess));
-                return FAIL;
-            }
-            bus_w(addr, val);
-            LOG(logINFOBLUE, ("Wrote 0x%x to 0x%x\n", val, addr));
-        }
-
-        // setbit command
-        else if (!strncmp(line, "setbit", strlen("setbit"))) {
-            uint32_t addr = 0;
-            uint32_t bit = 0;
-            if (sscanf(line, "%s %x %d", command, &addr, &bit) != 3) {
-                sprintf(mess, "Could not scan setbit command. Line:[%s].\n",
-                        line);
-                LOG(logERROR, (mess));
-                return FAIL;
-            }
-            bus_w(addr, bus_r(addr) | (1 << bit));
-            LOG(logINFOBLUE, ("Set bit %d in 0x%x\n", bit, addr));
-        }
-
-        // clearbit command
-        else if (!strncmp(line, "clearbit", strlen("clearbit"))) {
-            uint32_t addr = 0;
-            uint32_t bit = 0;
-            if (sscanf(line, "%s %x %d", command, &addr, &bit) != 3) {
-                sprintf(mess, "Could not scan clearbit command. Line:[%s].\n",
-                        line);
-                LOG(logERROR, (mess));
-                return FAIL;
-            }
-            bus_w(addr, bus_r(addr) & ~(1 << bit));
-            LOG(logINFOBLUE, ("Cleared bit %d in 0x%x\n", bit, addr));
-        }
-
-        // pollbit command
-        else if (!strncmp(line, "pollbit", strlen("pollbit"))) {
-            uint32_t addr = 0;
-            uint32_t bit = 0;
-            uint32_t val = 0;
-            if (sscanf(line, "%s %x %d %d", command, &addr, &bit, &val) != 4) {
-                sprintf(mess, "Could not scan pollbit command. Line:[%s].\n",
-                        line);
-                LOG(logERROR, (mess));
-                return FAIL;
-            }
-#ifndef VIRTUAL
-            int times = 0;
-            while (((bus_r(addr) >> bit) & 0x1) != val) {
-                if (times++ > WAIT_TIME_OUT_0US_TIMES) {
-                    sprintf(mess, "Polling bit %d in 0x%x timed out\n", bit,
-                            addr);
-                    LOG(logERROR, (mess));
-                    return FAIL;
-                }
-                usleep(0);
-            }
-#endif
-            LOG(logINFOBLUE, ("Polled bit %d in 0x%x\n", bit, addr));
-        }
-
-        // pattern command
-        else if (!strncmp(line, "pattern", strlen("pattern"))) {
-            // take a file name and call loadPatterFile
-            char patternFileName[LZ];
-            if (sscanf(line, "%s %s", command, patternFileName) != 2) {
-                sprintf(mess, "Could not scan pattern command. Line:[%s].\n",
-                        line);
-                LOG(logERROR, (mess));
-                return FAIL;
-            }
-            if (loadPatternFile(patternFileName, mess) == FAIL) {
-                return FAIL;
-            }
-            LOG(logINFOBLUE, ("loaded pattern [%s].\n", patternFileName));
-        }
-
-        // sleep command
-        else if (!strncmp(line, "sleep", strlen("sleep"))) {
-            int time = 0;
-            if (sscanf(line, "%s %d", command, &time) != 2) {
-                sprintf(mess, "Could not scan sleep command. Line:[%s].\n",
-                        line);
-                LOG(logERROR, (mess));
-                return FAIL;
-            }
-            usleep(time * 1000 * 1000);
-            LOG(logINFOBLUE, ("Slept for %d s\n", time));
-        }
-
-        // other commands
-        else {
-            sprintf(mess,
-                    "Could not scan command from on-board server "
-                    "%s file. Line:[%s].\n",
-                    fileType, line);
-            break;
-        }
-        memset(line, 0, LZ);
-    }
-    fclose(fd);
-    LOG(logINFOBLUE, ("Successfully read %s file.\n", fileType));
-    return OK;
 }
 
 /* set parameters -  dr */
@@ -1439,6 +1131,20 @@ int getPowerRailMask(enum PWRINDEX index, uint32_t *mask, char *mess) {
         LOG(logERROR, (mess));
         return FAIL;
     }
+    return OK;
+}
+
+int powerOff(char *mess) {
+    LOG(logINFOBLUE, ("Powering OFF all rails\n"));
+    enum DACINDEX indices[] = {D_PWR_D, D_PWR_C, D_PWR_B, D_PWR_A, D_PWR_IO};
+    int count = sizeof(indices) / sizeof(indices[0]);
+    int ret = setPowerRailEnabled(indices, count, false, mess);
+    if (ret == FAIL)
+        return FAIL;
+
+    if (XILINX_FMC_disable_all(mess, MAX_STR_LENGTH) == FAIL)
+        return FAIL;
+
     return OK;
 }
 

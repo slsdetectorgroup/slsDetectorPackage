@@ -4,8 +4,10 @@
 #include "sls/file_utils.h"
 #include "sls/logger.h"
 #include "sls/string_utils.h"
+
 #include <iostream>
 #include <thread>
+
 namespace sls {
 // some helper functions to print
 
@@ -1852,6 +1854,37 @@ std::string Caller::dac(int action) {
     return os.str();
 }
 
+defs::dacIndex Caller::parsePowerIndex(int argIndex) {
+    auto res = parseIfPowerIndex(argIndex);
+    if (!res.has_value()) {
+        throw RuntimeError("Invalid power name. Power name can be v_a, v_b, "
+                           "v_c, v_d, v_io, v_chip or any names set using "
+                           "powername command.");
+    }
+    return res.value();
+}
+
+std::optional<defs::dacIndex> Caller::parseIfPowerIndex(int argIndex) {
+    if (argIndex >= (int)args.size()) {
+        throw RuntimeError("Invalid arguments. Power name is required.");
+    }
+    auto arg = args[argIndex];
+
+    // power default names
+    if (is_int(arg) || arg == "v_a" || arg == "v_b" || arg == "v_c" ||
+        arg == "v_d" || arg == "v_io" || arg == "v_chip") {
+        return std::make_optional(StringTo<defs::dacIndex>(arg));
+    }
+
+    // power name
+    auto names = det->getPowerNames();
+    auto it = std::find(names.begin(), names.end(), arg);
+    if (it != names.end()) {
+        return std::make_optional(det->getPowerIndex(arg));
+    }
+    return std::nullopt;
+}
+
 defs::dacIndex Caller::parseDacIndex(int argIndex, bool isCtb) {
     if (argIndex >= (int)args.size()) {
         throw RuntimeError("Invalid arguments. DAC index is required.");
@@ -1859,12 +1892,12 @@ defs::dacIndex Caller::parseDacIndex(int argIndex, bool isCtb) {
     auto arg = args[argIndex];
 
     if (isCtb) {
-        // dac index or power dacs
-        if (is_int(arg) || arg == "v_a" || arg == "v_b" || arg == "v_c" ||
-            arg == "v_d" || arg == "v_io" || arg == "v_chip") {
-            return StringTo<defs::dacIndex>(arg);
+        // power dacs
+        auto res = parseIfPowerIndex(argIndex);
+        if (res.has_value()) {
+            return res.value();
         }
-        // dac name for ctb gui
+        // dac name
         return det->getDacIndex(arg);
     }
 
@@ -1936,8 +1969,8 @@ std::string Caller::power(int action) {
     if (action == defs::HELP_ACTION) {
         os << "[list of power names] [on|off]\n\t[Ctb][Xilinx Ctb] Enable or "
               "disable power rails. Power name can be v_a, v_b, v_c, v_d or "
-              "v_io. If none provided, all of them are set to on or off. One "
-              "can retrieve only one at a time."
+              "v_io or any names set using powername. One can retrieve only "
+              "one at a time."
            << '\n';
         return os.str();
     }
@@ -1953,11 +1986,13 @@ std::string Caller::power(int action) {
         if (args.size() != 1) {
             WrongNumberOfParameters(1);
         }
-        auto t = det->isPowerEnabled(StringTo<defs::dacIndex>(args[0]),
-                                     std::vector<int>{det_id})
-                     .tsquash("Inconsistent across modules");
+        auto t =
+            det->isPowerEnabled(parsePowerIndex(0), std::vector<int>{det_id})
+                .tsquash("Inconsistent across modules");
         os << args[0] << ' ' << ToString(t, defs::OnOff) << '\n';
-    } else if (action == defs::PUT_ACTION) {
+    }
+
+    else if (action == defs::PUT_ACTION) {
         if (args.size() < 1 || args.size() > 6) {
             WrongNumberOfParameters(1);
         }
@@ -1969,7 +2004,7 @@ std::string Caller::power(int action) {
         bool enable = StringTo(lastArg, defs::OnOff);
         std::vector<defs::dacIndex> powerIndices;
         for (size_t i = 0; i < args.size() - 1; ++i) {
-            powerIndices.push_back(StringTo<defs::dacIndex>(args[i]));
+            powerIndices.push_back(parsePowerIndex(i));
         }
 
         det->setPowerEnabled(powerIndices, enable, std::vector<int>{det_id});

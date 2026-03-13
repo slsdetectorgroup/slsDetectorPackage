@@ -154,7 +154,7 @@ int getPowerRailMask(enum PWRINDEX ind, uint32_t *mask, char *mess);
 int setPowerRailEnabled(enum DACINDEX indices[], int count, bool enable,
                         char *mess);
 int isPowerRailEnabled(enum DACINDEX ind, bool *retval, char *mess);
-int verifyPowerRailDisabled(enum DACINDEX ind, char *mess);
+int verifyPowerRailDisabled(enum DACINDEX ind, char *dacName, char *mess);
 void powerChip(bool enable);
 int getPowerChip();
 

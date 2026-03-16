@@ -302,9 +302,8 @@ u_int64_t getDetectorMAC() {
     char output[255];
 #ifdef VIRTUAL
     FILE *sysFile =
-        popen("cat /sys/class/net/$(ip route show default | grep -v vpn  | awk "
-              "'/default/ {print $5}')/address",
-              "r");
+        popen("ip link show $(ip route show default | grep -v vpn | awk '/default/ {print $5}') | grep link/ether | awk '{print $2}'",
+          "r");
 #else
     FILE *sysFile = popen("more /sys/class/net/eth0/address", "r");
 #endif

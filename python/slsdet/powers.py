@@ -20,8 +20,26 @@ class Power(DetectorProperty):
     """
     def __init__(self, name, enum, default, detector):
 
-        super().__init__(partial(detector.getPower, enum),
-                         lambda x, y : detector.setPower(enum, x, y),
+        def get_power(modules=[]):
+            enabled = detector.isPowerEnabled(enum, modules)
+            values = detector.getDAC(enum, True, modules)
+
+            # replace disabled powers with 0
+            return [v if e else 0 for v, e in zip(values, enabled)]
+        
+
+        def set_power(value, modules=[]):
+
+            # always disable first
+            detector.setPowerEnabled([enum], False, modules)
+
+            if value > 0:
+                # set the value
+                detector.setDAC(enum, value, True, modules)
+                detector.setPowerEnabled([enum], True, modules)
+   
+        super().__init__(get_power,
+                         set_power,
                          detector.size,
                          name)
 
@@ -30,7 +48,7 @@ class Power(DetectorProperty):
 
     def __repr__(self):
         """String representation for a single power in all modules"""
-        powerstr = ''.join([f'{item:5d}' for item in self.get()])
+        powerstr = ''.join([f'{item:5d} mV' for item in self.get()])
         return f'{self.__name__:15s}:{powerstr}'
 
 class NamedPowers:

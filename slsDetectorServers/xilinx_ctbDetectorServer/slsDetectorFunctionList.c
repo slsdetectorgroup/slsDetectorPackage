@@ -412,10 +412,9 @@ void setupDetector() {
         return;
     }
     // dacs only
-    LOG(logINFOBLUE, ("Powering down all dacs\n"));
+    LOG(logINFOBLUE, ("Setting all dacs to min (0 mV)\n"));
     for (int idac = 0; idac < NDAC_ONLY; ++idac) {
-        initError = setDAC(idac, LTC2620_D_GetPowerDownValue(), false,
-                           initErrorMessage);
+        initError = setDAC(idac, 0, false, initErrorMessage);
         if (initError == FAIL)
             return;
     }
@@ -602,25 +601,6 @@ int powerChip(int on, char *mess) {
         LOG(logINFOBLUE, ("Powering chip: off\n"));
         bus_w(addr, bus_r(addr) & ~mask);
         chipConfigured = 0;
-        if (FAIL == XILINX_FMC_disable_all(mess, MAX_STR_LENGTH)) {
-            return FAIL;
-        }
-#ifdef VIRTUAL
-        setTransceiverAlignment(0);
-#endif
-        // transceiver alignment should be reset at power off
-        if (isTransceiverAligned()) {
-            sprintf(mess, "Transceiver alignment not reset\n");
-            LOG(logERROR, (mess));
-
-            // to be removed when fixed later
-            LOG(logWARNING,
-                ("Bypassing this error for now. To be fixed later...\n"));
-            return OK;
-
-            return FAIL;
-        }
-        LOG(logINFO, ("\tTransceiver alignment has been reset\n"));
     }
     return OK;
 }

@@ -1854,37 +1854,6 @@ std::string Caller::dac(int action) {
     return os.str();
 }
 
-defs::dacIndex Caller::parsePowerIndex(int argIndex) {
-    auto res = parseIfPowerIndex(argIndex);
-    if (!res.has_value()) {
-        throw RuntimeError("Invalid power name. Power name can be v_a, v_b, "
-                           "v_c, v_d, v_io, v_chip or any names set using "
-                           "powername command.");
-    }
-    return res.value();
-}
-
-std::optional<defs::dacIndex> Caller::parseIfPowerIndex(int argIndex) {
-    if (argIndex >= (int)args.size()) {
-        throw RuntimeError("Invalid arguments. Power name is required.");
-    }
-    auto arg = args[argIndex];
-
-    // power default names
-    if (is_int(arg) || arg == "v_a" || arg == "v_b" || arg == "v_c" ||
-        arg == "v_d" || arg == "v_io" || arg == "v_chip") {
-        return std::make_optional(StringTo<defs::dacIndex>(arg));
-    }
-
-    // power name
-    auto names = det->getPowerNames();
-    auto it = std::find(names.begin(), names.end(), arg);
-    if (it != names.end()) {
-        return std::make_optional(det->getPowerIndex(arg));
-    }
-    return std::nullopt;
-}
-
 defs::dacIndex Caller::parseDacIndex(int argIndex, bool isCtb) {
     if (argIndex >= (int)args.size()) {
         throw RuntimeError("Invalid arguments. DAC index is required.");
@@ -1892,10 +1861,9 @@ defs::dacIndex Caller::parseDacIndex(int argIndex, bool isCtb) {
     auto arg = args[argIndex];
 
     if (isCtb) {
-        // power dacs
-        auto res = parseIfPowerIndex(argIndex);
-        if (res.has_value()) {
-            return res.value();
+        // dac index
+        if (is_int(arg)) {
+            return StringTo<defs::dacIndex>(arg);
         }
         // dac name
         return det->getDacIndex(arg);
@@ -1920,6 +1888,78 @@ bool Caller::parseMV(int argIndex) {
         return true;
     }
     return false;
+}
+
+std::string Caller::powerdac(int action) {
+    std::ostringstream os;
+
+    if (action == defs::HELP_ACTION) {
+        os << "[powername][mV value]\n\t[Ctb][Xilinx Ctb] Controls the dac "
+              "used for Power supply. Default names for powername are v_a, "
+              "v_b, v_c, v_d, v_io, v_chip(v_chip only applies to Ctb, not "
+              "Xilinx_Ctb). If custom names are assigned using the 'powername' "
+              "command, those names could be used instead instead of the "
+              "defaults. By default, all are set to minimum values. \n\t[Ctb] "
+              "v_chip can also be queried to get the vchip dac value, although "
+              "its rail cannot be enabled or disabled by the user. It is "
+              "enabled by default. Its dac value is automatically updated "
+              "whenever a power dac is modified. It is then set to the max of "
+              "power dacs + 200mV."
+           << '\n';
+        return os.str();
+    }
+
+    auto detType = det->getDetectorType().squash(defs::GENERIC);
+    if (detType != defs::CHIPTESTBOARD &&
+        detType != defs::XILINX_CHIPTESTBOARD) {
+        throw RuntimeError("This command is only applicable for ChipTestBoard "
+                           "and Xilinx ChipTestBoard.");
+    }
+    if (det_id != -1) {
+        throw RuntimeError("Cannot use powerdac at module level.");
+    }
+    auto index = parsePowerIndex(0);
+
+    if (action == defs::GET_ACTION) {
+        auto t = det->getPowerDAC(index);
+        os << args[0] << ' ' << OutString(t) << '\n';
+    }
+
+    else if (action == defs::PUT_ACTION) {
+        if (args.size() != 2) {
+            WrongNumberOfParameters(2);
+        }
+        auto val = StringTo<int>(args[1]);
+        det->setPowerDAC(index, val);
+        os << args[0] << ' ' << args[1] << '\n';
+    } else {
+        throw RuntimeError("Unknown action");
+    }
+
+    return os.str();
+}
+
+defs::dacIndex Caller::parsePowerIndex(int argIndex) {
+    if (argIndex >= (int)args.size()) {
+        throw RuntimeError("Invalid arguments. Power name is required.");
+    }
+    auto arg = args[argIndex];
+
+    // power default names
+    if (is_int(arg) || arg == "v_a" || arg == "v_b" || arg == "v_c" ||
+        arg == "v_d" || arg == "v_io" || arg == "v_chip") {
+        return StringTo<defs::dacIndex>(arg);
+    }
+
+    // power name
+    auto names = det->getPowerNames();
+    auto it = std::find(names.begin(), names.end(), arg);
+    if (it != names.end()) {
+        return det->getPowerIndex(arg);
+    }
+    throw RuntimeError(
+        "Unknown power name '" + arg +
+        "'. Use 'powername' command to see defined power names.");
 }
 
 std::string Caller::v_limit(int action) {

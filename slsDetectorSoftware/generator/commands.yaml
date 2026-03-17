@@ -2757,6 +2757,17 @@ dac:
               arg_types: [ std::string ]
             - argc: 2
               arg_types: [ std::string, bool ]
+              
+
+powerdac:
+    is_description: true
+    actions:
+        PUT:
+          argc: 2
+          arg_types: [ std::string, int ]
+        GET:
+          argc: 1
+          arg_types: [ std::string ]
 
 
 v_limit:

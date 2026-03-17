@@ -283,48 +283,6 @@ std::string GetHelpDac(std::string dac) {
     if (dac == "vtgstv") {
         return std::string("");
     }
-
-    if (dac == "v_a") {
-        return std::string(
-            "[mV value] mV \n\t[Ctb][Xilinx Ctb] Dac for Power supply a. Can "
-            "only be set in mV. Default to minimum values. To switch off must "
-            "switch off power rails using 'power' command.\n\t[Ctb] Changes "
-            "vchip (max of power supply voltages + 200mV).");
-    }
-    if (dac == "v_b") {
-        return std::string(
-            "[mV value] mV \n\t[Ctb][Xilinx Ctb] Dac for Power supply b. Can "
-            "only be set in mV. Default to minimum values. To switch off must "
-            "switch off power rails using 'power' command.\n\t[Ctb] Changes "
-            "vchip (max of power supply voltages + 200mV).");
-    }
-    if (dac == "v_c") {
-        return std::string(
-            "[mV value] mV \n\t[Ctb][Xilinx Ctb] Dac for Power supply c. Can "
-            "only be set in mV. Default to minimum values. To switch off must "
-            "switch off power rails using 'power' command.\n\t[Ctb] Changes "
-            "vchip (max of power supply voltages + 200mV).");
-    }
-    if (dac == "v_d") {
-        return std::string(
-            "[mV value] mV \n\t[Ctb][Xilinx Ctb] Dac for Power supply d. Can "
-            "only be set in mV. Default to minimum values. To switch off must "
-            "switch off power rails using 'power' command.\n\t[Ctb] Changes "
-            "vchip (max of power supply voltages + 200mV).");
-    }
-    if (dac == "v_io") {
-        return std::string(
-            "[mV value] mV \n\t[Ctb][Xilinx Ctb] Dac for Power supply IO. Can "
-            "only be set in mV. Default to minimum values. To switch off must "
-            "switch off power rails using 'power' command.\n\t[Ctb] Changes "
-            "vchip (max of power supply voltages + 200mV).");
-    }
-    if (dac == "v_chip") {
-        return std::string("mV \n\t[Ctb] Dac for Vchip. Can only get. Default "
-                           "to minimum values. Vchip is set in the background "
-                           "when v_a, b, c, d or io are set.");
-    }
-
     throw sls::RuntimeError("Unknown dac command");
 }
 

@@ -1542,6 +1542,15 @@ fmaster:
       function: setMasterFileWrite
       input_types: [ bool ]
 
+v_limit:
+  inherit_actions: INTEGER_COMMAND_NOID
+  help: "[n_value]\n\t[Ctb][Xilinx Ctb] Soft limit for power supplies and DACS in mV."
+  actions:
+    GET:
+      function: getVoltageLimit
+    PUT:
+      function: setVoltageLimit
+      input_types: [ int ]
 
 ################# INTEGER_USER_IND_COMMAND ###################
 vchip_comp_fe:
@@ -2769,15 +2778,6 @@ powerdac:
           argc: 1
           arg_types: [ std::string ]
 
-
-v_limit:
-    is_description: true
-    actions:
-        GET:
-          argc: 0
-        PUT:
-          argc: 1
-          arg_types: [ int ]
 
 power:
     is_description: true

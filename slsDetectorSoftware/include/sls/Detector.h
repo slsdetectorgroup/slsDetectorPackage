@@ -1659,6 +1659,12 @@ class Detector {
      * Options: I_POWER_A, I_POWER_B, I_POWER_C, I_POWER_D, I_POWER_IO  */
     int getMeasuredCurrent(defs::powerIndex index) const;
 
+    /** [CTB][Xilinx CTB] */
+    int getVoltageLimit() const;
+
+    /** [CTB][Xilinx CTB] set a voltage limit for dacs and power dacs */
+    void setVoltageLimit(const int limit_in_mV);
+
     /** [CTB][Xilinx CTB] gets list of slow adc enums */
     std::vector<defs::dacIndex> getSlowADCList() const;
 

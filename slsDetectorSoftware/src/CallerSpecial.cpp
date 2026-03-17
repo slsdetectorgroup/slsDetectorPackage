@@ -1962,56 +1962,18 @@ defs::dacIndex Caller::parsePowerIndex(int argIndex) {
         "'. Use 'powername' command to see defined power names.");
 }
 
-std::string Caller::v_limit(int action) {
-    std::ostringstream os;
-
-    if (action == defs::HELP_ACTION) {
-        os << "[n_value]\n\t[Ctb][Xilinx Ctb] Soft limit for power supplies "
-              "and DACS in mV."
-           << '\n';
-        return os.str();
-    }
-
-    auto detType = det->getDetectorType().squash(defs::GENERIC);
-    if (detType != defs::CHIPTESTBOARD &&
-        detType != defs::XILINX_CHIPTESTBOARD) {
-        throw RuntimeError("v_limit command is only applicable for "
-                           "ChipTestBoard and Xilinx ChipTestBoard.");
-    }
-
-    if (action == defs::GET_ACTION) {
-        if (!args.empty()) {
-            WrongNumberOfParameters(0);
-        }
-        auto t = det->getDAC(defs::V_LIMIT, true, std::vector<int>{det_id});
-        os << OutString(t) << " mV" << '\n';
-    }
-
-    else if (action == defs::PUT_ACTION) {
-        if (args.size() != 1) {
-            WrongNumberOfParameters(1);
-        }
-        auto val = StringTo<int>(args[0]);
-        det->setDAC(defs::V_LIMIT, val, true, std::vector<int>{det_id});
-        os << args[0] << " mV" << '\n';
-    }
-
-    else {
-        throw RuntimeError("Unknown action");
-    }
-
-    return os.str();
-}
-
 std::string Caller::power(int action) {
     std::ostringstream os;
 
     if (action == defs::HELP_ACTION) {
-        os << "[list of power names] [on|off]\n\t[Ctb][Xilinx Ctb] Enable or "
-              "disable power rails. Power name can be v_a, v_b, v_c, v_d or "
+        os << "[all|list of power names] [on|off]\n\t[Ctb][Xilinx Ctb] Enable "
+              "or "
+              "disable power rails. Power name can be all, v_a, v_b, v_c, v_d "
+              "or "
               "v_io or any defines using 'powername'. If power name is set to "
-              "'all', the command applies to all 'powers'. When retrieving the "
-              "states of multiple power rails, they are queried sequentially "
+              "'all', the command applies to all 'powers'. Enabling the power "
+              "rails is in parallel, whereas retrieving the states of multiple "
+              "power rails, they are queried sequentially "
               "(one after another), not in parallel."
            << '\n';
         return os.str();
@@ -2044,9 +2006,7 @@ std::string Caller::power(int action) {
 
     if (action == defs::GET_ACTION) {
         if (!all) {
-            auto t = det->isPowerEnabled(parsePowerIndex(0),
-                                         std::vector<int>{det_id})
-                         .tsquash("Inconsistent across modules");
+            auto t = det->isPowerEnabled(parsePowerIndex(0));
             os << args[0] << ' ' << ToString(t, defs::OnOff) << '\n';
         } else {
             // get each state and store in map
@@ -2054,9 +2014,7 @@ std::string Caller::power(int action) {
             auto powerIndices = det->getPowerList();
             for (const auto &index : powerIndices) {
                 auto name = ToString(index);
-                auto state =
-                    det->isPowerEnabled(index, std::vector<int>{det_id})
-                        .tsquash("Inconsistent across modules");
+                auto state = det->isPowerEnabled(index);
                 m[name] = ToString(state, defs::OnOff);
             }
             if (m.empty()) {
@@ -2083,7 +2041,7 @@ std::string Caller::power(int action) {
         bool enable = StringTo(lastArg, defs::OnOff);
 
         // power indices
-        std::vector<defs::dacIndex> powerIndices;
+        std::vector<defs::powerIndex> powerIndices;
         if (all) {
             powerIndices = det->getPowerList();
         } else {
@@ -2093,7 +2051,7 @@ std::string Caller::power(int action) {
             }
         }
 
-        det->setPowerEnabled(powerIndices, enable, std::vector<int>{det_id});
+        det->setPowerEnabled(powerIndices, enable);
         args.pop_back();
         os << ToString(args) << ' ' << ToString(enable, defs::OnOff) << '\n';
     } else {
@@ -2130,14 +2088,9 @@ std::string Caller::powervalues(int action) {
         while (it != t.cend()) {
             if (it != t.cbegin())
                 os << ", ";
-            os << ToString(*name_it++) << ' ';
-            if (det->isPowerEnabled(*it, std::vector<int>{det_id}).squash(0)) {
-                os << OutString(
-                          det->getDAC(*it, true, std::vector<int>{det_id}))
-                   << " mV";
-            } else {
-                os << "0 mV";
-            }
+            os << ToString(*name_it++) << ': [';
+            os << ToString(det->isPowerEnabled(*it), defs::OnOff) << ", ";
+            os << det->getPowerDAC(*it) << " mV ]";
             ++it;
         }
         os << "]" << '\n';

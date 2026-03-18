@@ -2148,9 +2148,9 @@ Result<int> Detector::getADCClock(Positions pos) const {
     return pimpl->Parallel(&Module::getClockFrequency, pos, defs::ADC_CLOCK);
 }
 
-void Detector::setADCClock(int value_in_MHz, Positions pos) {
+void Detector::setADCClock(int value_in_Hz, Positions pos) {
     pimpl->Parallel(&Module::setClockFrequency, pos, defs::ADC_CLOCK,
-                    value_in_MHz);
+                    value_in_Hz);
 }
 
 Result<int> Detector::getRUNClock(Positions pos) const {
@@ -2281,9 +2281,9 @@ Result<int> Detector::getDBITClock(Positions pos) const {
     return pimpl->Parallel(&Module::getClockFrequency, pos, defs::DBIT_CLOCK);
 }
 
-void Detector::setDBITClock(int value_in_MHz, Positions pos) {
+void Detector::setDBITClock(int value_in_Hz, Positions pos) {
     pimpl->Parallel(&Module::setClockFrequency, pos, defs::DBIT_CLOCK,
-                    value_in_MHz);
+                    value_in_Hz);
 }
 
 Result<int> Detector::getMeasuredPower(defs::dacIndex index,

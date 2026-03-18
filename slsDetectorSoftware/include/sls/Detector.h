@@ -474,10 +474,10 @@ class Detector {
      */
     void setHighVoltage(int value, Positions pos = {});
 
-    /** [Jungfrau][Moench][Mythen3][Gotthard2][Xilinx Ctb] */
+    /** [Jungfrau][Moench][Mythen3][Gotthard2] */
     Result<bool> getPowerChip(Positions pos = {}) const;
 
-    /** [Jungfrau][Moench][Mythen3][Gotthard2][Xilinx Ctb] Power the chip. \n
+    /** [Jungfrau][Moench][Mythen3][Gotthard2] Power the chip. \n
      *  Default is disabled. \n
      * [Jungfrau][Moench] Default is disabled. Get will return power status. Can
      * be off if temperature event occured (temperature over temp_threshold with

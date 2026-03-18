@@ -8874,10 +8874,9 @@ std::string Caller::powerchip(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << R"V0G0N([0, 1]
-	[Jungfrau][Moench][Mythen3][Gotthard2][Xilinx Ctb] Power the chip. 
+	[Jungfrau][Moench][Mythen3][Gotthard2] Power the chip. 
 	[Jungfrau][Moench] Default is 0. Get will return power status. Can be off if temperature event occured (temperature over temp_threshold with temp_control enabled. Will configure chip (only chip v1.1)
-	[Mythen3][Gotthard2] Default is 1. If module not connected or wrong module, powerchip will fail.
-	[Xilinx Ctb] Default is 0. Also configures the chip if powered on. )V0G0N"
+	[Mythen3][Gotthard2] Default is 1. If module not connected or wrong module, powerchip will fail. )V0G0N"
            << std::endl;
         return os.str();
     }

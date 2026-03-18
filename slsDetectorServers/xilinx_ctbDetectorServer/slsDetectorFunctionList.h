@@ -109,30 +109,32 @@ int64_t getMeasurementTime();
 int setModule(sls_detector_module myMod, char *mess);
 
 // parameters - dac, adc, hv
+int getVLimit();
+int setVLimit(int val, char *mess);
+
 int validateDACIndex(enum DACINDEX ind, char *mess);
-int validateDACValue(enum DACINDEX ind, int voltage, char *mess);
 int validateDACVoltage(enum DACINDEX ind, int voltage, char *mess);
-int convertVoltageToDACValue(enum DACINDEX ind, int voltage, int *retval_dacval,
-                             char *mess);
-int convertDACValueToVoltage(enum DACINDEX ind, int dacval, int *retval_voltage,
-                             char *mess);
+int convertVoltageToDAC(char* name, int voltage, int *retval_dacval, char *mess);
+int convertDACToVoltage(char* name, int dacval, int *retval_voltage, char *mess);
 int getDAC(enum DACINDEX ind, bool mV, int *retval, char *mess);
 /** @param val value can be in mV or dac units */
 int setDAC(enum DACINDEX ind, int val, bool mV, char *mess);
 
-int getVLimit();
-int setVLimit(int val, char *mess);
 
-int validatePower(enum DACINDEX ind, int val, char *mess);
-int getPowerIndexFromDACIndex(enum DACINDEX ind, enum PWRINDEX *pwrIndex,
-                              char *mess);
-int getPowerRailMask(enum PWRINDEX ind, uint32_t *mask, char *mess);
 
+int validatePowerDACIndex(enum powerIndex ind, char *mess);
+int validatePower(enum powerIndex ind, int val, char *mess);
+int convertVoltageToPowerDAC(char* name, int voltage, int *retval_dacval, char *mess);
+int convertPowerDACToVoltage(char* name, int dacval, int *retval_voltage, char *mess);
+int getPowerDAC(enum powerIndex ind, int *retval, char *mess);
+int setPowerDAC(enum powerIndex ind, int voltage, char *mess);
+
+
+int getPowerMask(enum powerIndex ind, uint32_t *mask, char *mess);
 int powerOff(char *mess);
-int setPowerRailEnabled(enum DACINDEX indices[], int count, bool enable,
-                        char *mess);
-int isPowerRailEnabled(enum DACINDEX ind, bool *retval, char *mess);
-int verifyPowerRailDisabled(enum DACINDEX ind, char *dacName, char *mess);
+int setPowerEnabled(enum powerIndex indices[], int count, bool enable, char *mess);
+int isPowerEnabled(enum powerIndex ind, bool *retval, char *mess);
+
 
 int getADC(enum ADCINDEX ind, int *value, char *mess);
 int getSlowADC(int ichan, int *retval, char *mess);

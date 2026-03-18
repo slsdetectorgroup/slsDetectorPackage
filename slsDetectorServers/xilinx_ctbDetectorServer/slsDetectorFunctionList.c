@@ -1091,10 +1091,40 @@ int setPowerDAC(enum powerIndex ind, int voltage, char *mess) {
     if (convertVoltageToPowerDAC(ind, voltage, &dacval, mess) == FAIL)
         return FAIL;
 
+    enum DACINDEX dacIndex = DAC_0;
+    if (getDACIndexForPower(ind, &dacIndex, mess) == FAIL) {
+        return FAIL;
+    }
     char *powerNames[] = {PWR_NAMES};
-    if (LTC2620_D_SetDacValue((int)ind, dacval, powerNames[ind], mess) == FAIL)
+    if (LTC2620_D_SetDacValue(dacIndex, dacval, powerNames[ind], mess) == FAIL)
         return FAIL;
     dacValues[ind] = dacval;
+    return OK;
+}
+
+int getDACIndexForPower(enum powerIndex pind, enum DACINDEX *dacIndex, char *mess) {
+    switch (pind) {
+    case V_POWER_IO:
+        *dacIndex = D_PWR_IO;
+        break;
+    case V_POWER_A:
+        *dacIndex = D_PWR_A;
+        break;
+    case V_POWER_B:
+        *dacIndex = D_PWR_B;
+        break;
+    case V_POWER_C:
+        *dacIndex = D_PWR_C;
+        break;
+    case V_POWER_D:
+        *dacIndex = D_PWR_D;
+        break;
+    default:
+        *dacIndex = -1;
+        sprintf(mess, "Power index %d has no corresponding dac index\n", pind);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
     return OK;
 }
 

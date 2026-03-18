@@ -283,12 +283,12 @@ void ALTERA_PLL_SetModePolling() {
                                  ALTERA_PLL_MODE_PLLNG_MD_VAL, 0);
 }
 
-int ALTERA_PLL_SetOutputFrequency(int clkIndex, int pllVCOFreqMhz, int value) {
-    LOG(logDEBUG1, ("C%d: Setting output frequency to %d (pllvcofreq: %dMhz)\n",
-                    clkIndex, value, pllVCOFreqMhz));
+int ALTERA_PLL_SetOutputFrequency(int clkIndex, int pllVCOFreqHz, int value) {
+    LOG(logDEBUG1, ("C%d: Setting output frequency to %d (pllvcofreq: %dHz)\n",
+                    clkIndex, value, pllVCOFreqHz));
 
     // calculate output frequency, round to next closest integer division
-    uint32_t total_div = (pllVCOFreqMhz + value / 2) / value;
+    uint32_t total_div = (pllVCOFreqHz + value / 2) / value;
 
     // assume 50% duty cycle
     uint32_t low_count = total_div / 2;
@@ -321,7 +321,7 @@ int ALTERA_PLL_SetOutputFrequency(int clkIndex, int pllVCOFreqMhz, int value) {
     // as adc clock is stopped temporarily when resetting pll)
     ALTERA_PLL_ResetPLL();
 
-    /*double temp = ((double)pllVCOFreqMhz / (double)(low_count + high_count));
+    /*double temp = ((double)pllVCOFreqHz / (double)(low_count + high_count));
         if ((temp - (int)temp) > 0.0001) {
                 temp += 0.5;
         }
@@ -331,18 +331,14 @@ int ALTERA_PLL_SetOutputFrequency(int clkIndex, int pllVCOFreqMhz, int value) {
     #if defined(CHIPTESTBOARDD)
         // wait for firmware to measure the actual frequency
         usleep(2 * 1000 * 1000);
+        value = ALTERA_PLL_getFrequency(clkIndex);
+        LOG(logDEBUG1, ("Frequency is %d\n", value));
     #endif
     return value;
 }
 
 #if defined(CHIPTESTBOARDD)
 uint32_t ALTERA_PLL_getFrequency(uint32_t clk_index) {
-
-    uint32_t base_addr = ALTERA_PLL_FREQ_MEASURE_BASE;
-    uint32_t addr = base_addr + clk_index * 2;
-    uint32_t counter_val = bus_r(addr);
-    // Hz => round to nearest kHz
-    uint32_t freq_kHz = (counter_val + 500) / 1000;
-    return freq_kHz;
+    return bus_r(ALTERA_PLL_FREQ_MEASURE_BASE + clk_index * 2);
 }
 #endif

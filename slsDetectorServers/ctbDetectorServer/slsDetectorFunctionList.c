@@ -66,7 +66,7 @@ uint8_t adcEnableMask_10g = 0xFF;
 uint32_t transceiverMask = DEFAULT_TRANSCEIVER_MASK;
 
 int32_t clkPhase[NUM_CLOCKS] = {};
-uint32_t clkFrequency[NUM_CLOCKS] = {40, 20, 20, 200};
+uint32_t clkFrequency[NUM_CLOCKS] = {40000000, 20000000, 20000000, 200000000};
 int dacValues[NDAC] = {};
 // software limit that depends on the current chip on the ctb
 int vLimit = 0;
@@ -2119,13 +2119,13 @@ int getMaxPhase(enum CLKINDEX ind) {
         LOG(logERROR, ("Unknown clock index %d to get max phase\n", ind));
         return -1;
     }
-    int ret = ((double)PLL_VCO_FREQ_MHZ / (double)clkFrequency[ind]) *
+    int ret = ((double)PLL_VCO_FREQ_HZ / (double)clkFrequency[ind]) *
               MAX_PHASE_SHIFTS_STEPS;
 
     char *clock_names[] = {CLK_NAMES};
     LOG(logDEBUG1,
-        ("Max Phase Shift (%s): %d (Clock: %d MHz, VCO:%d MHz)\n",
-         clock_names[ind], ret, clkFrequency[ind], PLL_VCO_FREQ_MHZ));
+        ("Max Phase Shift (%s): %d (Clock: %d MHz, VCO:%d Hz)\n",
+         clock_names[ind], ret, clkFrequency[ind], PLL_VCO_FREQ_HZ));
 
     return ret;
 }
@@ -2161,7 +2161,7 @@ int setFrequency(enum CLKINDEX ind, int val) {
         return FAIL;
     }
     char *clock_names[] = {CLK_NAMES};
-    LOG(logINFO, ("\tSetting %s clock (%d) frequency to %d MHz\n",
+    LOG(logINFO, ("\tSetting %s clock (%d) frequency to %d Hz\n",
                   clock_names[ind], ind, val));
 
     // check adc clk too high
@@ -2178,8 +2178,8 @@ int setFrequency(enum CLKINDEX ind, int val) {
 
     // Calculate and set output frequency
     clkFrequency[ind] =
-        ALTERA_PLL_SetOutputFrequency(ind, PLL_VCO_FREQ_MHZ, val);
-    LOG(logINFO, ("\t%s clock (%d) frequency set to %d MHz\n", clock_names[ind],
+        ALTERA_PLL_SetOutputFrequency(ind, PLL_VCO_FREQ_HZ, val);
+    LOG(logINFO, ("\t%s clock (%d) frequency set to %d Hz\n", clock_names[ind],
                   ind, clkFrequency[ind]));
 
     // phase reset by pll (when setting output frequency)
@@ -2209,12 +2209,12 @@ int getFrequency(enum CLKINDEX ind) {
     }
     #ifndef VIRTUAL
         // get the measured frequency from the firmware
-        int measuredFreqkHz = ALTERA_PLL_getFrequency(ind);
+        int measuredFreqHz = ALTERA_PLL_getFrequency(ind);
 
         // checking against 0 here ensures compatibility with old firmware, TODO: remove this check at some point
-        if (measuredFreqkHz != 0) {
+        if (measuredFreqHz != 0) {
             // Round to nearest MHz. (should we round at all ?)
-            clkFrequency[ind] = (measuredFreqkHz + 500) / 1000;
+            clkFrequency[ind] = measuredFreqHz;
         }
     #endif VIRTUAL
     return clkFrequency[ind];

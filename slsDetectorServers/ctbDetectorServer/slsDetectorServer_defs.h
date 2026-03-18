@@ -54,7 +54,7 @@
 #define DEFAULT_ADC_CLK               (40)  // 20
 #define DEFAULT_SYNC_CLK              (40)  // 20
 #define DEFAULT_DBIT_CLK              (200)
-#define NS_TO_CLK_CYCLE               (1E-3) // ns to MHz
+#define NS_TO_CLK_CYCLE               (1E-9) // ns to MHz
 #define DEFAULT_TRANSCEIVER_MASK      (0x3)
 
 #define MAX_TRANSCEIVER_MASK    (0xF)
@@ -95,8 +95,8 @@
 #define BIT32_MSK              (0xFFFFFFFF)
 #define BIT16_MASK             (0xFFFF)
 
-#define MAXIMUM_ADC_CLK  (65)
-#define PLL_VCO_FREQ_MHZ (800)
+#define MAXIMUM_ADC_CLK  (65000000)
+#define PLL_VCO_FREQ_HZ (800000000)
 
 /* Struct Definitions */
 typedef struct udp_header_struct {

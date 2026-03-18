@@ -75,11 +75,11 @@ void ALTERA_PLL_SetModePolling();
 /**
  * Calculate and write output frequency
  * @param clkIndex clock index
- * @param pllVCOFreqMhz PLL VCO Frequency in Mhz
+ * @param pllVCOFreqHz PLL VCO Frequency in Hz
  * @param value frequency to set to
  * @param frequency set
  */
-int ALTERA_PLL_SetOutputFrequency(int clkIndex, int pllVCOFreqMhz, int value);
+int ALTERA_PLL_SetOutputFrequency(int clkIndex, int pllVCOFreqHz, int value);
 
 /**
  * get measured clock frequency

@@ -5842,11 +5842,9 @@ int set_clock_frequency(int file_des) {
         case ADC_CLOCK:
             c = ADC_CLK;
             break;
-#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
         case DBIT_CLOCK:
             c = DBIT_CLK;
             break;
-#endif
         case RUN_CLOCK:
             c = RUN_CLK;
             break;
@@ -5867,26 +5865,19 @@ int set_clock_frequency(int file_des) {
                     (int)c);
 
             if (getFrequency(c) == val) {
-                LOG(logINFO, ("Same %s: %d %s\n", modeName, val,
-                              myDetectorType == GOTTHARD2 ? "Hz" : "MHz"));
+                LOG(logINFO, ("Same %s: %d %s\n", modeName, val, "Hz"));
             } else {
-                int ret = setFrequency(c, val);
+                int ret = setFrequency(c, val); // MM: Poblem
                 if (ret == FAIL) {
-                    sprintf(mess, "Could not set %s to %d %s\n", modeName, val,
-                            myDetectorType == XILINX_CHIPTESTBOARD ? "kHz"
-                                                                   : "MHz");
+                    sprintf(mess, "Could not set %s to %d %s\n", modeName, val,"Hz");
                     LOG(logERROR, (mess));
                 } else {
                     int retval = getFrequency(c);
                     LOG(logDEBUG1,
-                        ("retval %s: %d %s\n", modeName, retval,
-                         myDetectorType == XILINX_CHIPTESTBOARD ? "kHz"
-                                                                : "MHz"));
-#if !defined(XILINX_CHIPTESTBOARDD) && !defined(CHIPTESTBOARDD)
+                        ("retval %s: %d %s\n", modeName, retval, "Hz"));
                     // both CTB's will give the actual frequency, which is not
                     // 100% identical to the set frequency
                     validate(&ret, mess, val, retval, modeName, DEC);
-#endif
                 }
             }
         }

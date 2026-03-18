@@ -188,6 +188,15 @@ class DetectorImpl : public virtual slsDetectorDefs {
                 shm()->detType == defs::XILINX_CHIPTESTBOARD);
     }
 
+    inline void verifyChipTestBoard(const std::string &funcName) const {
+        if (!isChipTestBoard())
+            throw RuntimeError(funcName + " is only valid for chip test board");
+        if (size() != 1)
+            throw RuntimeError(
+                funcName +
+                " is only valid for single module setup (chip test board).");
+    }
+
     /** set acquiring flag in shared memory */
     void setAcquiringFlag(bool flag);
 

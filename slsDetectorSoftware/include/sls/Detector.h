@@ -1632,7 +1632,10 @@ class Detector {
     /** gets list of power enums */
     std::vector<defs::powerIndex> getPowerList() const;
 
-    /** [CTB][Xilinx CTB] */
+    /** [CTB] Options: V_POWE_A, V_POWER_B, V_POWER_C,
+     * V_POWER_D, V_POWER_IO, V_POWER_CHIP
+     * [Xilinx CTB] Options: V_POWE_A, V_POWER_B, V_POWER_C,
+     * V_POWER_D, V_POWER_IO */
     int getPowerDAC(defs::powerIndex index) const;
 
     /** [CTB][Xilinx CTB] Options: V_POWE_A, V_POWER_B, V_POWER_C,

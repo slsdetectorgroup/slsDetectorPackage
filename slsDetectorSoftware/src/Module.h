@@ -177,9 +177,14 @@ class Module : public virtual slsDetectorDefs {
     void setDAC(int val, dacIndex index, bool mV);
     bool getPowerChip() const;
     void setPowerChip(bool on);
-    bool isPowerEnabled(defs::dacIndex index) const;
-    void setPowerEnabled(const std::vector<defs::dacIndex> &indices,
-                         bool value);
+    int getPowerDAC(defs::powerIndex index) const;
+    void setPowerDAC(defs::powerIndex index, int value);
+    bool isPowerEnabled(defs::powerIndex index) const;
+    void setPowerEnabled(const std::vector<defs::powerIndex> &indices,
+                         bool enable);
+    int getPowerADC(defs::powerIndex index) const;
+    int getVoltageLimit() const;
+    void setVoltageLimit(const int limit_in_mV);
     int getImageTestMode() const;
     void setImageTestMode(const int value);
     /* temperature in millidegrees */

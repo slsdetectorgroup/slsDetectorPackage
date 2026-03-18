@@ -819,23 +819,44 @@ void Module::setPowerChip(bool on) {
     sendToDetector<int>(F_POWER_CHIP, static_cast<int>(on));
 }
 
-bool Module::isPowerEnabled(defs::dacIndex index) const {
-    return sendToDetector<int>(F_GET_POWER, index);
+int Module::getPowerDAC(defs::powerIndex index) const {
+    return sendToDetector<int>(F_GET_POWER_DAC, static_cast<int>(index));
 }
 
-void Module::setPowerEnabled(const std::vector<defs::dacIndex> &indices,
-                             bool value) {
+void Module::setPowerDAC(defs::powerIndex index, int value) {
+    int args[]{static_cast<int>(index), value};
+    sendToDetector(F_SET_POWER_DAC, args, nullptr);
+}
+
+bool Module::isPowerEnabled(defs::powerIndex index) const {
+    return sendToDetector<int>(F_GET_POWER, static_cast<int>(index));
+}
+
+void Module::setPowerEnabled(const std::vector<defs::powerIndex> &indices,
+                             bool enable) {
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(F_SET_POWER);
     client.setFnum(F_SET_POWER);
     int count = indices.size();
     client.Send(count);
     client.Send(indices);
-    client.Send(static_cast<int>(value));
+    client.Send(static_cast<int>(enable));
     if (client.Receive<int>() == FAIL) {
         throw DetectorError("Detector " + std::to_string(moduleIndex) +
                             " returned error: " + client.readErrorMessage());
     }
+}
+
+int Module::getPowerADC(defs::powerIndex index) const {
+    return sendToDetector<int>(F_GET_POWER_ADC, static_cast<int>(index));
+}
+
+int Module::getVoltageLimit() const {
+    return sendToDetector<int>(F_GET_VOLTAGE_LIMIT);
+}
+
+void Module::setVoltageLimit(const int limit_in_mV) {
+    sendToDetector(F_SET_VOLTAGE_LIMIT, limit_in_mV, nullptr);
 }
 
 int Module::getImageTestMode() const {

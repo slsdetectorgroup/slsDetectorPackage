@@ -2166,15 +2166,92 @@ Result<int> Detector::getSYNCClock(Positions pos) const {
     return pimpl->Parallel(&Module::getClockFrequency, pos, defs::SYNC_CLOCK);
 }
 
-std::vector<defs::dacIndex> Detector::getPowerList() const {
+std::vector<defs::powerIndex> Detector::getPowerList() const {
     auto dettype = getDetectorType().squash();
     if (dettype != defs::CHIPTESTBOARD &&
         dettype != defs::XILINX_CHIPTESTBOARD) {
         throw RuntimeError("Power list not implemented for this detector");
     }
-    return std::vector<defs::dacIndex>{defs::V_POWER_A, defs::V_POWER_B,
-                                       defs::V_POWER_C, defs::V_POWER_D,
-                                       defs::V_POWER_IO};
+    return std::vector<defs::powerIndex>{defs::V_POWER_A, defs::V_POWER_B,
+                                         defs::V_POWER_C, defs::V_POWER_D,
+                                         defs::V_POWER_IO};
+}
+
+int Detector::getPowerDAC(defs::powerIndex index) const {
+    pimpl->verifyChipTestBoard(__func__);
+    return pimpl->Parallel(&Module::getPowerDac, {0}, index)[0];
+}
+
+void Detector::setPowerDAC(defs::powerIndex index, int value) {
+    pimpl->verifyChipTestBoard(__func__);
+    pimpl->Parallel(&Module::setPowerDac, {0}, index, value);
+}
+
+bool Detector::isPowerEnabled(defs::powerIndex index) const {
+    pimpl->verifyChipTestBoard(__func__);
+    std::vector<defs::powerIndex> valid_indices = getPowerList();
+    if (std::find(valid_indices.begin(), valid_indices.end(), index) ==
+        valid_indices.end()) {
+        throw RuntimeError("Unknown Power Index " + std::to_string(index));
+    }
+    return pimpl->Parallel(&Module::isPowerEnabled, {0}, index)[0];
+}
+
+void Detector::setPowerEnabled(const std::vector<defs::powerIndex> &indices,
+                               bool enable) {
+    pimpl->verifyChipTestBoard(__func__);
+    if (indices.empty()) {
+        throw RuntimeError("No Power Index provided");
+    }
+    std::vector<defs::powerIndex> valid_indices = getPowerList();
+    for (const auto &index : indices) {
+        if (std::find(valid_indices.begin(), valid_indices.end(), index) ==
+            valid_indices.end()) {
+            throw RuntimeError("Unknown Power Index " + std::to_string(index));
+        }
+    }
+    pimpl->Parallel(&Module::setPowerEnabled, {0}, indices, enable);
+}
+
+int Detector::getMeasuredPower(defs::powerIndex index) const {
+    pimpl->verifyChipTestBoard(__func__);
+    switch (index) {
+    case defs::V_POWER_A:
+    case defs::V_POWER_B:
+    case defs::V_POWER_C:
+    case defs::V_POWER_D:
+    case defs::V_POWER_IO:
+    case defs::V_POWER_CHIP:
+        break;
+    default:
+        throw RuntimeError("Unknown Power Index " + std::to_string(index));
+    }
+    return pimpl->Parallel(&Module::getPowerADC, {0}, index)[0];
+}
+
+int Detector::getMeasuredCurrent(defs::powerIndex index) const {
+    pimpl->verifyChipTestBoard(__func__);
+    switch (index) {
+    case defs::I_POWER_A:
+    case defs::I_POWER_B:
+    case defs::I_POWER_C:
+    case defs::I_POWER_D:
+    case defs::I_POWER_IO:
+        break;
+    default:
+        throw RuntimeError("Unknown Current Index " + std::to_string(index));
+    }
+    return pimpl->Parallel(&Module::getPowerADC, {0}, index)[0];
+}
+
+int Detector::getVoltageLimit() const {
+    pimpl->verifyChipTestBoard(__func__);
+    return pimpl->Parallel(&Module::getVoltageLimit, {0})[0];
+}
+
+void Detector::setVoltageLimit(int value) {
+    pimpl->verifyChipTestBoard(__func__);
+    pimpl->Parallel(&Module::setVoltageLimit, {0}, value);
 }
 
 std::vector<defs::dacIndex> Detector::getSlowADCList() const {
@@ -2186,31 +2263,6 @@ std::vector<defs::dacIndex> Detector::getSlowADCList() const {
     return std::vector<defs::dacIndex>{
         defs::SLOW_ADC0, defs::SLOW_ADC1, defs::SLOW_ADC2, defs::SLOW_ADC3,
         defs::SLOW_ADC4, defs::SLOW_ADC5, defs::SLOW_ADC6, defs::SLOW_ADC7};
-}
-
-Result<bool> Detector::isPowerEnabled(defs::dacIndex index,
-                                      Positions pos) const {
-    std::vector<defs::dacIndex> valid_indices = getPowerList();
-    if (std::find(valid_indices.begin(), valid_indices.end(), index) ==
-        valid_indices.end()) {
-        throw RuntimeError("Unknown Power Index");
-    }
-    return pimpl->Parallel(&Module::isPowerEnabled, pos, index);
-}
-
-void Detector::setPowerEnabled(const std::vector<defs::dacIndex> &indices,
-                               bool value, Positions pos) {
-    if (indices.empty()) {
-        throw RuntimeError("No Power Index provided");
-    }
-    std::vector<defs::dacIndex> valid_indices = getPowerList();
-    for (const auto &index : indices) {
-        if (std::find(valid_indices.begin(), valid_indices.end(), index) ==
-            valid_indices.end()) {
-            throw RuntimeError("Unknown Power Index");
-        }
-    }
-    pimpl->Parallel(&Module::setPowerEnabled, pos, indices, value);
 }
 
 Result<int> Detector::getADCVpp(bool mV, Positions pos) const {
@@ -2277,37 +2329,6 @@ Result<int> Detector::getDBITClock(Positions pos) const {
 void Detector::setDBITClock(int value_in_MHz, Positions pos) {
     pimpl->Parallel(&Module::setClockFrequency, pos, defs::DBIT_CLOCK,
                     value_in_MHz);
-}
-
-Result<int> Detector::getMeasuredPower(defs::dacIndex index,
-                                       Positions pos) const {
-    switch (index) {
-    case defs::V_POWER_A:
-    case defs::V_POWER_B:
-    case defs::V_POWER_C:
-    case defs::V_POWER_D:
-    case defs::V_POWER_IO:
-    case defs::V_POWER_CHIP:
-        break;
-    default:
-        throw RuntimeError("Unknown Power Index");
-    }
-    return pimpl->Parallel(&Module::getADC, pos, index);
-}
-
-Result<int> Detector::getMeasuredCurrent(defs::dacIndex index,
-                                         Positions pos) const {
-    switch (index) {
-    case defs::I_POWER_A:
-    case defs::I_POWER_B:
-    case defs::I_POWER_C:
-    case defs::I_POWER_D:
-    case defs::I_POWER_IO:
-        break;
-    default:
-        throw RuntimeError("Unknown Current Index");
-    }
-    return pimpl->Parallel(&Module::getADC, pos, index);
 }
 
 Result<int> Detector::getSlowADC(defs::dacIndex index, Positions pos) const {

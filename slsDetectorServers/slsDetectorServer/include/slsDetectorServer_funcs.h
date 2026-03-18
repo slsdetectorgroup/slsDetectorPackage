@@ -343,3 +343,8 @@ int spi_read(int);
 int spi_write(int);
 int get_power(int);
 int set_power(int);
+int get_power_dac(int);
+int set_power_dac(int);
+int get_power_adc(int);
+int get_voltage_limit(int);
+int set_voltage_limit(int);

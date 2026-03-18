@@ -525,6 +525,12 @@ void function_table() {
     flist[F_SPI_WRITE] = &spi_write;
     flist[F_GET_POWER] = &get_power;
     flist[F_SET_POWER] = &set_power;
+    flist[F_GET_POWER_DAC] = &get_power_dac;
+    flist[F_SET_POWER_DAC] = &set_power_dac;
+    flist[F_GET_POWER_ADC] = &get_power_adc;
+    flist[F_GET_VOLTAGE_LIMIT] = &get_voltage_limit;
+    flist[F_SET_VOLTAGE_LIMIT] = &set_voltage_limit;
+
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
         LOG(logERROR, ("The last detector function enum has reached its "
@@ -11424,6 +11430,92 @@ int set_power(int file_des) {
         }
 
         ret = setPowerRailEnabled(serverDacIndices, count, enable, mess);
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+
+int get_power_dac(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
+    functionNotImplemented();
+#else
+    // index
+    int arg = -1;
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();  
+    LOG(logDEBUG1, ("Getting power DAC value for DAC %d\n", arg));
+    enum powerIndex ind = (enum powerIndex)arg;
+    ret = getPowerDAC(ind, &retval, mess);
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_power_dac(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
+    functionNotImplemented();
+#else
+    int args[2] = {-1, -1};
+    if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+        return printSocketReadError();
+    // index
+    enum powerIndex ind = (enum powerIndex)args[0];
+    int value = args[1];
+    LOG(logDEBUG1, ("Setting power DAC value for DAC %d to %d\n", ind, value));
+    if (Server_VerifyLock() == OK) {
+        ret = setPowerDAC(ind, value, mess);
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_adc(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
+    functionNotImplemented();
+#else
+    // index
+    int arg = -1;
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Getting ADC value for ADC %d\n", arg));
+    enum powerIndex ind = (enum powerIndex)arg;
+    ret = getPowerADC(ind, &retval, mess);
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int get_voltage_limit(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
+    functionNotImplemented();
+#else
+    ret = getVoltageLimit(&retval, mess);
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_voltage_limit(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
+    functionNotImplemented();
+#else
+    int arg = -1;
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Setting voltage limit to %d mV\n", arg));
+    if (Server_VerifyLock() == OK) {
+        ret = setVoltageLimit(arg, mess);
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);

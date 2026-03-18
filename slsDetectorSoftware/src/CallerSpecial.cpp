@@ -1939,7 +1939,7 @@ std::string Caller::powerdac(int action) {
     return os.str();
 }
 
-defs::dacIndex Caller::parsePowerIndex(int argIndex) {
+defs::powerIndex Caller::parsePowerIndex(int argIndex) {
     if (argIndex >= (int)args.size()) {
         throw RuntimeError("Invalid arguments. Power name is required.");
     }
@@ -1948,7 +1948,7 @@ defs::dacIndex Caller::parsePowerIndex(int argIndex) {
     // power default names
     if (is_int(arg) || arg == "v_a" || arg == "v_b" || arg == "v_c" ||
         arg == "v_d" || arg == "v_io" || arg == "v_chip") {
-        return StringTo<defs::dacIndex>(arg);
+        return StringTo<defs::powerIndex>(arg);
     }
 
     // power name

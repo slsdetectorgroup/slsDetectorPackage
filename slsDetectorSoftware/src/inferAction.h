@@ -172,6 +172,7 @@ class InferAction {
     int port();
     int power();
     int powerchip();
+    int powerdac();
     int powerindex();
     int powerlist();
     int powername();
@@ -507,6 +508,7 @@ class InferAction {
         {"port", &InferAction::port},
         {"power", &InferAction::power},
         {"powerchip", &InferAction::powerchip},
+        {"powerdac", &InferAction::powerdac},
         {"powerindex", &InferAction::powerindex},
         {"powerlist", &InferAction::powerlist},
         {"powername", &InferAction::powername},

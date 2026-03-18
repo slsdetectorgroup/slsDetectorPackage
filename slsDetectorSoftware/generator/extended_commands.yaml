@@ -4849,16 +4849,17 @@ im_a:
         argc: 0
         cast_input:
         - false
-        check_det_id: false
+        check_det_id: true
         convert_det_id: true
-        function: getMeasuredCurrent
+        function: getMeasuredPower
         input:
         - defs::I_POWER_A
         input_types:
         - int
         output:
         - OutString(t)
-        require_det_id: true
+        - '" mA"'
+        require_det_id: false
         store_result_in_t: true
   command_name: im_a
   function_alias: im_a
@@ -4873,16 +4874,17 @@ im_b:
         argc: 0
         cast_input:
         - false
-        check_det_id: false
+        check_det_id: true
         convert_det_id: true
-        function: getMeasuredCurrent
+        function: getMeasuredPower
         input:
         - defs::I_POWER_B
         input_types:
         - int
         output:
         - OutString(t)
-        require_det_id: true
+        - '" mA"'
+        require_det_id: false
         store_result_in_t: true
   command_name: im_b
   function_alias: im_b
@@ -4897,16 +4899,17 @@ im_c:
         argc: 0
         cast_input:
         - false
-        check_det_id: false
+        check_det_id: true
         convert_det_id: true
-        function: getMeasuredCurrent
+        function: getMeasuredPower
         input:
         - defs::I_POWER_C
         input_types:
         - int
         output:
         - OutString(t)
-        require_det_id: true
+        - '" mA"'
+        require_det_id: false
         store_result_in_t: true
   command_name: im_c
   function_alias: im_c
@@ -4921,16 +4924,17 @@ im_d:
         argc: 0
         cast_input:
         - false
-        check_det_id: false
+        check_det_id: true
         convert_det_id: true
-        function: getMeasuredCurrent
+        function: getMeasuredPower
         input:
         - defs::I_POWER_D
         input_types:
         - int
         output:
         - OutString(t)
-        require_det_id: true
+        - '" mA"'
+        require_det_id: false
         store_result_in_t: true
   command_name: im_d
   function_alias: im_d
@@ -4945,16 +4949,17 @@ im_io:
         argc: 0
         cast_input:
         - false
-        check_det_id: false
+        check_det_id: true
         convert_det_id: true
-        function: getMeasuredCurrent
+        function: getMeasuredPower
         input:
         - defs::I_POWER_IO
         input_types:
         - int
         output:
         - OutString(t)
-        require_det_id: true
+        - '" mA"'
+        require_det_id: false
         store_result_in_t: true
   command_name: im_io
   function_alias: im_io
@@ -7325,6 +7330,42 @@ powerchip:
     \ Ctb] Default is 0. Also configures the chip if powered on."
   infer_action: true
   template: true
+powerdac:
+  actions:
+    GET:
+      args:
+      - arg_types:
+        - std::string
+        argc: 1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: true
+    PUT:
+      args:
+      - arg_types:
+        - std::string
+        - int
+        argc: 2
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+  command_name: powerdac
+  function_alias: powerdac
+  help: ''
+  infer_action: true
+  is_description: true
 powerindex:
   actions:
     GET:
@@ -12630,12 +12671,13 @@ v_limit:
       - arg_types: []
         argc: 0
         cast_input: []
-        check_det_id: false
+        check_det_id: true
         convert_det_id: true
-        function: ''
+        function: getVoltageLimit
         input: []
         input_types: []
-        output: []
+        output:
+        - OutString(t)
         require_det_id: false
         store_result_in_t: true
     PUT:
@@ -12643,20 +12685,25 @@ v_limit:
       - arg_types:
         - int
         argc: 1
-        cast_input: []
-        check_det_id: false
+        cast_input:
+        - true
+        check_det_id: true
         convert_det_id: true
-        function: ''
-        input: []
-        input_types: []
-        output: []
+        function: setVoltageLimit
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
         require_det_id: false
         store_result_in_t: false
   command_name: v_limit
   function_alias: v_limit
-  help: ''
+  help: "[n_value]\n\t[Ctb][Xilinx Ctb] Soft limit for power supplies and DACS in\
+    \ mV."
   infer_action: true
-  is_description: true
+  template: true
 vchip_comp_adc:
   actions:
     GET:
@@ -13369,7 +13416,7 @@ vm_a:
         argc: 0
         cast_input:
         - false
-        check_det_id: false
+        check_det_id: true
         convert_det_id: true
         function: getMeasuredPower
         input:
@@ -13378,7 +13425,8 @@ vm_a:
         - int
         output:
         - OutString(t)
-        require_det_id: true
+        - '" mV"'
+        require_det_id: false
         store_result_in_t: true
   command_name: vm_a
   function_alias: vm_a
@@ -13393,7 +13441,7 @@ vm_b:
         argc: 0
         cast_input:
         - false
-        check_det_id: false
+        check_det_id: true
         convert_det_id: true
         function: getMeasuredPower
         input:
@@ -13402,7 +13450,8 @@ vm_b:
         - int
         output:
         - OutString(t)
-        require_det_id: true
+        - '" mV"'
+        require_det_id: false
         store_result_in_t: true
   command_name: vm_b
   function_alias: vm_b
@@ -13417,7 +13466,7 @@ vm_c:
         argc: 0
         cast_input:
         - false
-        check_det_id: false
+        check_det_id: true
         convert_det_id: true
         function: getMeasuredPower
         input:
@@ -13426,7 +13475,8 @@ vm_c:
         - int
         output:
         - OutString(t)
-        require_det_id: true
+        - '" mV"'
+        require_det_id: false
         store_result_in_t: true
   command_name: vm_c
   function_alias: vm_c
@@ -13441,7 +13491,7 @@ vm_d:
         argc: 0
         cast_input:
         - false
-        check_det_id: false
+        check_det_id: true
         convert_det_id: true
         function: getMeasuredPower
         input:
@@ -13450,7 +13500,8 @@ vm_d:
         - int
         output:
         - OutString(t)
-        require_det_id: true
+        - '" mV"'
+        require_det_id: false
         store_result_in_t: true
   command_name: vm_d
   function_alias: vm_d
@@ -13465,7 +13516,7 @@ vm_io:
         argc: 0
         cast_input:
         - false
-        check_det_id: false
+        check_det_id: true
         convert_det_id: true
         function: getMeasuredPower
         input:
@@ -13474,7 +13525,8 @@ vm_io:
         - int
         output:
         - OutString(t)
-        require_det_id: true
+        - '" mV"'
+        require_det_id: false
         store_result_in_t: true
   command_name: vm_io
   function_alias: vm_io

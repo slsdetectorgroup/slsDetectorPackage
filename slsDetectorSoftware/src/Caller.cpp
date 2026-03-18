@@ -5803,9 +5803,11 @@ std::string Caller::im_a(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 0) {
-            auto t = det->getMeasuredCurrent(defs::I_POWER_A,
-                                             std::vector<int>{det_id});
-            os << OutString(t) << '\n';
+            if (det_id != -1) {
+                throw RuntimeError("Cannot execute im_a at module level");
+            }
+            auto t = det->getMeasuredPower(defs::I_POWER_A);
+            os << OutString(t) << " mA" << '\n';
         }
     }
 
@@ -5843,9 +5845,11 @@ std::string Caller::im_b(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 0) {
-            auto t = det->getMeasuredCurrent(defs::I_POWER_B,
-                                             std::vector<int>{det_id});
-            os << OutString(t) << '\n';
+            if (det_id != -1) {
+                throw RuntimeError("Cannot execute im_b at module level");
+            }
+            auto t = det->getMeasuredPower(defs::I_POWER_B);
+            os << OutString(t) << " mA" << '\n';
         }
     }
 
@@ -5883,9 +5887,11 @@ std::string Caller::im_c(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 0) {
-            auto t = det->getMeasuredCurrent(defs::I_POWER_C,
-                                             std::vector<int>{det_id});
-            os << OutString(t) << '\n';
+            if (det_id != -1) {
+                throw RuntimeError("Cannot execute im_c at module level");
+            }
+            auto t = det->getMeasuredPower(defs::I_POWER_C);
+            os << OutString(t) << " mA" << '\n';
         }
     }
 
@@ -5923,9 +5929,11 @@ std::string Caller::im_d(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 0) {
-            auto t = det->getMeasuredCurrent(defs::I_POWER_D,
-                                             std::vector<int>{det_id});
-            os << OutString(t) << '\n';
+            if (det_id != -1) {
+                throw RuntimeError("Cannot execute im_d at module level");
+            }
+            auto t = det->getMeasuredPower(defs::I_POWER_D);
+            os << OutString(t) << " mA" << '\n';
         }
     }
 
@@ -5963,9 +5971,11 @@ std::string Caller::im_io(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 0) {
-            auto t = det->getMeasuredCurrent(defs::I_POWER_IO,
-                                             std::vector<int>{det_id});
-            os << OutString(t) << '\n';
+            if (det_id != -1) {
+                throw RuntimeError("Cannot execute im_io at module level");
+            }
+            auto t = det->getMeasuredPower(defs::I_POWER_IO);
+            os << OutString(t) << " mA" << '\n';
         }
     }
 
@@ -15754,6 +15764,74 @@ std::string Caller::updatemode(int action) {
     return os.str();
 }
 
+std::string Caller::v_limit(int action) {
+
+    std::ostringstream os;
+    // print help
+    if (action == slsDetectorDefs::HELP_ACTION) {
+        os << R"V0G0N([n_value]
+	[Ctb][Xilinx Ctb] Soft limit for power supplies and DACS in mV. )V0G0N"
+           << std::endl;
+        return os.str();
+    }
+
+    // check if action and arguments are valid
+    if (action == slsDetectorDefs::GET_ACTION) {
+        if (1 && args.size() != 0) {
+            throw RuntimeError("Wrong number of arguments for action GET");
+        }
+
+        if (args.size() == 0) {
+        }
+
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
+        if (1 && args.size() != 1) {
+            throw RuntimeError("Wrong number of arguments for action PUT");
+        }
+
+        if (args.size() == 1) {
+            try {
+                StringTo<int>(args[0]);
+            } catch (...) {
+                throw RuntimeError("Could not convert argument 0 to int");
+            }
+        }
+
+    }
+
+    else {
+
+        throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
+                           "are ['GET', 'PUT']");
+    }
+
+    // generate code for each action
+    if (action == slsDetectorDefs::GET_ACTION) {
+        if (args.size() == 0) {
+            if (det_id != -1) {
+                throw RuntimeError("Cannot execute v_limit at module level");
+            }
+            auto t = det->getVoltageLimit();
+            os << OutString(t) << '\n';
+        }
+    }
+
+    if (action == slsDetectorDefs::PUT_ACTION) {
+        if (args.size() == 1) {
+            if (det_id != -1) {
+                throw RuntimeError("Cannot execute v_limit at module level");
+            }
+            auto arg0 = StringTo<int>(args[0]);
+            det->setVoltageLimit(arg0);
+            os << args.front() << '\n';
+        }
+    }
+
+    return os.str();
+}
+
 std::string Caller::vchip_comp_adc(int action) {
 
     std::ostringstream os;
@@ -16636,9 +16714,11 @@ std::string Caller::vm_a(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 0) {
-            auto t = det->getMeasuredPower(defs::V_POWER_A,
-                                           std::vector<int>{det_id});
-            os << OutString(t) << '\n';
+            if (det_id != -1) {
+                throw RuntimeError("Cannot execute vm_a at module level");
+            }
+            auto t = det->getMeasuredPower(defs::V_POWER_A);
+            os << OutString(t) << " mV" << '\n';
         }
     }
 
@@ -16676,9 +16756,11 @@ std::string Caller::vm_b(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 0) {
-            auto t = det->getMeasuredPower(defs::V_POWER_B,
-                                           std::vector<int>{det_id});
-            os << OutString(t) << '\n';
+            if (det_id != -1) {
+                throw RuntimeError("Cannot execute vm_b at module level");
+            }
+            auto t = det->getMeasuredPower(defs::V_POWER_B);
+            os << OutString(t) << " mV" << '\n';
         }
     }
 
@@ -16716,9 +16798,11 @@ std::string Caller::vm_c(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 0) {
-            auto t = det->getMeasuredPower(defs::V_POWER_C,
-                                           std::vector<int>{det_id});
-            os << OutString(t) << '\n';
+            if (det_id != -1) {
+                throw RuntimeError("Cannot execute vm_c at module level");
+            }
+            auto t = det->getMeasuredPower(defs::V_POWER_C);
+            os << OutString(t) << " mV" << '\n';
         }
     }
 
@@ -16756,9 +16840,11 @@ std::string Caller::vm_d(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 0) {
-            auto t = det->getMeasuredPower(defs::V_POWER_D,
-                                           std::vector<int>{det_id});
-            os << OutString(t) << '\n';
+            if (det_id != -1) {
+                throw RuntimeError("Cannot execute vm_d at module level");
+            }
+            auto t = det->getMeasuredPower(defs::V_POWER_D);
+            os << OutString(t) << " mV" << '\n';
         }
     }
 
@@ -16796,9 +16882,11 @@ std::string Caller::vm_io(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 0) {
-            auto t = det->getMeasuredPower(defs::V_POWER_IO,
-                                           std::vector<int>{det_id});
-            os << OutString(t) << '\n';
+            if (det_id != -1) {
+                throw RuntimeError("Cannot execute vm_io at module level");
+            }
+            auto t = det->getMeasuredPower(defs::V_POWER_IO);
+            os << OutString(t) << " mV" << '\n';
         }
     }
 

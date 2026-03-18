@@ -218,6 +218,7 @@ class Caller {
     std::string port(int action);
     std::string power(int action);
     std::string powerchip(int action);
+    std::string powerdac(int action);
     std::string powerindex(int action);
     std::string powerlist(int action);
     std::string powername(int action);
@@ -417,10 +418,9 @@ class Caller {
     // applicable
     RegisterAddress getRegisterAddress(const std::string &saddr) const;
     BitAddress getBitAddress() const;
-    defs::dacIndex parsePowerIndex(int argIndex);
-    std::optional<defs::dacIndex> parseIfPowerIndex(int argIndex);
     defs::dacIndex parseDacIndex(int argIndex, bool isCtb);
     bool parseMV(int argIndex);
+    defs::powerIndex parsePowerIndex(int argIndex);
 
     FunctionMap functions{
         {"list", &Caller::list},
@@ -588,6 +588,7 @@ class Caller {
         {"port", &Caller::port},
         {"power", &Caller::power},
         {"powerchip", &Caller::powerchip},
+        {"powerdac", &Caller::powerdac},
         {"powerindex", &Caller::powerindex},
         {"powerlist", &Caller::powerlist},
         {"powername", &Caller::powername},

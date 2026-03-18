@@ -283,6 +283,20 @@ GET_IND_COMMAND:
       input_types: [ int ]
       output: [ OutString(t) ]
 
+GET_IND_COMMAND_NOID:
+  template: true
+  infer_action: true
+  help: ""
+  actions:
+    GET:
+      check_det_id: true
+      function: ''
+      argc: 0
+      input: [ 'VAL' ]
+      cast_input: [ false ]
+      input_types: [ int ]
+      output: [ OutString(t) ]
+
 CTB_NAMED_LIST:
   template: true
   infer_action: true
@@ -2088,85 +2102,99 @@ temp_slowadc:
       input: [ 'defs::SLOW_ADC_TEMP' ]
       output: [ OutString(t), '" °C"' ]
 
+
+
+################# GET_IND_COMMAND_NOID #######################
 vm_a:
-  inherit_actions: GET_IND_COMMAND
+  inherit_actions: GET_IND_COMMAND_NOID
   help: "\n\t[Ctb] Measured voltage of power supply a in mV."
   actions:
     GET:
       function: getMeasuredPower
       input: [ 'defs::V_POWER_A' ]
+      output: [ OutString(t), '" mV"' ]
 
 vm_b:
-  inherit_actions: GET_IND_COMMAND
+  inherit_actions: GET_IND_COMMAND_NOID
   help: "\n\t[Ctb] Measured voltage of power supply b in mV."
   actions:
     GET:
       function: getMeasuredPower
       input: [ 'defs::V_POWER_B' ]
+      output: [ OutString(t), '" mV"' ]
 
 vm_c:
-  inherit_actions: GET_IND_COMMAND
+  inherit_actions: GET_IND_COMMAND_NOID
   help: "\n\t[Ctb] Measured voltage of power supply c in mV."
   actions:
     GET:
       function: getMeasuredPower
       input: [ 'defs::V_POWER_C' ]
+      output: [ OutString(t), '" mV"' ]
 
 vm_d:
-  inherit_actions: GET_IND_COMMAND
+  inherit_actions: GET_IND_COMMAND_NOID
   help: "\n\t[Ctb] Measured voltage of power supply d in mV."
   actions:
     GET:
       function: getMeasuredPower
       input: [ 'defs::V_POWER_D' ]
+      output: [ OutString(t), '" mV"' ]
 
 vm_io:
-  inherit_actions: GET_IND_COMMAND
+  inherit_actions: GET_IND_COMMAND_NOID
   help: "\n\t[Ctb] Measured voltage of power supply io in mV."
   actions:
     GET:
       function: getMeasuredPower
       input: [ 'defs::V_POWER_IO' ]
+      output: [ OutString(t), '" mV"' ]
 
 im_a:
-  inherit_actions: GET_IND_COMMAND
+  inherit_actions: GET_IND_COMMAND_NOID
   help: "\n\t[Ctb] Measured current of power supply a in mA."
   actions:
     GET:
-      function: getMeasuredCurrent
+      function: getMeasuredPower
       input: [ 'defs::I_POWER_A' ]
+      output: [ OutString(t), '" mA"' ]
 
 im_b:
-  inherit_actions: GET_IND_COMMAND
+  inherit_actions: GET_IND_COMMAND_NOID
   help: "\n\t[Ctb] Measured current of power supply b in mA."
   actions:
     GET:
-      function: getMeasuredCurrent
+      function: getMeasuredPower
       input: [ 'defs::I_POWER_B' ]
+      output: [ OutString(t), '" mA"' ]
 
 im_c:
-  inherit_actions: GET_IND_COMMAND
+  inherit_actions: GET_IND_COMMAND_NOID
   help: "\n\t[Ctb] Measured current of power supply c in mA."
   actions:
     GET:
-      function: getMeasuredCurrent
+      function: getMeasuredPower
       input: [ 'defs::I_POWER_C' ]
+      output: [ OutString(t), '" mA"' ]
 
 im_d:
-  inherit_actions: GET_IND_COMMAND
+  inherit_actions: GET_IND_COMMAND_NOID
   help: "\n\t[Ctb] Measured current of power supply d in mA."
   actions:
     GET:
-      function: getMeasuredCurrent
+      function: getMeasuredPower
       input: [ 'defs::I_POWER_D' ]
+      output: [ OutString(t), '" mA"' ]
 
 im_io:
-  inherit_actions: GET_IND_COMMAND
+  inherit_actions: GET_IND_COMMAND_NOID
   help: "\n\t[Ctb] Measured current of power supply io in mA."
   actions:
     GET:
-      function: getMeasuredCurrent
+      function: getMeasuredPower
       input: [ 'defs::I_POWER_IO' ]
+      output: [ OutString(t), '" mA"' ]
+
 
 ################# CTB_NAMED_LIST #############################
 daclist:

@@ -2278,6 +2278,22 @@ int InferAction::powerchip() {
     }
 }
 
+int InferAction::powerdac() {
+
+    if (args.size() == 1) {
+        return slsDetectorDefs::GET_ACTION;
+    }
+
+    if (args.size() == 2) {
+        return slsDetectorDefs::PUT_ACTION;
+    }
+
+    else {
+
+        throw RuntimeError("Could not infer action: Wrong number of arguments");
+    }
+}
+
 int InferAction::powerindex() {
 
     if (args.size() == 1) {

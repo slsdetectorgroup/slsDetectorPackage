@@ -95,7 +95,7 @@ class Caller {
     BitAddress getBitAddress() const;
     defs::dacIndex parseDacIndex(int argIndex, bool isCtb);
     bool parseMV(int argIndex);
-    defs::dacIndex parsePowerIndex(int argIndex);
+    defs::powerIndex parsePowerIndex(int argIndex);
 
     FunctionMap functions{
         {"list", &Caller::list},

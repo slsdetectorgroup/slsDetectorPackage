@@ -2157,9 +2157,9 @@ Result<int> Detector::getRUNClock(Positions pos) const {
     return pimpl->Parallel(&Module::getClockFrequency, pos, defs::RUN_CLOCK);
 }
 
-void Detector::setRUNClock(int value_in_MHz, Positions pos) {
+void Detector::setRUNClock(int value_in_Hz, Positions pos) {
     pimpl->Parallel(&Module::setClockFrequency, pos, defs::RUN_CLOCK,
-                    value_in_MHz);
+                    value_in_Hz);
 }
 
 Result<int> Detector::getSYNCClock(Positions pos) const {

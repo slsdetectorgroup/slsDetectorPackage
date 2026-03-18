@@ -1622,8 +1622,8 @@ class Detector {
     /** [CTB] in MHz, [XCTB] in kHz */
     Result<int> getRUNClock(Positions pos = {}) const;
 
-    /** [CTB] in MHz, [XCTB] in kHz */
-    void setRUNClock(int value_in_MHz, Positions pos = {});
+    /** [CTB] in Hz, [XCTB] in Hz */
+    void setRUNClock(int value_in_Hz, Positions pos = {});
 
     /** [CTB]  in MHZ */
     Result<int> getSYNCClock(Positions pos = {}) const;

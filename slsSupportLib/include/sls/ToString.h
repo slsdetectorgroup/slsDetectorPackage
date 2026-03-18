@@ -353,4 +353,7 @@ std::vector<T> StringTo(const std::vector<std::string> &strings) {
     return result;
 }
 
+/** Convert frequency string with unit (MHz, kHz, Hz) to Hz */
+int StringToHz(const std::string &s, const std::string &unit);
+
 } // namespace sls

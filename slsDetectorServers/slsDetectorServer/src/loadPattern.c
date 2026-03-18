@@ -307,7 +307,9 @@ uint64_t getPatternWaitInterval(int level) {
         LOG(logERROR, ("runclk is 0. Cannot divide by 0. Returning -1.\n"));
         return -1;
     }
-    return numClocks / (NS_TO_CLK_CYCLE * runclk);
+    double conv = NS_TO_CLK_CYCLE * runclk;
+    uint64_t waitNs = (uint64_t)(numClocks / conv + 0.5);
+    return waitNs;
 }
 
 int validate_setPatternWaitClocksAndInterval(char *message, int level,

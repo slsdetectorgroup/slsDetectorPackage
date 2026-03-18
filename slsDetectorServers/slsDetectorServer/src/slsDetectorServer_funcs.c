@@ -5867,7 +5867,7 @@ int set_clock_frequency(int file_des) {
             if (getFrequency(c) == val) {
                 LOG(logINFO, ("Same %s: %d %s\n", modeName, val, "Hz"));
             } else {
-                int ret = setFrequency(c, val); // MM: Poblem
+                int ret = setFrequency(c, val);
                 if (ret == FAIL) {
                     sprintf(mess, "Could not set %s to %d %s\n", modeName, val,"Hz");
                     LOG(logERROR, (mess));

@@ -121,7 +121,7 @@ enum DACINDEX {
     D_PWR_C
 };
 
-#define PWR_NAMES "VA", "VB", "VC", "VD", "IO"
+#define PWR_NAMES "VA", "VB", "VC", "VD", "VIO"
 
 /* Struct Definitions */
 // For arm has to be multiple of 16

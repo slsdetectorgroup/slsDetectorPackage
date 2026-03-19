@@ -336,10 +336,7 @@ CTB_SINGLE_DACNAME:
       extra_variables:
         - name: index
           type: defs::dacIndex
-          value: 0  
-      exceptions:
-        - condition: 'det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD'
-          message: 'cmd + " only allowed for CTB."'
+          value: defs::DAC_0  
       check_det_id: true
       argc: 1
       input: [ "static_cast<defs::dacIndex>(StringTo<int>(args[0]) + index)" ]
@@ -350,10 +347,7 @@ CTB_SINGLE_DACNAME:
       extra_variables:
         - name: index
           type: defs::dacIndex
-          value: 0
-      exceptions:
-        - condition: 'det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD'
-          message: 'cmd + " only allowed for CTB."'
+          value: defs::DAC_0
       check_det_id: true
       argc: 2
       input: [ "static_cast<defs::dacIndex>(StringTo<int>(args[0]) + index)","args[1]" ]
@@ -368,12 +362,8 @@ CTB_GET_DACINDEX:
       extra_variables:
         - name: index
           type: defs::dacIndex
-          value: 0
-
+          value: defs::DAC_0
       check_det_id: true
-      exceptions:
-        - condition: 'det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD'
-          message: 'cmd + " only allowed for CTB."'
       argc: 1
       input: [ 'args[0]' ]
       input_types: [ std::string ]
@@ -385,9 +375,6 @@ CTB_SINGLE_NAME:
   actions:
     GET:
       check_det_id: true
-      exceptions:
-        - condition: 'det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD'
-          message: 'cmd + " only allowed for CTB."'
       argc: 1
       input: [ "args[0]" ]
       cast_input: [ true ]
@@ -395,9 +382,6 @@ CTB_SINGLE_NAME:
       output: [ 'args[0]',"' '", 't' ]
     PUT:
       check_det_id: true
-      exceptions:
-        - condition: 'det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD'
-          message: 'cmd + " only allowed for CTB."'
       argc: 2
       cast_input: [ true, false ]
       input: [ "args[0]","args[1]" ]
@@ -410,9 +394,6 @@ CTB_GET_INDEX:
   actions:
     GET:
       check_det_id: true
-      exceptions:
-        - condition: 'det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD'
-          message: 'cmd + " only allowed for CTB."'
       argc: 1
       input: [ 'args[0]' ]
       input_types: [ std::string ]
@@ -2287,21 +2268,28 @@ dacname:
           value: defs::DAC_0
 
 powername:
-  inherit_actions: CTB_SINGLE_DACNAME
   help: "[0-4][name] \n\t\t[Ctb][Xilinx_Ctb] Set the power at the given position to the given name."
+  infer_action: true
   actions:
     GET:
+      argc: 1
+      check_det_id: true
       function: getPowerName
-      extra_variables:
-        - name: index
-          type: defs::dacIndex
-          value: defs::V_POWER_A
+      input: [ 'args[0]' ]
+      arg_types: [ std::string ]
+      input_types: [ defs::powerIndex ]
+      cast_input: [ true ]
+      output: [ 'args[0]',"' '", 't' ]
     PUT:
+      argc: 2
+      check_det_id: true
       function: setPowerName
-      extra_variables:
-        - name: index
-          type: defs::dacIndex
-          value: defs::V_POWER_A
+      input: [ 'args[0]', 'args[1]' ]
+      arg_types: [ std::string, std::string ]
+      input_types: [ defs::powerIndex, std::string ]
+      cast_input: [ true, false ]
+      output: [ 'ToString(args)' ]
+
 
 slowadcname:
   inherit_actions: CTB_SINGLE_DACNAME
@@ -2338,10 +2326,7 @@ powerindex:
   actions:
     GET:
       function: getPowerIndex
-      extra_variables:
-        - name: index
-          type: defs::dacIndex
-          value: defs::V_POWER_A
+      output: [ 'ToString(t)' ]
 
 slowadcindex:
   inherit_actions: CTB_GET_DACINDEX

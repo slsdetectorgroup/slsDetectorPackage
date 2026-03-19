@@ -632,9 +632,9 @@ TEST_CASE("powerdac", "[.detectorintegration][dacs]") {
 
                 // this is the first command touching power dacs, should not be
                 // -100
-                REQUIRE(prev_val.any(-100) == false);
-                REQUIRE(prev_val.any(-1) == false);
-                REQUIRE(prev_val.any(0) == false);
+                REQUIRE(prev_val != -100);
+                REQUIRE(prev_val != -1);
+                REQUIRE(prev_val != 0);
 
                 REQUIRE_THROWS(
                     caller.call("powerdac", {names[iPower], "-2"}, -1, PUT));
@@ -708,7 +708,7 @@ TEST_CASE("powerdac", "[.detectorintegration][dacs]") {
                 }
 
                 // Reset all dacs to previous value
-                det.setPowerDAC(indices[iPower], prev_val, true);
+                det.setPowerDAC(indices[iPower], prev_val);
                 det.setPowerEnabled(std::vector{indices[iPower]},
                                     prev_val_power);
             }
@@ -907,31 +907,29 @@ TEST_CASE("v_limit", "[.detectorintegration]") {
 
     if (det_type == defs::CHIPTESTBOARD ||
         det_type == defs::XILINX_CHIPTESTBOARD) {
-        auto prev_val = det.getDAC(defs::V_LIMIT, true);
+        auto prev_val = det.getVoltageLimit();
         auto prev_dac_val = det.getDAC(defs::DAC_0, false);
 
         REQUIRE_THROWS(caller.call("v_limit", {"1200", "mV"}, -1, PUT));
         REQUIRE_THROWS(caller.call("v_limit", {"-100"}, -1, PUT));
-        REQUIRE_THROWS(caller.call("v_limit", {"-100", "mV"}, -1, PUT));
-        REQUIRE_THROWS(caller.call("v_limit", {"0", "mV"}, -1, PUT));
         {
             std::ostringstream oss;
             caller.call("v_limit", {"0"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "v_limit 0 mV\n");
+            REQUIRE(oss.str() == "v_limit 0\n");
         }
         {
             std::ostringstream oss;
             caller.call("v_limit", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "v_limit 0 mV\n");
+            REQUIRE(oss.str() == "v_limit 0\n");
         }
         {
             std::ostringstream oss;
             caller.call("v_limit", {"1500"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "v_limit 1500 mV\n");
+            REQUIRE(oss.str() == "v_limit 1500\n");
             REQUIRE_THROWS(caller.call("dac", {"0", "1501", "mV"}, -1, PUT));
         }
         for (int i = 0; i != det.size(); ++i) {
-            det.setDAC(defs::V_LIMIT, prev_val[i], true, {i});
+            det.setVoltageLimit(prev_val);
             det.setDAC(defs::DAC_0, prev_dac_val[i], false, {i});
         }
     } else {
@@ -1211,11 +1209,10 @@ TEST_CASE("power", "[.detectorintegration]") {
         det_type == defs::XILINX_CHIPTESTBOARD) {
 
         std::vector<std::string> cmds{"v_a", "v_b", "v_c", "v_d", "v_io"};
-        auto indices = det->getPowerList();
+        auto indices = det.getPowerList();
         std::vector<bool> prev_val(cmds.size());
         for (size_t iPower = 0; iPower < cmds.size(); ++iPower) {
-            prev_val[iPower] = det.isPowerEnabled(indices[iPower])
-                                   .tsquash("Inconsistent power enabled state");
+            prev_val[iPower] = det.isPowerEnabled(indices[iPower]);
         }
 
         REQUIRE_THROWS(caller.call("power", {"vrandom"}, -1, GET));

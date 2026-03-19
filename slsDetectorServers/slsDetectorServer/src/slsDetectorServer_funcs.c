@@ -1326,27 +1326,6 @@ int processDACEnums(enum dacIndex ind, int val, bool mV) {
             ret = getHighVoltage(&retval, mess);
         return retval;
 
-    case V_POWER_CHIP:
-        if (val != GET_FLAG) {
-            ret = FAIL;
-            sprintf(
-                mess,
-                "Can not set Vchip. Can only be set automatically in the "
-                "background (+200mV from highest power regulator voltage).\n");
-            LOG(logERROR, (mess));
-            return retval;
-        }
-        if (!mV) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Could not get vchip. Can get Vchip only in mV and not dac "
-                    "units.\n");
-            LOG(logERROR, (mess));
-            return retval;
-        }
-        ret = getVchip(&retval, mess);
-        return retval;
-
     default:
         serverDacIndex = getDACIndex(ind);
         if (ret == FAIL)
@@ -11252,15 +11231,11 @@ int get_power(int file_des) {
     if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
         return printSocketReadError();
 
-    LOG(logDEBUG1, ("Getting power rail enable for power %d\n", arg));
-
-    enum DACINDEX serverDacIndex = getDACIndex((enum dacIndex)arg);
-    if (ret == FAIL) {
-        return Server_SendResult(file_des, INT32, NULL, 0);
-    }
+    LOG(logDEBUG1, ("Getting power enable for power %d\n", arg));
+    enum powerIndex index = (enum powerIndex)arg;
 
     bool b_retval = false;
-    ret = isPowerRailEnabled(serverDacIndex, &b_retval, mess);
+    ret = isPowerEnabled(index, &b_retval, mess);
     retval = (int)b_retval;
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
@@ -11289,22 +11264,15 @@ int set_power(int file_des) {
     LOG(logDEBUG1, ("Setting %d Power rails to %d\n", count, enable));
 
     if (Server_VerifyLock() == OK) {
-
-        enum DACINDEX serverDacIndices[count] = {};
+        enum powerIndex indices[count];
         for (int iPower = 0; iPower != count; ++iPower) {
-            enum dacIndex ind = (enum dacIndex)args[iPower];
-            serverDacIndices[iPower] = getDACIndex(ind);
-            if (ret == FAIL) {
-                return Server_SendResult(file_des, INT32, NULL, 0);
-            }
+            indices[iPower] = (enum powerIndex)args[iPower];
         }
-
-        ret = setPowerRailEnabled(serverDacIndices, count, enable, mess);
+        ret = setPowerEnabled(indices, count, enable, mess);
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
-
 
 int get_power_dac(int file_des) {
     ret = OK;
@@ -11316,7 +11284,7 @@ int get_power_dac(int file_des) {
     // index
     int arg = -1;
     if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
-        return printSocketReadError();  
+        return printSocketReadError();
     LOG(logDEBUG1, ("Getting power DAC value for DAC %d\n", arg));
 
     ret = getPowerDAC((enum powerIndex)arg, &retval, mess);

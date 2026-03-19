@@ -201,10 +201,6 @@ adcindex:
         - false
         check_det_id: true
         convert_det_id: true
-        exceptions:
-        - condition: det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD
-            && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD
-          message: cmd + " only allowed for CTB."
         function: getAdcIndex
         input:
         - args[0]
@@ -329,10 +325,6 @@ adcname:
         - true
         check_det_id: true
         convert_det_id: true
-        exceptions:
-        - condition: det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD
-            && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD
-          message: cmd + " only allowed for CTB."
         function: getAdcName
         input:
         - args[0]
@@ -355,10 +347,6 @@ adcname:
         - false
         check_det_id: true
         convert_det_id: true
-        exceptions:
-        - condition: det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD
-            && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD
-          message: cmd + " only allowed for CTB."
         function: setAdcName
         input:
         - args[0]
@@ -1841,10 +1829,6 @@ dacindex:
         - false
         check_det_id: true
         convert_det_id: true
-        exceptions:
-        - condition: det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD
-            && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD
-          message: cmd + " only allowed for CTB."
         extra_variables:
         - name: index
           type: defs::dacIndex
@@ -1934,10 +1918,6 @@ dacname:
         - false
         check_det_id: true
         convert_det_id: true
-        exceptions:
-        - condition: det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD
-            && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD
-          message: cmd + " only allowed for CTB."
         extra_variables:
         - name: index
           type: defs::dacIndex
@@ -1964,10 +1944,6 @@ dacname:
         - false
         check_det_id: true
         convert_det_id: true
-        exceptions:
-        - condition: det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD
-            && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD
-          message: cmd + " only allowed for CTB."
         extra_variables:
         - name: index
           type: defs::dacIndex
@@ -7376,21 +7352,17 @@ powerindex:
         - false
         check_det_id: true
         convert_det_id: true
-        exceptions:
-        - condition: det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD
-            && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD
-          message: cmd + " only allowed for CTB."
         extra_variables:
         - name: index
           type: defs::dacIndex
-          value: defs::V_POWER_A
+          value: defs::DAC_0
         function: getPowerIndex
         input:
         - args[0]
         input_types:
         - std::string
         output:
-        - ToString(static_cast<int>(t) - index)
+        - ToString(t)
         require_det_id: false
         store_result_in_t: true
   command_name: powerindex
@@ -7462,25 +7434,17 @@ powername:
     GET:
       args:
       - arg_types:
-        - defs::dacIndex
+        - std::string
         argc: 1
         cast_input:
-        - false
+        - true
         check_det_id: true
         convert_det_id: true
-        exceptions:
-        - condition: det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD
-            && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD
-          message: cmd + " only allowed for CTB."
-        extra_variables:
-        - name: index
-          type: defs::dacIndex
-          value: defs::V_POWER_A
         function: getPowerName
         input:
-        - static_cast<defs::dacIndex>(StringTo<int>(args[0]) + index)
+        - args[0]
         input_types:
-        - defs::dacIndex
+        - defs::powerIndex
         output:
         - args[0]
         - ''' '''
@@ -7490,28 +7454,20 @@ powername:
     PUT:
       args:
       - arg_types:
-        - defs::dacIndex
+        - std::string
         - std::string
         argc: 2
         cast_input:
-        - false
+        - true
         - false
         check_det_id: true
         convert_det_id: true
-        exceptions:
-        - condition: det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD
-            && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD
-          message: cmd + " only allowed for CTB."
-        extra_variables:
-        - name: index
-          type: defs::dacIndex
-          value: defs::V_POWER_A
         function: setPowerName
         input:
-        - static_cast<defs::dacIndex>(StringTo<int>(args[0]) + index)
+        - args[0]
         - args[1]
         input_types:
-        - defs::dacIndex
+        - defs::powerIndex
         - std::string
         output:
         - ToString(args)
@@ -7522,7 +7478,6 @@ powername:
   help: "[0-4][name] \n\t\t[Ctb][Xilinx_Ctb] Set the power at the given position to\
     \ the given name."
   infer_action: true
-  template: true
 powervalues:
   actions:
     GET:
@@ -9807,10 +9762,6 @@ signalindex:
         - false
         check_det_id: true
         convert_det_id: true
-        exceptions:
-        - condition: det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD
-            && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD
-          message: cmd + " only allowed for CTB."
         function: getSignalIndex
         input:
         - args[0]
@@ -9895,10 +9846,6 @@ signalname:
         - true
         check_det_id: true
         convert_det_id: true
-        exceptions:
-        - condition: det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD
-            && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD
-          message: cmd + " only allowed for CTB."
         function: getSignalName
         input:
         - args[0]
@@ -9921,10 +9868,6 @@ signalname:
         - false
         check_det_id: true
         convert_det_id: true
-        exceptions:
-        - condition: det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD
-            && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD
-          message: cmd + " only allowed for CTB."
         function: setSignalName
         input:
         - args[0]
@@ -10008,10 +9951,6 @@ slowadcindex:
         - false
         check_det_id: true
         convert_det_id: true
-        exceptions:
-        - condition: det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD
-            && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD
-          message: cmd + " only allowed for CTB."
         extra_variables:
         - name: index
           type: defs::dacIndex
@@ -10100,10 +10039,6 @@ slowadcname:
         - false
         check_det_id: true
         convert_det_id: true
-        exceptions:
-        - condition: det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD
-            && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD
-          message: cmd + " only allowed for CTB."
         extra_variables:
         - name: index
           type: defs::dacIndex
@@ -10130,10 +10065,6 @@ slowadcname:
         - false
         check_det_id: true
         convert_det_id: true
-        exceptions:
-        - condition: det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD
-            && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD
-          message: cmd + " only allowed for CTB."
         extra_variables:
         - name: index
           type: defs::dacIndex

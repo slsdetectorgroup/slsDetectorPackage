@@ -2088,7 +2088,7 @@ std::string Caller::powervalues(int action) {
         while (it != t.cend()) {
             if (it != t.cbegin())
                 os << ", ";
-            os << ToString(*name_it++) << ': [';
+            os << ToString(*name_it++) << ": [";
             os << ToString(det->isPowerEnabled(*it), defs::OnOff) << ", ";
             os << det->getPowerDAC(*it) << " mV ]";
             ++it;

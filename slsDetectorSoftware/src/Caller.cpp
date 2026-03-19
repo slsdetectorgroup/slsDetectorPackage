@@ -285,12 +285,6 @@ std::string Caller::adcindex(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
-            if (det->getDetectorType().squash(defs::GENERIC) !=
-                    defs::CHIPTESTBOARD &&
-                det->getDetectorType().squash(defs::GENERIC) !=
-                    defs::XILINX_CHIPTESTBOARD) {
-                throw RuntimeError(cmd + " only allowed for CTB.");
-            }
             if (det_id != -1) {
                 throw RuntimeError("Cannot execute adcindex at module level");
             }
@@ -492,12 +486,6 @@ std::string Caller::adcname(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
-            if (det->getDetectorType().squash(defs::GENERIC) !=
-                    defs::CHIPTESTBOARD &&
-                det->getDetectorType().squash(defs::GENERIC) !=
-                    defs::XILINX_CHIPTESTBOARD) {
-                throw RuntimeError(cmd + " only allowed for CTB.");
-            }
             if (det_id != -1) {
                 throw RuntimeError("Cannot execute adcname at module level");
             }
@@ -509,12 +497,6 @@ std::string Caller::adcname(int action) {
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 2) {
-            if (det->getDetectorType().squash(defs::GENERIC) !=
-                    defs::CHIPTESTBOARD &&
-                det->getDetectorType().squash(defs::GENERIC) !=
-                    defs::XILINX_CHIPTESTBOARD) {
-                throw RuntimeError(cmd + " only allowed for CTB.");
-            }
             if (det_id != -1) {
                 throw RuntimeError("Cannot execute adcname at module level");
             }
@@ -2262,12 +2244,6 @@ std::string Caller::dacindex(int action) {
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
             defs::dacIndex index = defs::DAC_0;
-            if (det->getDetectorType().squash(defs::GENERIC) !=
-                    defs::CHIPTESTBOARD &&
-                det->getDetectorType().squash(defs::GENERIC) !=
-                    defs::XILINX_CHIPTESTBOARD) {
-                throw RuntimeError(cmd + " only allowed for CTB.");
-            }
             if (det_id != -1) {
                 throw RuntimeError("Cannot execute dacindex at module level");
             }
@@ -2400,12 +2376,6 @@ std::string Caller::dacname(int action) {
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
             defs::dacIndex index = defs::DAC_0;
-            if (det->getDetectorType().squash(defs::GENERIC) !=
-                    defs::CHIPTESTBOARD &&
-                det->getDetectorType().squash(defs::GENERIC) !=
-                    defs::XILINX_CHIPTESTBOARD) {
-                throw RuntimeError(cmd + " only allowed for CTB.");
-            }
             if (det_id != -1) {
                 throw RuntimeError("Cannot execute dacname at module level");
             }
@@ -2418,12 +2388,6 @@ std::string Caller::dacname(int action) {
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 2) {
             defs::dacIndex index = defs::DAC_0;
-            if (det->getDetectorType().squash(defs::GENERIC) !=
-                    defs::CHIPTESTBOARD &&
-                det->getDetectorType().squash(defs::GENERIC) !=
-                    defs::XILINX_CHIPTESTBOARD) {
-                throw RuntimeError(cmd + " only allowed for CTB.");
-            }
             if (det_id != -1) {
                 throw RuntimeError("Cannot execute dacname at module level");
             }
@@ -8950,7 +8914,7 @@ std::string Caller::powerindex(int action) {
         }
 
         if (args.size() == 1) {
-            defs::dacIndex index = defs::V_POWER_A;
+            defs::dacIndex index = defs::DAC_0;
         }
 
     }
@@ -8964,18 +8928,12 @@ std::string Caller::powerindex(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
-            defs::dacIndex index = defs::V_POWER_A;
-            if (det->getDetectorType().squash(defs::GENERIC) !=
-                    defs::CHIPTESTBOARD &&
-                det->getDetectorType().squash(defs::GENERIC) !=
-                    defs::XILINX_CHIPTESTBOARD) {
-                throw RuntimeError(cmd + " only allowed for CTB.");
-            }
+            defs::dacIndex index = defs::DAC_0;
             if (det_id != -1) {
                 throw RuntimeError("Cannot execute powerindex at module level");
             }
             auto t = det->getPowerIndex(args[0]);
-            os << ToString(static_cast<int>(t) - index) << '\n';
+            os << ToString(t) << '\n';
         }
     }
 
@@ -9076,7 +9034,12 @@ std::string Caller::powername(int action) {
         }
 
         if (args.size() == 1) {
-            defs::dacIndex index = defs::V_POWER_A;
+            try {
+                StringTo<defs::powerIndex>(args[0]);
+            } catch (...) {
+                throw RuntimeError(
+                    "Could not convert argument 0 to defs::powerIndex");
+            }
         }
 
     }
@@ -9087,7 +9050,12 @@ std::string Caller::powername(int action) {
         }
 
         if (args.size() == 2) {
-            defs::dacIndex index = defs::V_POWER_A;
+            try {
+                StringTo<defs::powerIndex>(args[0]);
+            } catch (...) {
+                throw RuntimeError(
+                    "Could not convert argument 0 to defs::powerIndex");
+            }
         }
 
     }
@@ -9101,37 +9069,22 @@ std::string Caller::powername(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
-            defs::dacIndex index = defs::V_POWER_A;
-            if (det->getDetectorType().squash(defs::GENERIC) !=
-                    defs::CHIPTESTBOARD &&
-                det->getDetectorType().squash(defs::GENERIC) !=
-                    defs::XILINX_CHIPTESTBOARD) {
-                throw RuntimeError(cmd + " only allowed for CTB.");
-            }
             if (det_id != -1) {
                 throw RuntimeError("Cannot execute powername at module level");
             }
-            auto t = det->getPowerName(
-                static_cast<defs::dacIndex>(StringTo<int>(args[0]) + index));
+            auto arg0 = StringTo<defs::powerIndex>(args[0]);
+            auto t = det->getPowerName(arg0);
             os << args[0] << ' ' << t << '\n';
         }
     }
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 2) {
-            defs::dacIndex index = defs::V_POWER_A;
-            if (det->getDetectorType().squash(defs::GENERIC) !=
-                    defs::CHIPTESTBOARD &&
-                det->getDetectorType().squash(defs::GENERIC) !=
-                    defs::XILINX_CHIPTESTBOARD) {
-                throw RuntimeError(cmd + " only allowed for CTB.");
-            }
             if (det_id != -1) {
                 throw RuntimeError("Cannot execute powername at module level");
             }
-            det->setPowerName(
-                static_cast<defs::dacIndex>(StringTo<int>(args[0]) + index),
-                args[1]);
+            auto arg0 = StringTo<defs::powerIndex>(args[0]);
+            det->setPowerName(arg0, args[1]);
             os << ToString(args) << '\n';
         }
     }
@@ -12117,12 +12070,6 @@ std::string Caller::signalindex(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
-            if (det->getDetectorType().squash(defs::GENERIC) !=
-                    defs::CHIPTESTBOARD &&
-                det->getDetectorType().squash(defs::GENERIC) !=
-                    defs::XILINX_CHIPTESTBOARD) {
-                throw RuntimeError(cmd + " only allowed for CTB.");
-            }
             if (det_id != -1) {
                 throw RuntimeError(
                     "Cannot execute signalindex at module level");
@@ -12262,12 +12209,6 @@ std::string Caller::signalname(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
-            if (det->getDetectorType().squash(defs::GENERIC) !=
-                    defs::CHIPTESTBOARD &&
-                det->getDetectorType().squash(defs::GENERIC) !=
-                    defs::XILINX_CHIPTESTBOARD) {
-                throw RuntimeError(cmd + " only allowed for CTB.");
-            }
             if (det_id != -1) {
                 throw RuntimeError("Cannot execute signalname at module level");
             }
@@ -12279,12 +12220,6 @@ std::string Caller::signalname(int action) {
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 2) {
-            if (det->getDetectorType().squash(defs::GENERIC) !=
-                    defs::CHIPTESTBOARD &&
-                det->getDetectorType().squash(defs::GENERIC) !=
-                    defs::XILINX_CHIPTESTBOARD) {
-                throw RuntimeError(cmd + " only allowed for CTB.");
-            }
             if (det_id != -1) {
                 throw RuntimeError("Cannot execute signalname at module level");
             }
@@ -12330,12 +12265,6 @@ std::string Caller::slowadcindex(int action) {
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
             defs::dacIndex index = defs::SLOW_ADC0;
-            if (det->getDetectorType().squash(defs::GENERIC) !=
-                    defs::CHIPTESTBOARD &&
-                det->getDetectorType().squash(defs::GENERIC) !=
-                    defs::XILINX_CHIPTESTBOARD) {
-                throw RuntimeError(cmd + " only allowed for CTB.");
-            }
             if (det_id != -1) {
                 throw RuntimeError(
                     "Cannot execute slowadcindex at module level");
@@ -12469,12 +12398,6 @@ std::string Caller::slowadcname(int action) {
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
             defs::dacIndex index = defs::SLOW_ADC0;
-            if (det->getDetectorType().squash(defs::GENERIC) !=
-                    defs::CHIPTESTBOARD &&
-                det->getDetectorType().squash(defs::GENERIC) !=
-                    defs::XILINX_CHIPTESTBOARD) {
-                throw RuntimeError(cmd + " only allowed for CTB.");
-            }
             if (det_id != -1) {
                 throw RuntimeError(
                     "Cannot execute slowadcname at module level");
@@ -12488,12 +12411,6 @@ std::string Caller::slowadcname(int action) {
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 2) {
             defs::dacIndex index = defs::SLOW_ADC0;
-            if (det->getDetectorType().squash(defs::GENERIC) !=
-                    defs::CHIPTESTBOARD &&
-                det->getDetectorType().squash(defs::GENERIC) !=
-                    defs::XILINX_CHIPTESTBOARD) {
-                throw RuntimeError(cmd + " only allowed for CTB.");
-            }
             if (det_id != -1) {
                 throw RuntimeError(
                     "Cannot execute slowadcname at module level");

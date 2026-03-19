@@ -2179,21 +2179,16 @@ std::vector<defs::powerIndex> Detector::getPowerList() const {
 
 int Detector::getPowerDAC(defs::powerIndex index) const {
     pimpl->verifyChipTestBoard(__func__);
-    return pimpl->Parallel(&Module::getPowerDac, {0}, index)[0];
+    return pimpl->Parallel(&Module::getPowerDAC, {0}, index)[0];
 }
 
 void Detector::setPowerDAC(defs::powerIndex index, int value) {
     pimpl->verifyChipTestBoard(__func__);
-    pimpl->Parallel(&Module::setPowerDac, {0}, index, value);
+    pimpl->Parallel(&Module::setPowerDAC, {0}, index, value);
 }
 
 bool Detector::isPowerEnabled(defs::powerIndex index) const {
     pimpl->verifyChipTestBoard(__func__);
-    std::vector<defs::powerIndex> valid_indices = getPowerList();
-    if (std::find(valid_indices.begin(), valid_indices.end(), index) ==
-        valid_indices.end()) {
-        throw RuntimeError("Unknown Power Index " + std::to_string(index));
-    }
     return pimpl->Parallel(&Module::isPowerEnabled, {0}, index)[0];
 }
 
@@ -2202,13 +2197,6 @@ void Detector::setPowerEnabled(const std::vector<defs::powerIndex> &indices,
     pimpl->verifyChipTestBoard(__func__);
     if (indices.empty()) {
         throw RuntimeError("No Power Index provided");
-    }
-    std::vector<defs::powerIndex> valid_indices = getPowerList();
-    for (const auto &index : indices) {
-        if (std::find(valid_indices.begin(), valid_indices.end(), index) ==
-            valid_indices.end()) {
-            throw RuntimeError("Unknown Power Index " + std::to_string(index));
-        }
     }
     pimpl->Parallel(&Module::setPowerEnabled, {0}, indices, enable);
 }
@@ -2481,20 +2469,20 @@ std::vector<std::string> Detector::getPowerNames() const {
     return pimpl->getCtbPowerNames();
 }
 
-defs::dacIndex Detector::getPowerIndex(const std::string &name) const {
+defs::powerIndex Detector::getPowerIndex(const std::string &name) const {
     auto names = getPowerNames();
     auto it = std::find(names.begin(), names.end(), name);
     if (it == names.end())
         throw RuntimeError("Power name not found");
-    return static_cast<defs::dacIndex>(it - names.begin() + defs::V_POWER_A);
+    return static_cast<defs::powerIndex>(it - names.begin());
 }
 
-void Detector::setPowerName(const defs::dacIndex index,
+void Detector::setPowerName(const defs::powerIndex index,
                             const std::string &name) {
     pimpl->setCtbPowerName(index, name);
 }
 
-std::string Detector::getPowerName(const defs::dacIndex i) const {
+std::string Detector::getPowerName(const defs::powerIndex i) const {
     return pimpl->getCtbPowerName(i);
 }
 

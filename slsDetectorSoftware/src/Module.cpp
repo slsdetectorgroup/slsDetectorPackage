@@ -839,7 +839,11 @@ void Module::setPowerEnabled(const std::vector<defs::powerIndex> &indices,
     client.setFnum(F_SET_POWER);
     int count = indices.size();
     client.Send(count);
-    client.Send(indices);
+    std::vector<int> indices_int(count);
+    for (size_t i = 0; i < indices.size(); ++i) {
+        indices_int[i] = static_cast<int>(indices[i]);
+    }
+    client.Send(indices_int);
     client.Send(static_cast<int>(enable));
     if (client.Receive<int>() == FAIL) {
         throw DetectorError("Detector " + std::to_string(moduleIndex) +

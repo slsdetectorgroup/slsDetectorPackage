@@ -20,11 +20,11 @@ CtbConfig::CtbConfig() {
     for (size_t i = 0; i != num_signals; ++i) {
         setSignalName(i, "BIT" + ToString(i));
     }
-    setPowerName(0, "VA");
-    setPowerName(1, "VB");
-    setPowerName(2, "VC");
-    setPowerName(3, "VD");
-    setPowerName(4, "VIO");
+    setPowerName(static_cast<int>(defs::V_POWER_A), "VA");
+    setPowerName(static_cast<int>(defs::V_POWER_B), "VB");
+    setPowerName(static_cast<int>(defs::V_POWER_C), "VC");
+    setPowerName(static_cast<int>(defs::V_POWER_D), "VD");
+    setPowerName(static_cast<int>(defs::V_POWER_IO), "VIO");
     for (size_t i = 0; i != num_slowADCs; ++i) {
         setSlowADCName(i, "SLOWADC" + ToString(i));
     }

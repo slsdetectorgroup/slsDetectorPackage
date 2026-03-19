@@ -333,9 +333,9 @@ class DetectorImpl : public virtual slsDetectorDefs {
     void setCtbSignalName(const int index, const std::string &name);
 
     std::vector<std::string> getCtbPowerNames() const;
-    std::string getCtbPowerName(const defs::dacIndex i) const;
+    std::string getCtbPowerName(const defs::powerIndex i) const;
     void setCtbPowerNames(const std::vector<std::string> &names);
-    void setCtbPowerName(const defs::dacIndex index, const std::string &name);
+    void setCtbPowerName(const defs::powerIndex index, const std::string &name);
 
     std::vector<std::string> getCtbSlowADCNames() const;
     std::string getCtbSlowADCName(const defs::dacIndex i) const;

@@ -9034,12 +9034,6 @@ std::string Caller::powername(int action) {
         }
 
         if (args.size() == 1) {
-            try {
-                StringTo<defs::powerIndex>(args[0]);
-            } catch (...) {
-                throw RuntimeError(
-                    "Could not convert argument 0 to defs::powerIndex");
-            }
         }
 
     }
@@ -9050,12 +9044,6 @@ std::string Caller::powername(int action) {
         }
 
         if (args.size() == 2) {
-            try {
-                StringTo<defs::powerIndex>(args[0]);
-            } catch (...) {
-                throw RuntimeError(
-                    "Could not convert argument 0 to defs::powerIndex");
-            }
         }
 
     }
@@ -9072,8 +9060,8 @@ std::string Caller::powername(int action) {
             if (det_id != -1) {
                 throw RuntimeError("Cannot execute powername at module level");
             }
-            auto arg0 = StringTo<defs::powerIndex>(args[0]);
-            auto t = det->getPowerName(arg0);
+            auto t = det->getPowerName(
+                static_cast<defs::powerIndex>(StringTo<int>(args[0])));
             os << args[0] << ' ' << t << '\n';
         }
     }
@@ -9083,8 +9071,8 @@ std::string Caller::powername(int action) {
             if (det_id != -1) {
                 throw RuntimeError("Cannot execute powername at module level");
             }
-            auto arg0 = StringTo<defs::powerIndex>(args[0]);
-            det->setPowerName(arg0, args[1]);
+            det->setPowerName(
+                static_cast<defs::powerIndex>(StringTo<int>(args[0])), args[1]);
             os << ToString(args) << '\n';
         }
     }

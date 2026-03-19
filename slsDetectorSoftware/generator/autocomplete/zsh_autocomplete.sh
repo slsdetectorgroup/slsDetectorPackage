@@ -1819,12 +1819,12 @@ __powername() {
 FCN_RETURN=""
 if [[ ${IS_GET} -eq 1 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN=""
+FCN_RETURN="v_a v_b v_c v_chip v_d v_io"
 fi
 fi
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN=""
+FCN_RETURN="v_a v_b v_c v_chip v_d v_io"
 fi
 if [[ "${cword}" == "3" ]]; then
 FCN_RETURN=""

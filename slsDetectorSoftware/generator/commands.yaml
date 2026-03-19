@@ -2275,19 +2275,15 @@ powername:
       argc: 1
       check_det_id: true
       function: getPowerName
-      input: [ 'args[0]' ]
-      arg_types: [ std::string ]
+      input: [ 'static_cast<defs::powerIndex>(StringTo<int>(args[0]))' ]
       input_types: [ defs::powerIndex ]
-      cast_input: [ true ]
       output: [ 'args[0]',"' '", 't' ]
     PUT:
       argc: 2
       check_det_id: true
       function: setPowerName
-      input: [ 'args[0]', 'args[1]' ]
-      arg_types: [ std::string, std::string ]
+      input: [ 'static_cast<defs::powerIndex>(StringTo<int>(args[0]))', 'args[1]' ]
       input_types: [ defs::powerIndex, std::string ]
-      cast_input: [ true, false ]
       output: [ 'ToString(args)' ]
 
 
@@ -2807,6 +2803,7 @@ powervalues:
         GET:
           args:
             - argc: 0
+
 
 ################# special commands ##########################
 

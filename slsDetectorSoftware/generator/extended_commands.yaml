@@ -7434,15 +7434,15 @@ powername:
     GET:
       args:
       - arg_types:
-        - std::string
+        - defs::powerIndex
         argc: 1
         cast_input:
-        - true
+        - false
         check_det_id: true
         convert_det_id: true
         function: getPowerName
         input:
-        - args[0]
+        - static_cast<defs::powerIndex>(StringTo<int>(args[0]))
         input_types:
         - defs::powerIndex
         output:
@@ -7454,17 +7454,17 @@ powername:
     PUT:
       args:
       - arg_types:
-        - std::string
+        - defs::powerIndex
         - std::string
         argc: 2
         cast_input:
-        - true
+        - false
         - false
         check_det_id: true
         convert_det_id: true
         function: setPowerName
         input:
-        - args[0]
+        - static_cast<defs::powerIndex>(StringTo<int>(args[0]))
         - args[1]
         input_types:
         - defs::powerIndex

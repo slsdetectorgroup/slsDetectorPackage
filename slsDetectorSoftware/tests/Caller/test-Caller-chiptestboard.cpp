@@ -714,7 +714,27 @@ TEST_CASE("adcclk", "[.detectorintegration]") {
         {
             std::ostringstream oss;
             caller.call("adcclk", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "adcclk 10\n");
+            REQUIRE(oss.str() == "adcclk 10000000\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("adcclk", {"15000", "kHz"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "adcclk 15000kHz\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("adcclk", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "adcclk 15000000\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("adcclk", {"5.75", "MHz"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "adcclk 5.75MHz\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("adcclk", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "adcclk 5750000\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setADCClock(prev_val[i], {i});
@@ -745,7 +765,27 @@ TEST_CASE("runclk", "[.detectorintegration]") {
         {
             std::ostringstream oss;
             caller.call("runclk", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "runclk 10\n");
+            REQUIRE(oss.str() == "runclk 10000000\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("runclk", {"15000", "kHz"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "runclk 15000kHz\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("runclk", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "runclk 15000000\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("runclk", {"5.75", "MHz"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "runclk 5.75MHz\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("runclk", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "runclk 5750000\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setRUNClock(prev_val[i], {i});
@@ -1042,7 +1082,27 @@ TEST_CASE("dbitclk", "[.detectorintegration]") {
         {
             std::ostringstream oss;
             caller.call("dbitclk", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "dbitclk 10\n");
+            REQUIRE(oss.str() == "dbitclk 10000000\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("dbitclk", {"15000", "kHz"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "dbitclk 15000kHz\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("dbitclk", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "dbitclk 15000000\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("dbitclk", {"5.75", "MHz"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "dbitclk 5.75MHz\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("dbitclk", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "dbitclk 5750000\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setDBITClock(prev_val[i], {i});

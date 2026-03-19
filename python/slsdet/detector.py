@@ -3520,15 +3520,22 @@ class Detector(CppDetectorApi):
     @element
     def runclk(self):
         """
-        [Ctb] Sets Run clock frequency in MHz. \n
-        [Xilinx Ctb] Sets Run clock frequency in kHz.
+        [Ctb][Xilinx Ctb] Sets Run clock frequency in MHz. \n
+        Accepts floating point inputs
         """
 
-        return self.getRUNClock()
+        freq_hz = element_if_equal(self.getRUNClock())
+        if isinstance(freq_hz, list):
+            return [value / 1e6 for value in freq_hz]
+        return freq_hz / 1e6
 
     @runclk.setter
     def runclk(self, freq):
-        ut.set_using_dict(self.setRUNClock, freq)
+        if isinstance(freq, dict):
+            freq_hz = {key: int(round(value * 1e6)) for key, value in freq.items()}
+        else:
+            freq_hz = int(round(freq * 1e6))
+        ut.set_using_dict(self.setRUNClock, freq_hz)
 
     @property
     @element
@@ -3605,15 +3612,21 @@ class Detector(CppDetectorApi):
     @element
     def dbitclk(self):
         """
-        [Ctb] Sets clock for latching the digital bits in MHz. \n
-        [Xilinx Ctb] clock for latching the digital bits in kHz.
+        [Ctb][Xilinx Ctb] Sets clock for latching the digital bits in MHz. \n
+        Accepts floating point inputs
         """
-
-        return self.getDBITClock()
+        freq_hz = element_if_equal(self.getDBITClock())
+        if isinstance(freq_hz, list):
+            return [value / 1e6 for value in freq_hz]
+        return freq_hz / 1e6
 
     @dbitclk.setter
     def dbitclk(self, value):
-        ut.set_using_dict(self.setDBITClock, value)
+        if isinstance(value, dict):
+            value_hz = {key: int(round(item * 1e6)) for key, item in value.items()}
+        else:
+            value_hz = int(round(value * 1e6))
+        ut.set_using_dict(self.setDBITClock, value_hz)
 
     @property
     @element
@@ -3736,15 +3749,22 @@ class Detector(CppDetectorApi):
     @element
     def adcclk(self):
         """
-        [Ctb] Sets ADC clock frequency in MHz. \n
-        [Xilinx Ctb] Sets ADC clock frequency in kHz.
+        [Ctb][Xilinx Ctb] Sets ADC clock frequency in MHz. \n
+        Accepts floating point inputs
         """
 
-        return self.getADCClock()
+        freq_hz = element_if_equal(self.getADCClock())
+        if isinstance(freq_hz, list):
+            return [value / 1e6 for value in freq_hz]
+        return freq_hz / 1e6
 
     @adcclk.setter
     def adcclk(self, value):
-        ut.set_using_dict(self.setADCClock, value)
+        if isinstance(value, dict):
+            value_hz = {key: int(round(item * 1e6)) for key, item in value.items()}
+        else:
+            value_hz = int(round(value * 1e6))
+        ut.set_using_dict(self.setADCClock, value_hz)
 
     @property
     @element

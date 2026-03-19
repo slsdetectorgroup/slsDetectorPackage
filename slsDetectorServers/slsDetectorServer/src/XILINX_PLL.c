@@ -71,7 +71,7 @@
 
 // clang-format on
 
-// freq in kHz !!
+// freq in Hz !!
 int XILINX_PLL_setFrequency(uint32_t clk_index, uint32_t freq) {
     if (clk_index >= XILINX_PLL_NUM_CLKS) {
         LOG(logERROR, ("XILINX_PLL: Invalid clock index %d\n", clk_index));

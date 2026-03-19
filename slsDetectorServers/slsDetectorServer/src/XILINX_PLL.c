@@ -78,7 +78,7 @@ int XILINX_PLL_setFrequency(uint32_t clk_index, uint32_t freq) {
         return 1;
     }
     if (freq < XILINX_PLL_MIN_FREQ || freq > XILINX_PLL_MAX_FREQ) {
-        LOG(logERROR, ("XILINX_PLL: Frequency %d kHz is out of range\n", freq));
+        LOG(logERROR, ("XILINX_PLL: Frequency %d Hz is out of range\n", freq));
         return 1;
     }
 

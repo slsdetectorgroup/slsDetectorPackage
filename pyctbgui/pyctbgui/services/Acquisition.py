@@ -58,12 +58,6 @@ class AcquisitionTab(QtWidgets.QWidget):
             self.view.spinBoxADCPipeline.setDisabled(True)
             self.view.spinBoxDBITPhase.setDisabled(True)
             self.view.spinBoxDBITPipeline.setDisabled(True)
-            self.view.labelRunF.setText("Run Clock Frequency (kHz):")
-            self.view.labelDBITF.setText("DBIT Clock Frequency (kHz):")
-            self.view.labelADCF.setText("ADC Clock Frequency (kHz):")
-            self.view.spinBoxRunF.setMaximum(250000)
-            self.view.spinBoxDBITF.setMaximum(250000)
-            self.view.spinBoxADCF.setMaximum(250000)
 
     def connect_ui(self):
         # For Acquistions Tab

@@ -3521,7 +3521,7 @@ class Detector(CppDetectorApi):
     def runclk(self):
         """
         [Ctb][Xilinx Ctb] Sets Run clock frequency in MHz. \n
-        Accepts floating point inputs
+        Accepts decimal inputs
         """
 
         freq_hz = element_if_equal(self.getRUNClock())
@@ -3613,7 +3613,7 @@ class Detector(CppDetectorApi):
     def dbitclk(self):
         """
         [Ctb][Xilinx Ctb] Sets clock for latching the digital bits in MHz. \n
-        Accepts floating point inputs
+        Accepts decimal inputs
         """
         freq_hz = element_if_equal(self.getDBITClock())
         if isinstance(freq_hz, list):
@@ -3750,7 +3750,7 @@ class Detector(CppDetectorApi):
     def adcclk(self):
         """
         [Ctb][Xilinx Ctb] Sets ADC clock frequency in MHz. \n
-        Accepts floating point inputs
+        Accepts decimal inputs
         """
 
         freq_hz = element_if_equal(self.getADCClock())

@@ -1982,11 +1982,11 @@ int setFrequency(enum CLKINDEX ind, int val) {
     }
 
     char *clock_names[] = {CLK_NAMES};
-    LOG(logINFO, ("\tSetting %s clock (%d) frequency to %d kHz\n",
+    LOG(logINFO, ("\tSetting %s clock (%d) frequency to %d Hz\n",
                   clock_names[ind], ind, val));
 
     if (XILINX_PLL_setFrequency(ind, val) == FAIL) {
-        LOG(logERROR, ("\tCould not set %s clock (%d) frequency to %d kHz\n",
+        LOG(logERROR, ("\tCould not set %s clock (%d) frequency to %d Hz\n",
                        clock_names[ind], ind, val));
         return FAIL;
     }

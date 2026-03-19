@@ -5931,13 +5931,7 @@ int get_clock_frequency(int file_des) {
         retval = getFrequency(c);
         char *clock_names[] = {CLK_NAMES};
         LOG(logDEBUG1,
-            ("retval %s clock (%d) frequency: %d %s\n", clock_names[c], (int)c,
-             retval,
-             myDetectorType == XILINX_CHIPTESTBOARD
-                 ? "kHz"
-                 : (myDetectorType == GOTTHARD2 || myDetectorType == MYTHEN3
-                        ? "Hz"
-                        : "MHz")));
+            ("retval %s clock (%d) frequency: %d %s\n", clock_names[c], (int)c, retval, "Hz"));
     }
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));

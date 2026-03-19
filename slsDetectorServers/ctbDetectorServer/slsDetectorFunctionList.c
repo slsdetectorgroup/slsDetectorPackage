@@ -66,7 +66,7 @@ uint8_t adcEnableMask_10g = 0xFF;
 uint32_t transceiverMask = DEFAULT_TRANSCEIVER_MASK;
 
 int32_t clkPhase[NUM_CLOCKS] = {};
-uint32_t clkFrequency[NUM_CLOCKS] = {40000000, 20000000, 20000000, 200000000};
+uint32_t clkFrequency[NUM_CLOCKS] = {DEFAULT_RUN_CLK, DEFAULT_ADC_CLK, DEFAULT_SYNC_CLK, DEFAULT_DBIT_CLK};
 int dacValues[NDAC] = {};
 // software limit that depends on the current chip on the ctb
 int vLimit = 0;

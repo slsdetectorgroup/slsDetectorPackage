@@ -2400,7 +2400,13 @@ defs::dacIndex Detector::getDacIndex(const std::string &name) const {
             throw RuntimeError("Dac name not found");
         return static_cast<defs::dacIndex>(it - names.begin());
     }
-    return StringTo<defs::dacIndex>(name);
+    auto retval = StringTo<defs::dacIndex>(name);
+    auto list = getDacList();
+    if (std::find(list.begin(), list.end(), retval) == list.end()) {
+        throw RuntimeError("Dac name not found in dac list. Use 'daclist' to "
+                           "get the list of dac names for this detector.");
+    }
+    return retval;
 }
 
 void Detector::setDacName(const defs::dacIndex i, const std::string &name) {
@@ -2410,6 +2416,11 @@ void Detector::setDacName(const defs::dacIndex i, const std::string &name) {
 std::string Detector::getDacName(const defs::dacIndex i) const {
     if (pimpl->isChipTestBoard())
         return pimpl->getCtbDacName(i);
+    auto list = getDacList();
+    if (std::find(list.begin(), list.end(), i) == list.end()) {
+        throw RuntimeError("Dac index not found in dac list. Use 'daclist' to "
+                           "get the list of dac indices for this detector.");
+    }
     return ToString(i);
 }
 

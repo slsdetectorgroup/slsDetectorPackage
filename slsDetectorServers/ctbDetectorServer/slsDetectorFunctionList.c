@@ -1273,6 +1273,7 @@ int setVLimit(int val, char *mess) {
         LOG(logERROR, (mess));
         return FAIL;
     }
+    LOG(logINFO, ("Setting vlimit to %d mV\n", val));
     vLimit = val;
     return OK;
 }
@@ -1721,19 +1722,8 @@ int getVchipToSet(int *retval_vchip, char *mess) {
     return OK;
 }
 
-int validatePowerADCIndex(enum powerIndex ind, char *mess) {
-    if (ind < 0 || ind > I_POWER_IO || ind == V_POWER_CHIP) {
-        sprintf(mess, "Could not get Power ADC. Invalid index %d\n", ind);
-        LOG(logERROR, (mess));
-        return FAIL;
-    }
-    return OK;
-}
-
 int getPowerADC(enum powerIndex index, int *retval, char *mess) {
     *retval = -1;
-    if (validatePowerADCIndex(index, mess) == FAIL)
-        return FAIL;
 
     enum ADCINDEX adcIndex = V_PWR_IO;
     switch (index) {

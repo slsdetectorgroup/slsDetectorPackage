@@ -362,8 +362,7 @@ TEST_CASE("powerindex", "[.detectorintegration]") {
             std::ostringstream oss;
             REQUIRE_NOTHROW(
                 caller.call("powerindex", {powername}, -1, GET, oss));
-            REQUIRE(oss.str() ==
-                    std::string("powerindex ") + str_power_index + '\n');
+            REQUIRE(oss.str() == "powerindex 2\n");
         }
     } else {
         REQUIRE_THROWS(caller.call("powerindex", {"2"}, -1, GET));
@@ -677,9 +676,11 @@ TEST_CASE("powerdac", "[.detectorintegration][dacs]") {
                     std::ostringstream oss1, oss2;
                     caller.call("powerdac", {names[iPower], "1200"}, -1, PUT,
                                 oss1);
-                    REQUIRE(oss1.str() == "dac " + names[iPower] + " 1200\n");
+                    REQUIRE(oss1.str() ==
+                            "powerdac " + names[iPower] + " 1200\n");
                     caller.call("powerdac", {names[iPower]}, -1, GET, oss2);
-                    REQUIRE(oss2.str() == "dac " + names[iPower] + " 1200\n");
+                    REQUIRE(oss2.str() ==
+                            "powerdac " + names[iPower] + " 1200\n");
                 }
                 {
                     // power name
@@ -690,11 +691,11 @@ TEST_CASE("powerdac", "[.detectorintegration][dacs]") {
                                 {"pwrname_" + names[iPower], "1200"}, -1, PUT,
                                 oss1);
                     REQUIRE(oss1.str() ==
-                            "dac pwrname_" + names[iPower] + " 1200\n");
+                            "powerdac pwrname_" + names[iPower] + " 1200\n");
                     caller.call("powerdac", {"pwrname_" + names[iPower]}, -1,
                                 GET, oss2);
                     REQUIRE(oss2.str() ==
-                            "dac pwrname_" + names[iPower] + " 1200 mV\n");
+                            "powerdac pwrname_" + names[iPower] + " 1200\n");
                 }
                 // trying to set dac when power is on
                 {
@@ -702,9 +703,11 @@ TEST_CASE("powerdac", "[.detectorintegration][dacs]") {
                     std::ostringstream oss1, oss2;
                     caller.call("powerdac", {names[iPower], "1200"}, -1, PUT,
                                 oss1);
-                    REQUIRE(oss1.str() == "dac " + names[iPower] + " 1200\n");
+                    REQUIRE(oss1.str() ==
+                            "powerdac " + names[iPower] + " 1200\n");
                     caller.call("powerdac", {names[iPower]}, -1, GET, oss2);
-                    REQUIRE(oss2.str() == "dac " + names[iPower] + " 1200\n");
+                    REQUIRE(oss2.str() ==
+                            "powerdac " + names[iPower] + " 1200\n");
                 }
 
                 // Reset all dacs to previous value

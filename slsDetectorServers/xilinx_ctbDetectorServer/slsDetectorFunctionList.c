@@ -869,6 +869,7 @@ int setVLimit(int val, char *mess) {
         LOG(logERROR, (mess));
         return FAIL;
     }
+    LOG(logINFO, ("Setting vlimit to %d mV\n", val));
     vLimit = val;
     return OK;
 }

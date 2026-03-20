@@ -5770,7 +5770,7 @@ std::string Caller::im_a(int action) {
             if (det_id != -1) {
                 throw RuntimeError("Cannot execute im_a at module level");
             }
-            auto t = det->getMeasuredPower(defs::I_POWER_A);
+            auto t = det->getMeasuredCurrent(defs::I_POWER_A);
             os << OutString(t) << " mA" << '\n';
         }
     }
@@ -5812,7 +5812,7 @@ std::string Caller::im_b(int action) {
             if (det_id != -1) {
                 throw RuntimeError("Cannot execute im_b at module level");
             }
-            auto t = det->getMeasuredPower(defs::I_POWER_B);
+            auto t = det->getMeasuredCurrent(defs::I_POWER_B);
             os << OutString(t) << " mA" << '\n';
         }
     }
@@ -5854,7 +5854,7 @@ std::string Caller::im_c(int action) {
             if (det_id != -1) {
                 throw RuntimeError("Cannot execute im_c at module level");
             }
-            auto t = det->getMeasuredPower(defs::I_POWER_C);
+            auto t = det->getMeasuredCurrent(defs::I_POWER_C);
             os << OutString(t) << " mA" << '\n';
         }
     }
@@ -5896,7 +5896,7 @@ std::string Caller::im_d(int action) {
             if (det_id != -1) {
                 throw RuntimeError("Cannot execute im_d at module level");
             }
-            auto t = det->getMeasuredPower(defs::I_POWER_D);
+            auto t = det->getMeasuredCurrent(defs::I_POWER_D);
             os << OutString(t) << " mA" << '\n';
         }
     }
@@ -5938,7 +5938,7 @@ std::string Caller::im_io(int action) {
             if (det_id != -1) {
                 throw RuntimeError("Cannot execute im_io at module level");
             }
-            auto t = det->getMeasuredPower(defs::I_POWER_IO);
+            auto t = det->getMeasuredCurrent(defs::I_POWER_IO);
             os << OutString(t) << " mA" << '\n';
         }
     }
@@ -8933,7 +8933,7 @@ std::string Caller::powerindex(int action) {
                 throw RuntimeError("Cannot execute powerindex at module level");
             }
             auto t = det->getPowerIndex(args[0]);
-            os << ToString(t) << '\n';
+            os << ToString(static_cast<int>(t)) << '\n';
         }
     }
 

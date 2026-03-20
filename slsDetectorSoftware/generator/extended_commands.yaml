@@ -4827,7 +4827,7 @@ im_a:
         - false
         check_det_id: true
         convert_det_id: true
-        function: getMeasuredPower
+        function: getMeasuredCurrent
         input:
         - defs::I_POWER_A
         input_types:
@@ -4852,7 +4852,7 @@ im_b:
         - false
         check_det_id: true
         convert_det_id: true
-        function: getMeasuredPower
+        function: getMeasuredCurrent
         input:
         - defs::I_POWER_B
         input_types:
@@ -4877,7 +4877,7 @@ im_c:
         - false
         check_det_id: true
         convert_det_id: true
-        function: getMeasuredPower
+        function: getMeasuredCurrent
         input:
         - defs::I_POWER_C
         input_types:
@@ -4902,7 +4902,7 @@ im_d:
         - false
         check_det_id: true
         convert_det_id: true
-        function: getMeasuredPower
+        function: getMeasuredCurrent
         input:
         - defs::I_POWER_D
         input_types:
@@ -4927,7 +4927,7 @@ im_io:
         - false
         check_det_id: true
         convert_det_id: true
-        function: getMeasuredPower
+        function: getMeasuredCurrent
         input:
         - defs::I_POWER_IO
         input_types:
@@ -7362,7 +7362,7 @@ powerindex:
         input_types:
         - std::string
         output:
-        - ToString(t)
+        - ToString(static_cast<int>(t))
         require_det_id: false
         store_result_in_t: true
   command_name: powerindex

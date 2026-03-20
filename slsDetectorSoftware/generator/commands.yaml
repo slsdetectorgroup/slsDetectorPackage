@@ -2136,7 +2136,7 @@ im_a:
   help: "\n\t[Ctb] Measured current of power supply a in mA."
   actions:
     GET:
-      function: getMeasuredPower
+      function: getMeasuredCurrent
       input: [ 'defs::I_POWER_A' ]
       output: [ OutString(t), '" mA"' ]
 
@@ -2145,7 +2145,7 @@ im_b:
   help: "\n\t[Ctb] Measured current of power supply b in mA."
   actions:
     GET:
-      function: getMeasuredPower
+      function: getMeasuredCurrent
       input: [ 'defs::I_POWER_B' ]
       output: [ OutString(t), '" mA"' ]
 
@@ -2154,7 +2154,7 @@ im_c:
   help: "\n\t[Ctb] Measured current of power supply c in mA."
   actions:
     GET:
-      function: getMeasuredPower
+      function: getMeasuredCurrent
       input: [ 'defs::I_POWER_C' ]
       output: [ OutString(t), '" mA"' ]
 
@@ -2163,7 +2163,7 @@ im_d:
   help: "\n\t[Ctb] Measured current of power supply d in mA."
   actions:
     GET:
-      function: getMeasuredPower
+      function: getMeasuredCurrent
       input: [ 'defs::I_POWER_D' ]
       output: [ OutString(t), '" mA"' ]
 
@@ -2172,7 +2172,7 @@ im_io:
   help: "\n\t[Ctb] Measured current of power supply io in mA."
   actions:
     GET:
-      function: getMeasuredPower
+      function: getMeasuredCurrent
       input: [ 'defs::I_POWER_IO' ]
       output: [ OutString(t), '" mA"' ]
 
@@ -2322,7 +2322,7 @@ powerindex:
   actions:
     GET:
       function: getPowerIndex
-      output: [ 'ToString(t)' ]
+      output: [ 'ToString(static_cast<int>(t))' ]
 
 slowadcindex:
   inherit_actions: CTB_GET_DACINDEX

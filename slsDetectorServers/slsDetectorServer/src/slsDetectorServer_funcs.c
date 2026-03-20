@@ -11336,7 +11336,7 @@ int get_voltage_limit(int file_des) {
 #if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
-    ret = getVLimit(&retval, mess);
+    retval = getVLimit();
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }

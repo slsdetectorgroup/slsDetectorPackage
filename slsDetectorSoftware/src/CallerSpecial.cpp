@@ -1921,6 +1921,9 @@ std::string Caller::powerdac(int action) {
     auto index = parsePowerIndex(0);
 
     if (action == defs::GET_ACTION) {
+        if (args.size() != 1) {
+            WrongNumberOfParameters(1);
+        }
         auto t = det->getPowerDAC(index);
         os << args[0] << ' ' << OutString(t) << '\n';
     }

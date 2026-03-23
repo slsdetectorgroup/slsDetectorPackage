@@ -476,16 +476,17 @@ def test_powers(session_simulator, request):
     det_type, num_interfaces, num_mods, d = session_simulator
     assert d is not None
 
+    from slsdet import Ctb
+    c = Ctb()
+    
     if det_type in ['ctb', 'xilinx_ctb']:
+
+        c.powerlist
 
         # save previous value
         from slsdet import powerIndex
-        prev_val_dac = d.getPowerDAC(powerIndex.V_POWER_A)
-        prev_val = d.isPowerEnabled(powerIndex.V_POWER_A)
-
-
-        from slsdet import Ctb
-        c = Ctb()
+        prev_val_dac = {power: c.getPowerDAC(power) for power in c.getPowerList()}
+        prev_val = {power: c.isPowerEnabled(power) for power in c.getPowerList()}
 
         invalid_assignments = [
             (c.powers, "random", True), # set random power
@@ -517,18 +518,21 @@ def test_powers(session_simulator, request):
         c.powers.VA.dac = 1500
         assert c.powers.VA.dac == 1500
 
-        c.powerlist = ["VA", "m_VB", "VC", "VD", "VIO"]
-        assert c.powers.v_named_b.enable == True
+        temp = c.powers.VB.dac
 
-        c.powerlist
+        c.powerlist = ["VA", "m_VB", "VC", "VD", "VIO"]
+        assert c.powers.m_VB.enable == True
+        assert c.powers.m_VB.dac == temp
+
 
         # restore previous value
-        d.setPowerDAC(powerIndex.V_POWER_A, prev_val_dac)
-        d.setPowerEnabled(powerIndex.V_POWER_A, prev_val)
+        for power in c.getPowerList():
+            c.setPowerDAC(power, prev_val_dac[power])
+            c.setPowerEnabled([power], prev_val[power])
     else:
         with pytest.raises(Exception) as exc_info:
-            d.powerlist
-        assert "not implemented" in str(exc_info.value)
+            c.powerlist
+        assert "only for CTB" in str(exc_info.value)
 
     Log(LogLevel.INFOGREEN, f"✅ {request.node.name} passed")
 

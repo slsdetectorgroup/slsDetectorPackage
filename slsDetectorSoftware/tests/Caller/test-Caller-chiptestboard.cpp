@@ -626,9 +626,6 @@ TEST_CASE("powerdac", "[.detectorintegration][dacs]") {
                 auto prev_val = det.getPowerDAC(indices[iPower]);
                 auto prev_val_power = det.isPowerEnabled(indices[iPower]);
 
-                // turn them off to be able to set the power dacs without issue
-                det.setPowerEnabled(std::vector{indices[iPower]}, false);
-
                 // this is the first command touching power dacs, should not be
                 // -100
                 REQUIRE(prev_val != -100);
@@ -912,6 +909,7 @@ TEST_CASE("v_limit", "[.detectorintegration]") {
         det_type == defs::XILINX_CHIPTESTBOARD) {
         auto prev_val = det.getVoltageLimit();
         auto prev_dac_val = det.getDAC(defs::DAC_0, false);
+        auto prev_power_dac_val  = det.getPowerDAC(defs::V_POWER_A);
 
         REQUIRE_THROWS(caller.call("v_limit", {"1200", "mV"}, -1, PUT));
         REQUIRE_THROWS(caller.call("v_limit", {"-100"}, -1, PUT));
@@ -922,14 +920,17 @@ TEST_CASE("v_limit", "[.detectorintegration]") {
             caller.call("v_limit", {}, -1, GET, oss2);
             REQUIRE(oss2.str() == "v_limit 0\n");
             REQUIRE_NOTHROW(caller.call("dac", {"0", "1200", "mV"}, -1, PUT));
+            REQUIRE_NOTHROW(caller.call("powerdac", {"v_a", "1200"}, -1, PUT));
         }
         {
             std::ostringstream oss;
             caller.call("v_limit", {"1500"}, -1, PUT, oss);
             REQUIRE(oss.str() == "v_limit 1500\n");
             REQUIRE_THROWS(caller.call("dac", {"0", "1501", "mV"}, -1, PUT));
+            REQUIRE_THROWS(caller.call("powerdac", {"v_a", "1501"}, -1, PUT));
         }
         det.setVoltageLimit(prev_val);
+        det.setPowerDAC(defs::V_POWER_A, prev_power_dac_val);
         for (int i = 0; i != det.size(); ++i) {
             det.setDAC(defs::DAC_0, prev_dac_val[i], false, {i});
         }

@@ -406,8 +406,9 @@ def test_v_limit(session_simulator, request):
 
         # save previous value
         prev_val = d.getVoltageLimit()
-        from slsdet import dacIndex
+        from slsdet import dacIndex, powerIndex
         prev_dac_val = d.getDAC(dacIndex.DAC_0, False)
+        prev_power_dac_val = d.getPowerDAC(powerIndex.V_POWER_A)
 
         with pytest.raises(Exception):
             d.v_limit = (1200, 'mV') #mV unit not supported, should be 'no unit'
@@ -418,6 +419,7 @@ def test_v_limit(session_simulator, request):
         d.v_limit = 0
         assert d.v_limit == 0
         d.setDAC(dacIndex.DAC_0, 1200, True, [0])
+        d.setPowerDAC(powerIndex.V_POWER_A, 1200)
 
         d.v_limit = 1500
         assert d.v_limit == 1500
@@ -425,8 +427,12 @@ def test_v_limit(session_simulator, request):
         with pytest.raises(Exception):
             d.setDAC(dacIndex.DAC_0, 1501, True, [0])
 
+        with pytest.raises(Exception):
+            d.setPowerDAC(powerIndex.V_POWER_A, 1501)
+
         # restore previous value
         d.setVoltageLimit(prev_val)
+        d.setPowerDAC(powerIndex.V_POWER_A, prev_power_dac_val)
         for i in range(len(d)):
             d.setDAC(dacIndex.DAC_0, prev_dac_val[i], False, [i])
 
@@ -461,6 +467,67 @@ def test_v_abcd(session_simulator, request):
         d.v_io
 
     Log(LogLevel.INFOGREEN, f"✅ {request.node.name} passed")
+
+
+
+@pytest.mark.detectorintegration
+def test_powers(session_simulator, request):
+    """Test powers."""
+    det_type, num_interfaces, num_mods, d = session_simulator
+    assert d is not None
+
+    if det_type in ['ctb', 'xilinx_ctb']:
+
+        # save previous value
+        from slsdet import powerIndex
+        prev_val_dac = d.getPowerDAC(powerIndex.V_POWER_A)
+        prev_val = d.isPowerEnabled(powerIndex.V_POWER_A)
+
+        invalid_assignments = [
+            (d.powers, "random", True), # set random power
+            (d.powers.VA, "random", True), # set random attribute of power
+            (d.powers.VA, "dac", "-100"),
+            (d.powers.VA, "dac", "-1"),
+            (d.powers.VA, "dac", "4096")
+        ]
+
+        for obj, attr, value in invalid_assignments:
+            with pytest.raises(Exception):
+                setattr(obj, attr, value)
+
+        with pytest.raises(Exception):
+            d.powers.VCHIP.dac
+
+
+        d.powers
+        d.powers.VA.dac = 1200
+        assert d.powers.VA.dac == 1200
+
+        d.powers.VA.enable = True
+        assert d.powers.VA.enable == True
+
+        d.setPowerEnabled([powerIndex.V_POWER_B, powerIndex.V_POWER_C], True)
+        assert d.powers.VB.enable == True
+        assert d.powers.VC.enable == True
+
+        d.powers.VA.dac = 1500
+        assert d.powers.VA.dac == 1500
+
+        d.powers._powernames[1] = "v_named_b"
+        assert d.powers.v_named_b.enable == True
+
+        # restore previous value
+        d.setPowerDAC(powerIndex.V_POWER_A, prev_val_dac)
+        d.setPowerEnabled(powerIndex.V_POWER_A, prev_val)
+    else:
+        with pytest.raises(Exception) as exc_info:
+            d.v_limit
+        assert "not implemented" in str(exc_info.value)
+
+    Log(LogLevel.INFOGREEN, f"✅ {request.node.name} passed")
+
+
+
 
 '''
 @pytest.mark.detectorintegration

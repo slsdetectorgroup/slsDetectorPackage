@@ -20,7 +20,7 @@ from .utils import Geometry, to_geo, element, reduce_time, is_iterable, hostname
 from ._slsdet import xy, freeSharedMemory, getUserDetails
 from .gaincaps import Mythen3GainCapsWrapper
 from . import utils as ut
-from .proxy import JsonProxy, SlowAdcProxy, ClkDivProxy, MaxPhaseProxy, ClkFreqProxy, PatLoopProxy, PatNLoopProxy, PatWaitProxy, PatWaitTimeProxy 
+from .proxy import JsonProxy, ClkDivProxy, MaxPhaseProxy, ClkFreqProxy, PatLoopProxy, PatNLoopProxy, PatWaitProxy, PatWaitTimeProxy 
 from .registers import Register, Adc_register
 import datetime as dt
 
@@ -1987,26 +1987,7 @@ class Detector(CppDetectorApi):
         return super().getBit(resolved)  
 
 
-    @property
-    def slowadc(self):
-        """
-        [Ctb] Slow ADC channel in uV of all channels or specific ones from 0-7.
-        
-        Example
-        -------
-        >>> d.slowadc
-        0: 0 uV
-        1: 0 uV
-        2: 0 uV
-        3: 0 uV
-        4: 0 uV
-        5: 0 uV
-        6: 0 uV
-        7: 0 uV
-        >>> d.slowadc[3]
-        0
-        """
-        return SlowAdcProxy(self)
+
 
     @property
     def daclist(self):
@@ -2022,41 +2003,7 @@ class Detector(CppDetectorApi):
     def daclist(self, value):
         self.setDacNames(value)
 
-    @property
-    def adclist(self):
-        """
-        [Chiptestboard] List of names for every adc for this board. 32 adcs
-        """
-        return self.getAdcNames()
 
-    @adclist.setter
-    def adclist(self, value):
-        self.setAdcNames(value)
-
-    @property
-    def signallist(self):
-        """
-        [Chiptestboard] List of names for every io signal for this board. 64 signals        
-        """
-        return self.getSignalNames()
-
-    @signallist.setter
-    def signallist(self, value):
-        self.setSignalNames(value)
-
-
-    @property
-    def slowadclist(self):
-        """
-        [Chiptestboard] List of names for every slowadc for this board. 8 slowadc
-        
-        """
-        return self.getSlowADCNames()
-
-    @slowadclist.setter
-    def slowadclist(self, value):
-        self.setSlowADCNames(value)
-        
     @property
     def dacvalues(self):
         """Gets the dac values for every dac for this detector."""
@@ -2065,14 +2012,6 @@ class Detector(CppDetectorApi):
             for dac in self.getDacList()
         }
 
-
-    @property
-    def slowadcvalues(self):
-        """[Chiptestboard][Xilinx CTB] Gets the slow adc values for every slow adc for this detector."""
-        return {
-            slowadc.name.lower(): element_if_equal(np.array(self.getSlowADC(slowadc)))
-            for slowadc in self.getSlowADCList()
-        }
 
     @property
     def timinglist(self):

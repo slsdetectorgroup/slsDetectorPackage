@@ -472,7 +472,7 @@ def test_v_abcd(session_simulator, request):
 
 @pytest.mark.detectorintegration
 def test_powers(session_simulator, request):
-    """Test powers."""
+    """Test powers and powerlist."""
     det_type, num_interfaces, num_mods, d = session_simulator
     assert d is not None
 
@@ -536,6 +536,72 @@ def test_powers(session_simulator, request):
 
     Log(LogLevel.INFOGREEN, f"✅ {request.node.name} passed")
 
+
+@pytest.mark.detectorintegration
+def test_adclist(session_simulator, request):
+    """Test ADC list."""
+    det_type, num_interfaces, num_mods, d = session_simulator
+    assert d is not None
+
+    from slsdet import Ctb
+    c = Ctb()
+    
+    if det_type in ['ctb', 'xilinx_ctb']:
+        c.adclist
+        c.adclist = ["1", "2", "3", "test", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32"]
+        c.adclist
+
+    else:
+        with pytest.raises(Exception) as exc_info:
+            c.adclist
+        assert "only for CTB" in str(exc_info.value)
+
+    Log(LogLevel.INFOGREEN, f"✅ {request.node.name} passed")
+
+
+@pytest.mark.detectorintegration
+def test_signallist(session_simulator, request):
+    """Test signal list."""
+    det_type, num_interfaces, num_mods, d = session_simulator
+    assert d is not None
+
+    from slsdet import Ctb
+    c = Ctb()
+    
+    if det_type in ['ctb', 'xilinx_ctb']:
+        c.signallist
+        c.signallist = ["1", "2", "3", "test", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50", "51", "52", "53", "54", "55", "56", "57", "58", "59", "60", "61", "62", "63", "64"]
+        c.signallist
+
+    else:
+        with pytest.raises(Exception) as exc_info:
+            c.signallist
+        assert "only for CTB" in str(exc_info.value)
+
+    Log(LogLevel.INFOGREEN, f"✅ {request.node.name} passed")
+
+
+@pytest.mark.detectorintegration
+def test_slowadc(session_simulator, request):
+    """Test slow ADC and slow adc list."""
+    det_type, num_interfaces, num_mods, d = session_simulator
+    assert d is not None
+
+    from slsdet import Ctb
+    c = Ctb()
+    
+    if det_type in ['ctb', 'xilinx_ctb']:
+        c.slowadc
+        c.slowadc.SLOWADC5
+        c.slowadclist = ["1", "2", "3", "test", "5", "6", "7", "8"]
+        c.slowadc.test
+
+    else:
+        with pytest.raises(Exception) as exc_info:
+            c.signallist
+        assert "only for CTB" in str(exc_info.value)
+
+    Log(LogLevel.INFOGREEN, f"✅ {request.node.name} passed")
 
 
 

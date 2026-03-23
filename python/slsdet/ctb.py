@@ -25,3 +25,12 @@ class Ctb(Detector):
     @property
     def powers(self):
         return self._powers
+    
+
+    @property
+    def powerlist(self):
+        return self.getPowerNames()
+
+    @powerlist.setter
+    def powerlist(self, value):
+        self.setPowerNames(value)

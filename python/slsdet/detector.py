@@ -2044,17 +2044,6 @@ class Detector(CppDetectorApi):
     def signallist(self, value):
         self.setSignalNames(value)
 
-    @property
-    def powerlist(self):
-        """
-        [Chiptestboard] List of names for every power for this board. 5 power supply
-        
-        """
-        return self.getPowerNames()
-
-    @powerlist.setter
-    def powerlist(self, value):
-        self.setPowerNames(value)
 
     @property
     def slowadclist(self):
@@ -2076,17 +2065,10 @@ class Detector(CppDetectorApi):
             for dac in self.getDacList()
         }
 
-    @property
-    def powervalues(self):
-        """[Chiptestboard] Gets the power values for every power for this detector."""
-        return {
-            power.name.lower(): element_if_equal(np.array(self.getPower(power)))
-            for power in self.getPowerList()
-        }
 
     @property
     def slowadcvalues(self):
-        """[Chiptestboard] Gets the slow adc values for every slow adc for this detector."""
+        """[Chiptestboard][Xilinx CTB] Gets the slow adc values for every slow adc for this detector."""
         return {
             slowadc.name.lower(): element_if_equal(np.array(self.getSlowADC(slowadc)))
             for slowadc in self.getSlowADCList()

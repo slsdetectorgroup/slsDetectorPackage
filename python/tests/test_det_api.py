@@ -483,12 +483,16 @@ def test_powers(session_simulator, request):
         prev_val_dac = d.getPowerDAC(powerIndex.V_POWER_A)
         prev_val = d.isPowerEnabled(powerIndex.V_POWER_A)
 
+
+        from slsdet import Ctb
+        c = Ctb()
+
         invalid_assignments = [
-            (d.powers, "random", True), # set random power
-            (d.powers.VA, "random", True), # set random attribute of power
-            (d.powers.VA, "dac", "-100"),
-            (d.powers.VA, "dac", "-1"),
-            (d.powers.VA, "dac", "4096")
+            (c.powers, "random", True), # set random power
+            (c.powers.VA, "random", True), # set random attribute of power
+            (c.powers.VA, "dac", "-100"),
+            (c.powers.VA, "dac", "-1"),
+            (c.powers.VA, "dac", "4096")
         ]
 
         for obj, attr, value in invalid_assignments:
@@ -496,32 +500,34 @@ def test_powers(session_simulator, request):
                 setattr(obj, attr, value)
 
         with pytest.raises(Exception):
-            d.powers.VCHIP.dac
+            c.powers.VCHIP.dac
 
 
-        d.powers
-        d.powers.VA.dac = 1200
-        assert d.powers.VA.dac == 1200
+        c.powers
+        c.powers.VA.dac = 1200
+        assert c.powers.VA.dac == 1200
 
-        d.powers.VA.enable = True
-        assert d.powers.VA.enable == True
+        c.powers.VA.enable = True
+        assert c.powers.VA.enable == True
 
-        d.setPowerEnabled([powerIndex.V_POWER_B, powerIndex.V_POWER_C], True)
-        assert d.powers.VB.enable == True
-        assert d.powers.VC.enable == True
+        c.setPowerEnabled([powerIndex.V_POWER_B, powerIndex.V_POWER_C], True)
+        assert c.powers.VB.enable == True
+        assert c.powers.VC.enable == True
 
-        d.powers.VA.dac = 1500
-        assert d.powers.VA.dac == 1500
+        c.powers.VA.dac = 1500
+        assert c.powers.VA.dac == 1500
 
-        d.powers._powernames[1] = "v_named_b"
-        assert d.powers.v_named_b.enable == True
+        c.powerlist = ["VA", "m_VB", "VC", "VD", "VIO"]
+        assert c.powers.v_named_b.enable == True
+
+        c.powerlist
 
         # restore previous value
         d.setPowerDAC(powerIndex.V_POWER_A, prev_val_dac)
         d.setPowerEnabled(powerIndex.V_POWER_A, prev_val)
     else:
         with pytest.raises(Exception) as exc_info:
-            d.v_limit
+            d.powerlist
         assert "not implemented" in str(exc_info.value)
 
     Log(LogLevel.INFOGREEN, f"✅ {request.node.name} passed")

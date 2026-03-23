@@ -909,7 +909,7 @@ TEST_CASE("v_limit", "[.detectorintegration]") {
         det_type == defs::XILINX_CHIPTESTBOARD) {
         auto prev_val = det.getVoltageLimit();
         auto prev_dac_val = det.getDAC(defs::DAC_0, false);
-        auto prev_power_dac_val  = det.getPowerDAC(defs::V_POWER_A);
+        auto prev_power_dac_val = det.getPowerDAC(defs::V_POWER_A);
 
         REQUIRE_THROWS(caller.call("v_limit", {"1200", "mV"}, -1, PUT));
         REQUIRE_THROWS(caller.call("v_limit", {"-100"}, -1, PUT));

@@ -405,8 +405,8 @@ def test_v_limit(session_simulator, request):
     if det_type in ['ctb', 'xilinx_ctb']:
 
         # save previous value
+        prev_val = d.getVoltageLimit()
         from slsdet import dacIndex
-        prev_val = d.getDAC(dacIndex.V_LIMIT, True)
         prev_dac_val = d.getDAC(dacIndex.DAC_0, False)
 
         with pytest.raises(Exception):
@@ -426,8 +426,8 @@ def test_v_limit(session_simulator, request):
             d.setDAC(dacIndex.DAC_0, 1501, True, [0])
 
         # restore previous value
+        d.setVoltageLimit(prev_val)
         for i in range(len(d)):
-            d.setDAC(dacIndex.V_LIMIT, prev_val[i], True, [i])
             d.setDAC(dacIndex.DAC_0, prev_dac_val[i], False, [i])
 
     else:

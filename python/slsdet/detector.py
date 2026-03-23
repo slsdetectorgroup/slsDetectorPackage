@@ -4173,13 +4173,11 @@ class Detector(CppDetectorApi):
     @element
     def v_limit(self):
         """[Ctb][Xilinx Ctb] Soft limit for power supplies (ctb only) and DACS in mV."""
-        return self.getDAC(dacIndex.V_LIMIT, True)
+        return self.getVoltageLimit()
 
     @v_limit.setter
     def v_limit(self, value):
-        value = ut.merge_args(dacIndex.V_LIMIT, value, True)
-        ut.set_using_dict(self.setDAC, *value)
-
+        ut.set_using_dict(self.setVoltageLimit, value)
 
     @property
     @element

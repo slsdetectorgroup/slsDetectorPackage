@@ -916,14 +916,12 @@ TEST_CASE("v_limit", "[.detectorintegration]") {
         REQUIRE_THROWS(caller.call("v_limit", {"1200", "mV"}, -1, PUT));
         REQUIRE_THROWS(caller.call("v_limit", {"-100"}, -1, PUT));
         {
-            std::ostringstream oss;
+            std::ostringstream oss, oss2;
             caller.call("v_limit", {"0"}, -1, PUT, oss);
             REQUIRE(oss.str() == "v_limit 0\n");
-        }
-        {
-            std::ostringstream oss;
-            caller.call("v_limit", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "v_limit 0\n");
+            caller.call("v_limit", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "v_limit 0\n");
+            REQUIRE_NOTHROW(caller.call("dac", {"0", "1200", "mV"}, -1, PUT));
         }
         {
             std::ostringstream oss;
@@ -931,8 +929,8 @@ TEST_CASE("v_limit", "[.detectorintegration]") {
             REQUIRE(oss.str() == "v_limit 1500\n");
             REQUIRE_THROWS(caller.call("dac", {"0", "1501", "mV"}, -1, PUT));
         }
+        det.setVoltageLimit(prev_val);
         for (int i = 0; i != det.size(); ++i) {
-            det.setVoltageLimit(prev_val);
             det.setDAC(defs::DAC_0, prev_dac_val[i], false, {i});
         }
     } else {

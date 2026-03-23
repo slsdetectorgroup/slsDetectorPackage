@@ -190,7 +190,9 @@ class DetectorImpl : public virtual slsDetectorDefs {
 
     inline void verifyChipTestBoard(const std::string &funcName) const {
         if (!isChipTestBoard())
-            throw RuntimeError(funcName + " is only valid for chip test board");
+            throw RuntimeError(funcName +
+                               " is not implemented for this detector. It is "
+                               "only valid for chip test board");
         if (size() != 1)
             throw RuntimeError(
                 funcName +

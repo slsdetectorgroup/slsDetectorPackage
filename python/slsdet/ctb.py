@@ -2,7 +2,7 @@
 # Copyright (C) 2021 Contributors to the SLS Detector Package
 from .detector import Detector, freeze
 from .utils import element_if_equal
-from .dacs import DetectorDacs, NamedDacs
+from .dacs import NamedDacs
 from .powers import DetectorPowers
 from .proxy import SlowAdcProxy
 from . import _slsdet

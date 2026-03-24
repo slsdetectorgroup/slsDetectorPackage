@@ -655,10 +655,29 @@ def test_dac(session_simulator, request):
         d.dacvalues
 
         dacname = d.daclist[0]
+        assert dacname
         dacIndex = d.getDacList()[0]
 
         # save previous value
         prev_val = d.getDAC(dacIndex, False)
+
+        if det_type == 'eiger':
+            from slsdet import Eiger
+            c = Eiger()
+        elif det_type == 'jungfrau':
+            from slsdet import Jungfrau
+            c = Jungfrau()
+        elif det_type == 'gotthard2':
+            from slsdet import Gotthard2
+            c = Gotthard2()
+        elif det_type == 'mythen3':
+            from slsdet import Mythen3
+            c = Mythen3()
+        elif det_type == 'moench':
+            from slsdet import Moench
+            c = Moench()    
+        else:
+            raise RuntimeError("Unknown detector type to test dac: " + det_type)
 
         invalid_assignments = [
             (c.dacs, "random", "1200"), # set random dac
@@ -670,10 +689,12 @@ def test_dac(session_simulator, request):
             with pytest.raises(Exception):
                 setattr(obj, attr, value)
 
-        d.dacs.dacname = 1200
-        assert d.getDAC(dacIndex.dacname, False)[0] == 1200
-        d.dacs.dacname = 0
-        assert d.dacs.dacname[0] == 0
+        setattr(c.dacs, dacname, 1200)
+        assert c.getDAC(dacIndex, False)[0] == 1200
+        setattr(c.dacs, dacname, 0)
+        assert getattr(c.dacs, dacname)[0] == 0
+
+
 
         # restore previous value
         for i in range(len(d)):

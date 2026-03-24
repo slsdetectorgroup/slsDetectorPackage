@@ -41,40 +41,36 @@ class NamedDacs:
     New implementation of the detector dacs. Used at the moment for 
     Ctb but should replace the old one for all detectors
     """
-    _frozen = False
-    _direct_access = ['_detector', '_current', '_dacnames']
+    _direct_access = ['_detector', '_current']
+
     def __init__(self, detector):
+        self._frozen = False
         self._detector = detector
         self._current = 0
-
-        #only get the dacnames if we have modules attached
-        if detector.size() == 0:
-            self._dacnames  = [f"DAC{i}" for i in range(18)]
-        else:
-            self._dacnames = [n.replace(" ", "") for n in detector.getDacNames()]
-
-        # Populate the dacs
-        for i,name in enumerate(self._dacnames):
-            #name, enum, low, high, default, detector
-            setattr(self, name, Dac(name, dacIndex(i), 0, 4000, 1000, detector))
-
         self._frozen = True
 
-    # def __getattr__(self, name):
-    #     return self.__getattribute__('_' + name)
+    @property
+    def _dacnames(self):
+        if self._detector.size() == 0:
+            raise RuntimeError("No modules added")
+        if hasattr(self._detector, 'daclist'):
+            return [n.replace(" ", "") for n in self._detector.daclist]
+        else:
+            return [f"DAC{i}" for i in range(18)]
+
+    def __getattr__(self, name):
+        if name in self._dacnames:
+            idx = self._dacnames.index(name)
+            return Dac(name, dacIndex(idx), 0, 4096, -100, self._detector)
+        raise AttributeError(f'Dac not found: {name}')
 
     def __setattr__(self, name, value):
-        if not self._frozen:
-            #durning init we need to be able to set up the class
+        if name in ('_detector', '_current', '_frozen'):
             super().__setattr__(name, value)
+        elif name in self._dacnames:
+            return getattr(self, name).__setitem__(slice(None, None, None), value)
         else:
-            #Later we restrict us to manipulate dacs and a few fields
-            if name in self._direct_access:
-                super().__setattr__(name, value)
-            elif name in self._dacnames:
-                return self.__getattribute__(name).__setitem__(slice(None, None, None), value)
-            else:
-                raise AttributeError(f'Dac not found: {name}')
+            raise AttributeError(f'Dac not found: {name}')
 
     def __next__(self):
         if self._current >= len(self._dacnames):
@@ -82,10 +78,10 @@ class NamedDacs:
             raise StopIteration
         else:
             self._current += 1
-            return self.__getattribute__(self._dacnames[self._current-1])
-            # return self.__getattr__(self._dacnames[self._current-1])
+            return getattr(self, self._dacnames[self._current-1])
 
     def __iter__(self):
+        self._current = 0
         return self
 
     def __repr__(self):

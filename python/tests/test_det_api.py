@@ -611,6 +611,7 @@ def test_dac(session_simulator, request):
     """Test dac."""
     det_type, num_interfaces, num_mods, d = session_simulator
     assert d is not None
+    from slsdet import dacIndex
 
     if det_type in ['ctb', 'xilinx_ctb']:
         
@@ -621,7 +622,6 @@ def test_dac(session_simulator, request):
         c.dacvalues
        
         # save previous value
-        from slsdet import dacIndex
         prev_val = {dac: c.getDAC(dac, False) for dac in c.getDacList()}
         prev_dac_list = c.daclist
 
@@ -651,5 +651,33 @@ def test_dac(session_simulator, request):
         with pytest.raises(Exception):
             d.dacs.DAC0
 
+        d.daclist
+        d.dacvalues
+
+        dacname = d.daclist[0]
+        dacIndex = d.getDacList()[0]
+
+        # save previous value
+        prev_val = d.getDAC(dacIndex, False)
+
+        invalid_assignments = [
+            (c.dacs, "random", "1200"), # set random dac
+            (c.dacs, dacname, "-1"),
+            (c.dacs, dacname, "4096")
+        ]
+
+        for obj, attr, value in invalid_assignments:
+            with pytest.raises(Exception):
+                setattr(obj, attr, value)
+
+        d.dacs.dacname = 1200
+        assert d.getDAC(dacIndex.dacname, False)[0] == 1200
+        d.dacs.dacname = 0
+        assert d.dacs.dacname[0] == 0
+
+        # restore previous value
+        for i in range(len(d)):
+            d.setDAC(dacIndex, prev_val[i], False, [i])
+   
 
     Log(LogLevel.INFOGREEN, f"✅ {request.node.name} passed")

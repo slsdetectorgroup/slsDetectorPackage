@@ -75,6 +75,8 @@ class DetectorPowers:
 
     @property
     def _powernames(self):
+        if self._detector.size() == 0:
+            raise RuntimeError("No modules added")
         # always get the latest list
         if hasattr(self._detector, 'powerlist'):
             return [n.replace(" ", "") for n in self._detector.powerlist]

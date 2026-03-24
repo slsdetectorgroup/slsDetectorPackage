@@ -60,7 +60,7 @@ class Power:
         return f'{self.__name__:15s}: {str(self.enable):5s}, {self.dac:5d} mV'
 
 
-class DetectorPowers:
+class NamedPowers:
     """
     List implementation of the all the power supplies with its names. 
     """

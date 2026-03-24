@@ -3,7 +3,7 @@
 from .detector import Detector, freeze
 from .utils import element_if_equal
 from .dacs import NamedDacs
-from .powers import DetectorPowers
+from .powers import NamedPowers
 from .proxy import SlowAdcProxy
 from . import _slsdet
 dacIndex = _slsdet.slsDetectorDefs.dacIndex
@@ -19,7 +19,7 @@ class Ctb(Detector):
         super().__init__(id)
         self._frozen = False 
         self._dacs = NamedDacs(self)
-        self._powers = DetectorPowers(self)
+        self._powers = NamedPowers(self)
     
     @property
     def dacs(self):

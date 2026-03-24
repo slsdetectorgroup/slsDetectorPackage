@@ -3,8 +3,8 @@
 # from .detector import Detector, DetectorError, free_shared_memory
 from .eiger import Eiger
 from .ctb import Ctb
-from .dacs import DetectorDacs, Dac
-from .powers import DetectorPowers, Power
+from .dacs import NamedDacs, DetectorDacs, Dac
+from .powers import NamedPowers, Power
 from .detector import Detector
 from .jungfrau import Jungfrau
 from .mythen3 import Mythen3

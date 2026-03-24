@@ -410,10 +410,9 @@ void setupDetector() {
         return;
     }
     // dacs only
-    LOG(logINFOBLUE, ("Powering down all dacs\n"));
+    LOG(logINFOBLUE, ("Setting all dacs to min (0 mV)\n"));
     for (int idac = 0; idac < NDAC_ONLY; ++idac) {
-        initError = setDAC(idac, LTC2620_D_GetPowerDownValue(), false,
-                           initErrorMessage);
+        initError = setDAC(idac, 0, false, initErrorMessage);
         if (initError == FAIL)
             return;
     }

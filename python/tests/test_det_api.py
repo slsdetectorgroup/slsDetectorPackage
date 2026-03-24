@@ -605,7 +605,7 @@ def test_slowadc(session_simulator, request):
 
 
 
-'''
+
 @pytest.mark.detectorintegration
 def test_dac(session_simulator, request):
     """Test dac."""
@@ -613,33 +613,43 @@ def test_dac(session_simulator, request):
     assert d is not None
 
     if det_type in ['ctb', 'xilinx_ctb']:
+        
+        from slsdet import Ctb
+        c = Ctb()
 
+        c.daclist
+        c.dacvalues
+       
         # save previous value
         from slsdet import dacIndex
-        prev_val = d.getDAC(dacIndex.V_LIMIT, True)
-        prev_dac_val = d.getDAC(dacIndex.DAC_0, True)
+        prev_val = {dac: c.getDAC(dac, False) for dac in c.getDacList()}
+        prev_dac_list = c.daclist
 
-        with pytest.raises(Exception):
-            d.v_limit = (1200, 'mV') #mV unit not supported, should be 'no unit'
+        invalid_assignments = [
+            (c.dacs, "vb_comp", 1200), # set random dac
+            (c.dacs, "DAC18", 1200), # set dac 18
+            (c.dacs, "DAC0", "-1"),
+            (c.dacs, "DAC0", "4096")
+        ]
 
-        with pytest.raises(Exception):
-            d.v_limit = -100
+        for obj, attr, value in invalid_assignments:
+            with pytest.raises(Exception):
+                setattr(obj, attr, value)
 
-        d.v_limit = 0
-        assert d.v_limit == 0
-        d.setDAC(dacIndex.DAC_0, 1200, True, {0})
+        c.dacs.DAC0 = 1200
+        assert c.getDAC(dacIndex.DAC_0, False)[0] == 1200
 
-        d.v_limit = 1500
-        assert d.v_limit == 1500
-
-        with pytest.raises(Exception):
-            d.setDAC(dacIndex.DAC_0, 1501, True, {0})
+        c.dacs.DAC0 = 0
+        assert c.dacs.DAC0[0] == 0
 
         # restore previous value
-        for i in range(len(d)):
-            d.setDAC(dacIndex.V_LIMIT, prev_val[i], True, {i})
-            d.setDAC(dacIndex.DAC_0, prev_dac_val[i], True, {i})
+        for dac in c.getDacList():
+            c.setDAC(dac, prev_val[dac][0], False)
+        c.daclist = prev_dac_list
+
+    else:
+        with pytest.raises(Exception):
+            d.dacs.DAC0
 
 
     Log(LogLevel.INFOGREEN, f"✅ {request.node.name} passed")
-'''

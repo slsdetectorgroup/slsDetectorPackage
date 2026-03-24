@@ -49,7 +49,7 @@ class NamedDacs:
 
         #only get the dacnames if we have modules attached
         if detector.size() == 0:
-            self._dacnames  = [f"dac{i}" for i in range(18)]
+            self._dacnames  = [f"DAC{i}" for i in range(18)]
         else:
             self._dacnames = [n.replace(" ", "") for n in detector.getDacNames()]
 

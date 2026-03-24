@@ -626,8 +626,8 @@ def test_dac(session_simulator, request):
         prev_dac_list = c.daclist
 
         invalid_assignments = [
-            (c.dacs, "vb_comp", 1200), # set random dac
-            (c.dacs, "DAC18", 1200), # set dac 18
+            (c.dacs, "vb_comp", "1200"), # set random dac
+            (c.dacs, "DAC18", "1200"), # set dac 18
             (c.dacs, "DAC0", "-1"),
             (c.dacs, "DAC0", "4096")
         ]

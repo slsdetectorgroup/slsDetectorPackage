@@ -1584,9 +1584,6 @@ TEST_CASE("powerchip", "[.detectorintegration]") {
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setPowerChip(prev_val, {i});
-            if (det_type == defs::XILINX_CHIPTESTBOARD) {
-                det.configureTransceiver();
-            }
         }
     } else {
         REQUIRE_THROWS(caller.call("powerchip", {}, -1, GET));

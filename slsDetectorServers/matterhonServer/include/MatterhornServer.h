@@ -16,7 +16,9 @@ struct UDPInfo {
     uint32_t dstip{};
 };
 
-class MatterhornServer {
+/// @brief Base class for Matterhorn Server, can be used to implement a virtual
+/// server for testing and actual server
+class BaseMatterhornServer {
 
   public:
     /**
@@ -26,23 +28,23 @@ class MatterhornServer {
      * throws an exception in case of failure
      * @param port TCP/IP port number
      */
-    explicit MatterhornServer(uint16_t port = DEFAULT_TCP_CNTRL_PORTNO);
+    explicit BaseMatterhornServer(uint16_t port = DEFAULT_TCP_CNTRL_PORTNO);
 
-    ~MatterhornServer() = default;
+    ~BaseMatterhornServer() = default;
 
     ReturnCode get_version(ServerInterface &socket);
 
     ReturnCode get_detector_type(ServerInterface &socket);
 
-    ReturnCode initial_checks(ServerInterface &socket);
+    virtual ReturnCode initial_checks(ServerInterface &socket) = 0;
 
     ReturnCode get_num_udp_interfaces(ServerInterface &socket);
 
-    ReturnCode get_update_mode(ServerInterface &socket);
+    virtual ReturnCode get_update_mode(ServerInterface &socket) = 0;
 
     ReturnCode get_source_udp_mac(ServerInterface &socket);
 
-  private:
+  protected:
     static std::string getMatterhornServerVersion();
 
     size_t num_udp_interfaces() const;
@@ -50,8 +52,8 @@ class MatterhornServer {
     /// @brief  TODO what is this?
     bool updateMode{true};
 
-  private:
-    /// @brief  @brief TCP/IP interface for communication with the client
+  protected:
+    /// @brief TCP/IP interface for communication with the client
     std::unique_ptr<TCPInterface> tcpInterface;
     std::array<UDPInfo, 1>
         udpDetails{}; // TODO: for now only one receiver per module
@@ -78,6 +80,44 @@ class MatterhornServer {
             {detFuncs::F_GET_SOURCE_UDP_MAC, [this](ServerInterface &si) {
                  return this->get_source_udp_mac(si);
              }}};
+};
+
+class MatterhornServer : public BaseMatterhornServer {
+
+  public:
+    /**
+     * Constructor
+     * Starts up a Matterhorn server.
+     * Assembles a Matterhorn server using TCP and UDP detector interfaces
+     * throws an exception in case of failure
+     * @param port TCP/IP port number
+     */
+    explicit MatterhornServer(uint16_t port = DEFAULT_TCP_CNTRL_PORTNO);
+
+    ~MatterhornServer() = default;
+
+    ReturnCode initial_checks(ServerInterface &socket) override;
+
+    ReturnCode get_update_mode(ServerInterface &socket) override;
+};
+
+class VirtualMatterhornServer : public BaseMatterhornServer {
+
+  public:
+    /**
+     * Constructor
+     * Starts up a virtual Matterhorn server.
+     * Assembles a virtual Matterhorn server using TCP and UDP detector
+     * interfaces throws an exception in case of failure
+     * @param port TCP/IP port number
+     */
+    explicit VirtualMatterhornServer(uint16_t port = DEFAULT_TCP_CNTRL_PORTNO);
+
+    ~VirtualMatterhornServer() = default;
+
+    ReturnCode initial_checks(ServerInterface &socket) override;
+
+    ReturnCode get_update_mode(ServerInterface &socket) override;
 };
 
 } // namespace sls

@@ -414,13 +414,15 @@ def test_v_limit(session_simulator, request):
             d.v_limit = (1200, 'mV') #mV unit not supported, should be 'no unit'
 
         with pytest.raises(Exception):
-            d.v_limit = -100
+            d.v_limit = -100 # previously worked but not allowing now
 
+        # setting dac and power dac with no vlimit should work
         d.v_limit = 0
         assert d.v_limit == 0
         d.setDAC(dacIndex.DAC_0, 1200, True, [0])
         d.setPowerDAC(powerIndex.V_POWER_A, 1200)
 
+        # setting vlimit should throw setting values above vlimit
         d.v_limit = 1500
         assert d.v_limit == 1500
 
@@ -429,6 +431,10 @@ def test_v_limit(session_simulator, request):
 
         with pytest.raises(Exception):
             d.setPowerDAC(powerIndex.V_POWER_A, 1501)
+        
+        # setting dac and power dac below vlimit should still work
+        d.setDAC(dacIndex.DAC_0, 1210, True, [0])
+        d.setPowerDAC(powerIndex.V_POWER_A, 1210)
 
         # restore previous value
         d.setVoltageLimit(prev_val)
@@ -488,6 +494,7 @@ def test_powers(session_simulator, request):
         prev_val_dac = {power: c.getPowerDAC(power) for power in c.getPowerList()}
         prev_val = {power: c.isPowerEnabled(power) for power in c.getPowerList()}
 
+        # invalid
         invalid_assignments = [
             (c.powers, "random", True), # set random power
             (c.powers.VA, "random", True), # set random attribute of power
@@ -495,15 +502,14 @@ def test_powers(session_simulator, request):
             (c.powers.VA, "dac", "-1"),
             (c.powers.VA, "dac", "4096")
         ]
-
         for obj, attr, value in invalid_assignments:
             with pytest.raises(Exception):
                 setattr(obj, attr, value)
-
+        # vchip power can only be accessed via pybindings because it cannot be enabled/disabled
         with pytest.raises(Exception):
             c.powers.VCHIP.dac
 
-
+        # valid
         c.powers
         c.powers.VA.dac = 1200
         assert c.powers.VA.dac == 1200
@@ -518,12 +524,11 @@ def test_powers(session_simulator, request):
         c.powers.VA.dac = 1500
         assert c.powers.VA.dac == 1500
 
+        # change power name and test same value 
         temp = c.powers.VB.dac
-
         c.powerlist = ["VA", "m_VB", "VC", "VD", "VIO"]
         assert c.powers.m_VB.enable == True
         assert c.powers.m_VB.dac == temp
-
 
         # restore previous value
         for power in c.getPowerList():
@@ -618,6 +623,7 @@ def test_dac(session_simulator, request):
         from slsdet import Ctb
         c = Ctb()
 
+        # valid
         c.daclist
         c.dacvalues
        
@@ -625,17 +631,18 @@ def test_dac(session_simulator, request):
         prev_val = {dac: c.getDAC(dac, False) for dac in c.getDacList()}
         prev_dac_list = c.daclist
 
+        # invalid
         invalid_assignments = [
             (c.dacs, "vb_comp", "1200"), # set random dac
             (c.dacs, "DAC18", "1200"), # set dac 18
             (c.dacs, "DAC0", "-1"),
             (c.dacs, "DAC0", "4096")
         ]
-
         for obj, attr, value in invalid_assignments:
             with pytest.raises(Exception):
                 setattr(obj, attr, value)
 
+        # valid
         c.dacs.DAC0 = 1200
         assert c.getDAC(dacIndex.DAC_0, False)[0] == 1200
 
@@ -651,9 +658,11 @@ def test_dac(session_simulator, request):
         with pytest.raises(Exception):
             d.dacs.DAC0
 
+        # valid
         d.daclist
         d.dacvalues
 
+        # remember first dac name and index to test later
         dacname = d.daclist[0]
         assert dacname
         dacIndex = d.getDacList()[0]
@@ -678,23 +687,23 @@ def test_dac(session_simulator, request):
             c = Moench()    
         else:
             raise RuntimeError("Unknown detector type to test dac: " + det_type)
-
+        # invalid checks
         invalid_assignments = [
             (c.dacs, "random", "1200"), # set random dac
+            (c.dacs, "DAC0", "1200"), # set random dac
             (c.dacs, dacname, "-1"),
             (c.dacs, dacname, "4096")
         ]
-
         for obj, attr, value in invalid_assignments:
             with pytest.raises(Exception):
                 setattr(obj, attr, value)
 
+        # valid, have to use setattr because c is different for each detector 
+        # and we cannot hardcode the dac name
         setattr(c.dacs, dacname, 1200)
         assert c.getDAC(dacIndex, False)[0] == 1200
         setattr(c.dacs, dacname, 0)
         assert getattr(c.dacs, dacname)[0] == 0
-
-
 
         # restore previous value
         for i in range(len(d)):

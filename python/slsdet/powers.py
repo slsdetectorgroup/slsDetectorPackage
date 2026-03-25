@@ -81,7 +81,7 @@ class NamedPowers:
         if hasattr(self._detector, 'powerlist'):
             return [n.replace(" ", "") for n in self._detector.powerlist]
         else:
-            return ["VA", "VB", "VC", "VD", "VIO"]
+            raise RuntimeError("Detector does not have powerlist attribute")
 
     def __getattr__(self, name):
         if name in self._powernames:

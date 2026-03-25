@@ -53,10 +53,7 @@ class NamedDacs:
     def _dacnames(self):
         if self._detector.size() == 0:
             raise RuntimeError("No modules added")
-        if hasattr(self._detector, 'daclist'):
-            return [n.replace(" ", "") for n in self._detector.daclist]
-        else:
-            return [f"DAC{i}" for i in range(18)]
+        return [n.replace(" ", "") for n in self._detector.daclist]
 
     def __getattr__(self, name):
         if name in self._dacnames:

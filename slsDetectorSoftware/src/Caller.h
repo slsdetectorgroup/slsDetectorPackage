@@ -902,9 +902,12 @@ class Caller {
 
     StringMap removed_functions{
 
-        {"v_a", "dac and power"},  {"v_b", "dac and power"},
-        {"v_c", "dac and power"},  {"v_d", "dac and power"},
-        {"v_io", "dac and power"}, {"v_chip", "dac"},
+        {"v_a", "'dac v_a' and 'power v_a'"},
+        {"v_b", "'dac v_b' and 'power v_b'"},
+        {"v_c", "'dac v_c' and 'power v_c'"},
+        {"v_d", "'dac v_d' and 'power v_d'"},
+        {"v_io", "'dac v_io' and 'power v_io'"},
+        {"v_chip", "'dac v_chip'"},
 
     };
 };

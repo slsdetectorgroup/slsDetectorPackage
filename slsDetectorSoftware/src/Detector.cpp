@@ -2403,8 +2403,9 @@ defs::dacIndex Detector::getDacIndex(const std::string &name) const {
     auto retval = StringTo<defs::dacIndex>(name);
     auto list = getDacList();
     if (std::find(list.begin(), list.end(), retval) == list.end()) {
-        throw RuntimeError("Dac name not found in dac list. Use 'daclist' to "
-                           "get the list of dac names for this detector.");
+        throw RuntimeError("Dac name not found in dac list. Use 'daclist' or "
+                           "Detector::getDacNames() to get the list of dac "
+                           "names for this detector.");
     }
     return retval;
 }
@@ -2418,8 +2419,10 @@ std::string Detector::getDacName(const defs::dacIndex i) const {
         return pimpl->getCtbDacName(i);
     auto list = getDacList();
     if (std::find(list.begin(), list.end(), i) == list.end()) {
-        throw RuntimeError("Dac index not found in dac list. Use 'daclist' to "
-                           "get the list of dac indices for this detector.");
+        auto count = getDacList().size();
+        throw RuntimeError(
+            "Dac index not found in dac list. Use an index from 0 to " +
+            std::to_string(count - 1) + ".");
     }
     return ToString(i);
 }

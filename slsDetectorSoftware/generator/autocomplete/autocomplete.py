@@ -16,7 +16,7 @@ type_values = {
     'special::mv': ["mv", "mV"],
     "special::deg": ["deg"],
     "special::time_unit": ["s", "ms", "us", "ns"],
-    "special::freq_unit": ["Hz", "KHz", "MHz"],
+    "special::freq_unit": ["Hz", "kHz", "MHz"],
     "special::hard": ["hard"],
     "special::force-delete-normal-file": ["--force-delete-normal-file"],
     "special::currentSourceFix": ["fix", "nofix"],

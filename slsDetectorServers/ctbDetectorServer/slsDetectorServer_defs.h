@@ -51,8 +51,8 @@
 #define DEFAULT_TIMING_MODE           (AUTO_TIMING)
 #define DEFAULT_TX_UDP_PORT           (0x7e9a)
 #define DEFAULT_RUN_CLK               (80000000) // 80
-#define DEFAULT_ADC_CLK               (40000000)  // 40
-#define DEFAULT_SYNC_CLK              (40000000)  // 40
+#define DEFAULT_ADC_CLK               (40000000) // 40
+#define DEFAULT_SYNC_CLK              (40000000) // 40
 #define DEFAULT_DBIT_CLK              (200000000)
 #define NS_TO_CLK_CYCLE               (1E-9) // ns to MHz
 #define DEFAULT_TRANSCEIVER_MASK      (0x3)
@@ -95,7 +95,7 @@
 #define BIT32_MSK              (0xFFFFFFFF)
 #define BIT16_MASK             (0xFFFF)
 
-#define MAXIMUM_ADC_CLK  (65000000)
+#define MAXIMUM_ADC_CLK (65000000)
 #define PLL_VCO_FREQ_HZ (800000000)
 
 /* Struct Definitions */

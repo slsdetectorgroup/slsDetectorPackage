@@ -58,6 +58,15 @@ TEST_CASE("conversion from duration to string", "[support]") {
     REQUIRE(ToString(us(-100)) == "-100us");
 }
 
+TEST_CASE("conversion from frequency to string", "[support]") {
+    REQUIRE(ToString(defs::Hz(150)) == "150 Hz");
+    REQUIRE(ToString(defs::Hz(1500)) == "1.5 kHz");
+    REQUIRE(ToString(defs::Hz(1500000)) == "1.5 MHz");
+    REQUIRE(ToString(defs::Hz(150), "Hz") == "150 Hz");
+    REQUIRE(ToString(defs::Hz(150), "kHz") == "0.15 kHz");
+    REQUIRE(ToString(defs::Hz(150), "MHz") == "0.00015 MHz");
+}
+
 TEST_CASE("Convert vector of time", "[support]") {
     std::vector<ns> vec{ns(150), us(10), ns(600)};
     REQUIRE(ToString(vec) == "[150ns, 10us, 600ns]");
@@ -135,6 +144,15 @@ TEST_CASE("string to std::chrono::duration", "[support]") {
     REQUIRE(StringTo<s>("3 s") == s(3));
     REQUIRE_THROWS(StringTo<ns>("5xs"));
     REQUIRE_THROWS(StringTo<ns>("asvn"));
+}
+
+TEST_CASE("string to frequency", "[support]") {
+    REQUIRE(StringTo<defs::Hz>("150", "Hz") == defs::Hz(150));
+    REQUIRE(StringTo<defs::Hz>("150Hz") == defs::Hz(150));
+    REQUIRE(StringTo<defs::Hz>("1.5 kHz") == defs::Hz(1500));
+    REQUIRE(StringTo<defs::Hz>("1.5MHz") == defs::Hz(1500000));
+    REQUIRE_THROWS(StringTo<defs::Hz>("5xs"));
+    REQUIRE_THROWS(StringTo<defs::Hz>("asvn"));
 }
 
 TEST_CASE("string to detectorType") {

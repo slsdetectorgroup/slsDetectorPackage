@@ -137,6 +137,16 @@ class CodeGenerator:
             if 'convert_to_time' in arg and arg['convert_to_time']:
                 self.write_line(f'auto {arg["convert_to_time"]["output"]} = '
                                 f'StringTo < time::ns > ({", ".join(arg["convert_to_time"]["input"])});')
+            if 'separate_freq_units' in arg and arg['separate_freq_units']:
+                self.write_line(f'std::string tmp_freq({arg["separate_freq_units"]["input"]});')
+                self.write_line(f'std::string {arg["separate_freq_units"]["output"][1]}'
+                                f' = RemoveUnit(tmp_freq);')
+                self.write_line(f'auto {arg["separate_freq_units"]["output"][0]} = '
+                                f'StringTo < defs::Hz > (tmp_freq,'
+                                f' {arg["separate_freq_units"]["output"][1]});')
+            if 'convert_to_freq' in arg and arg['convert_to_freq']:
+                self.write_line(f'auto {arg["convert_to_freq"]["output"]} = '
+                                f'StringTo < defs::Hz > ({", ".join(arg["convert_to_freq"]["input"])});')
             input_arguments = []
             if 'exceptions' in arg:
                 for exception in arg['exceptions']:

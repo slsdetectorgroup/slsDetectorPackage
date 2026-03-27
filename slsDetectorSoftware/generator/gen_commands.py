@@ -119,7 +119,25 @@ def generate(
                                     f'StringTo < time::ns > ({", ".join(arg["convert_to_time"]["input"])});')
                                 codegen.write_line(
                                     f'}} catch (...) {{  throw RuntimeError("Could not convert arguments to time::ns");}}')
+                            elif 'separate_freq_units' in arg and arg['separate_freq_units']:
+                                codegen.write_line(f'try {{')
+                                # TODO: refactor this repeating code
+                                codegen.write_line(f'std::string tmp_freq({arg["separate_freq_units"]["input"]});')
+                                codegen.write_line(f'std::string {arg["separate_freq_units"]["output"][1]}'
+                                                   f' = RemoveUnit(tmp_freq);')
+                                codegen.write_line(f'auto {arg["separate_freq_units"]["output"][0]} = '
+                                                   f'StringTo < defs::Hz > (tmp_freq,'
+                                                   f' {arg["separate_freq_units"]["output"][1]});')
+                                codegen.write_line(
+                                    f'}} catch (...) {{  throw RuntimeError("Could not convert argument to defs::Hz");}}')
 
+                            elif 'convert_to_freq' in arg and arg['convert_to_freq']:
+                                codegen.write_line(f'try {{')
+
+                                codegen.write_line(
+                                    f'StringTo < defs::Hz > ({", ".join(arg["convert_to_freq"]["input"])});')
+                                codegen.write_line(
+                                    f'}} catch (...) {{  throw RuntimeError("Could not convert arguments to defs::Hz");}}')
                             for i in range(len(arg['input'])):
                                 if not arg['cast_input'][i]:
                                     continue

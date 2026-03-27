@@ -66,7 +66,8 @@ uint8_t adcEnableMask_10g = 0xFF;
 uint32_t transceiverMask = DEFAULT_TRANSCEIVER_MASK;
 
 int32_t clkPhase[NUM_CLOCKS] = {};
-uint32_t clkFrequency[NUM_CLOCKS] = {DEFAULT_RUN_CLK, DEFAULT_ADC_CLK, DEFAULT_SYNC_CLK, DEFAULT_DBIT_CLK};
+uint32_t clkFrequency[NUM_CLOCKS] = {DEFAULT_RUN_CLK, DEFAULT_ADC_CLK,
+                                     DEFAULT_SYNC_CLK, DEFAULT_DBIT_CLK};
 int dacValues[NDAC] = {};
 // software limit that depends on the current chip on the ctb
 int vLimit = 0;
@@ -2125,9 +2126,8 @@ int getMaxPhase(enum CLKINDEX ind) {
               MAX_PHASE_SHIFTS_STEPS;
 
     char *clock_names[] = {CLK_NAMES};
-    LOG(logDEBUG1,
-        ("Max Phase Shift (%s): %d (Clock: %d MHz, VCO:%d Hz)\n",
-         clock_names[ind], ret, clkFrequency[ind], PLL_VCO_FREQ_HZ));
+    LOG(logDEBUG1, ("Max Phase Shift (%s): %d (Clock: %d MHz, VCO:%d Hz)\n",
+                    clock_names[ind], ret, clkFrequency[ind], PLL_VCO_FREQ_HZ));
 
     return ret;
 }
@@ -2209,16 +2209,17 @@ int getFrequency(enum CLKINDEX ind) {
         LOG(logERROR, ("Unknown clock index %d to get frequency\n", ind));
         return -1;
     }
-    #ifndef VIRTUAL
-        // get the measured frequency from the firmware
-        int measuredFreqHz = ALTERA_PLL_getFrequency(ind);
+#ifndef VIRTUAL
+    // get the measured frequency from the firmware
+    int measuredFreqHz = ALTERA_PLL_getFrequency(ind);
 
-        // checking against 0 here ensures compatibility with old firmware, TODO: remove this check at some point
-        if (measuredFreqHz != 0) {
-            // Round to nearest MHz. (should we round at all ?)
-            clkFrequency[ind] = measuredFreqHz;
-        }
-    #endif VIRTUAL
+    // checking against 0 here ensures compatibility with old firmware, TODO:
+    // remove this check at some point
+    if (measuredFreqHz != 0) {
+        // Round to nearest MHz. (should we round at all ?)
+        clkFrequency[ind] = measuredFreqHz;
+    }
+#endif
     return clkFrequency[ind];
 }
 

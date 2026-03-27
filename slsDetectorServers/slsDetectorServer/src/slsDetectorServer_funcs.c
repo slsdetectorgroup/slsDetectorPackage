@@ -5869,7 +5869,8 @@ int set_clock_frequency(int file_des) {
             } else {
                 int ret = setFrequency(c, val);
                 if (ret == FAIL) {
-                    sprintf(mess, "Could not set %s to %d %s\n", modeName, val,"Hz");
+                    sprintf(mess, "Could not set %s to %d %s\n", modeName, val,
+                            "Hz");
                     LOG(logERROR, (mess));
                 } else {
                     int retval = getFrequency(c);
@@ -5930,8 +5931,8 @@ int get_clock_frequency(int file_des) {
     if (ret == OK) {
         retval = getFrequency(c);
         char *clock_names[] = {CLK_NAMES};
-        LOG(logDEBUG1,
-            ("retval %s clock (%d) frequency: %d %s\n", clock_names[c], (int)c, retval, "Hz"));
+        LOG(logDEBUG1, ("retval %s clock (%d) frequency: %d %s\n",
+                        clock_names[c], (int)c, retval, "Hz"));
     }
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));

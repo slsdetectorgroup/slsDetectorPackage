@@ -1,6 +1,6 @@
 #include "CommandLineOptions.h"
-#include "MatterhornServer.h"
 #include "StopServer.h"
+#include "VirtualMatterhornServer.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_exceptions.h"
 #include <semaphore.h>
@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
         // std::signal(SIGTERM, childSigTermHandler);
         LOG(TLogLevel::logINFOBLUE) << "Stop Server [" << opts.port + 1 << "]";
         try {
-            MatterhornServer stopServer(opts.port + 1);
+            VirtualMatterhornServer stopServer(opts.port + 1);
         } catch (...) {
             LOG(TLogLevel::logINFOBLUE)
                 << "Exiting Stop Server [ Tid: " << gettid() << " ]";
@@ -79,7 +79,9 @@ int main(int argc, char *argv[]) {
         LOG(TLogLevel::logINFOBLUE) << "Control Server [" << opts.port << "]\n";
 
         try {
-            sls::MatterhornServer server(opts.port);
+            VirtualMatterhornServer server(
+                opts.port); // TODO use virtual if compiled with virtual
+                            // simulators on
         } catch (...) {
             kill(child_pid, SIGTERM); // tell child to exit
             LOG(sls::logINFOBLUE) << "Exiting [ Tid: " << gettid() << " ]";

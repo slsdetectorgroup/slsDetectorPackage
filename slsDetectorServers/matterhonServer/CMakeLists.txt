@@ -1,8 +1,8 @@
 # TODO: should be different executable if not simulators on !! 
 add_executable(matterhornDetectorServer_virtual
     ${CMAKE_CURRENT_SOURCE_DIR}/src/MatterhornApp.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/MatterhornServer.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/StopServer.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/VirtualMatterhornServer.cpp
+    #${CMAKE_CURRENT_SOURCE_DIR}/src/StopServer.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/CommandLineOptions.cpp
 )
 
@@ -20,7 +20,8 @@ target_link_libraries(matterhornDetectorServer_virtual
     PUBLIC 
         slsSupportStatic
         slsDetectorStatic
-        slsServerStatic) 
+        slsServerStatic
+)
 
 set_target_properties(matterhornDetectorServer_virtual PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin

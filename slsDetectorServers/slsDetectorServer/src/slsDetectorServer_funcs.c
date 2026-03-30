@@ -11071,7 +11071,7 @@ int set_pattern_wait_interval(int file_des) {
  */
 
 int spi_read(int file_des) {
-#if !defined(XILINX_CHIPTESTBOARDD)
+#if !defined(XILINX_CHIPTESTBOARDD) && !defined(CHIPTESTBOARDD)
     functionNotImplemented();
     return sendError(file_des);
 #endif
@@ -11121,7 +11121,7 @@ int spi_read(int file_des) {
     for (int i = 0; i < n_bytes; i++) {
         fake_register[i] = (uint8_t)((i * 2) % 256);
     }
-#else
+#elif defined(XILINX_CHIPTESTBOARDD)
     int spifd = open("/dev/spidev2.0", O_RDWR);
     LOG(logINFO, ("SPI Read: opened spidev2.0 with fd=%d\n", spifd));
     if (spifd < 0) {
@@ -11130,7 +11130,7 @@ int spi_read(int file_des) {
     }
 #endif
 
-    // Allocate dummy data to shif in, we keep a copy of this
+    // Allocate dummy data to shift in, we keep a copy of this
     // to double check that we access a register of the correct size
     uint8_t *dummy_data = malloc(n_bytes);
     if (dummy_data == NULL) {
@@ -11197,7 +11197,7 @@ int spi_read(int file_des) {
         fake_register[i] = local_tx[i + 1];
     }
 
-#else
+#elif defined(XILINX_CHIPTESTBOARDD)
     // For the real detector we do the transfer here
     if (ioctl(spifd, SPI_IOC_MESSAGE(1), &send_cmd) < 0) {
         // cleanup since we return early
@@ -11210,6 +11210,22 @@ int spi_read(int file_des) {
         // Send error message
         sprintf(mess, "SPI write failed with %d:%s\n", errno, strerror(errno));
         return sendError(file_des);
+    }
+#elif defined(CHIPTESTBOARDD)
+    // set spi to 8 bit per word (-1 comes from the firmware), set chipselect
+    bus_w(SPI_CTRL_REG, ((8 - 1) << SPI_CTRL_NBIT_OFST)+ (1 << SPI_CTRL_CHIPSELECT_BIT));
+    for (int i = 0; i < n_bytes + 1; ++i) {
+        bus_w(SPI_WRITEDATA_REG, local_tx[i]);
+        bus_w(SPI_CTRL_REG,
+              bus_r(SPI_CTRL_REG) | (1 << SPI_CTRL_WRITESTROBE_BIT));
+        bus_w(SPI_CTRL_REG,
+              bus_r(SPI_CTRL_REG) & ~(1 << SPI_CTRL_WRITESTROBE_BIT));
+        usleep(50);
+        local_rx[i] = (uint8_t)bus_r(SPI_READDATA_REG);
+        bus_w(SPI_CTRL_REG,
+              bus_r(SPI_CTRL_REG) | (1 << SPI_CTRL_READSTROBE_BIT));
+        bus_w(SPI_CTRL_REG,
+              bus_r(SPI_CTRL_REG) & ~(1 << SPI_CTRL_READSTROBE_BIT));
     }
 #endif
 
@@ -11231,7 +11247,7 @@ int spi_read(int file_des) {
         local_rx[i + 1] = fake_register[i];
     }
     free(fake_register); // we are done with the fake register
-#else
+#elif defined(XILINX_CHIPTESTBOARDD)
     if (ioctl(spifd, SPI_IOC_MESSAGE(1), &send_cmd) < 0) {
         // cleanup since we return early
         close(spifd);
@@ -11245,6 +11261,21 @@ int spi_read(int file_des) {
         return sendError(file_des);
     }
     close(spifd);
+#elif defined(CHIPTESTBOARDD)
+    for (int i = 0; i < n_bytes + 1; ++i) {
+        bus_w(SPI_WRITEDATA_REG, local_tx[i]);
+        bus_w(SPI_CTRL_REG,
+              bus_r(SPI_CTRL_REG) | (1 << SPI_CTRL_WRITESTROBE_BIT));
+        bus_w(SPI_CTRL_REG,
+              bus_r(SPI_CTRL_REG) & ~(1 << SPI_CTRL_WRITESTROBE_BIT));
+        usleep(50);
+        local_rx[i] = (uint8_t)bus_r(SPI_READDATA_REG);
+        bus_w(SPI_CTRL_REG,
+              bus_r(SPI_CTRL_REG) | (1 << SPI_CTRL_READSTROBE_BIT));
+        bus_w(SPI_CTRL_REG,
+              bus_r(SPI_CTRL_REG) & ~(1 << SPI_CTRL_READSTROBE_BIT));
+    }
+    bus_w(SPI_CTRL_REG, (8 - 1) << SPI_CTRL_NBIT_OFST); // remove chip-select
 #endif
     ret = OK;
     LOG(logDEBUG1, ("SPI Read Complete\n"));
@@ -11262,7 +11293,7 @@ int spi_read(int file_des) {
  * Write to SPI register.
  */
 int spi_write(int file_des) {
-#if !defined(XILINX_CHIPTESTBOARDD)
+#if !defined(XILINX_CHIPTESTBOARDD) && !defined(CHIPTESTBOARDD)
     functionNotImplemented();
     return Server_SendResult(file_des, INT32, NULL, 0);
 #endif
@@ -11343,7 +11374,7 @@ int spi_write(int file_des) {
     for (int i = 0; i < n_bytes + 1; i++) {
         local_rx[i] = local_tx[i];
     }
-#else
+#elif defined(XILINX_CHIPTESTBOARDD)
     int spifd = open("/dev/spidev2.0", O_RDWR);
     LOG(logINFO, ("SPI Read: opened spidev2.0 with fd=%d\n", spifd));
     if (spifd < 0) {
@@ -11362,6 +11393,23 @@ int spi_write(int file_des) {
         return sendError(file_des);
     }
     close(spifd);
+#elif defined(CHIPTESTBOARDD)
+    // set spi to 8 bit per word (-1 comes from firmware), set chip-select
+    bus_w(SPI_CTRL_REG, ((8 - 1) << SPI_CTRL_NBIT_OFST)+ (1 << SPI_CTRL_CHIPSELECT_BIT));
+    for (int i = 0; i < n_bytes + 1; ++i) {
+        bus_w(SPI_WRITEDATA_REG, local_tx[i]);
+        bus_w(SPI_CTRL_REG,
+              bus_r(SPI_CTRL_REG) | (1 << SPI_CTRL_WRITESTROBE_BIT));
+        bus_w(SPI_CTRL_REG,
+              bus_r(SPI_CTRL_REG) & ~(1 << SPI_CTRL_WRITESTROBE_BIT));
+        usleep(50);
+        local_rx[i] = (uint8_t)bus_r(SPI_READDATA_REG);
+        bus_w(SPI_CTRL_REG,
+              bus_r(SPI_CTRL_REG) | (1 << SPI_CTRL_READSTROBE_BIT));
+        bus_w(SPI_CTRL_REG,
+              bus_r(SPI_CTRL_REG) & ~(1 << SPI_CTRL_READSTROBE_BIT));
+    }
+    bus_w(SPI_CTRL_REG, (8 - 1) << SPI_CTRL_NBIT_OFST); // remove chip-select
 #endif
 
     ret = OK;

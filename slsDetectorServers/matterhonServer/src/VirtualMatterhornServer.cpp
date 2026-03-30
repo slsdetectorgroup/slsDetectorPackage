@@ -1,21 +1,30 @@
-#include "MatterhornServer.h"
+#include "VirtualMatterhornServer.h"
+
+namespace sls {
 
 VirtualMatterhornServer::VirtualMatterhornServer(uint16_t port)
-    : BaseMatterhornServer(port) {
+    : BaseMatterhornServer<VirtualMatterhornServer>(port) {
 
     udpDetails[0].srcip = LOCALHOSTIP_INT;
-    udpDetails[0].srcport = DEFAULT_UDP_SRC_PORTNO;
-    udpDetails[0].dstport = DEFAULT_UDP_DST_PORTNO;
-
     // TODO: when do i set the udp mac and ip ?
-
-    BaseMatterhornServer(port);
-
-    tcpInterface = std::make_unique<TCPInterface>(
-        function_table, port); // TODO: need a tcp and udp interface
 
     // should maybe be part of the constructor?
     tcpInterface->startTCPServer();
 
     // need a function to setup detector - e.g. set all registers etc.
 }
+
+ReturnCode VirtualMatterhornServer::initial_checks(ServerInterface &socket) {
+
+    // TODO: add more checks here, for now just return true to be able to test
+    // the should check firmware -client compatibility
+    bool initial_checks_passed = true;
+    return static_cast<ReturnCode>(socket.sendResult(initial_checks_passed));
+}
+
+ReturnCode VirtualMatterhornServer::get_update_mode(ServerInterface &socket) {
+    return static_cast<ReturnCode>(
+        socket.sendResult(static_cast<int>(updateMode)));
+}
+
+} // namespace sls

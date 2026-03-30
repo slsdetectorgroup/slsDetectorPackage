@@ -26,43 +26,63 @@ class Power:
         self.detector = detector
         self._frozen = True
 
+    def enable(self):
+        " Enable this power supply."
+        self.detector.setPowerEnabled([self.enum], True)
+    
+    def disable(self):
+        " Disable this power supply."
+        self.detector.setPowerEnabled([self.enum], False)
+
     @property
     def dac(self):
         " Returns the dac value for this power supply in mV."
         return self.detector.getPowerDAC(self.enum)
     
-    @dac.setter
-    def dac(self, value):
-        " Set the dac value for this power supply in mV."
-        self.detector.setPowerDAC(self.enum, value)
-
     @property
-    def enable(self):
+    def enabled(self):
         " Returns whether this power supply is enabled."
         return self.detector.isPowerEnabled(self.enum)
     
-    @enable.setter
-    def enable(self, value):
-        " Set whether this power supply is enabled."
-        self.detector.setPowerEnabled([self.enum], value)
-
     # prevent unknown attributes
     def __setattr__(self, name, value):
-        if not getattr(self, "_frozen", False):
-            super().__setattr__(name, value)
-        elif name in ("dac", "enable", "_frozen", "enum", "default", "detector", "__name__"):
+        if not getattr(self, "_frozen", False) or name in ("_frozen", "__name__", "enum", "default", "detector"):
             super().__setattr__(name, value)
         else:
-            raise AttributeError(f"Cannot set attribute '{name}' on Power. Allowed attributes are 'dac' and 'enable'.")
+            raise AttributeError(f"Cannot set attribute '{name}' on Power.")
         
+    def __eq__(self, other):
+        if isinstance(other, Power):
+            return (
+                self.detector == other.detector and
+                self.enum == other.enum
+            )
+        if isinstance(other, int):
+            return self.dac == other
+        return NotImplemented
+
     def __repr__(self):
         "String representation for a single power supply"
-        return f'{self.__name__:15s}: {str(self.enable):5s}, {self.dac:5d} mV'
+        return f'{self.__name__:15s}: {str(self.enabled):5s}, {self.dac:5d} mV'
 
 
 class NamedPowers:
     """
-    List implementation of the all the power supplies with its names. 
+    List implementation of the all the power supplies with its names.
+    d.powers gives you list of all powers with their DAC values and enables.
+
+    Example
+    --------
+    # print all powers with DAC and enables
+    d.powers
+    # set DAC or enables
+    d.powers.VA = 1200
+    d.powers.VA.enable()
+    d.powers.VA.disable()
+    # get
+    d.powers.VA.enabled
+    d.powers.VA.dac
+    d.powers.VA # print both enabled and dac
     """
     _direct_access = ['_detector', '_current']
 
@@ -93,10 +113,11 @@ class NamedPowers:
         if name in ("_detector", "_current", "_frozen"):
             super().__setattr__(name, value)
         elif name in self._powernames:
-            raise AttributeError(
-                f"Cannot assign directly to power '{name}'. "
-                f"Use '{name}.dac = value' or '{name}.enable = value'"
-            )
+            if isinstance(value, int):
+                idx = self._powernames.index(name)
+                self._detector.setPowerDAC(powerIndex(idx), value)
+            else:
+                raise AttributeError(f"Can only set DAC (int) for '{name}' on Power.")
         else:
             raise AttributeError(f'Power not found: {name}')
 
@@ -117,3 +138,6 @@ class NamedPowers:
         r_str = ['========== POWERS =========']
         r_str += [repr(power) for power in self]
         return '\n'.join(r_str)
+
+    def __dir__(self):
+        return super().__dir__() + self._powernames

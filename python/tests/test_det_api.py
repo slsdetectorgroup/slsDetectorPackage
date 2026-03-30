@@ -497,38 +497,42 @@ def test_powers(session_simulator, request):
         # invalid
         invalid_assignments = [
             (c.powers, "random", True), # set random power
-            (c.powers.VA, "random", True), # set random attribute of power
-            (c.powers.VA, "dac", "-100"),
-            (c.powers.VA, "dac", "-1"),
-            (c.powers.VA, "dac", "4096")
+            (c.powers, "random", True), # set random attribute of power
+            (c.powers.VA, "dac", "1200"),
+            (c.powers.VA, "enabled", "True"),
+            (c.powers, "VA", "-100"),
+            (c.powers, "VA", "-1"),
+            (c.powers, "VA", "4096")
         ]
         for obj, attr, value in invalid_assignments:
             with pytest.raises(Exception):
                 setattr(obj, attr, value)
         # vchip power can only be accessed via pybindings because it cannot be enabled/disabled
         with pytest.raises(Exception):
-            c.powers.VCHIP.dac
+            c.powers.VCHIP
 
         # valid
         c.powers
-        c.powers.VA.dac = 1200
+        c.powers.VA = 1200
+        assert c.powers.VA == 1200
         assert c.powers.VA.dac == 1200
 
-        c.powers.VA.enable = True
-        assert c.powers.VA.enable == True
+        c.powers.VA.enable()
+        assert c.powers.VA.enabled == True
 
         c.setPowerEnabled([powerIndex.V_POWER_B, powerIndex.V_POWER_C], True)
-        assert c.powers.VB.enable == True
-        assert c.powers.VC.enable == True
+        assert c.powers.VB.enabled == True
+        assert c.powers.VC.enabled == True
 
-        c.powers.VA.dac = 1500
+        c.powers.VA = 1500
+        assert c.powers.VA == 1500
         assert c.powers.VA.dac == 1500
 
         # change power name and test same value 
-        temp = c.powers.VB.dac
+        temp = c.powers.VB
         c.powerlist = ["VA", "m_VB", "VC", "VD", "VIO"]
-        assert c.powers.m_VB.enable == True
-        assert c.powers.m_VB.dac == temp
+        assert c.powers.m_VB.enabled == True
+        assert c.powers.m_VB == temp
 
         # restore previous value
         for power in c.getPowerList():

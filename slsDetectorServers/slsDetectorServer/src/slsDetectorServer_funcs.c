@@ -11064,6 +11064,15 @@ int set_pattern_wait_interval(int file_des) {
     return Server_SendResult(file_des, INT64, NULL, 0);
 }
 
+// usleep is not viable on blackfin
+void usleep_bf(uint64_t i){
+    const uint64_t BFIN_CYCLES_1uSECOND=20;
+    uint64_t j=i*20;
+    while(--j){
+        asm volatile("");
+    }
+}
+
 /**
  *  Non destructive read from SPI register. Read n_bytes by shifting in dummy
  *  data while keeping csn 0 after the operation. Shift the read out data back
@@ -11220,7 +11229,7 @@ int spi_read(int file_des) {
               bus_r(SPI_CTRL_REG) | (1 << SPI_CTRL_WRITESTROBE_BIT));
         bus_w(SPI_CTRL_REG,
               bus_r(SPI_CTRL_REG) & ~(1 << SPI_CTRL_WRITESTROBE_BIT));
-        usleep(50);
+        usleep_bf(25);
         local_rx[i] = (uint8_t)bus_r(SPI_READDATA_REG);
         bus_w(SPI_CTRL_REG,
               bus_r(SPI_CTRL_REG) | (1 << SPI_CTRL_READSTROBE_BIT));
@@ -11268,7 +11277,7 @@ int spi_read(int file_des) {
               bus_r(SPI_CTRL_REG) | (1 << SPI_CTRL_WRITESTROBE_BIT));
         bus_w(SPI_CTRL_REG,
               bus_r(SPI_CTRL_REG) & ~(1 << SPI_CTRL_WRITESTROBE_BIT));
-        usleep(50);
+        usleep_bf(25);
         local_rx[i] = (uint8_t)bus_r(SPI_READDATA_REG);
         bus_w(SPI_CTRL_REG,
               bus_r(SPI_CTRL_REG) | (1 << SPI_CTRL_READSTROBE_BIT));
@@ -11402,7 +11411,7 @@ int spi_write(int file_des) {
               bus_r(SPI_CTRL_REG) | (1 << SPI_CTRL_WRITESTROBE_BIT));
         bus_w(SPI_CTRL_REG,
               bus_r(SPI_CTRL_REG) & ~(1 << SPI_CTRL_WRITESTROBE_BIT));
-        usleep(50);
+        usleep_bf(25);
         local_rx[i] = (uint8_t)bus_r(SPI_READDATA_REG);
         bus_w(SPI_CTRL_REG,
               bus_r(SPI_CTRL_REG) | (1 << SPI_CTRL_READSTROBE_BIT));
@@ -11422,3 +11431,4 @@ int spi_write(int file_des) {
     free(local_rx);
     return ret;
 }
+

@@ -11224,17 +11224,10 @@ int spi_read(int file_des) {
     // set spi to 8 bit per word (-1 comes from the firmware), set chipselect
     bus_w(SPI_CTRL_REG, ((8 - 1) << SPI_CTRL_NBIT_OFST)+ (1 << SPI_CTRL_CHIPSELECT_BIT));
     for (int i = 0; i < n_bytes + 1; ++i) {
+        // TODO: should we make bus_w to this address blocking in the firmware to remove usleep ?
         bus_w(SPI_WRITEDATA_REG, local_tx[i]);
-        bus_w(SPI_CTRL_REG,
-              bus_r(SPI_CTRL_REG) | (1 << SPI_CTRL_WRITESTROBE_BIT));
-        bus_w(SPI_CTRL_REG,
-              bus_r(SPI_CTRL_REG) & ~(1 << SPI_CTRL_WRITESTROBE_BIT));
         usleep_bf(25);
         local_rx[i] = (uint8_t)bus_r(SPI_READDATA_REG);
-        bus_w(SPI_CTRL_REG,
-              bus_r(SPI_CTRL_REG) | (1 << SPI_CTRL_READSTROBE_BIT));
-        bus_w(SPI_CTRL_REG,
-              bus_r(SPI_CTRL_REG) & ~(1 << SPI_CTRL_READSTROBE_BIT));
     }
 #endif
 
@@ -11273,16 +11266,8 @@ int spi_read(int file_des) {
 #elif defined(CHIPTESTBOARDD)
     for (int i = 0; i < n_bytes + 1; ++i) {
         bus_w(SPI_WRITEDATA_REG, local_tx[i]);
-        bus_w(SPI_CTRL_REG,
-              bus_r(SPI_CTRL_REG) | (1 << SPI_CTRL_WRITESTROBE_BIT));
-        bus_w(SPI_CTRL_REG,
-              bus_r(SPI_CTRL_REG) & ~(1 << SPI_CTRL_WRITESTROBE_BIT));
         usleep_bf(25);
         local_rx[i] = (uint8_t)bus_r(SPI_READDATA_REG);
-        bus_w(SPI_CTRL_REG,
-              bus_r(SPI_CTRL_REG) | (1 << SPI_CTRL_READSTROBE_BIT));
-        bus_w(SPI_CTRL_REG,
-              bus_r(SPI_CTRL_REG) & ~(1 << SPI_CTRL_READSTROBE_BIT));
     }
     bus_w(SPI_CTRL_REG, (8 - 1) << SPI_CTRL_NBIT_OFST); // remove chip-select
 #endif
@@ -11407,16 +11392,8 @@ int spi_write(int file_des) {
     bus_w(SPI_CTRL_REG, ((8 - 1) << SPI_CTRL_NBIT_OFST)+ (1 << SPI_CTRL_CHIPSELECT_BIT));
     for (int i = 0; i < n_bytes + 1; ++i) {
         bus_w(SPI_WRITEDATA_REG, local_tx[i]);
-        bus_w(SPI_CTRL_REG,
-              bus_r(SPI_CTRL_REG) | (1 << SPI_CTRL_WRITESTROBE_BIT));
-        bus_w(SPI_CTRL_REG,
-              bus_r(SPI_CTRL_REG) & ~(1 << SPI_CTRL_WRITESTROBE_BIT));
         usleep_bf(25);
         local_rx[i] = (uint8_t)bus_r(SPI_READDATA_REG);
-        bus_w(SPI_CTRL_REG,
-              bus_r(SPI_CTRL_REG) | (1 << SPI_CTRL_READSTROBE_BIT));
-        bus_w(SPI_CTRL_REG,
-              bus_r(SPI_CTRL_REG) & ~(1 << SPI_CTRL_READSTROBE_BIT));
     }
     bus_w(SPI_CTRL_REG, (8 - 1) << SPI_CTRL_NBIT_OFST); // remove chip-select
 #endif

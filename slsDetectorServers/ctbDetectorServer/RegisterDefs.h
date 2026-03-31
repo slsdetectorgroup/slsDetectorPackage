@@ -630,8 +630,6 @@
 
 /* SPI */
 #define SPI_CTRL_REG (0x48 << MEM_MAP_SHIFT)
-    #define SPI_CTRL_READSTROBE_BIT  0
-    #define SPI_CTRL_WRITESTROBE_BIT 1
     #define SPI_CTRL_RX_EMPTY_BIT    2
     #define SPI_CTRL_CHIPSELECT_BIT  4
     #define SPI_CTRL_NBIT_OFST       16

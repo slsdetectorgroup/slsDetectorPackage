@@ -37,6 +37,21 @@ FREQ_COMMAND:
             output: converted_freq
           output: [ 'args[0]', 'args[1]' ]
 
+FREQ_GET_COMMAND:
+  infer_action: true
+  help: ""
+  template: true
+  actions:
+    GET:
+      require_det_id: true
+      function: ''
+      args:
+        - argc: 0
+          output: [ OutString(t) ]
+        - argc: 1
+          arg_types: [ special::freq_unit ]
+          output: [ "OutString(t , args[0])" ]
+
 TIME_COMMAND:
   infer_action: true
   help: ""
@@ -479,9 +494,9 @@ runclk:
   inherit_actions: FREQ_COMMAND
   actions:
     GET:
-      function: getRunClock
+      function: getRUNClock
     PUT:
-      function: setRunClock
+      function: setRUNClock
 
 
 dbitclk:
@@ -489,9 +504,18 @@ dbitclk:
   inherit_actions: FREQ_COMMAND
   actions:
     GET:
-      function: getDBitClock
+      function: getDBITClock
     PUT:
-      function: setDBitClock
+      function: setDBITClock
+
+################# FREQ_GET_COMMAND #############
+
+syncclk:
+  inherit_actions: FREQ_GET_COMMAND
+  help: "[n_clk] [(optional unit) Hz(default)|kHz|MHz]\n\t[Ctb] Sync clock."
+  actions:
+    GET:
+      function: getSYNCClock
 
 ################# TIME_COMMAND #############
 
@@ -2046,19 +2070,12 @@ burstsl:
     GET:
       function: getNumberOfBurstsLeft
 
-syncclk:
-  inherit_actions: GET_COMMAND
-  help: "[n_clk in MHz]\n\t[Ctb] Sync clock in MHz."
-  actions:
-    GET:
-      function: getSYNCClock
-
 patfname:
   inherit_actions: GET_COMMAND
   help: "\n\t[Ctb][Mythen3][Xilinx Ctb] Gets the pattern file name including path of the last pattern uploaded. Returns an empty if nothing was uploaded or via a server default file"
   actions:
     GET:
-      function: getPatterFileName
+      function: getPatternFileName
 
 lastclient:
   inherit_actions: GET_COMMAND

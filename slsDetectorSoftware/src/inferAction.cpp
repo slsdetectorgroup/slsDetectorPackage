@@ -63,6 +63,12 @@ int InferAction::adcclk() {
     }
 
     if (args.size() == 1) {
+        throw RuntimeError(
+            "sls_detector is disabled for command: adcclk with number of "
+            "arguments 1. Use sls_detector_get or sls_detector_put");
+    }
+
+    if (args.size() == 2) {
         return slsDetectorDefs::PUT_ACTION;
     }
 
@@ -711,6 +717,12 @@ int InferAction::dbitclk() {
     }
 
     if (args.size() == 1) {
+        throw RuntimeError(
+            "sls_detector is disabled for command: dbitclk with number of "
+            "arguments 1. Use sls_detector_get or sls_detector_put");
+    }
+
+    if (args.size() == 2) {
         return slsDetectorDefs::PUT_ACTION;
     }
 
@@ -2573,6 +2585,12 @@ int InferAction::runclk() {
     }
 
     if (args.size() == 1) {
+        throw RuntimeError(
+            "sls_detector is disabled for command: runclk with number of "
+            "arguments 1. Use sls_detector_get or sls_detector_put");
+    }
+
+    if (args.size() == 2) {
         return slsDetectorDefs::PUT_ACTION;
     }
 
@@ -3452,6 +3470,10 @@ int InferAction::sync() {
 int InferAction::syncclk() {
 
     if (args.size() == 0) {
+        return slsDetectorDefs::GET_ACTION;
+    }
+
+    if (args.size() == 1) {
         return slsDetectorDefs::GET_ACTION;
     }
 

@@ -2625,7 +2625,7 @@ void Module::configureTransceiver() {
 }
 
 // Pattern
-std::string Module::getPatterFileName() const {
+std::string Module::getPatternFileName() const {
     char retval[MAX_STR_LENGTH]{};
     sendToDetector(F_GET_PATTERN_FILE_NAME, nullptr, retval);
     return retval;

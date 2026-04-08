@@ -6,7 +6,6 @@
 #include "sls/versionAPI.h"
 
 #include "ALTERA_PLL.h" // pll
-#include "INA226.h"     // i2c
 #include "LTC2620.h"    // dacs
 #include "MAX1932.h"    // hv
 #include "UDPPacketHeaderGenerator.h"
@@ -610,17 +609,6 @@ void setupDetector() {
             return;
     }
 
-    // I2C
-    INA226_ConfigureI2CCore(I2C_SHUNT_RESISTER_OHMS, I2C_CONTROL_REG,
-                            I2C_STATUS_REG, I2C_RX_DATA_FIFO_REG,
-                            I2C_RX_DATA_FIFO_LEVEL_REG, I2C_SCL_LOW_COUNT_REG,
-                            I2C_SCL_HIGH_COUNT_REG, I2C_SDA_HOLD_REG,
-                            I2C_TRANSFER_COMMAND_FIFO_REG);
-    INA226_CalibrateCurrentRegister(I2C_POWER_VIO_DEVICE_ID);
-    INA226_CalibrateCurrentRegister(I2C_POWER_VA_DEVICE_ID);
-    INA226_CalibrateCurrentRegister(I2C_POWER_VB_DEVICE_ID);
-    INA226_CalibrateCurrentRegister(I2C_POWER_VC_DEVICE_ID);
-    INA226_CalibrateCurrentRegister(I2C_POWER_VD_DEVICE_ID);
     initError = setVchip(VCHIP_MIN_MV, initErrorMessage);
     if (initError == FAIL)
         return;
@@ -1705,16 +1693,12 @@ int getADC(enum ADCINDEX ind) {
     case V_PWR_B:
     case V_PWR_C:
     case V_PWR_D:
-        LOG(logDEBUG1, ("Reading I2C Voltage for device Id: %d\n", (int)ind));
-        return INA226_ReadVoltage(I2C_POWER_VIO_DEVICE_ID + (int)ind);
     case I_PWR_IO:
     case I_PWR_A:
     case I_PWR_B:
     case I_PWR_C:
     case I_PWR_D:
-        LOG(logDEBUG1, ("Reading I2C Current for device Id: %d\n", (int)ind));
-        return INA226_ReadCurrent(I2C_POWER_VIO_DEVICE_ID +
-                                  (int)(ind - I_PWR_IO));
+        return bus_r(POWER_MONITOR_BASE_REG + ((int)ind << MEM_MAP_SHIFT));
 
         // slow adcs
     case S_TMP:

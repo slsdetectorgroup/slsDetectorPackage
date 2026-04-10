@@ -6,7 +6,11 @@
 #include "sls/sls_detector_defs.h"
 #include "sls/versionAPI.h"
 #include <array>
+#include <cstring>
+#include <functional>
 #include <memory>
+#include <string>
+#include <unordered_map>
 
 namespace sls {
 

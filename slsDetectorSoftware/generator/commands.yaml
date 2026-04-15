@@ -481,7 +481,7 @@ CTB_GET_INDEX:
 ################# COMMANDS ##################################
 ################# FREQ_COMMAND #############
 adcclk:
-  help: "[n_clk] [(optional unit) Hz(default)|kHz|MHz]\n\t[Ctb][Xilinx Ctb] ADC clock frequency."
+  help: "[n_clk] [(optional unit) Hz|kHz|MHz(default)]\n\t[Ctb][Xilinx Ctb] ADC clock frequency."
   inherit_actions: FREQ_COMMAND
   actions:
     GET:
@@ -490,7 +490,7 @@ adcclk:
       function: setADCClock
 
 runclk:
-  help: "[n_clk] [(optional unit) Hz(default)|kHz|MHz]\n\t[Ctb][Xilinx Ctb] Run clock frequency."
+  help: "[n_clk] [(optional unit) Hz|kHz|MHz(default)]\n\t[Ctb][Xilinx Ctb] Run clock frequency."
   inherit_actions: FREQ_COMMAND
   actions:
     GET:
@@ -500,7 +500,7 @@ runclk:
 
 
 dbitclk:
-  help: "[n_clk] [(optional unit) Hz(default)|kHz|MHz]\n\t[Ctb][Xilinx Ctb]  Clock for latching the digital bits."
+  help: "[n_clk] [(optional unit) Hz|kHz|MHz(default)]\n\t[Ctb][Xilinx Ctb]  Clock for latching the digital bits."
   inherit_actions: FREQ_COMMAND
   actions:
     GET:
@@ -512,7 +512,7 @@ dbitclk:
 
 syncclk:
   inherit_actions: FREQ_GET_COMMAND
-  help: "[n_clk] [(optional unit) Hz(default)|kHz|MHz]\n\t[Ctb] Sync clock."
+  help: "[n_clk] [(optional unit) Hz|kHz|MHz(default)]\n\t[Ctb] Sync clock."
   actions:
     GET:
       function: getSYNCClock

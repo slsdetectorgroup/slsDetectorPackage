@@ -34,6 +34,7 @@ scanParameters = _slsdet.scanParameters
 currentSrcParameters = _slsdet.currentSrcParameters
 DurationWrapper = _slsdet.DurationWrapper
 pedestalParameters = _slsdet.pedestalParameters
+Hz = _slsdet.Hz
 
 import os
 def read_version():

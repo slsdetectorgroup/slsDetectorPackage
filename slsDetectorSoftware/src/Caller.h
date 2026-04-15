@@ -5,6 +5,7 @@
 #include "sls/Detector.h"
 
 #include <iostream>
+#include <optional>
 #include <string>
 #include <vector>
 namespace sls {
@@ -215,7 +216,9 @@ class Caller {
     std::string periodl(int action);
     std::string polarity(int action);
     std::string port(int action);
+    std::string power(int action);
     std::string powerchip(int action);
+    std::string powerdac(int action);
     std::string powerindex(int action);
     std::string powerlist(int action);
     std::string powername(int action);
@@ -358,12 +361,6 @@ class Caller {
     std::string updatekernel(int action);
     std::string updatemode(int action);
     std::string user(int action);
-    std::string v_a(int action);
-    std::string v_b(int action);
-    std::string v_c(int action);
-    std::string v_chip(int action);
-    std::string v_d(int action);
-    std::string v_io(int action);
     std::string v_limit(int action);
     std::string vchip_comp_adc(int action);
     std::string vchip_comp_fe(int action);
@@ -396,6 +393,7 @@ class Caller {
 
   private:
     bool ReplaceIfDeprecated(std::string &command);
+    void SuggestIfRemoved(const std::string &command);
     using FunctionMap = std::map<std::string, std::string (Caller::*)(int)>;
     using StringMap = std::map<std::string, std::string>;
     Detector *ptr; // pointer to the detector that executes the command
@@ -420,6 +418,9 @@ class Caller {
     // applicable
     RegisterAddress getRegisterAddress(const std::string &saddr) const;
     BitAddress getBitAddress() const;
+    defs::dacIndex parseDacIndex(int argIndex, bool isCtb);
+    bool parseMV(int argIndex);
+    defs::powerIndex parsePowerIndex(int argIndex);
 
     FunctionMap functions{
         {"list", &Caller::list},
@@ -585,7 +586,9 @@ class Caller {
         {"periodl", &Caller::periodl},
         {"polarity", &Caller::polarity},
         {"port", &Caller::port},
+        {"power", &Caller::power},
         {"powerchip", &Caller::powerchip},
+        {"powerdac", &Caller::powerdac},
         {"powerindex", &Caller::powerindex},
         {"powerlist", &Caller::powerlist},
         {"powername", &Caller::powername},
@@ -729,12 +732,6 @@ class Caller {
         {"updatekernel", &Caller::updatekernel},
         {"updatemode", &Caller::updatemode},
         {"user", &Caller::user},
-        {"v_a", &Caller::v_a},
-        {"v_b", &Caller::v_b},
-        {"v_c", &Caller::v_c},
-        {"v_chip", &Caller::v_chip},
-        {"v_d", &Caller::v_d},
-        {"v_io", &Caller::v_io},
         {"v_limit", &Caller::v_limit},
         {"vchip_comp_adc", &Caller::vchip_comp_adc},
         {"vchip_comp_fe", &Caller::vchip_comp_fe},
@@ -900,6 +897,17 @@ class Caller {
         {"now", "runtime"},
         {"timestamp", "frametime"},
         {"frameindex", "rx_frameindex"},
+
+    };
+
+    StringMap removed_functions{
+
+        {"v_a", "'dac v_a' and 'power v_a'"},
+        {"v_b", "'dac v_b' and 'power v_b'"},
+        {"v_c", "'dac v_c' and 'power v_c'"},
+        {"v_d", "'dac v_d' and 'power v_d'"},
+        {"v_io", "'dac v_io' and 'power v_io'"},
+        {"v_chip", "'dac v_chip'"},
 
     };
 };

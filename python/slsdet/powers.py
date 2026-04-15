@@ -1,77 +1,125 @@
 # SPDX-License-Identifier: LGPL-3.0-or-other
 # Copyright (C) 2021 Contributors to the SLS Detector Package
-from .detector_property import DetectorProperty
 from functools import partial
 import numpy as np
 from . import _slsdet
 from .detector import freeze
-dacIndex = _slsdet.slsDetectorDefs.dacIndex
-class Power(DetectorProperty):
+powerIndex = _slsdet.slsDetectorDefs.powerIndex
+class Power:
     """
-    This class represents a power on the Chip Test Board. One instance handles all
-    powers with the same name for a multi detector instance. (TODO: Not needed for CTB)
+    This class represents a power supply on the Chip Test Board. 
 
     .. note ::
 
-        This class is used to build up DetectorPowers and is in general
+        This class is used to build up NamedPowers and is in general
         not directly accessible to the user.
 
 
     """
+    _direct_access = ['_detector']
+
     def __init__(self, name, enum, default, detector):
-
-        super().__init__(partial(detector.getPower, enum),
-                         lambda x, y : detector.setPower(enum, x, y),
-                         detector.size,
-                         name)
-
+        self._frozen = False
+        self.__name__ = name
+        self.enum = enum
         self.default = default
+        self.detector = detector
+        self._frozen = True
 
+    def enable(self):
+        " Enable this power supply."
+        self.detector.setPowerEnabled([self.enum], True)
+    
+    def disable(self):
+        " Disable this power supply."
+        self.detector.setPowerEnabled([self.enum], False)
+
+    @property
+    def dac(self):
+        " Returns the dac value for this power supply in mV."
+        return self.detector.getPowerDAC(self.enum)
+    
+    @property
+    def enabled(self):
+        " Returns whether this power supply is enabled."
+        return self.detector.isPowerEnabled(self.enum)
+    
+    # prevent unknown attributes
+    def __setattr__(self, name, value):
+        if not getattr(self, "_frozen", False) or name in ("_frozen", "__name__", "enum", "default", "detector"):
+            super().__setattr__(name, value)
+        else:
+            raise AttributeError(f"Cannot set attribute '{name}' on Power.")
+        
+    def __eq__(self, other):
+        if isinstance(other, Power):
+            return (
+                self.detector == other.detector and
+                self.enum == other.enum
+            )
+        if isinstance(other, int):
+            return self.dac == other
+        return NotImplemented
 
     def __repr__(self):
-        """String representation for a single power in all modules"""
-        powerstr = ''.join([f'{item:5d}' for item in self.get()])
-        return f'{self.__name__:15s}:{powerstr}'
+        "String representation for a single power supply"
+        return f'{self.__name__:15s}: {str(self.enabled):5s}, {self.dac:5d} mV'
+
 
 class NamedPowers:
     """
-    New implementation of the detector powers. 
+    List implementation of the all the power supplies with its names.
+    d.powers gives you list of all powers with their DAC values and enables.
+
+    Example
+    --------
+    # print all powers with DAC and enables
+    d.powers
+    # set DAC or enables
+    d.powers.VA = 1200
+    d.powers.VA.enable()
+    d.powers.VA.disable()
+    # get
+    d.powers.VA.enabled
+    d.powers.VA.dac
+    d.powers.VA # print both enabled and dac
     """
-    _frozen = False
-    _direct_access = ['_detector', '_current', '_powernames']
+    _direct_access = ['_detector', '_current']
+
     def __init__(self, detector):
+        self._frozen = False
         self._detector = detector
         self._current = 0
-
-        #only get the powernames if we have modules attached
-        if detector.size() == 0:
-            self._powernames  = ["VA", "VB", "VC", "VD", "VIO"]
-        else:
-            self._powernames = [n.replace(" ", "") for n in detector.getPowerNames()]
-
-        # Populate the powers
-        for i,name in enumerate(self._powernames):
-            #name, enum, low, high, default, detector
-            k = dacIndex(i + int(dacIndex.V_POWER_A))
-            setattr(self, name, Power(name, k, 0, detector))
-
         self._frozen = True
 
-    # def __getattr__(self, name):
-    #     return self.__getattribute__('_' + name)
+
+    @property
+    def _powernames(self):
+        if self._detector.size() == 0:
+            raise RuntimeError("No modules added")
+        # always get the latest list
+        if hasattr(self._detector, 'powerlist'):
+            return [n.replace(" ", "") for n in self._detector.powerlist]
+        else:
+            raise RuntimeError("Detector does not have powerlist attribute")
+
+    def __getattr__(self, name):
+        if name in self._powernames:
+            idx = self._powernames.index(name)
+            return Power(name, powerIndex(idx), 0, self._detector)
+        raise AttributeError(f'Power not found: {name}')
 
     def __setattr__(self, name, value):
-        if not self._frozen:
-            #durning init we need to be able to set up the class
+        if name in ("_detector", "_current", "_frozen"):
             super().__setattr__(name, value)
-        else:
-            #Later we restrict us to manipulate powers and a few fields
-            if name in self._direct_access:
-                super().__setattr__(name, value)
-            elif name in self._powernames:
-                return self.__getattribute__(name).__setitem__(slice(None, None), value)
+        elif name in self._powernames:
+            if isinstance(value, int):
+                idx = self._powernames.index(name)
+                self._detector.setPowerDAC(powerIndex(idx), value)
             else:
-                raise AttributeError(f'Power not found: {name}')
+                raise AttributeError(f"Can only set DAC (int) for '{name}' on Power.")
+        else:
+            raise AttributeError(f'Power not found: {name}')
 
     def __next__(self):
         if self._current >= len(self._powernames):
@@ -79,83 +127,11 @@ class NamedPowers:
             raise StopIteration
         else:
             self._current += 1
-            return self.__getattribute__(self._powernames[self._current-1])
+            return getattr(self, self._powernames[self._current-1])
             # return self.__getattr__(self._powernames[self._current-1])
 
     def __iter__(self):
-        return self
-
-    def __repr__(self):
-        r_str = ['========== POWERS =========']
-        r_str += [repr(power) for power in self]
-        return '\n'.join(r_str)
-    def get_asarray(self):
-        """
-        Read the powers into a numpy array with dimensions [npowers, nmodules]
-        """
-        power_array = np.zeros((len(self._powernames), len(self._detector)))
-        for i, _d in enumerate(self):
-            power_array[i,:] = _d[:]
-        return power_array
-
-    def to_array(self):
-        return self.get_asarray()       
-
-    def set_from_array(self, power_array):
-        """
-        Set the power from an numpy array with power values. [npowers, nmodules]
-        """
-        power_array = power_array.astype(np.int)
-        for i, _d in enumerate(self):
-            _d[:] = power_array[i]
-
-    def from_array(self, power_array):
-        self.set_from_array(power_array)
-
-class DetectorPowers:
-    _powers = []
-    _powernames = [_d[0] for _d in _powers]
-    _allowed_attr = ['_detector', '_current']
-    _frozen = False
-
-    def __init__(self, detector):
-        # We need to at least initially know which detector we are connected to
-        self._detector = detector
-
-        # Index to support iteration
         self._current = 0
-
-        # Name the attributes? 
-        for _d in self._powers:
-            setattr(self, '_'+_d[0], Power(*_d, detector))
-
-        self._frozen = True
-
-    def __getattr__(self, name):
-        return self.__getattribute__('_' + name)
-
-    @property
-    def powernames(self):
-        return [_d[0] for _d in _powers]
-        
-    def __setattr__(self, name, value):
-        if name in self._powernames:
-            return self.__getattribute__('_' + name).__setitem__(slice(None, None), value)
-        else:
-            if self._frozen == True and name not in self._allowed_attr:
-                raise AttributeError(f'Power not found: {name}')
-            super().__setattr__(name, value)
-
-
-    def __next__(self):
-        if self._current >= len(self._powers):
-            self._current = 0
-            raise StopIteration
-        else:
-            self._current += 1
-            return self.__getattr__(self._powernames[self._current-1])
-
-    def __iter__(self):
         return self
 
     def __repr__(self):
@@ -163,33 +139,5 @@ class DetectorPowers:
         r_str += [repr(power) for power in self]
         return '\n'.join(r_str)
 
-    def get_asarray(self):
-        """
-        Read the powers into a numpy array with dimensions [npowers, nmodules]
-        """
-        power_array = np.zeros((len(self._powers), len(self._detector)))
-        for i, _d in enumerate(self):
-            power_array[i,:] = _d[:]
-        return power_array
-
-    def to_array(self):
-        return self.get_asarray()
-
-    def set_from_array(self, power_array):
-        """
-        Set the powers from an numpy array with power values. [npowers, nmodules]
-        """
-        power_array = power_array.astype(np.int)
-        for i, _d in enumerate(self):
-            _d[:] = power_array[i]
-
-    def from_array(self, power_array):
-        self.set_from_array(power_array)
-
-    def set_default(self):
-        """
-        Set all powers to their default values
-        """
-        for _d in self:
-            _d[:] = _d.default
-
+    def __dir__(self):
+        return super().__dir__() + self._powernames

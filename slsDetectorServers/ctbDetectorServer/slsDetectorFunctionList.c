@@ -67,7 +67,9 @@ uint32_t transceiverMask = DEFAULT_TRANSCEIVER_MASK;
 
 int32_t clkPhase[NUM_CLOCKS] = {};
 uint32_t clkFrequency[NUM_CLOCKS] = {40, 20, 20, 200};
-int dacValues[NDAC] = {};
+int dacValues[NDAC_ONLY] = {};
+int powerValues[NPWR] = {}; // powerIndex (A->IO, Chip)
+
 // software limit that depends on the current chip on the ctb
 int vLimit = 0;
 int highvoltage = 0;
@@ -524,8 +526,10 @@ void setupDetector() {
         clkFrequency[ADC_CLK] = DEFAULT_ADC_CLK;
         clkFrequency[SYNC_CLK] = DEFAULT_SYNC_CLK;
         clkFrequency[DBIT_CLK] = DEFAULT_DBIT_CLK;
-        for (int i = 0; i < NDAC; ++i)
+        for (int i = 0; i != NDAC_ONLY; ++i)
             dacValues[i] = -1;
+        for (int i = 0; i != NPWR; ++i)
+            powerValues[i] = -1;
     }
     vLimit = DEFAULT_VLIMIT;
     highvoltage = 0;
@@ -572,7 +576,7 @@ void setupDetector() {
     if (initError == FAIL)
         return;
 
-    // power off voltage regulators
+    // power regulators
     powerOff();
 
     // adcs
@@ -601,11 +605,11 @@ void setupDetector() {
     // power regulators
     LOG(logINFOBLUE,
         ("Setting power dacs to min dac value (power disabled)\n"));
-    for (int idac = NDAC_ONLY; idac < NDAC; ++idac) {
-        if (idac == D_PWR_CHIP)
+    for (int iPower = 0; iPower != NPWR; ++iPower) {
+        if (iPower == (int)V_POWER_CHIP)
             continue;
-        int min = (idac == D_PWR_IO) ? VIO_MIN_MV : POWER_RGLTR_MIN;
-        initError = setDAC(idac, min, true, initErrorMessage);
+        int min = (iPower == (int)V_POWER_IO) ? VIO_MIN_MV : POWER_RGLTR_MIN;
+        initError = setPowerDAC(iPower, min, initErrorMessage);
         if (initError == FAIL)
             return;
     }
@@ -1260,9 +1264,22 @@ int getADCVpp(int mV, int *retval, char *mess) {
     return OK;
 }
 
+int getVLimit() { return vLimit; }
+
+int setVLimit(int val, char *mess) {
+    if (val < 0) {
+        sprintf(mess, "Could not set vlimit. Invalid value %d\n", val);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    LOG(logINFO, ("Setting vlimit to %d mV\n", val));
+    vLimit = val;
+    return OK;
+}
+
 int validateDACIndex(enum DACINDEX ind, char *mess) {
-    if (ind < 0 || ind >= NDAC) {
-        sprintf(mess, "Could not set DAC. Invalid index %d\n", ind);
+    if (ind < 0 || ind >= NDAC_ONLY) {
+        sprintf(mess, "Could not set/get DAC. Invalid index %d\n", ind);
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -1298,84 +1315,26 @@ int validateDACVoltage(enum DACINDEX ind, int voltage, char *mess) {
     return OK;
 }
 
-int convertVoltageToDACValue(enum DACINDEX ind, int voltage, int *retval_dacval,
-                             char *mess) {
+int convertVoltageToDAC(enum DACINDEX ind, int voltage, int *retval_dacval,
+                        char *mess) {
     *retval_dacval = -1;
-    // normal dacs
-    if (ind < NDAC_ONLY) {
-        if (LTC2620_VoltageToDac(voltage, retval_dacval) == FAIL) {
-            sprintf(
-                mess,
-                "Could not set DAC %d. Could not convert %d mV to dac units.\n",
-                ind, voltage);
-            LOG(logERROR, (mess));
-            return FAIL;
-        }
-        return OK;
-    }
-    // vchip
-    if (ind == D_PWR_CHIP) {
-        if (ConvertToDifferentRange(
-                VCHIP_MIN_MV, VCHIP_MAX_MV, LTC2620_GetMaxInput(),
-                LTC2620_GetMinInput(), voltage, retval_dacval) == FAIL) {
-            sprintf(mess,
-                    "Could not set DAC %d (vchip). Could not convert %d mV to "
-                    "dac units.\n",
-                    ind, voltage);
-            LOG(logERROR, (mess));
-            return FAIL;
-        }
-        return OK;
-    }
-    // power dacs
-    if (ConvertToDifferentRange(POWER_RGLTR_MIN, POWER_RGLTR_MAX,
-                                LTC2620_GetMaxInput(), LTC2620_GetMinInput(),
-                                voltage, retval_dacval) == FAIL) {
+    if (LTC2620_VoltageToDac(voltage, retval_dacval) == FAIL) {
         sprintf(mess,
                 "Could not set DAC %d. Could not convert %d mV to dac units.\n",
-                ind, voltage);
+                (int)ind, voltage);
         LOG(logERROR, (mess));
         return FAIL;
     }
     return OK;
 }
 
-int convertDACValueToVoltage(enum DACINDEX ind, int dacval, int *retval_voltage,
-                             char *mess) {
+int convertDACToVoltage(enum DACINDEX ind, int dacval, int *retval_voltage,
+                        char *mess) {
     *retval_voltage = -1;
-    // normal dacs
-    if (ind < NDAC_ONLY) {
-        if (LTC2620_DacToVoltage(dacval, retval_voltage) == FAIL) {
-            sprintf(
-                mess,
-                "Could not get DAC %d. Could not convert %d dac units to mV\n",
-                ind, dacval);
-            LOG(logERROR, (mess));
-            return FAIL;
-        }
-        return OK;
-    }
-    // vchip
-    if (ind == D_PWR_CHIP) {
-        if (ConvertToDifferentRange(
-                LTC2620_GetMaxInput(), LTC2620_GetMinInput(), VCHIP_MIN_MV,
-                VCHIP_MAX_MV, dacval, retval_voltage) == FAIL) {
-            sprintf(mess,
-                    "Could not get DAC %d (vchip). Could not convert %d dac "
-                    "units to mV\n",
-                    ind, dacval);
-            LOG(logERROR, (mess));
-            return FAIL;
-        }
-        return OK;
-    }
-    // power dacs
-    if (ConvertToDifferentRange(LTC2620_GetMaxInput(), LTC2620_GetMinInput(),
-                                POWER_RGLTR_MIN, POWER_RGLTR_MAX, dacval,
-                                retval_voltage) == FAIL) {
+    if (LTC2620_DacToVoltage(dacval, retval_voltage) == FAIL) {
         sprintf(mess,
                 "Could not get DAC %d. Could not convert %d dac units to mV\n",
-                ind, dacval);
+                (int)ind, dacval);
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -1395,7 +1354,7 @@ int getDAC(enum DACINDEX ind, bool mV, int *retval, char *mess) {
     }
 
     if (mV) {
-        if (convertDACValueToVoltage(ind, dacval, retval, mess) == FAIL)
+        if (convertDACToVoltage(ind, dacval, retval, mess) == FAIL)
             return FAIL;
         return OK;
     }
@@ -1412,40 +1371,288 @@ int setDAC(enum DACINDEX ind, int val, bool mV, char *mess) {
 
     int dacval = val;
     if (mV) {
-        if (ind < NDAC_ONLY) {
-            if (validateDACVoltage(ind, val, mess) == FAIL)
-                return FAIL;
-        }
-        if (convertVoltageToDACValue(ind, val, &dacval, mess) == FAIL)
+        if (validateDACVoltage(ind, val, mess) == FAIL)
+            return FAIL;
+
+        if (convertVoltageToDAC(ind, val, &dacval, mess) == FAIL)
             return FAIL;
     }
-    {
-        char dacName[20] = {0};
-        snprintf(dacName, sizeof(dacName), "dac %d", ind);
-        if (LTC2620_SetDacValue((int)ind, dacval, dacName, mess) == FAIL)
-            return FAIL;
-    }
+
+    char dacName[20] = {0};
+    snprintf(dacName, sizeof(dacName), "dac %d", ind);
+    if (LTC2620_SetDacValue((int)ind, dacval, dacName, mess) == FAIL)
+        return FAIL;
     dacValues[ind] = dacval;
     return OK;
 }
 
-int getVLimit() { return vLimit; }
-
-int setVLimit(int val, char *mess) {
-    if (val < 0) {
-        sprintf(mess, "Could not set vlimit. Invalid value %d\n", val);
+int validatePowerDACIndex(enum powerIndex ind, char *mess) {
+    if (ind < 0 || ind > V_POWER_IO) {
+        sprintf(mess, "Could not set/get Power DAC. Invalid index %d\n", ind);
         LOG(logERROR, (mess));
         return FAIL;
     }
-    vLimit = val;
+
     return OK;
 }
 
-int validateVchip(int val, char *mess) {
-    if (val < VCHIP_MIN_MV || val > VCHIP_MAX_MV) {
+int validatePower(enum powerIndex ind, int voltage, char *mess) {
+    char *powerNames[] = {PWR_NAMES};
+
+    // validate min value
+    int min = (ind == V_POWER_IO) ? VIO_MIN_MV : POWER_RGLTR_MIN;
+    if (voltage < min && voltage != 0) {
+        sprintf(
+            mess,
+            "Could not set %s. Input value %d mV must be greater than %d mV.\n",
+            powerNames[ind], voltage, min);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    // validate max value
+    int max = (VCHIP_MAX_MV - VCHIP_POWER_INCRMNT);
+    if (voltage > max) {
+        sprintf(
+            mess,
+            "Could not set %s. Input value %d mV must be less than %d mV.\n",
+            powerNames[ind], voltage, max);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    // validate vlimit
+    if (vLimit > 0 && voltage > vLimit) {
+        sprintf(mess, "Could not set %s. Input %d mV exceeds vLimit %d mV\n",
+                powerNames[ind], voltage, vLimit);
+        LOG(logERROR, (mess))
+        return FAIL;
+    }
+    return OK;
+}
+
+int convertVoltageToPowerDAC(enum powerIndex ind, int voltage,
+                             int *retval_dacval, char *mess) {
+    *retval_dacval = -1;
+    if (ConvertToDifferentRange(POWER_RGLTR_MIN, POWER_RGLTR_MAX,
+                                LTC2620_GetMaxInput(), LTC2620_GetMinInput(),
+                                voltage, retval_dacval) == FAIL) {
+        char *powerNames[] = {PWR_NAMES};
+        sprintf(mess,
+                "Could not set %s. Could not convert %d mV to dac units.\n",
+                powerNames[ind], voltage);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    return OK;
+}
+
+int convertPowerDACToVoltage(enum powerIndex ind, int dacval,
+                             int *retval_voltage, char *mess) {
+    *retval_voltage = -1;
+    if (ConvertToDifferentRange(LTC2620_GetMaxInput(), LTC2620_GetMinInput(),
+                                POWER_RGLTR_MIN, POWER_RGLTR_MAX, dacval,
+                                retval_voltage) == FAIL) {
+        char *powerNames[] = {PWR_NAMES};
+        sprintf(mess,
+                "Could not get %s. Could not convert %d dac units to mV\n",
+                powerNames[ind], dacval);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    return OK;
+}
+
+int getPowerDAC(enum powerIndex ind, int *retval, char *mess) {
+    if (ind == V_POWER_CHIP) {
+        return getVchip(retval, mess);
+    }
+
+    *retval = -1;
+    if (validatePowerDACIndex(ind, mess) == FAIL)
+        return FAIL;
+
+    int dacval = powerValues[ind];
+    if (convertPowerDACToVoltage(ind, dacval, retval, mess) == FAIL)
+        return FAIL;
+
+    return OK;
+}
+
+int setPowerDAC(enum powerIndex ind, int voltage, char *mess) {
+    if (ind == V_POWER_CHIP) {
+        snprintf(mess, MAX_STR_LENGTH,
+                 "Cannot set power dac for vchip. It is automatically "
+                 "controlled when setting the other power rails (+200mV from "
+                 "highest power regulator voltage).\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+
+    if (validatePowerDACIndex(ind, mess) == FAIL)
+        return FAIL;
+
+    char *powerNames[] = {PWR_NAMES};
+    LOG(logINFO, ("Setting DAC %s: %d mV\n", powerNames[ind], voltage));
+
+    if (validatePower(ind, voltage, mess) == FAIL)
+        return FAIL;
+
+    int dacval = -1;
+    if (convertVoltageToPowerDAC(ind, voltage, &dacval, mess) == FAIL)
+        return FAIL;
+
+    {
+        enum DACINDEX dacIndex = D_PWR_IO;
+        if (getDACIndexForPower(ind, &dacIndex, mess) == FAIL) {
+            return FAIL;
+        }
+
+        if (LTC2620_SetDacValue(dacIndex, dacval, powerNames[ind], mess) ==
+            FAIL)
+            return FAIL;
+    }
+
+    powerValues[ind] = dacval;
+    return OK;
+}
+
+int getDACIndexForPower(enum powerIndex pind, enum DACINDEX *dacIndex,
+                        char *mess) {
+    switch (pind) {
+    case V_POWER_IO:
+        *dacIndex = D_PWR_IO;
+        break;
+    case V_POWER_A:
+        *dacIndex = D_PWR_A;
+        break;
+    case V_POWER_B:
+        *dacIndex = D_PWR_B;
+        break;
+    case V_POWER_C:
+        *dacIndex = D_PWR_C;
+        break;
+    case V_POWER_D:
+        *dacIndex = D_PWR_D;
+        break;
+    default:
+        *dacIndex = -1;
+        sprintf(mess, "Power index %d has no corresponding dac index\n", pind);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    return OK;
+}
+
+int getPowerMask(enum powerIndex index, uint32_t *mask, char *mess) {
+    switch (index) {
+    case V_POWER_IO:
+        *mask |= POWER_ENBL_VIO_MSK;
+        break;
+    case V_POWER_A:
+        *mask |= POWER_ENBL_VA_MSK;
+        break;
+    case V_POWER_B:
+        *mask |= POWER_ENBL_VB_MSK;
+        break;
+    case V_POWER_C:
+        *mask |= POWER_ENBL_VC_MSK;
+        break;
+    case V_POWER_D:
+        *mask |= POWER_ENBL_VD_MSK;
+        break;
+    default:
+        sprintf(mess, "Index %d has no power rail index\n", index);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    return OK;
+}
+
+void powerOff() {
+    LOG(logINFOBLUE, ("Powering OFF all rails\n"));
+    // cannot call setPowerRailEnabled because of vchip dependency
+    uint32_t mask = POWER_ENBL_VLTG_RGLTR_MSK;
+    bus_w(POWER_REG, bus_r(POWER_REG) & ~(mask));
+}
+
+int setPowerEnabled(enum powerIndex indices[], int count, bool enable,
+                    char *mess) {
+    uint32_t mask = 0;
+    for (int i = 0; i != count; ++i) {
+        if (getPowerMask(indices[i], &mask, mess) == FAIL)
+            return FAIL;
+    }
+    // log message
+    {
+        char *powerNames[] = {PWR_NAMES};
+        char message[256] = {0};
+        sprintf(message, "Switching %s power for ", enable ? "on" : "off");
+        for (int i = 0; i != count; ++i) {
+            strcat(message, powerNames[indices[i]]);
+        }
+        strcat(message, "\n");
+        LOG(logINFO, ("%s", message));
+    }
+
+    // set vchip accordingly
+    int vchipToSet = 0;
+    if (getVchipToSet(&vchipToSet, mess) == FAIL)
+        return FAIL;
+    if (setVchip(vchipToSet, mess) == FAIL)
+        return FAIL;
+
+    // enable/disable power rails
+    uint32_t addr = POWER_REG;
+    if (enable) {
+        bus_w(addr, bus_r(addr) | mask);
+    } else {
+        bus_w(addr, bus_r(addr) & ~(mask));
+    }
+    return OK;
+}
+
+int isPowerEnabled(enum powerIndex ind, bool *retval, char *mess) {
+    uint32_t mask = 0;
+    if (getPowerMask(ind, &mask, mess) == FAIL)
+        return FAIL;
+
+    *retval = (bus_r(POWER_REG) & mask) != 0;
+    LOG(logDEBUG1, ("get power %d:%d\n", ind, *retval));
+    return OK;
+}
+
+int validateVchip(int voltage, char *mess) {
+    if (voltage < VCHIP_MIN_MV || voltage > VCHIP_MAX_MV) {
         sprintf(mess,
                 "Invalid vchip value %d mV. Must be between %d and %d mV\n",
-                val, VCHIP_MIN_MV, VCHIP_MAX_MV);
+                voltage, VCHIP_MIN_MV, VCHIP_MAX_MV);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    return OK;
+}
+
+int convertVchipDACToVoltage(int dacval, int *retval_voltage, char *mess) {
+    *retval_voltage = -1;
+    if (ConvertToDifferentRange(LTC2620_GetMaxInput(), LTC2620_GetMinInput(),
+                                VCHIP_MIN_MV, VCHIP_MAX_MV, dacval,
+                                retval_voltage) == FAIL) {
+        sprintf(mess,
+                "Could not get vchip. Could not convert %d dac units to mV\n",
+                dacval);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    return OK;
+}
+
+int convertVoltageToVchipDAC(int voltage, int *retval_dacval, char *mess) {
+    *retval_dacval = -1;
+    if (ConvertToDifferentRange(VCHIP_MIN_MV, VCHIP_MAX_MV,
+                                LTC2620_GetMaxInput(), LTC2620_GetMinInput(),
+                                voltage, retval_dacval) == FAIL) {
+        sprintf(mess,
+                "Could not set vchip. Could not convert %d mV to dac units.\n",
+                voltage);
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -1453,38 +1660,43 @@ int validateVchip(int val, char *mess) {
 }
 
 int getVchip(int *retval, char *mess) {
-    if (getDAC(D_PWR_CHIP, true, retval, mess) == FAIL)
+    *retval = -1;
+    int dacval = powerValues[V_POWER_CHIP];
+    if (convertVchipDACToVoltage(dacval, retval, mess) == FAIL)
         return FAIL;
-    LOG(logDEBUG1, ("Vchip: %d\n", *retval));
     return OK;
 }
 
-int setVchip(int val, char *mess) {
-    LOG(logINFOBLUE, ("Setting Vchip to %d mV\n", val));
-    if (validateVchip(val, mess) == FAIL)
+int setVchip(int voltage, char *mess) {
+    LOG(logDEBUG, ("\tSetting Vchip to %d mV\n", voltage));
+
+    if (validateVchip(voltage, mess) == FAIL)
         return FAIL;
 
-    if (setDAC(D_PWR_CHIP, val, true, mess) == FAIL)
+    int dacval = -1;
+    if (convertVoltageToVchipDAC(voltage, &dacval, mess) == FAIL)
         return FAIL;
 
+    {
+        int dacIndex = D_PWR_CHIP;
+        char dacName[20] = {0};
+        snprintf(dacName, sizeof(dacName), "vchip");
+        if (LTC2620_SetDacValue(dacIndex, dacval, dacName, mess) == FAIL)
+            return FAIL;
+    }
+    powerValues[V_POWER_CHIP] = dacval;
     return OK;
 }
 
-int getVchipToSet(enum DACINDEX ind, int pwr_val, int *retval_vchip,
-                  char *mess) {
+int getVchipToSet(int *retval_vchip, char *mess) {
     // get the max of all the power regulators
     int max = 0;
-    for (int ipwr = NDAC_ONLY; ipwr <= NDAC; ++ipwr) {
-        if (ipwr == D_PWR_CHIP)
-            continue;
+    enum powerIndex pwrDacs[] = {V_POWER_A, V_POWER_B, V_POWER_C, V_POWER_D,
+                                 V_POWER_IO};
+    for (int ipwr = 0; ipwr != 5; ++ipwr) {
         int val = 0;
-        // current index, use the value to be set
-        if (ipwr == (int)ind) {
-            val = pwr_val;
-        } else {
-            if (getPower(ind, &val, mess) == FAIL)
-                return FAIL;
-        }
+        if (getPowerDAC(pwrDacs[ipwr], &val, mess) == FAIL)
+            return FAIL;
         if (val > max)
             max = val;
     }
@@ -1496,14 +1708,10 @@ int getVchipToSet(enum DACINDEX ind, int pwr_val, int *retval_vchip,
         retval = VCHIP_MIN_MV;
     // max checked earlier, should not happen
     if (retval > VCHIP_MAX_MV) {
-        enum PWRINDEX pwrIndex = PWR_IO;
-        if (getPowerIndexFromDACIndex(ind, &pwrIndex, mess) == FAIL)
-            return FAIL;
-        char *powerNames[] = {PWR_NAMES};
-        sprintf(
-            mess,
-            "Could not set %s. Vchip value to set %d is beyond itsmaximum %d\n",
-            powerNames[pwrIndex], retval, VCHIP_MAX_MV);
+        sprintf(mess,
+                "Could not set power enable. Vchip value to set %d is beyond "
+                "its maximum %d\n",
+                retval, VCHIP_MAX_MV);
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -1513,186 +1721,53 @@ int getVchipToSet(enum DACINDEX ind, int pwr_val, int *retval_vchip,
     return OK;
 }
 
-int validatePower(enum PWRINDEX ind, int val, char *mess) {
-    char *powerNames[] = {PWR_NAMES};
-    // validate min value
-    int min = (ind == PWR_IO) ? VIO_MIN_MV : POWER_RGLTR_MIN;
-    if (val < min && val != 0) {
-        sprintf(
-            mess,
-            "Could not set %s. Input value %d mV must be greater than %d mV.\n",
-            powerNames[ind], val, min);
-        LOG(logERROR, (mess));
-        return FAIL;
-    }
-    // validate max value
-    int max = (VCHIP_MAX_MV - VCHIP_POWER_INCRMNT);
-    if (val > max) {
-        sprintf(
-            mess,
-            "Could not set %s. Input value %d mV must be less than %d mV.\n",
-            powerNames[ind], val, max);
-        LOG(logERROR, (mess));
-        return FAIL;
-    }
-    // validate vlimit
-    if (vLimit > 0 && val > vLimit) {
-        sprintf(mess, "Could not set %s. Input %d mV exceeds vLimit %d mV\n",
-                powerNames[ind], val, vLimit);
-        LOG(logERROR, (mess))
-        return FAIL;
-    }
-    return OK;
-}
+int getPowerADC(enum powerIndex index, int *retval, char *mess) {
+    *retval = -1;
 
-// for power rail index and name debugging
-int getPowerIndexFromDACIndex(enum DACINDEX ind, enum PWRINDEX *pwrIndex,
-                              char *mess) {
-    *pwrIndex = PWR_IO;
-    switch (ind) {
-    case D_PWR_IO:
-        *pwrIndex = PWR_IO;
+    enum ADCINDEX adcIndex = V_PWR_IO;
+    switch (index) {
+    case V_POWER_A:
+    case I_POWER_A:
+        adcIndex = V_PWR_A;
         break;
-    case D_PWR_A:
-        *pwrIndex = PWR_A;
+    case V_POWER_B:
+    case I_POWER_B:
+        adcIndex = V_PWR_B;
         break;
-    case D_PWR_B:
-        *pwrIndex = PWR_B;
+    case V_POWER_C:
+    case I_POWER_C:
+        adcIndex = V_PWR_C;
         break;
-    case D_PWR_C:
-        *pwrIndex = PWR_C;
+    case V_POWER_D:
+    case I_POWER_D:
+        adcIndex = V_PWR_D;
         break;
-    case D_PWR_D:
-        *pwrIndex = PWR_D;
+    case V_POWER_IO:
+    case I_POWER_IO:
+        adcIndex = V_PWR_IO;
         break;
+
     default:
-        sprintf(mess, "Index %d has no power index\n", ind);
+        sprintf(mess, "Could not get Power ADC. Invalid index %d\n", index);
         LOG(logERROR, (mess));
         return FAIL;
     }
-    return OK;
-}
 
-int getPowerRailMask(enum PWRINDEX ind, uint32_t *mask, char *mess) {
-    *mask = 0;
-    switch (ind) {
-    case PWR_IO:
-        *mask = POWER_ENBL_VIO_MSK;
-        break;
-    case PWR_A:
-        *mask = POWER_ENBL_VA_MSK;
-        break;
-    case PWR_B:
-        *mask = POWER_ENBL_VB_MSK;
-        break;
-    case PWR_C:
-        *mask = POWER_ENBL_VC_MSK;
-        break;
-    case PWR_D:
-        *mask = POWER_ENBL_VD_MSK;
-        break;
-    default:
-        sprintf(mess, "Index %d has no power rail index\n", ind);
-        LOG(logERROR, (mess));
-        return FAIL;
-    }
-    return OK;
-}
-
-int EnablePowerRail(enum PWRINDEX ind, char *mess) {
-    char *powerNames[] = {PWR_NAMES};
-    uint32_t addr = POWER_REG;
-    uint32_t mask = 0;
-
-    if (getPowerRailMask(ind, &mask, mess) == FAIL)
-        return FAIL;
-
-    LOG(logINFO, ("\tSwitching on power for %s\n", powerNames[ind]));
-    bus_w(addr, bus_r(addr) | mask);
-    return OK;
-}
-
-int DisablePowerRail(enum PWRINDEX ind, char *mess) {
-    char *powerNames[] = {PWR_NAMES};
-    uint32_t addr = POWER_REG;
-    uint32_t mask = 0;
-
-    if (getPowerRailMask(ind, &mask, mess) == FAIL)
-        return FAIL;
-
-    LOG(logINFO, ("\tSwitching off power for %s\n", powerNames[ind]));
-    bus_w(addr, bus_r(addr) & ~(mask));
-    return OK;
-}
-
-int getPowerRail(enum PWRINDEX ind, int *retval, char *mess) {
-    char *powerNames[] = {PWR_NAMES};
-    uint32_t addr = POWER_REG;
-    uint32_t mask = 0;
-
-    if (getPowerRailMask(ind, &mask, mess) == FAIL)
-        return FAIL;
-
-    *retval = (bus_r(addr) & mask);
-    LOG(logDEBUG1, ("Power rail retval for %s: %s\n", powerNames[ind],
-                    ((*retval > 0) ? "Enabled" : "Disabled")));
-
-    return OK;
-}
-
-int getPower(enum DACINDEX ind, int *retval, char *mess) {
-    enum PWRINDEX pwrIndex = PWR_IO;
-    if (getPowerIndexFromDACIndex(ind, &pwrIndex, mess) == FAIL)
-        return FAIL;
-
-    // if powered off, return 0
-    if (getPowerRail(pwrIndex, retval, mess) == FAIL)
-        return FAIL;
-    if (*retval == 0) {
+#ifdef VIRTUAL
+    return 0;
+#endif
+    int deviceId = I2C_POWER_VIO_DEVICE_ID + (int)adcIndex;
+    // adc voltage
+    if (index < I_POWER_A) {
+        LOG(logDEBUG1, ("Reading I2C Voltage for device Id: %d\n", deviceId));
+        *retval = INA226_ReadVoltage(deviceId);
         return OK;
     }
 
-    if (getDAC(ind, true, retval, mess) == FAIL)
-        return FAIL;
+    // adc current
+    LOG(logDEBUG1, ("Reading I2C Current for device Id: %d\n", deviceId));
+    *retval = INA226_ReadCurrent(deviceId);
     return OK;
-}
-
-int setPower(enum DACINDEX ind, int val, char *mess) {
-    enum PWRINDEX pwrIndex = PWR_IO;
-    if (getPowerIndexFromDACIndex(ind, &pwrIndex, mess) == FAIL)
-        return FAIL;
-
-    char *powerNames[] = {PWR_NAMES};
-    LOG(logINFOBLUE, ("Setting %s to %d mV\n", powerNames[pwrIndex], val));
-
-    if (validatePower(pwrIndex, val, mess) == FAIL)
-        return FAIL;
-
-    // compute vchip to set before powering off
-    int vchip = 0;
-    if (getVchipToSet(ind, val, &vchip, mess) == FAIL)
-        return FAIL;
-
-    if (DisablePowerRail(pwrIndex, mess) == FAIL)
-        return FAIL;
-
-    if (setVchip(vchip, mess) == FAIL)
-        return FAIL;
-
-    if (val != 0) {
-        if (setDAC(ind, val, true, mess) == FAIL)
-            return FAIL;
-
-        if (EnablePowerRail(pwrIndex, mess) == FAIL)
-            return FAIL;
-    }
-    return OK;
-}
-
-void powerOff() {
-    uint32_t addr = POWER_REG;
-    LOG(logINFO, ("Powering off all voltage regulators\n"));
-    bus_w(addr, bus_r(addr) & (~POWER_ENBL_VLTG_RGLTR_MSK));
 }
 
 int getADC(enum ADCINDEX ind) {
@@ -1700,22 +1775,6 @@ int getADC(enum ADCINDEX ind) {
     return 0;
 #endif
     switch (ind) {
-    case V_PWR_IO:
-    case V_PWR_A:
-    case V_PWR_B:
-    case V_PWR_C:
-    case V_PWR_D:
-        LOG(logDEBUG1, ("Reading I2C Voltage for device Id: %d\n", (int)ind));
-        return INA226_ReadVoltage(I2C_POWER_VIO_DEVICE_ID + (int)ind);
-    case I_PWR_IO:
-    case I_PWR_A:
-    case I_PWR_B:
-    case I_PWR_C:
-    case I_PWR_D:
-        LOG(logDEBUG1, ("Reading I2C Current for device Id: %d\n", (int)ind));
-        return INA226_ReadCurrent(I2C_POWER_VIO_DEVICE_ID +
-                                  (int)(ind - I_PWR_IO));
-
         // slow adcs
     case S_TMP:
         LOG(logDEBUG1, ("Reading Slow ADC Temperature\n"));

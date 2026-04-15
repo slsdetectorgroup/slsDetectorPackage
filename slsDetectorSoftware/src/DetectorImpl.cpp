@@ -2026,17 +2026,17 @@ void DetectorImpl::setCtbPowerNames(const std::vector<std::string> &names) {
     ctb_shm()->setPowerNames(names);
 }
 
-std::string DetectorImpl::getCtbPowerName(const defs::dacIndex i) const {
+std::string DetectorImpl::getCtbPowerName(const defs::powerIndex i) const {
     if (!isChipTestBoard())
         throw RuntimeError("Named Powers only for CTB");
     return ctb_shm()->getPowerName(static_cast<int>(i - defs::V_POWER_A));
 }
 
-void DetectorImpl::setCtbPowerName(const defs::dacIndex index,
+void DetectorImpl::setCtbPowerName(const defs::powerIndex index,
                                    const std::string &name) {
     if (!isChipTestBoard())
         throw RuntimeError("Named Powers only for CTB");
-    ctb_shm()->setPowerName(static_cast<int>(index - defs::V_POWER_A), name);
+    ctb_shm()->setPowerName(static_cast<int>(index), name);
 }
 
 std::vector<std::string> DetectorImpl::getCtbSlowADCNames() const {

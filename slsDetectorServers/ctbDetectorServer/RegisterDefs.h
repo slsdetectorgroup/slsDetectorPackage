@@ -628,8 +628,27 @@
 #define ADC_SLOW_CTRL_DONE_OFST (1)
 #define ADC_SLOW_CTRL_DONE_MSK  (0x00000001 << ADC_SLOW_CTRL_DONE_OFST)
 
+/* SPI */
+#define SPI_CTRL_REG (0x48 << MEM_MAP_SHIFT)
+    #define SPI_CTRL_RX_EMPTY_BIT    2
+    #define SPI_CTRL_CHIPSELECT_BIT  4
+    #define SPI_CTRL_NBIT_OFST       16
+#define SPI_WRITEDATA_REG (0x49 << MEM_MAP_SHIFT)
+#define SPI_READDATA_REG (0x4A << MEM_MAP_SHIFT)
+
 /* Power monitor base register */
 #define POWER_MONITOR_BASE_REG (0x50 << MEM_MAP_SHIFT)
+
+/** I2C Control register */
+#define I2C_TRANSFER_COMMAND_FIFO_REG (0x100 << MEM_MAP_SHIFT)
+#define I2C_RX_DATA_FIFO_REG          (0x101 << MEM_MAP_SHIFT)
+#define I2C_CONTROL_REG               (0x102 << MEM_MAP_SHIFT)
+#define I2C_STATUS_REG                (0x105 << MEM_MAP_SHIFT)
+#define I2C_RX_DATA_FIFO_LEVEL_REG    (0x107 << MEM_MAP_SHIFT)
+#define I2C_SCL_LOW_COUNT_REG         (0x108 << MEM_MAP_SHIFT)
+#define I2C_SCL_HIGH_COUNT_REG        (0x109 << MEM_MAP_SHIFT)
+#define I2C_SDA_HOLD_REG              (0x10A << MEM_MAP_SHIFT)
+// fixme: upto 0x10f
 
 /* Round Robin  */
 #define RXR_ENDPOINT_START_REG (0x1000 << MEM_MAP_SHIFT)

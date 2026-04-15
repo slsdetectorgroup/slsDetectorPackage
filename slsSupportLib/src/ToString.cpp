@@ -1181,23 +1181,4 @@ template <> int64_t StringTo(const std::string &s) {
     return std::stol(s, nullptr, base);
 }
 
-int StringToHz(const std::string &s, const std::string &unit) {
-    double fval{0};
-    try {
-        fval = std::stod(s);
-    } catch (const std::invalid_argument &e) {
-        throw RuntimeError("Could not convert string to frequency");
-    }
-    if (unit.empty() || unit == "MHz") {
-        return static_cast<int>(fval * 1000000.0);
-    } else if (unit == "kHz") {
-        return static_cast<int>(fval * 1000.0);
-    } else if (unit == "Hz") {
-        return static_cast<int>(fval);
-    } else {
-        throw RuntimeError("Unknown unit: " + unit +
-                           ". Supported units: MHz, kHz, Hz");
-    }
-}
-
 } // namespace sls

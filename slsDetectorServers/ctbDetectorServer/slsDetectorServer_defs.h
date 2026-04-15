@@ -57,6 +57,9 @@
 #define NS_TO_CLK_CYCLE               (1E-9) // ns to MHz
 #define DEFAULT_TRANSCEIVER_MASK      (0x3)
 
+#define MIN_CLK_FREQ (2000000)   // 2 MHz
+#define MAX_CLK_FREQ (300000000) // 300 MHz
+
 #define MAX_TRANSCEIVER_MASK    (0xF)
 #define MAX_TRANSCEIVER_SAMPLES (0xFFFF)
 

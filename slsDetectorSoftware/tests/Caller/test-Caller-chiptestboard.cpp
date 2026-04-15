@@ -699,8 +699,24 @@ TEST_CASE("adcclk", "[.detectorintegration]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         auto prev_val = det.getADCClock();
+
+        REQUIRE_NOTHROW(caller.call("adcclk", {"MHZ"}, -1, GET));
+        REQUIRE_NOTHROW(caller.call("adcclk", {"mhz"}, -1, GET));
+        REQUIRE_NOTHROW(caller.call("adcclk", {"MHz"}, -1, GET));
+        REQUIRE_NOTHROW(caller.call("adcclk", {"kHz"}, -1, GET));
+        REQUIRE_NOTHROW(caller.call("adcclk", {"Hz"}, -1, GET));
+        REQUIRE_NOTHROW(caller.call("adcclk", {}, -1, GET));
+        // min
+        if (det_type == defs::CHIPTESTBOARD)
+            REQUIRE_THROWS(caller.call("adcclk", {"1", "MHz"}, -1, PUT));
+        else
+            REQUIRE_THROWS(caller.call("adcclk", {"9", "MHz"}, -1, PUT));
+        // max
+        REQUIRE_THROWS(caller.call("adcclk", {"301", "MHz"}, -1, PUT));
+
         {
             std::ostringstream oss;
             caller.call("adcclk", {"20"}, -1, PUT, oss);
@@ -711,10 +727,11 @@ TEST_CASE("adcclk", "[.detectorintegration]") {
             caller.call("adcclk", {"10"}, -1, PUT, oss);
             REQUIRE(oss.str() == "adcclk 10\n");
         }
+
         {
             std::ostringstream oss;
             caller.call("adcclk", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "adcclk 10000000\n");
+            REQUIRE(oss.str() == "adcclk 10MHz\n");
         }
         {
             std::ostringstream oss;
@@ -724,7 +741,7 @@ TEST_CASE("adcclk", "[.detectorintegration]") {
         {
             std::ostringstream oss;
             caller.call("adcclk", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "adcclk 15000000\n");
+            REQUIRE(oss.str() == "adcclk 15MHz\n");
         }
         {
             std::ostringstream oss;
@@ -734,7 +751,7 @@ TEST_CASE("adcclk", "[.detectorintegration]") {
         {
             std::ostringstream oss;
             caller.call("adcclk", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "adcclk 5750000\n");
+            REQUIRE(oss.str() == "adcclk 5.75MHz\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setADCClock(prev_val[i], {i});
@@ -750,8 +767,24 @@ TEST_CASE("runclk", "[.detectorintegration]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         auto prev_val = det.getRUNClock();
+
+        REQUIRE_NOTHROW(caller.call("runclk", {"MHZ"}, -1, GET));
+        REQUIRE_NOTHROW(caller.call("runclk", {"mhz"}, -1, GET));
+        REQUIRE_NOTHROW(caller.call("runclk", {"MHz"}, -1, GET));
+        REQUIRE_NOTHROW(caller.call("runclk", {"kHz"}, -1, GET));
+        REQUIRE_NOTHROW(caller.call("runclk", {"Hz"}, -1, GET));
+        REQUIRE_NOTHROW(caller.call("runclk", {}, -1, GET));
+        // min
+        if (det_type == defs::CHIPTESTBOARD)
+            REQUIRE_THROWS(caller.call("runclk", {"1", "MHz"}, -1, PUT));
+        else
+            REQUIRE_THROWS(caller.call("runclk", {"9", "MHz"}, -1, PUT));
+        // max
+        REQUIRE_THROWS(caller.call("runclk", {"301", "MHz"}, -1, PUT));
+
         {
             std::ostringstream oss;
             caller.call("runclk", {"20"}, -1, PUT, oss);
@@ -762,10 +795,11 @@ TEST_CASE("runclk", "[.detectorintegration]") {
             caller.call("runclk", {"10"}, -1, PUT, oss);
             REQUIRE(oss.str() == "runclk 10\n");
         }
+
         {
             std::ostringstream oss;
             caller.call("runclk", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "runclk 10000000\n");
+            REQUIRE(oss.str() == "runclk 10MHz\n");
         }
         {
             std::ostringstream oss;
@@ -775,7 +809,7 @@ TEST_CASE("runclk", "[.detectorintegration]") {
         {
             std::ostringstream oss;
             caller.call("runclk", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "runclk 15000000\n");
+            REQUIRE(oss.str() == "runclk 15MHz\n");
         }
         {
             std::ostringstream oss;
@@ -785,7 +819,7 @@ TEST_CASE("runclk", "[.detectorintegration]") {
         {
             std::ostringstream oss;
             caller.call("runclk", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "runclk 5750000\n");
+            REQUIRE(oss.str() == "runclk 5.75MHz\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setRUNClock(prev_val[i], {i});
@@ -1067,8 +1101,24 @@ TEST_CASE("dbitclk", "[.detectorintegration]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         auto prev_val = det.getDBITClock();
+
+        REQUIRE_NOTHROW(caller.call("dbitclk", {"MHZ"}, -1, GET));
+        REQUIRE_NOTHROW(caller.call("dbitclk", {"mhz"}, -1, GET));
+        REQUIRE_NOTHROW(caller.call("dbitclk", {"MHz"}, -1, GET));
+        REQUIRE_NOTHROW(caller.call("dbitclk", {"kHz"}, -1, GET));
+        REQUIRE_NOTHROW(caller.call("dbitclk", {"Hz"}, -1, GET));
+        REQUIRE_NOTHROW(caller.call("dbitclk", {}, -1, GET));
+        // min
+        if (det_type == defs::CHIPTESTBOARD)
+            REQUIRE_THROWS(caller.call("dbitclk", {"1", "MHz"}, -1, PUT));
+        else
+            REQUIRE_THROWS(caller.call("dbitclk", {"9", "MHz"}, -1, PUT));
+        // max
+        REQUIRE_THROWS(caller.call("dbitclk", {"301", "MHz"}, -1, PUT));
+
         {
             std::ostringstream oss;
             caller.call("dbitclk", {"20"}, -1, PUT, oss);
@@ -1079,10 +1129,11 @@ TEST_CASE("dbitclk", "[.detectorintegration]") {
             caller.call("dbitclk", {"10"}, -1, PUT, oss);
             REQUIRE(oss.str() == "dbitclk 10\n");
         }
+
         {
             std::ostringstream oss;
             caller.call("dbitclk", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "dbitclk 10000000\n");
+            REQUIRE(oss.str() == "dbitclk 10MHz\n");
         }
         {
             std::ostringstream oss;
@@ -1092,7 +1143,7 @@ TEST_CASE("dbitclk", "[.detectorintegration]") {
         {
             std::ostringstream oss;
             caller.call("dbitclk", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "dbitclk 15000000\n");
+            REQUIRE(oss.str() == "dbitclk 15MHz\n");
         }
         {
             std::ostringstream oss;
@@ -1102,7 +1153,7 @@ TEST_CASE("dbitclk", "[.detectorintegration]") {
         {
             std::ostringstream oss;
             caller.call("dbitclk", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "dbitclk 5750000\n");
+            REQUIRE(oss.str() == "dbitclk 5.75MHz\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setDBITClock(prev_val[i], {i});

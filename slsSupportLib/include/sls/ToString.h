@@ -111,13 +111,19 @@ typename std::enable_if<is_frequency<T>::value, std::string>::type
 ToString(T f, const std::string &unit) {
     double val = static_cast<double>(f.value);
 
+    auto unitLower = [&] {
+        std::string result = unit;
+        std::transform(result.begin(), result.end(), result.begin(),
+                       [](unsigned char c) { return std::tolower(c); });
+        return result;
+    }();
     std::ostringstream os;
-    if (unit == "Hz")
-        os << val << ' ' << unit;
-    else if (unit == "kHz")
-        os << val / (static_cast<double>(1e3)) << ' ' << unit;
-    else if (unit == "MHz")
-        os << val / (static_cast<double>(1e6)) << ' ' << unit;
+    if (unitLower == "hz")
+        os << val << unit;
+    else if (unitLower == "khz")
+        os << val / (static_cast<double>(1e3)) << unit;
+    else if (unitLower == "mhz")
+        os << val / (static_cast<double>(1e6)) << unit;
     else
         throw std::runtime_error("Unknown unit: " + unit);
     return os.str();
@@ -411,8 +417,5 @@ std::vector<T> StringTo(const std::vector<std::string> &strings) {
         result.push_back(StringTo<T>(s));
     return result;
 }
-
-/** Convert frequency string with unit (MHz, kHz, Hz) to Hz */
-int StringToHz(const std::string &s, const std::string &unit);
 
 } // namespace sls

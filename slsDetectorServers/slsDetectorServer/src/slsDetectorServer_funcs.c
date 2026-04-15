@@ -5866,6 +5866,13 @@ int set_clock_frequency(int file_des) {
 
             if (getFrequency(c) == val) {
                 LOG(logINFO, ("Same %s: %d %s\n", modeName, val, "Hz"));
+            } else if (val < MIN_CLK_FREQ || val > MAX_CLK_FREQ) {
+                ret = FAIL;
+                sprintf(mess,
+                        "Cannot set frequency to %d Hz. Frequency outside "
+                        "limits (%f - %f MHz)\n",
+                        val, MIN_CLK_FREQ / 1e6, MAX_CLK_FREQ / 1e6);
+                LOG(logERROR, (mess));
             } else {
                 int ret = setFrequency(c, val);
                 if (ret == FAIL) {

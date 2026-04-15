@@ -47,7 +47,7 @@
 #define DEFAULT_PERIOD                (1 * 1000 * 1000) // ns
 #define DEFAULT_DELAY                 (0)
 #define DEFAULT_HIGH_VOLTAGE          (0)
-#define DEFAULT_VLIMIT                (-100)
+#define DEFAULT_VLIMIT                (0)
 #define DEFAULT_TIMING_MODE           (AUTO_TIMING)
 #define DEFAULT_TX_UDP_PORT           (0x7e9a)
 #define DEFAULT_RUN_CLK               (200) // 40
@@ -174,8 +174,7 @@ enum DACINDEX {
     D_PWR_IO
 };
 
-enum PWRINDEX { PWR_IO, PWR_A, PWR_B, PWR_C, PWR_D };
-#define PWR_NAMES "VIO", "VA", "VB", "VC", "VD"
+#define PWR_NAMES "VA", "VB", "VC", "VD", "VIO"
 
 enum CLKINDEX { RUN_CLK, ADC_CLK, SYNC_CLK, DBIT_CLK, NUM_CLOCKS };
 #define CLK_NAMES "run", "adc", "sync", "dbit"

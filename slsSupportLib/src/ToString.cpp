@@ -7,6 +7,17 @@ namespace sls {
 
 std::string ToString(bool value) { return value ? "1" : "0"; }
 
+std::string ToString(bool value, defs::boolFormat format) {
+    switch (format) {
+    case defs::boolFormat::TrueFalse:
+        return value ? "true" : "false";
+    case defs::boolFormat::OnOff:
+        return value ? "on" : "off";
+    default:
+        return value ? "1" : "0";
+    }
+}
+
 std::string ToString(const slsDetectorDefs::xy &coord) {
     std::ostringstream oss;
     oss << '[' << coord.x << ", " << coord.y << ']';
@@ -552,6 +563,38 @@ std::string ToString(const std::vector<defs::dacIndex> &vec) {
     return os.str();
 }
 
+std::string ToString(const defs::powerIndex s) {
+    switch (s) {
+    case defs::V_POWER_A:
+        return std::string("v_a");
+    case defs::V_POWER_B:
+        return std::string("v_b");
+    case defs::V_POWER_C:
+        return std::string("v_c");
+    case defs::V_POWER_D:
+        return std::string("v_d");
+    case defs::V_POWER_IO:
+        return std::string("v_io");
+    case defs::V_POWER_CHIP:
+        return std::string("v_chip");
+    default:
+        return std::string("Unknown");
+    }
+}
+
+std::string ToString(const std::vector<defs::powerIndex> &vec) {
+    std::ostringstream os;
+    os << '[';
+    if (!vec.empty()) {
+        auto it = vec.begin();
+        os << ToString(*it++);
+        while (it != vec.end())
+            os << ", " << ToString(*it++);
+    }
+    os << ']';
+    return os.str();
+}
+
 std::string ToString(const defs::burstMode s) {
     switch (s) {
     case defs::BURST_INTERNAL:
@@ -1018,6 +1061,22 @@ template <> defs::dacIndex StringTo(const std::string &s) {
     throw RuntimeError("Unknown dac Index " + s);
 }
 
+template <> defs::powerIndex StringTo(const std::string &s) {
+    if (s == "v_a")
+        return defs::V_POWER_A;
+    if (s == "v_b")
+        return defs::V_POWER_B;
+    if (s == "v_c")
+        return defs::V_POWER_C;
+    if (s == "v_d")
+        return defs::V_POWER_D;
+    if (s == "v_io")
+        return defs::V_POWER_IO;
+    if (s == "v_chip")
+        return defs::V_POWER_CHIP;
+    throw RuntimeError("Unknown power Index " + s);
+}
+
 template <> defs::burstMode StringTo(const std::string &s) {
     if (s == "burst_internal")
         return defs::BURST_INTERNAL;
@@ -1165,14 +1224,38 @@ template <> int StringTo(const std::string &s) {
 }
 
 template <> bool StringTo(const std::string &s) {
-    int i = std::stoi(s, nullptr, 10);
-    switch (i) {
-    case 0:
-        return false;
-    case 1:
-        return true;
+    return StringTo(s, defs::boolFormat::OneZero);
+}
+
+bool StringTo(const std::string &s, defs::boolFormat format) {
+    switch (format) {
+    case defs::boolFormat::TrueFalse: {
+        if (s == "true")
+            return true;
+        if (s == "false")
+            return false;
+        throw RuntimeError("Unknown boolean. Expecting 'true' or 'false'.");
+    }
+    case defs::boolFormat::OnOff: {
+        if (s == "on")
+            return true;
+        if (s == "off")
+            return false;
+        throw RuntimeError("Unknown boolean. Expecting 'on' or 'off'.");
+    }
+    case defs::boolFormat::OneZero: {
+        int i = std::stoi(s, nullptr, 10);
+        switch (i) {
+        case 0:
+            return false;
+        case 1:
+            return true;
+        default:
+            throw RuntimeError("Unknown boolean. Expecting 0 or 1.");
+        }
+    }
     default:
-        throw RuntimeError("Unknown boolean. Expecting be 0 or 1.");
+        throw RuntimeError("Unknown boolean format.");
     }
 }
 

@@ -20,7 +20,7 @@ from .utils import Geometry, to_geo, element, reduce_time, is_iterable, hostname
 from ._slsdet import xy, freeSharedMemory, getUserDetails
 from .gaincaps import Mythen3GainCapsWrapper
 from . import utils as ut
-from .proxy import JsonProxy, SlowAdcProxy, ClkDivProxy, MaxPhaseProxy, ClkFreqProxy, PatLoopProxy, PatNLoopProxy, PatWaitProxy, PatWaitTimeProxy 
+from .proxy import JsonProxy, ClkDivProxy, MaxPhaseProxy, ClkFreqProxy, PatLoopProxy, PatNLoopProxy, PatWaitProxy, PatWaitTimeProxy 
 from .registers import Register, Adc_register
 import datetime as dt
 
@@ -516,7 +516,7 @@ class Detector(CppDetectorApi):
     @element
     def powerchip(self):
         """
-        [Jungfrau][Moench][Mythen3][Gotthard2][Xilinx Ctb] Power the chip. 
+        [Jungfrau][Moench][Mythen3][Gotthard2][Xilinx Ctb][Ctb] Power the chip. 
 
         Note
         ----
@@ -1987,26 +1987,7 @@ class Detector(CppDetectorApi):
         return super().getBit(resolved)  
 
 
-    @property
-    def slowadc(self):
-        """
-        [Ctb] Slow ADC channel in uV of all channels or specific ones from 0-7.
-        
-        Example
-        -------
-        >>> d.slowadc
-        0: 0 uV
-        1: 0 uV
-        2: 0 uV
-        3: 0 uV
-        4: 0 uV
-        5: 0 uV
-        6: 0 uV
-        7: 0 uV
-        >>> d.slowadc[3]
-        0
-        """
-        return SlowAdcProxy(self)
+
 
     @property
     def daclist(self):
@@ -2022,52 +2003,7 @@ class Detector(CppDetectorApi):
     def daclist(self, value):
         self.setDacNames(value)
 
-    @property
-    def adclist(self):
-        """
-        [Chiptestboard] List of names for every adc for this board. 32 adcs
-        """
-        return self.getAdcNames()
 
-    @adclist.setter
-    def adclist(self, value):
-        self.setAdcNames(value)
-
-    @property
-    def signallist(self):
-        """
-        [Chiptestboard] List of names for every io signal for this board. 64 signals        
-        """
-        return self.getSignalNames()
-
-    @signallist.setter
-    def signallist(self, value):
-        self.setSignalNames(value)
-
-    @property
-    def powerlist(self):
-        """
-        [Chiptestboard] List of names for every power for this board. 5 power supply
-        
-        """
-        return self.getPowerNames()
-
-    @powerlist.setter
-    def powerlist(self, value):
-        self.setPowerNames(value)
-
-    @property
-    def slowadclist(self):
-        """
-        [Chiptestboard] List of names for every slowadc for this board. 8 slowadc
-        
-        """
-        return self.getSlowADCNames()
-
-    @slowadclist.setter
-    def slowadclist(self, value):
-        self.setSlowADCNames(value)
-        
     @property
     def dacvalues(self):
         """Gets the dac values for every dac for this detector."""
@@ -2076,21 +2012,6 @@ class Detector(CppDetectorApi):
             for dac in self.getDacList()
         }
 
-    @property
-    def powervalues(self):
-        """[Chiptestboard] Gets the power values for every power for this detector."""
-        return {
-            power.name.lower(): element_if_equal(np.array(self.getPower(power)))
-            for power in self.getPowerList()
-        }
-
-    @property
-    def slowadcvalues(self):
-        """[Chiptestboard] Gets the slow adc values for every slow adc for this detector."""
-        return {
-            slowadc.name.lower(): element_if_equal(np.array(self.getSlowADC(slowadc)))
-            for slowadc in self.getSlowADCList()
-        }
 
     @property
     def timinglist(self):
@@ -4171,75 +4092,13 @@ class Detector(CppDetectorApi):
 
     @property
     @element
-    def v_a(self):
-        """[Ctb][Xilinx Ctb] Power supply a in mV."""
-        return self.getPower(dacIndex.V_POWER_A)
-
-    @v_a.setter
-    def v_a(self, value):
-        value = ut.merge_args(dacIndex.V_POWER_A, value)
-        ut.set_using_dict(self.setPower, *value)
-
-    @property
-    @element
-    def v_b(self):
-        """[Ctb][Xilinx Ctb] Power supply b in mV."""
-        return self.getPower(dacIndex.V_POWER_B)
-
-    @v_b.setter
-    def v_b(self, value):
-        value = ut.merge_args(dacIndex.V_POWER_B, value)
-        ut.set_using_dict(self.setPower, *value)
-
-    @property
-    @element
-    def v_c(self):
-        """[Ctb][Xilinx Ctb] Power supply c in mV."""
-        return self.getPower(dacIndex.V_POWER_C)
-
-    @v_c.setter
-    def v_c(self, value):
-        value = ut.merge_args(dacIndex.V_POWER_C, value)
-        ut.set_using_dict(self.setPower, *value)
-
-    @property
-    @element
-    def v_d(self):
-        """[Ctb][Xilinx Ctb] Power supply d in mV."""
-        return self.getPower(dacIndex.V_POWER_D)
-
-    @v_d.setter
-    def v_d(self, value):
-        value = ut.merge_args(dacIndex.V_POWER_D, value)
-        ut.set_using_dict(self.setPower, *value)
-
-    @property
-    @element
-    def v_io(self):
-        """[Ctb][Xilinx Ctb] Power supply io in mV. Minimum 1200 mV. 
-        
-        Note
-        ----
-        Must be the first power regulator to be set after fpga reset (on-board detector server start up).
-        """
-        return self.getPower(dacIndex.V_POWER_IO)
-
-    @v_io.setter
-    def v_io(self, value):
-        value = ut.merge_args(dacIndex.V_POWER_IO, value)
-        ut.set_using_dict(self.setPower, *value)
-
-    @property
-    @element
     def v_limit(self):
         """[Ctb][Xilinx Ctb] Soft limit for power supplies (ctb only) and DACS in mV."""
-        return self.getPower(dacIndex.V_LIMIT)
+        return self.getVoltageLimit()
 
     @v_limit.setter
     def v_limit(self, value):
-        value = ut.merge_args(dacIndex.V_LIMIT, value)
-        ut.set_using_dict(self.setPower, *value)
-
+        ut.set_using_dict(self.setVoltageLimit, value)
 
     @property
     @element

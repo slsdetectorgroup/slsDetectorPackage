@@ -78,7 +78,7 @@ void test_valid_port_caller(const std::string &command,
                             int detector_id, int action);
 
 void test_dac_caller(slsDetectorDefs::dacIndex index,
-                     const std::string &dacname, int dacvalue);
+                     const std::string &dacname, int dacvalue, bool mV = false);
 void test_onchip_dac_caller(slsDetectorDefs::dacIndex index,
                             const std::string &dacname, int dacvalue);
 

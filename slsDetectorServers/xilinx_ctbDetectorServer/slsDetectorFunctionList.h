@@ -63,18 +63,7 @@ void setupDetector();
 void cleanFifos();
 void resetFlow();
 int waitTransceiverReset(char *mess);
-#ifdef VIRTUAL
-void setTransceiverAlignment(int align);
-#endif
 int isTransceiverAligned();
-int waitTransceiverAligned(char *mess);
-int configureTransceiver(char *mess);
-int isChipConfigured();
-int powerChip(int on, char *mess);
-int getPowerChip();
-int configureChip(char *mess);
-int readConfigFile(char *mess, char *fileName, char *fileType);
-int resetChip(char *mess);
 
 // parameters - dr, roi
 int setDynamicRange(int dr);
@@ -120,28 +109,35 @@ int64_t getMeasurementTime();
 int setModule(sls_detector_module myMod, char *mess);
 
 // parameters - dac, adc, hv
+int getVLimit();
+int setVLimit(int val, char *mess);
+
 int validateDACIndex(enum DACINDEX ind, char *mess);
 int validateDACVoltage(enum DACINDEX ind, int voltage, char *mess);
-int convertVoltageToDACValue(enum DACINDEX ind, int voltage, int *retval_dacval,
-                             char *mess);
-int convertDACValueToVoltage(enum DACINDEX ind, int dacval, int *retval_voltage,
-                             char *mess);
+int convertVoltageToDAC(enum DACINDEX ind, int voltage, int *retval_dacval,
+                        char *mess);
+int convertDACToVoltage(enum DACINDEX ind, int dacval, int *retval_voltage,
+                        char *mess);
 int getDAC(enum DACINDEX ind, bool mV, int *retval, char *mess);
 /** @param val value can be in mV or dac units */
 int setDAC(enum DACINDEX ind, int val, bool mV, char *mess);
 
-int getVLimit();
-int setVLimit(int val, char *mess);
+int validatePowerDACIndex(enum powerIndex ind, char *mess);
+int validatePower(enum powerIndex ind, int val, char *mess);
+int convertVoltageToPowerDAC(enum powerIndex ind, int voltage,
+                             int *retval_dacval, char *mess);
+int convertPowerDACToVoltage(enum powerIndex ind, int dacval,
+                             int *retval_voltage, char *mess);
+int getPowerDAC(enum powerIndex ind, int *retval, char *mess);
+int setPowerDAC(enum powerIndex ind, int voltage, char *mess);
+int getDACIndexForPower(enum powerIndex pind, enum DACINDEX *dacIndex,
+                        char *mess);
 
-int validatePower(enum PWRINDEX ind, int val, char *mess);
-int getPowerIndexFromDACIndex(enum DACINDEX ind, enum PWRINDEX *pwrIndex,
-                              char *mess);
-int getPowerRailMask(enum PWRINDEX ind, uint32_t *mask, char *mess);
-int EnablePowerRail(enum PWRINDEX ind, char *mess);
-int DisablePowerRail(enum PWRINDEX ind, char *mess);
-int getPowerRail(enum PWRINDEX ind, int *retval, char *mess);
-int getPower(enum DACINDEX ind, int *retval, char *mess);
-int setPower(enum DACINDEX ind, int val, char *mess);
+int getPowerMask(enum powerIndex ind, uint32_t *mask, char *mess);
+void powerOff();
+int setPowerEnabled(enum powerIndex indices[], int count, bool enable,
+                    char *mess);
+int isPowerEnabled(enum powerIndex ind, bool *retval, char *mess);
 
 int getADC(enum ADCINDEX ind, int *value, char *mess);
 int getSlowADC(int ichan, int *retval, char *mess);

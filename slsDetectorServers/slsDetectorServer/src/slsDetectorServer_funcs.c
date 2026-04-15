@@ -11069,7 +11069,7 @@ int spi_read(int file_des) {
     for (int i = 0; i < n_bytes + 1; ++i) {
         // TODO: should we make bus_w to this address blocking in the firmware to remove usleep ?
         bus_w(SPI_WRITEDATA_REG, local_tx[i]);
-        usleep_bf(25);
+        usleep_bf(BFIN_SPI_WAIT_uSECONDS);
         local_rx[i] = (uint8_t)bus_r(SPI_READDATA_REG);
     }
 #endif
@@ -11109,7 +11109,7 @@ int spi_read(int file_des) {
 #elif defined(CHIPTESTBOARDD)
     for (int i = 0; i < n_bytes + 1; ++i) {
         bus_w(SPI_WRITEDATA_REG, local_tx[i]);
-        usleep_bf(25);
+        usleep_bf(BFIN_SPI_WAIT_uSECONDS);
         local_rx[i] = (uint8_t)bus_r(SPI_READDATA_REG);
     }
     bus_w(SPI_CTRL_REG, (8 - 1) << SPI_CTRL_NBIT_OFST); // remove chip-select
@@ -11235,7 +11235,7 @@ int spi_write(int file_des) {
     bus_w(SPI_CTRL_REG, ((8 - 1) << SPI_CTRL_NBIT_OFST)+ (1 << SPI_CTRL_CHIPSELECT_BIT));
     for (int i = 0; i < n_bytes + 1; ++i) {
         bus_w(SPI_WRITEDATA_REG, local_tx[i]);
-        usleep_bf(25);
+        usleep_bf(BFIN_SPI_WAIT_uSECONDS);
         local_rx[i] = (uint8_t)bus_r(SPI_READDATA_REG);
     }
     bus_w(SPI_CTRL_REG, (8 - 1) << SPI_CTRL_NBIT_OFST); // remove chip-select

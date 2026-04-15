@@ -29,6 +29,12 @@ void init_enums(py::module &m) {
                slsDetectorDefs::detectorType::XILINX_CHIPTESTBOARD)
         .export_values();
 
+    py::enum_<slsDetectorDefs::boolFormat>(Defs, "boolFormat")
+        .value("TrueFalse", slsDetectorDefs::boolFormat::TrueFalse)
+        .value("OnOff", slsDetectorDefs::boolFormat::OnOff)
+        .value("OneZero", slsDetectorDefs::boolFormat::OneZero)
+        .export_values();
+
     py::enum_<slsDetectorDefs::runStatus>(Defs, "runStatus")
         .value("IDLE", slsDetectorDefs::runStatus::IDLE)
         .value("ERROR", slsDetectorDefs::runStatus::ERROR)
@@ -175,18 +181,6 @@ void init_enums(py::module &m) {
         .value("TEMPERATURE_FPGA3",
                slsDetectorDefs::dacIndex::TEMPERATURE_FPGA3)
         .value("TRIMBIT_SCAN", slsDetectorDefs::dacIndex::TRIMBIT_SCAN)
-        .value("V_POWER_A", slsDetectorDefs::dacIndex::V_POWER_A)
-        .value("V_POWER_B", slsDetectorDefs::dacIndex::V_POWER_B)
-        .value("V_POWER_C", slsDetectorDefs::dacIndex::V_POWER_C)
-        .value("V_POWER_D", slsDetectorDefs::dacIndex::V_POWER_D)
-        .value("V_POWER_IO", slsDetectorDefs::dacIndex::V_POWER_IO)
-        .value("V_POWER_CHIP", slsDetectorDefs::dacIndex::V_POWER_CHIP)
-        .value("I_POWER_A", slsDetectorDefs::dacIndex::I_POWER_A)
-        .value("I_POWER_B", slsDetectorDefs::dacIndex::I_POWER_B)
-        .value("I_POWER_C", slsDetectorDefs::dacIndex::I_POWER_C)
-        .value("I_POWER_D", slsDetectorDefs::dacIndex::I_POWER_D)
-        .value("I_POWER_IO", slsDetectorDefs::dacIndex::I_POWER_IO)
-        .value("V_LIMIT", slsDetectorDefs::dacIndex::V_LIMIT)
         .value("SLOW_ADC0", slsDetectorDefs::dacIndex::SLOW_ADC0)
         .value("SLOW_ADC1", slsDetectorDefs::dacIndex::SLOW_ADC1)
         .value("SLOW_ADC2", slsDetectorDefs::dacIndex::SLOW_ADC2)
@@ -196,6 +190,20 @@ void init_enums(py::module &m) {
         .value("SLOW_ADC6", slsDetectorDefs::dacIndex::SLOW_ADC6)
         .value("SLOW_ADC7", slsDetectorDefs::dacIndex::SLOW_ADC7)
         .value("SLOW_ADC_TEMP", slsDetectorDefs::dacIndex::SLOW_ADC_TEMP)
+        .export_values();
+
+    py::enum_<slsDetectorDefs::powerIndex>(Defs, "powerIndex")
+        .value("V_POWER_A", slsDetectorDefs::powerIndex::V_POWER_A)
+        .value("V_POWER_B", slsDetectorDefs::powerIndex::V_POWER_B)
+        .value("V_POWER_C", slsDetectorDefs::powerIndex::V_POWER_C)
+        .value("V_POWER_D", slsDetectorDefs::powerIndex::V_POWER_D)
+        .value("V_POWER_IO", slsDetectorDefs::powerIndex::V_POWER_IO)
+        .value("V_POWER_CHIP", slsDetectorDefs::powerIndex::V_POWER_CHIP)
+        .value("I_POWER_A", slsDetectorDefs::powerIndex::I_POWER_A)
+        .value("I_POWER_B", slsDetectorDefs::powerIndex::I_POWER_B)
+        .value("I_POWER_C", slsDetectorDefs::powerIndex::I_POWER_C)
+        .value("I_POWER_D", slsDetectorDefs::powerIndex::I_POWER_D)
+        .value("I_POWER_IO", slsDetectorDefs::powerIndex::I_POWER_IO)
         .export_values();
 
     py::enum_<slsDetectorDefs::detectorSettings>(Defs, "detectorSettings")

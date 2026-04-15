@@ -114,6 +114,8 @@ class slsDetectorDefs {
     /**  return values */
     enum { OK, FAIL };
 
+    enum boolFormat { TrueFalse, OnOff, OneZero };
+
     /** staus mask */
     enum runStatus {
         IDLE,
@@ -404,18 +406,6 @@ typedef struct {
         TEMPERATURE_FPGA2,
         TEMPERATURE_FPGA3,
         TRIMBIT_SCAN,
-        V_POWER_A = 100,
-        V_POWER_B = 101,
-        V_POWER_C = 102,
-        V_POWER_D = 103,
-        V_POWER_IO = 104,
-        V_POWER_CHIP = 105,
-        I_POWER_A = 106,
-        I_POWER_B = 107,
-        I_POWER_C = 108,
-        I_POWER_D = 109,
-        I_POWER_IO = 110,
-        V_LIMIT = 111,
         SLOW_ADC0 = 1000,
         SLOW_ADC1,
         SLOW_ADC2,
@@ -425,6 +415,20 @@ typedef struct {
         SLOW_ADC6,
         SLOW_ADC7,
         SLOW_ADC_TEMP
+    };
+
+    enum powerIndex {
+        V_POWER_A,
+        V_POWER_B,
+        V_POWER_C,
+        V_POWER_D,
+        V_POWER_IO,
+        V_POWER_CHIP,
+        I_POWER_A,
+        I_POWER_B,
+        I_POWER_C,
+        I_POWER_D,
+        I_POWER_IO
     };
 
     /**

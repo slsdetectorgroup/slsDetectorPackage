@@ -42,9 +42,11 @@ constexpr int shm_id = 10;
 // macOS does not expose shm in the filesystem
 #ifndef __APPLE__
 
+const char *env_p = std::getenv(SHM_ENV_NAME);
+std::string env_name = env_p ? ("_" + std::string(env_p)) : "";
 const std::string file_path =
     std::string("/dev/shm/slsDetectorPackage_detector_") +
-    std::to_string(shm_id);
+    std::to_string(shm_id) + env_name;
 
 TEST_CASE("Free obsolete (without isValid)", "[detector][shm]") {
 

@@ -8,6 +8,7 @@
 
 #define GOODBYE (-200)
 #define REBOOT  (-400)
+#define BFIN_SPI_WAIT_uSECONDS 25
 
 // initialization functions
 int updateModeAllowedFunction(int file_des);

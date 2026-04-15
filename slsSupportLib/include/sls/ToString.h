@@ -37,6 +37,8 @@ std::string ToString(const defs::externalSignalFlag s);
 std::string ToString(const defs::readoutMode s);
 std::string ToString(const defs::dacIndex s);
 std::string ToString(const std::vector<defs::dacIndex> &vec);
+std::string ToString(const defs::powerIndex s);
+std::string ToString(const std::vector<defs::powerIndex> &vec);
 std::string ToString(const defs::burstMode s);
 std::string ToString(const defs::timingSourceType s);
 std::string ToString(const defs::M3_GainCaps s);
@@ -49,6 +51,7 @@ std::string ToString(const defs::timingInfoDecoder s);
 std::string ToString(const defs::collectionMode s);
 
 std::string ToString(bool value);
+std::string ToString(bool value, defs::boolFormat format);
 
 std::string ToString(const slsDetectorDefs::xy &coord);
 std::ostream &operator<<(std::ostream &os, const slsDetectorDefs::xy &coord);
@@ -316,6 +319,7 @@ template <> defs::fileFormat StringTo(const std::string &s);
 template <> defs::externalSignalFlag StringTo(const std::string &s);
 template <> defs::readoutMode StringTo(const std::string &s);
 template <> defs::dacIndex StringTo(const std::string &s);
+template <> defs::powerIndex StringTo(const std::string &s);
 template <> defs::burstMode StringTo(const std::string &s);
 template <> defs::timingSourceType StringTo(const std::string &s);
 template <> defs::M3_GainCaps StringTo(const std::string &s);
@@ -335,6 +339,7 @@ template <> uint32_t StringTo(const std::string &s);
 template <> uint64_t StringTo(const std::string &s);
 template <> int StringTo(const std::string &s);
 template <> bool StringTo(const std::string &s);
+bool StringTo(const std::string &s, defs::boolFormat format);
 template <> int64_t StringTo(const std::string &s);
 
 /** For types with a .str() method use this for conversion */

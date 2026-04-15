@@ -301,6 +301,13 @@ enum detFuncs {
     F_SET_PATTERN_WAIT_INTERVAL,
     F_SPI_READ,
     F_SPI_WRITE,
+    F_GET_POWER,
+    F_SET_POWER,
+    F_GET_POWER_DAC,
+    F_SET_POWER_DAC,
+    F_GET_POWER_ADC,
+    F_GET_VOLTAGE_LIMIT,
+    F_SET_VOLTAGE_LIMIT,
 
     NUM_DET_FUNCTIONS,
     RECEIVER_ENUM_START = 512, /**< detector function should not exceed this
@@ -713,6 +720,13 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_SET_PATTERN_WAIT_INTERVAL:       return "F_SET_PATTERN_WAIT_INTERVAL";
     case F_SPI_READ:                        return "F_SPI_READ";
     case F_SPI_WRITE:                       return "F_SPI_WRITE";
+    case F_GET_POWER:                       return "F_GET_POWER";
+    case F_SET_POWER:                       return "F_SET_POWER";
+    case F_GET_POWER_DAC:                   return "F_GET_POWER_DAC";
+    case F_SET_POWER_DAC:                   return "F_SET_POWER_DAC";
+    case F_GET_POWER_ADC:                   return "F_GET_POWER_ADC";
+    case F_GET_VOLTAGE_LIMIT:               return "F_GET_VOLTAGE_LIMIT";
+    case F_SET_VOLTAGE_LIMIT:               return "F_SET_VOLTAGE_LIMIT";
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";

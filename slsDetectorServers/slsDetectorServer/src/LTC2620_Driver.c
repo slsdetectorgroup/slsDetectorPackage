@@ -86,7 +86,7 @@ int LTC2620_D_SetDacValue(int dacnum, int val, char *dacname, char *mess) {
         LOG(logERROR, (mess));
         return FAIL;
     }
-    LOG(logINFO, ("\tSetting DAC %s [%d]: %d dac\n", dacname, dacnum, val));
+    LOG(logINFOBLUE, ("\tSetting DAC %s [%d]: %d dac\n", dacname, dacnum, val));
 
 #ifdef VIRTUAL
     return OK;

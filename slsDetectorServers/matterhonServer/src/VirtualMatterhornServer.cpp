@@ -6,7 +6,6 @@ VirtualMatterhornServer::VirtualMatterhornServer(uint16_t port)
     : BaseMatterhornServer<VirtualMatterhornServer>(port) {
 
     udpDetails[0].srcip = LOCALHOSTIP_INT;
-    // TODO: when do i set the udp mac and ip ?
 
     // should maybe be part of the constructor?
     tcpInterface->startTCPServer();

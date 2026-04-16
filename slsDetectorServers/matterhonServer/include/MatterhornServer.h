@@ -1,12 +1,11 @@
 #pragma once
-#include "TCPInterface.h"
 #include "BaseMatterhornServer.h"
+#include "TCPInterface.h"
 #include "sls/sls_detector_defs.h"
 #include <array>
 #include <memory>
 
 namespace sls {
-
 
 class MatterhornServer : public BaseMatterhornServer<MatterhornServer> {
 
@@ -26,7 +25,5 @@ class MatterhornServer : public BaseMatterhornServer<MatterhornServer> {
 
     ReturnCode get_update_mode(ServerInterface &socket);
 };
-
-
 
 } // namespace sls

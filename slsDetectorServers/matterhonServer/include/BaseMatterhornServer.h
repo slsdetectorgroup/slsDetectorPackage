@@ -52,6 +52,16 @@ template <typename DerivedServer> class BaseMatterhornServer {
 
     ReturnCode get_source_udp_mac(ServerInterface &socket);
 
+    ReturnCode get_source_udp_ip(ServerInterface &socket);
+
+    ReturnCode get_source_udp_port(ServerInterface &socket);
+
+    ReturnCode get_destination_udp_mac(ServerInterface &socket);
+
+    ReturnCode get_destination_udp_ip(ServerInterface &socket);
+
+    ReturnCode get_destination_udp_port(ServerInterface &socket);
+
   protected:
     size_t num_udp_interfaces() const;
 
@@ -89,8 +99,25 @@ template <typename DerivedServer> class BaseMatterhornServer {
              [this](ServerInterface &si) {
                  return static_cast<DerivedServer *>(this)->get_update_mode(si);
              }},
-            {detFuncs::F_GET_SOURCE_UDP_MAC, [this](ServerInterface &si) {
+            {detFuncs::F_GET_SOURCE_UDP_MAC,
+             [this](ServerInterface &si) {
                  return this->get_source_udp_mac(si);
+             }},
+
+            {detFuncs::F_GET_SOURCE_UDP_IP,
+             [this](ServerInterface &si) {
+                 return this->get_source_udp_ip(si);
+             }},
+            {detFuncs::F_GET_DEST_UDP_MAC,
+             [this](ServerInterface &si) {
+                 return this->get_destination_udp_mac(si);
+             }},
+            {detFuncs::F_GET_DEST_UDP_IP,
+             [this](ServerInterface &si) {
+                 return this->get_destination_udp_ip(si);
+             }},
+            {detFuncs::F_GET_DEST_UDP_PORT, [this](ServerInterface &si) {
+                 return this->get_destination_udp_port(si);
              }}};
 };
 
@@ -149,8 +176,38 @@ ReturnCode BaseMatterhornServer<DerivedServer>::get_num_udp_interfaces(
 template <typename DerivedServer>
 ReturnCode BaseMatterhornServer<DerivedServer>::get_source_udp_mac(
     ServerInterface &socket) {
-    uint64_t srcMac = udpDetails[0].srcmac;
-    return static_cast<ReturnCode>(socket.sendResult(srcMac));
+    return static_cast<ReturnCode>(socket.sendResult(udpDetails[0].srcmac));
 }
+
+template <typename DerivedServer>
+ReturnCode BaseMatterhornServer<DerivedServer>::get_source_udp_ip(
+    ServerInterface &socket) {
+    return static_cast<ReturnCode>(socket.sendResult(udpDetails[0].srcip));
+}
+
+template <typename DerivedServer>
+ReturnCode BaseMatterhornServer<DerivedServer>::get_source_udp_port(
+    ServerInterface &socket) {
+    return static_cast<ReturnCode>(
+        socket.sendResult(static_cast<int>(udpDetails[0].srcport)));
+}
+
+template <typename DerivedServer>
+ReturnCode BaseMatterhornServer<DerivedServer>::get_destination_udp_mac(
+    ServerInterface &socket) {
+    return static_cast<ReturnCode>(socket.sendResult(udpDetails[0].dstmac));
+}
+
+template <typename DerivedServer>
+ReturnCode BaseMatterhornServer<DerivedServer>::get_destination_udp_ip(
+    ServerInterface &socket) {
+    return static_cast<ReturnCode>(socket.sendResult(udpDetails[0].dstip));
+}
+
+template <typename DerivedServer>
+ReturnCode BaseMatterhornServer<DerivedServer>::get_destination_udp_port(
+    ServerInterface &socket) {
+    return static_cast<ReturnCode>(socket.sendResult(udpDetails[0].dstport));
+};
 
 } // namespace sls

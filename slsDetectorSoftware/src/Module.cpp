@@ -147,7 +147,6 @@ std::string Module::getReceiverSoftwareVersion() const {
 // static function
 slsDetectorDefs::detectorType
 Module::getTypeFromDetector(const std::string &hostname, uint16_t cport) {
-    LOG(logDEBUG1) << "Getting Module type ";
     ClientSocket socket("Detector", hostname, cport);
     socket.Send(F_GET_DETECTOR_TYPE);
     socket.setFnum(F_GET_DETECTOR_TYPE);

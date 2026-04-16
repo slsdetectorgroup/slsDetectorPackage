@@ -10908,10 +10908,10 @@ int set_pattern_wait_interval(int file_des) {
 }
 
 // usleep is not viable on blackfin
-void usleep_bf(uint64_t i){
-    const uint64_t BFIN_CYCLES_1uSECOND=20;
-    uint64_t j=i*20;
-    while(--j){
+void usleep_bf(uint64_t i) {
+    const uint64_t BFIN_CYCLES_1uSECOND = 20;
+    uint64_t j = i * BFIN_CYCLES_1uSECOND;
+    while (--j) {
         asm volatile("");
     }
 }
@@ -11065,9 +11065,11 @@ int spi_read(int file_des) {
     }
 #elif defined(CHIPTESTBOARDD)
     // set spi to 8 bit per word (-1 comes from the firmware), set chipselect
-    bus_w(SPI_CTRL_REG, ((8 - 1) << SPI_CTRL_NBIT_OFST)+ (1 << SPI_CTRL_CHIPSELECT_BIT));
+    bus_w(SPI_CTRL_REG,
+          ((8 - 1) << SPI_CTRL_NBIT_OFST) + (1 << SPI_CTRL_CHIPSELECT_BIT));
     for (int i = 0; i < n_bytes + 1; ++i) {
-        // TODO: should we make bus_w to this address blocking in the firmware to remove usleep ?
+        // TODO: should we make bus_w to this address blocking in the firmware
+        // to remove usleep ?
         bus_w(SPI_WRITEDATA_REG, local_tx[i]);
         usleep_bf(BFIN_SPI_WAIT_uSECONDS);
         local_rx[i] = (uint8_t)bus_r(SPI_READDATA_REG);
@@ -11232,7 +11234,8 @@ int spi_write(int file_des) {
     close(spifd);
 #elif defined(CHIPTESTBOARDD)
     // set spi to 8 bit per word (-1 comes from firmware), set chip-select
-    bus_w(SPI_CTRL_REG, ((8 - 1) << SPI_CTRL_NBIT_OFST)+ (1 << SPI_CTRL_CHIPSELECT_BIT));
+    bus_w(SPI_CTRL_REG,
+          ((8 - 1) << SPI_CTRL_NBIT_OFST) + (1 << SPI_CTRL_CHIPSELECT_BIT));
     for (int i = 0; i < n_bytes + 1; ++i) {
         bus_w(SPI_WRITEDATA_REG, local_tx[i]);
         usleep_bf(BFIN_SPI_WAIT_uSECONDS);
@@ -11391,5 +11394,3 @@ int set_voltage_limit(int file_des) {
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
-
-

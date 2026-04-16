@@ -32,7 +32,7 @@ if(NOT CMAKE_USE_PTHREADS_INIT)
     message(FATAL_ERROR "A POSIX threads (pthread) implementation is required, but was not found.")
 endif()
 
-option(SLS_LOG_MAX_REPORTING_LEVEL "Set the maximum logging level for the project" "sls::TLogLevel::logINFO")
+set(SLS_LOG_MAX_REPORTING_LEVEL "Set the maximum logging level for the project" CACHE STRING "sls::TLogLevel::logINFO")
 
 option(SLS_USE_SYSTEM_ZMQ "Use system installed libzmq" OFF)
 

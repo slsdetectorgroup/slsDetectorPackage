@@ -147,7 +147,7 @@ TEST_CASE("string to std::chrono::duration", "[support]") {
 }
 
 TEST_CASE("string to frequency", "[support]") {
-    REQUIRE(StringTo<defs::Hz>("150Hz") == defs::Hz(150));
+    REQUIRE(StringTo<defs::Hz>("150") == defs::Hz(150));
     REQUIRE(StringTo<defs::Hz>("150Hz") == defs::Hz(150));
     REQUIRE(StringTo<defs::Hz>("1.5kHz") == defs::Hz(1500));
     REQUIRE(StringTo<defs::Hz>("1.5MHz") == defs::Hz(1500000));

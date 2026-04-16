@@ -787,13 +787,13 @@ TEST_CASE("runclk", "[.detectorintegration]") {
 
         {
             std::ostringstream oss;
-            caller.call("runclk", {"20"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "runclk 20\n");
+            caller.call("runclk", {"20MHz"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "runclk 20MHz\n");
         }
         {
             std::ostringstream oss;
-            caller.call("runclk", {"10"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "runclk 10\n");
+            caller.call("runclk", {"10000000"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "runclk 10000000\n");
         }
 
         {

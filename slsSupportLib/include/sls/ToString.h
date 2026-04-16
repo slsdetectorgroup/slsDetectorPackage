@@ -354,11 +354,11 @@ T StringTo(const std::string &f, const std::string &unit) {
         return result;
     }();
 
-    if (unitLower.empty() || unitLower == "mhz") {
+    if (unitLower == "mhz") {
         return T(static_cast<int>(fval * 1e6));
     } else if (unitLower == "khz") {
         return T(static_cast<int>(fval * 1e3));
-    } else if (unitLower == "hz") {
+    } else if (unitLower.empty() || unitLower == "hz") {
         return T(static_cast<int>(fval));
     } else {
         throw RuntimeError(

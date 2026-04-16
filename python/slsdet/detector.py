@@ -3521,26 +3521,20 @@ class Detector(CppDetectorApi):
     @element
     def runclk(self):
         """
-        [Ctb][Xilinx Ctb] Sets Run clock frequency in MHz. \n
-        Accepts decimal inputs
-        """
+        [Ctb][Xilinx Ctb] Sets Run clock frequency.
 
+        Example
+        --------
+        >>> d.runclk
+        >>> 10MHz
+        >>> d.runclk = MHz(5)
+        >>> d.runclk = Hz(5 * 1000 * 1000)
+        >>> d.runclk = kHz(2000)
+        """
         return self.getRUNClock()
-        '''
-        freq_hz = element_if_equal(self.getRUNClock())
-        if isinstance(freq_hz, list):
-            return [value / 1e6 for value in freq_hz]
-        return freq_hz / 1e6
-        '''
 
     @runclk.setter
     def runclk(self, freq):
-        '''
-        if isinstance(freq, dict):
-            freq_hz = {key: int(round(value * 1e6)) for key, value in freq.items()}
-        else:
-            freq_hz = int(round(freq * 1e6))
-        '''
         ut.set_using_dict(self.setRUNClock, freq) 
 
     @property
@@ -3618,26 +3612,20 @@ class Detector(CppDetectorApi):
     @element
     def dbitclk(self):
         """
-        [Ctb][Xilinx Ctb] Sets clock for latching the digital bits in MHz. \n
-        Accepts decimal inputs
+        [Ctb][Xilinx Ctb] Sets clock for latching the digital bits.
+
+        Example
+        --------
+        >>> d.dbitclk
+        >>> 10MHz
+        >>> d.dbitclk = MHz(5)
+        >>> d.dbitclk = Hz(5 * 1000 * 1000)
+        >>> d.dbitclk = kHz(2000)
         """
-        '''
-        freq_hz = element_if_equal(self.getDBITClock())
-        if isinstance(freq_hz, list):
-            return [value / 1e6 for value in freq_hz]
-        return freq_hz / 1e6
-        '''
         return self.getDBITClock()
 
     @dbitclk.setter
     def dbitclk(self, value):
-        '''
-        if isinstance(value, dict):
-            value_hz = {key: int(round(item * 1e6)) for key, item in value.items()}
-        else:
-            value_hz = int(round(value * 1e6))
-        ut.set_using_dict(self.setDBITClock, value_hz)
-        '''
         ut.set_using_dict(self.setDBITClock, value)
 
     @property
@@ -3761,33 +3749,27 @@ class Detector(CppDetectorApi):
     @element
     def adcclk(self):
         """
-        [Ctb][Xilinx Ctb] Sets ADC clock frequency in MHz. \n
-        Accepts decimal inputs
+        [Ctb][Xilinx Ctb] Sets ADC clock frequency.
+
+        Example
+        --------
+        >>> d.adcclk
+        >>> 10MHz
+        >>> d.adcclk = MHz(5)
+        >>> d.adcclk = Hz(5 * 1000 * 1000)
+        >>> d.adcclk = kHz(2000)
         """
-        '''
-        freq_hz = element_if_equal(self.getADCClock())
-        if isinstance(freq_hz, list):
-            return [value / 1e6 for value in freq_hz]
-        return freq_hz / 1e6
-        '''
         return self.getADCClock()
 
     @adcclk.setter
     def adcclk(self, value):
-        '''
-        if isinstance(value, dict):
-            value_hz = {key: int(round(item * 1e6)) for key, item in value.items()}
-        else:
-            value_hz = int(round(value * 1e6))
-        ut.set_using_dict(self.setADCClock, value_hz)
-        '''
         ut.set_using_dict(self.setADCClock, value)
 
     @property
     @element
     def syncclk(self):
         """
-        [Ctb] Sync clock in MHz.
+        [Ctb] Sync clock.
         
         :setter: Not implemented
         """

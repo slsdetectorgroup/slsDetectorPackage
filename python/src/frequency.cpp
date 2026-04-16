@@ -18,9 +18,6 @@ void init_freq(py::module &m) {
 
     py::class_<slsDetectorDefs::Hz> Hz(m, "Hz");
     Hz.def(py::init<int>());
-    Hz.def(py::init([](double v) {
-        return slsDetectorDefs::Hz(static_cast<int>(std::round(v)));
-    }));
     Hz.def_readwrite("value", &slsDetectorDefs::Hz::value);
     Hz.def("__repr__", [](const slsDetectorDefs::Hz &f) { 
         return sls::ToString(f); 
@@ -36,6 +33,4 @@ void init_freq(py::module &m) {
     m.def("MHz", [](double v) {
         return slsDetectorDefs::Hz(static_cast<int>(std::round(v * MHz)));
     });
-    py::implicitly_convertible<int, slsDetectorDefs::Hz>();
-    py::implicitly_convertible<double, slsDetectorDefs::Hz>();
 }

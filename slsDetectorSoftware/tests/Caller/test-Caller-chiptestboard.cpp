@@ -719,13 +719,13 @@ TEST_CASE("adcclk", "[.detectorintegration]") {
 
         {
             std::ostringstream oss;
-            caller.call("adcclk", {"20"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "adcclk 20\n");
+            caller.call("adcclk", {"20MHz"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "adcclk 20MHz\n");
         }
         {
             std::ostringstream oss;
-            caller.call("adcclk", {"10"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "adcclk 10\n");
+            caller.call("adcclk", {"10000000"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "adcclk 10000000\n");
         }
 
         {
@@ -835,6 +835,11 @@ TEST_CASE("syncclk", "[.detectorintegration]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::CHIPTESTBOARD) {
+        REQUIRE_NOTHROW(caller.call("syncclk", {"MHZ"}, -1, GET));
+        REQUIRE_NOTHROW(caller.call("syncclk", {"mhz"}, -1, GET));
+        REQUIRE_NOTHROW(caller.call("syncclk", {"MHz"}, -1, GET));
+        REQUIRE_NOTHROW(caller.call("syncclk", {"kHz"}, -1, GET));
+        REQUIRE_NOTHROW(caller.call("syncclk", {"Hz"}, -1, GET));
         REQUIRE_NOTHROW(caller.call("syncclk", {}, -1, GET));
     } else {
         // clock index might work
@@ -1121,13 +1126,13 @@ TEST_CASE("dbitclk", "[.detectorintegration]") {
 
         {
             std::ostringstream oss;
-            caller.call("dbitclk", {"20"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "dbitclk 20\n");
+            caller.call("dbitclk", {"20MHz"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "dbitclk 20MHz\n");
         }
         {
             std::ostringstream oss;
-            caller.call("dbitclk", {"10"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "dbitclk 10\n");
+            caller.call("dbitclk", {"10000000"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "dbitclk 10000000\n");
         }
 
         {

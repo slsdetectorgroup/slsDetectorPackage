@@ -4,7 +4,7 @@ from pathlib import Path
 from PyQt5 import QtWidgets, uic
 from pyctbgui.utils.defines import Defines
 
-from slsdet import dacIndex, detectorType
+from slsdet import powerIndex, detectorType
 
 
 class PowerSuppliesTab(QtWidgets.QWidget):
@@ -31,10 +31,10 @@ class PowerSuppliesTab(QtWidgets.QWidget):
 
     def setup_ui(self):
         for i in Defines.powerSupplies:
-            dac = getattr(dacIndex, f"V_POWER_{i}")
+            dac = getattr(powerIndex, f"V_POWER_{i}")
             spinBox = getattr(self.view, f"spinBoxV{i}")
             checkBox = getattr(self.view, f"checkBoxV{i}")
-            retval = self.det.getPower(dac)[0]
+            retval = self.det.getPowerDAC(dac)
             spinBox.setValue(retval)
             if retval == 0:
                 checkBox.setChecked(False)
@@ -57,16 +57,16 @@ class PowerSuppliesTab(QtWidgets.QWidget):
     def getVoltage(self, i):
         spinBox = getattr(self.view, f"spinBoxV{i}")
         checkBox = getattr(self.view, f"checkBoxV{i}")
-        voltageIndex = getattr(dacIndex, f"V_POWER_{i}")
+        voltageIndex = getattr(powerIndex, f"V_POWER_{i}")
         label = getattr(self.view, f"labelV{i}")
 
         spinBox.editingFinished.disconnect()
         checkBox.stateChanged.disconnect()
 
         if self.det.type == detectorType.XILINX_CHIPTESTBOARD:
-            retval = self.det.getPower(voltageIndex)[0]
+            retval = self.det.getPowerDAC(voltageIndex)
         else:
-            retval = self.det.getMeasuredPower(voltageIndex)[0]
+            retval = self.det.getMeasuredPower(voltageIndex)
         # spinBox.setValue(retval)
         if retval > 1:
             checkBox.setChecked(True)
@@ -87,14 +87,14 @@ class PowerSuppliesTab(QtWidgets.QWidget):
     def setVoltage(self, i):
         checkBox = getattr(self.view, f"checkBoxV{i}")
         spinBox = getattr(self.view, f"spinBoxV{i}")
-        voltageIndex = getattr(dacIndex, f"V_POWER_{i}")
+        voltageIndex = getattr(powerIndex, f"V_POWER_{i}")
         spinBox.editingFinished.disconnect()
 
         value = 0
         if checkBox.isChecked():
             value = spinBox.value()
         try:
-            self.det.setPower(voltageIndex, value)
+            self.det.setPowerDAC(voltageIndex, value)
         except Exception as e:
             QtWidgets.QMessageBox.warning(self.mainWindow, "Voltage Fail", str(e), QtWidgets.QMessageBox.Ok)
             pass
@@ -107,12 +107,12 @@ class PowerSuppliesTab(QtWidgets.QWidget):
 
     def getCurrent(self, i):
         label = getattr(self.view, f"labelI{i}")
-        currentIndex = getattr(dacIndex, f"I_POWER_{i}")
-        retval = self.det.getMeasuredCurrent(currentIndex)[0]
+        currentIndex = getattr(powerIndex, f"I_POWER_{i}")
+        retval = self.det.getMeasuredCurrent(currentIndex)
         label.setText(f'{str(retval)} mA')
 
     def getVChip(self):
-        self.view.spinBoxVChip.setValue(self.det.getPower(dacIndex.V_POWER_CHIP)[0])
+        self.view.spinBoxVChip.setValue(self.det.getPowerDAC(powerIndex.V_POWER_CHIP))
 
     def powerOff(self):
         for i in Defines.powerSupplies:

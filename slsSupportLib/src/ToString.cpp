@@ -221,6 +221,8 @@ std::string ToString(const defs::detectorType s) {
         return std::string("Gotthard2");
     case defs::XILINX_CHIPTESTBOARD:
         return std::string("Xilinx_ChipTestBoard");
+    case defs::MATTERHORN:
+        return std::string("Matterhorn");
     default:
         return std::string("Unknown");
     }

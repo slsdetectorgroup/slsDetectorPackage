@@ -38,7 +38,7 @@ class PowerSuppliesTab(QtWidgets.QWidget):
 
     def setup_ui(self):
         if self.det.type == detectorType.XILINX_CHIPTESTBOARD:
-            self.view.spinBoxVChip.setDisabled(True)
+            self.view.labelVChip.setDisabled(True)
             for i in Defines.powerSupplies:
                 labelV = getattr(self.view, f"labelV{i}")
                 labelV.setDisabled(True)
@@ -65,7 +65,7 @@ class PowerSuppliesTab(QtWidgets.QWidget):
         label.setText(f'{str(retval)} mA')
 
     def getVChip(self):
-        self.view.spinBoxVChip.setValue(self.det.getPowerDAC(powerIndex.V_POWER_CHIP))
+        self.view.labelVChip.setText(f"{str(self.det.getPowerDAC(powerIndex.V_POWER_CHIP))} mV")
 
     def getVoltage(self, i):
         spinBox = getattr(self.view, f"spinBoxV{i}")

@@ -442,6 +442,11 @@ def test_runclk(session_simulator, request):
             with pytest.raises(Exception) as exc_info:
                 d.runclk = MHz(9)
 
+        c = MHz(2)
+        for rc in [5, 10, 15, 20]:
+            d.runclk = rc * c
+        assert d.runclk.value == 40_000_000
+
         for i in range(len(d)):
             d.setRUNClock(prev_runclk[i], [i])
 
@@ -491,6 +496,11 @@ def test_adcclk(session_simulator, request):
         else:
             with pytest.raises(Exception) as exc_info:
                 d.adcclk = MHz(9)
+
+        c = MHz(2)
+        for rc in [5, 10, 15, 20]:
+            d.adcclk = rc * c
+        assert d.adcclk.value == 40_000_000
 
         for i in range(len(d)):
             d.setADCClock(prev_adcclk[i], [i])
@@ -542,6 +552,11 @@ def test_dbitclk(session_simulator, request):
         else:
             with pytest.raises(Exception) as exc_info:
                 d.dbitclk = MHz(9)
+
+        c = MHz(2)
+        for rc in [5, 10, 15, 20]:
+            d.dbitclk = rc * c
+        assert d.dbitclk.value == 40_000_000
 
         for i in range(len(d)):
             d.setDBITClock(prev_dbitclk[i], [i])

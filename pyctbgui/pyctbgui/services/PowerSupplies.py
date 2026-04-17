@@ -4,7 +4,7 @@ from pathlib import Path
 from PyQt5 import QtWidgets, uic
 from pyctbgui.utils.defines import Defines
 
-from slsdet import dacIndex, detectorType
+from slsdet import powerIndex, detectorType
 
 
 class PowerSuppliesTab(QtWidgets.QWidget):
@@ -16,120 +16,116 @@ class PowerSuppliesTab(QtWidgets.QWidget):
 
     def refresh(self):
         self.updateVoltageNames()
+        if self.det.type == detectorType.CHIPTESTBOARD:
+            self.getVChip()
         for i in Defines.powerSupplies:
-            self.getVoltage(i)
-            if self.det.type == detectorType.CHIPTESTBOARD:
-                self.getCurrent(i)
+            self.update(i)
+
+    def update(self, i):
+        self.getPowerEnable(i)
+        self.getVoltage(i)
+        if self.det.type == detectorType.CHIPTESTBOARD:
+            self.getMeasuredVoltage(i)
+            self.getMeasuredCurrent(i)
 
     def connect_ui(self):
         for i in Defines.powerSupplies:
             spinBox = getattr(self.view, f"spinBoxV{i}")
             checkBox = getattr(self.view, f"checkBoxV{i}")
             spinBox.editingFinished.connect(partial(self.setVoltage, i))
-            checkBox.stateChanged.connect(partial(self.setVoltage, i))
+            checkBox.stateChanged.connect(partial(self.setPowerEnable, i))
         self.view.pushButtonPowerOff.clicked.connect(self.powerOff)
 
     def setup_ui(self):
-        for i in Defines.powerSupplies:
-            dac = getattr(dacIndex, f"V_POWER_{i}")
-            spinBox = getattr(self.view, f"spinBoxV{i}")
-            checkBox = getattr(self.view, f"checkBoxV{i}")
-            retval = self.det.getPower(dac)[0]
-            spinBox.setValue(retval)
-            if retval == 0:
-                checkBox.setChecked(False)
-                spinBox.setDisabled(True)
-            if self.det.type == detectorType.XILINX_CHIPTESTBOARD:
-                label = getattr(self.view, f"labelI{i}")
-                label.setDisabled(True)
         if self.det.type == detectorType.XILINX_CHIPTESTBOARD:
-            self.view.spinBoxVChip.setDisabled(True)
-
+            self.view.labelVChip.setDisabled(True)
+            for i in Defines.powerSupplies:
+                labelV = getattr(self.view, f"labelV{i}")
+                labelV.setDisabled(True)
+                labelI = getattr(self.view, f"labelI{i}")
+                labelI.setDisabled(True)
 
     def updateVoltageNames(self):
-        retval = self.det.getPowerNames()
-        getattr(self.view, "checkBoxVA").setText(retval[0])
-        getattr(self.view, "checkBoxVB").setText(retval[1])
-        getattr(self.view, "checkBoxVC").setText(retval[2])
-        getattr(self.view, "checkBoxVD").setText(retval[3])
-        getattr(self.view, "checkBoxVIO").setText(retval[4])
+        for i in Defines.powerSupplies:
+            checkBox = getattr(self.view, f"checkBoxV{i}")
+            dac = getattr(powerIndex, f"V_POWER_{i}")
+            retval = self.det.getPowerName(dac)
+            checkBox.setText(retval)
 
-    def getVoltage(self, i):
-        spinBox = getattr(self.view, f"spinBoxV{i}")
-        checkBox = getattr(self.view, f"checkBoxV{i}")
-        voltageIndex = getattr(dacIndex, f"V_POWER_{i}")
+    def getMeasuredVoltage(self, i):
         label = getattr(self.view, f"labelV{i}")
-
-        spinBox.editingFinished.disconnect()
-        checkBox.stateChanged.disconnect()
-
-        if self.det.type == detectorType.XILINX_CHIPTESTBOARD:
-            retval = self.det.getPower(voltageIndex)[0]
-        else:
-            retval = self.det.getMeasuredPower(voltageIndex)[0]
-        # spinBox.setValue(retval)
-        if retval > 1:
-            checkBox.setChecked(True)
-        if checkBox.isChecked():
-            spinBox.setEnabled(True)
-        else:
-            spinBox.setDisabled(True)
+        voltageIndex = getattr(powerIndex, f"V_POWER_{i}")
+        retval = self.det.getMeasuredPower(voltageIndex)
         label.setText(f'{str(retval)} mV')
-
-        spinBox.editingFinished.connect(partial(self.setVoltage, i))
-        checkBox.stateChanged.connect(partial(self.setVoltage, i))
-        
-        if self.det.type == detectorType.CHIPTESTBOARD:
-            self.getVChip()
-
-        # TODO: handle multiple events when pressing enter (twice)
-
-    def setVoltage(self, i):
-        checkBox = getattr(self.view, f"checkBoxV{i}")
-        spinBox = getattr(self.view, f"spinBoxV{i}")
-        voltageIndex = getattr(dacIndex, f"V_POWER_{i}")
-        spinBox.editingFinished.disconnect()
-
-        value = 0
-        if checkBox.isChecked():
-            value = spinBox.value()
-        try:
-            self.det.setPower(voltageIndex, value)
-        except Exception as e:
-            QtWidgets.QMessageBox.warning(self.mainWindow, "Voltage Fail", str(e), QtWidgets.QMessageBox.Ok)
-            pass
-
-        # TODO: (properly) disconnecting and connecting to handle multiple events (out of focus and pressing enter).
-        spinBox.editingFinished.connect(partial(self.setVoltage, i))
-        self.getVoltage(i)
-        if self.det.type == detectorType.CHIPTESTBOARD:
-            self.getCurrent(i)
-
-    def getCurrent(self, i):
+      
+    def getMeasuredCurrent(self, i):
         label = getattr(self.view, f"labelI{i}")
-        currentIndex = getattr(dacIndex, f"I_POWER_{i}")
-        retval = self.det.getMeasuredCurrent(currentIndex)[0]
+        currentIndex = getattr(powerIndex, f"I_POWER_{i}")
+        retval = self.det.getMeasuredCurrent(currentIndex)
         label.setText(f'{str(retval)} mA')
 
     def getVChip(self):
-        self.view.spinBoxVChip.setValue(self.det.getPower(dacIndex.V_POWER_CHIP)[0])
+        self.view.labelVChip.setText(f"{str(self.det.getPowerDAC(powerIndex.V_POWER_CHIP))} mV")
+
+    def getVoltage(self, i):
+        spinBox = getattr(self.view, f"spinBoxV{i}")
+        spinBox.editingFinished.disconnect()
+        voltageIndex = getattr(powerIndex, f"V_POWER_{i}")
+        spinBox.setValue(self.det.getPowerDAC(voltageIndex))
+        spinBox.editingFinished.connect(partial(self.setVoltage, i))
+
+    def setVoltage(self, i):
+        spinBox = getattr(self.view, f"spinBoxV{i}")
+        spinBox.editingFinished.disconnect()
+        voltageIndex = getattr(powerIndex, f"V_POWER_{i}")
+        try:
+            self.det.setPowerDAC(voltageIndex, spinBox.value())
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(self.mainWindow, "Voltage Fail", str(e), QtWidgets.QMessageBox.Ok)
+            pass
+        spinBox.editingFinished.connect(partial(self.setVoltage, i))
+        self.update(i)
+        if self.det.type == detectorType.CHIPTESTBOARD:
+            self.getVChip()
+
+    def getPowerEnable(self, i):
+        checkBox = getattr(self.view, f"checkBoxV{i}")
+        checkBox.stateChanged.disconnect()
+        voltageIndex = getattr(powerIndex, f"V_POWER_{i}")
+        retval = self.det.isPowerEnabled(voltageIndex)
+        checkBox.setChecked(retval)
+        checkBox.stateChanged.connect(partial(self.setPowerEnable, i))
+
+    def setPowerEnable(self, i):
+        checkBox = getattr(self.view, f"checkBoxV{i}")
+        checkBox.stateChanged.disconnect()
+        voltageIndex = getattr(powerIndex, f"V_POWER_{i}")
+        try:
+            self.det.setPowerEnabled([voltageIndex], checkBox.isChecked())
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(self.mainWindow, "Voltage Fail", str(e), QtWidgets.QMessageBox.Ok)
+            pass
+        checkBox.stateChanged.connect(partial(self.setPowerEnable, i))
+        self.update(i)
+        if self.det.type == detectorType.CHIPTESTBOARD:
+            self.getVChip()
+
 
     def powerOff(self):
-        for i in Defines.powerSupplies:
-            # set all voltages to 0
-            checkBox = getattr(self.view, f"checkBoxV{i}")
-            checkBox.stateChanged.disconnect()
-            checkBox.setChecked(False)
-            checkBox.stateChanged.connect(partial(self.setVoltage, i))
-            self.setVoltage(i)
+        voltageIndices = [getattr(powerIndex, f"V_POWER_{i}") for i in Defines.powerSupplies]
+        try:
+            self.det.setPowerEnabled(voltageIndices, False)
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(self.mainWindow, "Power Off Fail", str(e), QtWidgets.QMessageBox.Ok)
+            pass
+        finally:
+            self.refresh()
 
     def saveParameters(self) -> list:
         commands = []
         for i in Defines.powerSupplies:
             enabled = getattr(self.view, f"checkBoxV{i}").isChecked()
-            if enabled:
-                value = getattr(self.view, f"spinBoxV{i}").value()
-                commands.append(f"v_{i.lower()} {value}")
-            else:
-                commands.append(f"v_{i.lower()} 0")
+            commands.append(f"power v_{i.lower()} {enabled}")
+            value = getattr(self.view, f"spinBoxV{i}").value()
+            commands.append(f"powerdac v_{i.lower()} {value}")
         return commands

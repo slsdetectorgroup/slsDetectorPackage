@@ -66,13 +66,23 @@ template <typename DerivedDetectorServer> class DetectorServer {
 
     ReturnCode get_source_udp_mac(ServerInterface &socket) const;
 
+    ReturnCode set_source_udp_mac(ServerInterface &socket);
+
     ReturnCode get_source_udp_ip(ServerInterface &socket) const;
+
+    ReturnCode set_source_udp_ip(ServerInterface &socket);
 
     ReturnCode get_source_udp_port(ServerInterface &socket) const;
 
+    ReturnCode set_destination_udp_mac(ServerInterface &socket);
+
     ReturnCode get_destination_udp_mac(ServerInterface &socket) const;
 
+    ReturnCode set_destination_udp_ip(ServerInterface &socket);
+
     ReturnCode get_destination_udp_ip(ServerInterface &socket) const;
+
+    ReturnCode set_destination_udp_port(ServerInterface &socket);
 
     ReturnCode get_destination_udp_port(ServerInterface &socket) const;
 };
@@ -109,16 +119,27 @@ ReturnCode DetectorServer<DerivedDetectorServer>::processFunction(
             ->get_num_udp_interfaces(socket);
     case detFuncs::F_GET_UPDATE_MODE:
         return get_update_mode(socket);
+    case detFuncs::F_SET_SOURCE_UDP_MAC:
+        return set_source_udp_mac(socket);
     case detFuncs::F_GET_SOURCE_UDP_MAC:
         return get_source_udp_mac(socket);
+    case detFuncs::F_SET_SOURCE_UDP_IP:
+        return set_source_udp_ip(socket);
     case detFuncs::F_GET_SOURCE_UDP_IP:
         return get_source_udp_ip(socket);
+    case detFuncs::F_SET_DEST_UDP_MAC:
+        return set_destination_udp_mac(socket);
     case detFuncs::F_GET_DEST_UDP_MAC:
         return get_destination_udp_mac(socket);
+    case detFuncs::F_SET_DEST_UDP_IP:
+        return set_destination_udp_ip(socket);
     case detFuncs::F_GET_DEST_UDP_IP:
         return get_destination_udp_ip(socket);
+    case detFuncs::F_SET_DEST_UDP_PORT:
+        return set_destination_udp_port(socket);
     case detFuncs::F_GET_DEST_UDP_PORT:
         return get_destination_udp_port(socket);
+
     default:
         LOG(logDEBUG) << "Checking specific server functions for function ID: "
                       << function_id;
@@ -151,9 +172,48 @@ ReturnCode DetectorServer<DerivedDetectorServer>::get_update_mode(
 }
 
 template <typename DerivedDetectorServer>
+ReturnCode DetectorServer<DerivedDetectorServer>::set_source_udp_mac(
+    ServerInterface &socket) {
+    uint64_t newsrcudpMac;
+    int ret = socket.Receive(newsrcudpMac);
+
+    try {
+        int ret = socket.Receive(newsrcudpMac);
+    } catch (const SocketError &e) {
+        LOG(logERROR) << "Failed to receive new source UDP MAC address: "
+                      << e.what();
+        return ReturnCode::FAIL;
+    }
+    if (ret != static_cast<int>(sizeof(newsrcudpMac))) {
+        return ReturnCode::FAIL;
+    }
+
+    udpDetails[0].srcmac = newSrcMac;
+    return ReturnCode::OK;
+}
+
+template <typename DerivedDetectorServer>
 ReturnCode DetectorServer<DerivedDetectorServer>::get_source_udp_mac(
     ServerInterface &socket) const {
     return static_cast<ReturnCode>(socket.sendResult(udpDetails[0].srcmac));
+}
+
+template <typename DerivedDetectorServer>
+ReturnCode DetectorServer<DerivedDetectorServer>::set_source_udp_ip(
+    ServerInterface &socket) {
+    uint32_t newSrcIp;
+    int ret = socket.Receive(newSrcIp);
+
+    try {
+        int ret = socket.Receive(newSrcIp);
+    } catch (const SocketError &e) {
+        LOG(logERROR) << "Failed to receive new source UDP IP address: "
+                      << e.what();
+        return ReturnCode::FAIL;
+    }
+
+    udpDetails[0].srcip = newSrcIp;
+    return ReturnCode::OK;
 }
 
 template <typename DerivedDetectorServer>
@@ -170,15 +230,66 @@ ReturnCode DetectorServer<DerivedDetectorServer>::get_source_udp_port(
 }
 
 template <typename DerivedDetectorServer>
+ReturnCode DetectorServer<DerivedDetectorServer>::set_destination_udp_mac(
+    ServerInterface &socket) {
+    uint64_t newDstMac;
+    int ret = socket.Receive(newDstMac);
+    try {
+        int ret = socket.Receive(newDstMac);
+    } catch (const SocketError &e) {
+        LOG(logERROR) << "Failed to receive new destination UDP MAC address: "
+                      << e.what();
+        return ReturnCode::FAIL;
+    }
+
+    udpDetails[0].dstmac = newDstMac;
+    return ReturnCode::OK;
+}
+
+template <typename DerivedDetectorServer>
 ReturnCode DetectorServer<DerivedDetectorServer>::get_destination_udp_mac(
     ServerInterface &socket) const {
     return static_cast<ReturnCode>(socket.sendResult(udpDetails[0].dstmac));
 }
 
 template <typename DerivedDetectorServer>
+ReturnCode DetectorServer<DerivedDetectorServer>::set_destination_udp_ip(
+    ServerInterface &socket) {
+    uint32_t newDstIp;
+    int ret = socket.Receive(newDstIp);
+    try {
+        int ret = socket.Receive(newDstIp);
+    } catch (const SocketError &e) {
+        LOG(logERROR) << "Failed to receive new destination UDP IP address: "
+                      << e.what();
+        return ReturnCode::FAIL;
+    }
+
+    udpDetails[0].dstip = newDstIp;
+    return ReturnCode::OK;
+}
+
+template <typename DerivedDetectorServer>
 ReturnCode DetectorServer<DerivedDetectorServer>::get_destination_udp_ip(
     ServerInterface &socket) const {
     return static_cast<ReturnCode>(socket.sendResult(udpDetails[0].dstip));
+}
+
+template <typename DerivedDetectorServer>
+ReturnCode DetectorServer<DerivedDetectorServer>::set_destination_udp_port(
+    ServerInterface &socket) {
+    uint16_t newDstPort;
+    int ret = socket.Receive(newDstPort);
+    try {
+        int ret = socket.Receive(newDstPort);
+    } catch (const SocketError &e) {
+        LOG(logERROR) << "Failed to receive new destination UDP port number: "
+                      << e.what();
+        return ReturnCode::FAIL;
+    }
+
+    udpDetails[0].dstport = newDstPort;
+    return ReturnCode::OK;
 }
 
 template <typename DerivedDetectorServer>

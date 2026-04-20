@@ -10,6 +10,7 @@ runStatus = slsDetectorDefs.runStatus
 timingMode = slsDetectorDefs.timingMode
 speedLevel = slsDetectorDefs.speedLevel
 dacIndex = slsDetectorDefs.dacIndex
+powerIndex = slsDetectorDefs.powerIndex
 detectorType = slsDetectorDefs.detectorType
 streamingInterface = slsDetectorDefs.streamingInterface
 
@@ -4107,7 +4108,7 @@ class Detector(CppDetectorApi):
               
         :setter: Not implemented
         """
-        return self.getMeasuredCurrent(dacIndex.I_POWER_A)
+        return self.getMeasuredCurrent(powerIndex.I_POWER_A)
 
     @property
     @element
@@ -4116,7 +4117,7 @@ class Detector(CppDetectorApi):
         
         :setter: Not implemented
         """
-        return self.getMeasuredCurrent(dacIndex.I_POWER_B)
+        return self.getMeasuredCurrent(powerIndex.I_POWER_B)
 
     @property
     @element
@@ -4125,7 +4126,7 @@ class Detector(CppDetectorApi):
                 
         :setter: Not implemented
         """
-        return self.getMeasuredCurrent(dacIndex.I_POWER_C)
+        return self.getMeasuredCurrent(powerIndex.I_POWER_C)
 
     @property
     @element
@@ -4134,7 +4135,7 @@ class Detector(CppDetectorApi):
                 
         :setter: Not implemented
         """
-        return self.getMeasuredCurrent(dacIndex.I_POWER_D)
+        return self.getMeasuredCurrent(powerIndex.I_POWER_D)
 
     @property
     @element
@@ -4143,7 +4144,7 @@ class Detector(CppDetectorApi):
                 
         :setter: Not implemented
         """
-        return self.getMeasuredCurrent(dacIndex.I_POWER_IO)
+        return self.getMeasuredCurrent(powerIndex.I_POWER_IO)
 
     @property
     def clkphase(self):

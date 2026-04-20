@@ -175,20 +175,16 @@ template <typename DerivedDetectorServer>
 ReturnCode DetectorServer<DerivedDetectorServer>::set_source_udp_mac(
     ServerInterface &socket) {
     uint64_t newsrcudpMac;
-    int ret = socket.Receive(newsrcudpMac);
 
     try {
-        int ret = socket.Receive(newsrcudpMac);
+        int ret = socket.Receive<uint64_t>(newsrcudpMac);
     } catch (const SocketError &e) {
         LOG(logERROR) << "Failed to receive new source UDP MAC address: "
                       << e.what();
         return ReturnCode::FAIL;
     }
-    if (ret != static_cast<int>(sizeof(newsrcudpMac))) {
-        return ReturnCode::FAIL;
-    }
 
-    udpDetails[0].srcmac = newSrcMac;
+    udpDetails[0].srcmac = newsrcudpMac;
     return ReturnCode::OK;
 }
 
@@ -202,7 +198,6 @@ template <typename DerivedDetectorServer>
 ReturnCode DetectorServer<DerivedDetectorServer>::set_source_udp_ip(
     ServerInterface &socket) {
     uint32_t newSrcIp;
-    int ret = socket.Receive(newSrcIp);
 
     try {
         int ret = socket.Receive(newSrcIp);
@@ -233,9 +228,9 @@ template <typename DerivedDetectorServer>
 ReturnCode DetectorServer<DerivedDetectorServer>::set_destination_udp_mac(
     ServerInterface &socket) {
     uint64_t newDstMac;
-    int ret = socket.Receive(newDstMac);
+
     try {
-        int ret = socket.Receive(newDstMac);
+        int ret = socket.Receive<uint64_t>(newDstMac);
     } catch (const SocketError &e) {
         LOG(logERROR) << "Failed to receive new destination UDP MAC address: "
                       << e.what();
@@ -256,7 +251,7 @@ template <typename DerivedDetectorServer>
 ReturnCode DetectorServer<DerivedDetectorServer>::set_destination_udp_ip(
     ServerInterface &socket) {
     uint32_t newDstIp;
-    int ret = socket.Receive(newDstIp);
+
     try {
         int ret = socket.Receive(newDstIp);
     } catch (const SocketError &e) {
@@ -279,7 +274,7 @@ template <typename DerivedDetectorServer>
 ReturnCode DetectorServer<DerivedDetectorServer>::set_destination_udp_port(
     ServerInterface &socket) {
     uint16_t newDstPort;
-    int ret = socket.Receive(newDstPort);
+
     try {
         int ret = socket.Receive(newDstPort);
     } catch (const SocketError &e) {

@@ -382,9 +382,9 @@ void setupDetector() {
     analogEnable = 0;
     digitalEnable = 0;
     transceiverEnable = 0;
-    for (int i = 0; i != NDAC; ++i)
+    for (int i = 0; i != NDAC_ONLY; ++i)
         dacValues[i] = -1;
-    for (int i = 0; i != 5; ++i)
+    for (int i = 0; i != NPWR - 1; ++i)
         powerValues[i] = -1;
     vLimit = DEFAULT_VLIMIT;
 

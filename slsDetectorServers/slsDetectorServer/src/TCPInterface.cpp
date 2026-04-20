@@ -8,10 +8,10 @@
 namespace sls {
 
 TCPInterface::TCPInterface(
-    std::unordered_map<detFuncs, std::function<ReturnCode(ServerInterface &)>>
-        &functionTable_,
+    std::function<ReturnCode(const detFuncs &, ServerInterface &)>
+        &processFunction_,
     const uint16_t portNumber)
-    : functionTable(functionTable_), portNumber(portNumber),
+    : processFunction(processFunction_), portNumber(portNumber),
       server(portNumber) {
     validatePortNumber(portNumber);
 }
@@ -67,21 +67,12 @@ void TCPInterface::startTCPServer() {
 
 ReturnCode TCPInterface::processReceivedData(const detFuncs function_id,
                                              ServerInterface &socket) {
-    // TODO: is NUM_DET_FUNCTIONS correct?
 
     LOG(logDEBUG1) << "calling function fnum: " << function_id << " ("
                    << getFunctionNameFromEnum((enum detFuncs)function_id)
                    << ")";
 
-    auto function = functionTable.find(function_id);
-    if (function == functionTable.end()) {
-        throw RuntimeError(
-            fmt::format("Function {} not found not implemented",
-                        getFunctionNameFromEnum((enum detFuncs)function_id)));
-    }
-
-    ReturnCode returncode =
-        function->second(socket); // how does it pass input arguments?
+    ReturnCode returncode = processFunction(function_id, socket);
 
     LOG(logDEBUG1) << "Function "
                    << getFunctionNameFromEnum((enum detFuncs)function_id)

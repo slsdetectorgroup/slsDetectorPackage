@@ -19,8 +19,6 @@ class VirtualMatterhornServer
     ~VirtualMatterhornServer() = default;
 
     ReturnCode initial_checks(ServerInterface &socket);
-
-    ReturnCode get_update_mode(ServerInterface &socket);
 };
 
 } // namespace sls

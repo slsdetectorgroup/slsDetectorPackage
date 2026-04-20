@@ -21,9 +21,4 @@ ReturnCode VirtualMatterhornServer::initial_checks(ServerInterface &socket) {
     return static_cast<ReturnCode>(socket.sendResult(initial_checks_passed));
 }
 
-ReturnCode VirtualMatterhornServer::get_update_mode(ServerInterface &socket) {
-    return static_cast<ReturnCode>(
-        socket.sendResult(static_cast<int>(updateMode)));
-}
-
 } // namespace sls

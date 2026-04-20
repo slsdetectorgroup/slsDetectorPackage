@@ -22,8 +22,6 @@ class MatterhornServer : public BaseMatterhornServer<MatterhornServer> {
     ~MatterhornServer() = default;
 
     ReturnCode initial_checks(ServerInterface &socket);
-
-    ReturnCode get_update_mode(ServerInterface &socket);
 };
 
 } // namespace sls

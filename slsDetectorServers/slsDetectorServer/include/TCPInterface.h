@@ -18,9 +18,8 @@ class TCPInterface {
   public:
     ~TCPInterface();
 
-    TCPInterface(std::unordered_map<
-                     detFuncs, std::function<ReturnCode(ServerInterface &)>>
-                     &functionTable_,
+    TCPInterface(std::function<ReturnCode(const detFuncs &, ServerInterface &)>
+                     &processFunction_,
                  const uint16_t portNumber = DEFAULT_TCP_CNTRL_PORTNO);
 
     /// @brief starts the TCP/IP server to listen for client commands
@@ -36,8 +35,8 @@ class TCPInterface {
                                    ServerInterface &socket);
 
     /// @brief map of function IDs and corresponding functions
-    std::unordered_map<detFuncs, std::function<ReturnCode(ServerInterface &)>>
-        functionTable{};
+    std::function<ReturnCode(const detFuncs &, ServerInterface &)>
+        processFunction;
 
     uint16_t portNumber{};
 

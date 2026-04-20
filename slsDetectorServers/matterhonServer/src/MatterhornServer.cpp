@@ -3,7 +3,7 @@
 namespace sls {
 
 MatterhornServer::MatterhornServer(uint16_t port)
-    : BaseMatterhornServer(port) {
+    : BaseMatterhornServer<MatterhornServer>(port) {
 
     // TODO: when do i set the udp mac and ip ?
 
@@ -19,11 +19,6 @@ ReturnCode MatterhornServer::initial_checks(ServerInterface &socket) {
     // the should check firmware -client compatibility
     bool initial_checks_passed = true;
     return static_cast<ReturnCode>(socket.sendResult(initial_checks_passed));
-}
-
-ReturnCode MatterhornServer::get_update_mode(ServerInterface &socket) {
-    return static_cast<ReturnCode>(
-        socket.sendResult(static_cast<int>(updateMode)));
 }
 
 } // namespace sls

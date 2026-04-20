@@ -1,5 +1,4 @@
 #include "CommandLineOptions.h"
-#include "StopServer.h"
 #include "VirtualMatterhornServer.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_exceptions.h"

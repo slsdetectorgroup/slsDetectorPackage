@@ -164,8 +164,8 @@ int getAllPowerValues(bool *pwrEnable, int *pwrValues, char *mess);
 /** pwrEnable and pwrValues are current values
  * updated with the current command
  * (current cmd: eg. power enable all or only set one power dac) */
-int getVchipToSet(int *retval_vchip, bool *pwrEnable, int *pwrValues,
-                  char *mess);
+int computeVchip(int *retval_vchip, bool *pwrEnable, int *pwrValues,
+                 char *mess);
 
 int getPowerADC(enum powerIndex index, int *retval, char *mess);
 

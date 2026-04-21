@@ -1505,11 +1505,13 @@ int setPowerDAC(enum powerIndex ind, int voltage, char *mess) {
     pwrValues[ind] = voltage;
 
     // set vchip accordingly
-    int vchipToSet = 0;
-    if (getVchipToSet(&vchipToSet, pwrEnables, pwrValues, mess) == FAIL)
-        return FAIL;
-    if (setVchip(vchipToSet, mess) == FAIL)
-        return FAIL;
+    {
+        int vchip = 0;
+        if (computeVchip(&vchip, pwrEnables, pwrValues, mess) == FAIL)
+            return FAIL;
+        if (setVchip(vchip, mess) == FAIL)
+            return FAIL;
+    }
 
     int dacval = -1;
     if (convertVoltageToPowerDAC(ind, voltage, &dacval, mess) == FAIL)
@@ -1620,11 +1622,13 @@ int setPowerEnabled(enum powerIndex indices[], int count, bool enable,
     }
 
     // set vchip accordingly
-    int vchipToSet = 0;
-    if (getVchipToSet(&vchipToSet, pwrEnables, pwrValues, mess) == FAIL)
-        return FAIL;
-    if (setVchip(vchipToSet, mess) == FAIL)
-        return FAIL;
+    {
+        int vchip = 0;
+        if (computeVchip(&vchip, pwrEnables, pwrValues, mess) == FAIL)
+            return FAIL;
+        if (setVchip(vchip, mess) == FAIL)
+            return FAIL;
+    }
 
     // enable/disable power rails
     uint32_t addr = POWER_REG;
@@ -1725,8 +1729,8 @@ int getAllPowerValues(bool *pwrEnables, int *pwrValues, char *mess) {
     return OK;
 }
 
-int getVchipToSet(int *retval_vchip, bool *pwrEnables, int *pwrValues,
-                  char *mess) {
+int computeVchip(int *retval_vchip, bool *pwrEnables, int *pwrValues,
+                 char *mess) {
     // get the max of all the power regulators
     int max = 0;
     for (int ipwr = 0; ipwr != 5; ++ipwr) {

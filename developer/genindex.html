@@ -277,7 +277,7 @@
 <h2 id="D">D</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="commandline.html#term-dac-dac-dac-name-dac-or-mV-value-optional-unit-mV"><strong>dac dac [dac name] [dac or mV value] [(optional unit) mV]</strong></a>
+      <li><a href="commandline.html#term-dac-dac-name-dac-or-mV-value-optional-unit-mV"><strong>dac [dac name] [dac or mV value] [(optional unit) mV]</strong></a>
 </li>
       <li><a href="commandline.html#term-dacindex-name"><strong>dacindex [name]</strong></a>
 </li>
@@ -583,10 +583,10 @@
 </li>
       <li><a href="commandline.html#term-patwait0"><strong>patwait0</strong></a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="commandline.html#term-patwait1"><strong>patwait1</strong></a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="commandline.html#term-patwait2"><strong>patwait2</strong></a>
 </li>
       <li><a href="commandline.html#term-patwaittime-0-6-n_clk"><strong>patwaittime [0-6] [n_clk]</strong></a>
@@ -609,7 +609,11 @@
 </li>
       <li><a href="commandline.html#term-port-n"><strong>port [n]</strong></a>
 </li>
+      <li><a href="commandline.html#term-power-all-list-of-power-names-on-off"><strong>power [all|list of power names] [on|off]</strong></a>
+</li>
       <li><a href="commandline.html#term-powerchip-0-1"><strong>powerchip [0, 1]</strong></a>
+</li>
+      <li><a href="commandline.html#term-powerdac-powername-mV-value"><strong>powerdac [powername][mV value]</strong></a>
 </li>
       <li><a href="commandline.html#term-powerindex-name"><strong>powerindex [name]</strong></a>
 </li>
@@ -617,7 +621,7 @@
 </li>
       <li><a href="commandline.html#term-powername-0-4-name"><strong>powername [0-4][name]</strong></a>
 </li>
-      <li><a href="commandline.html#term-powervalues-name"><strong>powervalues [name]</strong></a>
+      <li><a href="commandline.html#term-powervalues"><strong>powervalues</strong></a>
 </li>
       <li><a href="commandline.html#term-programfpga-fname.pof-fname.rbf-full-path-opitonal-force-delete-normal-file"><strong>programfpga [fname.pof | fname.rbf (full path)][(opitonal)--force-delete-normal-file]</strong></a>
 </li>
@@ -1053,11 +1057,11 @@
 </li>
       <li><a href="detector.html#_CPPv4NK3sls8Detector20getMaxDBITPhaseShiftE9Positions">sls::Detector::getMaxDBITPhaseShift (C++ function)</a>
 </li>
-      <li><a href="detector.html#_CPPv4NK3sls8Detector18getMeasuredCurrentEN4defs8dacIndexE9Positions">sls::Detector::getMeasuredCurrent (C++ function)</a>
+      <li><a href="detector.html#_CPPv4NK3sls8Detector18getMeasuredCurrentEN4defs10powerIndexE">sls::Detector::getMeasuredCurrent (C++ function)</a>
 </li>
       <li><a href="detector.html#_CPPv4NK3sls8Detector17getMeasuredPeriodE9Positions">sls::Detector::getMeasuredPeriod (C++ function)</a>
 </li>
-      <li><a href="detector.html#_CPPv4NK3sls8Detector16getMeasuredPowerEN4defs8dacIndexE9Positions">sls::Detector::getMeasuredPower (C++ function)</a>
+      <li><a href="detector.html#_CPPv4NK3sls8Detector16getMeasuredPowerEN4defs10powerIndexE">sls::Detector::getMeasuredPower (C++ function)</a>
 </li>
       <li><a href="detector.html#_CPPv4NK3sls8Detector25getMeasuredSubFramePeriodE9Positions">sls::Detector::getMeasuredSubFramePeriod (C++ function)</a>
 </li>
@@ -1147,15 +1151,15 @@
 </li>
       <li><a href="detector.html#_CPPv4NK3sls8Detector11getPortSizeE9Positions">sls::Detector::getPortSize (C++ function)</a>
 </li>
-      <li><a href="detector.html#_CPPv4NK3sls8Detector8getPowerEN4defs8dacIndexE9Positions">sls::Detector::getPower (C++ function)</a>
-</li>
       <li><a href="detector.html#_CPPv4NK3sls8Detector12getPowerChipE9Positions">sls::Detector::getPowerChip (C++ function)</a>
+</li>
+      <li><a href="detector.html#_CPPv4NK3sls8Detector11getPowerDACEN4defs10powerIndexE">sls::Detector::getPowerDAC (C++ function)</a>
 </li>
       <li><a href="detector.html#_CPPv4NK3sls8Detector13getPowerIndexERKNSt6stringE">sls::Detector::getPowerIndex (C++ function)</a>
 </li>
       <li><a href="detector.html#_CPPv4NK3sls8Detector12getPowerListEv">sls::Detector::getPowerList (C++ function)</a>
 </li>
-      <li><a href="detector.html#_CPPv4NK3sls8Detector12getPowerNameEKN4defs8dacIndexE">sls::Detector::getPowerName (C++ function)</a>
+      <li><a href="detector.html#_CPPv4NK3sls8Detector12getPowerNameEKN4defs10powerIndexE">sls::Detector::getPowerName (C++ function)</a>
 </li>
       <li><a href="detector.html#_CPPv4NK3sls8Detector13getPowerNamesEv">sls::Detector::getPowerNames (C++ function)</a>
 </li>
@@ -1339,12 +1343,16 @@
 </li>
       <li><a href="detector.html#_CPPv4NK3sls8Detector13getVetoStreamE9Positions">sls::Detector::getVetoStream (C++ function)</a>
 </li>
+      <li><a href="detector.html#_CPPv4NK3sls8Detector15getVoltageLimitEv">sls::Detector::getVoltageLimit (C++ function)</a>
+</li>
       <li><a href="detector.html#_CPPv4NK3sls8Detector16hasBitDefinitionE10BitAddress">sls::Detector::hasBitDefinition (C++ function)</a>, <a href="detector.html#_CPPv4NK3sls8Detector16hasBitDefinitionERKNSt6stringE">[1]</a>
+</li>
+      <li><a href="detector.html#_CPPv4NK3sls8Detector21hasRegisterDefinitionE15RegisterAddress">sls::Detector::hasRegisterDefinition (C++ function)</a>, <a href="detector.html#_CPPv4NK3sls8Detector21hasRegisterDefinitionERKNSt6stringE">[1]</a>
+</li>
+      <li><a href="detector.html#_CPPv4NK3sls8Detector14isPowerEnabledEN4defs10powerIndexE">sls::Detector::isPowerEnabled (C++ function)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="detector.html#_CPPv4NK3sls8Detector21hasRegisterDefinitionE15RegisterAddress">sls::Detector::hasRegisterDefinition (C++ function)</a>, <a href="detector.html#_CPPv4NK3sls8Detector21hasRegisterDefinitionERKNSt6stringE">[1]</a>
-</li>
       <li><a href="detector.html#_CPPv4NK3sls8Detector23isVirtualDetectorServerE9Positions">sls::Detector::isVirtualDetectorServer (C++ function)</a>
 </li>
       <li><a href="detector.html#_CPPv4N3sls8Detector10loadConfigERKNSt6stringE">sls::Detector::loadConfig (C++ function)</a>
@@ -1368,6 +1376,8 @@
       <li><a href="detector.html#_CPPv4N3sls8Detector15pulsePixelNMoveEiN4defs2xyE9Positions">sls::Detector::pulsePixelNMove (C++ function)</a>
 </li>
       <li><a href="detector.html#_CPPv4NK3sls8Detector12readRegisterE15RegisterAddress9Positions">sls::Detector::readRegister (C++ function)</a>, <a href="detector.html#_CPPv4NK3sls8Detector12readRegisterE8uint32_t9Positions">[1]</a>, <a href="detector.html#_CPPv4NK3sls8Detector12readRegisterERKNSt6stringE9Positions">[2]</a>
+</li>
+      <li><a href="detector.html#_CPPv4NK3sls8Detector7readSpiEiii9Positions">sls::Detector::readSpi (C++ function)</a>
 </li>
       <li><a href="detector.html#_CPPv4N3sls8Detector16rebootControllerE9Positions">sls::Detector::rebootController (C++ function)</a>
 </li>
@@ -1621,11 +1631,13 @@
 </li>
       <li><a href="detector.html#_CPPv4N3sls8Detector11setPolarityEN4defs8polarityE9Positions">sls::Detector::setPolarity (C++ function)</a>
 </li>
-      <li><a href="detector.html#_CPPv4N3sls8Detector8setPowerEN4defs8dacIndexEi9Positions">sls::Detector::setPower (C++ function)</a>
-</li>
       <li><a href="detector.html#_CPPv4N3sls8Detector12setPowerChipEb9Positions">sls::Detector::setPowerChip (C++ function)</a>
 </li>
-      <li><a href="detector.html#_CPPv4N3sls8Detector12setPowerNameEKN4defs8dacIndexERKNSt6stringE">sls::Detector::setPowerName (C++ function)</a>
+      <li><a href="detector.html#_CPPv4N3sls8Detector11setPowerDACEN4defs10powerIndexEi">sls::Detector::setPowerDAC (C++ function)</a>
+</li>
+      <li><a href="detector.html#_CPPv4N3sls8Detector15setPowerEnabledERKNSt6vectorIN4defs10powerIndexEEEb">sls::Detector::setPowerEnabled (C++ function)</a>
+</li>
+      <li><a href="detector.html#_CPPv4N3sls8Detector12setPowerNameEKN4defs10powerIndexERKNSt6stringE">sls::Detector::setPowerName (C++ function)</a>
 </li>
       <li><a href="detector.html#_CPPv4N3sls8Detector13setPowerNamesEKNSt6vectorINSt6stringEEE">sls::Detector::setPowerNames (C++ function)</a>
 </li>
@@ -1767,6 +1779,8 @@
 </li>
       <li><a href="detector.html#_CPPv4N3sls8Detector25setVirtualDetectorServersEi8uint16_t">sls::Detector::setVirtualDetectorServers (C++ function)</a>
 </li>
+      <li><a href="detector.html#_CPPv4N3sls8Detector15setVoltageLimitEKi">sls::Detector::setVoltageLimit (C++ function)</a>
+</li>
       <li><a href="detector.html#_CPPv4NK3sls8Detector4sizeEv">sls::Detector::size (C++ function)</a>
 </li>
       <li><a href="detector.html#_CPPv4N3sls8Detector13startDetectorE9Positions">sls::Detector::startDetector (C++ function)</a>
@@ -1794,6 +1808,8 @@
       <li><a href="detector.html#_CPPv4N3sls8Detector16writeAdcRegisterE8uint32_t8uint32_t9Positions">sls::Detector::writeAdcRegister (C++ function)</a>
 </li>
       <li><a href="detector.html#_CPPv4N3sls8Detector13writeRegisterE15RegisterAddress13RegisterValueb9Positions">sls::Detector::writeRegister (C++ function)</a>, <a href="detector.html#_CPPv4N3sls8Detector13writeRegisterE8uint32_t8uint32_tb9Positions">[1]</a>, <a href="detector.html#_CPPv4N3sls8Detector13writeRegisterERKNSt6stringE13RegisterValueb9Positions">[2]</a>
+</li>
+      <li><a href="detector.html#_CPPv4N3sls8Detector8writeSpiEiiRKNSt6vectorI7uint8_tEE9Positions">sls::Detector::writeSpi (C++ function)</a>
 </li>
       <li><a href="detector.html#_CPPv4N3sls8DetectorD0Ev">sls::Detector::~Detector (C++ function)</a>
 </li>
@@ -1911,7 +1927,7 @@
 </li>
       <li><a href="container_utils.html#_CPPv4I0EN3sls22stableRemoveDuplicatesENSt9enable_ifIN12is_containerI1TE5valueEbE4typeER1T">sls::stableRemoveDuplicates (C++ function)</a>
 </li>
-      <li><a href="ToString.html#_CPPv4I0EN3sls8StringToE1TRKNSt6stringE">sls::StringTo (C++ function)</a>, <a href="ToString.html#_CPPv4I0EN3sls8StringToE1TRKNSt6stringERKNSt6stringE">[1]</a>, <a href="ToString.html#_CPPv4I0EN3sls8StringToENSt6vectorI1TEERKNSt6vectorINSt6stringEEE">[2]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToE13RegisterValueRKNSt6stringE">[3]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToE15RegisterAddressRKNSt6stringE">[4]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToE7int64_tRKNSt6stringE">[5]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToE7uint8_tRKNSt6stringE">[6]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToE8uint16_tRKNSt6stringE">[7]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToE8uint32_tRKNSt6stringE">[8]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToE8uint64_tRKNSt6stringE">[9]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs10fileFormatERKNSt6stringE">[10]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs10speedLevelERKNSt6stringE">[11]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs10timingModeERKNSt6stringE">[12]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs11M3_GainCapsERKNSt6stringE">[13]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs11readoutModeERKNSt6stringE">[14]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs12detectorTypeERKNSt6stringE">[15]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs12portPositionERKNSt6stringE">[16]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs13vetoAlgorithmERKNSt6stringE">[17]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs14collectionModeERKNSt6stringE">[18]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs16detectorSettingsERKNSt6stringE">[19]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs16timingSourceTypeERKNSt6stringE">[20]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs17timingInfoDecoderERKNSt6stringE">[21]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs18externalSignalFlagERKNSt6stringE">[22]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs18frameDiscardPolicyERKNSt6stringE">[23]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs18streamingInterfaceERKNSt6stringE">[24]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs8dacIndexERKNSt6stringE">[25]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs8gainModeERKNSt6stringE">[26]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs8polarityERKNSt6stringE">[27]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs9burstModeERKNSt6stringE">[28]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEbRKNSt6stringE">[29]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEiRKNSt6stringE">[30]</a>
+      <li><a href="ToString.html#_CPPv4I0EN3sls8StringToE1TRKNSt6stringE">sls::StringTo (C++ function)</a>, <a href="ToString.html#_CPPv4I0EN3sls8StringToE1TRKNSt6stringERKNSt6stringE">[1]</a>, <a href="ToString.html#_CPPv4I0EN3sls8StringToENSt6vectorI1TEERKNSt6vectorINSt6stringEEE">[2]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToE13RegisterValueRKNSt6stringE">[3]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToE15RegisterAddressRKNSt6stringE">[4]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToE7int64_tRKNSt6stringE">[5]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToE7uint8_tRKNSt6stringE">[6]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToE8uint16_tRKNSt6stringE">[7]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToE8uint32_tRKNSt6stringE">[8]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToE8uint64_tRKNSt6stringE">[9]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs10fileFormatERKNSt6stringE">[10]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs10powerIndexERKNSt6stringE">[11]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs10speedLevelERKNSt6stringE">[12]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs10timingModeERKNSt6stringE">[13]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs11M3_GainCapsERKNSt6stringE">[14]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs11readoutModeERKNSt6stringE">[15]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs12detectorTypeERKNSt6stringE">[16]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs12portPositionERKNSt6stringE">[17]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs13vetoAlgorithmERKNSt6stringE">[18]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs14collectionModeERKNSt6stringE">[19]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs16detectorSettingsERKNSt6stringE">[20]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs16timingSourceTypeERKNSt6stringE">[21]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs17timingInfoDecoderERKNSt6stringE">[22]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs18externalSignalFlagERKNSt6stringE">[23]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs18frameDiscardPolicyERKNSt6stringE">[24]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs18streamingInterfaceERKNSt6stringE">[25]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs8dacIndexERKNSt6stringE">[26]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs8gainModeERKNSt6stringE">[27]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs8polarityERKNSt6stringE">[28]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs9burstModeERKNSt6stringE">[29]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEbRKNSt6stringE">[30]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEiRKNSt6stringE">[31]</a>
 </li>
       <li><a href="container_utils.html#_CPPv4I0EN3sls3sumENSt9enable_ifINSt13is_arithmeticI1TE5valueE1TE4typeERKNSt6vectorI1TEE">sls::sum (C++ function)</a>
 </li>
@@ -2075,18 +2091,6 @@
 <h2 id="V">V</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="commandline.html#term-v_a-n_value"><strong>v_a [n_value]</strong></a>
-</li>
-      <li><a href="commandline.html#term-v_b-n_value"><strong>v_b [n_value]</strong></a>
-</li>
-      <li><a href="commandline.html#term-v_c-n_value"><strong>v_c [n_value]</strong></a>
-</li>
-      <li><a href="commandline.html#term-v_chip-n_value"><strong>v_chip [n_value]</strong></a>
-</li>
-      <li><a href="commandline.html#term-v_d-n_value"><strong>v_d [n_value]</strong></a>
-</li>
-      <li><a href="commandline.html#term-v_io-n_value"><strong>v_io [n_value]</strong></a>
-</li>
       <li><a href="commandline.html#term-v_limit-n_value"><strong>v_limit [n_value]</strong></a>
 </li>
       <li><a href="commandline.html#term-vchip_comp_adc-chip-index-0-9-1-for-all-10-bit-hex-value"><strong>vchip_comp_adc [chip index 0-9, -1 for all][10 bit hex value]</strong></a>
@@ -2101,14 +2105,14 @@
 </li>
       <li><a href="commandline.html#term-vchip_ref_comp_fe-chip-index-0-9-1-for-all-10-bit-hex-value"><strong>vchip_ref_comp_fe [chip index 0-9, -1 for all][10 bit hex value]</strong></a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="commandline.html#term-versions"><strong>versions</strong></a>
 </li>
       <li><a href="commandline.html#term-veto-0-1"><strong>veto [0, 1]</strong></a>
 </li>
       <li><a href="commandline.html#term-vetoalg-hits-raw-lll-10gbe"><strong>vetoalg [hits|raw] [lll|10gbe]</strong></a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="commandline.html#term-vetofile-chip-index-0-9-1-for-all-file-name"><strong>vetofile [chip index 0-9, -1 for all] [file name]</strong></a>
 </li>
       <li><a href="commandline.html#term-vetophoton-ichip-photons-energy-in-keV-reference-file"><strong>vetophoton [ichip] [#photons] [energy in keV] [reference file]</strong></a>

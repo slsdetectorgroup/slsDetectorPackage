@@ -441,7 +441,7 @@
 </div>
 </div>
 </dd>
-<dt id="term-dac-dac-dac-name-dac-or-mV-value-optional-unit-mV">dac dac [dac name] [dac or mV value] [(optional unit) mV]<a class="headerlink" href="#term-dac-dac-dac-name-dac-or-mV-value-optional-unit-mV" title="Link to this term"></a></dt><dd><div class="line-block">
+<dt id="term-dac-dac-name-dac-or-mV-value-optional-unit-mV">dac [dac name] [dac or mV value] [(optional unit) mV]<a class="headerlink" href="#term-dac-dac-name-dac-or-mV-value-optional-unit-mV" title="Link to this term"></a></dt><dd><div class="line-block">
 <div class="line">[Ctb] Use dac index for dac name.</div>
 </div>
 </dd>
@@ -1041,11 +1041,19 @@
 <div class="line">Port number of the control server on detector for detector-client tcp interface. Default is 1952. Normally unchanged. Set different ports for virtual servers on same pc.</div>
 </div>
 </dd>
+<dt id="term-power-all-list-of-power-names-on-off">power [all|list of power names] [on|off]<a class="headerlink" href="#term-power-all-list-of-power-names-on-off" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Xilinx Ctb] Enable or disable power rails. Power name can be all, v_a, v_b, v_c, v_d or v_io or any defines using ‘powername’. If power name is set to ‘all’, the command applies to all ‘powers’. Enabling the power rails is in parallel, whereas retrieving the states of multiple power rails, they are queried sequentially (one after another), not in parallel.</div>
+</div>
+</dd>
 <dt id="term-powerchip-0-1">powerchip [0, 1]<a class="headerlink" href="#term-powerchip-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
-<div class="line">[Jungfrau][Moench][Mythen3][Gotthard2][Xilinx Ctb] Power the chip.</div>
+<div class="line">[Jungfrau][Moench][Mythen3][Gotthard2] Power the chip.</div>
 <div class="line">[Jungfrau][Moench] Default is 0. Get will return power status. Can be off if temperature event occured (temperature over temp_threshold with temp_control enabled. Will configure chip (only chip v1.1)</div>
 <div class="line">[Mythen3][Gotthard2] Default is 1. If module not connected or wrong module, powerchip will fail.</div>
-<div class="line">[Xilinx Ctb] Default is 0. Also configures the chip if powered on.</div>
+</div>
+</dd>
+<dt id="term-powerdac-powername-mV-value">powerdac [powername][mV value]<a class="headerlink" href="#term-powerdac-powername-mV-value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Xilinx Ctb] Controls the dac used for Power supply. Default names for powername are v_a, v_b, v_c, v_d, v_io, v_chip(v_chip only applies to Ctb, not Xilinx_Ctb). If custom names are assigned using the ‘powername’ command, those names could be used instead instead of the defaults. By default, all are set to minimum values.</div>
+<div class="line">[Ctb] v_chip can also be queried to get the vchip dac value, although its rail cannot be enabled or disabled by the user. It is enabled by default. Its dac value is automatically updated whenever a power dac is modified. It is then set to the max of power dacs + 200mV.</div>
 </div>
 </dd>
 <dt id="term-powerindex-name">powerindex [name]<a class="headerlink" href="#term-powerindex-name" title="Link to this term"></a></dt><dd><div class="line-block">
@@ -1060,8 +1068,8 @@
 <div class="line">[Ctb][Xilinx_Ctb] Set the power at the given position to the given name.</div>
 </div>
 </dd>
-<dt id="term-powervalues-name">powervalues [name]<a class="headerlink" href="#term-powervalues-name" title="Link to this term"></a></dt><dd><div class="line-block">
-<div class="line">[Ctb][Xilinx_Ctb] Get values of all powers.</div>
+<dt id="term-powervalues">powervalues<a class="headerlink" href="#term-powervalues" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Xilinx_Ctb] Get dac values of all powers if enabled, else ‘0’.</div>
 </div>
 </dd>
 <dt id="term-programfpga-fname.pof-fname.rbf-full-path-opitonal-force-delete-normal-file">programfpga [fname.pof | fname.rbf (full path)][(opitonal)–force-delete-normal-file]<a class="headerlink" href="#term-programfpga-fname.pof-fname.rbf-full-path-opitonal-force-delete-normal-file" title="Link to this term"></a></dt><dd><div class="line-block">
@@ -1769,32 +1777,8 @@
 <div class="line">User details from shared memory (hostname, type, PID, User, Date).</div>
 </div>
 </dd>
-<dt id="term-v_a-n_value">v_a [n_value]<a class="headerlink" href="#term-v_a-n_value" title="Link to this term"></a></dt><dd><div class="line-block">
-<div class="line">[Ctb][Xilinx Ctb] Power supply a in mV.</div>
-</div>
-</dd>
-<dt id="term-v_b-n_value">v_b [n_value]<a class="headerlink" href="#term-v_b-n_value" title="Link to this term"></a></dt><dd><div class="line-block">
-<div class="line">[Ctb][Xilinx Ctb] Power supply b in mV.</div>
-</div>
-</dd>
-<dt id="term-v_c-n_value">v_c [n_value]<a class="headerlink" href="#term-v_c-n_value" title="Link to this term"></a></dt><dd><div class="line-block">
-<div class="line">[Ctb][Xilinx Ctb] Power supply c in mV.</div>
-</div>
-</dd>
-<dt id="term-v_chip-n_value">v_chip [n_value]<a class="headerlink" href="#term-v_chip-n_value" title="Link to this term"></a></dt><dd><div class="line-block">
-<div class="line">[Ctb] Power supply chip in mV. Do not use it unless you are completely sure you will not fry the board.</div>
-</div>
-</dd>
-<dt id="term-v_d-n_value">v_d [n_value]<a class="headerlink" href="#term-v_d-n_value" title="Link to this term"></a></dt><dd><div class="line-block">
-<div class="line">[Ctb][Xilinx Ctb] Power supply d in mV.</div>
-</div>
-</dd>
-<dt id="term-v_io-n_value">v_io [n_value]<a class="headerlink" href="#term-v_io-n_value" title="Link to this term"></a></dt><dd><div class="line-block">
-<div class="line">[Ctb][Xilinx Ctb] Power supply io in mV. Minimum 1200 mV. Must be the first power regulator to be set after fpga reset (on-board detector server start up).</div>
-</div>
-</dd>
 <dt id="term-v_limit-n_value">v_limit [n_value]<a class="headerlink" href="#term-v_limit-n_value" title="Link to this term"></a></dt><dd><div class="line-block">
-<div class="line">[Ctb][Xilinx Ctb] Soft limit for power supplies (ctb only) and DACS in mV.</div>
+<div class="line">[Ctb][Xilinx Ctb] Soft limit for power supplies and DACS in mV.</div>
 </div>
 </dd>
 <dt id="term-vchip_comp_adc-chip-index-0-9-1-for-all-10-bit-hex-value">vchip_comp_adc [chip index 0-9, -1 for all][10 bit hex value]<a class="headerlink" href="#term-vchip_comp_adc-chip-index-0-9-1-for-all-10-bit-hex-value" title="Link to this term"></a></dt><dd><div class="line-block">

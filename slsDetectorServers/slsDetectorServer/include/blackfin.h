@@ -122,3 +122,6 @@ uint32_t *Blackfin_getBaseAddress();
  * Map FPGA
  */
 int mapCSP0(void);
+
+/** sleep for only usecs */
+void usleep_bf(uint64_t i);

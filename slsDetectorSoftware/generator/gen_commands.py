@@ -14,6 +14,7 @@ GEN_PATH = Path(__file__).parent
 
 COMMANDS_PATH = GEN_PATH / 'extended_commands.yaml'
 DEPRECATED_COMMANDS_PATH = GEN_PATH / 'deprecated_commands.yaml'
+REMOVED_COMMANDS_PATH = GEN_PATH / 'removed_commands.yaml'
 CPP_INPUT_PATH = GEN_PATH / 'Caller.in.cpp'
 HEADER_INPUT_PATH = GEN_PATH / 'Caller.in.h'
 CPP_OUTPUT_PATH = GEN_PATH.parent / 'src' / 'Caller.cpp'
@@ -39,6 +40,8 @@ def generate(
 ):
     commands_config = yaml.unsafe_load(commands_path.open('r'))
     deprecated_commands_config = yaml.unsafe_load(DEPRECATED_COMMANDS_PATH.open('r'))
+    removed_commands_config = yaml.unsafe_load(REMOVED_COMMANDS_PATH.open('r'))
+
     type_dist, non_dist = check_infer(commands=commands_config)
 
     codegen.open(cpp_output_path)
@@ -185,7 +188,8 @@ def generate(
     codegen.close()
     print('[X] .cpp code generated')
     deprecated_commands = []
-    codegen.write_header(header_input_path, header_output_path, commands_config, deprecated_commands_config)
+    removed_commands = []
+    codegen.write_header(header_input_path, header_output_path, commands_config, deprecated_commands_config, removed_commands_config)
     print('[X] header code generated')
 
     

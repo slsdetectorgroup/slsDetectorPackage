@@ -188,6 +188,17 @@ class DetectorImpl : public virtual slsDetectorDefs {
                 shm()->detType == defs::XILINX_CHIPTESTBOARD);
     }
 
+    inline void verifyChipTestBoard(const std::string &funcName) const {
+        if (!isChipTestBoard())
+            throw RuntimeError(funcName +
+                               " is not implemented for this detector. It is "
+                               "only valid for chip test board");
+        if (size() != 1)
+            throw RuntimeError(
+                funcName +
+                " is only valid for single module setup (chip test board).");
+    }
+
     /** set acquiring flag in shared memory */
     void setAcquiringFlag(bool flag);
 
@@ -324,9 +335,9 @@ class DetectorImpl : public virtual slsDetectorDefs {
     void setCtbSignalName(const int index, const std::string &name);
 
     std::vector<std::string> getCtbPowerNames() const;
-    std::string getCtbPowerName(const defs::dacIndex i) const;
+    std::string getCtbPowerName(const defs::powerIndex i) const;
     void setCtbPowerNames(const std::vector<std::string> &names);
-    void setCtbPowerName(const defs::dacIndex index, const std::string &name);
+    void setCtbPowerName(const defs::powerIndex index, const std::string &name);
 
     std::vector<std::string> getCtbSlowADCNames() const;
     std::string getCtbSlowADCName(const defs::dacIndex i) const;

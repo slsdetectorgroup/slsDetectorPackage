@@ -36,7 +36,7 @@ class CodeGenerator:
             self.file.write(line)
         self.template_file.close()
 
-    def write_header(self, in_path, out_path, commands, deprecated_commands):
+    def write_header(self, in_path, out_path, commands, deprecated_commands, removed_commands):
         """Write the header file for the caller.h file"""
         with out_path.open('w') as fp:
             with in_path.open('r') as fp2:
@@ -56,6 +56,11 @@ class CodeGenerator:
 
                     if "THIS COMMENT TO BE REPLACED BY THE ACTUAL CODE (3)" in line:
                         for key, value in deprecated_commands.items():
+                            fp.write(f'{{"{key}", "{value}"}},\n')
+                        continue
+
+                    if "THIS COMMENT TO BE REPLACED BY THE ACTUAL CODE (4)" in line:
+                        for key, value in removed_commands.items():
                             fp.write(f'{{"{key}", "{value}"}},\n')
                         continue
 

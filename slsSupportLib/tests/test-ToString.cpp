@@ -26,6 +26,24 @@ TEST_CASE("Convert string to bool", "[support]") {
     REQUIRE(StringTo<bool>("0") == false);
 }
 
+TEST_CASE("Convert bool format to string", "[support]") {
+    REQUIRE(ToString(true, defs::boolFormat::TrueFalse) == "true");
+    REQUIRE(ToString(false, defs::boolFormat::TrueFalse) == "false");
+    REQUIRE(ToString(true, defs::boolFormat::OnOff) == "on");
+    REQUIRE(ToString(false, defs::boolFormat::OnOff) == "off");
+    REQUIRE(ToString(true, defs::boolFormat::OneZero) == "1");
+    REQUIRE(ToString(false, defs::boolFormat::OneZero) == "0");
+}
+
+TEST_CASE("Convert string to bool format", "[support]") {
+    REQUIRE(StringTo("1", defs::boolFormat::OneZero) == true);
+    REQUIRE(StringTo("0", defs::boolFormat::OneZero) == false);
+    REQUIRE(StringTo("true", defs::boolFormat::TrueFalse) == true);
+    REQUIRE(StringTo("false", defs::boolFormat::TrueFalse) == false);
+    REQUIRE(StringTo("on", defs::boolFormat::OnOff) == true);
+    REQUIRE(StringTo("off", defs::boolFormat::OnOff) == false);
+}
+
 TEST_CASE("Integer conversions", "[support]") {
     REQUIRE(ToString(0) == "0");
     REQUIRE(ToString(1) == "1");

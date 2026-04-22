@@ -1547,9 +1547,9 @@ TEST_CASE("powerchip", "[.detectorintegration]") {
     auto det_type = det.getDetectorType().squash();
 
     if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
-        det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD2 ||
-        det_type == defs::XILINX_CHIPTESTBOARD) {
-        auto prev_val = det.getPowerChip();
+        det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD2) {
+        auto prev_val =
+            det.getPowerChip().tsquash("Inconsistent power chip values");
         {
             std::ostringstream oss;
             caller.call("powerchip", {"1"}, -1, PUT, oss);
@@ -1583,10 +1583,7 @@ TEST_CASE("powerchip", "[.detectorintegration]") {
             REQUIRE(oss.str() == "powerchip 0\n");
         }
         for (int i = 0; i != det.size(); ++i) {
-            det.setPowerChip(prev_val[i], {i});
-            if (det_type == defs::XILINX_CHIPTESTBOARD) {
-                det.configureTransceiver();
-            }
+            det.setPowerChip(prev_val, {i});
         }
     } else {
         REQUIRE_THROWS(caller.call("powerchip", {}, -1, GET));

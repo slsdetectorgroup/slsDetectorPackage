@@ -631,6 +631,14 @@
 /* Clock Measurement base reg */
 #define PLL_FREQ_MEASURE_REG (0x44 << MEM_MAP_SHIFT)
 
+/* SPI */
+#define SPI_CTRL_REG (0x48 << MEM_MAP_SHIFT)
+#define SPI_CTRL_RX_EMPTY_BIT    2
+#define SPI_CTRL_CHIPSELECT_BIT  4
+#define SPI_CTRL_NBIT_OFST       16
+#define SPI_WRITEDATA_REG (0x49 << MEM_MAP_SHIFT)
+#define SPI_READDATA_REG (0x4A << MEM_MAP_SHIFT)
+
 /** I2C Control register */
 #define I2C_TRANSFER_COMMAND_FIFO_REG (0x100 << MEM_MAP_SHIFT)
 #define I2C_RX_DATA_FIFO_REG          (0x101 << MEM_MAP_SHIFT)

@@ -497,7 +497,7 @@ void setupDetector() {
     }
 
     // power on chip
-    initError = powerChip(1, initErrorMessage);
+    initError = powerChip(true, initErrorMessage);
     if (initError == FAIL)
         return;
 
@@ -2352,7 +2352,7 @@ int checkDetectorType(char *mess) {
     return OK;
 }
 
-int powerChip(int on, char *mess) {
+int powerChip(bool on, char *mess) {
     if (on) {
         LOG(logINFO, ("Powering chip: on\n"));
         bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_PWR_CHIP_MSK);

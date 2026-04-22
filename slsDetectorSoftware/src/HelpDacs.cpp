@@ -7,7 +7,7 @@
 namespace sls {
 
 std::string GetHelpDac(std::string dac) {
-    if (sls::is_int(dac)) {
+    if (dac.empty() || sls::is_int(dac)) {
         return std::string("[dac name] [dac or mV value] [(optional unit) mV] "
                            "\n\t[Ctb] Use dac index for dac name.");
     }
@@ -280,24 +280,10 @@ std::string GetHelpDac(std::string dac) {
         return std::string(
             "[dac or mV value][(optional unit) mV] \n\t[Moench] Dac for 7");
     }
-
-    // clang-format off
-    if (dac == "vtgstv") { return std::string(""); }
-    // clang-format on
-
-    throw sls::RuntimeError("Unknown dac command");
-}
-
-std::string GetHelpDacWrapper(const std::string &cmd,
-                              const std::vector<std::string> &args) {
-    std::ostringstream os;
-    os << cmd << ' ';
-    if (args.size() == 0) {
-        os << GetHelpDac(std::to_string(0)) << '\n';
-    } else {
-        os << args[0] << ' ' << GetHelpDac(args[0]) << '\n';
+    if (dac == "vtgstv") {
+        return std::string("");
     }
-    return os.str();
+    throw sls::RuntimeError("Unknown dac command");
 }
 
 } // namespace sls

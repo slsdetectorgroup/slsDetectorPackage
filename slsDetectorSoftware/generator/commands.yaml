@@ -236,29 +236,6 @@ INTEGER_COMMAND_NOID:
       input_types: [ int ]
       output: [ 'args.front()' ]
 
-INTEGER_IND_COMMAND:
-  template: true
-  infer_action: true
-  help: ""
-  actions:
-    GET:
-      # extra variable to store the index
-      require_det_id: true
-      function: ''
-      argc: 0
-      input: [ 'INDEX' ]
-      input_types: [ int ]
-      cast_input: [ false ]
-      output: [ OutString(t) ]
-    PUT:
-      # extra variable to store the index
-      function: ''
-      require_det_id: true
-      argc: 1
-      input: [ 'INDEX', 'args[0]' ]
-      input_types: [ int, int ]
-      cast_input: [ false, true ]
-      output: [ 'args.front()' ]
 
 INTEGER_USER_IND_COMMAND:
   template: true
@@ -356,6 +333,20 @@ GET_IND_COMMAND:
       input_types: [ int ]
       output: [ OutString(t) ]
 
+GET_IND_COMMAND_NOID:
+  template: true
+  infer_action: true
+  help: ""
+  actions:
+    GET:
+      check_det_id: true
+      function: ''
+      argc: 0
+      input: [ 'VAL' ]
+      cast_input: [ false ]
+      input_types: [ int ]
+      output: [ OutString(t) ]
+
 CTB_NAMED_LIST:
   template: true
   infer_action: true
@@ -395,10 +386,7 @@ CTB_SINGLE_DACNAME:
       extra_variables:
         - name: index
           type: defs::dacIndex
-          value: 0  
-      exceptions:
-        - condition: 'det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD'
-          message: 'cmd + " only allowed for CTB."'
+          value: defs::DAC_0  
       check_det_id: true
       argc: 1
       input: [ "static_cast<defs::dacIndex>(StringTo<int>(args[0]) + index)" ]
@@ -409,10 +397,7 @@ CTB_SINGLE_DACNAME:
       extra_variables:
         - name: index
           type: defs::dacIndex
-          value: 0
-      exceptions:
-        - condition: 'det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD'
-          message: 'cmd + " only allowed for CTB."'
+          value: defs::DAC_0
       check_det_id: true
       argc: 2
       input: [ "static_cast<defs::dacIndex>(StringTo<int>(args[0]) + index)","args[1]" ]
@@ -427,12 +412,8 @@ CTB_GET_DACINDEX:
       extra_variables:
         - name: index
           type: defs::dacIndex
-          value: 0
-
+          value: defs::DAC_0
       check_det_id: true
-      exceptions:
-        - condition: 'det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD'
-          message: 'cmd + " only allowed for CTB."'
       argc: 1
       input: [ 'args[0]' ]
       input_types: [ std::string ]
@@ -444,9 +425,6 @@ CTB_SINGLE_NAME:
   actions:
     GET:
       check_det_id: true
-      exceptions:
-        - condition: 'det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD'
-          message: 'cmd + " only allowed for CTB."'
       argc: 1
       input: [ "args[0]" ]
       cast_input: [ true ]
@@ -454,9 +432,6 @@ CTB_SINGLE_NAME:
       output: [ 'args[0]',"' '", 't' ]
     PUT:
       check_det_id: true
-      exceptions:
-        - condition: 'det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD'
-          message: 'cmd + " only allowed for CTB."'
       argc: 2
       cast_input: [ true, false ]
       input: [ "args[0]","args[1]" ]
@@ -469,9 +444,6 @@ CTB_GET_INDEX:
   actions:
     GET:
       check_det_id: true
-      exceptions:
-        - condition: 'det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD'
-          message: 'cmd + " only allowed for CTB."'
       argc: 1
       input: [ 'args[0]' ]
       input_types: [ std::string ]
@@ -788,7 +760,7 @@ highvoltage:
       function: setHighVoltage
 
 powerchip:
-  help: "[0, 1]\n\t[Jungfrau][Moench][Mythen3][Gotthard2][Xilinx Ctb] Power the chip. \n\t[Jungfrau][Moench] Default is 0. Get will return power status. Can be off if temperature event occured (temperature over temp_threshold with temp_control enabled. Will configure chip (only chip v1.1)\n\t[Mythen3][Gotthard2] Default is 1. If module not connected or wrong module, powerchip will fail.\n\t[Xilinx Ctb] Default is 0. Also configures the chip if powered on."
+  help: "[0, 1]\n\t[Jungfrau][Moench][Mythen3][Gotthard2] Power the chip. \n\t[Jungfrau][Moench] Default is 0. Get will return power status. Can be off if temperature event occured (temperature over temp_threshold with temp_control enabled. Will configure chip (only chip v1.1)\n\t[Mythen3][Gotthard2] Default is 1. If module not connected or wrong module, powerchip will fail."
   inherit_actions: INTEGER_COMMAND_VEC_ID
   actions:
     GET:
@@ -1627,83 +1599,15 @@ fmaster:
       function: setMasterFileWrite
       input_types: [ bool ]
 
-################# INTEGER_IND_COMMAND #######################
 v_limit:
-  inherit_actions: INTEGER_IND_COMMAND
-  help: "[n_value]\n\t[Ctb][Xilinx Ctb] Soft limit for power supplies (ctb only) and DACS in mV."
+  inherit_actions: INTEGER_COMMAND_NOID
+  help: "[n_value]\n\t[Ctb][Xilinx Ctb] Soft limit for power supplies and DACS in mV."
   actions:
     GET:
-      function: getPower
-      input: [ 'defs::V_LIMIT' ]
+      function: getVoltageLimit
     PUT:
-      function: setPower
-      input: [ 'defs::V_LIMIT', 'args[0]' ]
-
-v_a:
-  inherit_actions: INTEGER_IND_COMMAND
-  help: "[n_value]\n\t[Ctb][Xilinx Ctb] Power supply a in mV."
-  actions:
-    GET:
-      function: getPower
-      input: [ 'defs::V_POWER_A' ]
-    PUT:
-      function: setPower
-      input: [ 'defs::V_POWER_A', 'args[0]' ]
-
-v_b:
-  inherit_actions: INTEGER_IND_COMMAND
-  help: "[n_value]\n\t[Ctb][Xilinx Ctb] Power supply b in mV."
-  actions:
-    GET:
-      function: getPower
-      input: [ 'defs::V_POWER_B' ]
-    PUT:
-      function: setPower
-      input: [ 'defs::V_POWER_B', 'args[0]' ]
-
-v_c:
-  inherit_actions: INTEGER_IND_COMMAND
-  help: "[n_value]\n\t[Ctb][Xilinx Ctb] Power supply c in mV."
-  actions:
-    GET:
-      function: getPower
-      input: [ 'defs::V_POWER_C' ]
-    PUT:
-      function: setPower
-      input: [ 'defs::V_POWER_C', 'args[0]' ]
-
-v_d:
-  inherit_actions: INTEGER_IND_COMMAND
-  help: "[n_value]\n\t[Ctb][Xilinx Ctb] Power supply d in mV."
-  actions:
-    GET:
-      function: getPower
-      input: [ 'defs::V_POWER_D' ]
-    PUT:
-      function: setPower
-      input: [ 'defs::V_POWER_D', 'args[0]' ]
-
-v_io:
-  inherit_actions: INTEGER_IND_COMMAND
-  help: "[n_value]\n\t[Ctb][Xilinx Ctb] Power supply io in mV. Minimum 1200 mV. Must be the first power regulator to be set after fpga reset (on-board detector server start up)."
-  actions:
-    GET:
-      function: getPower
-      input: [ 'defs::V_POWER_IO' ]
-    PUT:
-      function: setPower
-      input: [ 'defs::V_POWER_IO', 'args[0]' ]
-
-v_chip:
-  inherit_actions: INTEGER_IND_COMMAND
-  help: "[n_value]\n\t[Ctb] Power supply chip in mV. Do not use it unless you are completely sure you will not fry the board."
-  actions:
-    GET:
-      function: getPower
-      input: [ 'defs::V_POWER_CHIP' ]
-    PUT:
-      function: setPower
-      input: [ 'defs::V_POWER_CHIP', 'args[0]' ]
+      function: setVoltageLimit
+      input_types: [ int ]
 
 ################# INTEGER_USER_IND_COMMAND ###################
 vchip_comp_fe:
@@ -2234,85 +2138,99 @@ temp_slowadc:
       input: [ 'defs::SLOW_ADC_TEMP' ]
       output: [ OutString(t), '" °C"' ]
 
+
+
+################# GET_IND_COMMAND_NOID #######################
 vm_a:
-  inherit_actions: GET_IND_COMMAND
+  inherit_actions: GET_IND_COMMAND_NOID
   help: "\n\t[Ctb] Measured voltage of power supply a in mV."
   actions:
     GET:
       function: getMeasuredPower
       input: [ 'defs::V_POWER_A' ]
+      output: [ OutString(t), '" mV"' ]
 
 vm_b:
-  inherit_actions: GET_IND_COMMAND
+  inherit_actions: GET_IND_COMMAND_NOID
   help: "\n\t[Ctb] Measured voltage of power supply b in mV."
   actions:
     GET:
       function: getMeasuredPower
       input: [ 'defs::V_POWER_B' ]
+      output: [ OutString(t), '" mV"' ]
 
 vm_c:
-  inherit_actions: GET_IND_COMMAND
+  inherit_actions: GET_IND_COMMAND_NOID
   help: "\n\t[Ctb] Measured voltage of power supply c in mV."
   actions:
     GET:
       function: getMeasuredPower
       input: [ 'defs::V_POWER_C' ]
+      output: [ OutString(t), '" mV"' ]
 
 vm_d:
-  inherit_actions: GET_IND_COMMAND
+  inherit_actions: GET_IND_COMMAND_NOID
   help: "\n\t[Ctb] Measured voltage of power supply d in mV."
   actions:
     GET:
       function: getMeasuredPower
       input: [ 'defs::V_POWER_D' ]
+      output: [ OutString(t), '" mV"' ]
 
 vm_io:
-  inherit_actions: GET_IND_COMMAND
+  inherit_actions: GET_IND_COMMAND_NOID
   help: "\n\t[Ctb] Measured voltage of power supply io in mV."
   actions:
     GET:
       function: getMeasuredPower
       input: [ 'defs::V_POWER_IO' ]
+      output: [ OutString(t), '" mV"' ]
 
 im_a:
-  inherit_actions: GET_IND_COMMAND
+  inherit_actions: GET_IND_COMMAND_NOID
   help: "\n\t[Ctb] Measured current of power supply a in mA."
   actions:
     GET:
       function: getMeasuredCurrent
       input: [ 'defs::I_POWER_A' ]
+      output: [ OutString(t), '" mA"' ]
 
 im_b:
-  inherit_actions: GET_IND_COMMAND
+  inherit_actions: GET_IND_COMMAND_NOID
   help: "\n\t[Ctb] Measured current of power supply b in mA."
   actions:
     GET:
       function: getMeasuredCurrent
       input: [ 'defs::I_POWER_B' ]
+      output: [ OutString(t), '" mA"' ]
 
 im_c:
-  inherit_actions: GET_IND_COMMAND
+  inherit_actions: GET_IND_COMMAND_NOID
   help: "\n\t[Ctb] Measured current of power supply c in mA."
   actions:
     GET:
       function: getMeasuredCurrent
       input: [ 'defs::I_POWER_C' ]
+      output: [ OutString(t), '" mA"' ]
 
 im_d:
-  inherit_actions: GET_IND_COMMAND
+  inherit_actions: GET_IND_COMMAND_NOID
   help: "\n\t[Ctb] Measured current of power supply d in mA."
   actions:
     GET:
       function: getMeasuredCurrent
       input: [ 'defs::I_POWER_D' ]
+      output: [ OutString(t), '" mA"' ]
 
 im_io:
-  inherit_actions: GET_IND_COMMAND
+  inherit_actions: GET_IND_COMMAND_NOID
   help: "\n\t[Ctb] Measured current of power supply io in mA."
   actions:
     GET:
       function: getMeasuredCurrent
       input: [ 'defs::I_POWER_IO' ]
+      output: [ OutString(t), '" mA"' ]
+
 
 ################# CTB_NAMED_LIST #############################
 daclist:
@@ -2361,17 +2279,6 @@ slowadclist:
         function: setSlowADCNames
 
 ################# CTB_VALUES ################################
-powervalues:
-  help: "[name] \n\t\t[Ctb][Xilinx_Ctb] Get values of all powers."
-  actions:
-    GET:
-      argc: 0
-      ctb_output_list:
-        GETFCNLIST: getPowerList
-        GETFCNNAME: getPowerNames
-        GETFCN: getPower
-        suffix: "mV"
-        printable_name: "*name_it++"
 
 slowadcvalues:
   help: "[name] \n\t\t[Ctb][Xilinx_Ctb] Get values of all slow adcs."
@@ -2416,21 +2323,24 @@ dacname:
           value: defs::DAC_0
 
 powername:
-  inherit_actions: CTB_SINGLE_DACNAME
   help: "[0-4][name] \n\t\t[Ctb][Xilinx_Ctb] Set the power at the given position to the given name."
+  infer_action: true
   actions:
     GET:
+      argc: 1
+      check_det_id: true
       function: getPowerName
-      extra_variables:
-        - name: index
-          type: defs::dacIndex
-          value: defs::V_POWER_A
+      input: [ 'static_cast<defs::powerIndex>(StringTo<int>(args[0]))' ]
+      input_types: [ defs::powerIndex ]
+      output: [ 'args[0]',"' '", 't' ]
     PUT:
+      argc: 2
+      check_det_id: true
       function: setPowerName
-      extra_variables:
-        - name: index
-          type: defs::dacIndex
-          value: defs::V_POWER_A
+      input: [ 'static_cast<defs::powerIndex>(StringTo<int>(args[0]))', 'args[1]' ]
+      input_types: [ defs::powerIndex, std::string ]
+      output: [ 'ToString(args)' ]
+
 
 slowadcname:
   inherit_actions: CTB_SINGLE_DACNAME
@@ -2467,10 +2377,7 @@ powerindex:
   actions:
     GET:
       function: getPowerIndex
-      extra_variables:
-        - name: index
-          type: defs::dacIndex
-          value: defs::V_POWER_A
+      output: [ 'ToString(static_cast<int>(t))' ]
 
 slowadcindex:
   inherit_actions: CTB_GET_DACINDEX
@@ -2906,6 +2813,51 @@ clearbit:
               arg_types: [ std::string, std::string ]
             - argc: 3
               arg_types: [ std::string, std::string, special::validate ]
+
+
+dac:
+    is_description: true
+    actions:
+        PUT:
+          args:
+            - argc: 2
+              arg_types: [ std::string, int ]
+            - argc: 3
+              arg_types: [ std::string, int, bool ]
+        GET:
+          args:
+            - argc: 1
+              arg_types: [ std::string ]
+            - argc: 2
+              arg_types: [ std::string, bool ]
+              
+
+powerdac:
+    is_description: true
+    actions:
+        PUT:
+          argc: 2
+          arg_types: [ std::string, int ]
+        GET:
+          argc: 1
+          arg_types: [ std::string ]
+
+
+power:
+    is_description: true
+    actions:
+        GET:
+          argc: 0
+        PUT:
+          argc: -1
+          arg_types: [ std::string ]
+
+powervalues:
+    is_description: true
+    actions:
+        GET:
+          args:
+            - argc: 0
 
 
 ################# special commands ##########################
@@ -3388,56 +3340,6 @@ extsig:
       cast_input: [ true, true ]
       output: [ 'args[0]', "' '", 'args[1]' ]
 
-dac:
-  help: "code: return GetHelpDacWrapper(cmd, args);\n" # this is a special case
-  actions:
-    GET:
-      exceptions:
-        - condition: "is_int(args[0]) && det->getDetectorType().squash() != defs::CHIPTESTBOARD && det->getDetectorType().squash() != defs::XILINX_CHIPTESTBOARD"
-          message: '"Dac indices can only be used for chip test board. Use daclist to get list of dac names for current detector."'
-      extra_variables:
-        - name: dacIndex
-          type: defs::dacIndex
-          value: "((det->getDetectorType().squash() == defs::CHIPTESTBOARD || det->getDetectorType().squash() == defs::XILINX_CHIPTESTBOARD) && !is_int(args[0])) ? det->getDacIndex(args[0]) : StringTo<defs::dacIndex>(args[0])"
-      function: getDAC
-      require_det_id: true
-      input_types: [ defs::dacIndex, bool ]
-      cast_input: [ false, true ]
-      args:
-        - argc: 1
-          arg_types: [defs::dacIndex]
-          input: [ dacIndex, '"0"' ]
-          output: [ 'args[0]', "' '", OutString(t) ]
-        - argc: 2
-          exceptions:
-            - condition: "is_int(args[0]) && det->getDetectorType().squash() != defs::CHIPTESTBOARD && det->getDetectorType().squash() != defs::XILINX_CHIPTESTBOARD"
-              message: '"Dac indices can only be used for chip test board. Use daclist to get list of dac names for current detector."'
-            - condition: 'args[1] != "mv" && args[1] != "mV"'
-              message: '"Unknown argument " + args[1] + ". Did you mean mV?"'
-          arg_types: [defs::dacIndex, special::mv]
-          input: [ dacIndex, '"1"' ]
-          output: [ 'args[0]', "' '" , OutString(t), '" mV"' ]
-    PUT:
-      exceptions:
-        - condition: "is_int(args[0]) && det->getDetectorType().squash() != defs::CHIPTESTBOARD && det->getDetectorType().squash() != defs::XILINX_CHIPTESTBOARD"
-          message: '"Dac indices can only be used for chip test board. Use daclist to get list of dac names for current detector."'
-      extra_variables:
-        - name: dacIndex
-          type: defs::dacIndex
-          value: "((det->getDetectorType().squash() == defs::CHIPTESTBOARD || det->getDetectorType().squash() == defs::XILINX_CHIPTESTBOARD) && !is_int(args[0])) ? det->getDacIndex(args[0]) : StringTo<defs::dacIndex>(args[0])"
-      function: setDAC
-      require_det_id: true
-      input_types: [ defs::dacIndex, int, bool ]
-      cast_input: [ false, true, true ]
-      args:
-        - argc: 2
-          arg_types: [defs::dacIndex, int]
-          input: [ dacIndex, "args[1]", '"0"' ]
-          output: [ "args[0]", "' '", "args[1]" ]
-        - argc: 3
-          arg_types: [defs::dacIndex, int, special::mv]
-          input: [ dacIndex, "args[1]", '"1"' ]
-          output: [ "args[0]", "' '", "args[1]", '" mV"' ]
 
 resetdacs:
   help: "[(optional) hard] \n\t[Eiger][Jungfrau][Moench][Gotthard2][Mythen3]Reset dac values to the defaults. A 'hard' optional reset will reset the dacs to the hardcoded defaults in on-board detector server."

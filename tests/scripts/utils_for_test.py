@@ -305,11 +305,11 @@ def loadConfig(name, rx_hostname = 'localhost', settingsdir = None, log_file_fp 
         if num_interfaces == 2: 
             d.udp_dstip2 = 'auto'
 
-        if name == "jungfrau" or name == "moench" or name == "xilinx_ctb":
+        if name == "jungfrau" or name == "moench":
             d.powerchip = 1
 
-        if name == "xilinx_ctb":
-            d.configureTransceiver()
+        #if name == "xilinx_ctb":
+        #    d.configureTransceiver()
 
         if settingsdir is not None and name in ['eiger', 'mythen3']: 
             d.settingspath = settingsdir + '/' + name + '/'

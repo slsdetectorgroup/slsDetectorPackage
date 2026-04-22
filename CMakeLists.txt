@@ -464,3 +464,21 @@ if(SLS_MASTER_PROJECT)
     set(PROJECT_LIBRARIES slsSupportShared slsDetectorShared slsReceiverShared)
     include(cmake/package_config.cmake)
 endif()
+
+
+
+#Packaging
+# Generic CPack metadata
+set(CPACK_PACKAGE_NAME "myapp")
+set(CPACK_PACKAGE_VENDOR "Example Corp")
+set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "My sample application")
+
+# RPM-specific settings
+set(CPACK_GENERATOR "RPM")
+set(CPACK_RPM_PACKAGE_LICENSE "MIT")
+set(CPACK_RPM_PACKAGE_GROUP "Applications/System")
+set(CPACK_RPM_PACKAGE_RELEASE 1)
+set(CPACK_RPM_PACKAGE_ARCHITECTURE "${CMAKE_SYSTEM_PROCESSOR}")
+set(CPACK_RPM_COMPONENT_INSTALL ON)
+include(CPack)

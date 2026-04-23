@@ -533,7 +533,7 @@ def test_dbitclk(session_simulator, request):
             d.dbitclk = Hz(5e6)
 
         d.dbitclk = MHz(15)
-        assert d.dbitclk.value == 5_000_000
+        assert d.dbitclk.value == 15_000_000
 
         d.dbitclk = MHz(14.5)
         assert d.dbitclk.value == 14_500_000

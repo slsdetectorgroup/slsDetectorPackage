@@ -1654,29 +1654,6 @@ void init_det(py::module &m) {
                        (void (Detector::*)(defs::readoutMode, sls::Positions)) &
                            Detector::setReadoutMode,
                        py::arg(), py::arg() = Positions{});
-    CppDetectorApi.def(
-        "getMeasuredPower",
-        (Result<int>(Detector::*)(defs::dacIndex, sls::Positions) const) &
-            Detector::getMeasuredPower,
-        py::arg(), py::arg() = Positions{});
-    CppDetectorApi.def(
-        "getMeasuredCurrent",
-        (Result<int>(Detector::*)(defs::dacIndex, sls::Positions) const) &
-            Detector::getMeasuredCurrent,
-        py::arg(), py::arg() = Positions{});
-    CppDetectorApi.def(
-        "getSlowADC",
-        (Result<int>(Detector::*)(defs::dacIndex, sls::Positions) const) &
-            Detector::getSlowADC,
-        py::arg(), py::arg() = Positions{});
-    CppDetectorApi.def("getDBITClock",
-                       (Result<int>(Detector::*)(sls::Positions) const) &
-                           Detector::getDBITClock,
-                       py::arg() = Positions{});
-    CppDetectorApi.def("setDBITClock",
-                       (void (Detector::*)(int, sls::Positions)) &
-                           Detector::setDBITClock,
-                       py::arg(), py::arg() = Positions{});
     CppDetectorApi.def("getExternalSamplingSource",
                        (Result<int>(Detector::*)(sls::Positions) const) &
                            Detector::getExternalSamplingSource,

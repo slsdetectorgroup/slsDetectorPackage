@@ -975,6 +975,8 @@ TEST_CASE("adcclk", "[.detectorintegration]") {
             caller.call("adcclk", {}, -1, GET, oss);
             REQUIRE(oss.str() == "adcclk 15.75MHz\n");
         }
+        std::cout << "Resetting adc clock to :" << ToString(prev_val)
+                  << std::endl;
         for (int i = 0; i != det.size(); ++i) {
             det.setADCClock(prev_val[i], {i});
         }

@@ -4,7 +4,8 @@
 #include "sls/sls_detector_funcs.h"
 
 #include <atomic>
-#include <future>
+#include <functional>
+#include <thread>
 #include <unordered_map>
 
 namespace sls {
@@ -22,10 +23,18 @@ class TCPInterface {
                      &processFunction_,
                  const uint16_t portNumber = DEFAULT_TCP_CNTRL_PORTNO);
 
-    /// @brief starts the TCP/IP server to listen for client commands
+    /// @brief creates tcp thread
     void startTCPServer();
 
+    std::atomic<bool> killTcpThread{false};
+
   private:
+    /**
+     * @brief starts the TCP/IP server to listen for client commands and process
+     * them
+     */
+    void startTCPServerClientConnection();
+
     /**
      *  @brief decodes the received command and calls the corresponding function
      *  @param function_id The ID of the function recived by the server and to
@@ -38,10 +47,14 @@ class TCPInterface {
     std::function<ReturnCode(const detFuncs &, ServerInterface &)>
         processFunction;
 
+    /// @brief TCP/IP port number for the detector server
     uint16_t portNumber{};
 
     /// @brief socket for TCP/IP communication with the client
     ServerSocket server;
+
+    /// @brief thread for running the TCP/IP server
+    std::unique_ptr<std::thread> tcpThread;
 };
 
 } // namespace sls

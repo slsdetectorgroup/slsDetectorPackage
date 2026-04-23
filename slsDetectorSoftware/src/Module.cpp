@@ -95,7 +95,6 @@ std::string Module::getControlServerLongVersion() const {
 }
 
 void Module::throwDeprecatedServerVersion() const {
-    LOG(logDEBUG3) << "throw deprecated version error";
     uint64_t res = sendToDetectorStop<int64_t>(F_GET_SERVER_VERSION);
     std::cout << std::endl;
     std::ostringstream os;
@@ -3513,7 +3512,6 @@ void Module::initialDetectorServerChecks() {
 }
 
 void Module::checkDetectorVersionCompatibility() {
-    LOG(logDEBUG) << "Checking detector version compatibility with client...";
     std::string detServers[2] = {getControlServerLongVersion(),
                                  getStopServerLongVersion()};
     LOG(logDEBUG1)

@@ -41,6 +41,8 @@ class BaseMatterhornServer
 
     ReturnCode initial_checks(ServerInterface &socket);
 
+    ReturnCode get_num_udp_interfaces(ServerInterface &socket) const;
+
     /**
      * @brief call function corresponding to the function ID received from the
      * client and send back the result
@@ -52,6 +54,9 @@ class BaseMatterhornServer
 
   private:
     static std::string getMatterhornServerVersion();
+
+    static constexpr uint8_t numUDPInterfaces =
+        1; // only one udp per module for now
 };
 
 template <typename DerivedServer>
@@ -65,6 +70,13 @@ BaseMatterhornServer<DerivedServer>::processFunction(const detFuncs function_id,
             fmt::format("Function {} not implemented",
                         getFunctionNameFromEnum((enum detFuncs)function_id)));
     }
+}
+
+template <typename DerivedServer>
+ReturnCode BaseMatterhornServer<DerivedServer>::get_num_udp_interfaces(
+    ServerInterface &socket) const {
+    return static_cast<ReturnCode>(
+        socket.sendResult(static_cast<int>(numUDPInterfaces)));
 }
 
 template <typename DerivedServer>

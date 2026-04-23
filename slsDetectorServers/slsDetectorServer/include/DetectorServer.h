@@ -18,17 +18,11 @@ namespace sls {
 /// @brief struct saving udp details (one UDP port per module)
 struct UDPInfo {
     uint16_t srcport{};
-    uint16_t srcport2{};
     uint16_t dstport{};
-    uint16_t dstport2{};
     uint64_t srcmac{};
-    uint64_t srcmac2{};
     uint64_t dstmac{};
-    uint64_t dstmac2{};
     uint32_t srcip{};
-    uint32_t srcip2{};
     uint32_t dstip{};
-    uint32_t dstip2{};
 };
 
 template <typename DerivedDetectorServer> class DetectorServer {
@@ -56,10 +50,6 @@ template <typename DerivedDetectorServer> class DetectorServer {
   private:
     ReturnCode processFunction(const detFuncs function_id,
                                ServerInterface &socket);
-
-    size_t num_udp_interfaces() const;
-
-    ReturnCode get_num_udp_interfaces(ServerInterface &socket) const;
 
     // TODO dont know what this does?
     ReturnCode get_update_mode(ServerInterface &socket) const;
@@ -152,18 +142,6 @@ ReturnCode DetectorServer<DerivedDetectorServer>::processFunction(
 }
 
 template <typename DerivedDetectorServer>
-size_t DetectorServer<DerivedDetectorServer>::num_udp_interfaces() const {
-    return udpDetails.size();
-}
-
-template <typename DerivedDetectorServer>
-ReturnCode DetectorServer<DerivedDetectorServer>::get_num_udp_interfaces(
-    ServerInterface &socket) const {
-    int numUDPInterfaces = static_cast<int>(num_udp_interfaces());
-    return static_cast<ReturnCode>(socket.sendResult(numUDPInterfaces));
-}
-
-template <typename DerivedDetectorServer>
 ReturnCode DetectorServer<DerivedDetectorServer>::get_update_mode(
     ServerInterface &socket) const {
 
@@ -185,6 +163,7 @@ ReturnCode DetectorServer<DerivedDetectorServer>::set_source_udp_mac(
     }
 
     udpDetails[0].srcmac = newsrcudpMac;
+    // TODO: configuremac, check unicast address
     return ReturnCode::OK;
 }
 
@@ -218,13 +197,6 @@ ReturnCode DetectorServer<DerivedDetectorServer>::get_source_udp_ip(
 }
 
 template <typename DerivedDetectorServer>
-ReturnCode DetectorServer<DerivedDetectorServer>::get_source_udp_port(
-    ServerInterface &socket) const {
-    return static_cast<ReturnCode>(
-        socket.sendResult(static_cast<int>(udpDetails[0].srcport)));
-}
-
-template <typename DerivedDetectorServer>
 ReturnCode DetectorServer<DerivedDetectorServer>::set_destination_udp_mac(
     ServerInterface &socket) {
     uint64_t newDstMac;
@@ -238,6 +210,7 @@ ReturnCode DetectorServer<DerivedDetectorServer>::set_destination_udp_mac(
     }
 
     udpDetails[0].dstmac = newDstMac;
+    // TODO: configuremac, check unicast address
     return ReturnCode::OK;
 }
 

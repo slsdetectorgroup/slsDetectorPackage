@@ -90,8 +90,6 @@ void ClientSocket::readReply(int &ret, void *retval, size_t retval_size) {
         }
         // get retval
         Receive(retval, retval_size);
-        LOG(logDEBUG1) << "Received size " << retval_size << " bytes from "
-                       << socketType << " with return code: " << ret;
     }
     // debugging
     catch (SocketError &e) {

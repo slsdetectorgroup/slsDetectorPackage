@@ -2,6 +2,7 @@
 #include "VirtualMatterhornServer.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_exceptions.h"
+#include "sls/versionAPI.h"
 #include <semaphore.h>
 
 #include <csignal>
@@ -47,9 +48,18 @@ int main(int argc, char *argv[]) {
     } catch (sls::RuntimeError &e) {
         return EXIT_FAILURE;
     }
-    if (opts.versionRequested || opts.helpRequested) {
+    if (opts.versionRequested) {
+        std::cout << fmt::format("MatterhornServer Version: {}", APIMATTERHORN)
+                  << std::endl; // might go back to costum CommandLIneOptions
+                                // getVersion
         return EXIT_SUCCESS;
     }
+
+    if (opts.helpRequested) {
+        return EXIT_SUCCESS;
+    }
+
+    LOG(TLogLevel::logINFOMAGENTA) << cli.printOptions();
 
     // Register Ctrl+C handler
     std::signal(SIGINT, sigInterruptHandler);

@@ -484,7 +484,6 @@ class Detector {
      * temp_control enabled. Will configure chip (only chip v1.1)\n
      * [Mythen3][Gotthard2] Default is 1. If module not connected or wrong
      * module, powerchip will fail.\n
-     * [Xilinx CTB] Default is 0. Also configures chip if powered on.
      */
     void setPowerChip(bool on, Positions pos = {});
 

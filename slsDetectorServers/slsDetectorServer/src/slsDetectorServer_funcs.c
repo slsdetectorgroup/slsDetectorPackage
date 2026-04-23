@@ -10907,15 +10907,6 @@ int set_pattern_wait_interval(int file_des) {
     return Server_SendResult(file_des, INT64, NULL, 0);
 }
 
-// usleep is not viable on blackfin
-void usleep_bf(uint64_t i) {
-    const uint64_t BFIN_CYCLES_1uSECOND = 20;
-    uint64_t j = i * BFIN_CYCLES_1uSECOND;
-    while (--j) {
-        asm volatile("");
-    }
-}
-
 /**
  *  Non destructive read from SPI register. Read n_bytes by shifting in dummy
  *  data while keeping csn 0 after the operation. Shift the read out data back
@@ -11066,9 +11057,11 @@ int spi_read(int file_des) {
 #elif defined(CHIPTESTBOARDD)
     // set spi to 8 bit per word (-1 comes from the firmware), set chipselect
     bus_w(SPI_CTRL_REG,
+
           ((8 - 1) << SPI_CTRL_NBIT_OFST) + (1 << SPI_CTRL_CHIPSELECT_BIT));
     for (int i = 0; i < n_bytes + 1; ++i) {
         // TODO: should we make bus_w to this address blocking in the firmware
+        //
         // to remove usleep ?
         bus_w(SPI_WRITEDATA_REG, local_tx[i]);
         usleep_bf(BFIN_SPI_WAIT_uSECONDS);

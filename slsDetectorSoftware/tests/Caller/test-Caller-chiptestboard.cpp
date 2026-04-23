@@ -706,11 +706,101 @@ TEST_CASE("powerdac", "[.detectorintegration][dacs]") {
                     REQUIRE(oss2.str() ==
                             "powerdac " + names[iPower] + " 1200\n");
                 }
-
                 // Reset all dacs to previous value
                 det.setPowerDAC(indices[iPower], prev_val);
                 det.setPowerEnabled(std::vector{indices[iPower]},
                                     prev_val_power);
+            }
+            // all
+            {
+                int prev_val[5] = {0};
+                int prev_power_val[5] = {0};
+                for (size_t iPower = 0; iPower < names.size(); ++iPower) {
+                    prev_val[iPower] = det.getPowerDAC(indices[iPower]);
+                    prev_power_val[iPower] =
+                        det.isPowerEnabled(indices[iPower]);
+                }
+
+                // all off
+                REQUIRE_NOTHROW(caller.call("power", {"all", "off"}, -1, PUT));
+                for (size_t iPower = 0; iPower < names.size(); ++iPower) {
+                    REQUIRE(det.isPowerEnabled(indices[iPower]) == false);
+                }
+
+                // all on
+                REQUIRE_NOTHROW(caller.call("power", {"all", "on"}, -1, PUT));
+                for (size_t iPower = 0; iPower < names.size(); ++iPower) {
+                    REQUIRE(det.isPowerEnabled(indices[iPower]) == true);
+                }
+
+                // all off
+                REQUIRE_NOTHROW(caller.call("power", {"all", "off"}, -1, PUT));
+                for (size_t iPower = 0; iPower < names.size(); ++iPower) {
+                    REQUIRE(det.isPowerEnabled(indices[iPower]) == false);
+                }
+
+                // reset it to previous value
+                for (size_t iPower = 0; iPower < names.size(); ++iPower) {
+                    det.setPowerDAC(indices[iPower], prev_val[iPower]);
+                    det.setPowerEnabled({indices[iPower]},
+                                        prev_power_val[iPower]);
+                }
+            }
+            // vchip val
+            if (det_type == defs::CHIPTESTBOARD) {
+                const int min_vchip_val = 1673;
+                int prev_val[5] = {0};
+                int prev_power_val[5] = {0};
+                for (size_t iPower = 0; iPower < names.size(); ++iPower) {
+                    prev_val[iPower] = det.getPowerDAC(indices[iPower]);
+                    prev_power_val[iPower] =
+                        det.isPowerEnabled(indices[iPower]);
+                }
+
+                // all off, vchip = min
+                REQUIRE_NOTHROW(caller.call("power", {"all", "off"}, -1, PUT));
+                REQUIRE(det.getPowerDAC(defs::V_POWER_CHIP) == min_vchip_val);
+
+                // change dacs
+                REQUIRE_NOTHROW(
+                    caller.call("powerdac", {"v_a", "1500"}, -1, PUT));
+                REQUIRE_NOTHROW(
+                    caller.call("powerdac", {"v_b", "1200"}, -1, PUT));
+                REQUIRE_NOTHROW(
+                    caller.call("powerdac", {"v_c", "1200"}, -1, PUT));
+                REQUIRE_NOTHROW(
+                    caller.call("powerdac", {"v_d", "1200"}, -1, PUT));
+                REQUIRE_NOTHROW(
+                    caller.call("powerdac", {"v_io", "1200"}, -1, PUT));
+                // vchip = min
+                REQUIRE(det.getPowerDAC(defs::V_POWER_CHIP) == min_vchip_val);
+
+                // all on, vchip changes
+                REQUIRE_NOTHROW(caller.call("power", {"all", "on"}, -1, PUT));
+                REQUIRE(det.getPowerDAC(defs::V_POWER_CHIP) == 1700);
+
+                // change dac, vchip changes to max + 200
+                REQUIRE_NOTHROW(
+                    caller.call("powerdac", {"v_a", "1700"}, -1, PUT));
+                REQUIRE(det.getPowerDAC(defs::V_POWER_CHIP) == 1900);
+                REQUIRE_NOTHROW(
+                    caller.call("powerdac", {"v_b", "1500"}, -1, PUT));
+                REQUIRE(det.getPowerDAC(defs::V_POWER_CHIP) == 1900);
+
+                // switch off v_a, vchip = max + 200 of those enabled
+                REQUIRE_NOTHROW(caller.call("power", {"v_a", "off"}, -1, PUT));
+                REQUIRE(det.getPowerDAC(defs::V_POWER_CHIP) == 1700);
+
+                // all off, vchip = min
+                REQUIRE_NOTHROW(caller.call("power", {"all", "off"}, -1, PUT));
+                REQUIRE(det.getPowerDAC(defs::V_POWER_CHIP) == min_vchip_val);
+
+                // reset it to previous value
+                for (size_t iPower = 0; iPower < names.size(); ++iPower) {
+                    det.setPowerDAC(indices[iPower], prev_val[iPower]);
+                    det.setPowerEnabled({indices[iPower]},
+                                        prev_power_val[iPower]);
+                }
             }
         }
 

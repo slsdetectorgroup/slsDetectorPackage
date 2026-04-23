@@ -245,6 +245,7 @@ option(SLS_TUNE_LOCAL "tune to local machine" OFF)
 option(SLS_DEVEL_HEADERS "install headers for devel" OFF)
 option(SLS_USE_MOENCH "compile zmq and post processing for Moench" OFF)
 option(SLS_USE_JUNGFRAU "compile post processing for Jungfrau" OFF)
+option(SLS_USE_MATTERHORN "compile matterhorn server" OFF)
 
 #Convenience option to switch off defaults when building Moench binaries only
 option(SLS_BUILD_ONLY_MOENCH "compile only Moench" OFF)
@@ -426,11 +427,11 @@ endif()
 
 if (SLS_USE_DETECTOR OR SLS_USE_TEXTCLIENT)
     add_subdirectory(slsDetectorSoftware)
-endif ()
+endif()
 
 # TODO refactor with simulators 
 if (SLS_USE_SERVER) 
-    add_subdirectory(slsDetectorServers/slsDetectorServer)
+    add_subdirectory(slsDetectorServers/slsDetectorServer_cpp)
 endif()
 
 if (SLS_USE_RECEIVER)
@@ -441,6 +442,10 @@ if (SLS_USE_GUI)
     add_subdirectory(libs/qwt)  
     add_subdirectory(slsDetectorGui)
 endif (SLS_USE_GUI)
+
+if (SLS_USE_MATTERHORN)
+    add_subdirectory(slsDetectorServers/matterhornServer)
+endif() 
 
 if (SLS_USE_SIMULATOR)
     add_subdirectory(slsDetectorServers)

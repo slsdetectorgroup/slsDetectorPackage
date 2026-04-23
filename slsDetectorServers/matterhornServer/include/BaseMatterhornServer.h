@@ -1,7 +1,7 @@
 #pragma once
 #include "DetectorServer.h"
 #include "TCPInterface.h"
-#include "communication_funcs.h"
+// #include "communication_funcs.h"
 #include "fmt/format.h"
 #include "sls/logger.h"
 #include "sls/network_utils.h"

@@ -15,5 +15,5 @@ add_subdirectory(jungfrauDetectorServer)
 add_subdirectory(mythen3DetectorServer)
 add_subdirectory(gotthard2DetectorServer)
 add_subdirectory(moenchDetectorServer)
-add_subdirectory(matterhonServer)
+add_subdirectory(matterhornServer)
 

@@ -15,7 +15,6 @@ target_link_libraries(slsServerObject
     PUBLIC
         slsProjectOptions
         slsSupportStatic
-        slsDetectorObject
     PRIVATE
         slsProjectWarnings
 )

@@ -184,7 +184,6 @@ void Detector::setHostname(const std::vector<std::string> &hostname) {
         setDetectorSize(numChannels);
         setInitialChecks(initialChecks);
     }
-    LOG(logDEBUG3) << "not in shared memory yet, setting hostname";
     pimpl->setHostname(hostname);
 }
 

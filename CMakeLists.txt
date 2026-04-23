@@ -199,17 +199,18 @@ if (SLS_FETCH_FMT_FROM_GITHUB)
             USES_TERMINAL_DOWNLOAD TRUE
     )
     set(FMT_INSTALL ON CACHE BOOL "")
-    # set(FMT_CMAKE_DIR "")
     FetchContent_MakeAvailable(fmt)
     set_property(TARGET fmt PROPERTY POSITION_INDEPENDENT_CODE ON)
 else()
      # downloaded from https://github.com/fmtlib/fmt/releases/tag/12.1.0
+     set(FMT_TEST OFF CACHE INTERNAL "disabling fmt tests")
      FetchContent_Declare(
             fmt
             URL ${CMAKE_CURRENT_SOURCE_DIR}/libs/fmt/fmt-12.1.0.tar.gz
             # Compute hash: md5sum fmt-12.1.0.tar.gz 
             URL_HASH MD5=92eb6f492e4838e5f024ce5207beafc7) 
     FetchContent_MakeAvailable(fmt)
+    set_property(TARGET fmt PROPERTY POSITION_INDEPENDENT_CODE ON)
 endif()
 
 # Export fmt 

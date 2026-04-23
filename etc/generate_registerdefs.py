@@ -5,12 +5,12 @@ def Ip_core_name_to_enum_type(ip_core_name : str) -> str:
     """Convert IP core name to enum type IPCore."""
     if pd.isna(ip_core_name): 
         return "IPCore::UNKNOWN"
-    else:
-        return f"IPCore::{ip_core_name.upper()}"
+    
+    return f"IPCore::{ip_core_name.upper()}"
 
 def create_bitmask_and_offset(from_bit : int, to_bit : int) -> tuple[int, int]: 
     """Create a bitmask for a register field given the from_bit and to_bit."""
-    if from_bit < 0 or to_bit < 0 or from_bit > to_bit:
+    if from_bit < 0 or to_bit < 0 or from_bit > to_bit or from_bit >= 32 or to_bit >= 32:
         raise ValueError(f"Invalid bit range: from_bit={from_bit}, to_bit={to_bit}")
     
     offset = from_bit
@@ -38,7 +38,7 @@ header = r"""
 namespace sls {
 
 /// @brief Enum for IP cores, value are adresses
-constexpr enum class IPCore : uint32_t {
+enum class IPCore : uint32_t {
     MH_RO_SM_AXI = 0, // dummy adresses for now
     FHDR_AXI = 1,
     AURORA_STATUS = 2,

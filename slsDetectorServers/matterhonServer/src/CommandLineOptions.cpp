@@ -1,7 +1,6 @@
 #include "CommandLineOptions.h"
 #include "sls/ToString.h"
 #include "sls/sls_detector_exceptions.h"
-#include "sls/versionAPI.h"
 
 #include <cstdint>
 #include <fmt/format.h>
@@ -10,24 +9,14 @@
 
 namespace sls {
 
-std::string CommandLineOptions::getVersion() const {
-    return fmt::format(
-        "MatterhornServer Version: {}",
-        APIMATTERHORN); // TODO check that it is updated correctly !!!
-}
-
 uint16_t CommandLineOptions::parsePort(const char *optarg) const {
     uint16_t val = 0; // TODO: in c code its unsigned int
 
     try {
         val = sls::StringTo<uint16_t>(optarg);
-    } catch (...) {
-        throw("Could not parse port number " + std::string(optarg));
-    }
-
-    if (val == std::numeric_limits<uint16_t>::max()) {
-        throw sls::RuntimeError("Cannot parse stop server port number. "
-                                "Value must be in range 0 - 65535.");
+    } catch (const std::exception &e) {
+        throw sls::RuntimeError(fmt::format(
+            "Could not parse port number {}. {}", optarg, e.what()));
     }
 
     if (val < 1024) {
@@ -45,51 +34,83 @@ CommandLineOptions::getHelpMessage(const std::string &executable) const {
         "Usage: {}"
         " [arguments]\n"
         "Possible arguments are:\n"
-        "\t-v, --version            : Software version\n"
-        "\t-p, --port <port>        : TCP communication port with client. "
+        "\t-v, --version                 : Software version\n"
+        "\t-p, --port <port>             : TCP communication port with client. "
         "\n"
-        "\t-d, --devel              : Developer mode. Skips firmware "
-        "checks. \n"
-        "\t-u, --update             : Update mode. Skips firmware checks "
-        "and "
-        "initial detector setup. \n",
+        "\t-s, --safe_startup            : Safe startup mode. Skips initial "
+        "detector setup and checks. \n"
+        "\t-f, --ignore_fw_compatibility : Ignore firmware compatibility "
+        "check. \n",
         executable);
     return helpmessage;
+}
+
+void CommandLineOptions::parse_deprecated(const int &opt, char *argv[]) {
+
+    switch (opt) {
+    case 'd':
+        std::cout << "Warning: -d/--devel option is deprecated. Use "
+                     "-l/--safe_startup instead."
+                  << std::endl;
+        detectorserveroptions.safeStartup = true;
+        break;
+    case 'u':
+        std::cout << "Warning: -u/--update option is deprecated. Use "
+                     "-f/--ignore_fw_compatibility instead."
+                  << std::endl;
+        detectorserveroptions.ignoreFirmwareCompatibility = true;
+        break;
+    default:
+        throw std::runtime_error(fmt::format("Wrong command line arguments. {}",
+                                             getHelpMessage(argv[0])));
+    }
+}
+
+std::string CommandLineOptions::printOptions() const {
+    std::string msg = "setting up detector server";
+
+    if (detectorserveroptions.ignoreFirmwareCompatibility) {
+        msg += " skipping firmware compatibility checks";
+        msg += detectorserveroptions.safeStartup ? " and" : "";
+    }
+    if (detectorserveroptions.safeStartup) {
+        msg += " in safe startup mode e.g. skipping any initial detector setup "
+               "and checks";
+    }
+
+    return msg;
 }
 
 DetectorServerOptions CommandLineOptions::parse(int argc, char *argv[]) {
 
     int opt, option_index = 0;
 
-    DetectorServerOptions serverOptionsValues{};
-
-    while ((opt = getopt_long(argc, argv, optstring.c_str(), options.data(),
+    while ((opt = getopt_long(argc, argv, optstring, options.data(),
                               &option_index)) != -1) {
         switch (opt) {
         case 'h':
             std::cout << getHelpMessage(argv[0]) << std::endl;
-            serverOptionsValues.helpRequested = true; // to exit in main
+            detectorserveroptions.helpRequested = true; // to exit in main
             break;
         case 'v':
-            serverOptionsValues.versionRequested = true; // to exit in main
-            std::cout << getVersion() << std::endl;
+            detectorserveroptions.versionRequested = true; // to exit in main
             break;
         case 'p':
-            serverOptionsValues.port = parsePort(optarg);
+            detectorserveroptions.port = parsePort(optarg);
             break;
-        case 'd':
-            serverOptionsValues.debugflag = true;
+        case 'f':
+            detectorserveroptions.ignoreFirmwareCompatibility = true;
             break;
-        case 'u':
-            serverOptionsValues.updateFlag = true;
+        case 's':
+            detectorserveroptions.safeStartup = true;
             break;
         default:
-            std::cout << getHelpMessage(argv[0]) << std::endl;
-            throw std::runtime_error("Wrong command line arguments.");
+            parse_deprecated(opt, argv); // to handle deprecated options and
+                                         // throw error for wrong options
         }
     }
 
-    return serverOptionsValues;
+    return detectorserveroptions;
 }
 
 } // namespace sls

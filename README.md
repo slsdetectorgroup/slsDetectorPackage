@@ -86,7 +86,7 @@ To use the basic building blocks, meaning sls_detector_get/put and the shared li
 
 Additionally the core requires the following dependencies: 
 
- * fmt 12.1.0 (packaged in libs)
+ * fmt 12.1.0 (packaged in libs) (since version 11.0.0)
  * ZeroMQ 4.3.4 (packaged in libs)
  * rapidjson (packaged in libs)
 

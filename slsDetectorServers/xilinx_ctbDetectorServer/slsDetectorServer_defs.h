@@ -162,7 +162,7 @@ enum CLKINDEX { RUN_CLK, ADC_CLK, SYNC_CLK, DBIT_CLK, NUM_CLOCKS };
 #define DEFAULT_ADC_CLK  (100000000) // 100 MHz
 #define DEFAULT_SYNC_CLK (20000000)  // 20 MHz
 #define DEFAULT_DBIT_CLK (100000000) // 100 MHz
-#define NS_TO_CLK_CYCLE  (1E-9)   // ns to Hz
+#define NS_TO_CLK_CYCLE  (1E-9)      // ns to Hz
 
 #define MIN_CLK_FREQ (10000000)  // 10 MHz
 #define MAX_CLK_FREQ (300000000) // 300 MHz

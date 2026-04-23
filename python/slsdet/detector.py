@@ -3723,7 +3723,7 @@ class Detector(CppDetectorApi):
         [Ctb][Mythen3][Xilinx Ctb] Gets the pattern file name including path of the last pattern uploaded. Returns an empty if nothing was uploaded or via a server default
         file
         """
-        return self.getPatterFileName()
+        return self.getPatternFileName()
 
     def patternstart(self):
         """[Ctb][Mythen3][Xilinx Ctb] Starts pattern. """

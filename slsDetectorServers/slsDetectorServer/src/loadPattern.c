@@ -308,7 +308,7 @@ uint64_t getPatternWaitInterval(int level) {
         return -1;
     }
     double conv = NS_TO_CLK_CYCLE * runclk;
-    uint64_t waitNs = (uint64_t)(numClocks / conv + 0.5);
+    uint64_t waitNs = (uint64_t)(numClocks / conv);
     return waitNs;
 }
 

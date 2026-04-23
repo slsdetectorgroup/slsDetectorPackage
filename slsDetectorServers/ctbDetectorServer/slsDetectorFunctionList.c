@@ -1150,13 +1150,8 @@ int getNumTransceiverSamples() { return ntSamples; }
 
 int setExpTime(int64_t val) {
     setPatternWaitInterval(0, val);
-
-    // Tolerance: three clock periods in ns.
     int64_t retval = getExpTime();
-    // tolerance of 3 clock cycles
-    int64_t toleranceNs = 3 * (1e9 / clkFrequency[RUN_CLK]);
-    int64_t diff = abs(val - retval);
-    if (diff > toleranceNs) {
+    if (val != retval) {
         return FAIL;
     }
     return OK;

@@ -211,6 +211,14 @@ class slsDetectorDefs {
         std::map<std::string, std::string> addJsonHeader;
     };
 
+    struct Hz {
+        int value{0};
+        explicit Hz(int v) : value(v){};
+        constexpr bool operator==(const Hz &other) const {
+            return (value == other.value);
+        }
+    };
+
 #endif
     enum frameDiscardPolicy {
         NO_DISCARD,
@@ -837,7 +845,6 @@ typedef struct {
 #endif
 
 #ifdef __cplusplus
-
 // TODO! discuss this
 #include <vector> //hmm... but currently no way around
 namespace sls {

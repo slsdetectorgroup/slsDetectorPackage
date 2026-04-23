@@ -72,18 +72,22 @@ std::string Caller::adcclk(int action) {
     std::ostringstream os;
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
-        os << R"V0G0N([ADC clock frequency] [(optional unit) MHz|kHz|Hz])V0G0N"
+        os << R"V0G0N([n_clk] [(optional unit) Hz(default)|kHz|MHz]
+	[Ctb][Xilinx Ctb] ADC clock frequency. )V0G0N"
            << std::endl;
         return os.str();
     }
 
     // check if action and arguments are valid
     if (action == slsDetectorDefs::GET_ACTION) {
-        if (1 && args.size() != 0) {
+        if (1 && args.size() != 0 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action GET");
         }
 
         if (args.size() == 0) {
+        }
+
+        if (args.size() == 1) {
         }
 
     }
@@ -97,17 +101,17 @@ std::string Caller::adcclk(int action) {
             try {
                 std::string tmp_freq(args[0]);
                 std::string unit = RemoveUnit(tmp_freq);
-                StringToHz(tmp_freq, unit);
+                auto converted_freq = StringTo<defs::Hz>(tmp_freq, unit);
             } catch (...) {
-                throw RuntimeError("Could not convert argument to frequency");
+                throw RuntimeError("Could not convert argument to defs::Hz");
             }
         }
 
         if (args.size() == 2) {
             try {
-                StringToHz(args[0], args[1]);
+                StringTo<defs::Hz>(args[0], args[1]);
             } catch (...) {
-                throw RuntimeError("Could not convert arguments to frequency");
+                throw RuntimeError("Could not convert arguments to defs::Hz");
             }
         }
 
@@ -125,20 +129,25 @@ std::string Caller::adcclk(int action) {
             auto t = det->getADCClock(std::vector<int>{det_id});
             os << OutString(t) << '\n';
         }
+
+        if (args.size() == 1) {
+            auto t = det->getADCClock(std::vector<int>{det_id});
+            os << OutString(t, args[0]) << '\n';
+        }
     }
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 1) {
             std::string tmp_freq(args[0]);
             std::string unit = RemoveUnit(tmp_freq);
-            auto converted_freq_hz = StringToHz(tmp_freq, unit);
-            det->setADCClock(converted_freq_hz, std::vector<int>{det_id});
+            auto converted_freq = StringTo<defs::Hz>(tmp_freq, unit);
+            det->setADCClock(converted_freq, std::vector<int>{det_id});
             os << args[0] << '\n';
         }
 
         if (args.size() == 2) {
-            auto converted_freq_hz = StringToHz(args[0], args[1]);
-            det->setADCClock(converted_freq_hz, std::vector<int>{det_id});
+            auto converted_freq = StringTo<defs::Hz>(args[0], args[1]);
+            det->setADCClock(converted_freq, std::vector<int>{det_id});
             os << args[0] << args[1] << '\n';
         }
     }
@@ -2498,18 +2507,22 @@ std::string Caller::dbitclk(int action) {
     std::ostringstream os;
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
-        os << R"V0G0N([dbit clock frequency] [(optional unit) MHz|kHz|Hz])V0G0N"
+        os << R"V0G0N([n_clk] [(optional unit) Hz(default)|kHz|MHz]
+	[Ctb][Xilinx Ctb]  Clock for latching the digital bits. )V0G0N"
            << std::endl;
         return os.str();
     }
 
     // check if action and arguments are valid
     if (action == slsDetectorDefs::GET_ACTION) {
-        if (1 && args.size() != 0) {
+        if (1 && args.size() != 0 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action GET");
         }
 
         if (args.size() == 0) {
+        }
+
+        if (args.size() == 1) {
         }
 
     }
@@ -2523,17 +2536,17 @@ std::string Caller::dbitclk(int action) {
             try {
                 std::string tmp_freq(args[0]);
                 std::string unit = RemoveUnit(tmp_freq);
-                StringToHz(tmp_freq, unit);
+                auto converted_freq = StringTo<defs::Hz>(tmp_freq, unit);
             } catch (...) {
-                throw RuntimeError("Could not convert argument to frequency");
+                throw RuntimeError("Could not convert argument to defs::Hz");
             }
         }
 
         if (args.size() == 2) {
             try {
-                StringToHz(args[0], args[1]);
+                StringTo<defs::Hz>(args[0], args[1]);
             } catch (...) {
-                throw RuntimeError("Could not convert arguments to frequency");
+                throw RuntimeError("Could not convert arguments to defs::Hz");
             }
         }
 
@@ -2551,20 +2564,25 @@ std::string Caller::dbitclk(int action) {
             auto t = det->getDBITClock(std::vector<int>{det_id});
             os << OutString(t) << '\n';
         }
+
+        if (args.size() == 1) {
+            auto t = det->getDBITClock(std::vector<int>{det_id});
+            os << OutString(t, args[0]) << '\n';
+        }
     }
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 1) {
             std::string tmp_freq(args[0]);
             std::string unit = RemoveUnit(tmp_freq);
-            auto converted_freq_hz = StringToHz(tmp_freq, unit);
-            det->setDBITClock(converted_freq_hz, std::vector<int>{det_id});
+            auto converted_freq = StringTo<defs::Hz>(tmp_freq, unit);
+            det->setDBITClock(converted_freq, std::vector<int>{det_id});
             os << args[0] << '\n';
         }
 
         if (args.size() == 2) {
-            auto converted_freq_hz = StringToHz(args[0], args[1]);
-            det->setDBITClock(converted_freq_hz, std::vector<int>{det_id});
+            auto converted_freq = StringTo<defs::Hz>(args[0], args[1]);
+            det->setDBITClock(converted_freq, std::vector<int>{det_id});
             os << args[0] << args[1] << '\n';
         }
     }
@@ -7344,7 +7362,7 @@ std::string Caller::patfname(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 0) {
-            auto t = det->getPatterFileName(std::vector<int>{det_id});
+            auto t = det->getPatternFileName(std::vector<int>{det_id});
             os << OutString(t) << '\n';
         }
     }
@@ -9941,18 +9959,22 @@ std::string Caller::runclk(int action) {
     std::ostringstream os;
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
-        os << R"V0G0N([Run clock frequency] [(optional unit) MHz|kHz|Hz])V0G0N"
+        os << R"V0G0N([n_clk] [(optional unit) Hz(default)|kHz|MHz]
+	[Ctb][Xilinx Ctb] Run clock frequency. )V0G0N"
            << std::endl;
         return os.str();
     }
 
     // check if action and arguments are valid
     if (action == slsDetectorDefs::GET_ACTION) {
-        if (1 && args.size() != 0) {
+        if (1 && args.size() != 0 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action GET");
         }
 
         if (args.size() == 0) {
+        }
+
+        if (args.size() == 1) {
         }
 
     }
@@ -9966,17 +9988,17 @@ std::string Caller::runclk(int action) {
             try {
                 std::string tmp_freq(args[0]);
                 std::string unit = RemoveUnit(tmp_freq);
-                StringToHz(tmp_freq, unit);
+                auto converted_freq = StringTo<defs::Hz>(tmp_freq, unit);
             } catch (...) {
-                throw RuntimeError("Could not convert argument to frequency");
+                throw RuntimeError("Could not convert argument to defs::Hz");
             }
         }
 
         if (args.size() == 2) {
             try {
-                StringToHz(args[0], args[1]);
+                StringTo<defs::Hz>(args[0], args[1]);
             } catch (...) {
-                throw RuntimeError("Could not convert arguments to frequency");
+                throw RuntimeError("Could not convert arguments to defs::Hz");
             }
         }
 
@@ -9994,20 +10016,25 @@ std::string Caller::runclk(int action) {
             auto t = det->getRUNClock(std::vector<int>{det_id});
             os << OutString(t) << '\n';
         }
+
+        if (args.size() == 1) {
+            auto t = det->getRUNClock(std::vector<int>{det_id});
+            os << OutString(t, args[0]) << '\n';
+        }
     }
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 1) {
             std::string tmp_freq(args[0]);
             std::string unit = RemoveUnit(tmp_freq);
-            auto converted_freq_hz = StringToHz(tmp_freq, unit);
-            det->setRUNClock(converted_freq_hz, std::vector<int>{det_id});
+            auto converted_freq = StringTo<defs::Hz>(tmp_freq, unit);
+            det->setRUNClock(converted_freq, std::vector<int>{det_id});
             os << args[0] << '\n';
         }
 
         if (args.size() == 2) {
-            auto converted_freq_hz = StringToHz(args[0], args[1]);
-            det->setRUNClock(converted_freq_hz, std::vector<int>{det_id});
+            auto converted_freq = StringTo<defs::Hz>(args[0], args[1]);
+            det->setRUNClock(converted_freq, std::vector<int>{det_id});
             os << args[0] << args[1] << '\n';
         }
     }
@@ -13110,19 +13137,22 @@ std::string Caller::syncclk(int action) {
     std::ostringstream os;
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
-        os << R"V0G0N([n_clk in MHz]
-	[Ctb] Sync clock in MHz. )V0G0N"
+        os << R"V0G0N([n_clk] [(optional unit) Hz(default)|kHz|MHz]
+	[Ctb] Sync clock. )V0G0N"
            << std::endl;
         return os.str();
     }
 
     // check if action and arguments are valid
     if (action == slsDetectorDefs::GET_ACTION) {
-        if (1 && args.size() != 0) {
+        if (1 && args.size() != 0 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action GET");
         }
 
         if (args.size() == 0) {
+        }
+
+        if (args.size() == 1) {
         }
 
     }
@@ -13138,6 +13168,11 @@ std::string Caller::syncclk(int action) {
         if (args.size() == 0) {
             auto t = det->getSYNCClock(std::vector<int>{det_id});
             os << OutString(t) << '\n';
+        }
+
+        if (args.size() == 1) {
+            auto t = det->getSYNCClock(std::vector<int>{det_id});
+            os << OutString(t, args[0]) << '\n';
         }
     }
 

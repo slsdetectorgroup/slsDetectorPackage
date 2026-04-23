@@ -328,12 +328,12 @@ int ALTERA_PLL_SetOutputFrequency(int clkIndex, int pllVCOFreqHz, int value) {
         return (int)temp;
         */
 
-    #if defined(CHIPTESTBOARDD) && !defined(VIRTUAL)
-        // wait for firmware to measure the actual frequency
-        usleep(2 * 1000 * 1000);
-        value = ALTERA_PLL_getFrequency(clkIndex);
-        LOG(logDEBUG1, ("Frequency is %d\n", value));
-    #endif
+#if defined(CHIPTESTBOARDD) && !defined(VIRTUAL)
+    // wait for firmware to measure the actual frequency
+    usleep(2 * 1000 * 1000);
+    value = ALTERA_PLL_getFrequency(clkIndex);
+    LOG(logDEBUG1, ("Frequency is %d\n", value));
+#endif
     return value;
 }
 

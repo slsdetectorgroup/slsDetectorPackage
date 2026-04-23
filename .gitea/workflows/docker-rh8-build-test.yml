@@ -34,6 +34,7 @@ jobs:
           python3.12 -m pip install pytest
           python3.12 -m pip install colorama
           python3.12 -m pip install numpy
+          python3.12 -m pip install pyzmq
 
       - name: Python unit tests
         working-directory: ${{gitea.workspace}}

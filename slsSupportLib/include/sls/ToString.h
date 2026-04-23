@@ -108,6 +108,44 @@ ToString(From t) {
     }
 }
 
+/** Convert frequency with specified output unit */
+template <typename T, typename Rep = double>
+typename std::enable_if<is_frequency<T>::value, std::string>::type
+ToString(T f, const std::string &unit) {
+    double val = static_cast<double>(f.value);
+
+    auto unitLower = [&] {
+        std::string result = unit;
+        std::transform(result.begin(), result.end(), result.begin(),
+                       [](unsigned char c) { return std::tolower(c); });
+        return result;
+    }();
+    std::ostringstream os;
+    if (unitLower == "hz")
+        os << val << unit;
+    else if (unitLower == "khz")
+        os << val / (static_cast<double>(1e3)) << unit;
+    else if (unitLower == "mhz")
+        os << val / (static_cast<double>(1e6)) << unit;
+    else
+        throw std::runtime_error("Unknown unit: " + unit);
+    return os.str();
+}
+
+/** Convert frequency automatically selecting the unit */
+template <typename From>
+typename std::enable_if<is_frequency<From>::value, std::string>::type
+ToString(From f) {
+    int val = f.value;
+    if (val < 1e3) {
+        return ToString(f, "Hz");
+    } else if (val < 1e6) {
+        return ToString(f, "kHz");
+    } else {
+        return ToString(f, "MHz");
+    }
+}
+
 /** Conversion of floating point values, removes trailing zeros*/
 template <typename T>
 typename std::enable_if<std::is_floating_point<T>::value, std::string>::type
@@ -279,7 +317,7 @@ ToString(const T &container, const std::string &unit) {
     return os.str();
 }
 
-template <typename T>
+template <typename T, std::enable_if_t<sls::is_duration<T>::value, int> = 0>
 T StringTo(const std::string &t, const std::string &unit) {
     double tval{0};
     try {
@@ -301,6 +339,33 @@ T StringTo(const std::string &t, const std::string &unit) {
     } else {
         throw RuntimeError(
             "Invalid unit in conversion from string to std::chrono::duration");
+    }
+}
+
+template <typename T, std::enable_if_t<sls::is_frequency<T>::value, int> = 0>
+T StringTo(const std::string &f, const std::string &unit) {
+    double fval{0};
+    try {
+        fval = std::stod(f);
+    } catch (const std::invalid_argument &e) {
+        throw RuntimeError("Could not convert string to frequency");
+    }
+    auto unitLower = [&] {
+        std::string result = unit;
+        std::transform(result.begin(), result.end(), result.begin(),
+                       [](unsigned char c) { return std::tolower(c); });
+        return result;
+    }();
+
+    if (unitLower == "mhz") {
+        return T(static_cast<int>(fval * 1e6));
+    } else if (unitLower == "khz") {
+        return T(static_cast<int>(fval * 1e3));
+    } else if (unitLower.empty() || unitLower == "hz") {
+        return T(static_cast<int>(fval));
+    } else {
+        throw RuntimeError(
+            "Invalid unit in conversion from string to frequency");
     }
 }
 
@@ -357,8 +422,5 @@ std::vector<T> StringTo(const std::vector<std::string> &strings) {
         result.push_back(StringTo<T>(s));
     return result;
 }
-
-/** Convert frequency string with unit (MHz, kHz, Hz) to Hz */
-int StringToHz(const std::string &s, const std::string &unit);
 
 } // namespace sls

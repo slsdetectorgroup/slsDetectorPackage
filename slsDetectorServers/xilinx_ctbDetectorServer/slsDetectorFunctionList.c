@@ -768,12 +768,8 @@ int getNumTransceiverSamples() {
 
 int setExpTime(int64_t val) {
     setPatternWaitInterval(0, val);
-
-    // Tolerance: three clock periods in ns.
     int64_t retval = getExpTime();
-    int64_t toleranceNs = 3 * (1000000000 / clkFrequency[RUN_CLK]);
-    int64_t diff = val - retval;
-    if (diff < -toleranceNs || diff > toleranceNs) {
+    if (val != retval) {
         return FAIL;
     }
     return OK;
@@ -851,13 +847,14 @@ int64_t getFramesFromStart() {
 }
 
 int64_t getActualTime() {
-    return getU64BitReg(TIME_FROM_START_OUT_REG_1, TIME_FROM_START_OUT_REG_2) /
-           (NS_TO_CLK_CYCLE * clkFrequency[SYNC_CLK]);
+    // in unit of 100ns
+    return getU64BitReg(TIME_FROM_START_OUT_REG_1, TIME_FROM_START_OUT_REG_2) *
+           100;
 }
 
 int64_t getMeasurementTime() {
-    return getU64BitReg(FRAME_TIME_OUT_REG_1, FRAME_TIME_OUT_REG_2) /
-           (NS_TO_CLK_CYCLE * clkFrequency[SYNC_CLK]);
+    // in unit of 100ns
+    return getU64BitReg(FRAME_TIME_OUT_REG_1, FRAME_TIME_OUT_REG_2) * 100;
 }
 
 /* parameters - dac, adc, hv */

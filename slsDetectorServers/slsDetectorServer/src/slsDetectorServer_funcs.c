@@ -5717,15 +5717,34 @@ int set_clock_frequency(int file_des) {
 
             if (getFrequency(c) == val) {
                 LOG(logINFO, ("Same %s: %d %s\n", modeName, val, "Hz"));
-            } else {
+            } else if (val < MIN_CLK_FREQ || val > MAX_CLK_FREQ) {
+                ret = FAIL;
+                sprintf(mess,
+                        "Cannot set frequency to %f MHz. Frequency outside "
+                        "limits (%f - %f MHz)\n",
+                        val / 1e6, MIN_CLK_FREQ / 1e6, MAX_CLK_FREQ / 1e6);
+                LOG(logERROR, (mess));
+            }
+#ifdef CHIPTESTBOARDD
+            else if (ind == ADC_CLOCK && (val > MAXIMUM_ADC_CLK)) {
+                ret = FAIL;
+                sprintf(mess,
+                        "Cannot set ADC clock frequency to %f MHz. Frequency "
+                        "outside limits (<= %f MHz)\n",
+                        val / 1e6, MAXIMUM_ADC_CLK / 1e6);
+                LOG(logERROR, (mess));
+            }
+#endif
+            else {
                 int ret = setFrequency(c, val);
                 if (ret == FAIL) {
-                    sprintf(mess, "Could not set %s to %d %s\n", modeName, val,"Hz");
+                    sprintf(mess, "Could not set %s to %f MHz\n", modeName,
+                            val / 1e6);
                     LOG(logERROR, (mess));
                 } else {
                     int retval = getFrequency(c);
                     LOG(logDEBUG1,
-                        ("retval %s: %d %s\n", modeName, retval, "Hz"));
+                        ("retval %s: %f MHz\n", modeName, retval / 1e6));
                     // both CTB's will give the actual frequency, which is not
                     // 100% identical to the set frequency
                     validate(&ret, mess, val, retval, modeName, DEC);
@@ -5781,8 +5800,8 @@ int get_clock_frequency(int file_des) {
     if (ret == OK) {
         retval = getFrequency(c);
         char *clock_names[] = {CLK_NAMES};
-        LOG(logDEBUG1,
-            ("retval %s clock (%d) frequency: %d %s\n", clock_names[c], (int)c, retval, "Hz"));
+        LOG(logDEBUG1, ("retval %s clock (%d) frequency: %d %s\n",
+                        clock_names[c], (int)c, retval, "Hz"));
     }
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));

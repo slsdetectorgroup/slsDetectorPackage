@@ -14,11 +14,12 @@ powerIndex = slsDetectorDefs.powerIndex
 detectorType = slsDetectorDefs.detectorType
 streamingInterface = slsDetectorDefs.streamingInterface
 
+
 defs = slsDetectorDefs
 
 from .utils import element_if_equal, all_equal, get_set_bits, list_to_bitmask
 from .utils import Geometry, to_geo, element, reduce_time, is_iterable, hostname_list
-from ._slsdet import xy, freeSharedMemory, getUserDetails
+from ._slsdet import xy, Hz, freeSharedMemory, getUserDetails
 from .gaincaps import Mythen3GainCapsWrapper
 from . import utils as ut
 from .proxy import JsonProxy, ClkDivProxy, MaxPhaseProxy, ClkFreqProxy, PatLoopProxy, PatNLoopProxy, PatWaitProxy, PatWaitTimeProxy 
@@ -3441,22 +3442,21 @@ class Detector(CppDetectorApi):
     @element
     def runclk(self):
         """
-        [Ctb][Xilinx Ctb] Sets Run clock frequency in MHz. \n
-        Accepts decimal inputs
-        """
+        [Ctb][Xilinx Ctb] Sets Run clock frequency.
 
-        freq_hz = element_if_equal(self.getRUNClock())
-        if isinstance(freq_hz, list):
-            return [value / 1e6 for value in freq_hz]
-        return freq_hz / 1e6
+        Example
+        --------
+        >>> d.runclk
+        >>> 10MHz
+        >>> d.runclk = MHz(5)
+        >>> d.runclk = Hz(5 * 1000 * 1000)
+        >>> d.runclk = kHz(2000)
+        """
+        return self.getRUNClock()
 
     @runclk.setter
     def runclk(self, freq):
-        if isinstance(freq, dict):
-            freq_hz = {key: int(round(value * 1e6)) for key, value in freq.items()}
-        else:
-            freq_hz = int(round(freq * 1e6))
-        ut.set_using_dict(self.setRUNClock, freq_hz)
+        ut.set_using_dict(self.setRUNClock, freq) 
 
     @property
     @element
@@ -3533,21 +3533,21 @@ class Detector(CppDetectorApi):
     @element
     def dbitclk(self):
         """
-        [Ctb][Xilinx Ctb] Sets clock for latching the digital bits in MHz. \n
-        Accepts decimal inputs
+        [Ctb][Xilinx Ctb] Sets clock for latching the digital bits.
+
+        Example
+        --------
+        >>> d.dbitclk
+        >>> 10MHz
+        >>> d.dbitclk = MHz(5)
+        >>> d.dbitclk = Hz(5 * 1000 * 1000)
+        >>> d.dbitclk = kHz(2000)
         """
-        freq_hz = element_if_equal(self.getDBITClock())
-        if isinstance(freq_hz, list):
-            return [value / 1e6 for value in freq_hz]
-        return freq_hz / 1e6
+        return self.getDBITClock()
 
     @dbitclk.setter
     def dbitclk(self, value):
-        if isinstance(value, dict):
-            value_hz = {key: int(round(item * 1e6)) for key, item in value.items()}
-        else:
-            value_hz = int(round(value * 1e6))
-        ut.set_using_dict(self.setDBITClock, value_hz)
+        ut.set_using_dict(self.setDBITClock, value)
 
     @property
     @element
@@ -3670,28 +3670,27 @@ class Detector(CppDetectorApi):
     @element
     def adcclk(self):
         """
-        [Ctb][Xilinx Ctb] Sets ADC clock frequency in MHz. \n
-        Accepts decimal inputs
-        """
+        [Ctb][Xilinx Ctb] Sets ADC clock frequency.
 
-        freq_hz = element_if_equal(self.getADCClock())
-        if isinstance(freq_hz, list):
-            return [value / 1e6 for value in freq_hz]
-        return freq_hz / 1e6
+        Example
+        --------
+        >>> d.adcclk
+        >>> 10MHz
+        >>> d.adcclk = MHz(5)
+        >>> d.adcclk = Hz(5 * 1000 * 1000)
+        >>> d.adcclk = kHz(2000)
+        """
+        return self.getADCClock()
 
     @adcclk.setter
     def adcclk(self, value):
-        if isinstance(value, dict):
-            value_hz = {key: int(round(item * 1e6)) for key, item in value.items()}
-        else:
-            value_hz = int(round(value * 1e6))
-        ut.set_using_dict(self.setADCClock, value_hz)
+        ut.set_using_dict(self.setADCClock, value)
 
     @property
     @element
     def syncclk(self):
         """
-        [Ctb] Sync clock in MHz.
+        [Ctb] Sync clock.
         
         :setter: Not implemented
         """
@@ -3724,7 +3723,7 @@ class Detector(CppDetectorApi):
         [Ctb][Mythen3][Xilinx Ctb] Gets the pattern file name including path of the last pattern uploaded. Returns an empty if nothing was uploaded or via a server default
         file
         """
-        return self.getPatterFileName()
+        return self.getPatternFileName()
 
     def patternstart(self):
         """[Ctb][Mythen3][Xilinx Ctb] Starts pattern. """

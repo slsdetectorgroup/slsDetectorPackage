@@ -14,6 +14,7 @@
 #include "communication_funcs_UDP.h"
 #include "loadPattern.h"
 
+#include <math.h>
 #include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -66,7 +67,8 @@ uint8_t adcEnableMask_10g = 0xFF;
 uint32_t transceiverMask = DEFAULT_TRANSCEIVER_MASK;
 
 int32_t clkPhase[NUM_CLOCKS] = {};
-uint32_t clkFrequency[NUM_CLOCKS] = {DEFAULT_RUN_CLK, DEFAULT_ADC_CLK, DEFAULT_SYNC_CLK, DEFAULT_DBIT_CLK};
+uint32_t clkFrequency[NUM_CLOCKS] = {DEFAULT_RUN_CLK, DEFAULT_ADC_CLK,
+                                     DEFAULT_SYNC_CLK, DEFAULT_DBIT_CLK};
 int dacValues[NDAC_ONLY] = {};
 int powerValues[NPWR] = {}; // powerIndex (A->IO, Chip)
 
@@ -1148,12 +1150,8 @@ int getNumTransceiverSamples() { return ntSamples; }
 
 int setExpTime(int64_t val) {
     setPatternWaitInterval(0, val);
-
-    // Tolerance: three clock periods in ns.
     int64_t retval = getExpTime();
-    int64_t toleranceNs = 3 * (1000000000 / clkFrequency[RUN_CLK]);
-    int64_t diff = val - retval;
-    if (diff < -toleranceNs || diff > toleranceNs) {
+    if (val != retval) {
         return FAIL;
     }
     return OK;
@@ -1167,12 +1165,12 @@ int setPeriod(int64_t val) {
         return FAIL;
     }
     LOG(logINFO, ("Setting period %lld ns\n", (long long int)val));
-    val *= (1E-3 * clkFrequency[SYNC_CLK]);
+    val *= (NS_TO_CLK_CYCLE * clkFrequency[SYNC_CLK]);
     set64BitReg(val, PERIOD_LSB_REG, PERIOD_MSB_REG);
 
     // validate for tolerance
     int64_t retval = getPeriod();
-    val /= (1E-3 * clkFrequency[SYNC_CLK]);
+    val /= (NS_TO_CLK_CYCLE * clkFrequency[SYNC_CLK]);
     if (val != retval) {
         return FAIL;
     }
@@ -1181,7 +1179,7 @@ int setPeriod(int64_t val) {
 
 int64_t getPeriod() {
     return get64BitReg(PERIOD_LSB_REG, PERIOD_MSB_REG) /
-           (1E-3 * clkFrequency[SYNC_CLK]);
+           (NS_TO_CLK_CYCLE * clkFrequency[SYNC_CLK]);
 }
 
 int setDelayAfterTrigger(int64_t val) {
@@ -1191,12 +1189,12 @@ int setDelayAfterTrigger(int64_t val) {
         return FAIL;
     }
     LOG(logINFO, ("Setting delay after trigger %lld ns\n", (long long int)val));
-    val *= (1E-3 * clkFrequency[SYNC_CLK]);
+    val *= (NS_TO_CLK_CYCLE * clkFrequency[SYNC_CLK]);
     set64BitReg(val, DELAY_LSB_REG, DELAY_MSB_REG);
 
     // validate for tolerance
     int64_t retval = getDelayAfterTrigger();
-    val /= (1E-3 * clkFrequency[SYNC_CLK]);
+    val /= (NS_TO_CLK_CYCLE * clkFrequency[SYNC_CLK]);
     if (val != retval) {
         return FAIL;
     }
@@ -1205,7 +1203,7 @@ int setDelayAfterTrigger(int64_t val) {
 
 int64_t getDelayAfterTrigger() {
     return get64BitReg(DELAY_LSB_REG, DELAY_MSB_REG) /
-           (1E-3 * clkFrequency[SYNC_CLK]);
+           (NS_TO_CLK_CYCLE * clkFrequency[SYNC_CLK]);
 }
 
 int64_t getNumFramesLeft() {
@@ -1218,12 +1216,12 @@ int64_t getNumTriggersLeft() {
 
 int64_t getDelayAfterTriggerLeft() {
     return get64BitReg(DELAY_LEFT_LSB_REG, DELAY_LEFT_MSB_REG) /
-           (1E-3 * clkFrequency[SYNC_CLK]);
+           (NS_TO_CLK_CYCLE * clkFrequency[SYNC_CLK]);
 }
 
 int64_t getPeriodLeft() {
     return get64BitReg(PERIOD_LEFT_LSB_REG, PERIOD_LEFT_MSB_REG) /
-           (1E-3 * clkFrequency[SYNC_CLK]);
+           (NS_TO_CLK_CYCLE * clkFrequency[SYNC_CLK]);
 }
 
 int64_t getFramesFromStart() {
@@ -1232,13 +1230,14 @@ int64_t getFramesFromStart() {
 }
 
 int64_t getActualTime() {
-    return get64BitReg(TIME_FROM_START_LSB_REG, TIME_FROM_START_MSB_REG) /
-           (1E-3 * CLK_FREQ);
+    // reg in unit of 100ns
+    return get64BitReg(TIME_FROM_START_LSB_REG, TIME_FROM_START_MSB_REG) * 100;
 }
 
 int64_t getMeasurementTime() {
-    return get64BitReg(START_FRAME_TIME_LSB_REG, START_FRAME_TIME_MSB_REG) /
-           (1E-3 * CLK_FREQ);
+    // reg in unit of 100ns
+    return get64BitReg(START_FRAME_TIME_LSB_REG, START_FRAME_TIME_MSB_REG) *
+           100;
 }
 
 /* parameters - settings */
@@ -2224,9 +2223,8 @@ int getMaxPhase(enum CLKINDEX ind) {
               MAX_PHASE_SHIFTS_STEPS;
 
     char *clock_names[] = {CLK_NAMES};
-    LOG(logDEBUG1,
-        ("Max Phase Shift (%s): %d (Clock: %d MHz, VCO:%d Hz)\n",
-         clock_names[ind], ret, clkFrequency[ind], PLL_VCO_FREQ_HZ));
+    LOG(logDEBUG1, ("Max Phase Shift (%s): %d (Clock: %d MHz, VCO:%d Hz)\n",
+                    clock_names[ind], ret, clkFrequency[ind], PLL_VCO_FREQ_HZ));
 
     return ret;
 }
@@ -2308,16 +2306,17 @@ int getFrequency(enum CLKINDEX ind) {
         LOG(logERROR, ("Unknown clock index %d to get frequency\n", ind));
         return -1;
     }
-    #ifndef VIRTUAL
-        // get the measured frequency from the firmware
-        int measuredFreqHz = ALTERA_PLL_getFrequency(ind);
+#ifndef VIRTUAL
+    // get the measured frequency from the firmware
+    int measuredFreqHz = ALTERA_PLL_getFrequency(ind);
 
-        // checking against 0 here ensures compatibility with old firmware, TODO: remove this check at some point
-        if (measuredFreqHz != 0) {
-            // Round to nearest MHz. (should we round at all ?)
-            clkFrequency[ind] = measuredFreqHz;
-        }
-    #endif VIRTUAL
+    // checking against 0 here ensures compatibility with old firmware, TODO:
+    // remove this check at some point
+    if (measuredFreqHz != 0) {
+        // Round to nearest MHz. (should we round at all ?)
+        clkFrequency[ind] = measuredFreqHz;
+    }
+#endif
     return clkFrequency[ind];
 }
 

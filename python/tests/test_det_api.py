@@ -486,9 +486,13 @@ def test_adcclk(session_simulator, request):
         assert d.adcclk.value == 15_000_500
 
         # invalid values from server
-        # max is 300MHz
-        with pytest.raises(Exception) as exc_info:
-            d.adcclk = MHz(66)
+        # max is 300MHz for xilinx and 54 MHz for ctb
+        if det_type == 'ctb':
+            with pytest.raises(Exception) as exc_info:
+                d.adcclk = MHz(66)
+        else:
+            with pytest.raises(Exception) as exc_info:
+                d.adcclk = MHz(301)
 
         # min is 2MHz for ctb and 10MHz for xilinx_ctb
         if det_type == 'ctb':

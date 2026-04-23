@@ -937,7 +937,10 @@ TEST_CASE("adcclk", "[.detectorintegration]") {
         else
             REQUIRE_THROWS(caller.call("adcclk", {"9", "MHz"}, -1, PUT));
         // max
-        REQUIRE_THROWS(caller.call("adcclk", {"66", "MHz"}, -1, PUT));
+        if (det_type == defs::CHIPTESTBOARD)
+            REQUIRE_THROWS(caller.call("adcclk", {"66", "MHz"}, -1, PUT));
+        else
+            REQUIRE_THROWS(caller.call("adcclk", {"301", "MHz"}, -1, PUT));
 
         {
             std::ostringstream oss;

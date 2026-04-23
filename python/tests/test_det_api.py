@@ -420,14 +420,14 @@ def test_runclk(session_simulator, request):
         with pytest.raises(Exception) as exc_info:
             d.runclk = Hz(5e6)
 
-        d.runclk = MHz(5)
-        assert d.runclk.value == 5_000_000
+        d.runclk = MHz(15)
+        assert d.runclk.value == 15_000_000
 
-        d.runclk = MHz(4.5)
-        assert d.runclk.value == 4_500_000
+        d.runclk = MHz(14.5)
+        assert d.runclk.value == 14_500_000
 
-        d.runclk = kHz(5000.5)
-        assert d.runclk.value == 5_000_500
+        d.runclk = kHz(15000.5)
+        assert d.runclk.value == 15_000_500
 
         # invalid values from server
         # max is 300MHz
@@ -476,14 +476,14 @@ def test_adcclk(session_simulator, request):
         with pytest.raises(Exception) as exc_info:
             d.adcclk = Hz(5e6)
 
-        d.adcclk = MHz(5)
-        assert d.adcclk.value == 5_000_000
+        d.adcclk = MHz(15)
+        assert d.adcclk.value == 15_000_000
 
-        d.adcclk = MHz(4.5)
-        assert d.adcclk.value == 4_500_000
+        d.adcclk = MHz(14.5)
+        assert d.adcclk.value == 14_500_000
 
-        d.adcclk = kHz(5000.5)
-        assert d.adcclk.value == 5_000_500
+        d.adcclk = kHz(15000.5)
+        assert d.adcclk.value == 15_000_500
 
         # invalid values from server
         # max is 300MHz
@@ -532,14 +532,14 @@ def test_dbitclk(session_simulator, request):
         with pytest.raises(Exception) as exc_info:
             d.dbitclk = Hz(5e6)
 
-        d.dbitclk = MHz(5)
+        d.dbitclk = MHz(15)
         assert d.dbitclk.value == 5_000_000
 
-        d.dbitclk = MHz(4.5)
-        assert d.dbitclk.value == 4_500_000
+        d.dbitclk = MHz(14.5)
+        assert d.dbitclk.value == 14_500_000
 
-        d.dbitclk = kHz(5000.5)
-        assert d.dbitclk.value == 5_000_500
+        d.dbitclk = kHz(15000.5)
+        assert d.dbitclk.value == 15_000_500
 
         # invalid values from server
         # max is 300MHz

@@ -10,25 +10,33 @@ namespace sls {
 TCPInterface::TCPInterface(
     std::function<ReturnCode(const detFuncs &, ServerInterface &)>
         &processFunction_,
-    const uint16_t portNumber)
-    : processFunction(processFunction_), portNumber(portNumber),
-      server(portNumber) {
-    validatePortNumber(portNumber);
+    const uint16_t portNumber_)
+    : processFunction(processFunction_), portNumber(portNumber_),
+      server(portNumber_) {
+    // validatePortNumber(portNumber); TODO: where to validate?
 }
 
 TCPInterface::~TCPInterface() {
-    LOG(logINFORED) << "Shutting down TCP Socket on port " << portNumber;
+    killTcpThread = true; // mmh but if the receiver is stuck in a function,
+                          // this will be of no help
+    LOG(logINFO) << "Shutting down TCP Socket on port " << portNumber;
     server.shutdown();
     LOG(logDEBUG) << "TCP Socket closed on port " << portNumber;
+    tcpThread->join();
 }
 
 void TCPInterface::startTCPServer() {
+    tcpThread = std::make_unique<std::thread>(
+        &TCPInterface::startTCPServerClientConnection, this);
+}
+
+void TCPInterface::startTCPServerClientConnection() {
 
     LOG(logINFO) << "SLS Server starting TCP Server on port " << portNumber
                  << '\n';
 
     int function_id{}; // TODO should it be an enum type
-    while (true) {
+    while (!killTcpThread) {
         try {
             auto socket = server.accept();
             try {

@@ -14,6 +14,7 @@
 #include "communication_funcs_UDP.h"
 #include "loadPattern.h"
 
+#include <math.h>
 #include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -1152,9 +1153,10 @@ int setExpTime(int64_t val) {
 
     // Tolerance: three clock periods in ns.
     int64_t retval = getExpTime();
-    int64_t toleranceNs = 3 * (1000000000 / clkFrequency[RUN_CLK]);
-    int64_t diff = val - retval;
-    if (diff < -toleranceNs || diff > toleranceNs) {
+    // tolerance of 3 clock cycles
+    int64_t toleranceNs = 3 * (1e9 / clkFrequency[RUN_CLK]);
+    int64_t diff = abs(val - retval);
+    if (diff > toleranceNs) {
         return FAIL;
     }
     return OK;
@@ -1168,12 +1170,12 @@ int setPeriod(int64_t val) {
         return FAIL;
     }
     LOG(logINFO, ("Setting period %lld ns\n", (long long int)val));
-    val *= (1E-3 * clkFrequency[SYNC_CLK]);
+    val *= (NS_TO_CLK_CYCLE * clkFrequency[SYNC_CLK]);
     set64BitReg(val, PERIOD_LSB_REG, PERIOD_MSB_REG);
 
     // validate for tolerance
     int64_t retval = getPeriod();
-    val /= (1E-3 * clkFrequency[SYNC_CLK]);
+    val /= (NS_TO_CLK_CYCLE * clkFrequency[SYNC_CLK]);
     if (val != retval) {
         return FAIL;
     }
@@ -1182,7 +1184,7 @@ int setPeriod(int64_t val) {
 
 int64_t getPeriod() {
     return get64BitReg(PERIOD_LSB_REG, PERIOD_MSB_REG) /
-           (1E-3 * clkFrequency[SYNC_CLK]);
+           (NS_TO_CLK_CYCLE * clkFrequency[SYNC_CLK]);
 }
 
 int setDelayAfterTrigger(int64_t val) {
@@ -1192,12 +1194,12 @@ int setDelayAfterTrigger(int64_t val) {
         return FAIL;
     }
     LOG(logINFO, ("Setting delay after trigger %lld ns\n", (long long int)val));
-    val *= (1E-3 * clkFrequency[SYNC_CLK]);
+    val *= (NS_TO_CLK_CYCLE * clkFrequency[SYNC_CLK]);
     set64BitReg(val, DELAY_LSB_REG, DELAY_MSB_REG);
 
     // validate for tolerance
     int64_t retval = getDelayAfterTrigger();
-    val /= (1E-3 * clkFrequency[SYNC_CLK]);
+    val /= (NS_TO_CLK_CYCLE * clkFrequency[SYNC_CLK]);
     if (val != retval) {
         return FAIL;
     }
@@ -1206,7 +1208,7 @@ int setDelayAfterTrigger(int64_t val) {
 
 int64_t getDelayAfterTrigger() {
     return get64BitReg(DELAY_LSB_REG, DELAY_MSB_REG) /
-           (1E-3 * clkFrequency[SYNC_CLK]);
+           (NS_TO_CLK_CYCLE * clkFrequency[SYNC_CLK]);
 }
 
 int64_t getNumFramesLeft() {
@@ -1219,12 +1221,12 @@ int64_t getNumTriggersLeft() {
 
 int64_t getDelayAfterTriggerLeft() {
     return get64BitReg(DELAY_LEFT_LSB_REG, DELAY_LEFT_MSB_REG) /
-           (1E-3 * clkFrequency[SYNC_CLK]);
+           (NS_TO_CLK_CYCLE * clkFrequency[SYNC_CLK]);
 }
 
 int64_t getPeriodLeft() {
     return get64BitReg(PERIOD_LEFT_LSB_REG, PERIOD_LEFT_MSB_REG) /
-           (1E-3 * clkFrequency[SYNC_CLK]);
+           (NS_TO_CLK_CYCLE * clkFrequency[SYNC_CLK]);
 }
 
 int64_t getFramesFromStart() {
@@ -1234,12 +1236,12 @@ int64_t getFramesFromStart() {
 
 int64_t getActualTime() {
     return get64BitReg(TIME_FROM_START_LSB_REG, TIME_FROM_START_MSB_REG) /
-           (1E-3 * CLK_FREQ);
+           (NS_TO_CLK_CYCLE * CLK_FREQ);
 }
 
 int64_t getMeasurementTime() {
     return get64BitReg(START_FRAME_TIME_LSB_REG, START_FRAME_TIME_MSB_REG) /
-           (1E-3 * CLK_FREQ);
+           (NS_TO_CLK_CYCLE * CLK_FREQ);
 }
 
 /* parameters - settings */

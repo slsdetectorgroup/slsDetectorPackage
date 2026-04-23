@@ -1230,13 +1230,14 @@ int64_t getFramesFromStart() {
 }
 
 int64_t getActualTime() {
-    return get64BitReg(TIME_FROM_START_LSB_REG, TIME_FROM_START_MSB_REG) /
-           (NS_TO_CLK_CYCLE * CLK_FREQ);
+    // reg in unit of 100ns
+    return get64BitReg(TIME_FROM_START_LSB_REG, TIME_FROM_START_MSB_REG) * 100;
 }
 
 int64_t getMeasurementTime() {
-    return get64BitReg(START_FRAME_TIME_LSB_REG, START_FRAME_TIME_MSB_REG) /
-           (NS_TO_CLK_CYCLE * CLK_FREQ);
+    // reg in unit of 100ns
+    return get64BitReg(START_FRAME_TIME_LSB_REG, START_FRAME_TIME_MSB_REG) *
+           100;
 }
 
 /* parameters - settings */

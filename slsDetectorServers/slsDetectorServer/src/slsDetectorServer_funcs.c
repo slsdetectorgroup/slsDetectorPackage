@@ -10902,8 +10902,20 @@ int set_pattern_wait_interval(int file_des) {
             uint64_t retval = 0;
             ret = validate_getPatternWaitClocksAndInterval(mess, loopLevel,
                                                            &retval, 0);
-            validate64(&ret, mess, (int64_t)timeval, retval,
-                       "set pattern wait interval", DEC);
+            if (ret == OK) { // is this not already validated ? why do this again here ?
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
+                int runclk = getFrequency(RUN_CLK);
+                int64_t toleranceNs = 3 * (1000000000 / runclk);
+                int64_t diff = (int64_t)timeval - (int64_t)retval;
+                if (diff < -toleranceNs || diff > toleranceNs) {
+                    validate64(&ret, mess, (int64_t)timeval, retval,
+                               "set pattern wait interval", DEC);
+                }
+#else
+                validate64(&ret, mess, (int64_t)timeval, retval,
+                           "set pattern wait interval", DEC);
+#endif
+            }
         }
     }
 

@@ -342,7 +342,23 @@ int validate_setPatternWaitClocksAndInterval(char *message, int level,
     char mode[128];
     memset(mode, 0, sizeof(mode));
     sprintf(mode, "set pattern Loop %d wait time", level);
-    validate64(&ret, message, waittime, retval, mode, DEC);
+
+    if (clocks) {
+        validate64(&ret, message, waittime, retval, mode, DEC);
+    } else {
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
+        int runclk = 0;
+        runclk = clkFrequency[RUN_CLK];
+
+        int64_t toleranceNs = 3 * (1000000000 / runclk);
+        int64_t diff = (int64_t)waittime - (int64_t)retval;
+        if (diff < -toleranceNs || diff > toleranceNs) {
+            validate64(&ret, message, waittime, retval, mode, DEC);
+        }
+#else
+        validate64(&ret, message, waittime, retval, mode, DEC);
+#endif
+    }
     return ret;
 }
 

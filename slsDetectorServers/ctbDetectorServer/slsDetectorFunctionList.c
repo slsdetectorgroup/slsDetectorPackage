@@ -1150,8 +1150,12 @@ int getNumTransceiverSamples() { return ntSamples; }
 
 int setExpTime(int64_t val) {
     setPatternWaitInterval(0, val);
+
+    // Tolerance: three clock periods in ns.
     int64_t retval = getExpTime();
-    if (val != retval) {
+    int64_t toleranceNs = 3 * (1000000000 / clkFrequency[RUN_CLK]);
+    int64_t diff = val - retval;
+    if (diff < -toleranceNs || diff > toleranceNs) {
         return FAIL;
     }
     return OK;
@@ -1171,7 +1175,9 @@ int setPeriod(int64_t val) {
     // validate for tolerance
     int64_t retval = getPeriod();
     val /= (NS_TO_CLK_CYCLE * clkFrequency[SYNC_CLK]);
-    if (val != retval) {
+    int64_t toleranceNs = 3 * (1000000000 / clkFrequency[SYNC_CLK]);
+    int64_t diff = val - retval;
+    if (diff < -toleranceNs || diff > toleranceNs) {
         return FAIL;
     }
     return OK;
@@ -1195,11 +1201,14 @@ int setDelayAfterTrigger(int64_t val) {
     // validate for tolerance
     int64_t retval = getDelayAfterTrigger();
     val /= (NS_TO_CLK_CYCLE * clkFrequency[SYNC_CLK]);
-    if (val != retval) {
+    int64_t toleranceNs = 3 * (1000000000 / clkFrequency[SYNC_CLK]);
+    int64_t diff = val - retval;
+    if (diff < -toleranceNs || diff > toleranceNs) {
         return FAIL;
     }
     return OK;
 }
+
 
 int64_t getDelayAfterTrigger() {
     return get64BitReg(DELAY_LSB_REG, DELAY_MSB_REG) /

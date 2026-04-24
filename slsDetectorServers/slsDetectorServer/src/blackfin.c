@@ -11,12 +11,13 @@
 #include <sys/mman.h> // mmap
 
 /* global variables */
+const uint64_t BFIN_CYCLES_1uSECOND = 20;
 u_int32_t *csp0base = 0;
+
 #define CSP0     0x20200000
 #define MEM_SIZE 0x100000
 
 #ifdef JUNGFRAUD
-
 extern void configureChip();
 #endif
 
@@ -131,3 +132,11 @@ int mapCSP0(void) {
 }
 
 uint32_t *Blackfin_getBaseAddress() { return csp0base; }
+
+// usleep is not viable on blackfin
+void usleep_bf(uint64_t i) {
+    uint64_t j = i * BFIN_CYCLES_1uSECOND;
+    while (--j) {
+        asm volatile("");
+    }
+}

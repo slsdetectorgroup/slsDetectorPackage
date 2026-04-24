@@ -6,8 +6,8 @@
 #include "sls/sls_detector_defs.h"
 #include <stdbool.h>
 
-#define GOODBYE (-200)
-#define REBOOT  (-400)
+#define GOODBYE                (-200)
+#define REBOOT                 (-400)
 #define BFIN_SPI_WAIT_uSECONDS 25
 
 // initialization functions

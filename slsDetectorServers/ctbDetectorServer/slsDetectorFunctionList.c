@@ -528,7 +528,7 @@ void setupDetector() {
         for (int i = 0; i != NDAC_ONLY; ++i)
             dacValues[i] = -1;
         for (int i = 0; i != NPWR; ++i)
-            powerValues[i] = -1;
+            powerValues[i] = 0; // to calculate vchip
     }
     vLimit = DEFAULT_VLIMIT;
     highvoltage = 0;
@@ -1484,6 +1484,23 @@ int setPowerDAC(enum powerIndex ind, int voltage, char *mess) {
     if (validatePower(ind, voltage, mess) == FAIL)
         return FAIL;
 
+    // to be values
+    bool pwrEnables[NPWR - 1] = {0};
+    int pwrValues[NPWR - 1] = {0};
+    if (getAllPowerValues(pwrEnables, pwrValues, mess) == FAIL)
+        return FAIL;
+    // update with current command
+    pwrValues[ind] = voltage;
+
+    // set vchip accordingly
+    {
+        int vchip = 0;
+        if (computeVchip(&vchip, pwrEnables, pwrValues, mess) == FAIL)
+            return FAIL;
+        if (setVchip(vchip, mess) == FAIL)
+            return FAIL;
+    }
+
     int dacval = -1;
     if (convertVoltageToPowerDAC(ind, voltage, &dacval, mess) == FAIL)
         return FAIL;
@@ -1573,20 +1590,33 @@ int setPowerEnabled(enum powerIndex indices[], int count, bool enable,
     {
         char *powerNames[] = {PWR_NAMES};
         char message[256] = {0};
-        sprintf(message, "Switching %s power for ", enable ? "on" : "off");
+        sprintf(message, "Switching %s power for [", enable ? "on" : "off");
         for (int i = 0; i != count; ++i) {
             strcat(message, powerNames[indices[i]]);
+            strcat(message, ", ");
         }
-        strcat(message, "\n");
+        strcat(message, "]\n");
         LOG(logINFO, ("%s", message));
     }
 
+    // to be values
+    bool pwrEnables[NPWR - 1] = {0};
+    int pwrValues[NPWR - 1] = {0};
+    if (getAllPowerValues(pwrEnables, pwrValues, mess) == FAIL)
+        return FAIL;
+    // update with current command
+    for (int i = 0; i != count; ++i) {
+        pwrEnables[indices[i]] = enable;
+    }
+
     // set vchip accordingly
-    int vchipToSet = 0;
-    if (getVchipToSet(&vchipToSet, mess) == FAIL)
-        return FAIL;
-    if (setVchip(vchipToSet, mess) == FAIL)
-        return FAIL;
+    {
+        int vchip = 0;
+        if (computeVchip(&vchip, pwrEnables, pwrValues, mess) == FAIL)
+            return FAIL;
+        if (setVchip(vchip, mess) == FAIL)
+            return FAIL;
+    }
 
     // enable/disable power rails
     uint32_t addr = POWER_REG;
@@ -1676,15 +1706,25 @@ int setVchip(int voltage, char *mess) {
     return OK;
 }
 
-int getVchipToSet(int *retval_vchip, char *mess) {
+int getAllPowerValues(bool *pwrEnables, int *pwrValues, char *mess) {
+    for (int ipwr = 0; ipwr != (NPWR - 1); ++ipwr) {
+        if (isPowerEnabled((enum powerIndex)ipwr, &pwrEnables[ipwr], mess) ==
+            FAIL)
+            return FAIL;
+        if (getPowerDAC((enum powerIndex)ipwr, &pwrValues[ipwr], mess) == FAIL)
+            return FAIL;
+    }
+    return OK;
+}
+
+int computeVchip(int *retval_vchip, bool *pwrEnables, int *pwrValues,
+                 char *mess) {
     // get the max of all the power regulators
     int max = 0;
-    enum powerIndex pwrDacs[] = {V_POWER_A, V_POWER_B, V_POWER_C, V_POWER_D,
-                                 V_POWER_IO};
     for (int ipwr = 0; ipwr != 5; ++ipwr) {
         int val = 0;
-        if (getPowerDAC(pwrDacs[ipwr], &val, mess) == FAIL)
-            return FAIL;
+        if (pwrEnables[ipwr])
+            val = pwrValues[ipwr];
         if (val > max)
             max = val;
     }

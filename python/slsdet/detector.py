@@ -10,6 +10,7 @@ runStatus = slsDetectorDefs.runStatus
 timingMode = slsDetectorDefs.timingMode
 speedLevel = slsDetectorDefs.speedLevel
 dacIndex = slsDetectorDefs.dacIndex
+powerIndex = slsDetectorDefs.powerIndex
 detectorType = slsDetectorDefs.detectorType
 streamingInterface = slsDetectorDefs.streamingInterface
 
@@ -516,13 +517,12 @@ class Detector(CppDetectorApi):
     @element
     def powerchip(self):
         """
-        [Jungfrau][Moench][Mythen3][Gotthard2][Xilinx Ctb][Ctb] Power the chip. 
+        [Jungfrau][Moench][Mythen3][Gotthard2] Power the chip. 
 
         Note
         ----
         [Jungfrau][Moench] Default is disabled. Get will return power status. Can be off if temperature event occured (temperature over temp_threshold with temp_control enabled. Will configure chip (only chip v1.1).\n
         [Mythen3][Gotthard2] Default is 1. If module not connected or wrong module, powerchip will fail.
-        [Xilinx Ctb] Default is 0. Also configures the chip if powered on.
         """
         return self.getPowerChip()
 
@@ -4107,7 +4107,7 @@ class Detector(CppDetectorApi):
               
         :setter: Not implemented
         """
-        return self.getMeasuredCurrent(dacIndex.I_POWER_A)
+        return self.getMeasuredCurrent(powerIndex.I_POWER_A)
 
     @property
     @element
@@ -4116,7 +4116,7 @@ class Detector(CppDetectorApi):
         
         :setter: Not implemented
         """
-        return self.getMeasuredCurrent(dacIndex.I_POWER_B)
+        return self.getMeasuredCurrent(powerIndex.I_POWER_B)
 
     @property
     @element
@@ -4125,7 +4125,7 @@ class Detector(CppDetectorApi):
                 
         :setter: Not implemented
         """
-        return self.getMeasuredCurrent(dacIndex.I_POWER_C)
+        return self.getMeasuredCurrent(powerIndex.I_POWER_C)
 
     @property
     @element
@@ -4134,7 +4134,7 @@ class Detector(CppDetectorApi):
                 
         :setter: Not implemented
         """
-        return self.getMeasuredCurrent(dacIndex.I_POWER_D)
+        return self.getMeasuredCurrent(powerIndex.I_POWER_D)
 
     @property
     @element
@@ -4143,7 +4143,7 @@ class Detector(CppDetectorApi):
                 
         :setter: Not implemented
         """
-        return self.getMeasuredCurrent(dacIndex.I_POWER_IO)
+        return self.getMeasuredCurrent(powerIndex.I_POWER_IO)
 
     @property
     def clkphase(self):

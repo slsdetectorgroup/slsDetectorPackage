@@ -31,20 +31,25 @@ PULL_SOCKET_PREFIX_FNAME = LOG_PREFIX_FNAME + '_pull_socket_'
 SYNCHRONIZER_SUFFIX_FNAME = LOG_PREFIX_FNAME + '_synchronizer.txt'
 
 
-def startFrameSynchronizerPullSocket(name, fp, quiet_mode=False):
+def startFrameSynchronizerPullSocket(name, fp, no_log_file = False, quiet_mode=False):
     cmd = ['python', '-u', 'frameSynchronizerPullSocket.py']  
     fname = PULL_SOCKET_PREFIX_FNAME + name + '.txt'
+    if no_log_file:
+        fname = None
     startProcessInBackground(cmd, fp, fname, quiet_mode)
     time.sleep(1)
-    checkLogForErrors(fp, fname)
+    if not no_log_file:
+        checkLogForErrors(fp, fname)
     
 
 
-def startFrameSynchronizer(num_mods, fp, quiet_mode=False):
+def startFrameSynchronizer(num_mods, fp, no_log_file = False, quiet_mode=False):
     cmd = [str(build_dir / 'slsFrameSynchronizer'), str(DEFAULT_TCP_RX_PORTNO), str(num_mods)]
     # in 10.0.0
     #cmd = ['slsFrameSynchronizer', '-p', str(DEFAULT_TCP_RX_PORTNO), '-n', str(num_mods)]
     fname = SYNCHRONIZER_SUFFIX_FNAME
+    if no_log_file:
+        fname = None
     startProcessInBackground(cmd, fp, fname, quiet_mode)
     time.sleep(1)
 
@@ -105,8 +110,8 @@ def startTestsForAll(args, fp):
             Log(LogLevel.INFOBLUE, f'Synchronizer Tests for {server}', fp, True)
             cleanup(fp)
             startDetectorVirtualServer(server, args.num_mods, fp, args.quiet)
-            startFrameSynchronizerPullSocket(server, fp, args.quiet)
-            startFrameSynchronizer(args.num_mods, f, args.quiet_modep)
+            startFrameSynchronizerPullSocket(server, fp, args.no_log_file, args.quiet)
+            startFrameSynchronizer(args.num_mods, fp, args.no_log_file, args.quiet)
             d = loadConfig(name=server, rx_hostname=args.rx_hostname, settingsdir=args.settingspath, log_file_fp=fp, num_mods=args.num_mods, num_frames=args.num_frames)
             loadBasicSettings(name=server, d=d, fp=fp)
             acquire(fp, d)

@@ -382,9 +382,9 @@ void setupDetector() {
     analogEnable = 0;
     digitalEnable = 0;
     transceiverEnable = 0;
-    for (int i = 0; i != NDAC; ++i)
+    for (int i = 0; i != NDAC_ONLY; ++i)
         dacValues[i] = -1;
-    for (int i = 0; i != 5; ++i)
+    for (int i = 0; i != NPWR - 1; ++i)
         powerValues[i] = -1;
     vLimit = DEFAULT_VLIMIT;
 
@@ -1170,11 +1170,12 @@ int setPowerEnabled(enum powerIndex indices[], int count, bool enable,
     {
         char *powerNames[] = {PWR_NAMES};
         char message[256] = {0};
-        sprintf(message, "Switching %s power for ", enable ? "on" : "off");
+        sprintf(message, "Switching %s power for [", enable ? "on" : "off");
         for (int i = 0; i != count; ++i) {
             strcat(message, powerNames[indices[i]]);
+            strcat(message, ", ");
         }
-        strcat(message, "\n");
+        strcat(message, "]\n");
         LOG(logINFO, ("%s", message));
     }
     // enable/disable power rails

@@ -109,7 +109,7 @@ ToString(From t) {
 }
 
 /** Convert frequency with specified output unit */
-template <typename T, typename Rep = double>
+template <typename T>
 typename std::enable_if<is_frequency<T>::value, std::string>::type
 ToString(T f, const std::string &unit) {
     double val = static_cast<double>(f.value);

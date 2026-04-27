@@ -16,7 +16,7 @@ def test_Hz():
 
 def test_rounding_exact():
     f = MHz(1.234)
-    assert f.value == round(1.234 * 1_000_000)
+    assert f.value == round(1_234_000)
 
 
 def test_mul():

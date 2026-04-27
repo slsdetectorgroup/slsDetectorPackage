@@ -6,7 +6,6 @@
 #include "sls/versionAPI.h"
 
 #include "ALTERA_PLL.h" // pll
-#include "INA226.h"     // i2c
 #include "LTC2620.h"    // dacs
 #include "MAX1932.h"    // hv
 #include "UDPPacketHeaderGenerator.h"
@@ -614,17 +613,6 @@ void setupDetector() {
             return;
     }
 
-    // I2C
-    INA226_ConfigureI2CCore(I2C_SHUNT_RESISTER_OHMS, I2C_CONTROL_REG,
-                            I2C_STATUS_REG, I2C_RX_DATA_FIFO_REG,
-                            I2C_RX_DATA_FIFO_LEVEL_REG, I2C_SCL_LOW_COUNT_REG,
-                            I2C_SCL_HIGH_COUNT_REG, I2C_SDA_HOLD_REG,
-                            I2C_TRANSFER_COMMAND_FIFO_REG);
-    INA226_CalibrateCurrentRegister(I2C_POWER_VIO_DEVICE_ID);
-    INA226_CalibrateCurrentRegister(I2C_POWER_VA_DEVICE_ID);
-    INA226_CalibrateCurrentRegister(I2C_POWER_VB_DEVICE_ID);
-    INA226_CalibrateCurrentRegister(I2C_POWER_VC_DEVICE_ID);
-    INA226_CalibrateCurrentRegister(I2C_POWER_VD_DEVICE_ID);
     initError = setVchip(VCHIP_MIN_MV, initErrorMessage);
     if (initError == FAIL)
         return;
@@ -1767,26 +1755,35 @@ int getPowerADC(enum powerIndex index, int *retval, char *mess) {
     enum ADCINDEX adcIndex = V_PWR_IO;
     switch (index) {
     case V_POWER_A:
-    case I_POWER_A:
         adcIndex = V_PWR_A;
         break;
     case V_POWER_B:
-    case I_POWER_B:
         adcIndex = V_PWR_B;
         break;
     case V_POWER_C:
-    case I_POWER_C:
         adcIndex = V_PWR_C;
         break;
     case V_POWER_D:
-    case I_POWER_D:
         adcIndex = V_PWR_D;
         break;
     case V_POWER_IO:
-    case I_POWER_IO:
         adcIndex = V_PWR_IO;
         break;
-
+    case I_POWER_A:
+        adcIndex = I_PWR_A;
+        break;
+    case I_POWER_B:
+        adcIndex = I_PWR_B;
+        break;
+    case I_POWER_C:
+        adcIndex = I_PWR_C;
+        break;
+    case I_POWER_D:
+        adcIndex = I_PWR_D;
+        break;
+    case I_POWER_IO:
+        adcIndex = I_PWR_IO;
+        break;
     default:
         sprintf(mess, "Could not get Power ADC. Invalid index %d\n", index);
         LOG(logERROR, (mess));
@@ -1796,17 +1793,7 @@ int getPowerADC(enum powerIndex index, int *retval, char *mess) {
 #ifdef VIRTUAL
     return 0;
 #endif
-    int deviceId = I2C_POWER_VIO_DEVICE_ID + (int)adcIndex;
-    // adc voltage
-    if (index < I_POWER_A) {
-        LOG(logDEBUG1, ("Reading I2C Voltage for device Id: %d\n", deviceId));
-        *retval = INA226_ReadVoltage(deviceId);
-        return OK;
-    }
-
-    // adc current
-    LOG(logDEBUG1, ("Reading I2C Current for device Id: %d\n", deviceId));
-    *retval = INA226_ReadCurrent(deviceId);
+    *retval = bus_r(POWER_MONITOR_BASE_REG + ((int)adcIndex << MEM_MAP_SHIFT));
     return OK;
 }
 

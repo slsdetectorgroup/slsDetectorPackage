@@ -1197,7 +1197,6 @@ int setDelayAfterTrigger(int64_t val) {
     return OK;
 }
 
-
 int64_t getDelayAfterTrigger() {
     return get64BitReg(DELAY_LSB_REG, DELAY_MSB_REG) /
            (NS_TO_CLK_CYCLE * clkFrequency[SYNC_CLK]);

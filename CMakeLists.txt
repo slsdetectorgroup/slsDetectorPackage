@@ -208,6 +208,7 @@ option(SLS_TUNE_LOCAL "tune to local machine" OFF)
 option(SLS_DEVEL_HEADERS "install headers for devel" OFF)
 option(SLS_USE_MOENCH "compile zmq and post processing for Moench" OFF)
 option(SLS_USE_JUNGFRAU "compile post processing for Jungfrau" OFF)
+option(SLS_INSTALL_VERSIONED_BINARIES "Add version number to binaries on install" OFF) #Needed for multi version RPM
 
 #Convenience option to switch off defaults when building Moench binaries only
 option(SLS_BUILD_ONLY_MOENCH "compile only Moench" OFF)
@@ -469,14 +470,14 @@ endif()
 
 #Packaging
 # Generic CPack metadata
-set(CPACK_PACKAGE_NAME "myapp")
-set(CPACK_PACKAGE_VENDOR "Example Corp")
+set(CPACK_PACKAGE_NAME "slsDetectorPackage")
+set(CPACK_PACKAGE_VENDOR "Paul Scherrer Institut")
 set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "My sample application")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "DAQ software for PSI developed detectors")
 
 # RPM-specific settings
 set(CPACK_GENERATOR "RPM")
-set(CPACK_RPM_PACKAGE_LICENSE "MIT")
+set(CPACK_RPM_PACKAGE_LICENSE "LGPL-3.0")
 set(CPACK_RPM_PACKAGE_GROUP "Applications/System")
 set(CPACK_RPM_PACKAGE_RELEASE 1)
 set(CPACK_RPM_PACKAGE_ARCHITECTURE "${CMAKE_SYSTEM_PROCESSOR}")

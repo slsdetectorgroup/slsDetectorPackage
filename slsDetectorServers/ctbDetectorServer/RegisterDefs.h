@@ -639,16 +639,8 @@
 #define SPI_WRITEDATA_REG (0x49 << MEM_MAP_SHIFT)
 #define SPI_READDATA_REG (0x4A << MEM_MAP_SHIFT)
 
-/** I2C Control register */
-#define I2C_TRANSFER_COMMAND_FIFO_REG (0x100 << MEM_MAP_SHIFT)
-#define I2C_RX_DATA_FIFO_REG          (0x101 << MEM_MAP_SHIFT)
-#define I2C_CONTROL_REG               (0x102 << MEM_MAP_SHIFT)
-#define I2C_STATUS_REG                (0x105 << MEM_MAP_SHIFT)
-#define I2C_RX_DATA_FIFO_LEVEL_REG    (0x107 << MEM_MAP_SHIFT)
-#define I2C_SCL_LOW_COUNT_REG         (0x108 << MEM_MAP_SHIFT)
-#define I2C_SCL_HIGH_COUNT_REG        (0x109 << MEM_MAP_SHIFT)
-#define I2C_SDA_HOLD_REG              (0x10A << MEM_MAP_SHIFT)
-// fixme: upto 0x10f
+/* Power monitor base register */
+#define POWER_MONITOR_BASE_REG (0x50 << MEM_MAP_SHIFT)
 
 /* Round Robin  */
 #define RXR_ENDPOINT_START_REG (0x1000 << MEM_MAP_SHIFT)

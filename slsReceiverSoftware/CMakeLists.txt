@@ -174,7 +174,7 @@ if (SLS_USE_RECEIVER_BINARIES)
         slsFrameSynchronizer
     )
     if(SLS_INSTALL_VERSIONED_BINARIES)
-    message(STATUS "Versioned binaries will be installed")
+        message(STATUS "Versioned binaries will be installed")
         foreach(target IN LISTS SLS_RECEIVER_BINARIES)
             install(PROGRAMS "$<TARGET_FILE:${target}>"
             DESTINATION ${CMAKE_INSTALL_BINDIR}

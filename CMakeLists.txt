@@ -480,6 +480,11 @@ set(CPACK_GENERATOR "RPM")
 set(CPACK_RPM_PACKAGE_LICENSE "LGPL-3.0")
 set(CPACK_RPM_PACKAGE_GROUP "Applications/System")
 set(CPACK_RPM_PACKAGE_RELEASE 1)
+# Adds %{?dist} to the RPM Release field
+set(CPACK_RPM_PACKAGE_RELEASE_DIST ON)
 set(CPACK_RPM_PACKAGE_ARCHITECTURE "${CMAKE_SYSTEM_PROCESSOR}")
 set(CPACK_RPM_COMPONENT_INSTALL ON)
+
+#control which RPMs are generated
+set(CPACK_COMPONENTS_ALL cli receiver zmq)
 include(CPack)

@@ -68,11 +68,11 @@ class AcquisitionTab(QtWidgets.QWidget):
         
         if self.det.type in [detectorType.CHIPTESTBOARD, detectorType.XILINX_CHIPTESTBOARD]:
             self.view.spinBoxRunF.editingFinished.connect(self.setRunFrequency)
-            self.view.comboBoxRunF.currentIndexChanged.connect(self.setRunFrequency)
+            self.view.comboBoxRunF.currentIndexChanged.connect(self.getRunFrequency)
             self.view.spinBoxADCF.editingFinished.connect(self.setADCFrequency)
-            self.view.comboBoxADCF.currentIndexChanged.connect(self.setADCFrequency)
+            self.view.comboBoxADCF.currentIndexChanged.connect(self.getADCFrequency)
             self.view.spinBoxDBITF.editingFinished.connect(self.setDBITFrequency)
-            self.view.comboBoxDBITF.currentIndexChanged.connect(self.setDBITFrequency)
+            self.view.comboBoxDBITF.currentIndexChanged.connect(self.getDBITFrequency)
         if self.det.type == detectorType.CHIPTESTBOARD:
             self.view.spinBoxADCPhase.editingFinished.connect(self.setADCPhase)
             self.view.spinBoxADCPipeline.editingFinished.connect(self.setADCPipeline)
@@ -193,24 +193,19 @@ class AcquisitionTab(QtWidgets.QWidget):
         self.getReadout()
 
 
-    def _getFrequency(self, det_attr, spinbox, combobox, setter):
+    def _getFrequency(self, det_attr, spinbox, spinSetter, combobox):
         spinbox.editingFinished.disconnect()
-        combobox.currentIndexChanged.disconnect()
         f = getattr(self.det, det_attr).value
+        unit = combobox.currentIndex()
 
-        if f < 1e3:
-            combobox.setCurrentIndex(2) #Hz
+        if unit == 2:   #Hz
             spinbox.setValue(f)
-        elif f < 1e6:
-            combobox.setCurrentIndex(1) #kHz
+        elif unit == 1:  #kHz
             spinbox.setValue(f / 1e3)
         else:
-            combobox.setCurrentIndex(0) #MHz
             spinbox.setValue(f / 1e6)
 
-        spinbox.editingFinished.connect(setter)
-        combobox.currentIndexChanged.connect(setter)
-
+        spinbox.editingFinished.connect(spinSetter)
     
     def _setFrequency(self, det_attr, spinbox, combobox, title, getter):
         value = spinbox.value()
@@ -229,9 +224,8 @@ class AcquisitionTab(QtWidgets.QWidget):
             QtWidgets.QMessageBox.warning(self.mainWindow, title + " Fail", str(e), QtWidgets.QMessageBox.Ok)   
         getter()
 
-
     def getRunFrequency(self):
-        self._getFrequency('runclk', self.view.spinBoxRunF, self.view.comboBoxRunF, self.setRunFrequency)
+        self._getFrequency('runclk', self.view.spinBoxRunF, self.setRunFrequency, self.view.comboBoxRunF)
 
     def setRunFrequency(self):
         self._setFrequency('runclk', self.view.spinBoxRunF, self.view.comboBoxRunF, "Run Frequency Fail", self.getRunFrequency)
@@ -286,7 +280,7 @@ class AcquisitionTab(QtWidgets.QWidget):
         self.getDigital()
 
     def getADCFrequency(self):
-        self._getFrequency('adcclk', self.view.spinBoxADCF, self.view.comboBoxADCF, self.setADCFrequency)
+        self._getFrequency('adcclk', self.view.spinBoxADCF, self.setADCFrequency, self.view.comboBoxADCF)
 
     def setADCFrequency(self):
         self._setFrequency('adcclk', self.view.spinBoxADCF, self.view.comboBoxADCF, "ADC Frequency Fail", self.getADCFrequency)
@@ -322,7 +316,7 @@ class AcquisitionTab(QtWidgets.QWidget):
         self.getADCPipeline()
 
     def getDBITFrequency(self):
-        self._getFrequency('dbitclk', self.view.spinBoxDBITF, self.view.comboBoxDBITF, self.setDBITFrequency)
+        self._getFrequency('dbitclk', self.view.spinBoxDBITF, self.setDBITFrequency, self.view.comboBoxDBITF)
 
     def setDBITFrequency(self):
         self._setFrequency('dbitclk', self.view.spinBoxDBITF, self.view.comboBoxDBITF, "DBit Frequency Fail", self.getDBITFrequency)

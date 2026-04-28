@@ -45,13 +45,13 @@
       </property>
       <property name="minimumSize">
        <size>
-        <width>90</width>
+        <width>120</width>
         <height>31</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>90</width>
+        <width>120</width>
         <height>31</height>
        </size>
       </property>
@@ -65,7 +65,7 @@
        <number>3</number>
       </property>
       <property name="maximum">
-       <double>10000.000000000000000</double>
+       <double>999999999.000000000000000</double>
       </property>
       <property name="singleStep">
        <double>1.000000000000000</double>
@@ -205,13 +205,13 @@
       </property>
       <property name="minimumSize">
        <size>
-        <width>125</width>
+        <width>185</width>
         <height>32</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>125</width>
+        <width>185</width>
         <height>32</height>
        </size>
       </property>
@@ -263,6 +263,12 @@
      <height>201</height>
     </rect>
    </property>
+   <property name="minimumSize">
+    <size>
+     <width>190</width>
+     <height>0</height>
+    </size>
+   </property>
    <property name="frameShape">
     <enum>QFrame::StyledPanel</enum>
    </property>
@@ -310,13 +316,13 @@
       </property>
       <property name="minimumSize">
        <size>
-        <width>90</width>
+        <width>120</width>
         <height>31</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>90</width>
+        <width>120</width>
         <height>31</height>
        </size>
       </property>
@@ -327,7 +333,7 @@
        <number>3</number>
       </property>
       <property name="maximum">
-       <double>10000.000000000000000</double>
+       <double>999999999.000000000000000</double>
       </property>
       <property name="singleStep">
        <double>1.000000000000000</double>
@@ -368,13 +374,13 @@
       </property>
       <property name="minimumSize">
        <size>
-        <width>90</width>
+        <width>120</width>
         <height>31</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>90</width>
+        <width>120</width>
         <height>31</height>
        </size>
       </property>
@@ -385,7 +391,7 @@
        <number>3</number>
       </property>
       <property name="maximum">
-       <double>10000.000000000000000</double>
+       <double>999999999.000000000000000</double>
       </property>
       <property name="singleStep">
        <double>1.000000000000000</double>
@@ -475,13 +481,13 @@
       </property>
       <property name="minimumSize">
        <size>
-        <width>155</width>
+        <width>185</width>
         <height>32</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>155</width>
+        <width>185</width>
         <height>32</height>
        </size>
       </property>
@@ -506,13 +512,13 @@
       </property>
       <property name="minimumSize">
        <size>
-        <width>155</width>
+        <width>185</width>
         <height>31</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>155</width>
+        <width>185</width>
         <height>31</height>
        </size>
       </property>
@@ -534,13 +540,13 @@
       </property>
       <property name="minimumSize">
        <size>
-        <width>155</width>
+        <width>185</width>
         <height>31</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>155</width>
+        <width>185</width>
         <height>31</height>
        </size>
       </property>
@@ -559,13 +565,13 @@
       </property>
       <property name="minimumSize">
        <size>
-        <width>155</width>
+        <width>185</width>
         <height>32</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>155</width>
+        <width>185</width>
         <height>32</height>
        </size>
       </property>
@@ -593,13 +599,13 @@
       </property>
       <property name="minimumSize">
        <size>
-        <width>155</width>
+        <width>185</width>
         <height>31</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>155</width>
+        <width>185</width>
         <height>31</height>
        </size>
       </property>
@@ -621,13 +627,13 @@
       </property>
       <property name="minimumSize">
        <size>
-        <width>155</width>
+        <width>185</width>
         <height>31</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>155</width>
+        <width>185</width>
         <height>31</height>
        </size>
       </property>

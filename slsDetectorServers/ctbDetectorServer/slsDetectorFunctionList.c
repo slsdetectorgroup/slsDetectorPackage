@@ -66,8 +66,7 @@ uint8_t adcEnableMask_10g = 0xFF;
 uint32_t transceiverMask = DEFAULT_TRANSCEIVER_MASK;
 
 int32_t clkPhase[NUM_CLOCKS] = {};
-uint32_t clkFrequency[NUM_CLOCKS] = {DEFAULT_RUN_CLK, DEFAULT_ADC_CLK,
-                                     DEFAULT_SYNC_CLK, DEFAULT_DBIT_CLK};
+uint32_t clkFrequency[NUM_CLOCKS] = {};
 int dacValues[NDAC_ONLY] = {};
 int powerValues[NPWR] = {}; // powerIndex (A->IO, Chip)
 

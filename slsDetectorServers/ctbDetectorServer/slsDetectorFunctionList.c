@@ -2218,7 +2218,7 @@ int getMaxPhase(enum CLKINDEX ind) {
               MAX_PHASE_SHIFTS_STEPS;
 
     char *clock_names[] = {CLK_NAMES};
-    LOG(logDEBUG1, ("Max Phase Shift (%s): %d (Clock: %d MHz, VCO:%d Hz)\n",
+    LOG(logDEBUG1, ("Max Phase Shift (%s): %d (Clock: %d Hz, VCO:%d Hz)\n",
                     clock_names[ind], ret, clkFrequency[ind], PLL_VCO_FREQ_HZ));
 
     return ret;
@@ -2260,7 +2260,7 @@ int setFrequency(enum CLKINDEX ind, int val) {
 
     // check adc clk too high
     if (ind == ADC_CLK && val > MAXIMUM_ADC_CLK) {
-        LOG(logERROR, ("Frequency %d MHz too high for ADC\n", val));
+        LOG(logERROR, ("Frequency %d Hz too high for ADC\n", val));
         return FAIL;
     }
 
@@ -2308,7 +2308,7 @@ int getFrequency(enum CLKINDEX ind) {
     // checking against 0 here ensures compatibility with old firmware, TODO:
     // remove this check at some point
     if (measuredFreqHz != 0) {
-        // Round to nearest MHz. (should we round at all ?)
+        // Round to nearest Hz. (should we round at all ?)
         clkFrequency[ind] = measuredFreqHz;
     }
 #endif

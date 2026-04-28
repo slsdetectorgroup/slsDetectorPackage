@@ -18,24 +18,18 @@
 #define CTRL_SRVR_INIT_TIME_US (2 * 1000 * 1000)
 
 /* Hardware Definitions */
-#define NCHAN                   (40)
-#define NCHAN_ANALOG            (32)
-#define NCHAN_DIGITAL           (64)
-#define NCHAN_TRANSCEIVER       (4)
-#define NBITS_PER_TRANSCEIVER   (64)
-#define NCHIP                   (1)
-#define NDAC                    (24)
-#define NPWR                    (6)
-#define NDAC_ONLY               (NDAC - NPWR)
-#define DYNAMIC_RANGE           (16)
-#define NUM_BYTES_PER_PIXEL     (DYNAMIC_RANGE / 8)
-#define CLK_FREQ                (156.25) // MHz
-#define I2C_POWER_VIO_DEVICE_ID (0x40)
-#define I2C_POWER_VA_DEVICE_ID  (0x41)
-#define I2C_POWER_VB_DEVICE_ID  (0x42)
-#define I2C_POWER_VC_DEVICE_ID  (0x43)
-#define I2C_POWER_VD_DEVICE_ID  (0x44)
-#define I2C_SHUNT_RESISTER_OHMS (0.005)
+#define NCHAN                 (40)
+#define NCHAN_ANALOG          (32)
+#define NCHAN_DIGITAL         (64)
+#define NCHAN_TRANSCEIVER     (4)
+#define NBITS_PER_TRANSCEIVER (64)
+#define NCHIP                 (1)
+#define NDAC                  (24)
+#define NPWR                  (6)
+#define NDAC_ONLY             (NDAC - NPWR)
+#define DYNAMIC_RANGE         (16)
+#define NUM_BYTES_PER_PIXEL   (DYNAMIC_RANGE / 8)
+#define CLK_FREQ              (156.25) // MHz
 
 /** Default Parameters */
 #define DEFAULT_DATA_BYTES            (NCHIP * NCHAN * NUM_BITS_PER_PIXEL)

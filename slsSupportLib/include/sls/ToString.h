@@ -109,42 +109,10 @@ ToString(From t) {
 }
 
 /** Convert frequency with specified output unit */
-template <typename T>
-typename std::enable_if<is_frequency<T>::value, std::string>::type
-ToString(T f, const std::string &unit) {
-    double val = static_cast<double>(f.value);
-
-    auto unitLower = [&] {
-        std::string result = unit;
-        std::transform(result.begin(), result.end(), result.begin(),
-                       [](unsigned char c) { return std::tolower(c); });
-        return result;
-    }();
-    std::ostringstream os;
-    if (unitLower == "hz")
-        os << val << unit;
-    else if (unitLower == "khz")
-        os << val / (static_cast<double>(1e3)) << unit;
-    else if (unitLower == "mhz")
-        os << val / (static_cast<double>(1e6)) << unit;
-    else
-        throw std::runtime_error("Unknown unit: " + unit);
-    return os.str();
-}
+std::string ToString(defs::Hz f, defs::FrequencyUnit unit);
 
 /** Convert frequency automatically selecting the unit */
-template <typename From>
-typename std::enable_if<is_frequency<From>::value, std::string>::type
-ToString(From f) {
-    int val = f.value;
-    if (val < 1e3) {
-        return ToString(f, "Hz");
-    } else if (val < 1e6) {
-        return ToString(f, "kHz");
-    } else {
-        return ToString(f, "MHz");
-    }
-}
+std::string ToString(defs::Hz f);
 
 /** Conversion of floating point values, removes trailing zeros*/
 template <typename T>
@@ -305,6 +273,22 @@ ToString(const T &vec) {
 template <typename T>
 typename std::enable_if<is_container<T>::value, std::string>::type
 ToString(const T &container, const std::string &unit) {
+    std::ostringstream os;
+    os << '[';
+    if (!container.empty()) {
+        auto it = container.cbegin();
+        os << ToString(*it++, unit);
+        while (it != container.cend())
+            os << ", " << ToString(*it++, unit);
+    }
+    os << ']';
+    return os.str();
+}
+
+/** Container and specified unit, call ToString(value, FrequencyUnit) */
+template <typename T>
+typename std::enable_if<is_container<T>::value, std::string>::type
+ToString(const T &container, defs::FrequencyUnit unit) {
     std::ostringstream os;
     os << '[';
     if (!container.empty()) {

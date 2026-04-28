@@ -219,6 +219,8 @@ class slsDetectorDefs {
         }
     };
 
+    enum class FrequencyUnit { Hz, kHz, MHz };
+
 #endif
     enum frameDiscardPolicy {
         NO_DISCARD,

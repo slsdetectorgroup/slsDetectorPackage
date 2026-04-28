@@ -80,9 +80,9 @@ TEST_CASE("conversion from frequency to string", "[support]") {
     REQUIRE(ToString(defs::Hz(150)) == "150Hz");
     REQUIRE(ToString(defs::Hz(1500)) == "1.5kHz");
     REQUIRE(ToString(defs::Hz(1500000)) == "1.5MHz");
-    REQUIRE(ToString(defs::Hz(150), "Hz") == "150Hz");
-    REQUIRE(ToString(defs::Hz(150), "kHz") == "0.15kHz");
-    REQUIRE(ToString(defs::Hz(150), "MHz") == "0.00015MHz");
+    REQUIRE(ToString(defs::Hz(150), defs::FrequencyUnit::Hz) == "150Hz");
+    REQUIRE(ToString(defs::Hz(150), defs::FrequencyUnit::kHz) == "0.15kHz");
+    REQUIRE(ToString(defs::Hz(150), defs::FrequencyUnit::MHz) == "0.00015MHz");
 }
 
 TEST_CASE("Convert vector of time", "[support]") {

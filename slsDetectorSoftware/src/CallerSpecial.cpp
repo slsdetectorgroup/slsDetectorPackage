@@ -11,6 +11,14 @@
 namespace sls {
 // some helper functions to print
 
+std::string Caller::OutString(const Result<defs::Hz> &value,
+                              const std::string &unit) {
+    auto u = parseFrequencyUnit(unit);
+    if (value.equal())
+        return ToString(value.front(), u);
+    return ToString(value, u);
+}
+
 std::vector<std::string> Caller::getAllCommands() {
     std::vector<std::string> ret;
     for (auto it : functions)
@@ -2103,6 +2111,23 @@ std::string Caller::powervalues(int action) {
         throw RuntimeError("Unknown action");
     }
     return os.str();
+}
+
+defs::FrequencyUnit Caller::parseFrequencyUnit(const std::string &unit) {
+    auto unitLower = [&] {
+        std::string result = unit;
+        std::transform(result.begin(), result.end(), result.begin(),
+                       [](unsigned char c) { return std::tolower(c); });
+        return result;
+    }();
+    if (unitLower == "hz")
+        return defs::FrequencyUnit::Hz;
+    if (unitLower == "khz")
+        return defs::FrequencyUnit::kHz;
+    if (unitLower == "mhz")
+        return defs::FrequencyUnit::MHz;
+
+    throw std::runtime_error("Unknown frequency unit: " + unit);
 }
 
 } // namespace sls

@@ -3306,10 +3306,6 @@ int set_pattern_wait_clocks(int file_des) {
         if (ret == OK) {
             ret = validate_getPatternWaitClocksAndInterval(mess, loopLevel,
                                                            &retval, 1);
-            if ((int64_t)timeval != GET_FLAG) {
-                validate64(&ret, mess, (int64_t)timeval, retval,
-                           "set pattern wait clocks", DEC);
-            }
         }
     }
 #endif
@@ -10898,26 +10894,6 @@ int set_pattern_wait_interval(int file_des) {
     if (Server_VerifyLock() == OK) {
         ret = validate_setPatternWaitClocksAndInterval(mess, loopLevel, timeval,
                                                        0);
-        if (ret == OK) {
-            uint64_t retval = 0;
-            ret = validate_getPatternWaitClocksAndInterval(mess, loopLevel,
-                                                           &retval, 0);
-            if (ret == OK) { // is this not already validated ? why do this
-                             // again here ?
-#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
-                int runclk = getFrequency(RUN_CLK);
-                int64_t toleranceNs = 3 * (1000000000 / runclk);
-                int64_t diff = (int64_t)timeval - (int64_t)retval;
-                if (diff < -toleranceNs || diff > toleranceNs) {
-                    validate64(&ret, mess, (int64_t)timeval, retval,
-                               "set pattern wait interval", DEC);
-                }
-#else
-                validate64(&ret, mess, (int64_t)timeval, retval,
-                           "set pattern wait interval", DEC);
-#endif
-            }
-        }
     }
 
 #endif

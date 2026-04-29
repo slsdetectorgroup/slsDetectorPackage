@@ -230,6 +230,20 @@ void validate64(int *ret, char *mess, int64_t arg, int64_t retval,
     }
 }
 
+void validate64_timer(int *ret, char *message, uint64_t arg, uint64_t retval,
+                      uint32_t clk_hz, char *modename) {
+    uint64_t arg_clks = ns_to_clocks(arg, clk_hz);
+    uint64_t retval_clks = ns_to_clocks(retval, clk_hz);
+    int64_t diff = (int64_t)retval_clks - (int64_t)arg_clks;
+    if (diff < 0) {
+        diff = -diff;
+    }
+    // tolerance = 1 clock
+    if (diff > 1) {
+        validate64(ret, message, arg, retval, modename, DEC);
+    }
+}
+
 int getModuleIdInFile(int *ret, char *mess, char *fileName) {
     const int fileNameSize = 128;
     char fname[fileNameSize];

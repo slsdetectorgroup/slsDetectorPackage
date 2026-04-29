@@ -1048,8 +1048,21 @@ TEST_CASE("runclk", "[.detectorintegration]") {
             caller.call("runclk", {}, -1, GET, oss);
             REQUIRE(oss.str() == "runclk 15.75MHz\n");
         }
+        // tolerance
+        auto prev_exptime = det.getExptime();
+        auto prev_period = det.getPeriod();
+        auto prev_delay = det.getDelayAfterTrigger();
+        {
+            caller.call("runclk", {"80", "MHz"}, -1, PUT);
+            REQUIRE_NOTHROW(caller.call("exptime", {"10012", "ns"}, -1, PUT));
+            REQUIRE_NOTHROW(caller.call("period", {"10012", "ns"}, -1, PUT));
+            REQUIRE_NOTHROW(caller.call("delay", {"10012", "ns"}, -1, PUT));
+        }
         for (int i = 0; i != det.size(); ++i) {
             det.setRUNClock(prev_val[i], {i});
+            det.setExptime(prev_exptime[i], {i});
+            det.setPeriod(prev_period[i], {i});
+            det.setDelayAfterTrigger(prev_delay[i], {i});
         }
     } else {
         // clock index might work

@@ -277,6 +277,14 @@ int validate_getPatternWaitClocksAndInterval(char *message, int level,
         *waittime = getPatternWaitClocks(level);
     } else {
         *waittime = getPatternWaitInterval(level);
+        if (*waittime == (uint64_t)-1) {
+            sprintf(
+                message,
+                "Cannot get pattern wait interval for level %d. runclk is 0.\n",
+                level);
+            LOG(logERROR, (message));
+            return FAIL;
+        }
     }
     return OK;
 }
@@ -297,7 +305,7 @@ uint64_t getPatternWaitClocks(int level) {
 
 uint64_t getPatternWaitInterval(int level) {
     uint64_t numClocks = getPatternWaitClocks(level);
-    int runclk = 0;
+    uint32_t runclk = 0;
 #if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
     runclk = clkFrequency[RUN_CLK];
 #elif MYTHEN3D
@@ -307,9 +315,7 @@ uint64_t getPatternWaitInterval(int level) {
         LOG(logERROR, ("runclk is 0. Cannot divide by 0. Returning -1.\n"));
         return -1;
     }
-    double conv = NS_TO_CLK_CYCLE * runclk;
-    uint64_t waitNs = (uint64_t)(numClocks / conv + 0.5);
-    return waitNs;
+    return clocks_to_ns(numClocks, runclk);
 }
 
 int validate_setPatternWaitClocksAndInterval(char *message, int level,
@@ -346,18 +352,18 @@ int validate_setPatternWaitClocksAndInterval(char *message, int level,
     if (clocks) {
         validate64(&ret, message, waittime, retval, mode, DEC);
     } else {
+        uint32_t runclk = 0;
 #if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
-        int runclk = 0;
         runclk = clkFrequency[RUN_CLK];
-
-        int64_t toleranceNs = 3 * (1000000000 / runclk);
-        int64_t diff = (int64_t)waittime - (int64_t)retval;
-        if (diff < -toleranceNs || diff > toleranceNs) {
-            validate64(&ret, message, waittime, retval, mode, DEC);
-        }
-#else
-        validate64(&ret, message, waittime, retval, mode, DEC);
+#elif MYTHEN3D
+        runclk = clkDivider[SYSTEM_C0];
 #endif
+        if (retval == (uint64_t)-1) {
+            sprintf(message, "runclk is 0. Cannot divide by 0 for patttern "
+                             "wait interval.\n");
+            return FAIL;
+        }
+        validate64_timer(&ret, message, waittime, retval, runclk, mode);
     }
     return ret;
 }
@@ -393,13 +399,13 @@ void setPatternWaitInterval(int level, uint64_t t) {
 #endif
         ("Setting Pattern Wait Time (level:%d) :%lld ns\n", level,
          (long long int)t));
-    int runclk = 0;
+    uint32_t runclk = 0;
 #if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
     runclk = clkFrequency[RUN_CLK];
 #elif MYTHEN3D
     runclk = clkDivider[SYSTEM_C0];
 #endif
-    uint64_t numClocks = (uint64_t)(t * (NS_TO_CLK_CYCLE * runclk) + 0.5);
+    uint64_t numClocks = ns_to_clocks(t, runclk);
     setPatternWaitClocks(level, numClocks);
 }
 

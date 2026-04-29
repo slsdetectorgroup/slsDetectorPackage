@@ -1137,12 +1137,8 @@ int getNumTransceiverSamples() { return ntSamples; }
 
 int setExpTime(int64_t val) {
     setPatternWaitInterval(0, val);
-
-    // Tolerance: three clock periods in ns.
     int64_t retval = getExpTime();
-    int64_t toleranceNs = 3 * (1000000000 / clkFrequency[RUN_CLK]);
-    int64_t diff = val - retval;
-    if (diff < -toleranceNs || diff > toleranceNs) {
+    if (retval != val) {
         return FAIL;
     }
     return OK;
@@ -1150,55 +1146,68 @@ int setExpTime(int64_t val) {
 
 int64_t getExpTime() { return getPatternWaitInterval(0); }
 
-int setPeriod(int64_t val) {
+int setPeriod(int64_t val, char *mess) {
     if (val < 0) {
-        LOG(logERROR, ("Invalid period: %lld ns\n", (long long int)val));
+        sprintf(mess, "Invalid period: %lld ns\n", (long long int)val);
+        LOG(logERROR, (mess));
         return FAIL;
     }
     LOG(logINFO, ("Setting period %lld ns\n", (long long int)val));
-    val *= (NS_TO_CLK_CYCLE * clkFrequency[SYNC_CLK]);
-    set64BitReg(val, PERIOD_LSB_REG, PERIOD_MSB_REG);
+    uint64_t numClocks = ns_to_clocks(val, clkFrequency[SYNC_CLK]);
+    set64BitReg(numClocks, PERIOD_LSB_REG, PERIOD_MSB_REG);
 
     // validate for tolerance
-    int64_t retval = getPeriod();
-    val /= (NS_TO_CLK_CYCLE * clkFrequency[SYNC_CLK]);
-    int64_t toleranceNs = 3 * (1000000000 / clkFrequency[SYNC_CLK]);
-    int64_t diff = val - retval;
-    if (diff < -toleranceNs || diff > toleranceNs) {
+    int64_t retval = 0;
+    int ret = getPeriod(&retval, mess);
+    if (ret == FAIL) {
         return FAIL;
     }
+    validate64_timer(&ret, mess, val, retval, clkFrequency[SYNC_CLK], "period");
+    return ret;
+}
+
+int getPeriod(int64_t *retval, char *mess) {
+    if (clkFrequency[SYNC_CLK] == 0) {
+        sprintf(mess, "Cannot get period. Sync clock frequency is 0.\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    uint64_t numClocks = get64BitReg(PERIOD_LSB_REG, PERIOD_MSB_REG);
+    *retval = clocks_to_ns(numClocks, clkFrequency[SYNC_CLK]);
     return OK;
 }
 
-int64_t getPeriod() {
-    return get64BitReg(PERIOD_LSB_REG, PERIOD_MSB_REG) /
-           (NS_TO_CLK_CYCLE * clkFrequency[SYNC_CLK]);
-}
-
-int setDelayAfterTrigger(int64_t val) {
+int setDelayAfterTrigger(int64_t val, char *mess) {
     if (val < 0) {
-        LOG(logERROR,
-            ("Invalid delay after trigger: %lld ns\n", (long long int)val));
+        sprintf(mess, "Invalid delay after trigger: %lld ns\n",
+                (long long int)val);
+        LOG(logERROR, (mess));
         return FAIL;
     }
     LOG(logINFO, ("Setting delay after trigger %lld ns\n", (long long int)val));
-    val *= (NS_TO_CLK_CYCLE * clkFrequency[SYNC_CLK]);
-    set64BitReg(val, DELAY_LSB_REG, DELAY_MSB_REG);
+    uint64_t numClocks = ns_to_clocks(val, clkFrequency[SYNC_CLK]);
+    set64BitReg(numClocks, DELAY_LSB_REG, DELAY_MSB_REG);
 
     // validate for tolerance
-    int64_t retval = getDelayAfterTrigger();
-    val /= (NS_TO_CLK_CYCLE * clkFrequency[SYNC_CLK]);
-    int64_t toleranceNs = 3 * (1000000000 / clkFrequency[SYNC_CLK]);
-    int64_t diff = val - retval;
-    if (diff < -toleranceNs || diff > toleranceNs) {
+    int64_t retval = 0;
+    int ret = getDelayAfterTrigger(&retval, mess);
+    if (ret == FAIL) {
         return FAIL;
     }
-    return OK;
+    validate64_timer(&ret, mess, val, retval, clkFrequency[SYNC_CLK],
+                     "delay after trigger");
+    return ret;
 }
 
-int64_t getDelayAfterTrigger() {
-    return get64BitReg(DELAY_LSB_REG, DELAY_MSB_REG) /
-           (NS_TO_CLK_CYCLE * clkFrequency[SYNC_CLK]);
+int getDelayAfterTrigger(int64_t *retval, char *mess) {
+    if (clkFrequency[SYNC_CLK] == 0) {
+        sprintf(mess, "Cannot get period. Sync clock frequency is 0.\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    uint64_t numClocks = get64BitReg(DELAY_LSB_REG, DELAY_MSB_REG);
+    *retval = clocks_to_ns(numClocks, clkFrequency[SYNC_CLK]);
+    return OK;
 }
 
 int64_t getNumFramesLeft() {

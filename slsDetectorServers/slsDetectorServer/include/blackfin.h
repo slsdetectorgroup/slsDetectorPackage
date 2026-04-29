@@ -22,9 +22,6 @@
 #define BFIN_AMC_ACCESS_EXTENSION_FNAME                                        \
     "/sys/kernel/debug/blackfin/ebiu_amc/EBIU_AMBCTL1"
 
-/** I2C defines */
-#define I2C_CLOCK_MHZ (131.25)
-
 /**
  * Write into a 16 bit register
  * @param offset address offset

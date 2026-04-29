@@ -43,6 +43,8 @@ class BaseMatterhornServer
 
     ReturnCode get_num_udp_interfaces(ServerInterface &socket) const;
 
+    ReturnCode get_run_status(ServerInterface &socket) const;
+
     /**
      * @brief call function corresponding to the function ID received from the
      * client and send back the result
@@ -108,6 +110,13 @@ ReturnCode
 BaseMatterhornServer<DerivedServer>::initial_checks(ServerInterface &socket) {
 
     return static_cast<DerivedServer *>(this)->initial_checks(socket);
+}
+
+template <typename DerivedServer>
+ReturnCode BaseMatterhornServer<DerivedServer>::get_run_status(
+    ServerInterface &socket) const {
+
+    return static_cast<const DerivedServer *>(this)->get_run_status(socket);
 }
 
 } // namespace sls

@@ -12,7 +12,8 @@ if(SLS_USE_SIMULATOR)
     target_include_directories(matterhornDetectorServer_virtual
         PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_SOURCE_DIR}/../../slsSupportLib/include
-        ${CMAKE_CURRENT_SOURCE_DIR}/../slsDetectorServer_cpp/include)
+        ${CMAKE_CURRENT_SOURCE_DIR}/../slsDetectorServer_cpp/include
+        ${CMAKE_SOURCE_DIR}/slsDetectorSoftware/src) # because of SharedMemory TODO: should be in slsSupportLib?
 
     target_link_libraries(matterhornDetectorServer_virtual
         PUBLIC 

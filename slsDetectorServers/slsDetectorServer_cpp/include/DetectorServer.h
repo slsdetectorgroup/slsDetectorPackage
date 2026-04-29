@@ -1,6 +1,6 @@
 #pragma once
+#include "SharedMemory.h"
 #include "TCPInterface.h"
-// #include "communication_funcs.h"
 #include "sls/logger.h"
 #include "sls/network_utils.h"
 #include "sls/sls_detector_defs.h"
@@ -26,6 +26,24 @@ struct UDPInfo {
 };
 
 using ReturnCode = slsDetectorDefs::ReturnCode;
+/// @brief Shared memory structure for stop server to store run status
+struct acquisitionStatus {
+
+    /* FIXED PATTERN FOR STATIC FUNCTIONS. DO NOT CHANGE, ONLY APPEND ------*/
+    int shmversion;
+
+    bool isValid{true}; // false if freed to block access from python or c++ api
+
+    std::atomic<slsDetectorDefs::runStatus> scanStatus{
+        slsDetectorDefs::runStatus::IDLE}; // idle, running or error
+    std::atomic<bool> scanStop{false};
+
+    // TODO: only neccessary for virtual, maybe have two shared memory
+    // structures, one for virtual
+    std::atomic<slsDetectorDefs::runStatus> status{
+        slsDetectorDefs::runStatus::IDLE};
+    std::atomic<bool> stop{false};
+};
 
 template <typename DerivedDetectorServer> class DetectorServer {
 
@@ -49,7 +67,14 @@ template <typename DerivedDetectorServer> class DetectorServer {
     /// @brief  TODO what is this?
     bool updateMode{true};
 
+    /// @brief
+    mutable SharedMemory<acquisitionStatus> shm{
+        0, 0}; // TODO: is mutable really neccessary?
+
   private:
+    /// @brief creates and maps shared memory
+    void createSharedMemory();
+
     ReturnCode processFunction(const detFuncs function_id,
                                ServerInterface &socket);
 
@@ -86,10 +111,13 @@ DetectorServer<DerivedDetectorServer>::DetectorServer(uint16_t port) {
     udpDetails[0].srcport = DEFAULT_UDP_SRC_PORTNO;
     udpDetails[0].dstport = DEFAULT_UDP_DST_PORTNO;
 
+    createSharedMemory();
+
     std::function<ReturnCode(const detFuncs &, ServerInterface &)> fn =
         [this](const detFuncs &function_id, ServerInterface &socket) {
             return this->processFunction(function_id, socket);
         };
+
     tcpInterface = std::make_unique<TCPInterface>(fn, port);
 }
 
@@ -131,6 +159,9 @@ ReturnCode DetectorServer<DerivedDetectorServer>::processFunction(
         return set_destination_udp_port(socket);
     case detFuncs::F_GET_DEST_UDP_PORT:
         return get_destination_udp_port(socket);
+    case detFuncs::F_GET_RUN_STATUS:
+        return static_cast<DerivedDetectorServer *>(this)->get_run_status(
+            socket);
 
     default:
         LOG(logDEBUG) << "Checking specific server functions for function ID: "
@@ -141,6 +172,19 @@ ReturnCode DetectorServer<DerivedDetectorServer>::processFunction(
     }
 
     return ReturnCode::FAIL;
+}
+
+template <typename DerivedDetectorServer>
+void DetectorServer<DerivedDetectorServer>::createSharedMemory() {
+
+    shm = SharedMemory<acquisitionStatus>(0, -1, "server");
+
+    if (shm.exists()) {
+        shm.openSharedMemory(true); // stop server TODO: should I verify size
+    } else {
+        LOG(logINFOBLUE) << "Creating shared memory for acquisition status";
+        shm.createSharedMemory();
+    }
 }
 
 template <typename DerivedDetectorServer>
@@ -166,7 +210,7 @@ ReturnCode DetectorServer<DerivedDetectorServer>::set_source_udp_mac(
 
     udpDetails[0].srcmac = newsrcudpMac;
     // TODO: configuremac, check unicast address
-    return ReturnCode::OK;
+    return static_cast<ReturnCode>(socket.Send(ReturnCode::OK));
 }
 
 template <typename DerivedDetectorServer>
@@ -178,6 +222,7 @@ ReturnCode DetectorServer<DerivedDetectorServer>::get_source_udp_mac(
 template <typename DerivedDetectorServer>
 ReturnCode DetectorServer<DerivedDetectorServer>::set_source_udp_ip(
     ServerInterface &socket) {
+
     uint32_t newSrcIp;
 
     try {
@@ -189,7 +234,7 @@ ReturnCode DetectorServer<DerivedDetectorServer>::set_source_udp_ip(
     }
 
     udpDetails[0].srcip = newSrcIp;
-    return ReturnCode::OK;
+    return static_cast<ReturnCode>(socket.Send(ReturnCode::OK));
 }
 
 template <typename DerivedDetectorServer>
@@ -213,7 +258,7 @@ ReturnCode DetectorServer<DerivedDetectorServer>::set_destination_udp_mac(
 
     udpDetails[0].dstmac = newDstMac;
     // TODO: configuremac, check unicast address
-    return ReturnCode::OK;
+    return static_cast<ReturnCode>(socket.Send(ReturnCode::OK));
 }
 
 template <typename DerivedDetectorServer>
@@ -236,7 +281,7 @@ ReturnCode DetectorServer<DerivedDetectorServer>::set_destination_udp_ip(
     }
 
     udpDetails[0].dstip = newDstIp;
-    return ReturnCode::OK;
+    return static_cast<ReturnCode>(socket.Send(ReturnCode::OK));
 }
 
 template <typename DerivedDetectorServer>
@@ -259,7 +304,7 @@ ReturnCode DetectorServer<DerivedDetectorServer>::set_destination_udp_port(
     }
 
     udpDetails[0].dstport = newDstPort;
-    return ReturnCode::OK;
+    return static_cast<ReturnCode>(socket.Send(ReturnCode::OK));
 }
 
 template <typename DerivedDetectorServer>

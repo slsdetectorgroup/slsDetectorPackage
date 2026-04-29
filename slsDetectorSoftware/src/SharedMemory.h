@@ -193,6 +193,8 @@ template <typename T> class SharedMemory {
         if (verifySize)
             checkSize(fd);
         shared_struct = mapSharedMemory(fd);
+
+        LOG(logINFO) << "Shared memory " << name << " opened";
     }
 
     void unmapSharedMemory() {

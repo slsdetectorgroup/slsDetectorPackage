@@ -363,7 +363,7 @@ void initStopServer() {
             return;
         }
 #ifdef VIRTUAL
-        sharedMemory_setStop(0);
+        setupDetector();
 #endif
     }
     initCheckDone = 1;
@@ -389,9 +389,13 @@ void setupDetector() {
     vLimit = DEFAULT_VLIMIT;
 
 #ifdef VIRTUAL
-    sharedMemory_setStatus(IDLE);
-    setupUDPCommParameters();
-    initializePatternWord();
+    if (isControlServer) {
+        sharedMemory_setStatus(IDLE);
+        setupUDPCommParameters();
+        initializePatternWord();
+    } else {
+        sharedMemory_setStop(0);
+    }
 #endif
     // initialization only at start up (restart fpga)
     initError = waitTransceiverReset(initErrorMessage);

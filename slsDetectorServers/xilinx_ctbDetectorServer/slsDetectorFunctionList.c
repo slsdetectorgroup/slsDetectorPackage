@@ -817,7 +817,7 @@ int setPeriod(int64_t val, char *mess) {
 }
 
 int getPeriod(int64_t *retval, char *mess) {
-    if (clkFrequency[SYNC_CLK] == 0) {
+    if (clkFrequency[RUN_CLK] == 0) {
         sprintf(mess, "Cannot get period. Run clock frequency is 0.\n");
         LOG(logERROR, (mess));
         return FAIL;

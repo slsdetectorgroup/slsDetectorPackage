@@ -11,7 +11,7 @@
 
 #ifdef MYTHEN3D
 extern enum TLogLevel trimmingPrint;
-extern uint32_t clkDivider[];
+extern int getFrequency(enum CLKINDEX ind);
 #endif
 #if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
 extern uint32_t clkFrequency[];
@@ -309,7 +309,7 @@ uint64_t getPatternWaitInterval(int level) {
 #if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
     runclk = clkFrequency[RUN_CLK];
 #elif MYTHEN3D
-    runclk = clkDivider[SYSTEM_C0];
+    runclk = getFrequency(SYSTEM_C0);
 #endif
     if (runclk == 0) {
         LOG(logERROR, ("runclk is 0. Cannot divide by 0. Returning -1.\n"));
@@ -356,7 +356,7 @@ int validate_setPatternWaitClocksAndInterval(char *message, int level,
 #if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
         runclk = clkFrequency[RUN_CLK];
 #elif MYTHEN3D
-        runclk = clkDivider[SYSTEM_C0];
+        runclk = getFrequency(SYSTEM_C0);
 #endif
         if (retval == (uint64_t)-1) {
             sprintf(message, "runclk is 0. Cannot divide by 0 for patttern "
@@ -403,7 +403,7 @@ void setPatternWaitInterval(int level, uint64_t t) {
 #if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
     runclk = clkFrequency[RUN_CLK];
 #elif MYTHEN3D
-    runclk = clkDivider[SYSTEM_C0];
+    runclk = getFrequency(SYSTEM_C0);
 #endif
     uint64_t numClocks = ns_to_clocks(t, runclk);
     setPatternWaitClocks(level, numClocks);

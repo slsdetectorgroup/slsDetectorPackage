@@ -1220,7 +1220,8 @@ int setDelayAfterTrigger(int64_t val, char *mess) {
 
 int getDelayAfterTrigger(int64_t *retval, char *mess) {
     if (clkFrequency[SYNC_CLK] == 0) {
-        sprintf(mess, "Cannot get period. Sync clock frequency is 0.\n");
+        sprintf(mess,
+                "Cannot get delay after trigger. Sync clock frequency is 0.\n");
         LOG(logERROR, (mess));
         return FAIL;
     }

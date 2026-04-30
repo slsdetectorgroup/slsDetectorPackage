@@ -2826,7 +2826,11 @@ int get_period_left(int file_des) {
     functionNotImplemented();
 #else
     // get only
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
+    ret = getPeriodLeft(&retval, mess);
+#else
     retval = getPeriodLeft();
+#endif
     LOG(logDEBUG1, ("retval period left %lld ns\n", (long long int)retval));
 #endif
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
@@ -2843,7 +2847,11 @@ int get_delay_after_trigger_left(int file_des) {
     functionNotImplemented();
 #else
     // get only
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
+    ret = getDelayAfterTriggerLeft(&retval, mess);
+#else
     retval = getDelayAfterTriggerLeft();
+#endif
     LOG(logDEBUG1,
         ("retval delay after trigger left %lld ns\n", (long long int)retval));
 #endif

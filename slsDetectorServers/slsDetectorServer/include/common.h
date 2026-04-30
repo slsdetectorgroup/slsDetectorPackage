@@ -2,6 +2,7 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #pragma once
 
+#include "clogger.h"
 #include "sls/md5.h"
 #include <stdint.h> // int64_t
 #include <stdio.h>
@@ -27,6 +28,10 @@ static inline uint64_t ns_to_clocks(uint64_t t, uint32_t freq_hz) {
     return (t * (uint64_t)freq_hz + HALF_NS_PER_SEC) / NS_PER_SEC;
 }
 static inline uint64_t clocks_to_ns(uint64_t clocks, uint32_t freq_hz) {
+    if (freq_hz == 0) {
+        LOG(logERROR, ("Frequency is 0, cannot convert clocks to ns\n"));
+        return (uint64_t)-1;
+    }
     return (clocks * (uint64_t)NS_PER_SEC + freq_hz / 2) / freq_hz;
 }
 

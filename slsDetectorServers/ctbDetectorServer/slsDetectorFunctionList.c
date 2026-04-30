@@ -1143,6 +1143,7 @@ int getNumTransceiverSamples() { return ntSamples; }
 
 int setExpTime(int64_t val, char *mess) {
     setPatternWaitInterval(0, val);
+
     // validate for tolerance
     int64_t retval = 0;
     if (getExpTime(&retval, mess) == FAIL) {
@@ -1236,14 +1237,27 @@ int64_t getNumTriggersLeft() {
     return get64BitReg(CYCLES_LEFT_LSB_REG, CYCLES_LEFT_MSB_REG);
 }
 
-int64_t getDelayAfterTriggerLeft() {
-    return get64BitReg(DELAY_LEFT_LSB_REG, DELAY_LEFT_MSB_REG) /
-           (NS_TO_CLK_CYCLE * clkFrequency[SYNC_CLK]);
+int getDelayAfterTriggerLeft(int64_t *retval, char *mess) {
+    if (clkFrequency[SYNC_CLK] == 0) {
+        sprintf(mess, "Cannot get delay after trigger left. Sync clock "
+                      "frequency is 0.\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    uint64_t numClocks = get64BitReg(DELAY_LEFT_LSB_REG, DELAY_LEFT_MSB_REG);
+    *retval = clocks_to_ns(numClocks, clkFrequency[SYNC_CLK]);
+    return OK;
 }
 
-int64_t getPeriodLeft() {
-    return get64BitReg(PERIOD_LEFT_LSB_REG, PERIOD_LEFT_MSB_REG) /
-           (NS_TO_CLK_CYCLE * clkFrequency[SYNC_CLK]);
+int getPeriodLeft(int64_t *retval, char *mess) {
+    if (clkFrequency[SYNC_CLK] == 0) {
+        sprintf(mess, "Cannot get period left. Sync clock frequency is 0.\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    uint64_t numClocks = get64BitReg(PERIOD_LEFT_LSB_REG, PERIOD_LEFT_MSB_REG);
+    *retval = clocks_to_ns(numClocks, clkFrequency[SYNC_CLK]);
+    return OK;
 }
 
 int64_t getFramesFromStart() {

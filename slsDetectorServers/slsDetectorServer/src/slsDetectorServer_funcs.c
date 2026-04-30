@@ -2494,7 +2494,11 @@ int get_period(int file_des) {
     int64_t retval = -1;
 
     // get only
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
+    ret = getPeriod(&retval, mess);
+#else
     retval = getPeriod();
+#endif
     LOG(logDEBUG1, ("retval period %lld ns\n", (long long int)retval));
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
@@ -2510,6 +2514,9 @@ int set_period(int file_des) {
 
     // only set
     if (Server_VerifyLock() == OK) {
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
+        ret = setPeriod(arg, mess);
+#else
         ret = setPeriod(arg);
         int64_t retval = getPeriod();
         LOG(logDEBUG1, ("retval period %lld ns\n", (long long int)retval));
@@ -2518,6 +2525,7 @@ int set_period(int file_des) {
                     (long long int)arg, (long long int)retval);
             LOG(logERROR, (mess));
         }
+#endif  
     }
     return Server_SendResult(file_des, INT64, NULL, 0);
 }
@@ -2533,7 +2541,11 @@ int get_delay_after_trigger(int file_des) {
     functionNotImplemented();
 #else
     // get only
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
+    ret = getDelayAfterTrigger(&retval, mess);
+#else
     retval = getDelayAfterTrigger();
+#endif
     LOG(logDEBUG1,
         ("retval delay after trigger %lld ns\n", (long long int)retval));
 #endif
@@ -2557,6 +2569,9 @@ int set_delay_after_trigger(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
+        ret = setDelayAfterTrigger(arg, mess);
+#else
         ret = setDelayAfterTrigger(arg);
         int64_t retval = getDelayAfterTrigger();
         LOG(logDEBUG1,
@@ -2568,6 +2583,7 @@ int set_delay_after_trigger(int file_des) {
                     (long long int)arg, (long long int)retval);
             LOG(logERROR, (mess));
         }
+#endif
     }
 #endif
     return Server_SendResult(file_des, INT64, NULL, 0);

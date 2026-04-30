@@ -1054,9 +1054,53 @@ TEST_CASE("runclk", "[.detectorintegration]") {
         auto prev_delay = det.getDelayAfterTrigger();
         {
             caller.call("runclk", {"80", "MHz"}, -1, PUT);
-            REQUIRE_NOTHROW(caller.call("exptime", {"10012", "ns"}, -1, PUT));
-            REQUIRE_NOTHROW(caller.call("period", {"10012", "ns"}, -1, PUT));
-            REQUIRE_NOTHROW(caller.call("delay", {"10012", "ns"}, -1, PUT));
+            {
+                std::ostringstream oss;
+                REQUIRE_NOTHROW(
+                    caller.call("exptime", {"10012", "ns"}, -1, PUT));
+                REQUIRE_NOTHROW(caller.call("exptime", {"ns"}, -1, GET, oss));
+                REQUIRE(oss.str() == "exptime 10013ns\n");
+            }
+            {
+                std::ostringstream oss;
+                REQUIRE_NOTHROW(
+                    caller.call("exptime", {"10013", "ns"}, -1, PUT));
+                REQUIRE_NOTHROW(caller.call("exptime", {"ns"}, -1, GET, oss));
+                REQUIRE(oss.str() == "exptime 10013ns\n");
+            }
+            {
+                std::ostringstream oss;
+                REQUIRE_NOTHROW(
+                    caller.call("exptime", {"10019", "ns"}, -1, PUT));
+                REQUIRE_NOTHROW(caller.call("exptime", {"ns"}, -1, GET, oss));
+                REQUIRE(oss.str() == "exptime 10025ns\n");
+            }
+            {
+                std::ostringstream oss;
+                REQUIRE_NOTHROW(
+                    caller.call("period", {"10125", "ns"}, -1, PUT));
+                REQUIRE_NOTHROW(caller.call("period", {"ns"}, -1, GET, oss));
+                REQUIRE(oss.str() == "period 10125ns\n");
+            }
+            {
+                std::ostringstream oss;
+                REQUIRE_NOTHROW(
+                    caller.call("period", {"10124", "ns"}, -1, PUT));
+                REQUIRE_NOTHROW(caller.call("period", {"ns"}, -1, GET, oss));
+                REQUIRE(oss.str() == "period 10125ns\n");
+            }
+            {
+                std::ostringstream oss;
+                REQUIRE_NOTHROW(caller.call("delay", {"10125", "ns"}, -1, PUT));
+                REQUIRE_NOTHROW(caller.call("delay", {"ns"}, -1, GET, oss));
+                REQUIRE(oss.str() == "delay 10125ns\n");
+            }
+            {
+                std::ostringstream oss;
+                REQUIRE_NOTHROW(caller.call("delay", {"10124", "ns"}, -1, PUT));
+                REQUIRE_NOTHROW(caller.call("delay", {"ns"}, -1, GET, oss));
+                REQUIRE(oss.str() == "delay 10125ns\n");
+            }
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setRUNClock(prev_val[i], {i});

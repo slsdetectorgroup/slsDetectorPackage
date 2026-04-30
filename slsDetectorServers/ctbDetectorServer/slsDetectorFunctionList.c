@@ -633,10 +633,16 @@ void setupDetector() {
         DEFAULT_NUM_SAMPLES); // update databytes and allocate ram
     setNumTransceiverSamples(DEFAULT_NUM_SAMPLES);
     setNumFrames(DEFAULT_NUM_FRAMES);
-    setExpTime(DEFAULT_EXPTIME);
+    initError = setExpTime(DEFAULT_EXPTIME, initErrorMessage);
+    if (initError == FAIL)
+        return;
     setNumTriggers(DEFAULT_NUM_CYCLES);
-    setPeriod(DEFAULT_PERIOD);
-    setDelayAfterTrigger(DEFAULT_DELAY);
+    initError = setPeriod(DEFAULT_PERIOD, initErrorMessage);
+    if (initError == FAIL)
+        return;
+    initError = setDelayAfterTrigger(DEFAULT_DELAY, initErrorMessage);
+    if (initError == FAIL)
+        return;
     setTiming(DEFAULT_TIMING_MODE);
     setADCEnableMask(BIT32_MSK);
     setADCEnableMask_10G(BIT32_MSK);
@@ -1135,16 +1141,28 @@ int setNumTransceiverSamples(int val) {
 
 int getNumTransceiverSamples() { return ntSamples; }
 
-int setExpTime(int64_t val) {
+int setExpTime(int64_t val, char *mess) {
     setPatternWaitInterval(0, val);
-    int64_t retval = getExpTime();
-    if (retval != val) {
+    // validate for tolerance
+    int64_t retval = 0;
+    if (getExpTime(&retval, mess) == FAIL) {
+        return FAIL;
+    }
+    int ret = OK;
+    validate64_timer(&ret, mess, val, retval, clkFrequency[RUN_CLK],
+                     "exposure time");
+    return ret;
+}
+
+int getExpTime(int64_t *retval, char *mess) {
+    *retval = getPatternWaitInterval(0);
+    if (*retval == -1) {
+        sprintf(mess, "Failed to get exposure time.\n");
+        LOG(logERROR, (mess));
         return FAIL;
     }
     return OK;
 }
-
-int64_t getExpTime() { return getPatternWaitInterval(0); }
 
 int setPeriod(int64_t val, char *mess) {
     if (val < 0) {
@@ -2533,10 +2551,21 @@ void *start_timer(void *arg) {
         return NULL;
     }
 
-    int64_t periodNs = getPeriod();
+    int64_t periodNs = 0;
+    int64_t expUs = 0;
+    {
+        char mess[MAX_STR_LENGTH] = {0};
+        if (getPeriod(&periodNs, mess) == FAIL) {
+            LOG(logERROR, ("Failed to get period.\n"));
+            return NULL;
+        }
+        if (getExpTime(&expUs, mess) == FAIL) {
+            LOG(logERROR, ("Failed to get exposure time.\n"));
+            return NULL;
+        }
+        expUs /= 1000;
+    }
     int numFrames = (getNumFrames() * getNumTriggers());
-    int64_t expUs = getExpTime() / 1000;
-
     int imageSize = dataBytes;
     int dataSize = UDP_PACKET_DATA_BYTES;
     int packetSize = sizeof(sls_detector_header) + dataSize;

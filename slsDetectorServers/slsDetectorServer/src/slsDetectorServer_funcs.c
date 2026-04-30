@@ -2402,7 +2402,11 @@ int get_exptime(int file_des) {
                       "for this detector\n");
         LOG(logERROR, (mess));
     } else {
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
+        ret = getExpTime(&retval, mess);
+#else
         retval = getExpTime();
+#endif
         LOG(logDEBUG1, ("retval exptime %lld ns\n", (long long int)retval));
     }
 #endif
@@ -2472,6 +2476,9 @@ int set_exptime(int file_des) {
                     "for this detector\n");
             LOG(logERROR, (mess));
         } else {
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
+            ret = setExpTime(val, mess);
+#else
             ret = setExpTime(val);
             int64_t retval = getExpTime();
             LOG(logDEBUG1, ("retval exptime %lld ns\n", (long long int)retval));
@@ -2482,6 +2489,7 @@ int set_exptime(int file_des) {
                         (long long int)val, (long long int)retval);
                 LOG(logERROR, (mess));
             }
+#endif
         }
 #endif
     }
@@ -2525,7 +2533,7 @@ int set_period(int file_des) {
                     (long long int)arg, (long long int)retval);
             LOG(logERROR, (mess));
         }
-#endif  
+#endif
     }
     return Server_SendResult(file_des, INT64, NULL, 0);
 }
@@ -7045,6 +7053,11 @@ int get_receiver_parameters(int file_des) {
         // exptime
 #ifdef MYTHEN3D
     i64 = 0;
+#elif defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
+    if (getExpTime(&i64, mess) == FAIL) {
+        sprintf(mess, "Could not get exposure time.\n");
+        return sendError(file_des);
+    }
 #else
     i64 = getExpTime();
 #endif
@@ -7053,7 +7066,15 @@ int get_receiver_parameters(int file_des) {
         return printSocketReadError();
 
     // period
+    i64 = 0;
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
+    if (getPeriod(&i64, mess) == FAIL) {
+        sprintf(mess, "Could not get period.\n");
+        return sendError(file_des);
+    }
+#else
     i64 = getPeriod();
+#endif
     n += sendData(file_des, &i64, sizeof(i64), INT64);
     if (n < 0)
         return printSocketReadError();

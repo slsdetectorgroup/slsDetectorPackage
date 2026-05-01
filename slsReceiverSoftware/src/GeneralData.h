@@ -468,6 +468,68 @@ class Mythen3Data : public GeneralData {
     };
 };
 
+class MatterhornData : public GeneralData {
+
+  public:
+    MatterhornData() {
+        detType = slsDetectorDefs::MATTERHORN;
+        headerSizeinPacket = sizeof(slsDetectorDefs::sls_detector_header);
+        framesPerFile = 10000; // TODO: dummy value
+        fifoDepth = 50000;     // TODO: dummy value
+        standardheader = true;
+        // udpSocketBufferSize = 0; // TODO: dummy value
+        dynamicRange = 16;    // default
+        tengigaEnable = true; // TODO: not sure
+        SetCounterMask(0xf);  // default all 4 counters enabled
+        UpdateImageSize();
+    };
+
+    void SetDynamicRange(int dr) {
+        dynamicRange = dr;
+        UpdateImageSize();
+    };
+
+    void SetCounterMask(const int mask) {
+        int n = __builtin_popcount(mask);
+        if (n < 1 || n > 4) {
+            throw RuntimeError("Invalid number of counters " +
+                               std::to_string(n) + ". Expected 1-4.");
+        }
+        counterMask = mask;
+        ncounters = n;
+        UpdateImageSize();
+    };
+
+  private:
+    void UpdateImageSize() {
+        nPixelsX = (nChannelsX * ncounters);
+        nPixelsY = (nChannelsY * ncounters);
+
+        imageSize = nPixelsX * nPixelsY * GetPixelDepth();
+        LOG(logINFO) << "imageSize: " << imageSize;
+        actualImageSize = imageSize;
+
+        // 10g
+        // TODO: dont know what to do here
+        /*
+        if (tengigaEnable) {
+        }
+        // 1g
+        else {
+        }
+        */
+
+        LOG(logINFO) << "Packets Per Frame: " << packetsPerFrame;
+        packetSize = headerSizeinPacket + dataSize;
+        LOG(logINFO) << "PacketSize: " << packetSize;
+    };
+
+  private:
+    int ncounters{0};
+    int nChannelsX{1024};
+    int nChannelsY{512};
+};
+
 class Gotthard2Data : public GeneralData {
   public:
     Gotthard2Data() {

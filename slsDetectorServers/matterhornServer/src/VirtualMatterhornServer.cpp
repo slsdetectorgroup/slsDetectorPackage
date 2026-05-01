@@ -45,9 +45,4 @@ VirtualMatterhornServer::get_run_status(ServerInterface &socket) const {
     return static_cast<ReturnCode>(socket.sendResult(status));
 }
 
-size_t VirtualMatterhornServer::get_frames() const {
-    // TODO: dummy implementation for now
-    return 0;
-}
-
 } // namespace sls

@@ -450,6 +450,7 @@ void ClientInterface::setDetectorType(detectorType arg) {
     case MOENCH:
     case MYTHEN3:
     case GOTTHARD2:
+    case MATTERHORN:
         break;
     default:
         throw RuntimeError("Unknown detector type: " + std::to_string(arg));

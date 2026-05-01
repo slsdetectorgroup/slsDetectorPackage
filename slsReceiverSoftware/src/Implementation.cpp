@@ -118,6 +118,7 @@ void Implementation::setDetectorType(const detectorType d) {
     case XILINX_CHIPTESTBOARD:
     case MYTHEN3:
     case GOTTHARD2:
+    case MATTERHORN:
         LOG(logINFO) << " ***** " << ToString(d) << " Receiver *****";
         break;
     default:
@@ -150,6 +151,9 @@ void Implementation::setDetectorType(const detectorType d) {
         break;
     case GOTTHARD2:
         generalData = new Gotthard2Data();
+        break;
+    case MATTERHORN:
+        generalData = new MatterhornData();
         break;
     default:
         break;

@@ -41,6 +41,10 @@ struct IpCoreRegisterBlock<IPCore, MemoryModel> {
         return memoryblocks_;
     }
 
+    const std::map<IPCore, MemoryModel> &operator()() const {
+        return memoryblocks_;
+    }
+
   private:
     std::map<IPCore, MemoryModel> memoryblocks_;
 };

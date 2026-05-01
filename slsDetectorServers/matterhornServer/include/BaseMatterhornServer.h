@@ -53,6 +53,10 @@ class BaseMatterhornServer
 
     ReturnCode get_receiver_parameters(ServerInterface &socket) const;
 
+    ReturnCode get_num_frames(ServerInterface &socket) const;
+
+    uint64_t get_frames() const;
+
     /**
      * @brief call function corresponding to the function ID received from the
      * client and send back the result
@@ -150,7 +154,7 @@ ReturnCode BaseMatterhornServer<DerivedServer>::get_receiver_parameters(
 
     rx_params.udp_dstmac = this->udpDetails[0].dstmac;
 
-    rx_params.frames = static_cast<const DerivedServer *>(this)->get_frames();
+    rx_params.frames = get_frames();
 
     // rx_params.triggers = 0;
 
@@ -168,9 +172,17 @@ ReturnCode BaseMatterhornServer<DerivedServer>::get_receiver_parameters(
 }
 
 template <typename DerivedServer>
-int64_t BaseMatterhornServer<DerivedServer>::getNumFrames() const {
-    // bus_r(Reg::MH_SM_Frames_Reg);
-    return 0; // TODO: implement
+ReturnCode BaseMatterhornServer<DerivedServer>::get_num_frames(
+    ServerInterface &socket) const {
+
+    uint64_t num_frames = get_frames();
+    return static_cast<ReturnCode>(socket.sendResult(num_frames));
+}
+
+template <typename DerivedServer>
+uint64_t BaseMatterhornServer<DerivedServer>::get_frames() const {
+    return static_cast<uint64_t>(
+        busCommunication.readRegister(Reg::MH_SM_Frames_Reg));
 }
 
 } // namespace sls

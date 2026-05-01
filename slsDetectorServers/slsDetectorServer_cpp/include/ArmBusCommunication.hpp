@@ -17,6 +17,10 @@ namespace sls {
 template <typename IPCoreEnumType, typename MemoryModel>
 struct IpCoreRegisterBlock {
 
+    const std::map<IPCoreEnumType, MemoryModel> &operator()() const {
+        return memoryblocks_;
+    }
+
     std::map<IPCoreEnumType, MemoryModel> &operator()() {
         return memoryblocks_;
     }
@@ -40,10 +44,10 @@ class BusCommunication {
     /// @brief stores register blocks for each IP core
     IpCoreRegisterBlock<IPCoreEnumType, MemoryModel> ipcoreregisterblocks;
 
-    void bus_w(const uint32_t offset, const uint32_t baseadress,
+    void bus_w(const uint32_t offset, IPCoreEnumType baseadress,
                const uint32_t data) const;
 
-    uint32_t bus_r(const uint32_t offset, const uint32_t baseadress) const;
+    uint32_t bus_r(const uint32_t offset, IPCoreEnumType baseadress) const;
 };
 
 template <typename IPCoreEnumType, typename MemoryModel>
@@ -57,30 +61,28 @@ void BusCommunication<IPCoreEnumType, MemoryModel>::mapToMemory() {
 template <typename IPCoreEnumType, typename MemoryModel>
 uint32_t BusCommunication<IPCoreEnumType, MemoryModel>::readRegister(
     const Register &register_) const {
-    return bus_r(register_.offset_in_bytes,
-                 static_cast<uint32_t>(register_.ip_core));
+    return bus_r(register_.offset_in_bytes, register_.ip_core);
 }
 
 template <typename IPCoreEnumType, typename MemoryModel>
 void BusCommunication<IPCoreEnumType, MemoryModel>::writeRegister(
     const Register &register_, const uint32_t data) const {
-    bus_w(register_.offset_in_bytes, static_cast<uint32_t>(register_.ip_core),
-          data);
+    bus_w(register_.offset_in_bytes, register_.ip_core, data);
 }
 
 template <typename IPCoreEnumType, typename MemoryModel>
 uint32_t BusCommunication<IPCoreEnumType, MemoryModel>::bus_r(
-    const uint32_t offset, const uint32_t baseadress) const {
-    auto ptr1 = ipcoreregisterblocks()[baseadress].getMappedMemoryPtr() +
+    const uint32_t offset, const IPCoreEnumType baseadress) const {
+    auto ptr1 = ipcoreregisterblocks().at(baseadress).getMappedMemoryPtr() +
                 offset / (sizeof(uint32_t));
     return *ptr1;
 }
 
 template <typename IPCoreEnumType, typename MemoryModel>
 void BusCommunication<IPCoreEnumType, MemoryModel>::bus_w(
-    const uint32_t offset, const uint32_t baseadress,
+    const uint32_t offset, const IPCoreEnumType baseadress,
     const uint32_t data) const {
-    auto ptr1 = ipcoreregisterblocks()[baseadress].getMappedMemoryPtr() +
+    auto ptr1 = ipcoreregisterblocks().at(baseadress).getMappedMemoryPtr() +
                 offset / (sizeof(uint32_t));
     *ptr1 = data;
 }

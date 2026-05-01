@@ -1,7 +1,10 @@
 #pragma once
+#include "ArmBusCommunication.hpp"
 #include "DetectorServer.h"
+#include "MemoryModel.hpp"
+#include "RegisterDefs.hpp"
+#include "SpecializedTemplates.h"
 #include "TCPInterface.h"
-// #include "communication_funcs.h"
 #include "fmt/format.h"
 #include "sls/logger.h"
 #include "sls/network_utils.h"
@@ -15,6 +18,9 @@
 #include <unordered_map>
 
 namespace sls {
+
+class VirtualMatterhornServer; // forward declaration
+class MatterhornServer;        // forward declaration
 
 /// @brief Base class for Matterhorn Server, can be used to implement a virtual
 /// server for testing and actual server
@@ -45,6 +51,8 @@ class BaseMatterhornServer
 
     ReturnCode get_run_status(ServerInterface &socket) const;
 
+    ReturnCode get_receiver_parameters(ServerInterface &socket) const;
+
     /**
      * @brief call function corresponding to the function ID received from the
      * client and send back the result
@@ -54,8 +62,17 @@ class BaseMatterhornServer
     ReturnCode processFunction(const detFuncs function_id,
                                ServerInterface &socket);
 
+  protected:
+    using MemoryModel = std::conditional_t<
+        std::is_same_v<DerivedServer, VirtualMatterhornServer>,
+        VirtualMemoryModel, HardwareMemoryModel>;
+
+    BusCommunication<IPCore, MemoryModel> busCommunication{};
+
   private:
     static std::string getMatterhornServerVersion();
+
+    int64_t getNumFrames() const;
 
     static constexpr uint8_t numUDPInterfaces =
         1; // only one udp per module for now
@@ -117,6 +134,43 @@ ReturnCode BaseMatterhornServer<DerivedServer>::get_run_status(
     ServerInterface &socket) const {
 
     return static_cast<const DerivedServer *>(this)->get_run_status(socket);
+}
+
+template <typename DerivedServer>
+ReturnCode BaseMatterhornServer<DerivedServer>::get_receiver_parameters(
+    ServerInterface &socket) const {
+
+    slsDetectorDefs::rxParameters rx_params{};
+
+    rx_params.udpInterfaces = numUDPInterfaces;
+
+    rx_params.udp_dstip = this->udpDetails[0].dstip;
+
+    rx_params.udp_dstport = this->udpDetails[0].dstport;
+
+    rx_params.udp_dstmac = this->udpDetails[0].dstmac;
+
+    rx_params.frames = static_cast<const DerivedServer *>(this)->get_frames();
+
+    // rx_params.triggers = 0;
+
+    // rx_params.expTimeNs = 0;
+
+    // rx_params.periodNs = 0;
+
+    // rx_params.dynamicRange = 0;
+
+    // rx_params.timMode = AUTO_TIMING;
+
+    // rx_params.counterMask = 0;
+
+    return static_cast<ReturnCode>(socket.sendResult(rx_params));
+}
+
+template <typename DerivedServer>
+int64_t BaseMatterhornServer<DerivedServer>::getNumFrames() const {
+    // bus_r(Reg::MH_SM_Frames_Reg);
+    return 0; // TODO: implement
 }
 
 } // namespace sls

@@ -5,7 +5,8 @@ namespace sls {
 MatterhornServer::MatterhornServer(uint16_t port)
     : BaseMatterhornServer<MatterhornServer>(port) {
 
-    // TODO: when do i set the udp mac and ip ?
+    // map the IP core base addresses to memory
+    busCommunication.mapToMemory(); // TODO: should this happen in constructor?
 
     // should maybe be part of the constructor?
     tcpInterface->startTCPServer();

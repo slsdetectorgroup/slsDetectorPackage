@@ -1,6 +1,7 @@
 set(SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/TCPInterface.cpp 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/CommandLineOptions.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/MemoryModel.cpp
 )
 
 add_library(slsServerObject OBJECT

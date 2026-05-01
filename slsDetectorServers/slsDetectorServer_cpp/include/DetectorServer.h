@@ -67,7 +67,7 @@ template <typename DerivedDetectorServer> class DetectorServer {
     /// @brief  TODO what is this?
     bool updateMode{true};
 
-    /// @brief
+    /// @brief shared mempory with aquisition status
     mutable SharedMemory<acquisitionStatus> shm{
         0, 0}; // TODO: is mutable really neccessary?
 
@@ -162,7 +162,9 @@ ReturnCode DetectorServer<DerivedDetectorServer>::processFunction(
     case detFuncs::F_GET_RUN_STATUS:
         return static_cast<DerivedDetectorServer *>(this)->get_run_status(
             socket);
-
+    case detFuncs::F_GET_RECEIVER_PARAMETERS:
+        return static_cast<DerivedDetectorServer *>(this)
+            ->get_receiver_parameters(socket);
     default:
         LOG(logDEBUG) << "Checking specific server functions for function ID: "
                       << function_id;

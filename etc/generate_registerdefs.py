@@ -78,6 +78,7 @@ constexpr RegisterField ModuleIndex{
 """
 
 postpend = r""" 
+} // namespace Reg
 } // namespace sls
 // clang-format on
 """

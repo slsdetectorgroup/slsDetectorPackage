@@ -21,6 +21,8 @@ class VirtualMatterhornServer
     ReturnCode initial_checks(ServerInterface &socket);
 
     ReturnCode get_run_status(ServerInterface &socket) const;
+
+    size_t get_frames() const;
 };
 
 } // namespace sls

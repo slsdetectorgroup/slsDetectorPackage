@@ -8,6 +8,9 @@ VirtualMatterhornServer::VirtualMatterhornServer(uint16_t port)
 
     udpDetails[0].srcip = LOCALHOSTIP_INT;
 
+    // map the IP core base addresses to virtual memory
+    busCommunication.mapToMemory();
+
     // should maybe be part of the constructor?
     tcpInterface->startTCPServer();
 
@@ -40,6 +43,11 @@ VirtualMatterhornServer::get_run_status(ServerInterface &socket) const {
 
     LOG(logINFO) << fmt::format("Status: {}\n", ToString(status));
     return static_cast<ReturnCode>(socket.sendResult(status));
+}
+
+size_t VirtualMatterhornServer::get_frames() const {
+    // TODO: dummy implementation for now
+    return 0;
 }
 
 } // namespace sls

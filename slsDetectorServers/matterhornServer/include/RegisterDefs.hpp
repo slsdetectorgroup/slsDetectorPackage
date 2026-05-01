@@ -1,19 +1,24 @@
-
-// clang-format off
+#pragma once
 #include "RegisterHelperStructs.hpp"
 
 namespace sls {
 
 /// @brief Enum for IP cores, value are adresses
-constexpr enum class IPCore : uint32_t {
-    MH_RO_SM_AXI = 0, // dummy adresses for now
-    FHDR_AXI = 1,
-    AURORA_STATUS = 2,
-    AURORA_STATUS2 = 3,
+enum class IPCore : uint32_t {
+    MH_RO_SM_AXI = 0xB0010000,
+    FHDR_AXI = 0xB0011000,
+    AURORA_STATUS = 0xB0014000,
+    AURORA_STATUS2 = 0xB0015000,
     PACKETIZERREG = 4,
-    UNKNOWN = 5
+    UNKNOWN = 0x00000000 // dont know yet
 };
 
+constexpr size_t IPCORE_REGISTER_BLOCK_SIZE =
+    0x1000; // size of each IP core address space in bytes // TODO: maybe add in
+            // other file definitions
+
+// clang-format off
+namespace Reg {
 
 // Register definitions
 constexpr Register CTRL_Reg{IPCore::UNKNOWN, 0x0};
@@ -22,7 +27,7 @@ constexpr Register Status_Reg{IPCore::UNKNOWN, 0x4};
 
 constexpr Register FPGAVersionReg{IPCore::UNKNOWN, 0x8};
 
-constexpr Register FPGA_GIT_HEAD{IPCore::UNKNOWN, 0xc};
+constexpr Register FPGA_GIT_HEAD_Reg{IPCore::UNKNOWN, 0xc};
 
 constexpr Register FixedPatternReg{IPCore::UNKNOWN, 0x10};
 
@@ -116,7 +121,7 @@ constexpr RegisterField FPGADetType{
      FPGAVersionReg, 24, 0xff};
 
 constexpr RegisterField FPGA_GIT_HEAD{
-     FPGA_GIT_HEAD, 0, 0xffffffff};
+     FPGA_GIT_HEAD_Reg, 0, 0xffffffff};
 
 constexpr RegisterField FixedPattern{
      FixedPatternReg, 0, 0xffffffff};
@@ -235,6 +240,7 @@ constexpr RegisterField Coordy{
 constexpr RegisterField Coordz{
      PktCoordReg2, 0, 0xffff};
 
+} // namespace Reg
  
 } // namespace sls
 // clang-format on

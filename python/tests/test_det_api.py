@@ -637,7 +637,7 @@ def test_v_limit(session_simulator, request):
     Log(LogLevel.INFOGREEN, f"✅ {request.node.name} passed")
 
 
-
+@pytest.mark.detectorintegration
 def test_v_abcd(session_simulator, request):
     """Test v_a, v_b, v_c, v_d, v_io are deprecated comands."""
     det_type, num_interfaces, num_mods, d = session_simulator

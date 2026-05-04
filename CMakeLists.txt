@@ -486,6 +486,11 @@ set(CPACK_RPM_PACKAGE_RELEASE_DIST ON)
 set(CPACK_RPM_PACKAGE_ARCHITECTURE "${CMAKE_SYSTEM_PROCESSOR}")
 set(CPACK_RPM_COMPONENT_INSTALL ON)
 
+
+set(CPACK_RPM_GUI_PACKAGE_REQUIRES
+    "qt5-qtbase, qt5-qtbase-gui"
+)
+
 #control which RPMs are generated
-set(CPACK_COMPONENTS_ALL cli receiver zmq)
+set(CPACK_COMPONENTS_ALL cli receiver zmq gui)
 include(CPack)

@@ -966,6 +966,10 @@ void Detector::startReceiver() { pimpl->Parallel(&Module::startReceiver, {}); }
 
 void Detector::stopReceiver() { pimpl->Parallel(&Module::stopReceiver, {}); }
 
+void Detector::restreamStop() {
+    pimpl->Parallel(&Module::restreamStopFromReceiver, {});
+}
+
 void Detector::startDetector(Positions pos) {
     pimpl->startAcquisition(false, pos);
 }

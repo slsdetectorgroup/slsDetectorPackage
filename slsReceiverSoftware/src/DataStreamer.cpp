@@ -168,6 +168,24 @@ int DataStreamer::SendDummyHeader() {
     zmqHeader zHeader;
     zHeader.data = false;
     zHeader.jsonversion = SLS_DETECTOR_JSON_HEADER_VERSION;
+
+    // parameters coming from the receiver software
+    zHeader.fname = fileNametoStream;
+    zHeader.dynamicRange = generalData->dynamicRange;
+    zHeader.fileIndex = fileIndex;
+    zHeader.ndetx = numPorts.x;
+    zHeader.ndety = numPorts.y;
+    zHeader.flipRows = static_cast<int>(flipRows);
+    zHeader.quad = quadEnable;
+
+    // update local copy only if it was updated (to prevent locking each time)
+    if (isAdditionalJsonUpdated) {
+        std::lock_guard<std::mutex> lock(additionalJsonMutex);
+        localAdditionalJsonHeader = additionalJsonHeader;
+        isAdditionalJsonUpdated = false;
+    }
+    zHeader.addJsonHeader = localAdditionalJsonHeader;
+    zHeader.rx_roi = portRoi.getIntArray();
     return zmqSocket->SendHeader(index, zHeader);
 }
 
@@ -177,24 +195,19 @@ int DataStreamer::SendDataHeader(sls_detector_header header, uint32_t size,
     zHeader.data = true;
     zHeader.jsonversion = SLS_DETECTOR_JSON_HEADER_VERSION;
 
+    // parameter coming from the detector
     uint64_t frameIndex = header.frameNumber - firstIndex;
     uint64_t acquisitionIndex = header.frameNumber;
 
-    zHeader.dynamicRange = generalData->dynamicRange;
-    zHeader.fileIndex = fileIndex;
-    zHeader.ndetx = numPorts.x;
-    zHeader.ndety = numPorts.y;
-    zHeader.npixelsx = nx;
-    zHeader.npixelsy = ny;
-    zHeader.imageSize = size;
-    zHeader.acqIndex = acquisitionIndex;
     zHeader.frameIndex = frameIndex;
+    zHeader.acqIndex = acquisitionIndex;
+    zHeader.frameNumber = header.frameNumber;
     zHeader.progress =
         100 * ((double)(frameIndex + 1) / (double)(nTotalFrames));
-    zHeader.fname = fileNametoStream;
-    zHeader.frameNumber = header.frameNumber;
     zHeader.expLength = header.expLength;
     zHeader.packetNumber = header.packetNumber;
+    zHeader.completeImage =
+        (header.packetNumber < generalData->packetsPerFrame ? false : true);
     zHeader.detSpec1 = header.detSpec1;
     zHeader.timestamp = header.timestamp;
     zHeader.modId = header.modId;
@@ -205,10 +218,18 @@ int DataStreamer::SendDataHeader(sls_detector_header header, uint32_t size,
     zHeader.detSpec4 = header.detSpec4;
     zHeader.detType = header.detType;
     zHeader.version = header.version;
+
+    // parameters coming from the receiver software
+    zHeader.fname = fileNametoStream;
+    zHeader.dynamicRange = generalData->dynamicRange;
+    zHeader.fileIndex = fileIndex;
+    zHeader.ndetx = numPorts.x;
+    zHeader.ndety = numPorts.y;
+    zHeader.npixelsx = nx;
+    zHeader.npixelsy = ny;
+    zHeader.imageSize = size;
     zHeader.flipRows = static_cast<int>(flipRows);
     zHeader.quad = quadEnable;
-    zHeader.completeImage =
-        (header.packetNumber < generalData->packetsPerFrame ? false : true);
 
     // update local copy only if it was updated (to prevent locking each time)
     if (isAdditionalJsonUpdated) {

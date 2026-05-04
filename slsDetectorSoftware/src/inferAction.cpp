@@ -2869,6 +2869,18 @@ int InferAction::rx_realudpsocksize() {
     }
 }
 
+int InferAction::rx_restream_stop() {
+
+    if (args.size() == 0) {
+        return slsDetectorDefs::PUT_ACTION;
+    }
+
+    else {
+
+        throw RuntimeError("Could not infer action: Wrong number of arguments");
+    }
+}
+
 int InferAction::rx_roi() {
 
     throw RuntimeError("sls_detector is disabled for command: rx_roi. Use "

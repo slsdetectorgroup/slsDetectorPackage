@@ -8841,6 +8841,28 @@ rx_realudpsocksize:
     \ to kernel bookkeeping."
   infer_action: true
   template: true
+rx_restream_stop:
+  actions:
+    PUT:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: true
+        convert_det_id: true
+        function: restreamStop
+        input: []
+        input_types: []
+        output:
+        - '"successful"'
+        require_det_id: false
+        store_result_in_t: false
+  command_name: rx_restream_stop
+  function_alias: rx_restream_stop
+  help: "\n\tSends ZMQ dummy header. The detector related fields are not set, the\
+    \ receiver related fields are set."
+  infer_action: true
+  template: true
 rx_roi:
   actions:
     GET:

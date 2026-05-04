@@ -208,6 +208,7 @@ option(SLS_TUNE_LOCAL "tune to local machine" OFF)
 option(SLS_DEVEL_HEADERS "install headers for devel" OFF)
 option(SLS_USE_MOENCH "compile zmq and post processing for Moench" OFF)
 option(SLS_USE_JUNGFRAU "compile post processing for Jungfrau" OFF)
+option(SLS_INSTALL_VERSIONED_BINARIES "Add version number to binaries on install" OFF) #Needed for multi version RPM
 
 #Convenience option to switch off defaults when building Moench binaries only
 option(SLS_BUILD_ONLY_MOENCH "compile only Moench" OFF)
@@ -462,3 +463,32 @@ if(SLS_MASTER_PROJECT)
     set(PROJECT_LIBRARIES slsSupportShared slsDetectorShared slsReceiverShared)
     include(cmake/package_config.cmake)
 endif()
+
+
+
+#Packaging
+# Generic CPack metadata
+set(CPACK_PACKAGE_NAME "slsDetectorPackage")
+set(CPACK_PACKAGE_VENDOR "Paul Scherrer Institut")
+set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "DAQ software for PSI developed detectors")
+
+# RPM-specific settings
+set(CPACK_GENERATOR "RPM")
+set(CPACK_RPM_FILE_NAME "RPM-DEFAULT")
+set(CPACK_RPM_PACKAGE_LICENSE "LGPL-3.0")
+set(CPACK_RPM_PACKAGE_GROUP "Applications/System")
+set(CPACK_RPM_PACKAGE_RELEASE 1)
+# Adds %{?dist} to the RPM Release field
+set(CPACK_RPM_PACKAGE_RELEASE_DIST ON)
+set(CPACK_RPM_PACKAGE_ARCHITECTURE "${CMAKE_SYSTEM_PROCESSOR}")
+set(CPACK_RPM_COMPONENT_INSTALL ON)
+
+
+set(CPACK_RPM_GUI_PACKAGE_REQUIRES
+    "qt5-qtbase, qt5-qtbase-gui"
+)
+
+#control which RPMs are generated
+set(CPACK_COMPONENTS_ALL cli receiver zmq gui)
+include(CPack)

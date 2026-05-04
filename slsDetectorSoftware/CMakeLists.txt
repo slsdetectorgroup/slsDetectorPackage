@@ -108,8 +108,22 @@ if(SLS_USE_TEXTCLIENT)
         if((CMAKE_BUILD_TYPE STREQUAL "Release") AND SLS_LTO_AVAILABLE)
             set_property(TARGET ${val1} PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
         endif()
+
+        # Mainly for RPMs to enable side by side installations of different versions
+        if(SLS_INSTALL_VERSIONED_BINARIES)
+            install(PROGRAMS "$<TARGET_FILE:${val1}>"
+                DESTINATION bin
+                RENAME "$<TARGET_FILE_BASE_NAME:${val1}>-${PROJECT_VERSION}"
+                COMPONENT cli
+            )
+        else()
+             install(TARGETS ${val1}
+                DESTINATION bin
+                COMPONENT cli
+            )
+        endif()
     endforeach()
-    install(TARGETS ${det_bin_names} DESTINATION bin)
+    
 
 
 endif(SLS_USE_TEXTCLIENT)

@@ -167,13 +167,31 @@ if (SLS_USE_RECEIVER_BINARIES)
         target_link_libraries(slsFrameSynchronizer PRIVATE "$<BUILD_INTERFACE:libzmq-static>")
     endif()
 
-    install(TARGETS slsReceiver slsMultiReceiver slsFrameSynchronizer
-        EXPORT "${TARGETS_EXPORT_NAME}"
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sls
+    # Receiver binaries
+    set(SLS_RECEIVER_BINARIES
+        slsReceiver
+        slsMultiReceiver
+        slsFrameSynchronizer
     )
+    if(SLS_INSTALL_VERSIONED_BINARIES)
+        message(STATUS "Versioned binaries will be installed")
+        foreach(target IN LISTS SLS_RECEIVER_BINARIES)
+            install(PROGRAMS "$<TARGET_FILE:${target}>"
+            DESTINATION ${CMAKE_INSTALL_BINDIR}
+            RENAME "$<TARGET_FILE_BASE_NAME:${target}>-${PROJECT_VERSION}"
+            COMPONENT receiver
+            )
+        endforeach()
+    else()
+        install(TARGETS ${SLS_RECEIVER_BINARIES}
+            EXPORT "${TARGETS_EXPORT_NAME}"
+            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+            COMPONENT receiver
+        )
+    endif()
+
+
+
 
 endif(SLS_USE_RECEIVER_BINARIES)
 

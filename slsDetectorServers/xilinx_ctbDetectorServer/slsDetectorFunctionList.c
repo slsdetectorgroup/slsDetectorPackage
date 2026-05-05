@@ -818,7 +818,7 @@ int setPeriod(int64_t val, char *mess) {
         return FAIL;
     }
     LOG(logINFO, ("Setting period %lld ns\n", (long long int)val));
-    uint64_t arg_clocks = ns_to_clocks(val, clkFrequency[SYNC_CLK]);
+    uint64_t arg_clocks = ns_to_clocks(val, clkFrequency[RUN_CLK]);
     setU64BitReg(arg_clocks, PERIOD_IN_REG_1, PERIOD_IN_REG_2);
 
     // validate
@@ -864,7 +864,7 @@ int setDelayAfterTrigger(int64_t val, char *mess) {
         return FAIL;
     }
     LOG(logINFO, ("Setting delay after trigger %lld ns\n", (long long int)val));
-    uint64_t arg_clocks = ns_to_clocks(val, clkFrequency[SYNC_CLK]);
+    uint64_t arg_clocks = ns_to_clocks(val, clkFrequency[RUN_CLK]);
     setU64BitReg(arg_clocks, DELAY_IN_REG_1, DELAY_IN_REG_2);
 
     // validate

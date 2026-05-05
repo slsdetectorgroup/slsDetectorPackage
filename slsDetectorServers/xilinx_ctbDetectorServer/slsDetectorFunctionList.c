@@ -779,15 +779,26 @@ int getNumTransceiverSamples() {
 int setExpTime(int64_t val, char *mess) {
     setPatternWaitInterval(0, val);
 
-    // validate for tolerance
-    int64_t retval = 0;
-    if (getExpTime(&retval, mess) == FAIL) {
+    // validate
+    uint64_t arg_clocks = ns_to_clocks(val, clkFrequency[RUN_CLK]);
+    uint64_t retval_clocks = getPatternWaitClocks(0);
+    if (arg_clocks != retval_clocks) {
+        sprintf(mess,
+                "Failed to set exposure time. Could not set number of clocks "
+                "to %lld, read %lld\n",
+                (long long int)arg_clocks, (long long int)retval_clocks);
+        LOG(logERROR, (mess));
         return FAIL;
     }
-    int ret = OK;
-    validate64_timer(&ret, mess, val, retval, clkFrequency[RUN_CLK],
-                     "exposure time");
-    return ret;
+
+    // log rounding if any
+    int64_t retval = getPatternWaitInterval(0);
+    if (val != retval) {
+        LOG(logWARNING, ("Rounding to %lld ns due to clock frequency\n",
+                         (long long int)retval));
+    }
+
+    return OK;
 }
 
 int getExpTime(int64_t *retval, char *mess) {
@@ -807,17 +818,31 @@ int setPeriod(int64_t val, char *mess) {
         return FAIL;
     }
     LOG(logINFO, ("Setting period %lld ns\n", (long long int)val));
-    uint64_t numClocks = ns_to_clocks(val, clkFrequency[RUN_CLK]);
-    setU64BitReg(numClocks, PERIOD_IN_REG_1, PERIOD_IN_REG_2);
+    uint64_t arg_clocks = ns_to_clocks(val, clkFrequency[SYNC_CLK]);
+    setU64BitReg(arg_clocks, PERIOD_IN_REG_1, PERIOD_IN_REG_2);
 
-    // validate for tolerance
-    int64_t retval = 0;
-    int ret = getPeriod(&retval, mess);
-    if (ret == FAIL) {
+    // validate
+    uint64_t retval_clocks = getU64BitReg(PERIOD_IN_REG_1, PERIOD_IN_REG_2);
+    if (arg_clocks != retval_clocks) {
+        sprintf(mess,
+                "Failed to set period. Could not set number of clocks "
+                "to %lld, red %lld\n",
+                (long long int)arg_clocks, (long long int)retval_clocks);
+        LOG(logERROR, (mess));
         return FAIL;
     }
-    validate64_timer(&ret, mess, val, retval, clkFrequency[RUN_CLK], "period");
-    return ret;
+
+    // log rounding if any
+    int64_t retval = 0;
+    if (getPeriod(&retval, mess) == FAIL) {
+        return FAIL;
+    }
+    if (val != retval) {
+        LOG(logWARNING, ("Rounding to %lld ns due to clock frequency\n",
+                         (long long int)retval));
+    }
+
+    return OK;
 }
 
 int getPeriod(int64_t *retval, char *mess) {
@@ -839,18 +864,32 @@ int setDelayAfterTrigger(int64_t val, char *mess) {
         return FAIL;
     }
     LOG(logINFO, ("Setting delay after trigger %lld ns\n", (long long int)val));
-    uint64_t numClocks = ns_to_clocks(val, clkFrequency[RUN_CLK]);
-    setU64BitReg(numClocks, DELAY_IN_REG_1, DELAY_IN_REG_2);
+    uint64_t arg_clocks = ns_to_clocks(val, clkFrequency[SYNC_CLK]);
+    setU64BitReg(arg_clocks, DELAY_IN_REG_1, DELAY_IN_REG_2);
 
-    // validate for tolerance
-    int64_t retval = 0;
-    int ret = getDelayAfterTrigger(&retval, mess);
-    if (ret == FAIL) {
+    // validate
+    uint64_t retval_clocks = getU64BitReg(DELAY_IN_REG_1, DELAY_IN_REG_2);
+    if (arg_clocks != retval_clocks) {
+        sprintf(
+            mess,
+            "Failed to set delay after trigger. Could not set number of clocks "
+            "to %lld, read %lld\n",
+            (long long int)arg_clocks, (long long int)retval_clocks);
+        LOG(logERROR, (mess));
         return FAIL;
     }
-    validate64_timer(&ret, mess, val, retval, clkFrequency[RUN_CLK],
-                     "delay after trigger");
-    return ret;
+
+    // log rounding if any
+    int64_t retval = 0;
+    if (getDelayAfterTrigger(&retval, mess) == FAIL) {
+        return FAIL;
+    }
+    if (val != retval) {
+        LOG(logWARNING, ("Rounding to %lld ns due to clock frequency\n",
+                         (long long int)retval));
+    }
+
+    return OK;
 }
 
 int getDelayAfterTrigger(int64_t *retval, char *mess) {

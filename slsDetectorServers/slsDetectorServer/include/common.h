@@ -62,9 +62,6 @@ void validate(int *ret, char *mess, int arg, int retval, char *modename,
 void validate64(int *ret, char *mess, int64_t arg, int64_t retval,
                 char *modename, enum numberMode nummode);
 
-void validate64_timer(int *ret, char *message, uint64_t arg, uint64_t retval,
-                      uint32_t runclk_hz, char *modename);
-
 int getModuleIdInFile(int *ret, char *mess, char *fileName);
 int verifyChecksumFromBuffer(char *mess, char *functionType,
                              char *clientChecksum, char *buffer, ssize_t bytes);

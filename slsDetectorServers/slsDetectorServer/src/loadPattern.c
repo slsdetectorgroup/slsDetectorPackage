@@ -329,43 +329,50 @@ int validate_setPatternWaitClocksAndInterval(char *message, int level,
         return FAIL;
     }
 
-    uint64_t retval = 0;
     if (clocks) {
         setPatternWaitClocks(level, waittime);
         // validate result
-        retval = getPatternWaitClocks(level);
+        uint64_t retval = getPatternWaitClocks(level);
         LOG(logDEBUG1, ("Pattern wait time in clocks (level:%d) retval: %d\n",
                         level, (long long int)retval));
-    } else {
-        setPatternWaitInterval(level, waittime);
-        // validate result
-        retval = getPatternWaitInterval(level);
-        LOG(logDEBUG1, ("Pattern wait time (level:%d) retval: %d\n", level,
-                        (long long int)retval));
-    }
 
-    int ret = OK;
-    char mode[128];
-    memset(mode, 0, sizeof(mode));
-    sprintf(mode, "set pattern Loop %d wait time", level);
-
-    if (clocks) {
+        int ret = OK;
+        char mode[128];
+        memset(mode, 0, sizeof(mode));
+        sprintf(mode, "set pattern Loop %d wait time (clocks)", level);
         validate64(&ret, message, waittime, retval, mode, DEC);
-    } else {
-        uint32_t runclk = 0;
-#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
-        runclk = clkFrequency[RUN_CLK];
-#elif MYTHEN3D
-        runclk = getFrequency(SYSTEM_C0);
-#endif
-        if (retval == (uint64_t)-1) {
-            sprintf(message, "runclk is 0. Cannot divide by 0 for patttern "
-                             "wait interval.\n");
-            return FAIL;
-        }
-        validate64_timer(&ret, message, waittime, retval, runclk, mode);
+        return ret;
     }
-    return ret;
+
+    // interval
+    setPatternWaitInterval(level, waittime);
+
+    // validate
+    uint32_t runclk = 0;
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
+    runclk = clkFrequency[RUN_CLK];
+#elif MYTHEN3D
+    runclk = getFrequency(SYSTEM_C0);
+#endif
+    uint64_t arg_clocks = ns_to_clocks(waittime, runclk);
+    uint64_t retval_clocks = getPatternWaitClocks(0);
+    if (arg_clocks != retval_clocks) {
+        sprintf(message,
+                "Failed to set exposure time. Could not set number of clocks "
+                "to %lld, read %lld\n",
+                (long long int)arg_clocks, (long long int)retval_clocks);
+        LOG(logERROR, (message));
+        return FAIL;
+    }
+
+    // log rounding if any
+    int64_t retval = getPatternWaitInterval(0);
+    if (waittime != retval) {
+        LOG(logWARNING, ("Rounding to %lld ns due to clock frequency\n",
+                         (long long int)retval));
+    }
+
+    return OK;
 }
 
 void setPatternWaitClocks(int level, uint64_t t) {

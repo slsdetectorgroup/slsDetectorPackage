@@ -355,18 +355,20 @@ int validate_setPatternWaitClocksAndInterval(char *message, int level,
     runclk = getFrequency(SYSTEM_C0);
 #endif
     uint64_t arg_clocks = ns_to_clocks(waittime, runclk);
-    uint64_t retval_clocks = getPatternWaitClocks(0);
+    uint64_t retval_clocks = getPatternWaitClocks(level);
     if (arg_clocks != retval_clocks) {
         sprintf(message,
-                "Failed to set exposure time. Could not set number of clocks "
+                "Failed to set pattern loop %d wait interval. Could not set "
+                "number of "
+                "clocks "
                 "to %lld, read %lld\n",
-                (long long int)arg_clocks, (long long int)retval_clocks);
+                level, (long long int)arg_clocks, (long long int)retval_clocks);
         LOG(logERROR, (message));
         return FAIL;
     }
 
     // log rounding if any
-    int64_t retval = getPatternWaitInterval(0);
+    uint64_t retval = getPatternWaitInterval(level);
     if (waittime != retval) {
         LOG(logWARNING, ("Rounding to %lld ns due to clock frequency\n",
                          (long long int)retval));

@@ -359,9 +359,7 @@ int validate_setPatternWaitClocksAndInterval(char *message, int level,
     if (arg_clocks != retval_clocks) {
         sprintf(message,
                 "Failed to set pattern loop %d wait interval. Could not set "
-                "number of "
-                "clocks "
-                "to %lld, read %lld\n",
+                "number of clocks to %lld, read %lld\n",
                 level, (long long int)arg_clocks, (long long int)retval_clocks);
         LOG(logERROR, (message));
         return FAIL;

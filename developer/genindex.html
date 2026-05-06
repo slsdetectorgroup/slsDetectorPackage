@@ -179,7 +179,7 @@
 </li>
       <li><a href="commandline.html#term-activate-0-1"><strong>activate [0, 1]</strong></a>
 </li>
-      <li><a href="commandline.html#term-adcclk-n_clk-in-MHz"><strong>adcclk [n_clk in MHz]</strong></a>
+      <li><a href="commandline.html#term-adcclk-n_clk-optional-unit-Hz-default-kHz-MHz"><strong>adcclk [n_clk] [(optional unit) Hz(default)|kHz|MHz]</strong></a>
 </li>
       <li><a href="commandline.html#term-adcenable-bitmask"><strong>adcenable [bitmask]</strong></a>
 </li>
@@ -289,7 +289,7 @@
 </li>
       <li><a href="commandline.html#term-datastream-left-right-0-1"><strong>datastream [left|right] [0, 1]</strong></a>
 </li>
-      <li><a href="commandline.html#term-dbitclk-n_clk-in-MHz"><strong>dbitclk [n_clk in MHz]</strong></a>
+      <li><a href="commandline.html#term-dbitclk-n_clk-optional-unit-Hz-default-kHz-MHz"><strong>dbitclk [n_clk] [(optional unit) Hz(default)|kHz|MHz]</strong></a>
 </li>
       <li><a href="commandline.html#term-dbitphase-n_value-optional-deg"><strong>dbitphase [n_value] [(optional)deg]</strong></a>
 </li>
@@ -669,7 +669,7 @@
 </li>
       <li><a href="commandline.html#term-row-value"><strong>row [value]</strong></a>
 </li>
-      <li><a href="commandline.html#term-runclk-n_clk-in-MHz"><strong>runclk [n_clk in MHz]</strong></a>
+      <li><a href="commandline.html#term-runclk-n_clk-optional-unit-Hz-default-kHz-MHz"><strong>runclk [n_clk] [(optional unit) Hz(default)|kHz|MHz]</strong></a>
 </li>
       <li><a href="commandline.html#term-runtime-optional-unit-ns-us-ms-s"><strong>runtime [(optional unit) ns|us|ms|s]</strong></a>
 </li>
@@ -1119,9 +1119,9 @@
 </li>
       <li><a href="detector.html#_CPPv4NK3sls8Detector15getPartialResetE9Positions">sls::Detector::getPartialReset (C++ function)</a>
 </li>
-      <li><a href="detector.html#_CPPv4NK3sls8Detector17getPatterFileNameE9Positions">sls::Detector::getPatterFileName (C++ function)</a>
-</li>
       <li><a href="detector.html#_CPPv4NK3sls8Detector17getPatternBitMaskE9Positions">sls::Detector::getPatternBitMask (C++ function)</a>
+</li>
+      <li><a href="detector.html#_CPPv4NK3sls8Detector18getPatternFileNameE9Positions">sls::Detector::getPatternFileName (C++ function)</a>
 </li>
       <li><a href="detector.html#_CPPv4NK3sls8Detector19getPatternIOControlE9Positions">sls::Detector::getPatternIOControl (C++ function)</a>
 </li>
@@ -1351,10 +1351,10 @@
 </li>
       <li><a href="detector.html#_CPPv4NK3sls8Detector14isPowerEnabledEN4defs10powerIndexE">sls::Detector::isPowerEnabled (C++ function)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="detector.html#_CPPv4NK3sls8Detector23isVirtualDetectorServerE9Positions">sls::Detector::isVirtualDetectorServer (C++ function)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="detector.html#_CPPv4N3sls8Detector10loadConfigERKNSt6stringE">sls::Detector::loadConfig (C++ function)</a>
 </li>
       <li><a href="detector.html#_CPPv4N3sls8Detector18loadDefaultPatternE9Positions">sls::Detector::loadDefaultPattern (C++ function)</a>
@@ -1405,7 +1405,7 @@
 </li>
       <li><a href="detector.html#_CPPv4N3sls8Detector9setActiveEKb9Positions">sls::Detector::setActive (C++ function)</a>
 </li>
-      <li><a href="detector.html#_CPPv4N3sls8Detector11setADCClockEi9Positions">sls::Detector::setADCClock (C++ function)</a>
+      <li><a href="detector.html#_CPPv4N3sls8Detector11setADCClockEN4defs2HzE9Positions">sls::Detector::setADCClock (C++ function)</a>
 </li>
       <li><a href="detector.html#_CPPv4N3sls8Detector19setADCConfigurationEKiKiKi9Positions">sls::Detector::setADCConfiguration (C++ function)</a>
 </li>
@@ -1481,7 +1481,7 @@
 </li>
       <li><a href="detector.html#_CPPv4N3sls8Detector13setDataStreamEKN4defs12portPositionEKb9Positions">sls::Detector::setDataStream (C++ function)</a>
 </li>
-      <li><a href="detector.html#_CPPv4N3sls8Detector12setDBITClockEi9Positions">sls::Detector::setDBITClock (C++ function)</a>
+      <li><a href="detector.html#_CPPv4N3sls8Detector12setDBITClockEN4defs2HzE9Positions">sls::Detector::setDBITClock (C++ function)</a>
 </li>
       <li><a href="detector.html#_CPPv4N3sls8Detector12setDBITPhaseEi9Positions">sls::Detector::setDBITPhase (C++ function)</a>
 </li>
@@ -1659,7 +1659,7 @@
 </li>
       <li><a href="detector.html#_CPPv4N3sls8Detector6setRowEKi9Positions">sls::Detector::setRow (C++ function)</a>
 </li>
-      <li><a href="detector.html#_CPPv4N3sls8Detector11setRUNClockEi9Positions">sls::Detector::setRUNClock (C++ function)</a>
+      <li><a href="detector.html#_CPPv4N3sls8Detector11setRUNClockEN4defs2HzE9Positions">sls::Detector::setRUNClock (C++ function)</a>
 </li>
       <li><a href="detector.html#_CPPv4N3sls8Detector11setRxArpingEb9Positions">sls::Detector::setRxArping (C++ function)</a>
 </li>
@@ -1843,6 +1843,10 @@
 </li>
       <li><a href="type_traits.html#_CPPv4IDpEN3sls18is_duration_helperE">sls::is_duration_helper (C++ struct)</a>
 </li>
+      <li><a href="type_traits.html#_CPPv4I0EN3sls12is_frequencyE">sls::is_frequency (C++ struct)</a>
+</li>
+      <li><a href="type_traits.html#_CPPv4IEN3sls12is_frequencyIN4defs2HzEEE">sls::is_frequency&lt;defs::Hz&gt; (C++ struct)</a>
+</li>
       <li><a href="type_traits.html#_CPPv4I00EN3sls18is_light_containerE">sls::is_light_container (C++ struct)</a>
 </li>
       <li><a href="type_traits.html#_CPPv4I0EN3sls18is_light_containerI1TNSt11conditionalIXL0EE19is_container_helperIN1T10value_typeEN1T9size_typeEN1T8iteratorEN1T14const_iteratorEDTcldtclNSt7declvalI1TEEE4sizeEEDTcldtclNSt7declvalI1TEEE5beginEEDTcldtclNSt7declvalI1TEEE3endEEEvE4typeEEE">sls::is_light_container&lt;T, typename std::conditional&lt;false, is_container_helper&lt;typename T::value_type, typename T::size_type, typename T::iterator, typename T::const_iterator, decltype(std::declval&lt;T&gt;().size()), decltype(std::declval&lt;T&gt;().begin()), decltype(std::declval&lt;T&gt;().end())&gt;, void&gt;::type&gt; (C++ struct)</a>
@@ -1927,11 +1931,11 @@
 </li>
       <li><a href="container_utils.html#_CPPv4I0EN3sls22stableRemoveDuplicatesENSt9enable_ifIN12is_containerI1TE5valueEbE4typeER1T">sls::stableRemoveDuplicates (C++ function)</a>
 </li>
-      <li><a href="ToString.html#_CPPv4I0EN3sls8StringToE1TRKNSt6stringE">sls::StringTo (C++ function)</a>, <a href="ToString.html#_CPPv4I0EN3sls8StringToE1TRKNSt6stringERKNSt6stringE">[1]</a>, <a href="ToString.html#_CPPv4I0EN3sls8StringToENSt6vectorI1TEERKNSt6vectorINSt6stringEEE">[2]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToE13RegisterValueRKNSt6stringE">[3]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToE15RegisterAddressRKNSt6stringE">[4]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToE7int64_tRKNSt6stringE">[5]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToE7uint8_tRKNSt6stringE">[6]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToE8uint16_tRKNSt6stringE">[7]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToE8uint32_tRKNSt6stringE">[8]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToE8uint64_tRKNSt6stringE">[9]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs10fileFormatERKNSt6stringE">[10]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs10powerIndexERKNSt6stringE">[11]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs10speedLevelERKNSt6stringE">[12]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs10timingModeERKNSt6stringE">[13]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs11M3_GainCapsERKNSt6stringE">[14]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs11readoutModeERKNSt6stringE">[15]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs12detectorTypeERKNSt6stringE">[16]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs12portPositionERKNSt6stringE">[17]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs13vetoAlgorithmERKNSt6stringE">[18]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs14collectionModeERKNSt6stringE">[19]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs16detectorSettingsERKNSt6stringE">[20]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs16timingSourceTypeERKNSt6stringE">[21]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs17timingInfoDecoderERKNSt6stringE">[22]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs18externalSignalFlagERKNSt6stringE">[23]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs18frameDiscardPolicyERKNSt6stringE">[24]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs18streamingInterfaceERKNSt6stringE">[25]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs8dacIndexERKNSt6stringE">[26]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs8gainModeERKNSt6stringE">[27]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs8polarityERKNSt6stringE">[28]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs9burstModeERKNSt6stringE">[29]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEbRKNSt6stringE">[30]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEiRKNSt6stringE">[31]</a>
+      <li><a href="ToString.html#_CPPv4I0EN3sls8StringToE1TRKNSt6stringE">sls::StringTo (C++ function)</a>, <a href="ToString.html#_CPPv4I0EN3sls8StringToENSt6vectorI1TEERKNSt6vectorINSt6stringEEE">[1]</a>, <a href="ToString.html#_CPPv4I0_NSt11enable_if_tIN3sls11is_durationI1TE5valueEiEEEN3sls8StringToE1TRKNSt6stringERKNSt6stringE">[2]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToE13RegisterValueRKNSt6stringE">[3]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToE15RegisterAddressRKNSt6stringE">[4]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToE7int64_tRKNSt6stringE">[5]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToE7uint8_tRKNSt6stringE">[6]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToE8uint16_tRKNSt6stringE">[7]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToE8uint32_tRKNSt6stringE">[8]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToE8uint64_tRKNSt6stringE">[9]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs10fileFormatERKNSt6stringE">[10]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs10powerIndexERKNSt6stringE">[11]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs10speedLevelERKNSt6stringE">[12]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs10timingModeERKNSt6stringE">[13]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs11M3_GainCapsERKNSt6stringE">[14]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs11readoutModeERKNSt6stringE">[15]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs12detectorTypeERKNSt6stringE">[16]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs12portPositionERKNSt6stringE">[17]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs13vetoAlgorithmERKNSt6stringE">[18]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs14collectionModeERKNSt6stringE">[19]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs16detectorSettingsERKNSt6stringE">[20]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs16timingSourceTypeERKNSt6stringE">[21]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs17timingInfoDecoderERKNSt6stringE">[22]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs18externalSignalFlagERKNSt6stringE">[23]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs18frameDiscardPolicyERKNSt6stringE">[24]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs18streamingInterfaceERKNSt6stringE">[25]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs8dacIndexERKNSt6stringE">[26]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs8gainModeERKNSt6stringE">[27]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs8polarityERKNSt6stringE">[28]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEN4defs9burstModeERKNSt6stringE">[29]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEbRKNSt6stringE">[30]</a>, <a href="ToString.html#_CPPv4IEN3sls8StringToEiRKNSt6stringE">[31]</a>
 </li>
       <li><a href="container_utils.html#_CPPv4I0EN3sls3sumENSt9enable_ifINSt13is_arithmeticI1TE5valueE1TE4typeERKNSt6vectorI1TEE">sls::sum (C++ function)</a>
 </li>
-      <li><a href="ToString.html#_CPPv4I00EN3sls8ToStringENSt6stringERKNSt3mapI7KeyType9ValueTypeEE">sls::ToString (C++ function)</a>, <a href="ToString.html#_CPPv4I00EN3sls8ToStringENSt9enable_ifIN11is_durationI1TE5valueENSt6stringEE4typeE1TRKNSt6stringE">[1]</a>, <a href="ToString.html#_CPPv4I0EN3sls8ToStringENSt9enable_ifIN11is_durationI4FromE5valueENSt6stringEE4typeE4From">[2]</a>, <a href="ToString.html#_CPPv4I0EN3sls8ToStringENSt9enable_ifIN12is_containerI1TE5valueENSt6stringEE4typeERK1TRKNSt6stringE">[3]</a>, <a href="ToString.html#_CPPv4I0EN3sls8ToStringENSt9enable_ifIN7has_strI1TE5valueENSt6stringEE4typeERK1T">[4]</a>, <a href="ToString.html#_CPPv4I0EN3sls8ToStringENSt9enable_ifINSt11is_integralI1TE5valueENSt6stringEE4typeERK1T">[5]</a>, <a href="ToString.html#_CPPv4I0EN3sls8ToStringENSt9enable_ifINSt17is_floating_pointI1TE5valueENSt6stringEE4typeERK1T">[6]</a>, <a href="ToString.html#_CPPv4I0EN3sls8ToStringENSt9enable_ifIXaaN12is_containerI1TE5valueENSt7is_sameIN9typenameT10value_typeENSt6stringEE5valueEENSt6stringEE4typeERK1T">[7]</a>, <a href="ToString.html#_CPPv4I0EN3sls8ToStringENSt9enable_ifIXaaN12is_containerI1TE5valueEntNSt7is_sameIN9typenameT10value_typeENSt6stringEE5valueEENSt6stringEE4typeERK1T">[8]</a>, <a href="ToString.html#_CPPv4I0_6size_tEN3sls8ToStringENSt6stringERA4size_K1T">[9]</a>
+      <li><a href="ToString.html#_CPPv4I00EN3sls8ToStringENSt6stringERKNSt3mapI7KeyType9ValueTypeEE">sls::ToString (C++ function)</a>, <a href="ToString.html#_CPPv4I00EN3sls8ToStringENSt9enable_ifIN11is_durationI1TE5valueENSt6stringEE4typeE1TRKNSt6stringE">[1]</a>, <a href="ToString.html#_CPPv4I0EN3sls8ToStringENSt9enable_ifIN11is_durationI4FromE5valueENSt6stringEE4typeE4From">[2]</a>, <a href="ToString.html#_CPPv4I0EN3sls8ToStringENSt9enable_ifIN12is_containerI1TE5valueENSt6stringEE4typeERK1TN4defs13FrequencyUnitE">[3]</a>, <a href="ToString.html#_CPPv4I0EN3sls8ToStringENSt9enable_ifIN12is_containerI1TE5valueENSt6stringEE4typeERK1TRKNSt6stringE">[4]</a>, <a href="ToString.html#_CPPv4I0EN3sls8ToStringENSt9enable_ifIN7has_strI1TE5valueENSt6stringEE4typeERK1T">[5]</a>, <a href="ToString.html#_CPPv4I0EN3sls8ToStringENSt9enable_ifINSt11is_integralI1TE5valueENSt6stringEE4typeERK1T">[6]</a>, <a href="ToString.html#_CPPv4I0EN3sls8ToStringENSt9enable_ifINSt17is_floating_pointI1TE5valueENSt6stringEE4typeERK1T">[7]</a>, <a href="ToString.html#_CPPv4I0EN3sls8ToStringENSt9enable_ifIXaaN12is_containerI1TE5valueENSt7is_sameIN9typenameT10value_typeENSt6stringEE5valueEENSt6stringEE4typeERK1T">[8]</a>, <a href="ToString.html#_CPPv4I0EN3sls8ToStringENSt9enable_ifIXaaN12is_containerI1TE5valueEntNSt7is_sameIN9typenameT10value_typeENSt6stringEE5valueEENSt6stringEE4typeERK1T">[9]</a>, <a href="ToString.html#_CPPv4I0_6size_tEN3sls8ToStringENSt6stringERA4size_K1T">[10]</a>
 </li>
       <li><a href="ToString.html#_CPPv4I0EN3sls11ToStringHexENSt9enable_ifINSt11is_integralI1TE5valueENSt6stringEE4typeERK1T">sls::ToStringHex (C++ function)</a>, <a href="ToString.html#_CPPv4I0EN3sls11ToStringHexENSt9enable_ifINSt11is_integralI1TE5valueENSt6stringEE4typeERK1Ti">[1]</a>, <a href="ToString.html#_CPPv4I0EN3sls11ToStringHexENSt9enable_ifIXaaN12is_containerI1TE5valueEntNSt7is_sameIN9typenameT10value_typeENSt6stringEE5valueEENSt6stringEE4typeERK1T">[2]</a>, <a href="ToString.html#_CPPv4I0EN3sls11ToStringHexENSt9enable_ifIXaaN12is_containerI1TE5valueEntNSt7is_sameIN9typenameT10value_typeENSt6stringEE5valueEENSt6stringEE4typeERK1Ti">[3]</a>
 </li>
@@ -1953,7 +1957,7 @@
 </li>
       <li><a href="commandline.html#term-sync-0-1"><strong>sync [0, 1]</strong></a>
 </li>
-      <li><a href="commandline.html#term-syncclk-n_clk-in-MHz"><strong>syncclk [n_clk in MHz]</strong></a>
+      <li><a href="commandline.html#term-syncclk-n_clk-optional-unit-Hz-default-kHz-MHz"><strong>syncclk [n_clk] [(optional unit) Hz(default)|kHz|MHz]</strong></a>
 </li>
   </ul></td>
 </tr></table>

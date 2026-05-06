@@ -20,7 +20,7 @@ using namespace sls;
 
 pid_t pid = -1;
 
-volatile bool interruption = false;
+static volatile sig_atomic_t interruption = 0;
 
 /**
  * Control+C Interrupt Handler
@@ -28,15 +28,8 @@ volatile bool interruption = false;
  */
 void sigInterruptHandler(int signal) {
     (void)signal; // suppress unused warning if needed
-    /*
-    if (pid > 0) {
-        kill(pid, SIGTERM); // tell child to exit
-    }
-    */
-    interruption = true; // tell parent to exit
+    interruption = 1;
 }
-
-void sigterm_handler(int) { interruption = true; }
 
 // TODO: should be a generic ServerApp for all detectors
 int main(int argc, char *argv[]) {
@@ -50,8 +43,8 @@ int main(int argc, char *argv[]) {
     }
     if (opts.versionRequested) {
         std::cout << fmt::format("MatterhornServer Version: {}", APIMATTERHORN)
-                  << std::endl; // might go back to costum CommandLIneOptions
-                                // getVersion
+                  << std::endl;
+
         return EXIT_SUCCESS;
     }
 
@@ -67,31 +60,24 @@ int main(int argc, char *argv[]) {
     // handle locally on socket crash
     signal(SIGPIPE, SIG_IGN);
 
-    // handle locally on socket crash
-    // sls::setupSignalHandler(SIGPIPE, SIG_IGN); / what is this?
-
     pid = fork(); // fork process for control and stop server
 
     if (pid == 0) {
         // Stop server Process
-        signal(SIGTERM, sigterm_handler);
 
         LOG(TLogLevel::logINFOBLUE) << "Stop Server [" << opts.port + 1 << "]";
         try {
             VirtualMatterhornServer stopServer(opts.port + 1);
             while (!interruption) {
-                sleep(1);
+                pause(); // wait for signal to exit
             }
         } catch (...) {
-            LOG(TLogLevel::logINFOBLUE)
-                << "Exiting Stop Server [ Tid: " << gettid() << " ]";
-            // TODO: maybe also terminate the control server !!!!
-            return EXIT_FAILURE;
+            kill(getppid(), SIGINT); // tell parent to exit // TODO: should then
+                                     // also return EXIT_FAILURE
         }
         LOG(TLogLevel::logINFOBLUE)
             << "Exiting Stop Server [ Tid: " << gettid() << " ]";
         LOG(sls::logINFO) << "Exiting Stop Server";
-        return EXIT_SUCCESS;
     } else if (pid > 0) {
         // parent
         // Control Server Process
@@ -103,15 +89,19 @@ int main(int argc, char *argv[]) {
                 opts.port); // TODO use virtual if compiled with virtual
                             // simulators on
             while (!interruption) {
-                sleep(1);
+                pause(); // wait for signal to exit
             }
         } catch (...) {
-            kill(0, SIGTERM); // tell child to exit
-            LOG(sls::logINFOBLUE) << "Exiting [ Tid: " << gettid() << " ]";
+            LOG(sls::logINFOBLUE)
+                << "Exiting Control Server [ Tid: " << gettid() << " ]";
+            LOG(sls::logINFO) << "Exiting Detector Server";
+            kill(pid, SIGINT);        // tell child to exit
+            waitpid(pid, nullptr, 0); // wait for child to exit
             return EXIT_FAILURE;
         }
-        waitpid(0, nullptr, 0); // wait for child to exit
-        LOG(sls::logINFOBLUE) << "Exiting [ Tid: " << gettid() << " ]";
+        waitpid(pid, nullptr, 0); // wait for child to exit
+        LOG(sls::logINFOBLUE)
+            << "Exiting Detector Control Server [ Tid: " << gettid() << " ]";
         LOG(sls::logINFO) << "Exiting Detector Server";
     } else {
         LOG(sls::logERROR)

@@ -22,10 +22,13 @@ TCPInterface::~TCPInterface() {
     LOG(logINFO) << "Shutting down TCP Socket on port " << portNumber;
     server.shutdown();
     LOG(logDEBUG) << "TCP Socket closed on port " << portNumber;
-    tcpThread->join();
+    if (tcpThread && tcpThread->joinable()) {
+        tcpThread->join();
+    }
 }
 
 void TCPInterface::startTCPServer() {
+
     tcpThread = std::make_unique<std::thread>(
         &TCPInterface::startTCPServerClientConnection, this);
 }

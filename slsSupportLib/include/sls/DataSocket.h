@@ -3,6 +3,7 @@
 #pragma once
 
 #include "sls/TypeTraits.h"
+#include "sls/logger.h"
 #include <cstddef>
 #include <cstdint>
 #include <iostream>

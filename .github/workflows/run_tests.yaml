@@ -22,7 +22,7 @@ jobs:
 
       - uses: awalsh128/cache-apt-pkgs-action@latest
         with:
-          packages: libhdf5-dev 
+          packages: libhdf5-dev libfmt-dev
           version: 1.0
 
       - name: Configure CMake

@@ -52,9 +52,11 @@ ServerInterface ServerSocket::accept() {
     if (newSocket == -1) {
         throw SocketError("Server ERROR: socket accept failed\n");
     }
+
     char tc[INET_ADDRSTRLEN]{};
     inet_ntop(AF_INET, &(clientAddr.sin_addr), tc, INET_ADDRSTRLEN);
     thisClient = IpAddr{tc};
+    // Set socket buffer size
     return ServerInterface(newSocket);
 }
 

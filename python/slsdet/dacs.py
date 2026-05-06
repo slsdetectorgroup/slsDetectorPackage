@@ -89,7 +89,7 @@ class NamedDacs:
         """
         Read the dacs into a numpy array with dimensions [ndacs, nmodules]
         """
-        dac_array = np.zeros((len(self._dacnames), len(self._detector)))
+        dac_array = np.zeros((len(self._dacnames), len(self._detector)), dtype = np.int32)
         for i, _d in enumerate(self):
             dac_array[i,:] = _d[:]
         return dac_array
@@ -101,7 +101,7 @@ class NamedDacs:
         """
         Set the dacs from an numpy array with dac values. [ndacs, nmodules]
         """
-        dac_array = dac_array.astype(np.int)
+        dac_array = dac_array.astype(np.int32)
         for i, _d in enumerate(self):
             _d[:] = dac_array[i]
 
@@ -163,7 +163,7 @@ class DetectorDacs:
         """
         Read the dacs into a numpy array with dimensions [ndacs, nmodules]
         """
-        dac_array = np.zeros((len(self._dacs), len(self._detector)))
+        dac_array = np.zeros((len(self._dacs), len(self._detector)), dtype = np.int32)
         for i, _d in enumerate(self):
             dac_array[i,:] = _d[:]
         return dac_array
@@ -175,7 +175,7 @@ class DetectorDacs:
         """
         Set the dacs from an numpy array with dac values. [ndacs, nmodules]
         """
-        dac_array = dac_array.astype(np.int)
+        dac_array = dac_array.astype(np.int32)
         for i, _d in enumerate(self):
             _d[:] = dac_array[i]
 

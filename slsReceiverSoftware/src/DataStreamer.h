@@ -10,6 +10,7 @@
  */
 
 #include "ThreadObject.h"
+#include "sls/ZmqSocket.h"
 #include "sls/network_utils.h"
 
 #include <map>
@@ -49,7 +50,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
      */
     void CreateZmqSockets(uint16_t port, int hwm);
     void CloseZmqSocket();
-    void RestreamStop();
+    void RestreamStop(const std::string &fname);
 
   private:
     /**
@@ -71,18 +72,16 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
      */
     void ProcessAnImage(sls_detector_header header, size_t size, char *data);
 
+    zmqHeader prepareZmqHeader();
     int SendDummyHeader();
 
     /**
      * Create and send Json Header
      * @param rheader header of image
      * @param size data size (could have been modified in call back)
-     * @param nx number of pixels in x dim
-     * @param ny number of pixels in y dim
      * @returns 0 if error, else 1
      */
-    int SendDataHeader(sls_detector_header header, uint32_t size = 0,
-                       uint32_t nx = 0, uint32_t ny = 0);
+    int SendDataHeader(sls_detector_header header, uint32_t size = 0);
 
     static const std::string TypeName;
     const GeneralData *generalData{nullptr};

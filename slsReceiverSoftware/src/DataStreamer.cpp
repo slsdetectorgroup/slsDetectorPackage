@@ -8,7 +8,6 @@
 #include "DataStreamer.h"
 #include "Fifo.h"
 #include "GeneralData.h"
-#include "sls/ZmqSocket.h"
 #include "sls/sls_detector_exceptions.h"
 
 #include <cerrno>
@@ -152,8 +151,7 @@ void DataStreamer::ProcessAnImage(sls_detector_header header, size_t size,
     uint64_t fnum = header.frameNumber;
     LOG(logDEBUG1) << "DataStreamer " << index << ": fnum:" << fnum;
 
-    if (!SendDataHeader(header, size, generalData->nPixelsX,
-                        generalData->nPixelsY)) {
+    if (!SendDataHeader(header, size)) {
         LOG(logERROR) << "Could not send zmq header for fnum " << fnum
                       << " and streamer " << index;
     }
@@ -164,17 +162,17 @@ void DataStreamer::ProcessAnImage(sls_detector_header header, size_t size,
     }
 }
 
-int DataStreamer::SendDummyHeader() {
+zmqHeader DataStreamer::prepareZmqHeader() {
     zmqHeader zHeader;
-    zHeader.data = false;
     zHeader.jsonversion = SLS_DETECTOR_JSON_HEADER_VERSION;
-
     // parameters coming from the receiver software
     zHeader.fname = fileNametoStream;
     zHeader.dynamicRange = generalData->dynamicRange;
     zHeader.fileIndex = fileIndex;
     zHeader.ndetx = numPorts.x;
     zHeader.ndety = numPorts.y;
+    zHeader.npixelsx = generalData->nPixelsX;
+    zHeader.npixelsy = generalData->nPixelsY;
     zHeader.flipRows = static_cast<int>(flipRows);
     zHeader.quad = quadEnable;
 
@@ -186,14 +184,18 @@ int DataStreamer::SendDummyHeader() {
     }
     zHeader.addJsonHeader = localAdditionalJsonHeader;
     zHeader.rx_roi = portRoi.getIntArray();
+    return zHeader;
+}
+
+int DataStreamer::SendDummyHeader() {
+    zmqHeader zHeader = prepareZmqHeader();
+    zHeader.data = false;
     return zmqSocket->SendHeader(index, zHeader);
 }
 
-int DataStreamer::SendDataHeader(sls_detector_header header, uint32_t size,
-                                 uint32_t nx, uint32_t ny) {
-    zmqHeader zHeader;
+int DataStreamer::SendDataHeader(sls_detector_header header, uint32_t size) {
+    zmqHeader zHeader = prepareZmqHeader();
     zHeader.data = true;
-    zHeader.jsonversion = SLS_DETECTOR_JSON_HEADER_VERSION;
 
     // parameter coming from the detector (raw and derived)
     uint64_t frameIndex = header.frameNumber - firstIndex;
@@ -219,31 +221,11 @@ int DataStreamer::SendDataHeader(sls_detector_header header, uint32_t size,
     zHeader.detType = header.detType;
     zHeader.version = header.version;
 
-    // parameters coming from the receiver software
-    zHeader.fname = fileNametoStream;
-    zHeader.dynamicRange = generalData->dynamicRange;
-    zHeader.fileIndex = fileIndex;
-    zHeader.ndetx = numPorts.x;
-    zHeader.ndety = numPorts.y;
-    zHeader.npixelsx = nx;
-    zHeader.npixelsy = ny;
-    zHeader.imageSize = size;
-    zHeader.flipRows = static_cast<int>(flipRows);
-    zHeader.quad = quadEnable;
-
-    // update local copy only if it was updated (to prevent locking each time)
-    if (isAdditionalJsonUpdated) {
-        std::lock_guard<std::mutex> lock(additionalJsonMutex);
-        localAdditionalJsonHeader = additionalJsonHeader;
-        isAdditionalJsonUpdated = false;
-    }
-    zHeader.addJsonHeader = localAdditionalJsonHeader;
-    zHeader.rx_roi = portRoi.getIntArray();
-
     return zmqSocket->SendHeader(index, zHeader);
 }
 
-void DataStreamer::RestreamStop() {
+void DataStreamer::RestreamStop(const std::string &fname) {
+    fileNametoStream = fname;
     if (!SendDummyHeader()) {
         throw RuntimeError("Could not restream Dummy Header via ZMQ for port " +
                            std::to_string(zmqSocket->GetPortNumber()));

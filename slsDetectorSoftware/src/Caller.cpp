@@ -10857,7 +10857,7 @@ std::string Caller::rx_realudpsocksize(int action) {
     return os.str();
 }
 
-std::string Caller::rx_restream_stop(int action) {
+std::string Caller::rx_restreamstop(int action) {
 
     std::ostringstream os;
     // print help
@@ -10888,11 +10888,7 @@ std::string Caller::rx_restream_stop(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 0) {
-            if (det_id != -1) {
-                throw RuntimeError(
-                    "Cannot execute rx_restream_stop at module level");
-            }
-            det->restreamStop();
+            det->restreamRxStop(std::vector<int>{det_id});
             os << "successful" << '\n';
         }
     }

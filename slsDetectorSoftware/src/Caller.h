@@ -261,7 +261,7 @@ class Caller {
     std::string rx_padding(int action);
     std::string rx_printconfig(int action);
     std::string rx_realudpsocksize(int action);
-    std::string rx_restream_stop(int action);
+    std::string rx_restreamstop(int action);
     std::string rx_roi(int action);
     std::string rx_silent(int action);
     std::string rx_start(int action);
@@ -632,7 +632,7 @@ class Caller {
         {"rx_padding", &Caller::rx_padding},
         {"rx_printconfig", &Caller::rx_printconfig},
         {"rx_realudpsocksize", &Caller::rx_realudpsocksize},
-        {"rx_restream_stop", &Caller::rx_restream_stop},
+        {"rx_restreamstop", &Caller::rx_restreamstop},
         {"rx_roi", &Caller::rx_roi},
         {"rx_silent", &Caller::rx_silent},
         {"rx_start", &Caller::rx_start},

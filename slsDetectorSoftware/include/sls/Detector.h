@@ -700,8 +700,6 @@ class Detector {
     /** Gets Scan error message if scan ended in error for non blocking
      * acquisitions.*/
     Result<std::string> getScanErrorMessage(Positions pos = {}) const;
-
-    void restreamStop();
     ///@}
 
     /** @name Network Configuration (Detector<->Receiver) */
@@ -1164,6 +1162,7 @@ class Detector {
      */
     void setRxZmqHwm(const int limit);
 
+    void restreamRxStop(Positions pos = {}) const;
     ///@}
 
     /** @name Eiger Specific */

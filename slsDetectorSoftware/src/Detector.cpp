@@ -966,10 +966,6 @@ void Detector::startReceiver() { pimpl->Parallel(&Module::startReceiver, {}); }
 
 void Detector::stopReceiver() { pimpl->Parallel(&Module::stopReceiver, {}); }
 
-void Detector::restreamStop() {
-    pimpl->Parallel(&Module::restreamStopFromReceiver, {});
-}
-
 void Detector::startDetector(Positions pos) {
     pimpl->startAcquisition(false, pos);
 }
@@ -1638,6 +1634,10 @@ void Detector::setRxZmqHwm(const int limit) {
         setRxZmqDataStream(false, {});
         setRxZmqDataStream(true, {});
     }
+}
+
+void Detector::restreamRxStop(Positions pos) const {
+    pimpl->Parallel(&Module::restreamStopFromReceiver, pos);
 }
 
 // Eiger Specific

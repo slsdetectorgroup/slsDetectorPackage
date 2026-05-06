@@ -2869,7 +2869,7 @@ int InferAction::rx_realudpsocksize() {
     }
 }
 
-int InferAction::rx_restream_stop() {
+int InferAction::rx_restreamstop() {
 
     if (args.size() == 0) {
         return slsDetectorDefs::PUT_ACTION;

@@ -215,7 +215,7 @@ class InferAction {
     int rx_padding();
     int rx_printconfig();
     int rx_realudpsocksize();
-    int rx_restream_stop();
+    int rx_restreamstop();
     int rx_roi();
     int rx_silent();
     int rx_start();
@@ -552,7 +552,7 @@ class InferAction {
         {"rx_padding", &InferAction::rx_padding},
         {"rx_printconfig", &InferAction::rx_printconfig},
         {"rx_realudpsocksize", &InferAction::rx_realudpsocksize},
-        {"rx_restream_stop", &InferAction::rx_restream_stop},
+        {"rx_restreamstop", &InferAction::rx_restreamstop},
         {"rx_roi", &InferAction::rx_roi},
         {"rx_silent", &InferAction::rx_silent},
         {"rx_start", &InferAction::rx_start},

@@ -195,7 +195,7 @@ int DataStreamer::SendDataHeader(sls_detector_header header, uint32_t size,
     zHeader.data = true;
     zHeader.jsonversion = SLS_DETECTOR_JSON_HEADER_VERSION;
 
-    // parameter coming from the detector
+    // parameter coming from the detector (raw and derived)
     uint64_t frameIndex = header.frameNumber - firstIndex;
     uint64_t acquisitionIndex = header.frameNumber;
 

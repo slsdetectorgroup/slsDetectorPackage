@@ -11057,9 +11057,11 @@ int spi_read(int file_des) {
 #elif defined(CHIPTESTBOARDD)
     // set spi to 8 bit per word (-1 comes from the firmware), set chipselect
     bus_w(SPI_CTRL_REG,
+
           ((8 - 1) << SPI_CTRL_NBIT_OFST) + (1 << SPI_CTRL_CHIPSELECT_BIT));
     for (int i = 0; i < n_bytes + 1; ++i) {
         // TODO: should we make bus_w to this address blocking in the firmware
+        //
         // to remove usleep ?
         bus_w(SPI_WRITEDATA_REG, local_tx[i]);
         usleep_bf(BFIN_SPI_WAIT_uSECONDS);

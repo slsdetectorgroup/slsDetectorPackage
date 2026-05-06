@@ -95,7 +95,7 @@ target_link_libraries(slsSupportObject
     slsProjectOptions 
     ${STD_FS_LIB} # from helpers.cmake
     Threads::Threads # slsDetector and Receiver need this
-    
+    fmt::fmt
   PRIVATE
     slsProjectWarnings
     md5sls     

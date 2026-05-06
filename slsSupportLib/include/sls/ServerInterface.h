@@ -3,6 +3,8 @@
 #pragma once
 
 #include "sls/DataSocket.h"
+#include "sls/logger.h"
+
 namespace sls {
 class ServerInterface;
 }

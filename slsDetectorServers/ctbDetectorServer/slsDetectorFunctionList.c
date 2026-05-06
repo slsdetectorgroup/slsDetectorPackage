@@ -1793,7 +1793,8 @@ int getPowerADC(enum powerIndex index, int *retval, char *mess) {
 #ifdef VIRTUAL
     return 0;
 #endif
-    *retval = bus_r(POWER_MONITOR_BASE_REG + ((int)adcIndex << MEM_MAP_SHIFT));
+    // read register containing the measurement (16-bit signed), sign extend to int
+    *retval = (int)(int16_t)bus_r(POWER_MONITOR_BASE_REG + ((int)adcIndex << MEM_MAP_SHIFT));
     return OK;
 }
 

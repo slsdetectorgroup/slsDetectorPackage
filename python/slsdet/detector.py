@@ -14,11 +14,12 @@ powerIndex = slsDetectorDefs.powerIndex
 detectorType = slsDetectorDefs.detectorType
 streamingInterface = slsDetectorDefs.streamingInterface
 
+
 defs = slsDetectorDefs
 
 from .utils import element_if_equal, all_equal, get_set_bits, list_to_bitmask
 from .utils import Geometry, to_geo, element, reduce_time, is_iterable, hostname_list
-from ._slsdet import xy, freeSharedMemory, getUserDetails
+from ._slsdet import xy, Hz, freeSharedMemory, getUserDetails
 from .gaincaps import Mythen3GainCapsWrapper
 from . import utils as ut
 from .proxy import JsonProxy, ClkDivProxy, MaxPhaseProxy, ClkFreqProxy, PatLoopProxy, PatNLoopProxy, PatWaitProxy, PatWaitTimeProxy 
@@ -3441,15 +3442,21 @@ class Detector(CppDetectorApi):
     @element
     def runclk(self):
         """
-        [Ctb] Sets Run clock frequency in MHz. \n
-        [Xilinx Ctb] Sets Run clock frequency in kHz.
-        """
+        [Ctb][Xilinx Ctb] Sets Run clock frequency.
 
+        Example
+        --------
+        >>> d.runclk
+        >>> 10MHz
+        >>> d.runclk = MHz(5)
+        >>> d.runclk = Hz(5 * 1000 * 1000)
+        >>> d.runclk = kHz(2000)
+        """
         return self.getRUNClock()
 
     @runclk.setter
     def runclk(self, freq):
-        ut.set_using_dict(self.setRUNClock, freq)
+        ut.set_using_dict(self.setRUNClock, freq) 
 
     @property
     @element
@@ -3526,10 +3533,16 @@ class Detector(CppDetectorApi):
     @element
     def dbitclk(self):
         """
-        [Ctb] Sets clock for latching the digital bits in MHz. \n
-        [Xilinx Ctb] clock for latching the digital bits in kHz.
-        """
+        [Ctb][Xilinx Ctb] Sets clock for latching the digital bits.
 
+        Example
+        --------
+        >>> d.dbitclk
+        >>> 10MHz
+        >>> d.dbitclk = MHz(5)
+        >>> d.dbitclk = Hz(5 * 1000 * 1000)
+        >>> d.dbitclk = kHz(2000)
+        """
         return self.getDBITClock()
 
     @dbitclk.setter
@@ -3657,10 +3670,16 @@ class Detector(CppDetectorApi):
     @element
     def adcclk(self):
         """
-        [Ctb] Sets ADC clock frequency in MHz. \n
-        [Xilinx Ctb] Sets ADC clock frequency in kHz.
-        """
+        [Ctb][Xilinx Ctb] Sets ADC clock frequency.
 
+        Example
+        --------
+        >>> d.adcclk
+        >>> 10MHz
+        >>> d.adcclk = MHz(5)
+        >>> d.adcclk = Hz(5 * 1000 * 1000)
+        >>> d.adcclk = kHz(2000)
+        """
         return self.getADCClock()
 
     @adcclk.setter
@@ -3671,7 +3690,7 @@ class Detector(CppDetectorApi):
     @element
     def syncclk(self):
         """
-        [Ctb] Sync clock in MHz.
+        [Ctb] Sync clock.
         
         :setter: Not implemented
         """
@@ -3704,7 +3723,7 @@ class Detector(CppDetectorApi):
         [Ctb][Mythen3][Xilinx Ctb] Gets the pattern file name including path of the last pattern uploaded. Returns an empty if nothing was uploaded or via a server default
         file
         """
-        return self.getPatterFileName()
+        return self.getPatternFileName()
 
     def patternstart(self):
         """[Ctb][Mythen3][Xilinx Ctb] Starts pattern. """

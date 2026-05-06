@@ -2144,25 +2144,34 @@ void Detector::setNumberOfAnalogSamples(int value, Positions pos) {
     pimpl->Parallel(&Module::setNumberOfAnalogSamples, pos, value);
 }
 
-Result<int> Detector::getADCClock(Positions pos) const {
+Result<defs::Hz> Detector::getADCClock(Positions pos) const {
     return pimpl->Parallel(&Module::getClockFrequency, pos, defs::ADC_CLOCK);
 }
 
-void Detector::setADCClock(int value_in_MHz, Positions pos) {
+void Detector::setADCClock(defs::Hz val, Positions pos) {
     pimpl->Parallel(&Module::setClockFrequency, pos, defs::ADC_CLOCK,
-                    value_in_MHz);
+                    val.value);
 }
 
-Result<int> Detector::getRUNClock(Positions pos) const {
+Result<defs::Hz> Detector::getRUNClock(Positions pos) const {
     return pimpl->Parallel(&Module::getClockFrequency, pos, defs::RUN_CLOCK);
 }
 
-void Detector::setRUNClock(int value_in_MHz, Positions pos) {
+void Detector::setRUNClock(defs::Hz val, Positions pos) {
     pimpl->Parallel(&Module::setClockFrequency, pos, defs::RUN_CLOCK,
-                    value_in_MHz);
+                    val.value);
 }
 
-Result<int> Detector::getSYNCClock(Positions pos) const {
+Result<defs::Hz> Detector::getDBITClock(Positions pos) const {
+    return pimpl->Parallel(&Module::getClockFrequency, pos, defs::DBIT_CLOCK);
+}
+
+void Detector::setDBITClock(defs::Hz val, Positions pos) {
+    pimpl->Parallel(&Module::setClockFrequency, pos, defs::DBIT_CLOCK,
+                    val.value);
+}
+
+Result<defs::Hz> Detector::getSYNCClock(Positions pos) const {
     return pimpl->Parallel(&Module::getClockFrequency, pos, defs::SYNC_CLOCK);
 }
 
@@ -2308,15 +2317,6 @@ Result<defs::readoutMode> Detector::getReadoutMode(Positions pos) const {
 
 void Detector::setReadoutMode(defs::readoutMode value, Positions pos) {
     pimpl->Parallel(&Module::setReadoutMode, pos, value);
-}
-
-Result<int> Detector::getDBITClock(Positions pos) const {
-    return pimpl->Parallel(&Module::getClockFrequency, pos, defs::DBIT_CLOCK);
-}
-
-void Detector::setDBITClock(int value_in_MHz, Positions pos) {
-    pimpl->Parallel(&Module::setClockFrequency, pos, defs::DBIT_CLOCK,
-                    value_in_MHz);
 }
 
 Result<int> Detector::getSlowADC(defs::dacIndex index, Positions pos) const {
@@ -2609,8 +2609,8 @@ void Detector::configureTransceiver(Positions pos) {
 
 // Pattern
 
-Result<std::string> Detector::getPatterFileName(Positions pos) const {
-    return pimpl->Parallel(&Module::getPatterFileName, pos);
+Result<std::string> Detector::getPatternFileName(Positions pos) const {
+    return pimpl->Parallel(&Module::getPatternFileName, pos);
 }
 
 void Detector::setPattern(const std::string &fname, Positions pos) {

@@ -13,6 +13,7 @@
 #include "communication_funcs_UDP.h"
 #include "loadPattern.h"
 
+#include <math.h>
 #include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -65,7 +66,7 @@ uint8_t adcEnableMask_10g = 0xFF;
 uint32_t transceiverMask = DEFAULT_TRANSCEIVER_MASK;
 
 int32_t clkPhase[NUM_CLOCKS] = {};
-uint32_t clkFrequency[NUM_CLOCKS] = {40, 20, 20, 200};
+uint32_t clkFrequency[NUM_CLOCKS] = {};
 int dacValues[NDAC_ONLY] = {};
 int powerValues[NPWR] = {}; // powerIndex (A->IO, Chip)
 
@@ -557,7 +558,7 @@ void setupDetector() {
     ALTERA_PLL_SetDefines(PLL_CNTRL_REG, PLL_PARAM_REG,
                           PLL_CNTRL_RCNFG_PRMTR_RST_MSK, PLL_CNTRL_WR_PRMTR_MSK,
                           PLL_CNTRL_PLL_RST_MSK, PLL_CNTRL_ADDR_MSK,
-                          PLL_CNTRL_ADDR_OFST);
+                          PLL_CNTRL_ADDR_OFST, PLL_FREQ_MEASURE_REG);
     ALTERA_PLL_ResetPLLAndReconfiguration();
 
     resetCore();
@@ -632,10 +633,16 @@ void setupDetector() {
         DEFAULT_NUM_SAMPLES); // update databytes and allocate ram
     setNumTransceiverSamples(DEFAULT_NUM_SAMPLES);
     setNumFrames(DEFAULT_NUM_FRAMES);
-    setExpTime(DEFAULT_EXPTIME);
+    initError = setExpTime(DEFAULT_EXPTIME, initErrorMessage);
+    if (initError == FAIL)
+        return;
     setNumTriggers(DEFAULT_NUM_CYCLES);
-    setPeriod(DEFAULT_PERIOD);
-    setDelayAfterTrigger(DEFAULT_DELAY);
+    initError = setPeriod(DEFAULT_PERIOD, initErrorMessage);
+    if (initError == FAIL)
+        return;
+    initError = setDelayAfterTrigger(DEFAULT_DELAY, initErrorMessage);
+    if (initError == FAIL)
+        return;
     setTiming(DEFAULT_TIMING_MODE);
     setADCEnableMask(BIT32_MSK);
     setADCEnableMask_10G(BIT32_MSK);
@@ -1134,64 +1141,132 @@ int setNumTransceiverSamples(int val) {
 
 int getNumTransceiverSamples() { return ntSamples; }
 
-int setExpTime(int64_t val) {
+int setExpTime(int64_t val, char *mess) {
     setPatternWaitInterval(0, val);
 
-    // validate for tolerance
-    int64_t retval = getExpTime();
+    // validate
+    uint64_t arg_clocks = ns_to_clocks(val, clkFrequency[RUN_CLK]);
+    uint64_t retval_clocks = getPatternWaitClocks(0);
+    if (arg_clocks != retval_clocks) {
+        sprintf(mess,
+                "Failed to set exposure time. Could not set number of clocks "
+                "to %lld, read %lld\n",
+                (long long int)arg_clocks, (long long int)retval_clocks);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+
+    // log rounding if any
+    int64_t retval = getPatternWaitInterval(0);
     if (val != retval) {
+        LOG(logWARNING, ("Rounding to %lld ns due to clock frequency\n",
+                         (long long int)retval));
+    }
+
+    return OK;
+}
+
+int getExpTime(int64_t *retval, char *mess) {
+    *retval = getPatternWaitInterval(0);
+    if (*retval == -1) {
+        sprintf(mess, "Failed to get exposure time.\n");
+        LOG(logERROR, (mess));
         return FAIL;
     }
     return OK;
 }
 
-int64_t getExpTime() { return getPatternWaitInterval(0); }
-
-int setPeriod(int64_t val) {
+int setPeriod(int64_t val, char *mess) {
     if (val < 0) {
-        LOG(logERROR, ("Invalid period: %lld ns\n", (long long int)val));
+        sprintf(mess, "Invalid period: %lld ns\n", (long long int)val);
+        LOG(logERROR, (mess));
         return FAIL;
     }
     LOG(logINFO, ("Setting period %lld ns\n", (long long int)val));
-    val *= (1E-3 * clkFrequency[SYNC_CLK]);
-    set64BitReg(val, PERIOD_LSB_REG, PERIOD_MSB_REG);
+    uint64_t arg_clocks = ns_to_clocks(val, clkFrequency[SYNC_CLK]);
+    set64BitReg(arg_clocks, PERIOD_LSB_REG, PERIOD_MSB_REG);
 
-    // validate for tolerance
-    int64_t retval = getPeriod();
-    val /= (1E-3 * clkFrequency[SYNC_CLK]);
-    if (val != retval) {
+    // validate
+    uint64_t retval_clocks = get64BitReg(PERIOD_LSB_REG, PERIOD_MSB_REG);
+    if (arg_clocks != retval_clocks) {
+        sprintf(mess,
+                "Failed to set period. Could not set number of clocks "
+                "to %lld, red %lld\n",
+                (long long int)arg_clocks, (long long int)retval_clocks);
+        LOG(logERROR, (mess));
         return FAIL;
     }
+
+    // log rounding if any
+    int64_t retval = 0;
+    if (getPeriod(&retval, mess) == FAIL) {
+        return FAIL;
+    }
+    if (val != retval) {
+        LOG(logWARNING, ("Rounding to %lld ns due to clock frequency\n",
+                         (long long int)retval));
+    }
+
     return OK;
 }
 
-int64_t getPeriod() {
-    return get64BitReg(PERIOD_LSB_REG, PERIOD_MSB_REG) /
-           (1E-3 * clkFrequency[SYNC_CLK]);
+int getPeriod(int64_t *retval, char *mess) {
+    if (clkFrequency[SYNC_CLK] == 0) {
+        sprintf(mess, "Cannot get period. Sync clock frequency is 0.\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    uint64_t numClocks = get64BitReg(PERIOD_LSB_REG, PERIOD_MSB_REG);
+    *retval = clocks_to_ns(numClocks, clkFrequency[SYNC_CLK]);
+    return OK;
 }
 
-int setDelayAfterTrigger(int64_t val) {
+int setDelayAfterTrigger(int64_t val, char *mess) {
     if (val < 0) {
-        LOG(logERROR,
-            ("Invalid delay after trigger: %lld ns\n", (long long int)val));
+        sprintf(mess, "Invalid delay after trigger: %lld ns\n",
+                (long long int)val);
+        LOG(logERROR, (mess));
         return FAIL;
     }
     LOG(logINFO, ("Setting delay after trigger %lld ns\n", (long long int)val));
-    val *= (1E-3 * clkFrequency[SYNC_CLK]);
-    set64BitReg(val, DELAY_LSB_REG, DELAY_MSB_REG);
+    uint64_t arg_clocks = ns_to_clocks(val, clkFrequency[SYNC_CLK]);
+    set64BitReg(arg_clocks, DELAY_LSB_REG, DELAY_MSB_REG);
 
-    // validate for tolerance
-    int64_t retval = getDelayAfterTrigger();
-    val /= (1E-3 * clkFrequency[SYNC_CLK]);
-    if (val != retval) {
+    // validate
+    uint64_t retval_clocks = get64BitReg(DELAY_LSB_REG, DELAY_MSB_REG);
+    if (arg_clocks != retval_clocks) {
+        sprintf(
+            mess,
+            "Failed to set delay after trigger. Could not set number of clocks "
+            "to %lld, read %lld\n",
+            (long long int)arg_clocks, (long long int)retval_clocks);
+        LOG(logERROR, (mess));
         return FAIL;
     }
+
+    // log rounding if any
+    int64_t retval = 0;
+    if (getDelayAfterTrigger(&retval, mess) == FAIL) {
+        return FAIL;
+    }
+    if (val != retval) {
+        LOG(logWARNING, ("Rounding to %lld ns due to clock frequency\n",
+                         (long long int)retval));
+    }
+
     return OK;
 }
 
-int64_t getDelayAfterTrigger() {
-    return get64BitReg(DELAY_LSB_REG, DELAY_MSB_REG) /
-           (1E-3 * clkFrequency[SYNC_CLK]);
+int getDelayAfterTrigger(int64_t *retval, char *mess) {
+    if (clkFrequency[SYNC_CLK] == 0) {
+        sprintf(mess,
+                "Cannot get delay after trigger. Sync clock frequency is 0.\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    uint64_t numClocks = get64BitReg(DELAY_LSB_REG, DELAY_MSB_REG);
+    *retval = clocks_to_ns(numClocks, clkFrequency[SYNC_CLK]);
+    return OK;
 }
 
 int64_t getNumFramesLeft() {
@@ -1202,14 +1277,27 @@ int64_t getNumTriggersLeft() {
     return get64BitReg(CYCLES_LEFT_LSB_REG, CYCLES_LEFT_MSB_REG);
 }
 
-int64_t getDelayAfterTriggerLeft() {
-    return get64BitReg(DELAY_LEFT_LSB_REG, DELAY_LEFT_MSB_REG) /
-           (1E-3 * clkFrequency[SYNC_CLK]);
+int getDelayAfterTriggerLeft(int64_t *retval, char *mess) {
+    if (clkFrequency[SYNC_CLK] == 0) {
+        sprintf(mess, "Cannot get delay after trigger left. Sync clock "
+                      "frequency is 0.\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    uint64_t numClocks = get64BitReg(DELAY_LEFT_LSB_REG, DELAY_LEFT_MSB_REG);
+    *retval = clocks_to_ns(numClocks, clkFrequency[SYNC_CLK]);
+    return OK;
 }
 
-int64_t getPeriodLeft() {
-    return get64BitReg(PERIOD_LEFT_LSB_REG, PERIOD_LEFT_MSB_REG) /
-           (1E-3 * clkFrequency[SYNC_CLK]);
+int getPeriodLeft(int64_t *retval, char *mess) {
+    if (clkFrequency[SYNC_CLK] == 0) {
+        sprintf(mess, "Cannot get period left. Sync clock frequency is 0.\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    uint64_t numClocks = get64BitReg(PERIOD_LEFT_LSB_REG, PERIOD_LEFT_MSB_REG);
+    *retval = clocks_to_ns(numClocks, clkFrequency[SYNC_CLK]);
+    return OK;
 }
 
 int64_t getFramesFromStart() {
@@ -1218,13 +1306,14 @@ int64_t getFramesFromStart() {
 }
 
 int64_t getActualTime() {
-    return get64BitReg(TIME_FROM_START_LSB_REG, TIME_FROM_START_MSB_REG) /
-           (1E-3 * CLK_FREQ);
+    // reg in unit of 100ns
+    return get64BitReg(TIME_FROM_START_LSB_REG, TIME_FROM_START_MSB_REG) * 100;
 }
 
 int64_t getMeasurementTime() {
-    return get64BitReg(START_FRAME_TIME_LSB_REG, START_FRAME_TIME_MSB_REG) /
-           (1E-3 * CLK_FREQ);
+    // reg in unit of 100ns
+    return get64BitReg(START_FRAME_TIME_LSB_REG, START_FRAME_TIME_MSB_REG) *
+           100;
 }
 
 /* parameters - settings */
@@ -2206,13 +2295,12 @@ int getMaxPhase(enum CLKINDEX ind) {
         LOG(logERROR, ("Unknown clock index %d to get max phase\n", ind));
         return -1;
     }
-    int ret = ((double)PLL_VCO_FREQ_MHZ / (double)clkFrequency[ind]) *
+    int ret = ((double)PLL_VCO_FREQ_HZ / (double)clkFrequency[ind]) *
               MAX_PHASE_SHIFTS_STEPS;
 
     char *clock_names[] = {CLK_NAMES};
-    LOG(logDEBUG1,
-        ("Max Phase Shift (%s): %d (Clock: %d MHz, VCO:%d MHz)\n",
-         clock_names[ind], ret, clkFrequency[ind], PLL_VCO_FREQ_MHZ));
+    LOG(logDEBUG1, ("Max Phase Shift (%s): %d (Clock: %d Hz, VCO:%d Hz)\n",
+                    clock_names[ind], ret, clkFrequency[ind], PLL_VCO_FREQ_HZ));
 
     return ret;
 }
@@ -2248,12 +2336,12 @@ int setFrequency(enum CLKINDEX ind, int val) {
         return FAIL;
     }
     char *clock_names[] = {CLK_NAMES};
-    LOG(logINFO, ("\tSetting %s clock (%d) frequency to %d MHz\n",
+    LOG(logINFO, ("\tSetting %s clock (%d) frequency to %d Hz\n",
                   clock_names[ind], ind, val));
 
     // check adc clk too high
     if (ind == ADC_CLK && val > MAXIMUM_ADC_CLK) {
-        LOG(logERROR, ("Frequency %d MHz too high for ADC\n", val));
+        LOG(logERROR, ("Frequency %d Hz too high for ADC\n", val));
         return FAIL;
     }
 
@@ -2265,8 +2353,8 @@ int setFrequency(enum CLKINDEX ind, int val) {
 
     // Calculate and set output frequency
     clkFrequency[ind] =
-        ALTERA_PLL_SetOuputFrequency(ind, PLL_VCO_FREQ_MHZ, val);
-    LOG(logINFO, ("\t%s clock (%d) frequency set to %d MHz\n", clock_names[ind],
+        ALTERA_PLL_SetOutputFrequency(ind, PLL_VCO_FREQ_HZ, val);
+    LOG(logINFO, ("\t%s clock (%d) frequency set to %d Hz\n", clock_names[ind],
                   ind, clkFrequency[ind]));
 
     // phase reset by pll (when setting output frequency)
@@ -2294,6 +2382,17 @@ int getFrequency(enum CLKINDEX ind) {
         LOG(logERROR, ("Unknown clock index %d to get frequency\n", ind));
         return -1;
     }
+#ifndef VIRTUAL
+    // get the measured frequency from the firmware
+    int measuredFreqHz = ALTERA_PLL_getFrequency(ind);
+
+    // checking against 0 here ensures compatibility with old firmware, TODO:
+    // remove this check at some point
+    if (measuredFreqHz != 0) {
+        // Round to nearest Hz. (should we round at all ?)
+        clkFrequency[ind] = measuredFreqHz;
+    }
+#endif
     return clkFrequency[ind];
 }
 
@@ -2507,10 +2606,21 @@ void *start_timer(void *arg) {
         return NULL;
     }
 
-    int64_t periodNs = getPeriod();
+    int64_t periodNs = 0;
+    int64_t expUs = 0;
+    {
+        char mess[MAX_STR_LENGTH] = {0};
+        if (getPeriod(&periodNs, mess) == FAIL) {
+            LOG(logERROR, ("Failed to get period.\n"));
+            return NULL;
+        }
+        if (getExpTime(&expUs, mess) == FAIL) {
+            LOG(logERROR, ("Failed to get exposure time.\n"));
+            return NULL;
+        }
+        expUs /= 1000;
+    }
     int numFrames = (getNumFrames() * getNumTriggers());
-    int64_t expUs = getExpTime() / 1000;
-
     int imageSize = dataBytes;
     int dataSize = UDP_PACKET_DATA_BYTES;
     int packetSize = sizeof(sls_detector_header) + dataSize;

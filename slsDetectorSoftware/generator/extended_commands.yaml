@@ -86,28 +86,69 @@ adcclk:
         - OutString(t)
         require_det_id: true
         store_result_in_t: true
+      - arg_types:
+        - special::freq_unit
+        argc: 1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: getADCClock
+        input: []
+        input_types: []
+        output:
+        - OutString(t , args[0])
+        require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - arg_types:
-        - int
+        - std::string
         argc: 1
         cast_input:
-        - true
+        - false
         check_det_id: false
         convert_det_id: true
         function: setADCClock
         input:
-        - args[0]
+        - converted_freq
         input_types:
-        - int
+        - defs::Hz
         output:
-        - args.front()
+        - args[0]
+        require_det_id: true
+        separate_freq_units:
+          input: args[0]
+          output:
+          - converted_freq
+          - unit
+        store_result_in_t: false
+      - arg_types:
+        - int
+        - special::freq_unit
+        argc: 2
+        cast_input:
+        - false
+        check_det_id: false
+        convert_det_id: true
+        convert_to_freq:
+          input:
+          - args[0]
+          - args[1]
+          output: converted_freq
+        function: setADCClock
+        input:
+        - converted_freq
+        input_types:
+        - defs::Hz
+        output:
+        - args[0]
+        - args[1]
         require_det_id: true
         store_result_in_t: false
   command_name: adcclk
   function_alias: adcclk
-  help: "[n_clk in MHz]\n\t[Ctb] ADC clock frequency in MHz.\n\t[xilinx Ctb] ADC clock\
-    \ frequency in kHz."
+  help: "[n_clk] [(optional unit) Hz(default)|kHz|MHz]\n\t[Ctb][Xilinx Ctb] ADC clock\
+    \ frequency."
   infer_action: true
   template: true
 adcenable:
@@ -2060,28 +2101,69 @@ dbitclk:
         - OutString(t)
         require_det_id: true
         store_result_in_t: true
+      - arg_types:
+        - special::freq_unit
+        argc: 1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: getDBITClock
+        input: []
+        input_types: []
+        output:
+        - OutString(t , args[0])
+        require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - arg_types:
-        - int
+        - std::string
         argc: 1
         cast_input:
-        - true
+        - false
         check_det_id: false
         convert_det_id: true
         function: setDBITClock
         input:
-        - args[0]
+        - converted_freq
         input_types:
-        - int
+        - defs::Hz
         output:
-        - args.front()
+        - args[0]
+        require_det_id: true
+        separate_freq_units:
+          input: args[0]
+          output:
+          - converted_freq
+          - unit
+        store_result_in_t: false
+      - arg_types:
+        - int
+        - special::freq_unit
+        argc: 2
+        cast_input:
+        - false
+        check_det_id: false
+        convert_det_id: true
+        convert_to_freq:
+          input:
+          - args[0]
+          - args[1]
+          output: converted_freq
+        function: setDBITClock
+        input:
+        - converted_freq
+        input_types:
+        - defs::Hz
+        output:
+        - args[0]
+        - args[1]
         require_det_id: true
         store_result_in_t: false
   command_name: dbitclk
   function_alias: dbitclk
-  help: "[n_clk in MHz]\n\t[Ctb] Clock for latching the digital bits in MHz.\n\t[xilinx\
-    \ Ctb] Clock for latching the digital bits in kHz."
+  help: "[n_clk] [(optional unit) Hz(default)|kHz|MHz]\n\t[Ctb][Xilinx Ctb]  Clock\
+    \ for latching the digital bits."
   infer_action: true
   template: true
 dbitphase:
@@ -5788,7 +5870,7 @@ patfname:
         cast_input: []
         check_det_id: false
         convert_det_id: true
-        function: getPatterFileName
+        function: getPatternFileName
         input: []
         input_types: []
         output:
@@ -8140,27 +8222,69 @@ runclk:
         - OutString(t)
         require_det_id: true
         store_result_in_t: true
+      - arg_types:
+        - special::freq_unit
+        argc: 1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: getRUNClock
+        input: []
+        input_types: []
+        output:
+        - OutString(t , args[0])
+        require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - arg_types:
-        - int
+        - std::string
         argc: 1
         cast_input:
-        - true
+        - false
         check_det_id: false
         convert_det_id: true
         function: setRUNClock
         input:
-        - args[0]
+        - converted_freq
         input_types:
-        - int
+        - defs::Hz
         output:
-        - args.front()
+        - args[0]
+        require_det_id: true
+        separate_freq_units:
+          input: args[0]
+          output:
+          - converted_freq
+          - unit
+        store_result_in_t: false
+      - arg_types:
+        - int
+        - special::freq_unit
+        argc: 2
+        cast_input:
+        - false
+        check_det_id: false
+        convert_det_id: true
+        convert_to_freq:
+          input:
+          - args[0]
+          - args[1]
+          output: converted_freq
+        function: setRUNClock
+        input:
+        - converted_freq
+        input_types:
+        - defs::Hz
+        output:
+        - args[0]
+        - args[1]
         require_det_id: true
         store_result_in_t: false
   command_name: runclk
   function_alias: runclk
-  help: "[n_clk in MHz]\n\t[Ctb] Run clock in MHz.\n\t[xilinx Ctb] Run clock in kHz."
+  help: "[n_clk] [(optional unit) Hz(default)|kHz|MHz]\n\t[Ctb][Xilinx Ctb] Run clock\
+    \ frequency."
   infer_action: true
   template: true
 runtime:
@@ -10575,9 +10699,22 @@ syncclk:
         - OutString(t)
         require_det_id: true
         store_result_in_t: true
+      - arg_types:
+        - special::freq_unit
+        argc: 1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: getSYNCClock
+        input: []
+        input_types: []
+        output:
+        - OutString(t , args[0])
+        require_det_id: true
+        store_result_in_t: true
   command_name: syncclk
   function_alias: syncclk
-  help: "[n_clk in MHz]\n\t[Ctb] Sync clock in MHz."
+  help: "[n_clk] [(optional unit) Hz(default)|kHz|MHz]\n\t[Ctb] Sync clock."
   infer_action: true
   template: true
 temp_10ge:

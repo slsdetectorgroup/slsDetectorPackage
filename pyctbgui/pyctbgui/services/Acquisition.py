@@ -7,7 +7,7 @@ import zmq
 from PyQt5 import QtWidgets, uic
 import logging
 
-from slsdet import readoutMode, runStatus, detectorType
+from slsdet import readoutMode, runStatus, detectorType, Hz, MHz, kHz
 from pyctbgui.utils.defines import Defines
 from pyctbgui.utils.numpyWriter.npy_writer import NumpyFileManager
 from pyctbgui.utils.numpyWriter.npz_writer import NpzFileWriter
@@ -58,12 +58,6 @@ class AcquisitionTab(QtWidgets.QWidget):
             self.view.spinBoxADCPipeline.setDisabled(True)
             self.view.spinBoxDBITPhase.setDisabled(True)
             self.view.spinBoxDBITPipeline.setDisabled(True)
-            self.view.labelRunF.setText("Run Clock Frequency (kHz):")
-            self.view.labelDBITF.setText("DBIT Clock Frequency (kHz):")
-            self.view.labelADCF.setText("ADC Clock Frequency (kHz):")
-            self.view.spinBoxRunF.setMaximum(250000)
-            self.view.spinBoxDBITF.setMaximum(250000)
-            self.view.spinBoxADCF.setMaximum(250000)
 
     def connect_ui(self):
         # For Acquistions Tab
@@ -74,8 +68,11 @@ class AcquisitionTab(QtWidgets.QWidget):
         
         if self.det.type in [detectorType.CHIPTESTBOARD, detectorType.XILINX_CHIPTESTBOARD]:
             self.view.spinBoxRunF.editingFinished.connect(self.setRunFrequency)
+            self.view.comboBoxRunF.currentIndexChanged.connect(self.getRunFrequency)
             self.view.spinBoxADCF.editingFinished.connect(self.setADCFrequency)
+            self.view.comboBoxADCF.currentIndexChanged.connect(self.getADCFrequency)
             self.view.spinBoxDBITF.editingFinished.connect(self.setDBITFrequency)
+            self.view.comboBoxDBITF.currentIndexChanged.connect(self.getDBITFrequency)
         if self.det.type == detectorType.CHIPTESTBOARD:
             self.view.spinBoxADCPhase.editingFinished.connect(self.setADCPhase)
             self.view.spinBoxADCPipeline.editingFinished.connect(self.setADCPipeline)
@@ -195,20 +192,43 @@ class AcquisitionTab(QtWidgets.QWidget):
         self.view.comboBoxROMode.currentIndexChanged.connect(self.setReadOut)
         self.getReadout()
 
+
+    def _getFrequency(self, det_attr, spinbox, spinSetter, combobox):
+        spinbox.editingFinished.disconnect()
+        f = getattr(self.det, det_attr).value
+        unit = combobox.currentIndex()
+
+        if unit == 2:   #Hz
+            spinbox.setValue(f)
+        elif unit == 1:  #kHz
+            spinbox.setValue(f / 1e3)
+        else:
+            spinbox.setValue(f / 1e6)
+
+        spinbox.editingFinished.connect(spinSetter)
+    
+    def _setFrequency(self, det_attr, spinbox, combobox, title, getter):
+        value = spinbox.value()
+        idx = combobox.currentIndex()
+
+        if idx == 0:
+            val = MHz(value)
+        elif idx == 1:
+            val = kHz(value)
+        else:
+            val = Hz((int)(value))
+
+        try:
+            setattr(self.det, det_attr, val)
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(self.mainWindow, title + " Fail", str(e), QtWidgets.QMessageBox.Ok)   
+        getter()
+
     def getRunFrequency(self):
-        self.view.spinBoxRunF.editingFinished.disconnect()
-        self.view.spinBoxRunF.setValue(self.det.runclk)
-        self.view.spinBoxRunF.editingFinished.connect(self.setRunFrequency)
+        self._getFrequency('runclk', self.view.spinBoxRunF, self.setRunFrequency, self.view.comboBoxRunF)
 
     def setRunFrequency(self):
-        self.view.spinBoxRunF.editingFinished.disconnect()
-        try:
-            self.det.runclk = self.view.spinBoxRunF.value()
-        except Exception as e:
-            QtWidgets.QMessageBox.warning(self.mainWindow, "Run Frequency Fail", str(e), QtWidgets.QMessageBox.Ok)
-        # TODO: handling double event exceptions
-        self.view.spinBoxRunF.editingFinished.connect(self.setRunFrequency)
-        self.getRunFrequency()
+        self._setFrequency('runclk', self.view.spinBoxRunF, self.view.comboBoxRunF, "Run Frequency Fail", self.getRunFrequency)
 
     def getTransceiver(self):
         self.view.spinBoxTransceiver.editingFinished.disconnect()
@@ -260,19 +280,10 @@ class AcquisitionTab(QtWidgets.QWidget):
         self.getDigital()
 
     def getADCFrequency(self):
-        self.view.spinBoxADCF.editingFinished.disconnect()
-        self.view.spinBoxADCF.setValue(self.det.adcclk)
-        self.view.spinBoxADCF.editingFinished.connect(self.setADCFrequency)
+        self._getFrequency('adcclk', self.view.spinBoxADCF, self.setADCFrequency, self.view.comboBoxADCF)
 
     def setADCFrequency(self):
-        self.view.spinBoxADCF.editingFinished.disconnect()
-        try:
-            self.det.adcclk = self.view.spinBoxADCF.value()
-        except Exception as e:
-            QtWidgets.QMessageBox.warning(self.mainWindow, "ADC Frequency Fail", str(e), QtWidgets.QMessageBox.Ok)
-        # TODO: handling double event exceptions
-        self.view.spinBoxADCF.editingFinished.connect(self.setADCFrequency)
-        self.getADCFrequency()
+        self._setFrequency('adcclk', self.view.spinBoxADCF, self.view.comboBoxADCF, "ADC Frequency Fail", self.getADCFrequency)
 
     def getADCPhase(self):
         self.view.spinBoxADCPhase.editingFinished.disconnect()
@@ -305,19 +316,10 @@ class AcquisitionTab(QtWidgets.QWidget):
         self.getADCPipeline()
 
     def getDBITFrequency(self):
-        self.view.spinBoxDBITF.editingFinished.disconnect()
-        self.view.spinBoxDBITF.setValue(self.det.dbitclk)
-        self.view.spinBoxDBITF.editingFinished.connect(self.setDBITFrequency)
+        self._getFrequency('dbitclk', self.view.spinBoxDBITF, self.setDBITFrequency, self.view.comboBoxDBITF)
 
     def setDBITFrequency(self):
-        self.view.spinBoxDBITF.editingFinished.disconnect()
-        try:
-            self.det.dbitclk = self.view.spinBoxDBITF.value()
-        except Exception as e:
-            QtWidgets.QMessageBox.warning(self.mainWindow, "DBit Frequency Fail", str(e), QtWidgets.QMessageBox.Ok)
-        # TODO: handling double event exceptions
-        self.view.spinBoxDBITF.editingFinished.connect(self.setDBITFrequency)
-        self.getDBITFrequency()
+        self._setFrequency('dbitclk', self.view.spinBoxDBITF, self.view.comboBoxDBITF, "DBit Frequency Fail", self.getDBITFrequency)
 
     def getDBITPhase(self):
         self.view.spinBoxDBITPhase.editingFinished.disconnect()

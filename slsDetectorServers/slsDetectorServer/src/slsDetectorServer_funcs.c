@@ -2402,7 +2402,11 @@ int get_exptime(int file_des) {
                       "for this detector\n");
         LOG(logERROR, (mess));
     } else {
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
+        ret = getExpTime(&retval, mess);
+#else
         retval = getExpTime();
+#endif
         LOG(logDEBUG1, ("retval exptime %lld ns\n", (long long int)retval));
     }
 #endif
@@ -2472,6 +2476,9 @@ int set_exptime(int file_des) {
                     "for this detector\n");
             LOG(logERROR, (mess));
         } else {
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
+            ret = setExpTime(val, mess);
+#else
             ret = setExpTime(val);
             int64_t retval = getExpTime();
             LOG(logDEBUG1, ("retval exptime %lld ns\n", (long long int)retval));
@@ -2482,6 +2489,7 @@ int set_exptime(int file_des) {
                         (long long int)val, (long long int)retval);
                 LOG(logERROR, (mess));
             }
+#endif
         }
 #endif
     }
@@ -2494,7 +2502,11 @@ int get_period(int file_des) {
     int64_t retval = -1;
 
     // get only
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
+    ret = getPeriod(&retval, mess);
+#else
     retval = getPeriod();
+#endif
     LOG(logDEBUG1, ("retval period %lld ns\n", (long long int)retval));
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
@@ -2510,6 +2522,9 @@ int set_period(int file_des) {
 
     // only set
     if (Server_VerifyLock() == OK) {
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
+        ret = setPeriod(arg, mess);
+#else
         ret = setPeriod(arg);
         int64_t retval = getPeriod();
         LOG(logDEBUG1, ("retval period %lld ns\n", (long long int)retval));
@@ -2518,6 +2533,7 @@ int set_period(int file_des) {
                     (long long int)arg, (long long int)retval);
             LOG(logERROR, (mess));
         }
+#endif
     }
     return Server_SendResult(file_des, INT64, NULL, 0);
 }
@@ -2533,7 +2549,11 @@ int get_delay_after_trigger(int file_des) {
     functionNotImplemented();
 #else
     // get only
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
+    ret = getDelayAfterTrigger(&retval, mess);
+#else
     retval = getDelayAfterTrigger();
+#endif
     LOG(logDEBUG1,
         ("retval delay after trigger %lld ns\n", (long long int)retval));
 #endif
@@ -2557,6 +2577,9 @@ int set_delay_after_trigger(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
+        ret = setDelayAfterTrigger(arg, mess);
+#else
         ret = setDelayAfterTrigger(arg);
         int64_t retval = getDelayAfterTrigger();
         LOG(logDEBUG1,
@@ -2568,6 +2591,7 @@ int set_delay_after_trigger(int file_des) {
                     (long long int)arg, (long long int)retval);
             LOG(logERROR, (mess));
         }
+#endif
     }
 #endif
     return Server_SendResult(file_des, INT64, NULL, 0);
@@ -2802,7 +2826,11 @@ int get_period_left(int file_des) {
     functionNotImplemented();
 #else
     // get only
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
+    ret = getPeriodLeft(&retval, mess);
+#else
     retval = getPeriodLeft();
+#endif
     LOG(logDEBUG1, ("retval period left %lld ns\n", (long long int)retval));
 #endif
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
@@ -2819,7 +2847,11 @@ int get_delay_after_trigger_left(int file_des) {
     functionNotImplemented();
 #else
     // get only
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
+    ret = getDelayAfterTriggerLeft(&retval, mess);
+#else
     retval = getDelayAfterTriggerLeft();
+#endif
     LOG(logDEBUG1,
         ("retval delay after trigger left %lld ns\n", (long long int)retval));
 #endif
@@ -3306,10 +3338,6 @@ int set_pattern_wait_clocks(int file_des) {
         if (ret == OK) {
             ret = validate_getPatternWaitClocksAndInterval(mess, loopLevel,
                                                            &retval, 1);
-            if ((int64_t)timeval != GET_FLAG) {
-                validate64(&ret, mess, (int64_t)timeval, retval,
-                           "set pattern wait clocks", DEC);
-            }
         }
     }
 #endif
@@ -5693,11 +5721,9 @@ int set_clock_frequency(int file_des) {
         case ADC_CLOCK:
             c = ADC_CLK;
             break;
-#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
         case DBIT_CLOCK:
             c = DBIT_CLK;
             break;
-#endif
         case RUN_CLOCK:
             c = RUN_CLK;
             break;
@@ -5718,26 +5744,38 @@ int set_clock_frequency(int file_des) {
                     (int)c);
 
             if (getFrequency(c) == val) {
-                LOG(logINFO, ("Same %s: %d %s\n", modeName, val,
-                              myDetectorType == GOTTHARD2 ? "Hz" : "MHz"));
-            } else {
+                LOG(logINFO, ("Same %s: %d %s\n", modeName, val, "Hz"));
+            } else if (val < MIN_CLK_FREQ || val > MAX_CLK_FREQ) {
+                ret = FAIL;
+                sprintf(mess,
+                        "Cannot set frequency to %f MHz. Frequency outside "
+                        "limits (%f - %f MHz)\n",
+                        val / 1e6, MIN_CLK_FREQ / 1e6, MAX_CLK_FREQ / 1e6);
+                LOG(logERROR, (mess));
+            }
+#ifdef CHIPTESTBOARDD
+            else if (ind == ADC_CLOCK && (val > MAXIMUM_ADC_CLK)) {
+                ret = FAIL;
+                sprintf(mess,
+                        "Cannot set ADC clock frequency to %f MHz. Frequency "
+                        "outside limits (<= %f MHz)\n",
+                        val / 1e6, MAXIMUM_ADC_CLK / 1e6);
+                LOG(logERROR, (mess));
+            }
+#endif
+            else {
                 int ret = setFrequency(c, val);
                 if (ret == FAIL) {
-                    sprintf(mess, "Could not set %s to %d %s\n", modeName, val,
-                            myDetectorType == XILINX_CHIPTESTBOARD ? "kHz"
-                                                                   : "MHz");
+                    sprintf(mess, "Could not set %s to %f MHz\n", modeName,
+                            val / 1e6);
                     LOG(logERROR, (mess));
                 } else {
                     int retval = getFrequency(c);
                     LOG(logDEBUG1,
-                        ("retval %s: %d %s\n", modeName, retval,
-                         myDetectorType == XILINX_CHIPTESTBOARD ? "kHz"
-                                                                : "MHz"));
-#if !defined(XILINX_CHIPTESTBOARDD)
-                    // XCTB will give the actual frequency, which is not
+                        ("retval %s: %f MHz\n", modeName, retval / 1e6));
+                    // both CTB's will give the actual frequency, which is not
                     // 100% identical to the set frequency
                     validate(&ret, mess, val, retval, modeName, DEC);
-#endif
                 }
             }
         }
@@ -5790,14 +5828,8 @@ int get_clock_frequency(int file_des) {
     if (ret == OK) {
         retval = getFrequency(c);
         char *clock_names[] = {CLK_NAMES};
-        LOG(logDEBUG1,
-            ("retval %s clock (%d) frequency: %d %s\n", clock_names[c], (int)c,
-             retval,
-             myDetectorType == XILINX_CHIPTESTBOARD
-                 ? "kHz"
-                 : (myDetectorType == GOTTHARD2 || myDetectorType == MYTHEN3
-                        ? "Hz"
-                        : "MHz")));
+        LOG(logDEBUG1, ("retval %s clock (%d) frequency: %d %s\n",
+                        clock_names[c], (int)c, retval, "Hz"));
     }
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
@@ -7029,6 +7061,11 @@ int get_receiver_parameters(int file_des) {
         // exptime
 #ifdef MYTHEN3D
     i64 = 0;
+#elif defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
+    if (getExpTime(&i64, mess) == FAIL) {
+        sprintf(mess, "Could not get exposure time.\n");
+        return sendError(file_des);
+    }
 #else
     i64 = getExpTime();
 #endif
@@ -7037,7 +7074,15 @@ int get_receiver_parameters(int file_des) {
         return printSocketReadError();
 
     // period
+    i64 = 0;
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
+    if (getPeriod(&i64, mess) == FAIL) {
+        sprintf(mess, "Could not get period.\n");
+        return sendError(file_des);
+    }
+#else
     i64 = getPeriod();
+#endif
     n += sendData(file_des, &i64, sizeof(i64), INT64);
     if (n < 0)
         return printSocketReadError();
@@ -10894,13 +10939,6 @@ int set_pattern_wait_interval(int file_des) {
     if (Server_VerifyLock() == OK) {
         ret = validate_setPatternWaitClocksAndInterval(mess, loopLevel, timeval,
                                                        0);
-        if (ret == OK) {
-            uint64_t retval = 0;
-            ret = validate_getPatternWaitClocksAndInterval(mess, loopLevel,
-                                                           &retval, 0);
-            validate64(&ret, mess, (int64_t)timeval, retval,
-                       "set pattern wait interval", DEC);
-        }
     }
 
 #endif

@@ -11,7 +11,7 @@
 
 #ifdef MYTHEN3D
 extern enum TLogLevel trimmingPrint;
-extern uint32_t clkDivider[];
+extern int getFrequency(enum CLKINDEX ind);
 #endif
 #if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
 extern uint32_t clkFrequency[];
@@ -277,6 +277,14 @@ int validate_getPatternWaitClocksAndInterval(char *message, int level,
         *waittime = getPatternWaitClocks(level);
     } else {
         *waittime = getPatternWaitInterval(level);
+        if (*waittime == (uint64_t)-1) {
+            sprintf(
+                message,
+                "Cannot get pattern wait interval for level %d. runclk is 0.\n",
+                level);
+            LOG(logERROR, (message));
+            return FAIL;
+        }
     }
     return OK;
 }
@@ -297,17 +305,17 @@ uint64_t getPatternWaitClocks(int level) {
 
 uint64_t getPatternWaitInterval(int level) {
     uint64_t numClocks = getPatternWaitClocks(level);
-    int runclk = 0;
+    uint32_t runclk = 0;
 #if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
     runclk = clkFrequency[RUN_CLK];
 #elif MYTHEN3D
-    runclk = clkDivider[SYSTEM_C0];
+    runclk = getFrequency(SYSTEM_C0);
 #endif
     if (runclk == 0) {
         LOG(logERROR, ("runclk is 0. Cannot divide by 0. Returning -1.\n"));
         return -1;
     }
-    return numClocks / (NS_TO_CLK_CYCLE * runclk);
+    return clocks_to_ns(numClocks, runclk);
 }
 
 int validate_setPatternWaitClocksAndInterval(char *message, int level,
@@ -321,27 +329,50 @@ int validate_setPatternWaitClocksAndInterval(char *message, int level,
         return FAIL;
     }
 
-    uint64_t retval = 0;
     if (clocks) {
         setPatternWaitClocks(level, waittime);
         // validate result
-        retval = getPatternWaitClocks(level);
+        uint64_t retval = getPatternWaitClocks(level);
         LOG(logDEBUG1, ("Pattern wait time in clocks (level:%d) retval: %d\n",
                         level, (long long int)retval));
-    } else {
-        setPatternWaitInterval(level, waittime);
-        // validate result
-        retval = getPatternWaitInterval(level);
-        LOG(logDEBUG1, ("Pattern wait time (level:%d) retval: %d\n", level,
-                        (long long int)retval));
+
+        int ret = OK;
+        char mode[128];
+        memset(mode, 0, sizeof(mode));
+        sprintf(mode, "set pattern Loop %d wait time (clocks)", level);
+        validate64(&ret, message, waittime, retval, mode, DEC);
+        return ret;
     }
 
-    int ret = OK;
-    char mode[128];
-    memset(mode, 0, sizeof(mode));
-    sprintf(mode, "set pattern Loop %d wait time", level);
-    validate64(&ret, message, waittime, retval, mode, DEC);
-    return ret;
+    // interval
+    setPatternWaitInterval(level, waittime);
+
+    // validate
+    uint32_t runclk = 0;
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
+    runclk = clkFrequency[RUN_CLK];
+#elif MYTHEN3D
+    runclk = getFrequency(SYSTEM_C0);
+#endif
+    uint64_t arg_clocks = ns_to_clocks(waittime, runclk);
+    uint64_t retval_clocks = getPatternWaitClocks(level);
+    if (arg_clocks != retval_clocks) {
+        sprintf(message,
+                "Failed to set pattern loop %d wait interval. Could not set "
+                "number of clocks to %lld, read %lld\n",
+                level, (long long int)arg_clocks, (long long int)retval_clocks);
+        LOG(logERROR, (message));
+        return FAIL;
+    }
+
+    // log rounding if any
+    uint64_t retval = getPatternWaitInterval(level);
+    if (waittime != retval) {
+        LOG(logWARNING, ("Rounding to %lld ns due to clock frequency\n",
+                         (long long int)retval));
+    }
+
+    return OK;
 }
 
 void setPatternWaitClocks(int level, uint64_t t) {
@@ -375,13 +406,13 @@ void setPatternWaitInterval(int level, uint64_t t) {
 #endif
         ("Setting Pattern Wait Time (level:%d) :%lld ns\n", level,
          (long long int)t));
-    int runclk = 0;
+    uint32_t runclk = 0;
 #if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
     runclk = clkFrequency[RUN_CLK];
 #elif MYTHEN3D
-    runclk = clkDivider[SYSTEM_C0];
+    runclk = getFrequency(SYSTEM_C0);
 #endif
-    uint64_t numClocks = t * (NS_TO_CLK_CYCLE * runclk);
+    uint64_t numClocks = ns_to_clocks(t, runclk);
     setPatternWaitClocks(level, numClocks);
 }
 

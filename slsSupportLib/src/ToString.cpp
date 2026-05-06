@@ -741,6 +741,36 @@ std::string ToString(const defs::collectionMode s) {
 
 const std::string &ToString(const std::string &s) { return s; }
 
+std::string ToString(defs::Hz f, defs::FrequencyUnit unit) {
+    double val = static_cast<double>(f.value);
+    std::ostringstream os;
+    switch (unit) {
+    case defs::FrequencyUnit::Hz:
+        os << val << "Hz";
+        break;
+    case defs::FrequencyUnit::kHz:
+        os << val / (static_cast<double>(1e3)) << "kHz";
+        break;
+    case defs::FrequencyUnit::MHz:
+        os << val / (static_cast<double>(1e6)) << "MHz";
+        break;
+    default:
+        throw std::runtime_error("Unknown frequency unit");
+    }
+    return os.str();
+}
+
+std::string ToString(defs::Hz f) {
+    int val = f.value;
+    if (val < 1e3) {
+        return ToString(f, defs::FrequencyUnit::Hz);
+    } else if (val < 1e6) {
+        return ToString(f, defs::FrequencyUnit::kHz);
+    } else {
+        return ToString(f, defs::FrequencyUnit::MHz);
+    }
+}
+
 template <> defs::detectorType StringTo(const std::string &s) {
     if (s == "Eiger")
         return defs::EIGER;

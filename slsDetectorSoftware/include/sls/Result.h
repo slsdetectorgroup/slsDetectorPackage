@@ -38,6 +38,7 @@ template <class T, class Allocator = std::allocator<T>> class Result {
     template <typename V, typename = typename std::enable_if<
                               std::is_integral<V>::value &&
                               (std::is_same<T, time::ns>::value ||
+                               std::is_same<T, defs::Hz>::value ||
                                std::is_same<T, bool>::value)>::type>
     Result(const Result<V> &from) {
         vec.reserve(from.size());
@@ -49,6 +50,7 @@ template <class T, class Allocator = std::allocator<T>> class Result {
     template <typename V, typename = typename std::enable_if<
                               std::is_integral<V>::value &&
                               (std::is_same<T, time::ns>::value ||
+                               std::is_same<T, defs::Hz>::value ||
                                std::is_same<T, bool>::value)>::type>
     Result(Result<V> &from) {
         vec.reserve(from.size());
@@ -60,6 +62,7 @@ template <class T, class Allocator = std::allocator<T>> class Result {
     template <typename V, typename = typename std::enable_if<
                               std::is_integral<V>::value &&
                               (std::is_same<T, time::ns>::value ||
+                               std::is_same<T, defs::Hz>::value ||
                                std::is_same<T, bool>::value)>::type>
     Result(Result<V> &&from) {
         vec.reserve(from.size());

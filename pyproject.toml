@@ -15,6 +15,12 @@ dependencies = [
     "numpy", 
 ]
 
+[project.scripts]
+sls_detector_get = "slsdet.cli:get"
+sls_detector_put = "slsdet.cli:put"
+sls_detector_acquire = "slsdet.cli:acquire"
+slsReceiver = "slsdet.cli:receiver"
+
 [tool.cibuildwheel]
 before-all = "uname -a"
 build = "cp{311,312,313,314}-manylinux_x86_64"
@@ -22,16 +28,20 @@ build = "cp{311,312,313,314}-manylinux_x86_64"
 [tool.scikit-build.build]
 verbose = true
 
+
 [tool.scikit-build.cmake]
 build-type = "Release"
 
 [tool.scikit-build.install]
-components = [ "python",]
+components = [ "python","cli", "receiver"]
 
 [tool.scikit-build.cmake.define]
-SLS_USE_RECEIVER = "OFF"
-SLS_USE_RECEIVER_BINARIES = "OFF"
-SLS_USE_TEXTCLIENT = "OFF"
+SLS_USE_RECEIVER = "ON"
+SLS_USE_RECEIVER_BINARIES = "ON"
+SLS_USE_TEXTCLIENT = "ON"
 SLS_BUILD_SHARED_LIBRARIES = "OFF"
 SLS_USE_PYTHON = "ON"
 SLS_INSTALL_PYTHONEXT = "ON"
+CMAKE_INSTALL_BINDIR = "slsdet/data/bin"
+
+

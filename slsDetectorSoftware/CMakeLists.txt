@@ -112,13 +112,13 @@ if(SLS_USE_TEXTCLIENT)
         # Mainly for RPMs to enable side by side installations of different versions
         if(SLS_INSTALL_VERSIONED_BINARIES)
             install(PROGRAMS "$<TARGET_FILE:${val1}>"
-                DESTINATION bin
+                DESTINATION ${CMAKE_INSTALL_BINDIR}
                 RENAME "$<TARGET_FILE_BASE_NAME:${val1}>-${PROJECT_VERSION}"
                 COMPONENT cli
             )
         else()
              install(TARGETS ${val1}
-                DESTINATION bin
+                DESTINATION ${CMAKE_INSTALL_BINDIR}
                 COMPONENT cli
             )
         endif()

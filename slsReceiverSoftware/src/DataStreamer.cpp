@@ -162,18 +162,23 @@ void DataStreamer::ProcessAnImage(sls_detector_header header, size_t size,
     }
 }
 
-zmqHeader DataStreamer::prepareZmqHeader() {
+zmqHeader DataStreamer::prepareRxZmqHeader() {
     zmqHeader zHeader;
     zHeader.jsonversion = SLS_DETECTOR_JSON_HEADER_VERSION;
-    // parameters coming from the receiver software
-    zHeader.fname = fileNametoStream;
+
+    // parameters coming from the receiver
     zHeader.dynamicRange = generalData->dynamicRange;
     zHeader.fileIndex = fileIndex;
+    zHeader.flipRows = static_cast<int>(flipRows);
+    zHeader.fname = fileNametoStream;
+    zHeader.imageSize = generalData->imageSize;
+    if (generalData->detType == GOTTHARD2 && index != 0) {
+        zHeader.imageSize = generalData->vetoImageSize;
+    }
     zHeader.ndetx = numPorts.x;
     zHeader.ndety = numPorts.y;
     zHeader.npixelsx = generalData->nPixelsX;
     zHeader.npixelsy = generalData->nPixelsY;
-    zHeader.flipRows = static_cast<int>(flipRows);
     zHeader.quad = quadEnable;
 
     // update local copy only if it was updated (to prevent locking each time)
@@ -188,37 +193,38 @@ zmqHeader DataStreamer::prepareZmqHeader() {
 }
 
 int DataStreamer::SendDummyHeader() {
-    zmqHeader zHeader = prepareZmqHeader();
+    zmqHeader zHeader = prepareRxZmqHeader();
     zHeader.data = false;
     return zmqSocket->SendHeader(index, zHeader);
 }
 
 int DataStreamer::SendDataHeader(sls_detector_header header, uint32_t size) {
-    zmqHeader zHeader = prepareZmqHeader();
+    zmqHeader zHeader = prepareRxZmqHeader();
     zHeader.data = true;
 
     // parameter coming from the detector (raw and derived)
     uint64_t frameIndex = header.frameNumber - firstIndex;
     uint64_t acquisitionIndex = header.frameNumber;
 
-    zHeader.frameIndex = frameIndex;
     zHeader.acqIndex = acquisitionIndex;
-    zHeader.frameNumber = header.frameNumber;
-    zHeader.progress =
-        100 * ((double)(frameIndex + 1) / (double)(nTotalFrames));
-    zHeader.expLength = header.expLength;
-    zHeader.packetNumber = header.packetNumber;
+    zHeader.column = header.column;
     zHeader.completeImage =
         (header.packetNumber < generalData->packetsPerFrame ? false : true);
     zHeader.detSpec1 = header.detSpec1;
-    zHeader.timestamp = header.timestamp;
-    zHeader.modId = header.modId;
-    zHeader.row = header.row;
-    zHeader.column = header.column;
     zHeader.detSpec2 = header.detSpec2;
     zHeader.detSpec3 = header.detSpec3;
     zHeader.detSpec4 = header.detSpec4;
     zHeader.detType = header.detType;
+    zHeader.expLength = header.expLength;
+    zHeader.frameIndex = frameIndex;
+    zHeader.frameNumber = header.frameNumber;
+    zHeader.imageSize = size;
+    zHeader.modId = header.modId;
+    zHeader.packetNumber = header.packetNumber;
+    zHeader.progress =
+        100 * ((double)(frameIndex + 1) / (double)(nTotalFrames));
+    zHeader.row = header.row;
+    zHeader.timestamp = header.timestamp;
     zHeader.version = header.version;
 
     return zmqSocket->SendHeader(index, zHeader);

@@ -72,7 +72,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
      */
     void ProcessAnImage(sls_detector_header header, size_t size, char *data);
 
-    zmqHeader prepareZmqHeader();
+    zmqHeader prepareRxZmqHeader();
     int SendDummyHeader();
 
     /**

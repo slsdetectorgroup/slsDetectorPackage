@@ -2431,8 +2431,9 @@ std::string Caller::datastream(int action) {
     std::ostringstream os;
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
-        os << R"V0G0N([left|right] [0, 1]
-	[Eiger] Enables or disables data streaming from left or/and right side of detector for 10 GbE mode. 1 (enabled) by default. )V0G0N"
+        os << R"V0G0N([left|right|top|bottom] [0, 1]
+	[Eiger] Enables or disables data streaming from left or/and right side of detector for 10 GbE mode. Options: left, right. 1 (enabled) by default.
+	[Jungfrau][Moench] Enables or disables data stream from top or/and bottom side of receiver. Can change only if numinterfaces is 2. Options: top, bottom.1 (enabled) by default. )V0G0N"
            << std::endl;
         return os.str();
     }

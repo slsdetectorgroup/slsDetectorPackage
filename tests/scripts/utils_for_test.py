@@ -287,6 +287,7 @@ def startReceiver(num_mods, fp, no_log_file = False, quiet_mode=False):
 
 def loadConfig(name, rx_hostname = 'localhost', settingsdir = None, log_file_fp = None, num_mods = 1, num_frames = 1, num_interfaces = 1):
     Log(LogLevel.INFO, 'Loading config', log_file_fp, True)
+    Log(LogLevel.INFORED, f"Config for {name}, num_mods={num_mods}, num_interfaces={num_interfaces}", log_file_fp, True)
     try:
         d = connectToVirtualServers(name, num_mods)
 

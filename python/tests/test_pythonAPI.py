@@ -1,7 +1,7 @@
 import pytest 
 import sys 
 
-from conftest import session_simulator, test_with_simulators
+from conftest import session_simulator, test_with_specific_simulator
 
 from slsdet import Detector
 
@@ -41,7 +41,7 @@ def test_rx_ROI(session_simulator):
 
         assert d.rx_roi == [(5,15,15,25)]
 
-        if d.type != detectorType.JUNGFRAU and d.numinterfaces != 2:
+        if d.nmod > 1 and (d.type != detectorType.JUNGFRAU) or (d.numinterfaces == 2 and d.type != detectorType.EIGER): 
             d.rx_roi = [[0,10,0,20], [5,20,410,420]] 
 
             roi = d.rx_roi
@@ -49,22 +49,25 @@ def test_rx_ROI(session_simulator):
 
         d.rx_clearroi() 
         roi = d.rx_roi
-        assert roi == [(-1,-1,-1,-1)]  
+        assert roi == [(-1,-1,-1,-1)] 
+
 
 @pytest.mark.detectorintegration
-@pytest.mark.parametrize("servers", [["moench", 1]], indirect=True)
-def test_type(test_with_specific_simulator):
+@pytest.mark.parametrize("session_simulator",[("moench", 1, 2)],indirect=True)
+def test_type(session_simulator):
 
     d = Detector()
     assert d.type == detectorType.MOENCH
 
 
 @pytest.mark.detectorintegration
-@pytest.mark.parametrize("servers", [["moench", 1], ["jungfrau", 1]], indirect=True)
-def test_numinterfaces(test_with_specific_simulator):
+@pytest.mark.parametrize("session_simulator",[("moench", 1, 2), ("jungfrau", 1, 2)],indirect=True)
+def test_numinterfaces(session_simulator):
 
     d = Detector()
     assert d.numinterfaces == 1
+
+
 
     
     

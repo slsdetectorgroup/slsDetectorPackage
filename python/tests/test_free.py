@@ -17,46 +17,18 @@ sys.path.append(str(scripts_dir))
 
 
 from slsdet import Detector, Ctb, freeSharedMemory
+
 from utils_for_test import (
     Log,
     LogLevel,
-    cleanup,
-    startDetectorVirtualServer,
-    connectToVirtualServers,
     SERVER_START_PORTNO
 )
 
-'''
-scope = module =>Once per test file/module 
-to share expensive setup like startDetectorVirtualServer
-'''
-@pytest.fixture(scope="module")
-def det_config():
-    return {
-        "name": "ctb",
-        "num_mods": 1
-    }
-
-@pytest.fixture(scope="module", autouse=True)
-def setup_simulator(det_config):
-    """Fixture to start the detector server once and clean up at the end."""
-    fp = sys.stdout
-
-    cleanup(fp)
-    startDetectorVirtualServer(det_config["name"], det_config["num_mods"], fp)
-
-    Log(LogLevel.INFOBLUE, f'Waiting for server to start up and connect')
-    connectToVirtualServers(det_config["name"], det_config["num_mods"])
-    Log(LogLevel.INFOBLUE, f'Freeing shm before tests')
-    freeSharedMemory()
-
-    yield  # tests run here
-
-    cleanup(fp)
-
+from conftest import session_simulator
 
 @pytest.mark.detectorintegration
-def test_exptime_after_free_should_raise(setup_simulator):
+@pytest.mark.parametrize("session_simulator",[("ctb", 1, 1)],indirect=True)
+def test_exptime_after_free_should_raise(session_simulator):
     Log(LogLevel.INFOBLUE, f'\nRunning test_exptime_after_free_should_raise')
 
 
@@ -78,7 +50,8 @@ def free_and_create_shm():
     k.hostname = f"localhost:{SERVER_START_PORTNO}" # free and recreate shm, maps to local shm struct
 
 @pytest.mark.detectorintegration
-def test_exptime_after_not_passing_var_should_raise(setup_simulator):
+@pytest.mark.parametrize("session_simulator",[("ctb", 1, 1)],indirect=True)
+def test_exptime_after_not_passing_var_should_raise(session_simulator):
     Log(LogLevel.INFOBLUE, f'\nRunning test_exptime_after_not_passing_var_should_raise')
 
 
@@ -102,7 +75,8 @@ def free_and_create_shm_passing_ctb_var(k):
     k.hostname = f"localhost:{SERVER_START_PORTNO}" # free and recreate shm, maps to local shm struct
 
 @pytest.mark.detectorintegration
-def test_exptime_after_passing_ctb_var_should_raise(setup_simulator):
+@pytest.mark.parametrize("session_simulator",[("ctb", 1, 1)],indirect=True)
+def test_exptime_after_passing_ctb_var_should_raise(session_simulator):
     Log(LogLevel.INFOBLUE, f'\nRunning test_exptime_after_passing_ctb_var_should_raise')
 
     d = Ctb() # creates multi shm (assuming no shm exists)
@@ -125,7 +99,8 @@ def free_and_create_shm_returning_ctb():
     return k
 
 @pytest.mark.detectorintegration
-def test_exptime_after_returning_ctb_should_raise(setup_simulator):
+@pytest.mark.parametrize("session_simulator",[("ctb", 1, 1)],indirect=True)
+def test_exptime_after_returning_ctb_should_raise(session_simulator):
     Log(LogLevel.INFOBLUE, f'\nRunning test_exptime_after_returning_ctb_should_raise')
 
     d = Ctb() # creates multi shm (assuming no shm exists)
@@ -148,7 +123,8 @@ def test_exptime_after_returning_ctb_should_raise(setup_simulator):
     assert str(exc_info.value) == "Shared memory is invalid or freed. Close resources before access."
 
 @pytest.mark.detectorintegration
-def test_hostname_twice_acess_old_should_raise(setup_simulator):
+@pytest.mark.parametrize("session_simulator",[("ctb", 1, 1)],indirect=True)
+def test_hostname_twice_acess_old_should_raise(session_simulator):
     Log(LogLevel.INFOBLUE, f'\nRunning test_hostname_twice_acess_old_should_raise')
 
     d = Ctb() # creates multi shm (assuming no shm exists)

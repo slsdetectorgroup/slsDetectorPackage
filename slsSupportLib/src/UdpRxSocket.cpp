@@ -18,7 +18,7 @@ namespace sls {
 UdpRxSocket::UdpRxSocket(uint16_t port, ssize_t packet_size,
                          const char *hostname, int kernel_buffer_size)
     : packet_size_(packet_size) {
-    struct addrinfo hints {};
+    struct addrinfo hints{};
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_DGRAM;
     hints.ai_flags = AI_PASSIVE | AI_ADDRCONFIG;

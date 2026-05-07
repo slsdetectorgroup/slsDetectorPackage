@@ -897,6 +897,22 @@ class Detector {
      */
     void setTransmissionDelay(int step);
 
+    /** [Eiger] Module Level disable. Options: LEFT, RIGHT
+     * [Jungfrau][Moench] Only Receiver level diable. Options: TOP, BOTTOM
+     *
+     */
+    Result<bool> getDataStream(const defs::portPosition port,
+                               Positions pos = {}) const;
+
+    /** [Eiger] enable or disable data streaming from left or right of detector
+     * for 10GbE. Default: enabled
+     * [Jungfrau][Moench] Enable/Disable data streaming from the top or bottom
+     * of receiver. Default: enabled. Disabling of any port works only if number
+     * of interfaces is 2.
+     */
+    void setDataStream(const defs::portPosition port, const bool enable,
+                       Positions pos = {});
+
     ///@}
 
     /** @name Receiver Configuration */
@@ -1250,16 +1266,6 @@ class Detector {
     /** [Eiger] Sets detector size to a quad. 0 (disabled) is default. (Specific
      * hardware required). */
     void setQuad(const bool enable);
-
-    /** [Eiger] */
-    Result<bool> getDataStream(const defs::portPosition port,
-                               Positions pos = {}) const;
-
-    /** [Eiger] enable or disable data streaming from left or right of detector
-     * for 10GbE. Default: enabled
-     */
-    void setDataStream(const defs::portPosition port, const bool enable,
-                       Positions pos = {});
 
     /** [Eiger] Advanced */
     Result<bool> getTop(Positions pos = {}) const;

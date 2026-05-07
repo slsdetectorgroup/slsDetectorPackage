@@ -32,7 +32,7 @@ template <class T, class Allocator = std::allocator<T>> class Result {
 
   public:
     Result() = default;
-    Result(std::initializer_list<T> list) : vec(list){};
+    Result(std::initializer_list<T> list) : vec(list) {};
 
     /** Custom constructor from integer type to Result<ns> or Result<bool> */
     template <typename V, typename = typename std::enable_if<

@@ -3068,6 +3068,92 @@ TEST_CASE("txdelay", "[.detectorintegration]") {
     }
 }
 
+TEST_CASE("datastream", "[.detectorintegration]") {
+    Detector det;
+    Caller caller(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER) {
+        auto prev_val_left = det.getDataStream(defs::LEFT);
+        auto prev_val_right = det.getDataStream(defs::RIGHT);
+
+        // invalid args
+        REQUIRE_THROWS(caller.call("datastream", {"top", "1"}, -1, PUT));
+        REQUIRE_THROWS(caller.call("datastream", {"bottom", "1"}, -1, PUT));
+        // no "left" or "right" argument
+        REQUIRE_THROWS(caller.call("datastream", {"1"}, -1, PUT));
+        {
+            std::ostringstream oss;
+            caller.call("datastream", {"left", "0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "datastream [left, 0]\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("datastream", {"right", "0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "datastream [right, 0]\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("datastream", {"left", "1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "datastream [left, 1]\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("datastream", {"right", "1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "datastream [right, 1]\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setDataStream(defs::LEFT, prev_val_left[i], {i});
+            det.setDataStream(defs::RIGHT, prev_val_right[i], {i});
+        }
+    } else if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
+
+        // throw with 1 interface
+        if (det.getNumberofUDPInterfaces().squash() == 1) {
+            REQUIRE_THROWS(caller.call("datastream", {"top", "0"}, -1, PUT));
+        }
+        // 2 interfaces
+        else {
+            auto prev_val_top = det.getDataStream(defs::TOP);
+            auto prev_val_bottom = det.getDataStream(defs::BOTTOM);
+
+            // invalid args
+            REQUIRE_THROWS(caller.call("datastream", {"left", "1"}, -1, PUT));
+            REQUIRE_THROWS(caller.call("datastream", {"right", "1"}, -1, PUT));
+            // no "top" or "bottom" argument
+            REQUIRE_THROWS(caller.call("datastream", {"1"}, -1, PUT));
+            {
+                std::ostringstream oss;
+                caller.call("datastream", {"top", "0"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "datastream [top, 0]\n");
+            }
+            {
+                std::ostringstream oss;
+                caller.call("datastream", {"bottom", "0"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "datastream [bottom, 0]\n");
+            }
+            {
+                std::ostringstream oss;
+                caller.call("datastream", {"top", "1"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "datastream [top, 1]\n");
+            }
+            {
+                std::ostringstream oss;
+                caller.call("datastream", {"bottom", "1"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "datastream [bottom, 1]\n");
+            }
+            for (int i = 0; i != det.size(); ++i) {
+                det.setDataStream(defs::TOP, prev_val_top[i], {i});
+                det.setDataStream(defs::BOTTOM, prev_val_bottom[i], {i});
+            }
+        }
+    } else {
+        REQUIRE_THROWS(caller.call("datastream", {}, -1, GET));
+        REQUIRE_THROWS(caller.call("datastream", {"1"}, -1, PUT));
+        REQUIRE_THROWS(caller.call("datastream", {"left", "1"}, -1, PUT));
+        REQUIRE_THROWS(caller.call("datastream", {"top", "1"}, -1, PUT));
+    }
+}
+
 /* ZMQ Streaming Parameters (Receiver<->Client) */
 
 TEST_CASE("zmqport", "[.detectorintegration]") {

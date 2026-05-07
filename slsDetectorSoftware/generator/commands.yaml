@@ -3611,7 +3611,7 @@ quad:
       output: [ args.front() ]
 
 datastream:
-  help: "[left|right] [0, 1]\n\t[Eiger] Enables or disables data streaming from left or/and right side of detector for 10 GbE mode. 1 (enabled) by default."
+  help: "[left|right|top|bottom] [0, 1]\n\t[Eiger] Enables or disables data streaming from left or/and right side of detector for 10 GbE mode. Options: left, right. 1 (enabled) by default.\n\t[Jungfrau][Moench] Enables or disables data stream from top or/and bottom side of receiver. Can change only if numinterfaces is 2. Options: top, bottom.1 (enabled) by default."
   actions:
     GET:
       argc: 1

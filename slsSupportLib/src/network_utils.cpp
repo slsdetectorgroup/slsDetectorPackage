@@ -225,7 +225,7 @@ void validatePortRange(uint16_t startPort, int numPorts) {
 
 void setupSignalHandler(int signal, void (*handler)(int)) {
     // Catch signal SIGINT to close files and call destructors properly
-    struct sigaction sa {};
+    struct sigaction sa{};
     sa.sa_handler = handler;
     sigemptyset(&sa.sa_mask); // dont block additional signals
     sa.sa_flags = 0;

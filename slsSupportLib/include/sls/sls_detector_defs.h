@@ -137,7 +137,7 @@ class slsDetectorDefs {
         int x{0};
         int y{0};
         xy() = default;
-        xy(int x, int y) : x(x), y(y){};
+        xy(int x, int y) : x(x), y(y) {};
         constexpr bool operator==(const xy &other) const {
             return ((x == other.x) && (y == other.y));
         }
@@ -223,7 +223,7 @@ class slsDetectorDefs {
 
     struct Hz {
         int value{0};
-        explicit Hz(int v) : value(v){};
+        explicit Hz(int v) : value(v) {};
         constexpr bool operator==(const Hz &other) const {
             return (value == other.value);
         }
@@ -252,9 +252,9 @@ class slsDetectorDefs {
         int ymin{-1};
         int ymax{-1};
         ROI() = default;
-        ROI(int xmin, int xmax) : xmin(xmin), xmax(xmax){};
+        ROI(int xmin, int xmax) : xmin(xmin), xmax(xmax) {};
         ROI(int xmin, int xmax, int ymin, int ymax)
-            : xmin(xmin), xmax(xmax), ymin(ymin), ymax(ymax){};
+            : xmin(xmin), xmax(xmax), ymin(ymin), ymax(ymax) {};
         constexpr int width() const { return (xmax - xmin + 1); }
         constexpr int height() const { return (ymax - ymin + 1); }
         constexpr std::array<int, 4> getIntArray() const {

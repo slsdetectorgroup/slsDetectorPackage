@@ -2423,11 +2423,18 @@ class Detector(CppDetectorApi):
     @property
     def datastream(self):
         """
-        datastream [left|right] [0, 1]
-	    [Eiger] Enables or disables data streaming from left or/and right side of detector for 10GbE mode. 1 (enabled) by default.
+        datastream [LEFT|RIGHT|TOP|BOTTOM] [0, 1]
+	    [Eiger] Enables or disables data streaming from left or/and right side of detector for 10GbE mode. 1 (enabled) by default. Options: LEFT, RIGHT.
+        [Jungfrau][Moench] Enables or disables data stream from top or/and bottom receiver. Can change only if numinterfaces is 2. 1 (enabled) by default. Options: TOP, BOTTOM.
+        Enum: portPosition
         """
         result = {}
-        for port in [defs.LEFT, defs.RIGHT]:
+        if self.type in [detectorType.JUNGFRAU, detectorType.MOENCH]:
+            ports = [defs.TOP, defs.BOTTOM]
+        else:
+            ports = [defs.LEFT, defs.RIGHT]     
+
+        for port in ports:
             result[port] = element_if_equal(self.getDataStream(port))
         return result
 

@@ -7,8 +7,7 @@
 
 #define NUM_HARDWARE_VERSIONS    (2)
 #define HARDWARE_VERSION_NUMBERS {0x0, 0x1};
-#define HARDWARE_VERSION_NAMES                                                 \
-    { "FX70T", "FX30T" }
+#define HARDWARE_VERSION_NAMES   {"FX70T", "FX30T"}
 
 #define REQUIRED_FIRMWARE_VERSION (32)
 // virtual ones renamed for consistency

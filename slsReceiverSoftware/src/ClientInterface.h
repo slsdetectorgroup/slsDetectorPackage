@@ -154,7 +154,9 @@ class ClientInterface : private virtual slsDetectorDefs {
     int get_streaming_hwm(ServerInterface &socket);
     int set_streaming_hwm(ServerInterface &socket);
     int set_all_threshold(ServerInterface &socket);
-    int set_detector_datastream(ServerInterface &socket);
+    void validate_port_position(const portPosition port);
+    int set_port_udp_datastream(ServerInterface &socket);
+    int get_port_udp_datastream(ServerInterface &socket);
     int get_arping(ServerInterface &socket);
     int set_arping(ServerInterface &socket);
     int get_receiver_roi(ServerInterface &socket);

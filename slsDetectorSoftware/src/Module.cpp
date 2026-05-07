@@ -1407,6 +1407,33 @@ void Module::setTransmissionDelayRight(int value) {
     sendToDetector(F_SET_TRANSMISSION_DELAY_RIGHT, value, nullptr);
 }
 
+bool Module::getDataStream(const portPosition port) const {
+    // receiver only
+    if (shm()->detType == JUNGFRAU || shm()->detType == MOENCH) {
+        if (!shm()->useReceiverFlag) {
+            throw RuntimeError("No receiver to get datastream.");
+        }
+        return sendToReceiver<int>(F_RECEIVER_GET_UDP_DATASTREAM,
+                                   static_cast<int>(port));
+    } else
+        return sendToDetector<int>(F_GET_DATASTREAM, static_cast<int>(port));
+}
+
+void Module::setDataStream(const portPosition port, const bool enable) {
+    int args[]{static_cast<int>(port), static_cast<int>(enable)};
+    if (shm()->detType == JUNGFRAU || shm()->detType == MOENCH) {
+        if (!shm()->useReceiverFlag) {
+            throw RuntimeError("No receiver to set datastream.");
+        }
+        sendToReceiver(F_RECEIVER_SET_UDP_DATASTREAM, args, nullptr);
+    } else {
+        sendToDetector(F_SET_DATASTREAM, args, nullptr);
+        if (shm()->useReceiverFlag) {
+            sendToReceiver(F_RECEIVER_SET_UDP_DATASTREAM, args, nullptr);
+        }
+    }
+}
+
 // Receiver Config
 
 bool Module::getUseReceiverFlag() const { return shm()->useReceiverFlag; }
@@ -1945,18 +1972,6 @@ void Module::setQuad(const bool enable) {
     sendToDetector(F_SET_QUAD, value, nullptr);
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_SET_RECEIVER_QUAD, value, nullptr);
-    }
-}
-
-bool Module::getDataStream(const portPosition port) const {
-    return sendToDetector<int>(F_GET_DATASTREAM, static_cast<int>(port));
-}
-
-void Module::setDataStream(const portPosition port, const bool enable) {
-    int args[]{static_cast<int>(port), static_cast<int>(enable)};
-    sendToDetector(F_SET_DATASTREAM, args, nullptr);
-    if (shm()->useReceiverFlag) {
-        sendToReceiver(F_RECEIVER_SET_DATASTREAM, args, nullptr);
     }
 }
 

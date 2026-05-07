@@ -46,6 +46,9 @@
 #define DEFAULT_UDP_SRC_PORTNO   32410
 #define DEFAULT_UDP_DST_PORTNO   50001
 
+/** for virtual detectors */
+#define LOCALHOSTIP_INT 2130706433
+
 #define MAX_UDP_DESTINATION 32
 
 #define SLS_DETECTOR_HEADER_VERSION      0x2
@@ -82,8 +85,13 @@
 #define DEFAULT_STREAMING_TIMER_IN_MS 500
 
 #define NUM_RX_THREAD_IDS 9
+
 // NOLINTEND(cppcoreguidelines-macro-usage)
 #ifdef __cplusplus
+
+// TODO: why are all these defs inside a class? - why not static
+enum ReturnCode { OK = 0, FAIL = 1 };
+
 class slsDetectorDefs {
   public:
 #endif
@@ -98,11 +106,15 @@ class slsDetectorDefs {
         MOENCH,
         MYTHEN3,
         GOTTHARD2,
-        XILINX_CHIPTESTBOARD
+        XILINX_CHIPTESTBOARD,
+        MATTERHORN // TODO: maybe better to have it under a namespace
+                   // slsDetectorDefs instead of grouped in a class
     };
 
     /**  return values */
     enum { OK, FAIL };
+
+    enum boolFormat { TrueFalse, OnOff, OneZero };
 
     /** staus mask */
     enum runStatus {
@@ -208,6 +220,16 @@ class slsDetectorDefs {
         bool flipRows;
         std::map<std::string, std::string> addJsonHeader;
     };
+
+    struct Hz {
+        int value{0};
+        explicit Hz(int v) : value(v){};
+        constexpr bool operator==(const Hz &other) const {
+            return (value == other.value);
+        }
+    };
+
+    enum class FrequencyUnit { Hz, kHz, MHz };
 
 #endif
     enum frameDiscardPolicy {
@@ -394,18 +416,6 @@ typedef struct {
         TEMPERATURE_FPGA2,
         TEMPERATURE_FPGA3,
         TRIMBIT_SCAN,
-        V_POWER_A = 100,
-        V_POWER_B = 101,
-        V_POWER_C = 102,
-        V_POWER_D = 103,
-        V_POWER_IO = 104,
-        V_POWER_CHIP = 105,
-        I_POWER_A = 106,
-        I_POWER_B = 107,
-        I_POWER_C = 108,
-        I_POWER_D = 109,
-        I_POWER_IO = 110,
-        V_LIMIT = 111,
         SLOW_ADC0 = 1000,
         SLOW_ADC1,
         SLOW_ADC2,
@@ -415,6 +425,20 @@ typedef struct {
         SLOW_ADC6,
         SLOW_ADC7,
         SLOW_ADC_TEMP
+    };
+
+    enum powerIndex {
+        V_POWER_A,
+        V_POWER_B,
+        V_POWER_C,
+        V_POWER_D,
+        V_POWER_IO,
+        V_POWER_CHIP,
+        I_POWER_A,
+        I_POWER_B,
+        I_POWER_C,
+        I_POWER_D,
+        I_POWER_IO
     };
 
     /**
@@ -754,6 +778,13 @@ struct detParameters {
             nChipY = 1;
             nDacs = 14;
             break;
+        case slsDetectorDefs::detectorType::MATTERHORN:
+            nChanX = 256;
+            nChanY = 256;
+            nChipX = 4;
+            nChipY = 2;
+            nDacs = 31;
+            break;
         default:
             throw sls::RuntimeError("Unknown detector type! " +
                                     std::to_string(type));
@@ -804,7 +835,7 @@ typedef struct {
     }
 
     sls_detector_module &operator=(const sls_detector_module &other) {
-        if(this == &other)
+        if (this == &other)
             return *this;
         delete[] dacs;
         delete[] chanregs;
@@ -833,7 +864,6 @@ typedef struct {
 #endif
 
 #ifdef __cplusplus
-
 // TODO! discuss this
 #include <vector> //hmm... but currently no way around
 namespace sls {

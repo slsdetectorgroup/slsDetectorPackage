@@ -474,17 +474,16 @@ class Detector {
      */
     void setHighVoltage(int value, Positions pos = {});
 
-    /** [Jungfrau][Moench][Mythen3][Gotthard2][Xilinx Ctb] */
+    /** [Jungfrau][Moench][Mythen3][Gotthard2] */
     Result<bool> getPowerChip(Positions pos = {}) const;
 
-    /** [Jungfrau][Moench][Mythen3][Gotthard2][Xilinx Ctb] Power the chip. \n
+    /** [Jungfrau][Moench][Mythen3][Gotthard2] Power the chip. \n
      *  Default is disabled. \n
      * [Jungfrau][Moench] Default is disabled. Get will return power status. Can
      * be off if temperature event occured (temperature over temp_threshold with
      * temp_control enabled. Will configure chip (only chip v1.1)\n
      * [Mythen3][Gotthard2] Default is 1. If module not connected or wrong
      * module, powerchip will fail.\n
-     * [Xilinx CTB] Default is 0. Also configures chip if powered on.
      */
     void setPowerChip(bool on, Positions pos = {});
 
@@ -535,6 +534,7 @@ class Detector {
     Result<int> getDAC(defs::dacIndex index, bool mV = false,
                        Positions pos = {}) const;
 
+    /** Sets dac in dac units or mV1 */
     void setDAC(defs::dacIndex index, int value, bool mV = false,
                 Positions pos = {});
 
@@ -1613,36 +1613,71 @@ class Detector {
     /** [CTB] */
     void setNumberOfAnalogSamples(int value, Positions pos = {});
 
-    /** [CTB] in MHz, [XCTB] in kHz */
-    Result<int> getADCClock(Positions pos = {}) const;
+    /** [CTB][XCTB] */
+    Result<defs::Hz> getADCClock(Positions pos = {}) const;
 
-    /** [CTB] in MHz, [XCTB] in kHz */
-    void setADCClock(int value_in_MHz, Positions pos = {});
+    /** [CTB][XCTB] */
+    void setADCClock(defs::Hz val, Positions pos = {});
 
-    /** [CTB] in MHz, [XCTB] in kHz */
-    Result<int> getRUNClock(Positions pos = {}) const;
+    /** [CTB][XCTB] */
+    Result<defs::Hz> getRUNClock(Positions pos = {}) const;
 
-    /** [CTB] in MHz, [XCTB] in kHz */
-    void setRUNClock(int value_in_MHz, Positions pos = {});
+    /** [CTB][XCTB] */
+    void setRUNClock(defs::Hz val, Positions pos = {});
 
-    /** [CTB]  in MHZ */
-    Result<int> getSYNCClock(Positions pos = {}) const;
+    /** [CTB][XCTB] */
+    Result<defs::Hz> getDBITClock(Positions pos = {}) const;
+
+    /** [CTB][XCTB] */
+    void setDBITClock(defs::Hz val, Positions pos = {});
+
+    /** [CTB][XCTB] */
+    Result<defs::Hz> getSYNCClock(Positions pos = {}) const;
 
     /** gets list of power enums */
-    std::vector<defs::dacIndex> getPowerList() const;
+    std::vector<defs::powerIndex> getPowerList() const;
 
-    /** gets list of slow adc enums */
-    std::vector<defs::dacIndex> getSlowADCList() const;
+    /** [CTB] Options: V_POWER_A, V_POWER_B, V_POWER_C,
+     * V_POWER_D, V_POWER_IO, V_POWER_CHIP
+     * [Xilinx CTB] Options: V_POWER_A, V_POWER_B, V_POWER_C,
+     * V_POWER_D, V_POWER_IO */
+    int getPowerDAC(defs::powerIndex index) const;
+
+    /** [CTB][Xilinx CTB] Options: V_POWER_A, V_POWER_B, V_POWER_C,
+     * V_POWER_D, V_POWER_IO */
+    void setPowerDAC(defs::powerIndex index, int value);
 
     /** [CTB][Xilinx CTB] */
-    Result<int> getPower(defs::dacIndex index, Positions pos = {}) const;
+    bool isPowerEnabled(defs::powerIndex index) const;
 
     /**
-     * [CTB][Xilinx CTB] mV
-     * [Ctb][Xilinx CTB] Options: V_LIMIT, V_POWER_A, V_POWER_B, V_POWER_C,
-     * V_POWER_D, V_POWER_IO, V_POWER_CHIP
+     * [Ctb][Xilinx CTB] Options: V_POWER_A, V_POWER_B, V_POWER_C,
+     * V_POWER_D, V_POWER_IO
      */
-    void setPower(defs::dacIndex index, int value, Positions pos = {});
+    void setPowerEnabled(const std::vector<defs::powerIndex> &indices,
+                         bool enable);
+
+    /**
+     * [CTB] mV
+     * Options: V_POWER_A, V_POWER_B, V_POWER_C, V_POWER_D, V_POWER_IO */
+    int getMeasuredPower(defs::powerIndex index) const;
+
+    /**
+     * [CTB] mA
+     * Options: I_POWER_A, I_POWER_B, I_POWER_C, I_POWER_D, I_POWER_IO  */
+    int getMeasuredCurrent(defs::powerIndex index) const;
+
+    /** [CTB][Xilinx CTB] */
+    int getVoltageLimit() const;
+
+    /** [CTB][Xilinx CTB] set a voltage limit for dacs and power dacs */
+    void setVoltageLimit(const int limit_in_mV);
+
+    /** [CTB][Xilinx CTB] gets list of slow adc enums */
+    std::vector<defs::dacIndex> getSlowADCList() const;
+
+    /** [CTB][Xilinx CTB] Options: SLOW_ADC0 - SLOW_ADC7  in uV */
+    Result<int> getSlowADC(defs::dacIndex index, Positions pos = {}) const;
 
     /**
      * [CTB] Options: [0- 4] or [1V, 1.14V, 1.33V, 1.6V, 2V]
@@ -1691,27 +1726,6 @@ class Detector {
      * [Xilinx CTB] Options: TRANSCEIVER_ONLY (default)
      */
     void setReadoutMode(defs::readoutMode value, Positions pos = {});
-
-    /** [CTB] in MHz, [XCTB] in kHz */
-    Result<int> getDBITClock(Positions pos = {}) const;
-
-    /** [CTB] in MHz, [XCTB] in kHz */
-    void setDBITClock(int value_in_MHz, Positions pos = {});
-
-    /**
-     * [CTB] mV
-     * Options: V_POWER_A, V_POWER_B, V_POWER_C, V_POWER_D, V_POWER_IO */
-    Result<int> getMeasuredPower(defs::dacIndex index,
-                                 Positions pos = {}) const;
-
-    /**
-     * [CTB] mA
-     * Options: I_POWER_A, I_POWER_B, I_POWER_C, I_POWER_D, I_POWER_IO  */
-    Result<int> getMeasuredCurrent(defs::dacIndex index,
-                                   Positions pos = {}) const;
-
-    /** [CTB][Xilinx CTB] Options: SLOW_ADC0 - SLOW_ADC7  in uV */
-    Result<int> getSlowADC(defs::dacIndex index, Positions pos = {}) const;
 
     /** [CTB] */
     Result<int> getExternalSamplingSource(Positions pos = {}) const;
@@ -1815,13 +1829,13 @@ class Detector {
     std::vector<std::string> getPowerNames() const;
 
     /** [CTB][Xilinx CTB] */
-    defs::dacIndex getPowerIndex(const std::string &name) const;
+    defs::powerIndex getPowerIndex(const std::string &name) const;
 
     /** [CTB][Xilinx CTB] */
-    void setPowerName(const defs::dacIndex i, const std::string &name);
+    void setPowerName(const defs::powerIndex i, const std::string &name);
 
     /** [CTB][Xilinx CTB] */
-    std::string getPowerName(const defs::dacIndex i) const;
+    std::string getPowerName(const defs::powerIndex i) const;
 
     /** [CTB][Xilinx CTB] */
     void setSlowADCNames(const std::vector<std::string> names);
@@ -1920,7 +1934,7 @@ class Detector {
     /** [CTB][Mythen3][Xilinx CTB] Gets the pattern file name including path of
      * the last pattern uploaded. \n Returns an empty if nothing was uploaded or
      * via a server default file*/
-    Result<std::string> getPatterFileName(Positions pos = {}) const;
+    Result<std::string> getPatternFileName(Positions pos = {}) const;
 
     /** [CTB][Mythen3][Xilinx CTB] Loads ASCII pattern file directly to server
      * (instead of executing line by line)*/
@@ -2246,6 +2260,13 @@ class Detector {
     Result<ns> getMeasurementTime(Positions pos = {}) const;
 
     ///@}
+
+    Result<std::vector<uint8_t>> readSpi(int chip_id, int register_id,
+                                         int n_bytes, Positions pos = {}) const;
+
+    Result<std::vector<uint8_t>> writeSpi(int chip_id, int register_id,
+                                          const std::vector<uint8_t> &data,
+                                          Positions pos = {});
 
   private:
     std::vector<uint16_t> getValidPortNumbers(uint16_t start_port);

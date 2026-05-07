@@ -80,7 +80,7 @@ _sd() {
   local IS_PATH=0
 
 
-local SLS_COMMANDS=" acquire activate adcclk adcenable adcenable10g adcindex adcinvert adclist adcname adcphase adcpipeline adcreg adcvpp apulse asamples autocompdisable badchannels blockingtrigger burstmode burstperiod bursts burstsl bustest cdsgain chipversion clearbit clearbusy clientversion clkdiv clkfreq clkphase collectionmode column compdisabletime confadc config configtransceiver counters currentsource dac dacindex daclist dacname dacvalues datastream dbitclk dbitphase dbitpipeline defaultdac defaultpattern define_bit define_reg definelist_bit definelist_reg delay delayl detectorserverversion detsize diodelay dpulse dr drlist dsamples execcommand exptime exptime1 exptime2 exptime3 extrastoragecells extsampling extsamplingsrc extsig fformat filtercells filterresistor findex firmwaretest firmwareversion fliprows flowcontrol10g fmaster fname foverwrite fpath framecounter frames framesl frametime free fwrite gaincaps gainmode gappixels gatedelay gatedelay1 gatedelay2 gatedelay3 gates getbit hardwareversion highvoltage hostname im_a im_b im_c im_d im_io imagetest initialchecks inj_ch interpolation interruptsubframe kernelversion lastclient led lock master maxadcphaseshift maxclkphaseshift maxdbitphaseshift measuredperiod measuredsubperiod moduleid nextframenumber nmod numinterfaces overflow packageversion parallel parameters partialreset patfname patioctrl patlimits patloop patloop0 patloop1 patloop2 patmask patnloop patnloop0 patnloop1 patnloop2 patsetbit pattern patternstart patwait patwait0 patwait1 patwait2 patwaittime patwaittime0 patwaittime1 patwaittime2 patword pedestalmode period periodl polarity port powerchip powerindex powerlist powername powervalues programfpga pulse pulsechip pulsenmove pumpprobe quad ratecorr readnrows readout readoutspeed readoutspeedlist rebootcontroller reg resetdacs resetfpga romode row runclk runtime rx_arping rx_clearroi rx_dbitlist rx_dbitoffset rx_dbitreorder rx_discardpolicy rx_fifodepth rx_frameindex rx_framescaught rx_framesperfile rx_hostname rx_jsonaddheader rx_jsonpara rx_lastclient rx_lock rx_missingpackets rx_padding rx_printconfig rx_realudpsocksize rx_roi rx_silent rx_start rx_status rx_stop rx_tcpport rx_threads rx_udpsocksize rx_version rx_zmqfreq rx_zmqhwm rx_zmqip rx_zmqport rx_zmqstartfnum rx_zmqstream samples savepattern scan scanerrmsg selinterface serialnumber setbit settings settingslist settingspath signalindex signallist signalname sleep slowadc slowadcindex slowadclist slowadcname slowadcvalues start status stop stopport storagecell_delay storagecell_start subdeadtime subexptime sync syncclk temp_10ge temp_adc temp_control temp_dcdc temp_event temp_fpga temp_fpgaext temp_fpgafl temp_fpgafr temp_slowadc temp_sodl temp_sodr temp_threshold templist tempvalues tengiga threshold thresholdnotb timing timing_info_decoder timinglist timingsource top transceiverenable trigger triggers triggersl trimbits trimen trimval tsamples txdelay txdelay_frame txdelay_left txdelay_right type udp_cleardst udp_dstip udp_dstip2 udp_dstlist udp_dstmac udp_dstmac2 udp_dstport udp_dstport2 udp_firstdst udp_numdst udp_reconfigure udp_srcip udp_srcip2 udp_srcmac udp_srcmac2 udp_validate update updatedetectorserver updatekernel updatemode user v_a v_b v_c v_chip v_d v_io v_limit vchip_comp_adc vchip_comp_fe vchip_cs vchip_opa_1st vchip_opa_fd vchip_ref_comp_fe versions veto vetoalg vetofile vetophoton vetoref vetostream virtual vm_a vm_b vm_c vm_d vm_io zmqhwm zmqip zmqport "
+local SLS_COMMANDS=" acquire activate adcclk adcenable adcenable10g adcindex adcinvert adclist adcname adcphase adcpipeline adcreg adcvpp apulse asamples autocompdisable badchannels blockingtrigger burstmode burstperiod bursts burstsl bustest cdsgain chipversion clearbit clearbusy clientversion clkdiv clkfreq clkphase collectionmode column compdisabletime confadc config configtransceiver counters currentsource dac dacindex daclist dacname dacvalues datastream dbitclk dbitphase dbitpipeline defaultdac defaultpattern define_bit define_reg definelist_bit definelist_reg delay delayl detectorserverversion detsize diodelay dpulse dr drlist dsamples execcommand exptime exptime1 exptime2 exptime3 extrastoragecells extsampling extsamplingsrc extsig fformat filtercells filterresistor findex firmwaretest firmwareversion fliprows flowcontrol10g fmaster fname foverwrite fpath framecounter frames framesl frametime free fwrite gaincaps gainmode gappixels gatedelay gatedelay1 gatedelay2 gatedelay3 gates getbit hardwareversion highvoltage hostname im_a im_b im_c im_d im_io imagetest include initialchecks inj_ch interpolation interruptsubframe kernelversion lastclient led lock master maxadcphaseshift maxclkphaseshift maxdbitphaseshift measuredperiod measuredsubperiod moduleid nextframenumber nmod numinterfaces overflow packageversion parallel parameters partialreset patfname patioctrl patlimits patloop patloop0 patloop1 patloop2 patmask patnloop patnloop0 patnloop1 patnloop2 patsetbit pattern patternstart patwait patwait0 patwait1 patwait2 patwaittime patwaittime0 patwaittime1 patwaittime2 patword pedestalmode period periodl polarity port power powerchip powerdac powerindex powerlist powername powervalues programfpga pulse pulsechip pulsenmove pumpprobe quad ratecorr readnrows readout readoutspeed readoutspeedlist rebootcontroller reg resetdacs resetfpga romode row runclk runtime rx_arping rx_clearroi rx_dbitlist rx_dbitoffset rx_dbitreorder rx_discardpolicy rx_fifodepth rx_frameindex rx_framescaught rx_framesperfile rx_hostname rx_jsonaddheader rx_jsonpara rx_lastclient rx_lock rx_missingpackets rx_padding rx_printconfig rx_realudpsocksize rx_roi rx_silent rx_start rx_status rx_stop rx_tcpport rx_threads rx_udpsocksize rx_version rx_zmqfreq rx_zmqhwm rx_zmqip rx_zmqport rx_zmqstartfnum rx_zmqstream samples savepattern scan scanerrmsg selinterface serialnumber setbit settings settingslist settingspath signalindex signallist signalname sleep slowadc slowadcindex slowadclist slowadcname slowadcvalues start status stop stopport storagecell_delay storagecell_start subdeadtime subexptime sync syncclk temp_10ge temp_adc temp_control temp_dcdc temp_event temp_fpga temp_fpgaext temp_fpgafl temp_fpgafr temp_slowadc temp_sodl temp_sodr temp_threshold templist tempvalues tengiga threshold thresholdnotb timing timing_info_decoder timinglist timingsource top transceiverenable trigger triggers triggersl trimbits trimen trimval tsamples txdelay txdelay_frame txdelay_left txdelay_right type udp_cleardst udp_dstip udp_dstip2 udp_dstlist udp_dstmac udp_dstmac2 udp_dstport udp_dstport2 udp_firstdst udp_numdst udp_reconfigure udp_srcip udp_srcip2 udp_srcmac udp_srcmac2 udp_validate update updatedetectorserver updatekernel updatemode user v_limit vchip_comp_adc vchip_comp_fe vchip_cs vchip_opa_1st vchip_opa_fd vchip_ref_comp_fe versions veto vetoalg vetofile vetophoton vetoref vetostream virtual vm_a vm_b vm_c vm_d vm_io zmqhwm zmqip zmqport "
 __acquire() {
 FCN_RETURN=""
 return 0
@@ -96,9 +96,17 @@ return 0
 }
 __adcclk() {
 FCN_RETURN=""
+if [[ ${IS_GET} -eq 1 ]]; then
+if [[ "${cword}" == "2" ]]; then
+FCN_RETURN="Hz MHz kHz"
+fi
+fi
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
 FCN_RETURN=""
+fi
+if [[ "${cword}" == "3" ]]; then
+FCN_RETURN="Hz MHz kHz"
 fi
 fi
 return 0
@@ -524,21 +532,21 @@ __dac() {
 FCN_RETURN=""
 if [[ ${IS_GET} -eq 1 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN=""
 fi
 if [[ "${cword}" == "3" ]]; then
-FCN_RETURN="mV mv"
+FCN_RETURN="0 1"
 fi
 fi
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN=""
 fi
 if [[ "${cword}" == "3" ]]; then
 FCN_RETURN=""
 fi
 if [[ "${cword}" == "4" ]]; then
-FCN_RETURN="mV mv"
+FCN_RETURN="0 1"
 fi
 fi
 return 0
@@ -565,12 +573,12 @@ __dacname() {
 FCN_RETURN=""
 if [[ ${IS_GET} -eq 1 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
 fi
 fi
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
 fi
 if [[ "${cword}" == "3" ]]; then
 FCN_RETURN=""
@@ -611,9 +619,17 @@ return 0
 }
 __dbitclk() {
 FCN_RETURN=""
+if [[ ${IS_GET} -eq 1 ]]; then
+if [[ "${cword}" == "2" ]]; then
+FCN_RETURN="Hz MHz kHz"
+fi
+fi
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
 FCN_RETURN=""
+fi
+if [[ "${cword}" == "3" ]]; then
+FCN_RETURN="Hz MHz kHz"
 fi
 fi
 return 0
@@ -648,21 +664,21 @@ __defaultdac() {
 FCN_RETURN=""
 if [[ ${IS_GET} -eq 1 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
 fi
 if [[ "${cword}" == "3" ]]; then
-FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
 fi
 fi
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
 fi
 if [[ "${cword}" == "3" ]]; then
 FCN_RETURN=""
 fi
 if [[ "${cword}" == "4" ]]; then
-FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
 fi
 fi
 return 0
@@ -671,13 +687,13 @@ __defaultpattern() {
 FCN_RETURN=""
 if [[ ${IS_GET} -eq 1 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
 fi
 if [[ "${cword}" == "3" ]]; then
 FCN_RETURN=""
 fi
 if [[ "${cword}" == "4" ]]; then
-FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
 fi
 fi
 return 0
@@ -1262,6 +1278,21 @@ fi
 fi
 return 0
 }
+__include() {
+FCN_RETURN=""
+if [[ ${IS_GET} -eq 1 ]]; then
+if [[ "${cword}" == "2" ]]; then
+FCN_RETURN="0 1"
+fi
+fi
+if [[ ${IS_GET} -eq 0 ]]; then
+if [[ "${cword}" == "2" ]]; then
+FCN_RETURN=""
+IS_PATH=1
+fi
+fi
+return 0
+}
 __initialchecks() {
 FCN_RETURN=""
 if [[ ${IS_GET} -eq 0 ]]; then
@@ -1828,11 +1859,32 @@ fi
 fi
 return 0
 }
+__power() {
+FCN_RETURN=""
+return 0
+}
 __powerchip() {
 FCN_RETURN=""
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
 FCN_RETURN="0 1"
+fi
+fi
+return 0
+}
+__powerdac() {
+FCN_RETURN=""
+if [[ ${IS_GET} -eq 1 ]]; then
+if [[ "${cword}" == "2" ]]; then
+FCN_RETURN=""
+fi
+fi
+if [[ ${IS_GET} -eq 0 ]]; then
+if [[ "${cword}" == "2" ]]; then
+FCN_RETURN=""
+fi
+if [[ "${cword}" == "3" ]]; then
+FCN_RETURN=""
 fi
 fi
 return 0
@@ -1859,12 +1911,12 @@ __powername() {
 FCN_RETURN=""
 if [[ ${IS_GET} -eq 1 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN="v_a v_b v_c v_chip v_d v_io"
 fi
 fi
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN="v_a v_b v_c v_chip v_d v_io"
 fi
 if [[ "${cword}" == "3" ]]; then
 FCN_RETURN=""
@@ -2084,9 +2136,17 @@ return 0
 }
 __runclk() {
 FCN_RETURN=""
+if [[ ${IS_GET} -eq 1 ]]; then
+if [[ "${cword}" == "2" ]]; then
+FCN_RETURN="Hz MHz kHz"
+fi
+fi
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
 FCN_RETURN=""
+fi
+if [[ "${cword}" == "3" ]]; then
+FCN_RETURN="Hz MHz kHz"
 fi
 fi
 return 0
@@ -2372,7 +2432,7 @@ __scan() {
 FCN_RETURN=""
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
 fi
 if [[ "${cword}" == "3" ]]; then
 FCN_RETURN=""
@@ -2425,7 +2485,7 @@ __settings() {
 FCN_RETURN=""
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
 fi
 fi
 return 0
@@ -2535,12 +2595,12 @@ __slowadcname() {
 FCN_RETURN=""
 if [[ ${IS_GET} -eq 1 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
 fi
 fi
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
 fi
 if [[ "${cword}" == "3" ]]; then
 FCN_RETURN=""
@@ -2644,6 +2704,16 @@ return 0
 }
 __syncclk() {
 FCN_RETURN=""
+if [[ ${IS_GET} -eq 1 ]]; then
+if [[ "${cword}" == "2" ]]; then
+FCN_RETURN="Hz MHz kHz"
+fi
+fi
+if [[ ${IS_GET} -eq 0 ]]; then
+if [[ "${cword}" == "2" ]]; then
+FCN_RETURN="Hz MHz kHz"
+fi
+fi
 return 0
 }
 __temp_10ge() {
@@ -2737,13 +2807,13 @@ if [[ "${cword}" == "2" ]]; then
 FCN_RETURN=""
 fi
 if [[ "${cword}" == "3" ]]; then
-FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
 fi
 if [[ "${cword}" == "4" ]]; then
 FCN_RETURN=""
 fi
 if [[ "${cword}" == "5" ]]; then
-FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
 fi
 fi
 return 0
@@ -2755,13 +2825,13 @@ if [[ "${cword}" == "2" ]]; then
 FCN_RETURN=""
 fi
 if [[ "${cword}" == "3" ]]; then
-FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
 fi
 if [[ "${cword}" == "4" ]]; then
 FCN_RETURN=""
 fi
 if [[ "${cword}" == "5" ]]; then
-FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
 fi
 fi
 return 0
@@ -2770,7 +2840,7 @@ __timing() {
 FCN_RETURN=""
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="`sls_detector_get timinglist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN="`sls_detector_get timinglist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
 fi
 fi
 return 0
@@ -3100,60 +3170,6 @@ return 0
 }
 __user() {
 FCN_RETURN=""
-return 0
-}
-__v_a() {
-FCN_RETURN=""
-if [[ ${IS_GET} -eq 0 ]]; then
-if [[ "${cword}" == "2" ]]; then
-FCN_RETURN=""
-fi
-fi
-return 0
-}
-__v_b() {
-FCN_RETURN=""
-if [[ ${IS_GET} -eq 0 ]]; then
-if [[ "${cword}" == "2" ]]; then
-FCN_RETURN=""
-fi
-fi
-return 0
-}
-__v_c() {
-FCN_RETURN=""
-if [[ ${IS_GET} -eq 0 ]]; then
-if [[ "${cword}" == "2" ]]; then
-FCN_RETURN=""
-fi
-fi
-return 0
-}
-__v_chip() {
-FCN_RETURN=""
-if [[ ${IS_GET} -eq 0 ]]; then
-if [[ "${cword}" == "2" ]]; then
-FCN_RETURN=""
-fi
-fi
-return 0
-}
-__v_d() {
-FCN_RETURN=""
-if [[ ${IS_GET} -eq 0 ]]; then
-if [[ "${cword}" == "2" ]]; then
-FCN_RETURN=""
-fi
-fi
-return 0
-}
-__v_io() {
-FCN_RETURN=""
-if [[ ${IS_GET} -eq 0 ]]; then
-if [[ "${cword}" == "2" ]]; then
-FCN_RETURN=""
-fi
-fi
 return 0
 }
 __v_limit() {

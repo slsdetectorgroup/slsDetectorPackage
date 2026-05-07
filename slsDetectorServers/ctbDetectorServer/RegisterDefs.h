@@ -438,6 +438,16 @@
 
 #define POWER_ENBL_VLTG_RGLTR_OFST  (16)
 #define POWER_ENBL_VLTG_RGLTR_MSK   (0x0000001F << POWER_ENBL_VLTG_RGLTR_OFST)
+#define POWER_ENBL_VIO_OFST         (16)
+#define POWER_ENBL_VIO_MSK          (0x00000001 << POWER_ENBL_VIO_OFST)
+#define POWER_ENBL_VA_OFST          (17)
+#define POWER_ENBL_VA_MSK           (0x00000001 << POWER_ENBL_VA_OFST)
+#define POWER_ENBL_VB_OFST          (18)
+#define POWER_ENBL_VB_MSK           (0x00000001 << POWER_ENBL_VB_OFST)
+#define POWER_ENBL_VC_OFST          (19)
+#define POWER_ENBL_VC_MSK           (0x00000001 << POWER_ENBL_VC_OFST)
+#define POWER_ENBL_VD_OFST          (20)
+#define POWER_ENBL_VD_MSK           (0x00000001 << POWER_ENBL_VD_OFST)
 #define POWER_HV_INTERNAL_SLCT_OFST (31)
 #define POWER_HV_INTERNAL_SLCT_MSK  (0x00000001 << POWER_HV_INTERNAL_SLCT_OFST)
 
@@ -618,16 +628,19 @@
 #define ADC_SLOW_CTRL_DONE_OFST (1)
 #define ADC_SLOW_CTRL_DONE_MSK  (0x00000001 << ADC_SLOW_CTRL_DONE_OFST)
 
-/** I2C Control register */
-#define I2C_TRANSFER_COMMAND_FIFO_REG (0x100 << MEM_MAP_SHIFT)
-#define I2C_RX_DATA_FIFO_REG          (0x101 << MEM_MAP_SHIFT)
-#define I2C_CONTROL_REG               (0x102 << MEM_MAP_SHIFT)
-#define I2C_STATUS_REG                (0x105 << MEM_MAP_SHIFT)
-#define I2C_RX_DATA_FIFO_LEVEL_REG    (0x107 << MEM_MAP_SHIFT)
-#define I2C_SCL_LOW_COUNT_REG         (0x108 << MEM_MAP_SHIFT)
-#define I2C_SCL_HIGH_COUNT_REG        (0x109 << MEM_MAP_SHIFT)
-#define I2C_SDA_HOLD_REG              (0x10A << MEM_MAP_SHIFT)
-// fixme: upto 0x10f
+/* Clock Measurement base reg */
+#define PLL_FREQ_MEASURE_REG (0x44 << MEM_MAP_SHIFT)
+
+/* SPI */
+#define SPI_CTRL_REG (0x48 << MEM_MAP_SHIFT)
+#define SPI_CTRL_RX_EMPTY_BIT    2
+#define SPI_CTRL_CHIPSELECT_BIT  4
+#define SPI_CTRL_NBIT_OFST       16
+#define SPI_WRITEDATA_REG (0x49 << MEM_MAP_SHIFT)
+#define SPI_READDATA_REG (0x4A << MEM_MAP_SHIFT)
+
+/* Power monitor base register */
+#define POWER_MONITOR_BASE_REG (0x50 << MEM_MAP_SHIFT)
 
 /* Round Robin  */
 #define RXR_ENDPOINT_START_REG (0x1000 << MEM_MAP_SHIFT)

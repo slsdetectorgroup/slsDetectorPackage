@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: LGPL-3.0-or-other
 # Copyright (C) 2021 Contributors to the SLS Detector Package
+import pathlib
 from ._slsdet import CppDetectorApi
 from ._slsdet import slsDetectorDefs
 from ._slsdet import IpAddr, MacAddr
@@ -9,17 +10,19 @@ runStatus = slsDetectorDefs.runStatus
 timingMode = slsDetectorDefs.timingMode
 speedLevel = slsDetectorDefs.speedLevel
 dacIndex = slsDetectorDefs.dacIndex
+powerIndex = slsDetectorDefs.powerIndex
 detectorType = slsDetectorDefs.detectorType
 streamingInterface = slsDetectorDefs.streamingInterface
+
 
 defs = slsDetectorDefs
 
 from .utils import element_if_equal, all_equal, get_set_bits, list_to_bitmask
 from .utils import Geometry, to_geo, element, reduce_time, is_iterable, hostname_list
-from ._slsdet import xy, freeSharedMemory, getUserDetails
+from ._slsdet import xy, Hz, freeSharedMemory, getUserDetails
 from .gaincaps import Mythen3GainCapsWrapper
 from . import utils as ut
-from .proxy import JsonProxy, SlowAdcProxy, ClkDivProxy, MaxPhaseProxy, ClkFreqProxy, PatLoopProxy, PatNLoopProxy, PatWaitProxy, PatWaitTimeProxy 
+from .proxy import JsonProxy, ClkDivProxy, MaxPhaseProxy, ClkFreqProxy, PatLoopProxy, PatNLoopProxy, PatWaitProxy, PatWaitTimeProxy 
 from .registers import Register, Adc_register
 import datetime as dt
 
@@ -145,6 +148,33 @@ class Detector(CppDetectorApi):
 
     @parameters.setter
     def parameters(self, value):
+        if isinstance(value, str):
+            value = ut.make_string_path(value)
+        self.loadParameters(value)
+
+
+    @property
+    def include(self):
+        """Sets detector measurement parameters to those contained in fname. 
+        Set up per measurement.
+        
+        Note 
+        -----
+        Equivalent to config, but does not free shared memory. Same as parameters command.
+
+        :getter: Not implemented
+        :setter: loads parameters file
+
+        Example
+        ---------
+
+        >>> d.include = 'path/to/file.par'
+        
+        """
+        return NotImplementedError("include is set only")
+
+    @include.setter
+    def include(self, value):
         if isinstance(value, str):
             value = ut.make_string_path(value)
         self.loadParameters(value)
@@ -488,13 +518,12 @@ class Detector(CppDetectorApi):
     @element
     def powerchip(self):
         """
-        [Jungfrau][Moench][Mythen3][Gotthard2][Xilinx Ctb] Power the chip. 
+        [Jungfrau][Moench][Mythen3][Gotthard2] Power the chip. 
 
         Note
         ----
         [Jungfrau][Moench] Default is disabled. Get will return power status. Can be off if temperature event occured (temperature over temp_threshold with temp_control enabled. Will configure chip (only chip v1.1).\n
         [Mythen3][Gotthard2] Default is 1. If module not connected or wrong module, powerchip will fail.
-        [Xilinx Ctb] Default is 0. Also configures the chip if powered on.
         """
         return self.getPowerChip()
 
@@ -1880,6 +1909,8 @@ class Detector(CppDetectorApi):
                 raise ValueError("bit_position must be provided when passing int address")
             if not isinstance(bit_position, int):
                 raise ValueError("bit_position must be int")
+            if isinstance(bitname_or_addr, int):
+                bitname_or_addr = RegisterAddress(bitname_or_addr)
             return BitAddress(bitname_or_addr, bit_position)
 
         # New usage with str or BitAddress
@@ -1957,26 +1988,7 @@ class Detector(CppDetectorApi):
         return super().getBit(resolved)  
 
 
-    @property
-    def slowadc(self):
-        """
-        [Ctb] Slow ADC channel in uV of all channels or specific ones from 0-7.
-        
-        Example
-        -------
-        >>> d.slowadc
-        0: 0 uV
-        1: 0 uV
-        2: 0 uV
-        3: 0 uV
-        4: 0 uV
-        5: 0 uV
-        6: 0 uV
-        7: 0 uV
-        >>> d.slowadc[3]
-        0
-        """
-        return SlowAdcProxy(self)
+
 
     @property
     def daclist(self):
@@ -1992,52 +2004,7 @@ class Detector(CppDetectorApi):
     def daclist(self, value):
         self.setDacNames(value)
 
-    @property
-    def adclist(self):
-        """
-        [Chiptestboard] List of names for every adc for this board. 32 adcs
-        """
-        return self.getAdcNames()
 
-    @adclist.setter
-    def adclist(self, value):
-        self.setAdcNames(value)
-
-    @property
-    def signallist(self):
-        """
-        [Chiptestboard] List of names for every io signal for this board. 64 signals        
-        """
-        return self.getSignalNames()
-
-    @signallist.setter
-    def signallist(self, value):
-        self.setSignalNames(value)
-
-    @property
-    def powerlist(self):
-        """
-        [Chiptestboard] List of names for every power for this board. 5 power supply
-        
-        """
-        return self.getPowerNames()
-
-    @powerlist.setter
-    def powerlist(self, value):
-        self.setPowerNames(value)
-
-    @property
-    def slowadclist(self):
-        """
-        [Chiptestboard] List of names for every slowadc for this board. 8 slowadc
-        
-        """
-        return self.getSlowADCNames()
-
-    @slowadclist.setter
-    def slowadclist(self, value):
-        self.setSlowADCNames(value)
-        
     @property
     def dacvalues(self):
         """Gets the dac values for every dac for this detector."""
@@ -2046,21 +2013,6 @@ class Detector(CppDetectorApi):
             for dac in self.getDacList()
         }
 
-    @property
-    def powervalues(self):
-        """[Chiptestboard] Gets the power values for every power for this detector."""
-        return {
-            power.name.lower(): element_if_equal(np.array(self.getPower(power)))
-            for power in self.getPowerList()
-        }
-
-    @property
-    def slowadcvalues(self):
-        """[Chiptestboard] Gets the slow adc values for every slow adc for this detector."""
-        return {
-            slowadc.name.lower(): element_if_equal(np.array(self.getSlowADC(slowadc)))
-            for slowadc in self.getSlowADCList()
-        }
 
     @property
     def timinglist(self):
@@ -3490,15 +3442,21 @@ class Detector(CppDetectorApi):
     @element
     def runclk(self):
         """
-        [Ctb] Sets Run clock frequency in MHz. \n
-        [Xilinx Ctb] Sets Run clock frequency in kHz.
-        """
+        [Ctb][Xilinx Ctb] Sets Run clock frequency.
 
+        Example
+        --------
+        >>> d.runclk
+        >>> 10MHz
+        >>> d.runclk = MHz(5)
+        >>> d.runclk = Hz(5 * 1000 * 1000)
+        >>> d.runclk = kHz(2000)
+        """
         return self.getRUNClock()
 
     @runclk.setter
     def runclk(self, freq):
-        ut.set_using_dict(self.setRUNClock, freq)
+        ut.set_using_dict(self.setRUNClock, freq) 
 
     @property
     @element
@@ -3575,10 +3533,16 @@ class Detector(CppDetectorApi):
     @element
     def dbitclk(self):
         """
-        [Ctb] Sets clock for latching the digital bits in MHz. \n
-        [Xilinx Ctb] clock for latching the digital bits in kHz.
-        """
+        [Ctb][Xilinx Ctb] Sets clock for latching the digital bits.
 
+        Example
+        --------
+        >>> d.dbitclk
+        >>> 10MHz
+        >>> d.dbitclk = MHz(5)
+        >>> d.dbitclk = Hz(5 * 1000 * 1000)
+        >>> d.dbitclk = kHz(2000)
+        """
         return self.getDBITClock()
 
     @dbitclk.setter
@@ -3706,10 +3670,16 @@ class Detector(CppDetectorApi):
     @element
     def adcclk(self):
         """
-        [Ctb] Sets ADC clock frequency in MHz. \n
-        [Xilinx Ctb] Sets ADC clock frequency in kHz.
-        """
+        [Ctb][Xilinx Ctb] Sets ADC clock frequency.
 
+        Example
+        --------
+        >>> d.adcclk
+        >>> 10MHz
+        >>> d.adcclk = MHz(5)
+        >>> d.adcclk = Hz(5 * 1000 * 1000)
+        >>> d.adcclk = kHz(2000)
+        """
         return self.getADCClock()
 
     @adcclk.setter
@@ -3720,7 +3690,7 @@ class Detector(CppDetectorApi):
     @element
     def syncclk(self):
         """
-        [Ctb] Sync clock in MHz.
+        [Ctb] Sync clock.
         
         :setter: Not implemented
         """
@@ -3728,7 +3698,7 @@ class Detector(CppDetectorApi):
 
     @property
     def pattern(self):
-        """[Mythen3][Ctb][Xilinx Ctb] Loads ASCII pattern file directly to server (instead of executing line by line).
+        """[Mythen3][Ctb][Xilinx Ctb] Load a pattern (from file or memory) to the server (instead of executing line by line).
                
         :getter: Not Implemented
         
@@ -3739,9 +3709,13 @@ class Detector(CppDetectorApi):
         raise NotImplementedError("Pattern is set only")
 
     @pattern.setter
-    def pattern(self, fname):
-        fname = ut.make_string_path(fname)
-        ut.set_using_dict(self.setPattern, fname)
+    def pattern(self, name_or_pattern):
+        # If passed a file path, convert to string representation
+        # with the path expanded. Otherwise it's probably a sls::Pattern
+        # and we can pass it directly.
+        if isinstance(name_or_pattern, (pathlib.Path, str)):
+            name_or_pattern = ut.make_string_path(name_or_pattern)
+        ut.set_using_dict(self.setPattern, name_or_pattern)
 
     @property
     def patfname(self):
@@ -3749,8 +3723,12 @@ class Detector(CppDetectorApi):
         [Ctb][Mythen3][Xilinx Ctb] Gets the pattern file name including path of the last pattern uploaded. Returns an empty if nothing was uploaded or via a server default
         file
         """
-        return self.getPatterFileName()
+        return self.getPatternFileName()
 
+    def patternstart(self):
+        """[Ctb][Mythen3][Xilinx Ctb] Starts pattern. """
+        self.startPattern()
+        
     @property
     @element
     def patioctrl(self):
@@ -4133,75 +4111,13 @@ class Detector(CppDetectorApi):
 
     @property
     @element
-    def v_a(self):
-        """[Ctb][Xilinx Ctb] Power supply a in mV."""
-        return self.getPower(dacIndex.V_POWER_A)
-
-    @v_a.setter
-    def v_a(self, value):
-        value = ut.merge_args(dacIndex.V_POWER_A, value)
-        ut.set_using_dict(self.setPower, *value)
-
-    @property
-    @element
-    def v_b(self):
-        """[Ctb][Xilinx Ctb] Power supply b in mV."""
-        return self.getPower(dacIndex.V_POWER_B)
-
-    @v_b.setter
-    def v_b(self, value):
-        value = ut.merge_args(dacIndex.V_POWER_B, value)
-        ut.set_using_dict(self.setPower, *value)
-
-    @property
-    @element
-    def v_c(self):
-        """[Ctb][Xilinx Ctb] Power supply c in mV."""
-        return self.getPower(dacIndex.V_POWER_C)
-
-    @v_c.setter
-    def v_c(self, value):
-        value = ut.merge_args(dacIndex.V_POWER_C, value)
-        ut.set_using_dict(self.setPower, *value)
-
-    @property
-    @element
-    def v_d(self):
-        """[Ctb][Xilinx Ctb] Power supply d in mV."""
-        return self.getPower(dacIndex.V_POWER_D)
-
-    @v_d.setter
-    def v_d(self, value):
-        value = ut.merge_args(dacIndex.V_POWER_D, value)
-        ut.set_using_dict(self.setPower, *value)
-
-    @property
-    @element
-    def v_io(self):
-        """[Ctb][Xilinx Ctb] Power supply io in mV. Minimum 1200 mV. 
-        
-        Note
-        ----
-        Must be the first power regulator to be set after fpga reset (on-board detector server start up).
-        """
-        return self.getPower(dacIndex.V_POWER_IO)
-
-    @v_io.setter
-    def v_io(self, value):
-        value = ut.merge_args(dacIndex.V_POWER_IO, value)
-        ut.set_using_dict(self.setPower, *value)
-
-    @property
-    @element
     def v_limit(self):
         """[Ctb][Xilinx Ctb] Soft limit for power supplies (ctb only) and DACS in mV."""
-        return self.getPower(dacIndex.V_LIMIT)
+        return self.getVoltageLimit()
 
     @v_limit.setter
     def v_limit(self, value):
-        value = ut.merge_args(dacIndex.V_LIMIT, value)
-        ut.set_using_dict(self.setPower, *value)
-
+        ut.set_using_dict(self.setVoltageLimit, value)
 
     @property
     @element
@@ -4210,7 +4126,7 @@ class Detector(CppDetectorApi):
               
         :setter: Not implemented
         """
-        return self.getMeasuredCurrent(dacIndex.I_POWER_A)
+        return self.getMeasuredCurrent(powerIndex.I_POWER_A)
 
     @property
     @element
@@ -4219,7 +4135,7 @@ class Detector(CppDetectorApi):
         
         :setter: Not implemented
         """
-        return self.getMeasuredCurrent(dacIndex.I_POWER_B)
+        return self.getMeasuredCurrent(powerIndex.I_POWER_B)
 
     @property
     @element
@@ -4228,7 +4144,7 @@ class Detector(CppDetectorApi):
                 
         :setter: Not implemented
         """
-        return self.getMeasuredCurrent(dacIndex.I_POWER_C)
+        return self.getMeasuredCurrent(powerIndex.I_POWER_C)
 
     @property
     @element
@@ -4237,7 +4153,7 @@ class Detector(CppDetectorApi):
                 
         :setter: Not implemented
         """
-        return self.getMeasuredCurrent(dacIndex.I_POWER_D)
+        return self.getMeasuredCurrent(powerIndex.I_POWER_D)
 
     @property
     @element
@@ -4246,7 +4162,7 @@ class Detector(CppDetectorApi):
                 
         :setter: Not implemented
         """
-        return self.getMeasuredCurrent(dacIndex.I_POWER_IO)
+        return self.getMeasuredCurrent(powerIndex.I_POWER_IO)
 
     @property
     def clkphase(self):

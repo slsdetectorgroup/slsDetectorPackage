@@ -196,7 +196,7 @@ void DetectorImpl::setHostname(const std::vector<std::string> &name) {
 }
 
 void DetectorImpl::addModule(const std::string &name) {
-    LOG(logINFO) << "Adding module " << name;
+    LOG(TLogLevel::logINFO) << "Adding module " << name;
     auto host = verifyUniqueDetHost(name);
     std::string hostname = host.first;
     uint16_t port = host.second;
@@ -1831,6 +1831,13 @@ void DetectorImpl::setRxROI(const std::vector<defs::ROI> &args) {
         auto moduleGlobalRoi = getModuleROI(iModule);
         // at most 2 rois per module (for each port)
         std::vector<defs::ROI> portRois(nPortsPerModule);
+        for (auto &roi : portRois) {
+            roi.setNoRoi();
+            if (shm()->numberOfChannels.y == 1) {
+                roi.ymin = -1;
+                roi.ymax = -1;
+            }
+        }
 
         // check overlap with module
         for (const auto &arg : args) {
@@ -2019,17 +2026,17 @@ void DetectorImpl::setCtbPowerNames(const std::vector<std::string> &names) {
     ctb_shm()->setPowerNames(names);
 }
 
-std::string DetectorImpl::getCtbPowerName(const defs::dacIndex i) const {
+std::string DetectorImpl::getCtbPowerName(const defs::powerIndex i) const {
     if (!isChipTestBoard())
         throw RuntimeError("Named Powers only for CTB");
     return ctb_shm()->getPowerName(static_cast<int>(i - defs::V_POWER_A));
 }
 
-void DetectorImpl::setCtbPowerName(const defs::dacIndex index,
+void DetectorImpl::setCtbPowerName(const defs::powerIndex index,
                                    const std::string &name) {
     if (!isChipTestBoard())
         throw RuntimeError("Named Powers only for CTB");
-    ctb_shm()->setPowerName(static_cast<int>(index - defs::V_POWER_A), name);
+    ctb_shm()->setPowerName(static_cast<int>(index), name);
 }
 
 std::vector<std::string> DetectorImpl::getCtbSlowADCNames() const {

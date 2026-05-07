@@ -120,6 +120,7 @@ class InferAction {
     int im_d();
     int im_io();
     int imagetest();
+    int include();
     int initialchecks();
     int inj_ch();
     int interpolation();
@@ -169,7 +170,9 @@ class InferAction {
     int periodl();
     int polarity();
     int port();
+    int power();
     int powerchip();
+    int powerdac();
     int powerindex();
     int powerlist();
     int powername();
@@ -312,12 +315,6 @@ class InferAction {
     int updatekernel();
     int updatemode();
     int user();
-    int v_a();
-    int v_b();
-    int v_c();
-    int v_chip();
-    int v_d();
-    int v_io();
     int v_limit();
     int vchip_comp_adc();
     int vchip_comp_fe();
@@ -456,6 +453,7 @@ class InferAction {
         {"im_d", &InferAction::im_d},
         {"im_io", &InferAction::im_io},
         {"imagetest", &InferAction::imagetest},
+        {"include", &InferAction::include},
         {"initialchecks", &InferAction::initialchecks},
         {"inj_ch", &InferAction::inj_ch},
         {"interpolation", &InferAction::interpolation},
@@ -508,7 +506,9 @@ class InferAction {
         {"periodl", &InferAction::periodl},
         {"polarity", &InferAction::polarity},
         {"port", &InferAction::port},
+        {"power", &InferAction::power},
         {"powerchip", &InferAction::powerchip},
+        {"powerdac", &InferAction::powerdac},
         {"powerindex", &InferAction::powerindex},
         {"powerlist", &InferAction::powerlist},
         {"powername", &InferAction::powername},
@@ -652,12 +652,6 @@ class InferAction {
         {"updatekernel", &InferAction::updatekernel},
         {"updatemode", &InferAction::updatemode},
         {"user", &InferAction::user},
-        {"v_a", &InferAction::v_a},
-        {"v_b", &InferAction::v_b},
-        {"v_c", &InferAction::v_c},
-        {"v_chip", &InferAction::v_chip},
-        {"v_d", &InferAction::v_d},
-        {"v_io", &InferAction::v_io},
         {"v_limit", &InferAction::v_limit},
         {"vchip_comp_adc", &InferAction::vchip_comp_adc},
         {"vchip_comp_fe", &InferAction::vchip_comp_fe},

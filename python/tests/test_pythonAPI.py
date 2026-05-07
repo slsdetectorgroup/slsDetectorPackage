@@ -1,7 +1,7 @@
 import pytest 
 import sys 
 
-from conftest import test_with_simulators
+from conftest import session_simulator, test_with_simulators
 
 from slsdet import Detector
 
@@ -11,11 +11,12 @@ from slsdet._slsdet import slsDetectorDefs
 detectorType = slsDetectorDefs.detectorType
 
 
-@pytest.mark.withdetectorsimulators
-def test_rx_ROI(test_with_simulators):
+@pytest.mark.detectorintegration
+def test_rx_ROI(session_simulator):
     """ Test rx_ROI property of Detector class. """
+    det_type, num_interfaces, num_mods, d = session_simulator
+    assert d is not None
 
-    d = Detector()
     if d.type == detectorType.CHIPTESTBOARD or d.type == detectorType.XILINX_CHIPTESTBOARD:
         pytest.skip("Skipping ROI test for ctb/xilinx_ctb detector types.")
     
@@ -50,7 +51,7 @@ def test_rx_ROI(test_with_simulators):
         roi = d.rx_roi
         assert roi == [(-1,-1,-1,-1)]  
 
-@pytest.mark.withdetectorsimulators
+@pytest.mark.detectorintegration
 @pytest.mark.parametrize("servers", [["moench", 1]], indirect=True)
 def test_type(test_with_specific_simulator):
 
@@ -58,7 +59,7 @@ def test_type(test_with_specific_simulator):
     assert d.type == detectorType.MOENCH
 
 
-@pytest.mark.withdetectorsimulators
+@pytest.mark.detectorintegration
 @pytest.mark.parametrize("servers", [["moench", 1], ["jungfrau", 1]], indirect=True)
 def test_numinterfaces(test_with_specific_simulator):
 
@@ -67,5 +68,3 @@ def test_numinterfaces(test_with_specific_simulator):
 
     
     
-
-

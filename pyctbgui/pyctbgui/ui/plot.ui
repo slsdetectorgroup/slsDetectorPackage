@@ -165,7 +165,37 @@
           </property>
           <item>
            <property name="text">
-            <string>Matterhorn</string>
+            <string>Matterhorn02</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Matterhorn1_16bit_4_counters</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Matterhorn1_16bit_1_counter</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Matterhorn1_8bit_4_counters</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Matterhorn1_8bit_1_counter</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Matterhorn1_4bit_1_counter</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Matterhorn1_4bit_4_counters</string>
            </property>
           </item>
           <item>

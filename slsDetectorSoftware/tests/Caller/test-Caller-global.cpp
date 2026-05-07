@@ -33,28 +33,34 @@ void test_valid_port_caller(const std::string &command,
 }
 
 void test_dac_caller(defs::dacIndex index, const std::string &dacname,
-                     int dacvalue) {
+                     int dacvalue, bool mV) {
     Detector det;
     Caller caller(&det);
-    std::ostringstream oss_set, oss_get;
-    auto dacstr = std::to_string(dacvalue);
+    std::string dac = dacname;
+    auto value = std::to_string(dacvalue);
     auto previous = det.getDAC(index, false);
     // chip test board
     if (dacname == "dac") {
-        auto dacIndexstr = std::to_string(static_cast<int>(index));
-        caller.call(dacname, {dacIndexstr, dacstr}, -1, PUT, oss_set);
-        REQUIRE(oss_set.str() ==
-                dacname + " " + dacIndexstr + " " + dacstr + "\n");
-        caller.call(dacname, {dacIndexstr}, -1, GET, oss_get);
-        REQUIRE(oss_get.str() ==
-                dacname + " " + dacIndexstr + " " + dacstr + "\n");
+        dac = std::to_string(static_cast<int>(index));
     }
-    // other detectors
-    else {
-        caller.call("dac", {dacname, dacstr}, -1, PUT, oss_set);
-        REQUIRE(oss_set.str() == "dac " + dacname + " " + dacstr + "\n");
-        caller.call("dac", {dacname}, -1, GET, oss_get);
-        REQUIRE(oss_get.str() == "dac " + dacname + " " + dacstr + "\n");
+    {
+        std::ostringstream oss;
+        std::vector<std::string> args = {dac, value};
+        if (mV)
+            args.push_back("mV");
+        std::cout << "args:" << ToString(args) << std::endl;
+        caller.call("dac", args, -1, PUT, oss);
+        REQUIRE(oss.str() == std::string("dac ") + dac + " " + value +
+                                 (mV ? " mV\n" : "\n"));
+    }
+    {
+        std::ostringstream oss;
+        std::vector<std::string> args = {dac};
+        if (mV)
+            args.push_back("mV");
+        caller.call("dac", args, -1, GET, oss);
+        REQUIRE(oss.str() ==
+                "dac " + dac + " " + value + (mV ? " mV\n" : "\n"));
     }
     // Reset all dacs to previous value
     for (int i = 0; i != det.size(); ++i) {
@@ -125,12 +131,6 @@ void test_acquire_binary_file_size(const testFileInfo &file_info,
     REQUIRE(actual_file_size == expected_file_size);
 }
 
-void test_frames_caught(const Detector &det, int num_frames_to_acquire) {
-    auto frames_caught = det.getFramesCaught().tsquash(
-        "Inconsistent number of frames caught")[0];
-    REQUIRE(frames_caught == num_frames_to_acquire);
-}
-
 void test_acquire_with_receiver(Caller &caller, const Detector &det) {
     REQUIRE_NOTHROW(caller.call("rx_start", {}, -1, PUT));
     REQUIRE_NOTHROW(caller.call("start", {}, -1, PUT));
@@ -172,9 +172,12 @@ void create_files_for_acquire(
 
     // acquire and get num frames caught
     REQUIRE_NOTHROW(test_acquire_with_receiver(caller, det));
-    auto frames_caught = det.getFramesCaught().tsquash(
-        "Inconsistent number of frames caught")[0];
-    REQUIRE(frames_caught == num_frames);
+    // TODO: maybe there should not be REQUIRE statements in void function at
+    // all, but traceback should be handled
+    {
+        auto frames_caught = det.getFramesCaught()[0][0];
+        REQUIRE(frames_caught == num_frames);
+    }
 
     // hdf5
 #ifdef HDF5C
@@ -184,9 +187,10 @@ void create_files_for_acquire(
 
     // acquire and get num frames caught
     test_acquire_with_receiver(caller, det);
-    frames_caught = det.getFramesCaught().tsquash(
-        "Inconsistent number of frames caught")[0];
-    REQUIRE(frames_caught == num_frames);
+    {
+        auto frames_caught = det.getFramesCaught()[0][0];
+        REQUIRE(frames_caught == num_frames);
+    }
 #endif
 
     // restore previous state

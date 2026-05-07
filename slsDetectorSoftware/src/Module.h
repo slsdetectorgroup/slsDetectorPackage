@@ -177,6 +177,14 @@ class Module : public virtual slsDetectorDefs {
     void setDAC(int val, dacIndex index, bool mV);
     bool getPowerChip() const;
     void setPowerChip(bool on);
+    int getPowerDAC(defs::powerIndex index) const;
+    void setPowerDAC(defs::powerIndex index, int value);
+    bool isPowerEnabled(defs::powerIndex index) const;
+    void setPowerEnabled(const std::vector<defs::powerIndex> &indices,
+                         bool enable);
+    int getPowerADC(defs::powerIndex index) const;
+    int getVoltageLimit() const;
+    void setVoltageLimit(const int limit_in_mV);
     int getImageTestMode() const;
     void setImageTestMode(const int value);
     /* temperature in millidegrees */
@@ -528,7 +536,7 @@ class Module : public virtual slsDetectorDefs {
      *    Pattern                                     *
      *                                                *
      * ************************************************/
-    std::string getPatterFileName() const;
+    std::string getPatternFileName() const;
     void setPattern(const Pattern &pat, const std::string &fname);
     Pattern getPattern();
     void loadDefaultPattern();
@@ -607,6 +615,11 @@ class Module : public virtual slsDetectorDefs {
     int64_t getNumberOfFramesFromStart() const;
     int64_t getActualTime() const;
     int64_t getMeasurementTime() const;
+    std::vector<uint8_t> readSpi(int chip_id, int register_id,
+                                 int n_bytes) const;
+
+    std::vector<uint8_t> writeSpi(int chip_id, int register_id,
+                                  const std::vector<uint8_t> &data);
 
   private:
     std::string getReceiverLongVersion() const;

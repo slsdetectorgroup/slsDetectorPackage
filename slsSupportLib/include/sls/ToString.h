@@ -37,6 +37,8 @@ std::string ToString(const defs::externalSignalFlag s);
 std::string ToString(const defs::readoutMode s);
 std::string ToString(const defs::dacIndex s);
 std::string ToString(const std::vector<defs::dacIndex> &vec);
+std::string ToString(const defs::powerIndex s);
+std::string ToString(const std::vector<defs::powerIndex> &vec);
 std::string ToString(const defs::burstMode s);
 std::string ToString(const defs::timingSourceType s);
 std::string ToString(const defs::M3_GainCaps s);
@@ -49,6 +51,7 @@ std::string ToString(const defs::timingInfoDecoder s);
 std::string ToString(const defs::collectionMode s);
 
 std::string ToString(bool value);
+std::string ToString(bool value, defs::boolFormat format);
 
 std::string ToString(const slsDetectorDefs::xy &coord);
 std::ostream &operator<<(std::ostream &os, const slsDetectorDefs::xy &coord);
@@ -104,6 +107,12 @@ ToString(From t) {
         return ToString(tns, "s");
     }
 }
+
+/** Convert frequency with specified output unit */
+std::string ToString(defs::Hz f, defs::FrequencyUnit unit);
+
+/** Convert frequency automatically selecting the unit */
+std::string ToString(defs::Hz f);
 
 /** Conversion of floating point values, removes trailing zeros*/
 template <typename T>
@@ -276,7 +285,23 @@ ToString(const T &container, const std::string &unit) {
     return os.str();
 }
 
+/** Container and specified unit, call ToString(value, FrequencyUnit) */
 template <typename T>
+typename std::enable_if<is_container<T>::value, std::string>::type
+ToString(const T &container, defs::FrequencyUnit unit) {
+    std::ostringstream os;
+    os << '[';
+    if (!container.empty()) {
+        auto it = container.cbegin();
+        os << ToString(*it++, unit);
+        while (it != container.cend())
+            os << ", " << ToString(*it++, unit);
+    }
+    os << ']';
+    return os.str();
+}
+
+template <typename T, std::enable_if_t<sls::is_duration<T>::value, int> = 0>
 T StringTo(const std::string &t, const std::string &unit) {
     double tval{0};
     try {
@@ -301,6 +326,33 @@ T StringTo(const std::string &t, const std::string &unit) {
     }
 }
 
+template <typename T, std::enable_if_t<sls::is_frequency<T>::value, int> = 0>
+T StringTo(const std::string &f, const std::string &unit) {
+    double fval{0};
+    try {
+        fval = std::stod(f);
+    } catch (const std::invalid_argument &e) {
+        throw RuntimeError("Could not convert string to frequency");
+    }
+    auto unitLower = [&] {
+        std::string result = unit;
+        std::transform(result.begin(), result.end(), result.begin(),
+                       [](unsigned char c) { return std::tolower(c); });
+        return result;
+    }();
+
+    if (unitLower == "mhz") {
+        return T(static_cast<int>(fval * 1e6));
+    } else if (unitLower == "khz") {
+        return T(static_cast<int>(fval * 1e3));
+    } else if (unitLower.empty() || unitLower == "hz") {
+        return T(static_cast<int>(fval));
+    } else {
+        throw RuntimeError(
+            "Invalid unit in conversion from string to frequency");
+    }
+}
+
 template <typename T> T StringTo(const std::string &t) {
     std::string tmp{t};
     auto unit = RemoveUnit(tmp);
@@ -316,6 +368,7 @@ template <> defs::fileFormat StringTo(const std::string &s);
 template <> defs::externalSignalFlag StringTo(const std::string &s);
 template <> defs::readoutMode StringTo(const std::string &s);
 template <> defs::dacIndex StringTo(const std::string &s);
+template <> defs::powerIndex StringTo(const std::string &s);
 template <> defs::burstMode StringTo(const std::string &s);
 template <> defs::timingSourceType StringTo(const std::string &s);
 template <> defs::M3_GainCaps StringTo(const std::string &s);
@@ -335,6 +388,7 @@ template <> uint32_t StringTo(const std::string &s);
 template <> uint64_t StringTo(const std::string &s);
 template <> int StringTo(const std::string &s);
 template <> bool StringTo(const std::string &s);
+bool StringTo(const std::string &s, defs::boolFormat format);
 template <> int64_t StringTo(const std::string &s);
 
 /** For types with a .str() method use this for conversion */

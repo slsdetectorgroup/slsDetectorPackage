@@ -4,9 +4,11 @@
 #include "clogger.h"
 #include "common.h"
 #include "sls/sls_detector_defs.h"
+#include <stdbool.h>
 
-#define GOODBYE (-200)
-#define REBOOT  (-400)
+#define GOODBYE                (-200)
+#define REBOOT                 (-400)
+#define BFIN_SPI_WAIT_uSECONDS 25
 
 // initialization functions
 int updateModeAllowedFunction(int file_des);
@@ -39,7 +41,7 @@ int set_bus_test(int);
 int set_image_test_mode(int);
 int get_image_test_mode(int);
 enum DACINDEX getDACIndex(enum dacIndex ind);
-int validateAndSetDac(enum dacIndex ind, int val, int mV);
+int processDACEnums(enum dacIndex ind, int val, bool mV);
 int set_dac(int);
 int get_adc(int);
 int write_register(int);
@@ -338,3 +340,12 @@ int get_collection_mode(int);
 int set_collection_mode(int);
 int get_pattern_wait_interval(int);
 int set_pattern_wait_interval(int);
+int spi_read(int);
+int spi_write(int);
+int get_power(int);
+int set_power(int);
+int get_power_dac(int);
+int set_power_dac(int);
+int get_power_adc(int);
+int get_voltage_limit(int);
+int set_voltage_limit(int);

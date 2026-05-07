@@ -12,8 +12,6 @@ add_executable(ctbDetectorServer_virtual
     ../slsDetectorServer/src/UDPPacketHeaderGenerator.c
     ../slsDetectorServer/src/AD9257.c
     ../slsDetectorServer/src/ALTERA_PLL.c
-    ../slsDetectorServer/src/I2C.c
-    ../slsDetectorServer/src/INA226.c
     ../slsDetectorServer/src/LTC2620.c
     ../slsDetectorServer/src/MAX1932.c
     ../slsDetectorServer/src/programViaBlackfin.c

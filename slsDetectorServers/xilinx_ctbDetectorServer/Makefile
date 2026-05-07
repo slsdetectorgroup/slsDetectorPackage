@@ -23,7 +23,7 @@ DESTDIR		?= 	bin
 INSTMODE	= 	0777
 
 SRCS 		= 	slsDetectorFunctionList.c  
-SRCS		+=	$(main_src)slsDetectorServer.c $(main_src)slsDetectorServer_funcs.c $(main_src)communication_funcs.c $(main_src)arm64.c $(main_src)XILINX_PLL.c $(main_src)common.c $(main_src)/sharedMemory.c $(main_src)/loadPattern.c $(md5_dir)md5.c $(main_src)programViaArm.c $(main_src)LTC2620_Driver.c 
+SRCS		+=	$(main_src)slsDetectorServer.c $(main_src)slsDetectorServer_funcs.c $(main_src)communication_funcs.c $(main_src)arm64.c $(main_src)XILINX_PLL.c $(main_src)XILINX_FMC.c $(main_src)common.c $(main_src)/sharedMemory.c $(main_src)/loadPattern.c $(md5_dir)md5.c $(main_src)programViaArm.c $(main_src)LTC2620_Driver.c 
 
 OBJS 		= 	$(SRCS:.c=.o) 
  
@@ -39,7 +39,7 @@ boot: $(OBJS)
 version_name=APIXILINXCTB
 version_path=slsDetectorServers/xilinx_ctbDetectorServer
 versioning: 
-	cd ../../ && echo $(PWD) && echo `tput setaf 6; python updateAPIVersion.py $(version_name) $(version_path);  tput sgr0;`
+	cd ../../ && echo $(PWD) && echo `tput setaf 6; python etc/updateAPIVersion.py $(version_name) $(version_path);  tput sgr0;`
 
 
 $(PROGS): $(OBJS)

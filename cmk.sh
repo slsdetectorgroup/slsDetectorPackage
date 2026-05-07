@@ -250,7 +250,7 @@ fi
 
 #Tests
 if [ $TESTS -eq 1 ]; then
-	CMAKE_POST+=" -DSLS_USE_TESTS=ON -DSLS_USE_INTEGRATION_TESTS=ON"
+	CMAKE_POST+=" -DSLS_USE_TESTS=ON "
 	echo "Tests Option enabled"
 fi 
 

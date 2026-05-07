@@ -5,6 +5,7 @@
 #include "sls/Detector.h"
 
 #include <iostream>
+#include <optional>
 #include <string>
 #include <vector>
 namespace sls {
@@ -53,6 +54,9 @@ class Caller {
         return ToString(value, unit);
     }
 
+    std::string OutString(const Result<defs::Hz> &value,
+                          const std::string &unit);
+
     std::vector<std::string> getAllCommands();
     std::map<std::string, std::string> GetDeprecatedCommands();
     std::string list(int action);
@@ -67,6 +71,7 @@ class Caller {
 
   private:
     bool ReplaceIfDeprecated(std::string &command);
+    void SuggestIfRemoved(const std::string &command);
     using FunctionMap = std::map<std::string, std::string (Caller::*)(int)>;
     using StringMap = std::map<std::string, std::string>;
     Detector *ptr; // pointer to the detector that executes the command
@@ -91,6 +96,10 @@ class Caller {
     // applicable
     RegisterAddress getRegisterAddress(const std::string &saddr) const;
     BitAddress getBitAddress() const;
+    defs::dacIndex parseDacIndex(int argIndex, bool isCtb);
+    bool parseMV(int argIndex);
+    defs::powerIndex parsePowerIndex(int argIndex);
+    defs::FrequencyUnit parseFrequencyUnit(const std::string &s);
 
     FunctionMap functions{
         {"list", &Caller::list},
@@ -102,6 +111,12 @@ class Caller {
     StringMap deprecated_functions{
 
         // THIS COMMENT TO BE REPLACED BY THE ACTUAL CODE (3)
+
+    };
+
+    StringMap removed_functions{
+
+        // THIS COMMENT TO BE REPLACED BY THE ACTUAL CODE (4)
 
     };
 };

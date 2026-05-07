@@ -25,8 +25,12 @@ void init_bit(py::module &m) {
              })
         .def("__str__", &RegisterAddress::str)
         .def("value", &RegisterAddress::value)
+        .def("__int__", &RegisterAddress::value)
         .def(py::self == py::self)
-        .def(py::self != py::self);
+        .def(py::self != py::self)
+        .def("__add__",&RegisterAddress::operator+)
+        .def("__radd__",&RegisterAddress::operator+)
+        .def("__iadd__",&RegisterAddress::operator+=, py::return_value_policy::reference_internal);
 
     py::class_<BitAddress>(m, "BitAddress")
         .def(py::init())
@@ -51,6 +55,7 @@ void init_bit(py::module &m) {
              })
         .def("__str__", &RegisterValue::str)
         .def("value", &RegisterValue::value)
+        .def("__int__", &RegisterValue::value)
         .def(py::self == py::self)
         .def(py::self != py::self)
         .def("__or__", [](const RegisterValue &lhs,

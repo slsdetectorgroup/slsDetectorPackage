@@ -6,11 +6,9 @@ from PyQt5 import QtWidgets, uic
 import pyqtgraph as pg
 from pyqtgraph import LegendItem
 
-from pyctbgui.utils import decoder
 from pyctbgui.utils.defines import Defines
 
 from pyctbgui.utils.bit_utils import bit_is_set, manipulate_bit
-import pyctbgui.utils.pixelmap as pm
 from pyctbgui.utils.recordOrApplyPedestal import recordOrApplyPedestal
 
 
@@ -18,6 +16,7 @@ class TransceiverTab(QtWidgets.QWidget):
 
     def __init__(self, parent):
         super().__init__(parent)
+        pg.setConfigOptions(imageAxisOrder="row-major")  
         uic.loadUi(Path(__file__).parent.parent / 'ui' / "transceiver.ui", parent)
         self.view = parent
         self.mainWindow = None
@@ -132,8 +131,11 @@ class TransceiverTab(QtWidgets.QWidget):
             if dSamples % 8 != 0:
                 nbitsPerDBit += (8 - (dSamples % 8))
             transceiverOffset += nDBitEnabled * (nbitsPerDBit // 8)
-        trans_array = np.array(np.frombuffer(data, offset=transceiverOffset, dtype=np.uint16))
-        return decoder.decode(trans_array, pm.matterhorn_transceiver())
+        trans_array = np.array(np.frombuffer(data, offset=transceiverOffset, dtype=np.uint8))
+        
+        tmp = self.mainWindow.decoder(trans_array)
+
+        return tmp
 
     def processImageData(self, data, dSamples):
         """
@@ -144,20 +146,18 @@ class TransceiverTab(QtWidgets.QWidget):
         """
         # get zoom state
         viewBox = self.mainWindow.plotTransceiverImage.getView()
+
         state = viewBox.getState()
         try:
             self.mainWindow.transceiver_frame = self._processImageData(data, dSamples, self.mainWindow.romode.value,
                                                                        self.mainWindow.nDBitEnabled)
             self.plotTab.ignoreHistogramSignal = True
             self.mainWindow.plotTransceiverImage.setImage(self.mainWindow.transceiver_frame)
-        except Exception:
+        except Exception as e:
             self.mainWindow.statusbar.setStyleSheet("color:red")
-            message = f'Warning: Invalid size for Transceiver Image. Expected' \
-                      f' {self.mainWindow.nTransceiverRows * self.mainWindow.nTransceiverCols} size,' \
-                      f' got {self.mainWindow.transceiver_frame.size} instead.'
             self.acquisitionTab.updateCurrentFrame('Invalid Image')
-            self.mainWindow.statusbar.showMessage(message)
-            print(message)
+            self.mainWindow.statusbar.showMessage(str(e))
+            print("Error: ", str(e))
 
         self.plotTab.setFrameLimits(self.mainWindow.transceiver_frame)
 
@@ -187,8 +187,8 @@ class TransceiverTab(QtWidgets.QWidget):
         self.mainWindow.nTransceiverCols = 0
         self.mainWindow.transceiver_frame = np.zeros(
             (self.mainWindow.nTransceiverRows, self.mainWindow.nTransceiverCols))
-        self.mainWindow.plotTransceiverImage.setImage(self.mainWindow.transceiver_frame)
-        self.mainWindow.verticalLayoutPlot.addWidget(self.mainWindow.plotTransceiverImage, 6)
+        self.mainWindow.plotTransceiverImage.setImage(self.mainWindow.transceiver_frame) 
+        self.mainWindow.verticalLayoutPlot.addWidget(self.mainWindow.plotTransceiverImage, 6) 
 
         cm = pg.colormap.get('CET-L9')  # prepare a linear color map
         self.mainWindow.plotTransceiverImage.setColorMap(cm)

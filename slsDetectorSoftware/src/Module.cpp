@@ -50,8 +50,6 @@ std::string Module::getHostname() const { return shm()->hostname; }
 void Module::setHostname(const std::string &hostname,
                          const bool initialChecks) {
     strcpy_safe(shm()->hostname, hostname.c_str());
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.close();
     try {
         checkDetectorVersionCompatibility();
         initialDetectorServerChecks();
@@ -87,9 +85,11 @@ std::string Module::getControlServerLongVersion() const {
     // throw with old server version (sends 8 bytes)
     catch (RuntimeError &e) {
         std::string emsg = std::string(e.what());
+
         if (emsg.find(F_GET_SERVER_VERSION) && emsg.find("8 bytes")) {
             throwDeprecatedServerVersion();
         }
+
         throw;
     }
 }
@@ -146,7 +146,6 @@ std::string Module::getReceiverSoftwareVersion() const {
 // static function
 slsDetectorDefs::detectorType
 Module::getTypeFromDetector(const std::string &hostname, uint16_t cport) {
-    LOG(logDEBUG1) << "Getting Module type ";
     ClientSocket socket("Detector", hostname, cport);
     socket.Send(F_GET_DETECTOR_TYPE);
     socket.setFnum(F_GET_DETECTOR_TYPE);
@@ -803,6 +802,10 @@ void Module::resetToDefaultDacs(const bool hardReset) {
 }
 
 void Module::setDAC(int val, dacIndex index, bool mV) {
+    // -1 reserved for get at the moment (get_dac also calls F_SET_DAC)
+    if (val == -1) {
+        throw RuntimeError("Invalid input. DAC value cannot be set to -1.");
+    }
     int args[]{static_cast<int>(index), static_cast<int>(mV), val};
     sendToDetector<int>(F_SET_DAC, args);
 }
@@ -813,6 +816,50 @@ bool Module::getPowerChip() const {
 
 void Module::setPowerChip(bool on) {
     sendToDetector<int>(F_POWER_CHIP, static_cast<int>(on));
+}
+
+int Module::getPowerDAC(defs::powerIndex index) const {
+    return sendToDetector<int>(F_GET_POWER_DAC, static_cast<int>(index));
+}
+
+void Module::setPowerDAC(defs::powerIndex index, int value) {
+    int args[]{static_cast<int>(index), value};
+    sendToDetector(F_SET_POWER_DAC, args, nullptr);
+}
+
+bool Module::isPowerEnabled(defs::powerIndex index) const {
+    return sendToDetector<int>(F_GET_POWER, static_cast<int>(index));
+}
+
+void Module::setPowerEnabled(const std::vector<defs::powerIndex> &indices,
+                             bool enable) {
+    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    client.Send(F_SET_POWER);
+    client.setFnum(F_SET_POWER);
+    int count = indices.size();
+    client.Send(count);
+    std::vector<int> indices_int(count);
+    for (size_t i = 0; i < indices.size(); ++i) {
+        indices_int[i] = static_cast<int>(indices[i]);
+    }
+    client.Send(indices_int);
+    client.Send(static_cast<int>(enable));
+    if (client.Receive<int>() == FAIL) {
+        throw DetectorError("Detector " + std::to_string(moduleIndex) +
+                            " returned error: " + client.readErrorMessage());
+    }
+}
+
+int Module::getPowerADC(defs::powerIndex index) const {
+    return sendToDetector<int>(F_GET_POWER_ADC, static_cast<int>(index));
+}
+
+int Module::getVoltageLimit() const {
+    return sendToDetector<int>(F_GET_VOLTAGE_LIMIT);
+}
+
+void Module::setVoltageLimit(const int limit_in_mV) {
+    sendToDetector(F_SET_VOLTAGE_LIMIT, limit_in_mV, nullptr);
 }
 
 int Module::getImageTestMode() const {
@@ -2621,7 +2668,7 @@ void Module::configureTransceiver() {
 }
 
 // Pattern
-std::string Module::getPatterFileName() const {
+std::string Module::getPatternFileName() const {
     char retval[MAX_STR_LENGTH]{};
     sendToDetector(F_GET_PATTERN_FILE_NAME, nullptr, retval);
     return retval;
@@ -3467,6 +3514,9 @@ void Module::initialDetectorServerChecks() {
 void Module::checkDetectorVersionCompatibility() {
     std::string detServers[2] = {getControlServerLongVersion(),
                                  getStopServerLongVersion()};
+    LOG(logDEBUG1)
+        << "Checking detector version compatibility with client version "
+        << detServers[0] << " and " << detServers[1];
     for (int i = 0; i != 2; ++i) {
         // det and client (sem. versioning)
         Version det(detServers[i]);
@@ -3515,6 +3565,8 @@ const std::string Module::getDetectorAPI() const {
         return APIGOTTHARD2;
     case XILINX_CHIPTESTBOARD:
         return APIXILINXCTB;
+    case MATTERHORN:
+        return APIMATTERHORN;
     default:
         throw NotImplementedError(
             "Detector type not implemented to get Detector API");
@@ -4074,4 +4126,50 @@ void Module::simulatingActivityinDetector(const std::string &functionType,
     }
     printf("\n");
 }
+
+std::vector<uint8_t> Module::readSpi(int chip_id, int register_id,
+                                     int n_bytes) const {
+    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    client.Send(F_SPI_READ);
+    client.setFnum(F_SPI_READ);
+    client.Send(chip_id);
+    client.Send(register_id);
+    client.Send(n_bytes);
+
+    if (client.Receive<int>() == FAIL) {
+        std::ostringstream os;
+        os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
+           << " returned error: " << client.readErrorMessage();
+        throw DetectorError(os.str());
+    }
+
+    std::vector<uint8_t> data(n_bytes);
+    client.Receive(data);
+    return data;
+}
+
+std::vector<uint8_t> Module::writeSpi(int chip_id, int register_id,
+                                      const std::vector<uint8_t> &data) {
+    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    client.Send(F_SPI_WRITE);
+    client.setFnum(F_SPI_WRITE);
+    client.Send(chip_id);
+    client.Send(register_id);
+    client.Send(static_cast<int>(data.size()));
+    client.Send(data);
+
+    if (client.Receive<int>() == FAIL) {
+        std::ostringstream os;
+        os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
+           << " returned error: " << client.readErrorMessage();
+        throw DetectorError(os.str());
+    }
+
+    // Read the output from the SPI write. This contains the data before the
+    // write.
+    std::vector<uint8_t> ret(data.size());
+    client.Receive(ret);
+    return ret;
+}
+
 } // namespace sls

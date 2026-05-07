@@ -56,20 +56,22 @@
 #define DEFAULT_NUM_DSAMPLES          (1)
 #define DEFAULT_NUM_TSAMPLES          (200)
 #define DEFAULT_STARTING_FRAME_NUMBER (1)
-#define DEFAULT_VLIMIT                (-100)
+#define DEFAULT_VLIMIT                (0)
 #define DEFAULT_DELAY                 (0)
 
 #define MAX_TRANSCEIVER_MASK    (0xF)
-#define MAX_TRANSCEIVER_SAMPLES (0x1FFF)
+#define MAX_TRANSCEIVER_SAMPLES (0x7FFFFFFF)
 
 #define MAX_ANALOG_SAMPLES  (0x3FFF)
 #define MAX_DIGITAL_SAMPLES (0x3FFF)
 
-#define DAC_MIN_MV      (0)
-#define DAC_MAX_MV      (2048)
-#define POWER_RGLTR_MIN (1041)
-#define POWER_RGLTR_MAX (2661)
-#define VIO_MIN_MV      (1200) // for fpga to function
+#define DAC_MIN_MV         (0)
+#define DAC_MAX_MV         (2048)
+#define POWER_RGLTR_MIN    (1041)
+#define POWER_RGLTR_MAX    (2661)
+#define VIO_MIN_MV         (1200)       // for fpga to function
+#define SLOW_ADC_MAX_MV    (2500)       // AD7689
+#define SLOW_ADC_MAX_STEPS (0xFFFF + 1) // AD7689
 
 /* Defines in the Firmware */
 #define WAIT_TIME_PATTERN_READ  (10)
@@ -119,7 +121,7 @@ enum DACINDEX {
     D_PWR_C
 };
 
-#define PWR_NAMES "D", "_unknown", "IO", "A", "B", "C"
+#define PWR_NAMES "VA", "VB", "VC", "VD", "VIO"
 
 /* Struct Definitions */
 // For arm has to be multiple of 16
@@ -156,8 +158,11 @@ typedef struct udp_header_struct {
 enum CLKINDEX { RUN_CLK, ADC_CLK, SYNC_CLK, DBIT_CLK, NUM_CLOCKS };
 #define CLK_NAMES "run", "adc", "sync", "dbit"
 
-#define DEFAULT_RUN_CLK  (20000)  // 20 MHz
-#define DEFAULT_ADC_CLK  (100000) // 100 MHz
-#define DEFAULT_SYNC_CLK (20000)  // 20 MHz
-#define DEFAULT_DBIT_CLK (100000) // 100 MHz
-#define NS_TO_CLK_CYCLE  (1E-6)   // ns to kHz
+#define DEFAULT_RUN_CLK  (20000000)  // 20 MHz
+#define DEFAULT_ADC_CLK  (100000000) // 100 MHz
+#define DEFAULT_SYNC_CLK (20000000)  // 20 MHz
+#define DEFAULT_DBIT_CLK (100000000) // 100 MHz
+#define NS_TO_CLK_CYCLE  (1E-9)      // ns to Hz
+
+#define MIN_CLK_FREQ (10000000)  // 10 MHz
+#define MAX_CLK_FREQ (300000000) // 300 MHz

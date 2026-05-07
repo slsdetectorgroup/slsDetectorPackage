@@ -9,7 +9,7 @@ If any changes to enums in slsDetectorDefs
 ```sh
 # to generate the dump.json file
 cd slsSupportLib/src
-clang++ -Xclang -ast-dump=json -Xclang -ast-dump-filter -Xclang StringTo -c ToString.cpp -I ../include/ -std=gnu++11 > ../../slsDetectorSoftware/generator/autocomplete/dump.json 
+clang++ -Xclang -ast-dump=json -Xclang -ast-dump-filter -Xclang StringTo -c ToString.cpp -I ../include/ -std=gnu++17 > ../../slsDetectorSoftware/generator/autocomplete/dump.json 
 cd ../../slsDetectorSoftware/generator/autocomplete
 python autocomplete.py -f
 ```
@@ -302,7 +302,13 @@ write_arg in codegen reads the argument fields and generate c++ code accordingly
   std::string $output[1]$ = RemoveUnit(tmp_time);
   auto $output[0]$ = StringTo<time::ns>(tmp_time, $output[1]$);
   ```
-- convert_to_time: takes three parameters: input[0], input[1], output
+- separate_freq_units: takes three parameters: input, output[0], output[1] each one is a variable name
+  ```cpp
+  std::string tmp_freq($input$);
+  std::string $output[1]$ = RemoveUnit(tmp_freq);
+  auto $output[0]$ = StringTo<defs::Hz>(tmp_freq, $output[1]$);
+  ```
+- convert_to_time and convert_to_freq: takes three parameters: input[0], input[1], output
   ```cpp
   auto output = StringTo<time::ns>(input[0], input[1]);
   ```

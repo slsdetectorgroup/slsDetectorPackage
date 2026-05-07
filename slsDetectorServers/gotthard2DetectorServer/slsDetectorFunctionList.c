@@ -479,10 +479,8 @@ void setupDetector() {
     setTimingSource(DEFAULT_TIMING_SOURCE);
 
     // Default values
-    initError = setHighVoltage(DEFAULT_HIGH_VOLTAGE);
+    initError = setHighVoltage(DEFAULT_HIGH_VOLTAGE, initErrorMessage);
     if (initError == FAIL) {
-        sprintf(initErrorMessage, "Could not set high voltage to %d\n",
-                DEFAULT_HIGH_VOLTAGE);
         return;
     }
 
@@ -499,7 +497,7 @@ void setupDetector() {
     }
 
     // power on chip
-    initError = powerChip(1, initErrorMessage);
+    initError = powerChip(true, initErrorMessage);
     if (initError == FAIL)
         return;
 
@@ -524,7 +522,9 @@ void setupDetector() {
     setBurstMode(DEFAULT_BURST_MODE);
     setFilterResistor(DEFAULT_FILTER_RESISTOR);
     setCDSGain(DEFAILT_CDS_GAIN);
-    setSettings(DEFAULT_SETTINGS);
+    initError = setSettings(DEFAULT_SETTINGS, initErrorMessage);
+    if (initError == FAIL)
+        return;
 
     // Initialization of acquistion parameters
     setNextFrameNumber(DEFAULT_FRAME_NUMBER);
@@ -560,7 +560,7 @@ void setASICDefaults() {
     LOG(logINFO, ("Setting ASIC Defaults (0x%x)\n", bus_r(addr)));
 }
 
-int resetToDefaultDacs(int hardReset) {
+int resetToDefaultDacs(int hardReset, char *mess) {
     // reset defaults to hardcoded defaults
     if (hardReset) {
         for (int i = 0; i < NDAC; ++i) {
@@ -568,16 +568,12 @@ int resetToDefaultDacs(int hardReset) {
         }
     }
     // reset dacs to defaults
-    int ret = OK;
     LOG(logINFOBLUE, ("Setting Default Dac values\n"));
     for (int i = 0; i < NDAC; ++i) {
         if (defaultDacValues[i] != -1) {
-            setDAC((enum DACINDEX)i, defaultDacValues[i], 0);
-            if (dacValues[i] != defaultDacValues[i]) {
-                ret = FAIL;
-                LOG(logERROR, ("Setting dac %d failed, wrote %d, read %d\n", i,
-                               defaultDacValues[i], dacValues[i]));
-            }
+            if (setDAC((enum DACINDEX)i, defaultDacValues[i], false, mess) ==
+                FAIL)
+                return FAIL;
         }
     }
     LOG(logINFOBLUE, ("Setting Default On-chip Dac values\n"));
@@ -588,17 +584,18 @@ int resetToDefaultDacs(int hardReset) {
                              defaultOnChipdacValues[idac][ichip]);
                 if (onChipdacValues[idac][ichip] !=
                     defaultOnChipdacValues[idac][ichip]) {
-                    ret = FAIL;
-                    LOG(logERROR,
-                        ("Setting on-chip dac %d (ichip:%d) failed, "
-                         "wrote %d, read %d\n",
-                         idac, ichip, defaultOnChipdacValues[idac][ichip],
-                         onChipdacValues[idac][ichip]));
+                    sprintf(mess,
+                            "Setting on-chip dac %d (ichip:%d) failed, "
+                            "wrote %d, read %d\n",
+                            idac, ichip, defaultOnChipdacValues[idac][ichip],
+                            onChipdacValues[idac][ichip]);
+                    LOG(logERROR, (mess));
+                    return FAIL;
                 }
             }
         }
     }
-    return ret;
+    return OK;
 }
 
 int getDefaultDac(enum DACINDEX index, enum detectorSettings sett,
@@ -952,13 +949,11 @@ int readConfigFile() {
             hardCodedDefaultDacValues[idac] = value;
 
             // set dac
-            setDAC(idac, value, 0);
-            int retval = getDAC(idac, 0);
-            if (retval != value) {
+            if (setDAC(idac, value, false, initErrorMessage) == FAIL) {
                 sprintf(initErrorMessage,
                         "Set dac %s failed from on-board server config file. "
-                        "Set %d, got %d.\n",
-                        command, value, retval);
+                        "Could not set %d.\n",
+                        command, value);
                 break;
             }
         }
@@ -1401,9 +1396,12 @@ int64_t getMeasurementTime() {
 }
 
 /* parameters - module, settings */
-enum detectorSettings setSettings(enum detectorSettings sett) {
-    if (sett == UNINITIALIZED)
-        return thisSettings;
+int setSettings(enum detectorSettings sett, char *mess) {
+    if (sett == UNINITIALIZED) {
+        sprintf(mess, "Cannot set settings to uninitialized\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
 
     // set settings
     uint32_t addr = ASIC_CONFIG_REG;
@@ -1428,13 +1426,13 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
             ("Set settings - Fix Gain 2, val: 0x%x\n", bus_r(addr) & mask));
         break;
     default:
-        LOG(logERROR,
-            ("This settings is not defined for this detector %d\n", (int)sett));
-        return -1;
+        sprintf(mess, "Undefined settings %d\n", (int)sett);
+        LOG(logERROR, (mess));
+        return FAIL;
     }
     thisSettings = sett;
 
-    return getSettings();
+    return OK;
 }
 
 enum detectorSettings getSettings() {
@@ -1523,46 +1521,106 @@ int getOnChipDAC(enum ONCHIP_DACINDEX ind, int chipIndex) {
     return onChipdacValues[ind][chipIndex];
 }
 
-void setDAC(enum DACINDEX ind, int val, int mV) {
-    if (val < 0) {
-        return;
+int validateDACIndex(enum DACINDEX ind, char *mess) {
+    if (ind < 0 || ind >= NDAC) {
+        sprintf(mess, "Could not set DAC. Invalid index %d\n", ind);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    return OK;
+}
+
+int validateDACVoltage(enum DACINDEX ind, int voltage, char *mess) {
+    char *dacNames[] = {DAC_NAMES};
+    // validate min value
+    if (voltage < 0) {
+        sprintf(mess,
+                "Could not set DAC %s. Input value %d cannot be negative\n",
+                dacNames[ind], voltage);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    // validate max value
+    if (voltage > DAC_MAX_MV) {
+        sprintf(
+            mess,
+            "Could not set DAC %s. Input value %d mV exceeds maximum %d mV\n",
+            dacNames[ind], voltage, DAC_MAX_MV);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    return OK;
+}
+
+int convertVoltageToDACValue(enum DACINDEX ind, int voltage, int *retval_dacval,
+                             char *mess) {
+    if (LTC2620_D_VoltageToDac(voltage, retval_dacval) == FAIL) {
+        char *dacNames[] = {DAC_NAMES};
+        sprintf(mess,
+                "Could not set DAC %s. Could not convert %d mV to dac units.\n",
+                dacNames[ind], voltage);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    return OK;
+}
+
+int convertDACValueToVoltage(enum DACINDEX ind, int dacval, int *retval_voltage,
+                             char *mess) {
+    *retval_voltage = -1;
+    if (LTC2620_D_DacToVoltage(dacval, retval_voltage) == FAIL) {
+        char *dacNames[] = {DAC_NAMES};
+        sprintf(mess,
+                "Could not get DAC %s. Could not convert %d dac units to mV\n",
+                dacNames[ind], dacval);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    return OK;
+}
+
+int getDAC(enum DACINDEX ind, bool mV, int *retval, char *mess) {
+    if (validateDACIndex(ind, mess) == FAIL)
+        return FAIL;
+
+    int dacval = dacValues[ind];
+    if (mV) {
+        if (convertDACValueToVoltage(ind, dacval, retval, mess) == FAIL)
+            return FAIL;
+        return OK;
     }
 
-    char *dac_names[] = {DAC_NAMES};
-    LOG(logDEBUG1, ("Setting dac[%d - %s]: %d %s \n", (int)ind, dac_names[ind],
-                    val, (mV ? "mV" : "dac units")));
+    *retval = dacval;
+    return OK;
+}
+
+int setDAC(enum DACINDEX ind, int val, bool mV, char *mess) {
+    {
+        char *dacNames[] = {DAC_NAMES};
+        LOG(logINFO, ("Setting DAC %s: %d %s \n", dacNames[ind], val,
+                      (mV ? "mV" : "dac units")));
+    }
+
+    if (validateDACIndex(ind, mess) == FAIL)
+        return FAIL;
+
     int dacval = val;
-#ifdef VIRTUAL
-    LOG(logINFO, ("Setting dac[%d - %s]: %d %s \n", (int)ind, dac_names[ind],
-                  val, (mV ? "mV" : "dac units")));
-    if (!mV) {
-        dacValues[ind] = val;
-    }
-    // convert to dac units
-    else if (LTC2620_D_VoltageToDac(val, &dacval) == OK) {
-        dacValues[ind] = dacval;
-    }
-#else
-    if (LTC2620_D_SetDACValue((int)ind, val, mV, dac_names[ind], &dacval) ==
-        OK) {
-        dacValues[ind] = dacval;
-    }
-#endif
-}
+    if (mV) {
+        if (validateDACVoltage(ind, val, mess) == FAIL)
+            return FAIL;
 
-int getDAC(enum DACINDEX ind, int mV) {
-    if (!mV) {
-        LOG(logDEBUG1, ("Getting DAC %d : %d dac\n", ind, dacValues[ind]));
-        return dacValues[ind];
+        if (convertVoltageToDACValue(ind, val, &dacval, mess) == FAIL)
+            return FAIL;
     }
-    int voltage = -1;
-    LTC2620_D_DacToVoltage(dacValues[ind], &voltage);
-    LOG(logDEBUG1,
-        ("Getting DAC %d : %d dac (%d mV)\n", ind, dacValues[ind], voltage));
-    return voltage;
+    {
+        char *dacNames[] = {DAC_NAMES};
+        if (LTC2620_D_SetDacValue((int)ind, dacval, dacNames[ind], mess) ==
+            FAIL)
+            return FAIL;
+    }
+    dacValues[ind] = dacval;
+    return OK;
 }
-
-int getMaxDacSteps() { return LTC2620_D_GetMaxNumSteps(); }
 
 int getADC(enum ADCINDEX ind, int *value) {
     LOG(logDEBUG1, ("Reading FPGA temperature...\n"));
@@ -1575,9 +1633,12 @@ int getADC(enum ADCINDEX ind, int *value) {
     return OK;
 }
 
-int setHighVoltage(int val) {
-    if (val > HV_SOFT_MAX_VOLTAGE) {
-        LOG(logERROR, ("Invalid high voltage: %d V\n", val));
+int setHighVoltage(int val, char *mess) {
+    // validate input value
+    if (val < 0 || val > HV_SOFT_MAX_VOLTAGE) {
+        sprintf(mess, "Invalid Voltage. Valid range (0 - %d)\n",
+                HV_SOFT_MAX_VOLTAGE);
+        LOG(logERROR, (mess));
         return FAIL;
     }
 
@@ -1589,7 +1650,7 @@ int setHighVoltage(int val) {
     // at startup (initCheck not done: to not wait 10s assuming hv = 0
     // otherwise as below, always check current hv to wait 10s if powering off
     if (initCheckDone) {
-        if (getHighVoltage(&prevHighVoltage) == FAIL) {
+        if (getHighVoltage(&prevHighVoltage, mess) == FAIL) {
             LOG(logERROR, ("Could not get current high voltage to determine if "
                            "%d s wait is required\n",
                            waitTime));
@@ -1597,21 +1658,36 @@ int setHighVoltage(int val) {
         }
     }
 
-    int ret = DAC6571_Set(val);
+    if (DAC6571_Set(val, mess) == FAIL)
+        return FAIL;
 
     // only when powering off (from non zero value), wait 10s
-    if (ret == OK) {
-        if (prevHighVoltage > 0 && val == 0) {
-            LOG(logINFO,
-                ("\tSwitching off high voltage requires %d s...\n", waitTime));
-            sleep(waitTime);
-            LOG(logINFO, ("\tAssuming high voltage switched off\n"));
-        }
+    if (prevHighVoltage > 0 && val == 0) {
+        LOG(logINFO,
+            ("\tSwitching off high voltage requires %d s...\n", waitTime));
+        sleep(waitTime);
+        LOG(logINFO, ("\tAssuming high voltage switched off\n"));
     }
-    return ret;
+
+    // validate get
+    int retval = 0;
+    if (getHighVoltage(&retval, mess) == FAIL)
+        return FAIL;
+    if (val != retval) {
+        sprintf(mess, "Could not set high voltage. Set %d, but got %d\n", val,
+                retval);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+
+    return OK;
 }
 
-int getHighVoltage(int *retval) { return DAC6571_Get(retval); }
+int getHighVoltage(int *retval, char *mess) {
+    int ret = DAC6571_Get(retval, mess);
+    LOG(logDEBUG1, ("High Voltage: %d\n", *retval));
+    return ret;
+}
 
 /* parameters - timing */
 
@@ -2276,7 +2352,7 @@ int checkDetectorType(char *mess) {
     return OK;
 }
 
-int powerChip(int on, char *mess) {
+int powerChip(bool on, char *mess) {
     if (on) {
         LOG(logINFO, ("Powering chip: on\n"));
         bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_PWR_CHIP_MSK);
@@ -2285,7 +2361,7 @@ int powerChip(int on, char *mess) {
     } else {
         // throw if high voltage on
         int highVoltage = 0;
-        if (getHighVoltage(&highVoltage) == FAIL) {
+        if (getHighVoltage(&highVoltage, mess) == FAIL) {
             sprintf(mess, "Could not get high voltage status to do a safety "
                           "check first\n");
             LOG(logERROR, (mess));

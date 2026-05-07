@@ -7,6 +7,10 @@
 #include "sls/sls_detector_funcs.h"
 #include "slsDetectorFunctionList.h"
 
+#include <errno.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
+
 #if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD) ||               \
     defined(MYTHEN3D)
 #include "Pattern.h"
@@ -18,6 +22,8 @@
 #include <string.h>
 #include <sys/sysinfo.h>
 #include <unistd.h>
+
+#include <linux/spi/spidev.h>
 
 // defined in the detector specific Makefile
 #ifdef EIGERD
@@ -515,6 +521,16 @@ void function_table() {
     flist[F_SET_COLLECTION_MODE] = &set_collection_mode;
     flist[F_GET_PATTERN_WAIT_INTERVAL] = &get_pattern_wait_interval;
     flist[F_SET_PATTERN_WAIT_INTERVAL] = &set_pattern_wait_interval;
+    flist[F_SPI_READ] = &spi_read;
+    flist[F_SPI_WRITE] = &spi_write;
+    flist[F_GET_POWER] = &get_power;
+    flist[F_SET_POWER] = &set_power;
+    flist[F_GET_POWER_DAC] = &get_power_dac;
+    flist[F_SET_POWER_DAC] = &set_power_dac;
+    flist[F_GET_POWER_ADC] = &get_power_adc;
+    flist[F_GET_VOLTAGE_LIMIT] = &get_voltage_limit;
+    flist[F_SET_VOLTAGE_LIMIT] = &set_voltage_limit;
+
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
         LOG(logERROR, ("The last detector function enum has reached its "
@@ -949,41 +965,6 @@ enum DACINDEX getDACIndex(enum dacIndex ind) {
     case VISHAPER:
         serverDacIndex = E_VISHAPER;
         break;
-#elif CHIPTESTBOARDD
-    case V_POWER_A:
-        serverDacIndex = D_PWR_A;
-        break;
-    case V_POWER_B:
-        serverDacIndex = D_PWR_B;
-        break;
-    case V_POWER_C:
-        serverDacIndex = D_PWR_C;
-        break;
-    case V_POWER_D:
-        serverDacIndex = D_PWR_D;
-        break;
-    case V_POWER_IO:
-        serverDacIndex = D_PWR_IO;
-        break;
-    case V_POWER_CHIP:
-        serverDacIndex = D_PWR_CHIP;
-        break;
-#elif XILINX_CHIPTESTBOARDD
-    case V_POWER_A:
-        serverDacIndex = D_PWR_A;
-        break;
-    case V_POWER_B:
-        serverDacIndex = D_PWR_B;
-        break;
-    case V_POWER_C:
-        serverDacIndex = D_PWR_C;
-        break;
-    case V_POWER_D:
-        serverDacIndex = D_PWR_D;
-        break;
-    case V_POWER_IO:
-        serverDacIndex = D_PWR_IO;
-        break;
 #elif MYTHEN3D
     case VCASSH:
         serverDacIndex = M_VCASSH;
@@ -1151,299 +1132,229 @@ enum DACINDEX getDACIndex(enum dacIndex ind) {
     return serverDacIndex;
 }
 
-int validateAndSetDac(enum dacIndex ind, int val, int mV) {
+#ifdef EIGERD
+int processDACEnums(enum dacIndex ind, int val, bool mV) {
     int retval = -1;
-
     enum DACINDEX serverDacIndex = 0;
-    // valid enums
     switch (ind) {
-#ifndef XILINX_CHIPTESTBOARDD
-    case HIGH_VOLTAGE:
-#endif
-#ifdef EIGERD
-    case IO_DELAY:
-#elif CHIPTESTBOARDD
-    case ADC_VPP:
-    case V_LIMIT:
-#elif XILINX_CHIPTESTBOARDD
-    case V_LIMIT:
-#endif
-        break;
-    default:
-        serverDacIndex = getDACIndex(ind);
-        break;
-    }
-    if (ret == FAIL) {
-        return retval;
-    }
-    switch (ind) {
-        // adc vpp
-#if defined(CHIPTESTBOARDD)
-    case ADC_VPP:
-        // set
-        if (val >= 0) {
-            ret = AD9257_SetVrefVoltage(val, mV);
-            if (ret == FAIL) {
-                sprintf(mess, "Could not set Adc Vpp. Please set a "
-                              "proper value\n");
-                LOG(logERROR, (mess));
-            }
-        }
-        retval = AD9257_GetVrefVoltage(mV);
-        LOG(logDEBUG1,
-            ("Adc Vpp retval: %d %s\n", retval, (mV ? "mV" : "mode")));
-        // cannot validate (its just a variable and mv gives different
-        // value)
-        break;
-#endif
 
-        // io delay
-#ifdef EIGERD
     case IO_DELAY:
         retval = setIODelay(val);
         LOG(logDEBUG1, ("IODelay: %d\n", retval));
         validate(&ret, mess, val, retval, "set iodelay", DEC);
-        break;
-#endif
+        return retval;
 
-        // high voltage
-#ifndef XILINX_CHIPTESTBOARDD
     case HIGH_VOLTAGE:
+        if (val != GET_FLAG)
+            ret = setHighVoltage(val, mess);
+        else
+            ret = getHighVoltage(&retval, mess);
+        return retval;
 
-#if defined(MYTHEN3D) || defined(GOTTHARD2D)
-        if ((val != -1 && val < 0) || (val > HV_SOFT_MAX_VOLTAGE)) {
-            ret = FAIL;
-            sprintf(mess, "Invalid Voltage. Valid range (0 - %d)\n",
-                    HV_SOFT_MAX_VOLTAGE);
-            LOG(logERROR, (mess));
-        } else {
-            if (val >= 0) {
-                ret = setHighVoltage(val);
-                if (ret == FAIL) {
-                    strcpy(mess, "Could not set high voltage.\n");
-                    LOG(logERROR, (mess));
-                }
-            }
-            if (ret == OK) {
-                ret = getHighVoltage(&retval);
-                if (ret == FAIL) {
-                    strcpy(mess, "Could not get high voltage.\n");
-                    LOG(logERROR, (mess));
-                }
-                LOG(logDEBUG1, ("High Voltage: %d\n", retval));
-                validate(&ret, mess, val, retval, "set high voltage", DEC);
-            }
-        }
-#else
-        retval = setHighVoltage(val);
-        LOG(logDEBUG1, ("High Voltage: %d\n", retval));
-#if defined(JUNGFRAUD) || defined(MOENCHD) || defined(CHIPTESTBOARDD)
-        validate(&ret, mess, val, retval, "set high voltage", DEC);
-#endif
-#endif
-
-#ifdef EIGERD
-        if ((retval != SLAVE_HIGH_VOLTAGE_READ_VAL) && (retval < 0)) {
-            ret = FAIL;
-            if (retval == -1)
-                sprintf(mess,
-                        "Setting high voltage failed. Bad value %d. "
-                        "The range is from 0 to 200 V.\n",
-                        val);
-            else if (retval == -2)
-                strcpy(mess, "Setting high voltage failed. "
-                             "Serial/i2c communication failed.\n");
-            else if (retval == -3)
-                strcpy(mess, "Getting high voltage failed. "
-                             "Serial/i2c communication failed.\n");
-            LOG(logERROR, (mess));
-        }
-#endif
-        break;
-#endif
-        // power
-#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
-    case V_POWER_A:
-    case V_POWER_B:
-    case V_POWER_C:
-    case V_POWER_D:
-    case V_POWER_IO:
-        if (val != GET_FLAG) {
-            if (!mV) {
-                ret = FAIL;
-                sprintf(mess,
-                        "Could not set power. Power regulator %d "
-                        "should be in mV and not dac units.\n",
-                        ind);
-                LOG(logERROR, (mess));
-            } else if (checkVLimitCompliant(val) == FAIL) {
-                ret = FAIL;
-                sprintf(mess,
-                        "Could not set power. Power regulator %d "
-                        "exceeds voltage limit %d.\n",
-                        ind, getVLimit());
-                LOG(logERROR, (mess));
-            }
-
-            else if (!isPowerValid(serverDacIndex, val)) {
-                ret = FAIL;
-                sprintf(
-                    mess,
-                    "Could not set power. Power regulator %d "
-                    "should be between %d and %d mV\n",
-                    ind,
-                    (serverDacIndex == D_PWR_IO ? VIO_MIN_MV : POWER_RGLTR_MIN),
-#ifdef CHIPTESTBOARDD
-                    (VCHIP_MAX_MV - VCHIP_POWER_INCRMNT));
-#else
-                    POWER_RGLTR_MAX);
-#endif
-                LOG(logERROR, (mess));
-            }
-
-            else {
-                setPower(serverDacIndex, val);
-            }
-        }
-        if (ret == OK) {
-            retval = getPower(serverDacIndex);
-            LOG(logDEBUG1, ("Power regulator(%d): %d\n", ind, retval));
-            validate(&ret, mess, val, retval, "set power regulator", DEC);
-        }
-        break;
-#endif
-
-#ifdef CHIPTESTBOARDD
-    case V_POWER_CHIP:
-        if (val >= 0) {
-            ret = FAIL;
-            sprintf(mess, "Can not set Vchip. Can only be set "
-                          "automatically in the background (+200mV "
-                          "from highest power regulator voltage).\n");
-            LOG(logERROR, (mess));
-            /* restrict users from setting vchip
-            if (!mV) {
-                ret = FAIL;
-                sprintf(mess,"Could not set Vchip. Should be in mV and
-            not dac units.\n"); LOG(logERROR,(mess)); } else if
-            (!isVchipValid(val)) { ret = FAIL; sprintf(mess,"Could not
-            set Vchip. Should be between %d and %d mV\n", VCHIP_MIN_MV,
-            VCHIP_MAX_MV); LOG(logERROR,(mess)); } else { setVchip(val);
-            }
-            */
-        }
-        retval = getVchip();
-        LOG(logDEBUG1, ("Vchip: %d\n", retval));
-        if (ret == OK && val != GET_FLAG && val != -100 && retval != val) {
-            ret = FAIL;
-            sprintf(mess, "Could not set vchip. Set %d, but read %d\n", val,
-                    retval);
-            LOG(logERROR, (mess));
-        }
-        break;
-#endif
-
-        // vlimit
-#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
-    case V_LIMIT:
-        if (val >= 0) {
-            if (!mV) {
-                ret = FAIL;
-                strcpy(mess, "Could not set power. VLimit should be in "
-                             "mV and not dac units.\n");
-                LOG(logERROR, (mess));
-            } else {
-                setVLimit(val);
-            }
-        }
-        retval = getVLimit();
-        LOG(logDEBUG1, ("VLimit: %d\n", retval));
-        validate(&ret, mess, val, retval, "set vlimit", DEC);
-        break;
-#endif
-        // dacs
+        // actual dacs
     default:
-        if (mV && val > DAC_MAX_MV) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Could not set dac %d to value %d. Allowed limits "
-                    "(0 - %d mV).\n",
-                    ind, val, DAC_MAX_MV);
-            LOG(logERROR, (mess));
-        } else if (!mV && val > getMaxDacSteps()) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Could not set dac %d to value %d. Allowed limits "
-                    "(0 - %d dac units).\n",
-                    ind, val, getMaxDacSteps());
-            LOG(logERROR, (mess));
-        } else {
-#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
-            if ((val != GET_FLAG && mV && checkVLimitCompliant(val) == FAIL) ||
-                (val != GET_FLAG && !mV &&
-                 checkVLimitDacCompliant(val) == FAIL)) {
-                ret = FAIL;
-                sprintf(mess,
-                        "Could not set dac %d to value %d. "
-                        "Exceeds voltage limit %d.\n",
-                        ind, (mV ? val : dacToVoltage(val)), getVLimit());
-                LOG(logERROR, (mess));
-            } else
-#endif
-#ifdef MYTHEN3D
-                // ignore counter enable to force vth dac values
-                setDAC(serverDacIndex, val, mV, 0);
-#else
-            setDAC(serverDacIndex, val, mV);
-#endif
-            retval = getDAC(serverDacIndex, mV);
-        }
-#ifdef EIGERD
-        if (val != GET_FLAG && getSettings() != UNDEFINED) {
-            // changing dac changes settings to undefined
-            switch (serverDacIndex) {
-            case E_VCMP_LL:
-            case E_VCMP_LR:
-            case E_VCMP_RL:
-            case E_VCMP_RR:
-            case E_VRPREAMP:
-            case E_VCP:
-                setSettings(UNDEFINED);
+        serverDacIndex = getDACIndex(ind);
+        if (ret == FAIL)
+            return retval;
+        // set
+        if (val != GET_FLAG) {
+            ret = setDAC(serverDacIndex, val, mV, mess);
+            // handle if set by user individually
+            if (serverDacIndex == E_VCMP_LL || serverDacIndex == E_VCMP_LR ||
+                serverDacIndex == E_VCMP_RL || serverDacIndex == E_VCMP_RR ||
+                serverDacIndex == E_VRPREAMP || serverDacIndex == E_VCP) {
+                setSettings(UNDEFINED, mess);
                 LOG(logERROR, ("Settings has been changed "
                                "to undefined (changed specific dacs)\n"));
-                break;
-            default:
-                break;
             }
         }
-#endif
-        // check
-        if (ret == OK) {
-            if ((abs(retval - val) <= 5) || val == GET_FLAG) {
-                ret = OK;
-            } else {
-                ret = FAIL;
-                sprintf(mess, "Setting dac %d : wrote %d but read %d\n",
-                        serverDacIndex, val, retval);
-                LOG(logERROR, (mess));
-            }
-        }
-        LOG(logDEBUG1, ("Dac (%d): %d %s\n\n", serverDacIndex, retval,
-                        (mV ? "mV" : "dac units")));
-#ifdef MYTHEN3D
-        // changed for setsettings (direct),
-        // custom trimbit file (setmodule with myMod.reg as -1),
-        // change of dac (direct)
-        if (val != GET_FLAG && ret == OK) {
-            for (int i = 0; i < NCOUNTERS; ++i) {
-                setThresholdEnergy(i, -1);
-            }
-        }
-#endif
-        break;
+        // get
+        else
+            ret = getDAC(serverDacIndex, mV, &retval, mess);
+        return retval;
     }
+}
+#endif
+
+#if MYTHEN3D
+int processDACEnums(enum dacIndex ind, int val, bool mV) {
+    int retval = -1;
+    enum DACINDEX serverDacIndex = 0;
+    switch (ind) {
+
+    case HIGH_VOLTAGE:
+        if (val != GET_FLAG)
+            ret = setHighVoltage(val, mess);
+        else
+            ret = getHighVoltage(&retval, mess);
+        return retval;
+
+    // actual dacs
+    default:
+        serverDacIndex = getDACIndex(ind);
+        if (ret == FAIL)
+            return retval;
+        // set
+        if (val != GET_FLAG) {
+            if ((int)serverDacIndex == (int)M_VTHRESHOLD)
+                ret = setThresholdDACs(val, mV, mess);
+            else {
+                ret = rememberValueIfVthDac(serverDacIndex, val, mV, mess);
+                if (ret == FAIL)
+                    return retval;
+                ret = setDAC(serverDacIndex, val, mV, mess);
+                // changed for setsettings (direct),
+                // custom trimbit file (setmodule with myMod.reg as -1),
+                // change of dac (direct)
+                if (ret == OK) {
+                    for (int i = 0; i < NCOUNTERS; ++i) {
+                        setThresholdEnergy(i, -1);
+                    }
+                }
+            }
+        }
+        // get
+        else {
+            if ((int)serverDacIndex == (int)M_VTHRESHOLD)
+                ret = getThresholdDACs(mV, &retval, mess);
+            else
+                ret = getDAC(serverDacIndex, mV, &retval, mess);
+        }
+        return retval;
+    }
+}
+#endif
+
+#if GOTTHARD2D
+int processDACEnums(enum dacIndex ind, int val, bool mV) {
+    int retval = -1;
+    enum DACINDEX serverDacIndex = 0;
+    switch (ind) {
+
+    case HIGH_VOLTAGE:
+        if (val != GET_FLAG)
+            ret = setHighVoltage(val, mess);
+        else
+            ret = getHighVoltage(&retval, mess);
+        return retval;
+
+    // actual dacs
+    default:
+        serverDacIndex = getDACIndex(ind);
+        if (ret == FAIL)
+            return retval;
+        if (val != GET_FLAG)
+            ret = setDAC(serverDacIndex, val, mV, mess);
+        else
+            ret = getDAC(serverDacIndex, mV, &retval, mess);
+        return retval;
+    }
+}
+#endif
+
+#if JUNGFRAUD
+int processDACEnums(enum dacIndex ind, int val, bool mV) {
+    int retval = -1;
+    enum DACINDEX serverDacIndex = 0;
+    switch (ind) {
+
+    case HIGH_VOLTAGE:
+        if (val != GET_FLAG)
+            ret = setHighVoltage(val, mess);
+        else
+            ret = getHighVoltage(&retval, mess);
+        return retval;
+
+    // actual dacs
+    default:
+        serverDacIndex = getDACIndex(ind);
+        if (ret == FAIL)
+            return retval;
+        if (val != GET_FLAG)
+            ret = setDAC(serverDacIndex, val, mV, mess);
+        else
+            ret = getDAC(serverDacIndex, mV, &retval, mess);
+        return retval;
+    }
+}
+#endif
+
+#if MOENCHD
+int processDACEnums(enum dacIndex ind, int val, bool mV) {
+    int retval = -1;
+    enum DACINDEX serverDacIndex = 0;
+    switch (ind) {
+
+    case HIGH_VOLTAGE:
+        if (val != GET_FLAG)
+            ret = setHighVoltage(val, mess);
+        else
+            ret = getHighVoltage(&retval, mess);
+        return retval;
+
+    // actual dacs
+    default:
+        serverDacIndex = getDACIndex(ind);
+        if (ret == FAIL)
+            return retval;
+        if (val != GET_FLAG)
+            ret = setDAC(serverDacIndex, val, mV, mess);
+        else
+            ret = getDAC(serverDacIndex, mV, &retval, mess);
+        return retval;
+    }
+}
+#endif
+
+#if CHIPTESTBOARDD
+int processDACEnums(enum dacIndex ind, int val, bool mV) {
+    int retval = -1;
+    enum DACINDEX serverDacIndex = 0;
+    switch (ind) {
+
+    case ADC_VPP:
+        if (val != GET_FLAG)
+            ret = setADCVpp(val, mV, mess);
+        else
+            ret = getADCVpp(mV, &retval, mess);
+        return retval;
+
+    case HIGH_VOLTAGE:
+        if (val != GET_FLAG)
+            ret = setHighVoltage(val, mess);
+        else
+            ret = getHighVoltage(&retval, mess);
+        return retval;
+
+    default:
+        serverDacIndex = getDACIndex(ind);
+        if (ret == FAIL)
+            return retval;
+
+        if (val != GET_FLAG)
+            ret = setDAC(serverDacIndex, val, mV, mess);
+        else
+            ret = getDAC(serverDacIndex, mV, &retval, mess);
+        return retval;
+    }
+}
+#endif
+
+#if XILINX_CHIPTESTBOARDD
+int processDACEnums(enum dacIndex ind, int val, bool mV) {
+    int retval = -1;
+
+    enum DACINDEX serverDacIndex = getDACIndex(ind);
+    if (ret == FAIL)
+        return retval;
+
+    if (val != GET_FLAG)
+        ret = setDAC(serverDacIndex, val, mV, mess);
+    else
+        ret = getDAC(serverDacIndex, mV, &retval, mess);
     return retval;
 }
+#endif
 
 int set_dac(int file_des) {
     ret = OK;
@@ -1455,14 +1366,14 @@ int set_dac(int file_des) {
         return printSocketReadError();
 
     enum dacIndex ind = args[0];
-    int mV = args[1];
+    bool mV = (args[1] != 0);
     int val = args[2];
 
     LOG(logDEBUG1,
         ("Setting DAC %d to %d %s\n", ind, val, (mV ? "mV" : "dac units")));
     // set & get
     if ((val == GET_FLAG) || (Server_VerifyLock() == OK)) {
-        retval = validateAndSetDac(ind, val, mV);
+        retval = processDACEnums(ind, val, mV);
     }
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
@@ -1518,36 +1429,6 @@ int get_adc(int file_des) {
         serverAdcIndex = TEMP_FPGAFEBR;
         break;
 #elif CHIPTESTBOARDD
-    case V_POWER_A:
-        serverAdcIndex = V_PWR_A;
-        break;
-    case V_POWER_B:
-        serverAdcIndex = V_PWR_B;
-        break;
-    case V_POWER_C:
-        serverAdcIndex = V_PWR_C;
-        break;
-    case V_POWER_D:
-        serverAdcIndex = V_PWR_D;
-        break;
-    case V_POWER_IO:
-        serverAdcIndex = V_PWR_IO;
-        break;
-    case I_POWER_A:
-        serverAdcIndex = I_PWR_A;
-        break;
-    case I_POWER_B:
-        serverAdcIndex = I_PWR_B;
-        break;
-    case I_POWER_C:
-        serverAdcIndex = I_PWR_C;
-        break;
-    case I_POWER_D:
-        serverAdcIndex = I_PWR_D;
-        break;
-    case I_POWER_IO:
-        serverAdcIndex = I_PWR_IO;
-        break;
     case SLOW_ADC0:
         serverAdcIndex = S_ADC0;
         break;
@@ -1612,7 +1493,9 @@ int get_adc(int file_des) {
     // valid index
     if (ret == OK) {
         LOG(logDEBUG1, ("Getting ADC %d\n", serverAdcIndex));
-#if defined(MYTHEN3D) || defined(GOTTHARD2D) || defined(XILINX_CHIPTESTBOARDD)
+#if defined(XILINX_CHIPTESTBOARDD)
+        ret = getADC(serverAdcIndex, &retval, mess);
+#elif defined(MYTHEN3D) || defined(GOTTHARD2D)
         ret = getADC(serverAdcIndex, &retval);
         if (ret == FAIL) {
             if (ind == TEMPERATURE_FPGA) {
@@ -1878,7 +1761,7 @@ int set_settings(int file_des) {
             validate_settings(isett);
 #endif
             if (ret == OK) {
-                setSettings(isett);
+                ret = setSettings(isett, mess);
             }
         }
         retval = getSettings();
@@ -1929,7 +1812,7 @@ int acquire(int blocking, int file_des) {
     }
     // only set
     if (Server_VerifyLock() == OK) {
-#if defined(XILINX_CHIPTESTBOARDD) || defined(GOTTHARD2D)
+#if defined(GOTTHARD2D)
         if (!isChipConfigured()) {
             ret = FAIL;
             strcpy(mess, "Could not start acquisition. Chip is not configured. "
@@ -2094,7 +1977,7 @@ void *start_state_machine(void *arg) {
             else {
                 LOG(logINFOBLUE, ("Dac [%d] scan %d/%d: [%d]\n",
                                   scanGlobalIndex, i, times, scanSteps[i]));
-                validateAndSetDac(scanGlobalIndex, scanSteps[i], 0);
+                processDACEnums(scanGlobalIndex, scanSteps[i], false);
                 if (ret == FAIL) {
                     sprintf(scanErrMessage, "Cannot scan dac %d at %d. ",
                             scanGlobalIndex, scanSteps[i]);
@@ -2519,7 +2402,11 @@ int get_exptime(int file_des) {
                       "for this detector\n");
         LOG(logERROR, (mess));
     } else {
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
+        ret = getExpTime(&retval, mess);
+#else
         retval = getExpTime();
+#endif
         LOG(logDEBUG1, ("retval exptime %lld ns\n", (long long int)retval));
     }
 #endif
@@ -2589,6 +2476,9 @@ int set_exptime(int file_des) {
                     "for this detector\n");
             LOG(logERROR, (mess));
         } else {
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
+            ret = setExpTime(val, mess);
+#else
             ret = setExpTime(val);
             int64_t retval = getExpTime();
             LOG(logDEBUG1, ("retval exptime %lld ns\n", (long long int)retval));
@@ -2599,6 +2489,7 @@ int set_exptime(int file_des) {
                         (long long int)val, (long long int)retval);
                 LOG(logERROR, (mess));
             }
+#endif
         }
 #endif
     }
@@ -2611,7 +2502,11 @@ int get_period(int file_des) {
     int64_t retval = -1;
 
     // get only
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
+    ret = getPeriod(&retval, mess);
+#else
     retval = getPeriod();
+#endif
     LOG(logDEBUG1, ("retval period %lld ns\n", (long long int)retval));
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
@@ -2627,6 +2522,9 @@ int set_period(int file_des) {
 
     // only set
     if (Server_VerifyLock() == OK) {
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
+        ret = setPeriod(arg, mess);
+#else
         ret = setPeriod(arg);
         int64_t retval = getPeriod();
         LOG(logDEBUG1, ("retval period %lld ns\n", (long long int)retval));
@@ -2635,6 +2533,7 @@ int set_period(int file_des) {
                     (long long int)arg, (long long int)retval);
             LOG(logERROR, (mess));
         }
+#endif
     }
     return Server_SendResult(file_des, INT64, NULL, 0);
 }
@@ -2650,7 +2549,11 @@ int get_delay_after_trigger(int file_des) {
     functionNotImplemented();
 #else
     // get only
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
+    ret = getDelayAfterTrigger(&retval, mess);
+#else
     retval = getDelayAfterTrigger();
+#endif
     LOG(logDEBUG1,
         ("retval delay after trigger %lld ns\n", (long long int)retval));
 #endif
@@ -2674,6 +2577,9 @@ int set_delay_after_trigger(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
+        ret = setDelayAfterTrigger(arg, mess);
+#else
         ret = setDelayAfterTrigger(arg);
         int64_t retval = getDelayAfterTrigger();
         LOG(logDEBUG1,
@@ -2685,6 +2591,7 @@ int set_delay_after_trigger(int file_des) {
                     (long long int)arg, (long long int)retval);
             LOG(logERROR, (mess));
         }
+#endif
     }
 #endif
     return Server_SendResult(file_des, INT64, NULL, 0);
@@ -2919,7 +2826,11 @@ int get_period_left(int file_des) {
     functionNotImplemented();
 #else
     // get only
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
+    ret = getPeriodLeft(&retval, mess);
+#else
     retval = getPeriodLeft();
+#endif
     LOG(logDEBUG1, ("retval period left %lld ns\n", (long long int)retval));
 #endif
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
@@ -2936,7 +2847,11 @@ int get_delay_after_trigger_left(int file_des) {
     functionNotImplemented();
 #else
     // get only
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
+    ret = getDelayAfterTriggerLeft(&retval, mess);
+#else
     retval = getDelayAfterTriggerLeft();
+#endif
     LOG(logDEBUG1,
         ("retval delay after trigger left %lld ns\n", (long long int)retval));
 #endif
@@ -3194,7 +3109,7 @@ int validateAndSetAllTrimbits(int arg) {
 #ifdef EIGERD
             // changes settings to undefined
             if (getSettings() != UNDEFINED) {
-                setSettings(UNDEFINED);
+                setSettings(UNDEFINED, mess);
                 LOG(logERROR,
                     ("Settings has been changed to undefined (change all "
                      "trimbits)\n"));
@@ -3423,10 +3338,6 @@ int set_pattern_wait_clocks(int file_des) {
         if (ret == OK) {
             ret = validate_getPatternWaitClocksAndInterval(mess, loopLevel,
                                                            &retval, 1);
-            if ((int64_t)timeval != GET_FLAG) {
-                validate64(&ret, mess, (int64_t)timeval, retval,
-                           "set pattern wait clocks", DEC);
-            }
         }
     }
 #endif
@@ -3978,7 +3889,7 @@ int power_chip(int file_des) {
     LOG(logDEBUG1, ("Powering chip to %d\n", arg));
 
 #if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(MYTHEN3D) &&          \
-    !defined(GOTTHARD2D) && !defined(XILINX_CHIPTESTBOARDD)
+    !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // set & get
@@ -3997,7 +3908,7 @@ int power_chip(int file_des) {
             }
         }
 #endif
-#if defined(XILINX_CHIPTESTBOARDD) || defined(GOTTHARD2D)
+#if defined(GOTTHARD2D)
         if (ret == OK) {
             if (arg != -1) {
                 if (arg != 0 && arg != 1) {
@@ -4010,7 +3921,6 @@ int power_chip(int file_des) {
             }
             if (ret == OK) {
                 retval = getPowerChip();
-                LOG(logDEBUG1, ("Power chip: %d\n", retval));
                 validate(&ret, mess, arg, retval, "power on/off chip", DEC);
             }
         }
@@ -5811,11 +5721,9 @@ int set_clock_frequency(int file_des) {
         case ADC_CLOCK:
             c = ADC_CLK;
             break;
-#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
         case DBIT_CLOCK:
             c = DBIT_CLK;
             break;
-#endif
         case RUN_CLOCK:
             c = RUN_CLK;
             break;
@@ -5836,26 +5744,38 @@ int set_clock_frequency(int file_des) {
                     (int)c);
 
             if (getFrequency(c) == val) {
-                LOG(logINFO, ("Same %s: %d %s\n", modeName, val,
-                              myDetectorType == GOTTHARD2 ? "Hz" : "MHz"));
-            } else {
+                LOG(logINFO, ("Same %s: %d %s\n", modeName, val, "Hz"));
+            } else if (val < MIN_CLK_FREQ || val > MAX_CLK_FREQ) {
+                ret = FAIL;
+                sprintf(mess,
+                        "Cannot set frequency to %f MHz. Frequency outside "
+                        "limits (%f - %f MHz)\n",
+                        val / 1e6, MIN_CLK_FREQ / 1e6, MAX_CLK_FREQ / 1e6);
+                LOG(logERROR, (mess));
+            }
+#ifdef CHIPTESTBOARDD
+            else if (ind == ADC_CLOCK && (val > MAXIMUM_ADC_CLK)) {
+                ret = FAIL;
+                sprintf(mess,
+                        "Cannot set ADC clock frequency to %f MHz. Frequency "
+                        "outside limits (<= %f MHz)\n",
+                        val / 1e6, MAXIMUM_ADC_CLK / 1e6);
+                LOG(logERROR, (mess));
+            }
+#endif
+            else {
                 int ret = setFrequency(c, val);
                 if (ret == FAIL) {
-                    sprintf(mess, "Could not set %s to %d %s\n", modeName, val,
-                            myDetectorType == XILINX_CHIPTESTBOARD ? "kHz"
-                                                                   : "MHz");
+                    sprintf(mess, "Could not set %s to %f MHz\n", modeName,
+                            val / 1e6);
                     LOG(logERROR, (mess));
                 } else {
                     int retval = getFrequency(c);
                     LOG(logDEBUG1,
-                        ("retval %s: %d %s\n", modeName, retval,
-                         myDetectorType == XILINX_CHIPTESTBOARD ? "kHz"
-                                                                : "MHz"));
-#if !defined(XILINX_CHIPTESTBOARDD)
-                    // XCTB will give the actual frequency, which is not
+                        ("retval %s: %f MHz\n", modeName, retval / 1e6));
+                    // both CTB's will give the actual frequency, which is not
                     // 100% identical to the set frequency
                     validate(&ret, mess, val, retval, modeName, DEC);
-#endif
                 }
             }
         }
@@ -5908,14 +5828,8 @@ int get_clock_frequency(int file_des) {
     if (ret == OK) {
         retval = getFrequency(c);
         char *clock_names[] = {CLK_NAMES};
-        LOG(logDEBUG1,
-            ("retval %s clock (%d) frequency: %d %s\n", clock_names[c], (int)c,
-             retval,
-             myDetectorType == XILINX_CHIPTESTBOARD
-                 ? "kHz"
-                 : (myDetectorType == GOTTHARD2 || myDetectorType == MYTHEN3
-                        ? "Hz"
-                        : "MHz")));
+        LOG(logDEBUG1, ("retval %s clock (%d) frequency: %d %s\n",
+                        clock_names[c], (int)c, retval, "Hz"));
     }
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
@@ -6662,30 +6576,7 @@ int set_counter_mask(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        if (arg == 0) {
-            ret = FAIL;
-            sprintf(mess, "Could not set counter mask. Cannot set it to 0.\n");
-            LOG(logERROR, (mess));
-        } else if (arg > MAX_COUNTER_MSK) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Could not set counter mask. Invalid counter bit enabled. "
-                    "Max number of counters: %d\n",
-                    NCOUNTERS);
-            LOG(logERROR, (mess));
-        } else {
-            setCounterMask(arg);
-            uint32_t retval = getCounterMask();
-            LOG(logDEBUG, ("counter mask retval: 0x%x\n", retval));
-            if (retval != arg) {
-                ret = FAIL;
-                sprintf(mess,
-                        "Could not set counter mask. Set 0x%x mask, got 0x%x "
-                        "mask\n",
-                        arg, retval);
-                LOG(logERROR, (mess));
-            }
-        }
+        ret = setCounterMask(arg, mess);
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
@@ -7170,6 +7061,11 @@ int get_receiver_parameters(int file_des) {
         // exptime
 #ifdef MYTHEN3D
     i64 = 0;
+#elif defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
+    if (getExpTime(&i64, mess) == FAIL) {
+        sprintf(mess, "Could not get exposure time.\n");
+        return sendError(file_des);
+    }
 #else
     i64 = getExpTime();
 #endif
@@ -7178,7 +7074,15 @@ int get_receiver_parameters(int file_des) {
         return printSocketReadError();
 
     // period
+    i64 = 0;
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
+    if (getPeriod(&i64, mess) == FAIL) {
+        sprintf(mess, "Could not get period.\n");
+        return sendError(file_des);
+    }
+#else
     i64 = getPeriod();
+#endif
     n += sendData(file_des, &i64, sizeof(i64), INT64);
     if (n < 0)
         return printSocketReadError();
@@ -8383,12 +8287,7 @@ int reset_to_default_dacs(int file_des) {
     functionNotImplemented();
 #else
     if (Server_VerifyLock() == OK) {
-        if (resetToDefaultDacs(arg) == FAIL) {
-            ret = FAIL;
-            sprintf(mess, "Could not %s reset default dacs",
-                    (arg == 1 ? "hard" : ""));
-            LOG(logERROR, (mess));
-        }
+        ret = resetToDefaultDacs(arg, mess);
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
@@ -10155,27 +10054,7 @@ int set_interpolation(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        if (getPumpProbe() && arg) {
-            ret = FAIL;
-            sprintf(mess, "Could not set interpolation. Disable pump probe "
-                          "mode first.\n");
-            LOG(logERROR, (mess));
-        } else {
-            ret = setInterpolation(arg);
-            if (ret == FAIL) {
-                if (arg)
-                    sprintf(mess, "Could not set interpolation or enable all "
-                                  "counters for it.\n");
-                else
-                    sprintf(mess, "Could not set interpolation\n");
-                LOG(logERROR, (mess));
-            } else {
-                int retval = getInterpolation();
-                validate(&ret, mess, (int)arg, (int)retval, "set interpolation",
-                         DEC);
-                LOG(logDEBUG1, ("interpolation retval: %u\n", retval));
-            }
-        }
+        ret = setInterpolation((arg != 0), mess);
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
@@ -10212,23 +10091,7 @@ int set_pump_probe(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        if (getInterpolation() && arg) {
-            ret = FAIL;
-            sprintf(mess, "Could not set pump probe mode. Disable "
-                          "interpolation mode first.\n");
-            LOG(logERROR, (mess));
-        } else {
-            ret = setPumpProbe(arg);
-            if (ret == FAIL) {
-                sprintf(mess, "Could not set pump probe\n");
-                LOG(logERROR, (mess));
-            } else {
-                int retval = getPumpProbe();
-                validate(&ret, mess, (int)arg, (int)retval, "set pump probe",
-                         DEC);
-                LOG(logDEBUG1, ("pump probe retval: %u\n", retval));
-            }
-        }
+        ret = setPumpProbe((arg != 0), mess);
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
@@ -10901,17 +10764,9 @@ int config_transceiver(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
 
-#if !defined(XILINX_CHIPTESTBOARDD)
+    // currently not implemented anymore.
     functionNotImplemented();
-#else
-    if (Server_VerifyLock() == OK) {
-        LOG(logINFO, ("Configuring Transceiver\n"));
-        ret = configureTransceiver(mess);
-        if (ret == FAIL) {
-            LOG(logERROR, (mess));
-        }
-    }
-#endif
+
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
@@ -11084,15 +10939,489 @@ int set_pattern_wait_interval(int file_des) {
     if (Server_VerifyLock() == OK) {
         ret = validate_setPatternWaitClocksAndInterval(mess, loopLevel, timeval,
                                                        0);
-        if (ret == OK) {
-            uint64_t retval = 0;
-            ret = validate_getPatternWaitClocksAndInterval(mess, loopLevel,
-                                                           &retval, 0);
-            validate64(&ret, mess, (int64_t)timeval, retval,
-                       "set pattern wait interval", DEC);
-        }
     }
 
 #endif
     return Server_SendResult(file_des, INT64, NULL, 0);
+}
+
+/**
+ *  Non destructive read from SPI register. Read n_bytes by shifting in dummy
+ *  data while keeping csn 0 after the operation. Shift the read out data back
+ *  in to restore the register.
+ */
+
+int spi_read(int file_des) {
+#if !defined(XILINX_CHIPTESTBOARDD) && !defined(CHIPTESTBOARDD)
+    functionNotImplemented();
+    return sendError(file_des);
+#endif
+
+    int chip_id = 0;
+    if (receiveData(file_des, &chip_id, sizeof(chip_id), INT32) < 0) {
+        return printSocketReadError();
+    }
+    if (chip_id < 0 || chip_id > 15) {
+        sprintf(mess, "Invalid chip_id %d. Must be 0-15\n", chip_id);
+        return sendError(file_des);
+    }
+
+    int register_id = 0;
+    if (receiveData(file_des, &register_id, sizeof(register_id), INT32) < 0) {
+        return printSocketReadError();
+    }
+    if (register_id < 0 || register_id > 15) {
+        sprintf(mess, "Invalid register_id %d. Must be 0-15\n", register_id);
+        return sendError(file_des);
+    }
+
+    int n_bytes = 0;
+    if (receiveData(file_des, &n_bytes, sizeof(n_bytes), INT32) < 0) {
+        return printSocketReadError();
+    }
+    if (n_bytes < 1) {
+        sprintf(mess,
+                "Invalid n_bytes %d. Must ask for a read of at least 1 byte\n",
+                n_bytes);
+        return sendError(file_des);
+    }
+
+    LOG(logINFO,
+        ("SPI Read Requested: chip_id=%d, register_id=%d, n_bytes=%d\n",
+         chip_id, register_id, n_bytes));
+
+#ifdef VIRTUAL
+    // For the virtual detector we create a fake register to read from
+    // and fill it with 0,2,4,6,... This way we can check that copying
+    // of the data works as expected
+    uint8_t *fake_register = malloc(n_bytes);
+    if (fake_register == NULL) {
+        LOG(logERROR, ("Could not allocate memory for fake register\n"));
+        exit(EXIT_FAILURE);
+    }
+    for (int i = 0; i < n_bytes; i++) {
+        fake_register[i] = (uint8_t)((i * 2) % 256);
+    }
+#elif defined(XILINX_CHIPTESTBOARDD)
+    int spifd = open("/dev/spidev2.0", O_RDWR);
+    LOG(logINFO, ("SPI Read: opened spidev2.0 with fd=%d\n", spifd));
+    if (spifd < 0) {
+        sprintf(mess, "Could not open /dev/spidev2.0\n");
+        return sendError(file_des);
+    }
+#endif
+
+    // Allocate dummy data to shift in, we keep a copy of this
+    // to double check that we access a register of the correct size
+    uint8_t *dummy_data = malloc(n_bytes);
+    if (dummy_data == NULL) {
+        LOG(logERROR, ("Could not allocate memory for dummy data\n"));
+        exit(EXIT_FAILURE);
+    }
+    for (int i = 0; i < n_bytes; i++) {
+        dummy_data[i] = (uint8_t)(i % 256);
+    }
+
+    // Allocate actual data buffer this holds the data we read out
+    // and that we need to write back to restore the register
+    uint8_t *actual_data = malloc(n_bytes);
+    if (actual_data == NULL) {
+        LOG(logERROR, ("Could not allocate memory for actual data\n"));
+        exit(EXIT_FAILURE);
+    }
+    memset(actual_data, 0, n_bytes);
+
+    // Setup sending and receiving buffers and the spi_ioc_transfer struct.
+    // We need one more byte before the actual data to send chip_id and
+    // register_id
+    uint8_t *local_tx = malloc(n_bytes + 1);
+    if (local_tx == NULL) {
+        LOG(logERROR, ("Could not allocate memory for local_tx\n"));
+        exit(EXIT_FAILURE);
+    }
+    uint8_t *local_rx = malloc(n_bytes + 1);
+    if (local_rx == NULL) {
+        LOG(logERROR, ("Could not allocate memory for local_rx\n"));
+        exit(EXIT_FAILURE);
+    }
+
+    struct spi_ioc_transfer send_cmd[1];
+    memset(send_cmd, 0, sizeof(send_cmd));
+    send_cmd[0].len = n_bytes + 1;
+    send_cmd[0].tx_buf = (unsigned long)local_tx;
+    send_cmd[0].rx_buf = (unsigned long)local_rx;
+
+    // 0 - Normal operation, 1 - CSN remains zero after operation
+    // We use cs_change = 1 to not close the SPI transaction and
+    // allow for shifting the read out data back in to restore the
+    // regitster
+    send_cmd[0].cs_change = 1;
+
+    // First byte of the message is 4 bits chip_id then 4 bits register_id
+    local_tx[0] = ((chip_id & 0xF) << 4) | (register_id & 0xF);
+
+    // Then the data follows
+    for (int i = 0; i < n_bytes; i++)
+        local_tx[i + 1] = dummy_data[i];
+
+#ifdef VIRTUAL
+    // For the virtual detector we have to copy the data
+
+    // First byte shuuld be 0x00
+    local_rx[0] = 0;
+
+    // Then we copy the data from the fake register to the local_rx buffer
+    // and the local_tx data to the fake register to emulate the shifting in and
+    // out of the data
+    for (int i = 0; i < n_bytes; i++) {
+        local_rx[i + 1] = fake_register[i];
+        fake_register[i] = local_tx[i + 1];
+    }
+
+#elif defined(XILINX_CHIPTESTBOARDD)
+    // For the real detector we do the transfer here
+    if (ioctl(spifd, SPI_IOC_MESSAGE(1), &send_cmd) < 0) {
+        // cleanup since we return early
+        close(spifd);
+        free(local_tx);
+        free(local_rx);
+        free(dummy_data);
+        free(actual_data);
+
+        // Send error message
+        sprintf(mess, "SPI write failed with %d:%s\n", errno, strerror(errno));
+        return sendError(file_des);
+    }
+#elif defined(CHIPTESTBOARDD)
+    // set spi to 8 bit per word (-1 comes from the firmware), set chipselect
+    bus_w(SPI_CTRL_REG,
+
+          ((8 - 1) << SPI_CTRL_NBIT_OFST) + (1 << SPI_CTRL_CHIPSELECT_BIT));
+    for (int i = 0; i < n_bytes + 1; ++i) {
+        // TODO: should we make bus_w to this address blocking in the firmware
+        //
+        // to remove usleep ?
+        bus_w(SPI_WRITEDATA_REG, local_tx[i]);
+        usleep_bf(BFIN_SPI_WAIT_uSECONDS);
+        local_rx[i] = (uint8_t)bus_r(SPI_READDATA_REG);
+    }
+#endif
+
+    // Copy everything but the first received byte to the user. First byte
+    // should be 0x00 anyway
+    for (int i = 0; i < n_bytes; i++)
+        actual_data[i] = local_rx[i + 1];
+
+    // Set up for the second transfer to restore the register
+    send_cmd[0].cs_change =
+        0; // we want to end the transaction after this transfer
+    local_tx[0] = ((chip_id & 0xF) << 4) | (register_id & 0xF);
+    for (int i = 0; i < n_bytes; i++)
+        local_tx[i + 1] = actual_data[i];
+
+#ifdef VIRTUAL
+    // Copy the data from the fake register to the local_rx buffer
+    for (int i = 0; i < n_bytes; i++) {
+        local_rx[i + 1] = fake_register[i];
+    }
+    free(fake_register); // we are done with the fake register
+#elif defined(XILINX_CHIPTESTBOARDD)
+    if (ioctl(spifd, SPI_IOC_MESSAGE(1), &send_cmd) < 0) {
+        // cleanup since we return early
+        close(spifd);
+        free(local_tx);
+        free(local_rx);
+        free(dummy_data);
+        free(actual_data);
+
+        // Send error message
+        sprintf(mess, "SPI write failed with %d:%s\n", errno, strerror(errno));
+        return sendError(file_des);
+    }
+    close(spifd);
+#elif defined(CHIPTESTBOARDD)
+    for (int i = 0; i < n_bytes + 1; ++i) {
+        bus_w(SPI_WRITEDATA_REG, local_tx[i]);
+        usleep_bf(BFIN_SPI_WAIT_uSECONDS);
+        local_rx[i] = (uint8_t)bus_r(SPI_READDATA_REG);
+    }
+    bus_w(SPI_CTRL_REG, (8 - 1) << SPI_CTRL_NBIT_OFST); // remove chip-select
+#endif
+    ret = OK;
+    LOG(logDEBUG1, ("SPI Read Complete\n"));
+    Server_SendResult(file_des, INT32, NULL, 0);
+    sendData(file_des, actual_data, n_bytes, OTHER);
+
+    free(local_tx);
+    free(local_rx);
+    free(dummy_data);
+    free(actual_data);
+    return ret;
+}
+
+/**
+ * Write to SPI register.
+ */
+int spi_write(int file_des) {
+#if !defined(XILINX_CHIPTESTBOARDD) && !defined(CHIPTESTBOARDD)
+    functionNotImplemented();
+    return Server_SendResult(file_des, INT32, NULL, 0);
+#endif
+
+    int chip_id = 0;
+    if (receiveData(file_des, &chip_id, sizeof(chip_id), INT32) < 0) {
+        return printSocketReadError();
+    }
+    if (chip_id < 0 || chip_id > 15) {
+        ret = FAIL;
+        sprintf(mess, "Invalid chip_id %d. Must be 0-15\n", chip_id);
+        LOG(logERROR, (mess));
+        return Server_SendResult(file_des, INT32, NULL, 0);
+    }
+
+    int register_id = 0;
+    if (receiveData(file_des, &register_id, sizeof(register_id), INT32) < 0) {
+        return printSocketReadError();
+    }
+    if (register_id < 0 || register_id > 15) {
+        ret = FAIL;
+        sprintf(mess, "Invalid register_id %d. Must be 0-15\n", register_id);
+        LOG(logERROR, (mess));
+        return Server_SendResult(file_des, INT32, NULL, 0);
+    }
+
+    int n_bytes = 0;
+    if (receiveData(file_des, &n_bytes, sizeof(n_bytes), INT32) < 0) {
+        return printSocketReadError();
+    }
+    if (n_bytes < 1) {
+        sprintf(mess,
+                "Invalid n_bytes %d. Must ask for a write of at least 1 byte\n",
+                n_bytes);
+        return sendError(file_des);
+    }
+
+    LOG(logINFO,
+        ("SPI Write Requested: chip_id=%d, register_id=%d, n_bytes=%d\n",
+         chip_id, register_id, n_bytes));
+
+    uint8_t *data = malloc(n_bytes);
+    if (data == NULL) {
+        LOG(logERROR, ("Could not allocate memory for SPI write data\n"));
+        exit(EXIT_FAILURE);
+    }
+    memset(data, 0, n_bytes);
+    if (receiveData(file_des, data, n_bytes, OTHER) < 0) {
+        free(data);
+        return printSocketReadError();
+    }
+
+    uint8_t *local_tx = malloc(n_bytes + 1);
+    if (local_tx == NULL) {
+        LOG(logERROR, ("Could not allocate memory for local_tx\n"));
+        exit(EXIT_FAILURE);
+    }
+    uint8_t *local_rx = malloc(n_bytes + 1);
+    if (local_rx == NULL) {
+        LOG(logERROR, ("Could not allocate memory for local_rx\n"));
+        exit(EXIT_FAILURE);
+    }
+
+    struct spi_ioc_transfer send_cmd[1];
+    memset(send_cmd, 0, sizeof(send_cmd));
+    send_cmd[0].len = n_bytes + 1;
+    send_cmd[0].tx_buf = (unsigned long)local_tx;
+    send_cmd[0].rx_buf = (unsigned long)local_rx;
+
+    // 0 - Normal operation, 1 - CSn remains zero after operation
+    send_cmd[0].cs_change = 0;
+    local_tx[0] = ((chip_id & 0xF) << 4) | (register_id & 0xF);
+    for (int i = 0; i < n_bytes; i++)
+        local_tx[i + 1] = data[i];
+
+#ifdef VIRTUAL
+    // For the virtual detector copy the data from local_tx to local_rx
+    for (int i = 0; i < n_bytes + 1; i++) {
+        local_rx[i] = local_tx[i];
+    }
+#elif defined(XILINX_CHIPTESTBOARDD)
+    int spifd = open("/dev/spidev2.0", O_RDWR);
+    LOG(logINFO, ("SPI Read: opened spidev2.0 with fd=%d\n", spifd));
+    if (spifd < 0) {
+        free(data);
+        free(local_tx);
+        free(local_rx);
+        sprintf(mess, "Could not open /dev/spidev2.0\n");
+        return sendError(file_des);
+    }
+    if (ioctl(spifd, SPI_IOC_MESSAGE(1), &send_cmd) < 0) {
+        close(spifd);
+        free(data);
+        free(local_tx);
+        free(local_rx);
+        sprintf(mess, "SPI write failed with %d:%s\n", errno, strerror(errno));
+        return sendError(file_des);
+    }
+    close(spifd);
+#elif defined(CHIPTESTBOARDD)
+    // set spi to 8 bit per word (-1 comes from firmware), set chip-select
+    bus_w(SPI_CTRL_REG,
+          ((8 - 1) << SPI_CTRL_NBIT_OFST) + (1 << SPI_CTRL_CHIPSELECT_BIT));
+    for (int i = 0; i < n_bytes + 1; ++i) {
+        bus_w(SPI_WRITEDATA_REG, local_tx[i]);
+        usleep_bf(BFIN_SPI_WAIT_uSECONDS);
+        local_rx[i] = (uint8_t)bus_r(SPI_READDATA_REG);
+    }
+    bus_w(SPI_CTRL_REG, (8 - 1) << SPI_CTRL_NBIT_OFST); // remove chip-select
+#endif
+
+    ret = OK;
+    LOG(logDEBUG1, ("SPI Write Complete\n"));
+    Server_SendResult(file_des, INT32, NULL, 0);
+    sendData(file_des, local_rx + 1, n_bytes, OTHER);
+
+    free(data);
+    free(local_tx);
+    free(local_rx);
+    return ret;
+}
+
+int get_power(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
+    functionNotImplemented();
+#else
+    // index
+    int arg = -1;
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+
+    LOG(logDEBUG1, ("Getting power enable for power %d\n", arg));
+    enum powerIndex index = (enum powerIndex)arg;
+
+    bool b_retval = false;
+    ret = isPowerEnabled(index, &b_retval, mess);
+    retval = (int)b_retval;
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_power(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
+    functionNotImplemented();
+#else
+    int count = 0;
+    if (receiveData(file_des, &count, sizeof(count), INT32) < 0)
+        return printSocketReadError();
+
+    int args[count];
+    if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+        return printSocketReadError();
+
+    int arg = 0;
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    bool enable = (arg != 0);
+
+    LOG(logDEBUG1, ("Setting %d Power rails to %d\n", count, enable));
+
+    if (Server_VerifyLock() == OK) {
+        enum powerIndex indices[count];
+        for (int iPower = 0; iPower != count; ++iPower) {
+            indices[iPower] = (enum powerIndex)args[iPower];
+        }
+        ret = setPowerEnabled(indices, count, enable, mess);
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_power_dac(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
+    functionNotImplemented();
+#else
+    // index
+    int arg = -1;
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Getting power DAC value for DAC %d\n", arg));
+
+    ret = getPowerDAC((enum powerIndex)arg, &retval, mess);
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_power_dac(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
+    functionNotImplemented();
+#else
+    int args[2] = {-1, -1};
+    if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+        return printSocketReadError();
+    // index
+    enum powerIndex ind = (enum powerIndex)args[0];
+    int value = args[1];
+    LOG(logDEBUG1, ("Setting power DAC value for DAC %d to %d\n", ind, value));
+    if (Server_VerifyLock() == OK) {
+        ret = setPowerDAC(ind, value, mess);
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_power_adc(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+#if !defined(CHIPTESTBOARDD)
+    functionNotImplemented();
+#else
+    // index
+    int arg = -1;
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Getting ADC value for ADC %d\n", arg));
+    ret = getPowerADC((enum powerIndex)arg, &retval, mess);
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int get_voltage_limit(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
+    functionNotImplemented();
+#else
+    retval = getVLimit();
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_voltage_limit(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
+    functionNotImplemented();
+#else
+    int arg = -1;
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Setting voltage limit to %d mV\n", arg));
+    if (Server_VerifyLock() == OK) {
+        ret = setVLimit(arg, mess);
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
 }

@@ -86,28 +86,69 @@ adcclk:
         - OutString(t)
         require_det_id: true
         store_result_in_t: true
+      - arg_types:
+        - special::freq_unit
+        argc: 1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: getADCClock
+        input: []
+        input_types: []
+        output:
+        - OutString(t , args[0])
+        require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - arg_types:
-        - int
+        - std::string
         argc: 1
         cast_input:
-        - true
+        - false
         check_det_id: false
         convert_det_id: true
         function: setADCClock
         input:
-        - args[0]
+        - converted_freq
         input_types:
-        - int
+        - defs::Hz
         output:
-        - args.front()
+        - args[0]
+        require_det_id: true
+        separate_freq_units:
+          input: args[0]
+          output:
+          - converted_freq
+          - unit
+        store_result_in_t: false
+      - arg_types:
+        - int
+        - special::freq_unit
+        argc: 2
+        cast_input:
+        - false
+        check_det_id: false
+        convert_det_id: true
+        convert_to_freq:
+          input:
+          - args[0]
+          - args[1]
+          output: converted_freq
+        function: setADCClock
+        input:
+        - converted_freq
+        input_types:
+        - defs::Hz
+        output:
+        - args[0]
+        - args[1]
         require_det_id: true
         store_result_in_t: false
   command_name: adcclk
   function_alias: adcclk
-  help: "[n_clk in MHz]\n\t[Ctb] ADC clock frequency in MHz.\n\t[xilinx Ctb] ADC clock\
-    \ frequency in kHz."
+  help: "[n_clk] [(optional unit) Hz(default)|kHz|MHz]\n\t[Ctb][Xilinx Ctb] ADC clock\
+    \ frequency."
   infer_action: true
   template: true
 adcenable:
@@ -201,10 +242,6 @@ adcindex:
         - false
         check_det_id: true
         convert_det_id: true
-        exceptions:
-        - condition: det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD
-            && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD
-          message: cmd + " only allowed for CTB."
         function: getAdcIndex
         input:
         - args[0]
@@ -329,10 +366,6 @@ adcname:
         - true
         check_det_id: true
         convert_det_id: true
-        exceptions:
-        - condition: det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD
-            && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD
-          message: cmd + " only allowed for CTB."
         function: getAdcName
         input:
         - args[0]
@@ -355,10 +388,6 @@ adcname:
         - false
         check_det_id: true
         convert_det_id: true
-        exceptions:
-        - condition: det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD
-            && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD
-          message: cmd + " only allowed for CTB."
         function: setAdcName
         input:
         - args[0]
@@ -1772,155 +1801,64 @@ dac:
     GET:
       args:
       - arg_types:
-        - defs::dacIndex
+        - std::string
         argc: 1
-        cast_input:
-        - false
-        - true
+        cast_input: []
         check_det_id: false
         convert_det_id: true
-        exceptions:
-        - condition: is_int(args[0]) && det->getDetectorType().squash() != defs::CHIPTESTBOARD
-            && det->getDetectorType().squash() != defs::XILINX_CHIPTESTBOARD
-          message: '"Dac indices can only be used for chip test board. Use daclist
-            to get list of dac names for current detector."'
-        extra_variables:
-        - name: dacIndex
-          type: defs::dacIndex
-          value: '((det->getDetectorType().squash() == defs::CHIPTESTBOARD || det->getDetectorType().squash()
-            == defs::XILINX_CHIPTESTBOARD) && !is_int(args[0])) ? det->getDacIndex(args[0])
-            : StringTo<defs::dacIndex>(args[0])'
-        function: getDAC
-        input:
-        - dacIndex
-        - '"0"'
-        input_types:
-        - defs::dacIndex
-        - bool
-        output:
-        - args[0]
-        - ''' '''
-        - OutString(t)
-        require_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
         store_result_in_t: true
       - arg_types:
-        - defs::dacIndex
-        - special::mv
+        - std::string
+        - bool
         argc: 2
-        cast_input:
-        - false
-        - true
+        cast_input: []
         check_det_id: false
         convert_det_id: true
-        exceptions:
-        - condition: is_int(args[0]) && det->getDetectorType().squash() != defs::CHIPTESTBOARD
-            && det->getDetectorType().squash() != defs::XILINX_CHIPTESTBOARD
-          message: '"Dac indices can only be used for chip test board. Use daclist
-            to get list of dac names for current detector."'
-        - condition: args[1] != "mv" && args[1] != "mV"
-          message: '"Unknown argument " + args[1] + ". Did you mean mV?"'
-        extra_variables:
-        - name: dacIndex
-          type: defs::dacIndex
-          value: '((det->getDetectorType().squash() == defs::CHIPTESTBOARD || det->getDetectorType().squash()
-            == defs::XILINX_CHIPTESTBOARD) && !is_int(args[0])) ? det->getDacIndex(args[0])
-            : StringTo<defs::dacIndex>(args[0])'
-        function: getDAC
-        input:
-        - dacIndex
-        - '"1"'
-        input_types:
-        - defs::dacIndex
-        - bool
-        output:
-        - args[0]
-        - ''' '''
-        - OutString(t)
-        - '" mV"'
-        require_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
         store_result_in_t: true
     PUT:
       args:
       - arg_types:
-        - defs::dacIndex
+        - std::string
         - int
         argc: 2
-        cast_input:
-        - false
-        - true
-        - true
+        cast_input: []
         check_det_id: false
         convert_det_id: true
-        exceptions:
-        - condition: is_int(args[0]) && det->getDetectorType().squash() != defs::CHIPTESTBOARD
-            && det->getDetectorType().squash() != defs::XILINX_CHIPTESTBOARD
-          message: '"Dac indices can only be used for chip test board. Use daclist
-            to get list of dac names for current detector."'
-        extra_variables:
-        - name: dacIndex
-          type: defs::dacIndex
-          value: '((det->getDetectorType().squash() == defs::CHIPTESTBOARD || det->getDetectorType().squash()
-            == defs::XILINX_CHIPTESTBOARD) && !is_int(args[0])) ? det->getDacIndex(args[0])
-            : StringTo<defs::dacIndex>(args[0])'
-        function: setDAC
-        input:
-        - dacIndex
-        - args[1]
-        - '"0"'
-        input_types:
-        - defs::dacIndex
-        - int
-        - bool
-        output:
-        - args[0]
-        - ''' '''
-        - args[1]
-        require_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
         store_result_in_t: false
       - arg_types:
-        - defs::dacIndex
-        - int
-        - special::mv
-        argc: 3
-        cast_input:
-        - false
-        - true
-        - true
-        check_det_id: false
-        convert_det_id: true
-        exceptions:
-        - condition: is_int(args[0]) && det->getDetectorType().squash() != defs::CHIPTESTBOARD
-            && det->getDetectorType().squash() != defs::XILINX_CHIPTESTBOARD
-          message: '"Dac indices can only be used for chip test board. Use daclist
-            to get list of dac names for current detector."'
-        extra_variables:
-        - name: dacIndex
-          type: defs::dacIndex
-          value: '((det->getDetectorType().squash() == defs::CHIPTESTBOARD || det->getDetectorType().squash()
-            == defs::XILINX_CHIPTESTBOARD) && !is_int(args[0])) ? det->getDacIndex(args[0])
-            : StringTo<defs::dacIndex>(args[0])'
-        function: setDAC
-        input:
-        - dacIndex
-        - args[1]
-        - '"1"'
-        input_types:
-        - defs::dacIndex
+        - std::string
         - int
         - bool
-        output:
-        - args[0]
-        - ''' '''
-        - args[1]
-        - '" mV"'
-        require_det_id: true
+        argc: 3
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
         store_result_in_t: false
   command_name: dac
   function_alias: dac
-  help: 'code: return GetHelpDacWrapper(cmd, args);
-
-    '
+  help: ''
   infer_action: true
+  is_description: true
 dacindex:
   actions:
     GET:
@@ -1932,10 +1870,6 @@ dacindex:
         - false
         check_det_id: true
         convert_det_id: true
-        exceptions:
-        - condition: det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD
-            && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD
-          message: cmd + " only allowed for CTB."
         extra_variables:
         - name: index
           type: defs::dacIndex
@@ -2025,10 +1959,6 @@ dacname:
         - false
         check_det_id: true
         convert_det_id: true
-        exceptions:
-        - condition: det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD
-            && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD
-          message: cmd + " only allowed for CTB."
         extra_variables:
         - name: index
           type: defs::dacIndex
@@ -2055,10 +1985,6 @@ dacname:
         - false
         check_det_id: true
         convert_det_id: true
-        exceptions:
-        - condition: det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD
-            && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD
-          message: cmd + " only allowed for CTB."
         extra_variables:
         - name: index
           type: defs::dacIndex
@@ -2175,28 +2101,69 @@ dbitclk:
         - OutString(t)
         require_det_id: true
         store_result_in_t: true
+      - arg_types:
+        - special::freq_unit
+        argc: 1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: getDBITClock
+        input: []
+        input_types: []
+        output:
+        - OutString(t , args[0])
+        require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - arg_types:
-        - int
+        - std::string
         argc: 1
         cast_input:
-        - true
+        - false
         check_det_id: false
         convert_det_id: true
         function: setDBITClock
         input:
-        - args[0]
+        - converted_freq
         input_types:
-        - int
+        - defs::Hz
         output:
-        - args.front()
+        - args[0]
+        require_det_id: true
+        separate_freq_units:
+          input: args[0]
+          output:
+          - converted_freq
+          - unit
+        store_result_in_t: false
+      - arg_types:
+        - int
+        - special::freq_unit
+        argc: 2
+        cast_input:
+        - false
+        check_det_id: false
+        convert_det_id: true
+        convert_to_freq:
+          input:
+          - args[0]
+          - args[1]
+          output: converted_freq
+        function: setDBITClock
+        input:
+        - converted_freq
+        input_types:
+        - defs::Hz
+        output:
+        - args[0]
+        - args[1]
         require_det_id: true
         store_result_in_t: false
   command_name: dbitclk
   function_alias: dbitclk
-  help: "[n_clk in MHz]\n\t[Ctb] Clock for latching the digital bits in MHz.\n\t[xilinx\
-    \ Ctb] Clock for latching the digital bits in kHz."
+  help: "[n_clk] [(optional unit) Hz(default)|kHz|MHz]\n\t[Ctb][Xilinx Ctb]  Clock\
+    \ for latching the digital bits."
   infer_action: true
   template: true
 dbitphase:
@@ -4940,7 +4907,7 @@ im_a:
         argc: 0
         cast_input:
         - false
-        check_det_id: false
+        check_det_id: true
         convert_det_id: true
         function: getMeasuredCurrent
         input:
@@ -4949,7 +4916,8 @@ im_a:
         - int
         output:
         - OutString(t)
-        require_det_id: true
+        - '" mA"'
+        require_det_id: false
         store_result_in_t: true
   command_name: im_a
   function_alias: im_a
@@ -4964,7 +4932,7 @@ im_b:
         argc: 0
         cast_input:
         - false
-        check_det_id: false
+        check_det_id: true
         convert_det_id: true
         function: getMeasuredCurrent
         input:
@@ -4973,7 +4941,8 @@ im_b:
         - int
         output:
         - OutString(t)
-        require_det_id: true
+        - '" mA"'
+        require_det_id: false
         store_result_in_t: true
   command_name: im_b
   function_alias: im_b
@@ -4988,7 +4957,7 @@ im_c:
         argc: 0
         cast_input:
         - false
-        check_det_id: false
+        check_det_id: true
         convert_det_id: true
         function: getMeasuredCurrent
         input:
@@ -4997,7 +4966,8 @@ im_c:
         - int
         output:
         - OutString(t)
-        require_det_id: true
+        - '" mA"'
+        require_det_id: false
         store_result_in_t: true
   command_name: im_c
   function_alias: im_c
@@ -5012,7 +4982,7 @@ im_d:
         argc: 0
         cast_input:
         - false
-        check_det_id: false
+        check_det_id: true
         convert_det_id: true
         function: getMeasuredCurrent
         input:
@@ -5021,7 +4991,8 @@ im_d:
         - int
         output:
         - OutString(t)
-        require_det_id: true
+        - '" mA"'
+        require_det_id: false
         store_result_in_t: true
   command_name: im_d
   function_alias: im_d
@@ -5036,7 +5007,7 @@ im_io:
         argc: 0
         cast_input:
         - false
-        check_det_id: false
+        check_det_id: true
         convert_det_id: true
         function: getMeasuredCurrent
         input:
@@ -5045,7 +5016,8 @@ im_io:
         - int
         output:
         - OutString(t)
-        require_det_id: true
+        - '" mA"'
+        require_det_id: false
         store_result_in_t: true
   command_name: im_io
   function_alias: im_io
@@ -5090,6 +5062,32 @@ imagetest:
   function_alias: imagetest
   help: "[0, 1]\n\t[Eiger][Jungfrau][Moench] Only for Virtual servers. If 0, each\
     \ pixel intensity incremented by 1. If 1, all pixels almost saturated."
+  infer_action: true
+  template: true
+include:
+  actions:
+    PUT:
+      args:
+      - arg_types:
+        - special::path
+        argc: 1
+        cast_input:
+        - false
+        check_det_id: true
+        convert_det_id: true
+        function: loadParameters
+        input:
+        - args[0]
+        input_types:
+        - std::string
+        output:
+        - args.front()
+        require_det_id: false
+        store_result_in_t: false
+  command_name: include
+  function_alias: include
+  help: "\n\tSets detector measurement parameters to those contained in fname. Set\
+    \ up per measurement. Same as parameters command."
   infer_action: true
   template: true
 initialchecks:
@@ -5872,7 +5870,7 @@ patfname:
         cast_input: []
         check_det_id: false
         convert_det_id: true
-        function: getPatterFileName
+        function: getPatternFileName
         input: []
         input_types: []
         output:
@@ -7312,6 +7310,40 @@ port:
     \ virtual servers on same pc."
   infer_action: true
   template: true
+power:
+  actions:
+    GET:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: true
+    PUT:
+      args:
+      - arg_types:
+        - std::string
+        argc: -1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+  command_name: power
+  function_alias: power
+  help: ''
+  infer_action: true
+  is_description: true
 powerchip:
   actions:
     GET:
@@ -7348,14 +7380,49 @@ powerchip:
         store_result_in_t: false
   command_name: powerchip
   function_alias: powerchip
-  help: "[0, 1]\n\t[Jungfrau][Moench][Mythen3][Gotthard2][Xilinx Ctb] Power the chip.\
-    \ \n\t[Jungfrau][Moench] Default is 0. Get will return power status. Can be off\
-    \ if temperature event occured (temperature over temp_threshold with temp_control\
-    \ enabled. Will configure chip (only chip v1.1)\n\t[Mythen3][Gotthard2] Default\
-    \ is 1. If module not connected or wrong module, powerchip will fail.\n\t[Xilinx\
-    \ Ctb] Default is 0. Also configures the chip if powered on."
+  help: "[0, 1]\n\t[Jungfrau][Moench][Mythen3][Gotthard2] Power the chip. \n\t[Jungfrau][Moench]\
+    \ Default is 0. Get will return power status. Can be off if temperature event\
+    \ occured (temperature over temp_threshold with temp_control enabled. Will configure\
+    \ chip (only chip v1.1)\n\t[Mythen3][Gotthard2] Default is 1. If module not connected\
+    \ or wrong module, powerchip will fail."
   infer_action: true
   template: true
+powerdac:
+  actions:
+    GET:
+      args:
+      - arg_types:
+        - std::string
+        argc: 1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: true
+    PUT:
+      args:
+      - arg_types:
+        - std::string
+        - int
+        argc: 2
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+  command_name: powerdac
+  function_alias: powerdac
+  help: ''
+  infer_action: true
+  is_description: true
 powerindex:
   actions:
     GET:
@@ -7367,21 +7434,17 @@ powerindex:
         - false
         check_det_id: true
         convert_det_id: true
-        exceptions:
-        - condition: det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD
-            && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD
-          message: cmd + " only allowed for CTB."
         extra_variables:
         - name: index
           type: defs::dacIndex
-          value: defs::V_POWER_A
+          value: defs::DAC_0
         function: getPowerIndex
         input:
         - args[0]
         input_types:
         - std::string
         output:
-        - ToString(static_cast<int>(t) - index)
+        - ToString(static_cast<int>(t))
         require_det_id: false
         store_result_in_t: true
   command_name: powerindex
@@ -7453,25 +7516,17 @@ powername:
     GET:
       args:
       - arg_types:
-        - defs::dacIndex
+        - defs::powerIndex
         argc: 1
         cast_input:
         - false
         check_det_id: true
         convert_det_id: true
-        exceptions:
-        - condition: det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD
-            && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD
-          message: cmd + " only allowed for CTB."
-        extra_variables:
-        - name: index
-          type: defs::dacIndex
-          value: defs::V_POWER_A
         function: getPowerName
         input:
-        - static_cast<defs::dacIndex>(StringTo<int>(args[0]) + index)
+        - static_cast<defs::powerIndex>(StringTo<int>(args[0]))
         input_types:
-        - defs::dacIndex
+        - defs::powerIndex
         output:
         - args[0]
         - ''' '''
@@ -7481,7 +7536,7 @@ powername:
     PUT:
       args:
       - arg_types:
-        - defs::dacIndex
+        - defs::powerIndex
         - std::string
         argc: 2
         cast_input:
@@ -7489,20 +7544,12 @@ powername:
         - false
         check_det_id: true
         convert_det_id: true
-        exceptions:
-        - condition: det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD
-            && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD
-          message: cmd + " only allowed for CTB."
-        extra_variables:
-        - name: index
-          type: defs::dacIndex
-          value: defs::V_POWER_A
         function: setPowerName
         input:
-        - static_cast<defs::dacIndex>(StringTo<int>(args[0]) + index)
+        - static_cast<defs::powerIndex>(StringTo<int>(args[0]))
         - args[1]
         input_types:
-        - defs::dacIndex
+        - defs::powerIndex
         - std::string
         output:
         - ToString(args)
@@ -7513,7 +7560,6 @@ powername:
   help: "[0-4][name] \n\t\t[Ctb][Xilinx_Ctb] Set the power at the given position to\
     \ the given name."
   infer_action: true
-  template: true
 powervalues:
   actions:
     GET:
@@ -7523,12 +7569,6 @@ powervalues:
         cast_input: []
         check_det_id: false
         convert_det_id: true
-        ctb_output_list:
-          GETFCN: getPower
-          GETFCNLIST: getPowerList
-          GETFCNNAME: getPowerNames
-          printable_name: '*name_it++'
-          suffix: mV
         function: ''
         input: []
         input_types: []
@@ -7537,8 +7577,9 @@ powervalues:
         store_result_in_t: true
   command_name: powervalues
   function_alias: powervalues
-  help: "[name] \n\t\t[Ctb][Xilinx_Ctb] Get values of all powers."
+  help: ''
   infer_action: true
+  is_description: true
 programfpga:
   actions:
     PUT:
@@ -8181,27 +8222,69 @@ runclk:
         - OutString(t)
         require_det_id: true
         store_result_in_t: true
+      - arg_types:
+        - special::freq_unit
+        argc: 1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: getRUNClock
+        input: []
+        input_types: []
+        output:
+        - OutString(t , args[0])
+        require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - arg_types:
-        - int
+        - std::string
         argc: 1
         cast_input:
-        - true
+        - false
         check_det_id: false
         convert_det_id: true
         function: setRUNClock
         input:
-        - args[0]
+        - converted_freq
         input_types:
-        - int
+        - defs::Hz
         output:
-        - args.front()
+        - args[0]
+        require_det_id: true
+        separate_freq_units:
+          input: args[0]
+          output:
+          - converted_freq
+          - unit
+        store_result_in_t: false
+      - arg_types:
+        - int
+        - special::freq_unit
+        argc: 2
+        cast_input:
+        - false
+        check_det_id: false
+        convert_det_id: true
+        convert_to_freq:
+          input:
+          - args[0]
+          - args[1]
+          output: converted_freq
+        function: setRUNClock
+        input:
+        - converted_freq
+        input_types:
+        - defs::Hz
+        output:
+        - args[0]
+        - args[1]
         require_det_id: true
         store_result_in_t: false
   command_name: runclk
   function_alias: runclk
-  help: "[n_clk in MHz]\n\t[Ctb] Run clock in MHz.\n\t[xilinx Ctb] Run clock in kHz."
+  help: "[n_clk] [(optional unit) Hz(default)|kHz|MHz]\n\t[Ctb][Xilinx Ctb] Run clock\
+    \ frequency."
   infer_action: true
   template: true
 runtime:
@@ -9803,10 +9886,6 @@ signalindex:
         - false
         check_det_id: true
         convert_det_id: true
-        exceptions:
-        - condition: det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD
-            && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD
-          message: cmd + " only allowed for CTB."
         function: getSignalIndex
         input:
         - args[0]
@@ -9891,10 +9970,6 @@ signalname:
         - true
         check_det_id: true
         convert_det_id: true
-        exceptions:
-        - condition: det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD
-            && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD
-          message: cmd + " only allowed for CTB."
         function: getSignalName
         input:
         - args[0]
@@ -9917,10 +9992,6 @@ signalname:
         - false
         check_det_id: true
         convert_det_id: true
-        exceptions:
-        - condition: det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD
-            && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD
-          message: cmd + " only allowed for CTB."
         function: setSignalName
         input:
         - args[0]
@@ -10004,10 +10075,6 @@ slowadcindex:
         - false
         check_det_id: true
         convert_det_id: true
-        exceptions:
-        - condition: det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD
-            && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD
-          message: cmd + " only allowed for CTB."
         extra_variables:
         - name: index
           type: defs::dacIndex
@@ -10096,10 +10163,6 @@ slowadcname:
         - false
         check_det_id: true
         convert_det_id: true
-        exceptions:
-        - condition: det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD
-            && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD
-          message: cmd + " only allowed for CTB."
         extra_variables:
         - name: index
           type: defs::dacIndex
@@ -10126,10 +10189,6 @@ slowadcname:
         - false
         check_det_id: true
         convert_det_id: true
-        exceptions:
-        - condition: det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD
-            && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD
-          message: cmd + " only allowed for CTB."
         extra_variables:
         - name: index
           type: defs::dacIndex
@@ -10640,9 +10699,22 @@ syncclk:
         - OutString(t)
         require_det_id: true
         store_result_in_t: true
+      - arg_types:
+        - special::freq_unit
+        argc: 1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: getSYNCClock
+        input: []
+        input_types: []
+        output:
+        - OutString(t , args[0])
+        require_det_id: true
+        store_result_in_t: true
   command_name: syncclk
   function_alias: syncclk
-  help: "[n_clk in MHz]\n\t[Ctb] Sync clock in MHz."
+  help: "[n_clk] [(optional unit) Hz(default)|kHz|MHz]\n\t[Ctb] Sync clock."
   infer_action: true
   template: true
 temp_10ge:
@@ -12659,330 +12731,44 @@ user:
   help: ''
   infer_action: true
   is_description: true
-v_a:
-  actions:
-    GET:
-      args:
-      - arg_types: []
-        argc: 0
-        cast_input:
-        - false
-        check_det_id: false
-        convert_det_id: true
-        function: getPower
-        input:
-        - defs::V_POWER_A
-        input_types:
-        - int
-        output:
-        - OutString(t)
-        require_det_id: true
-        store_result_in_t: true
-    PUT:
-      args:
-      - arg_types:
-        - int
-        - int
-        argc: 1
-        cast_input:
-        - false
-        - true
-        check_det_id: false
-        convert_det_id: true
-        function: setPower
-        input:
-        - defs::V_POWER_A
-        - args[0]
-        input_types:
-        - int
-        - int
-        output:
-        - args.front()
-        require_det_id: true
-        store_result_in_t: false
-  command_name: v_a
-  function_alias: v_a
-  help: "[n_value]\n\t[Ctb][Xilinx Ctb] Power supply a in mV."
-  infer_action: true
-  template: true
-v_b:
-  actions:
-    GET:
-      args:
-      - arg_types: []
-        argc: 0
-        cast_input:
-        - false
-        check_det_id: false
-        convert_det_id: true
-        function: getPower
-        input:
-        - defs::V_POWER_B
-        input_types:
-        - int
-        output:
-        - OutString(t)
-        require_det_id: true
-        store_result_in_t: true
-    PUT:
-      args:
-      - arg_types:
-        - int
-        - int
-        argc: 1
-        cast_input:
-        - false
-        - true
-        check_det_id: false
-        convert_det_id: true
-        function: setPower
-        input:
-        - defs::V_POWER_B
-        - args[0]
-        input_types:
-        - int
-        - int
-        output:
-        - args.front()
-        require_det_id: true
-        store_result_in_t: false
-  command_name: v_b
-  function_alias: v_b
-  help: "[n_value]\n\t[Ctb][Xilinx Ctb] Power supply b in mV."
-  infer_action: true
-  template: true
-v_c:
-  actions:
-    GET:
-      args:
-      - arg_types: []
-        argc: 0
-        cast_input:
-        - false
-        check_det_id: false
-        convert_det_id: true
-        function: getPower
-        input:
-        - defs::V_POWER_C
-        input_types:
-        - int
-        output:
-        - OutString(t)
-        require_det_id: true
-        store_result_in_t: true
-    PUT:
-      args:
-      - arg_types:
-        - int
-        - int
-        argc: 1
-        cast_input:
-        - false
-        - true
-        check_det_id: false
-        convert_det_id: true
-        function: setPower
-        input:
-        - defs::V_POWER_C
-        - args[0]
-        input_types:
-        - int
-        - int
-        output:
-        - args.front()
-        require_det_id: true
-        store_result_in_t: false
-  command_name: v_c
-  function_alias: v_c
-  help: "[n_value]\n\t[Ctb][Xilinx Ctb] Power supply c in mV."
-  infer_action: true
-  template: true
-v_chip:
-  actions:
-    GET:
-      args:
-      - arg_types: []
-        argc: 0
-        cast_input:
-        - false
-        check_det_id: false
-        convert_det_id: true
-        function: getPower
-        input:
-        - defs::V_POWER_CHIP
-        input_types:
-        - int
-        output:
-        - OutString(t)
-        require_det_id: true
-        store_result_in_t: true
-    PUT:
-      args:
-      - arg_types:
-        - int
-        - int
-        argc: 1
-        cast_input:
-        - false
-        - true
-        check_det_id: false
-        convert_det_id: true
-        function: setPower
-        input:
-        - defs::V_POWER_CHIP
-        - args[0]
-        input_types:
-        - int
-        - int
-        output:
-        - args.front()
-        require_det_id: true
-        store_result_in_t: false
-  command_name: v_chip
-  function_alias: v_chip
-  help: "[n_value]\n\t[Ctb] Power supply chip in mV. Do not use it unless you are\
-    \ completely sure you will not fry the board."
-  infer_action: true
-  template: true
-v_d:
-  actions:
-    GET:
-      args:
-      - arg_types: []
-        argc: 0
-        cast_input:
-        - false
-        check_det_id: false
-        convert_det_id: true
-        function: getPower
-        input:
-        - defs::V_POWER_D
-        input_types:
-        - int
-        output:
-        - OutString(t)
-        require_det_id: true
-        store_result_in_t: true
-    PUT:
-      args:
-      - arg_types:
-        - int
-        - int
-        argc: 1
-        cast_input:
-        - false
-        - true
-        check_det_id: false
-        convert_det_id: true
-        function: setPower
-        input:
-        - defs::V_POWER_D
-        - args[0]
-        input_types:
-        - int
-        - int
-        output:
-        - args.front()
-        require_det_id: true
-        store_result_in_t: false
-  command_name: v_d
-  function_alias: v_d
-  help: "[n_value]\n\t[Ctb][Xilinx Ctb] Power supply d in mV."
-  infer_action: true
-  template: true
-v_io:
-  actions:
-    GET:
-      args:
-      - arg_types: []
-        argc: 0
-        cast_input:
-        - false
-        check_det_id: false
-        convert_det_id: true
-        function: getPower
-        input:
-        - defs::V_POWER_IO
-        input_types:
-        - int
-        output:
-        - OutString(t)
-        require_det_id: true
-        store_result_in_t: true
-    PUT:
-      args:
-      - arg_types:
-        - int
-        - int
-        argc: 1
-        cast_input:
-        - false
-        - true
-        check_det_id: false
-        convert_det_id: true
-        function: setPower
-        input:
-        - defs::V_POWER_IO
-        - args[0]
-        input_types:
-        - int
-        - int
-        output:
-        - args.front()
-        require_det_id: true
-        store_result_in_t: false
-  command_name: v_io
-  function_alias: v_io
-  help: "[n_value]\n\t[Ctb][Xilinx Ctb] Power supply io in mV. Minimum 1200 mV. Must\
-    \ be the first power regulator to be set after fpga reset (on-board detector server\
-    \ start up)."
-  infer_action: true
-  template: true
 v_limit:
   actions:
     GET:
       args:
       - arg_types: []
         argc: 0
-        cast_input:
-        - false
-        check_det_id: false
+        cast_input: []
+        check_det_id: true
         convert_det_id: true
-        function: getPower
-        input:
-        - defs::V_LIMIT
-        input_types:
-        - int
+        function: getVoltageLimit
+        input: []
+        input_types: []
         output:
         - OutString(t)
-        require_det_id: true
+        require_det_id: false
         store_result_in_t: true
     PUT:
       args:
       - arg_types:
         - int
-        - int
         argc: 1
         cast_input:
-        - false
         - true
-        check_det_id: false
+        check_det_id: true
         convert_det_id: true
-        function: setPower
+        function: setVoltageLimit
         input:
-        - defs::V_LIMIT
         - args[0]
         input_types:
         - int
-        - int
         output:
         - args.front()
-        require_det_id: true
+        require_det_id: false
         store_result_in_t: false
   command_name: v_limit
   function_alias: v_limit
-  help: "[n_value]\n\t[Ctb][Xilinx Ctb] Soft limit for power supplies (ctb only) and\
-    \ DACS in mV."
+  help: "[n_value]\n\t[Ctb][Xilinx Ctb] Soft limit for power supplies and DACS in\
+    \ mV."
   infer_action: true
   template: true
 vchip_comp_adc:
@@ -13697,7 +13483,7 @@ vm_a:
         argc: 0
         cast_input:
         - false
-        check_det_id: false
+        check_det_id: true
         convert_det_id: true
         function: getMeasuredPower
         input:
@@ -13706,7 +13492,8 @@ vm_a:
         - int
         output:
         - OutString(t)
-        require_det_id: true
+        - '" mV"'
+        require_det_id: false
         store_result_in_t: true
   command_name: vm_a
   function_alias: vm_a
@@ -13721,7 +13508,7 @@ vm_b:
         argc: 0
         cast_input:
         - false
-        check_det_id: false
+        check_det_id: true
         convert_det_id: true
         function: getMeasuredPower
         input:
@@ -13730,7 +13517,8 @@ vm_b:
         - int
         output:
         - OutString(t)
-        require_det_id: true
+        - '" mV"'
+        require_det_id: false
         store_result_in_t: true
   command_name: vm_b
   function_alias: vm_b
@@ -13745,7 +13533,7 @@ vm_c:
         argc: 0
         cast_input:
         - false
-        check_det_id: false
+        check_det_id: true
         convert_det_id: true
         function: getMeasuredPower
         input:
@@ -13754,7 +13542,8 @@ vm_c:
         - int
         output:
         - OutString(t)
-        require_det_id: true
+        - '" mV"'
+        require_det_id: false
         store_result_in_t: true
   command_name: vm_c
   function_alias: vm_c
@@ -13769,7 +13558,7 @@ vm_d:
         argc: 0
         cast_input:
         - false
-        check_det_id: false
+        check_det_id: true
         convert_det_id: true
         function: getMeasuredPower
         input:
@@ -13778,7 +13567,8 @@ vm_d:
         - int
         output:
         - OutString(t)
-        require_det_id: true
+        - '" mV"'
+        require_det_id: false
         store_result_in_t: true
   command_name: vm_d
   function_alias: vm_d
@@ -13793,7 +13583,7 @@ vm_io:
         argc: 0
         cast_input:
         - false
-        check_det_id: false
+        check_det_id: true
         convert_det_id: true
         function: getMeasuredPower
         input:
@@ -13802,7 +13592,8 @@ vm_io:
         - int
         output:
         - OutString(t)
-        require_det_id: true
+        - '" mV"'
+        require_det_id: false
         store_result_in_t: true
   command_name: vm_io
   function_alias: vm_io

@@ -9,8 +9,8 @@
 #include "sls/versionAPI.h"
 
 #include "LTC2620_Driver.h"
+#include "XILINX_FMC.h"
 #include "XILINX_PLL.h"
-
 #include "loadPattern.h"
 #ifdef VIRTUAL
 #include "communication_funcs_UDP.h"
@@ -41,11 +41,11 @@ char initErrorMessage[MAX_STR_LENGTH];
 int detPos[2] = {0, 0};
 
 uint32_t clkFrequency[NUM_CLOCKS] = {};
-int chipConfigured = 0;
 int analogEnable = 0;
 int digitalEnable = 0;
 int transceiverEnable = 0;
-int dacValues[NDAC] = {};
+int dacValues[NDAC_ONLY] = {};
+int powerValues[NPWR - 1] = {}; // powerIndex (A->IO)
 // software limit that depends on the current chip on the ctb
 int vLimit = 0;
 
@@ -257,17 +257,17 @@ int testFixedFPGAPattern() {
     LOG(logINFO, ("Testing FPGA Fixed Pattern:\n"));
 #ifndef VIRTUAL
     uint32_t val = bus_r(FIXEDPATTERNREG);
-    if (val == FIXEDPATTERNVAL) {
+    if (val == FIXEDPATTERNREG_PRESET) {
         LOG(logINFO, ("\tFixed pattern: successful match (0x%08x)\n", val));
     } else {
         LOG(logERROR,
             ("Fixed pattern does not match! Read 0x%08x, expected 0x%08x\n",
-             val, FIXEDPATTERNVAL));
+             val, FIXEDPATTERNREG_PRESET));
         return FAIL;
     }
 #endif
-    LOG(logINFO,
-        ("\tSuccessfully read FPGA Fixed Pattern (0x%x)\n", FIXEDPATTERNVAL));
+    LOG(logINFO, ("\tSuccessfully read FPGA Fixed Pattern (0x%x)\n",
+                  FIXEDPATTERNREG_PRESET));
     return OK;
 }
 
@@ -363,7 +363,7 @@ void initStopServer() {
             return;
         }
 #ifdef VIRTUAL
-        sharedMemory_setStop(0);
+        setupDetector();
 #endif
     }
     initCheckDone = 1;
@@ -379,35 +379,56 @@ void setupDetector() {
     clkFrequency[ADC_CLK] = DEFAULT_ADC_CLK;
     clkFrequency[SYNC_CLK] = DEFAULT_SYNC_CLK;
     clkFrequency[DBIT_CLK] = DEFAULT_DBIT_CLK;
-    chipConfigured = 0;
     analogEnable = 0;
     digitalEnable = 0;
     transceiverEnable = 0;
-    for (int i = 0; i < NDAC; ++i)
+    for (int i = 0; i != NDAC_ONLY; ++i)
         dacValues[i] = -1;
+    for (int i = 0; i != NPWR - 1; ++i)
+        powerValues[i] = -1;
     vLimit = DEFAULT_VLIMIT;
 
 #ifdef VIRTUAL
-    sharedMemory_setStatus(IDLE);
-    setupUDPCommParameters();
-    initializePatternWord();
+    if (isControlServer) {
+        sharedMemory_setStatus(IDLE);
+        setupUDPCommParameters();
+        initializePatternWord();
+    } else {
+        sharedMemory_setStop(0);
+    }
 #endif
     // initialization only at start up (restart fpga)
     initError = waitTransceiverReset(initErrorMessage);
     if (initError == FAIL) {
         return;
     }
-    // power off chip
-    initError = powerChip(0, initErrorMessage);
-    if (initError == FAIL) {
-        return;
-    }
+
+    powerOff();
 
     LTC2620_D_SetDefines(DAC_MIN_MV, DAC_MAX_MV, DAC_DRIVER_FILE_NAME, NDAC,
                          NPWR, DAC_POWERDOWN_DRIVER_FILE_NAME);
-    LOG(logINFOBLUE, ("Powering down all dacs\n"));
-    for (int idac = 0; idac < NDAC; ++idac) {
-        setDAC(idac, LTC2620_D_GetPowerDownValue(), 0);
+
+    // power LTC2620 before talking to it
+    initError = XILINX_FMC_enable_all(initErrorMessage, MAX_STR_LENGTH);
+    if (initError == FAIL) {
+        return;
+    }
+    // dacs only
+    LOG(logINFOBLUE, ("Setting all dacs to min (0 mV)\n"));
+    for (int idac = 0; idac < NDAC_ONLY; ++idac) {
+        initError = setDAC(idac, 0, false, initErrorMessage);
+        if (initError == FAIL)
+            return;
+    }
+
+    // power regulators
+    LOG(logINFOBLUE,
+        ("Setting power dacs to min dac value (power disabled)\n"));
+    for (int iPower = 0; iPower != (NPWR - 1); ++iPower) {
+        int min = (iPower == (int)V_POWER_IO) ? VIO_MIN_MV : POWER_RGLTR_MIN;
+        initError = setPowerDAC(iPower, min, initErrorMessage);
+        if (initError == FAIL)
+            return;
     }
 
     resetFlow();
@@ -427,9 +448,15 @@ void setupDetector() {
     setNumFrames(DEFAULT_NUM_FRAMES);
     setNumTriggers(DEFAULT_NUM_CYCLES);
     setTiming(DEFAULT_TIMING_MODE);
-    setExpTime(DEFAULT_EXPTIME);
-    setPeriod(DEFAULT_PERIOD);
-    setDelayAfterTrigger(DEFAULT_DELAY);
+    initError = setExpTime(DEFAULT_EXPTIME, initErrorMessage);
+    if (initError == FAIL)
+        return;
+    initError = setPeriod(DEFAULT_PERIOD, initErrorMessage);
+    if (initError == FAIL)
+        return;
+    initError = setDelayAfterTrigger(DEFAULT_DELAY, initErrorMessage);
+    if (initError == FAIL)
+        return;
 
     setNextFrameNumber(DEFAULT_STARTING_FRAME_NUMBER);
 }
@@ -489,18 +516,6 @@ int waitTransceiverReset(char *mess) {
     return OK;
 }
 
-#ifdef VIRTUAL
-void setTransceiverAlignment(int align) {
-    if (align) {
-        bus_w(TRANSCEIVERSTATUS,
-              (bus_r(TRANSCEIVERSTATUS) | RXBYTEISALIGNED_MSK));
-    } else {
-        bus_w(TRANSCEIVERSTATUS,
-              (bus_r(TRANSCEIVERSTATUS) & ~RXBYTEISALIGNED_MSK));
-    }
-}
-#endif
-
 int isTransceiverAligned() {
 #ifdef VIRTUAL
     return 1;
@@ -515,294 +530,6 @@ int isTransceiverAligned() {
             return 1;
     }
     return retval;
-}
-
-int waitTransceiverAligned(char *mess) {
-#ifdef VIRTUAL
-    setTransceiverAlignment(1);
-#else
-
-    // no module: transceiver will never get aligned
-    if (!checkModuleFlag) {
-        LOG(logWARNING, ("No module: Transceiver will never get aligned. "
-                         "Ignoring alignment check.\n"));
-        return OK;
-    }
-
-    int transceiverWordAligned = isTransceiverAligned();
-    int times = 0;
-    while (transceiverWordAligned == 0) {
-        if (times++ > WAIT_TIME_OUT_0US_TIMES) {
-            sprintf(mess, "Transceiver alignment timed out. Check connection, "
-                          "p-n inversions, LSB-MSB inversions, link error "
-                          "counters and channel enable settings\n");
-            LOG(logERROR, (mess));
-            return FAIL;
-        }
-        usleep(0);
-        transceiverWordAligned = isTransceiverAligned();
-    }
-#endif
-    LOG(logINFOBLUE, ("Transceiver alignment done\n"));
-    return OK;
-}
-
-int configureTransceiver(char *mess) {
-    LOG(logINFOBLUE, ("\tConfiguring transceiver\n"));
-
-    if (chipConfigured == 0) {
-        sprintf(mess,
-                "Chip not configured. Use powerchip to power on chip first.\n");
-        LOG(logERROR, (mess));
-        return FAIL;
-    }
-    return waitTransceiverAligned(mess);
-}
-
-int isChipConfigured() { return chipConfigured; }
-
-// TODO powerchip and configurechip should be separate commands (not
-// requirement) in the future
-// TODO differentiate between power on board (va, vb, vc, vd, vio) and power
-// chip (only chip with voltage vchip)?
-int powerChip(int on, char *mess) {
-    uint32_t addr = CTRL_REG;
-    uint32_t mask = POWER_VIO_MSK | POWER_VCC_A_MSK | POWER_VCC_B_MSK |
-                    POWER_VCC_C_MSK | POWER_VCC_D_MSK;
-    if (on) {
-        LOG(logINFOBLUE, ("Powering chip: on\n"));
-        bus_w(addr, bus_r(addr) | mask);
-
-        if (configureChip(mess) == FAIL)
-            return FAIL;
-
-    } else {
-        LOG(logINFOBLUE, ("Powering chip: off\n"));
-        bus_w(addr, bus_r(addr) & ~mask);
-
-        chipConfigured = 0;
-
-#ifdef VIRTUAL
-        setTransceiverAlignment(0);
-#endif
-        // transceiver alignment should be reset at power off
-        if (isTransceiverAligned()) {
-            sprintf(mess, "Transceiver alignment not reset\n");
-            LOG(logERROR, (mess));
-
-            // to be removed when fixed later
-            LOG(logWARNING,
-                ("Bypassing this error for now. To be fixed later...\n"));
-            return OK;
-
-            return FAIL;
-        }
-        LOG(logINFO, ("\tTransceiver alignment has been reset\n"));
-    }
-    return OK;
-}
-
-int getPowerChip() {
-    uint32_t addr = CTRL_REG;
-    uint32_t mask = POWER_VIO_MSK | POWER_VCC_A_MSK | POWER_VCC_B_MSK |
-                    POWER_VCC_C_MSK | POWER_VCC_D_MSK;
-    return (((bus_r(addr) & mask) == mask) ? 1 : 0);
-}
-
-int configureChip(char *mess) {
-    LOG(logINFOBLUE, ("\tConfiguring chip\n"));
-    chipConfigured = 0;
-    if (readConfigFile(mess, CONFIG_CHIP_FILE, "chip config") == FAIL) {
-        return FAIL;
-    }
-    if (readConfigFile(mess, RESET_CHIP_FILE, "reset chip") == FAIL) {
-        return FAIL;
-    }
-    LOG(logINFOBLUE, ("Chip configured.\n"));
-    chipConfigured = 1;
-    return OK;
-}
-
-int readConfigFile(char *mess, char *fileName, char *fileType) {
-    const int fileNameSize = 128;
-    char fname[fileNameSize];
-    if (getAbsPath(fname, fileNameSize, fileName) == FAIL) {
-        sprintf(mess, "Could not get full path for %s file [%s].\n", fileType,
-                fname);
-        LOG(logERROR, (mess));
-        return FAIL;
-    }
-    if (access(fname, F_OK) != 0) {
-        sprintf(mess, "Could not find %s file [%s].\n", fileType, fname);
-        LOG(logERROR, (mess));
-        return FAIL;
-    }
-    FILE *fd = fopen(fname, "r");
-    if (fd == NULL) {
-        sprintf(mess, "Could not open on-board detector server %s file [%s].\n",
-                fileType, fname);
-        LOG(logERROR, (mess));
-        return FAIL;
-    }
-    LOG(logINFOBLUE, ("Reading %s file %s\n", fileType, fname));
-
-    const size_t LZ = 256;
-    char line[LZ];
-    memset(line, 0, LZ);
-    char command[LZ];
-
-    // keep reading a line
-    while (fgets(line, LZ, fd)) {
-
-        // ignore comments
-        if (line[0] == '#') {
-            LOG(logDEBUG1, ("Ignoring Comment\n"));
-            continue;
-        }
-
-        // ignore empty lines
-        if (strlen(line) <= 1) {
-            LOG(logDEBUG1, ("Ignoring Empty line\n"));
-            continue;
-        }
-
-        // removing leading spaces
-        if (line[0] == ' ' || line[0] == '\t') {
-            int len = strlen(line);
-            // find first valid character
-            int i = 0;
-            for (i = 0; i < len; ++i) {
-                if (line[i] != ' ' && line[i] != '\t') {
-                    break;
-                }
-            }
-            // ignore the line full of spaces (last char \n)
-            if (i >= len - 1) {
-                LOG(logDEBUG1, ("Ignoring line full of spaces\n"));
-                continue;
-            }
-            // copying only valid char
-            char temp[LZ];
-            memset(temp, 0, LZ);
-            memcpy(temp, line + i, strlen(line) - i);
-            memset(line, 0, LZ);
-            memcpy(line, temp, strlen(temp));
-            LOG(logDEBUG1, ("Removing leading spaces.\n"));
-        }
-
-        LOG(logDEBUG1, ("Command to process: (size:%d) %.*s\n", strlen(line),
-                        strlen(line) - 1, line));
-        memset(command, 0, LZ);
-
-        // reg command
-        if (!strncmp(line, "reg", strlen("reg"))) {
-            uint32_t addr = 0;
-            uint32_t val = 0;
-            if (sscanf(line, "%s %x %x", command, &addr, &val) != 3) {
-                sprintf(mess, "Could not scan reg command. Line:[%s].\n", line);
-                LOG(logERROR, (mess));
-                return FAIL;
-            }
-            bus_w(addr, val);
-            LOG(logINFOBLUE, ("Wrote 0x%x to 0x%x\n", val, addr));
-        }
-
-        // setbit command
-        else if (!strncmp(line, "setbit", strlen("setbit"))) {
-            uint32_t addr = 0;
-            uint32_t bit = 0;
-            if (sscanf(line, "%s %x %d", command, &addr, &bit) != 3) {
-                sprintf(mess, "Could not scan setbit command. Line:[%s].\n",
-                        line);
-                LOG(logERROR, (mess));
-                return FAIL;
-            }
-            bus_w(addr, bus_r(addr) | (1 << bit));
-            LOG(logINFOBLUE, ("Set bit %d in 0x%x\n", bit, addr));
-        }
-
-        // clearbit command
-        else if (!strncmp(line, "clearbit", strlen("clearbit"))) {
-            uint32_t addr = 0;
-            uint32_t bit = 0;
-            if (sscanf(line, "%s %x %d", command, &addr, &bit) != 3) {
-                sprintf(mess, "Could not scan clearbit command. Line:[%s].\n",
-                        line);
-                LOG(logERROR, (mess));
-                return FAIL;
-            }
-            bus_w(addr, bus_r(addr) & ~(1 << bit));
-            LOG(logINFOBLUE, ("Cleared bit %d in 0x%x\n", bit, addr));
-        }
-
-        // pollbit command
-        else if (!strncmp(line, "pollbit", strlen("pollbit"))) {
-            uint32_t addr = 0;
-            uint32_t bit = 0;
-            uint32_t val = 0;
-            if (sscanf(line, "%s %x %d %d", command, &addr, &bit, &val) != 4) {
-                sprintf(mess, "Could not scan pollbit command. Line:[%s].\n",
-                        line);
-                LOG(logERROR, (mess));
-                return FAIL;
-            }
-#ifndef VIRTUAL
-            int times = 0;
-            while (((bus_r(addr) >> bit) & 0x1) != val) {
-                if (times++ > WAIT_TIME_OUT_0US_TIMES) {
-                    sprintf(mess, "Polling bit %d in 0x%x timed out\n", bit,
-                            addr);
-                    LOG(logERROR, (mess));
-                    return FAIL;
-                }
-                usleep(0);
-            }
-#endif
-            LOG(logINFOBLUE, ("Polled bit %d in 0x%x\n", bit, addr));
-        }
-
-        // pattern command
-        else if (!strncmp(line, "pattern", strlen("pattern"))) {
-            // take a file name and call loadPatterFile
-            char patternFileName[LZ];
-            if (sscanf(line, "%s %s", command, patternFileName) != 2) {
-                sprintf(mess, "Could not scan pattern command. Line:[%s].\n",
-                        line);
-                LOG(logERROR, (mess));
-                return FAIL;
-            }
-            if (loadPatternFile(patternFileName, mess) == FAIL) {
-                return FAIL;
-            }
-            LOG(logINFOBLUE, ("loaded pattern [%s].\n", patternFileName));
-        }
-
-        // sleep command
-        else if (!strncmp(line, "sleep", strlen("sleep"))) {
-            int time = 0;
-            if (sscanf(line, "%s %d", command, &time) != 2) {
-                sprintf(mess, "Could not scan sleep command. Line:[%s].\n",
-                        line);
-                LOG(logERROR, (mess));
-                return FAIL;
-            }
-            usleep(time * 1000 * 1000);
-            LOG(logINFOBLUE, ("Slept for %d s\n", time));
-        }
-
-        // other commands
-        else {
-            sprintf(mess,
-                    "Could not scan command from on-board server "
-                    "%s file. Line:[%s].\n",
-                    fileType, line);
-            break;
-        }
-        memset(line, 0, LZ);
-    }
-    fclose(fd);
-    LOG(logINFOBLUE, ("Successfully read %s file.\n", fileType));
-    return OK;
 }
 
 /* set parameters -  dr */
@@ -1049,63 +776,132 @@ int getNumTransceiverSamples() {
     return ((bus_r(NO_SAMPLES_X_REG) & NO_SAMPLES_X_MSK) >> NO_SAMPLES_X_OFST);
 }
 
-int setExpTime(int64_t val) {
+int setExpTime(int64_t val, char *mess) {
     setPatternWaitInterval(0, val);
 
-    // validate for tolerance
-    int64_t retval = getExpTime();
+    // validate
+    uint64_t arg_clocks = ns_to_clocks(val, clkFrequency[RUN_CLK]);
+    uint64_t retval_clocks = getPatternWaitClocks(0);
+    if (arg_clocks != retval_clocks) {
+        sprintf(mess,
+                "Failed to set exposure time. Could not set number of clocks "
+                "to %lld, read %lld\n",
+                (long long int)arg_clocks, (long long int)retval_clocks);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+
+    // log rounding if any
+    int64_t retval = getPatternWaitInterval(0);
     if (val != retval) {
+        LOG(logWARNING, ("Rounding to %lld ns due to clock frequency\n",
+                         (long long int)retval));
+    }
+
+    return OK;
+}
+
+int getExpTime(int64_t *retval, char *mess) {
+    *retval = getPatternWaitInterval(0);
+    if (*retval == -1) {
+        sprintf(mess, "Failed to get exposure time.\n");
+        LOG(logERROR, (mess));
         return FAIL;
     }
     return OK;
 }
 
-int64_t getExpTime() { return getPatternWaitInterval(0); }
-
-int setPeriod(int64_t val) {
+int setPeriod(int64_t val, char *mess) {
     if (val < 0) {
-        LOG(logERROR, ("Invalid period: %lld ns\n", (long long int)val));
+        sprintf(mess, "Invalid period: %lld ns\n", (long long int)val);
+        LOG(logERROR, (mess));
         return FAIL;
     }
     LOG(logINFO, ("Setting period %lld ns\n", (long long int)val));
-    val *= (NS_TO_CLK_CYCLE * clkFrequency[RUN_CLK]);
-    setU64BitReg(val, PERIOD_IN_REG_1, PERIOD_IN_REG_2);
+    uint64_t arg_clocks = ns_to_clocks(val, clkFrequency[RUN_CLK]);
+    setU64BitReg(arg_clocks, PERIOD_IN_REG_1, PERIOD_IN_REG_2);
 
-    // validate for tolerance
-    int64_t retval = getPeriod();
-    val /= (NS_TO_CLK_CYCLE * clkFrequency[RUN_CLK]);
-    if (val != retval) {
+    // validate
+    uint64_t retval_clocks = getU64BitReg(PERIOD_IN_REG_1, PERIOD_IN_REG_2);
+    if (arg_clocks != retval_clocks) {
+        sprintf(mess,
+                "Failed to set period. Could not set number of clocks "
+                "to %lld, red %lld\n",
+                (long long int)arg_clocks, (long long int)retval_clocks);
+        LOG(logERROR, (mess));
         return FAIL;
     }
+
+    // log rounding if any
+    int64_t retval = 0;
+    if (getPeriod(&retval, mess) == FAIL) {
+        return FAIL;
+    }
+    if (val != retval) {
+        LOG(logWARNING, ("Rounding to %lld ns due to clock frequency\n",
+                         (long long int)retval));
+    }
+
     return OK;
 }
 
-int64_t getPeriod() {
-    return getU64BitReg(PERIOD_IN_REG_1, PERIOD_IN_REG_2) /
-           (NS_TO_CLK_CYCLE * clkFrequency[RUN_CLK]);
+int getPeriod(int64_t *retval, char *mess) {
+    if (clkFrequency[RUN_CLK] == 0) {
+        sprintf(mess, "Cannot get period. Run clock frequency is 0.\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    uint64_t numClocks = getU64BitReg(PERIOD_IN_REG_1, PERIOD_IN_REG_2);
+    *retval = clocks_to_ns(numClocks, clkFrequency[RUN_CLK]);
+    return OK;
 }
 
-int setDelayAfterTrigger(int64_t val) {
+int setDelayAfterTrigger(int64_t val, char *mess) {
     if (val < 0) {
-        LOG(logERROR, ("Invalid delay after trigger: %ld ns\n", val));
+        sprintf(mess, "Invalid delay after trigger: %lld ns\n",
+                (long long int)val);
+        LOG(logERROR, (mess));
         return FAIL;
     }
-    LOG(logINFO, ("Setting delay after trigger %ld ns\n", val));
-    val *= (NS_TO_CLK_CYCLE * clkFrequency[RUN_CLK]);
-    setU64BitReg(val, DELAY_IN_REG_1, DELAY_IN_REG_2);
+    LOG(logINFO, ("Setting delay after trigger %lld ns\n", (long long int)val));
+    uint64_t arg_clocks = ns_to_clocks(val, clkFrequency[RUN_CLK]);
+    setU64BitReg(arg_clocks, DELAY_IN_REG_1, DELAY_IN_REG_2);
 
-    // validate for tolerance
-    int64_t retval = getDelayAfterTrigger();
-    val /= (NS_TO_CLK_CYCLE * clkFrequency[RUN_CLK]);
-    if (val != retval) {
+    // validate
+    uint64_t retval_clocks = getU64BitReg(DELAY_IN_REG_1, DELAY_IN_REG_2);
+    if (arg_clocks != retval_clocks) {
+        sprintf(
+            mess,
+            "Failed to set delay after trigger. Could not set number of clocks "
+            "to %lld, read %lld\n",
+            (long long int)arg_clocks, (long long int)retval_clocks);
+        LOG(logERROR, (mess));
         return FAIL;
     }
+
+    // log rounding if any
+    int64_t retval = 0;
+    if (getDelayAfterTrigger(&retval, mess) == FAIL) {
+        return FAIL;
+    }
+    if (val != retval) {
+        LOG(logWARNING, ("Rounding to %lld ns due to clock frequency\n",
+                         (long long int)retval));
+    }
+
     return OK;
 }
 
-int64_t getDelayAfterTrigger() {
-    return getU64BitReg(DELAY_IN_REG_1, DELAY_IN_REG_2) /
-           (NS_TO_CLK_CYCLE * clkFrequency[RUN_CLK]);
+int getDelayAfterTrigger(int64_t *retval, char *mess) {
+    if (clkFrequency[RUN_CLK] == 0) {
+        sprintf(mess,
+                "Cannot get delay after trigger. Run clock frequency is 0.\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    uint64_t numClocks = getU64BitReg(DELAY_IN_REG_1, DELAY_IN_REG_2);
+    *retval = clocks_to_ns(numClocks, clkFrequency[RUN_CLK]);
+    return OK;
 }
 
 int64_t getNumFramesLeft() {
@@ -1116,14 +912,27 @@ int64_t getNumTriggersLeft() {
     return getU64BitReg(CYCLES_OUT_REG_1, CYCLES_OUT_REG_2);
 }
 
-int64_t getDelayAfterTriggerLeft() {
-    return getU64BitReg(DELAY_OUT_REG_1, DELAY_OUT_REG_2) /
-           (NS_TO_CLK_CYCLE * clkFrequency[RUN_CLK]);
+int getDelayAfterTriggerLeft(int64_t *retval, char *mess) {
+    if (clkFrequency[RUN_CLK] == 0) {
+        sprintf(mess, "Cannot get delay after trigger left. Run clock "
+                      "frequency is 0.\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    uint64_t numClocks = getU64BitReg(DELAY_OUT_REG_1, DELAY_OUT_REG_2);
+    *retval = clocks_to_ns(numClocks, clkFrequency[RUN_CLK]);
+    return OK;
 }
 
-int64_t getPeriodLeft() {
-    return getU64BitReg(PERIOD_OUT_REG_1, PERIOD_OUT_REG_2) /
-           (NS_TO_CLK_CYCLE * clkFrequency[RUN_CLK]);
+int getPeriodLeft(int64_t *retval, char *mess) {
+    if (clkFrequency[RUN_CLK] == 0) {
+        sprintf(mess, "Cannot get period left. Run clock frequency is 0.\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    uint64_t numClocks = getU64BitReg(PERIOD_OUT_REG_1, PERIOD_OUT_REG_2);
+    *retval = clocks_to_ns(numClocks, clkFrequency[RUN_CLK]);
+    return OK;
 }
 
 int64_t getFramesFromStart() {
@@ -1132,229 +941,358 @@ int64_t getFramesFromStart() {
 }
 
 int64_t getActualTime() {
-    return getU64BitReg(TIME_FROM_START_OUT_REG_1, TIME_FROM_START_OUT_REG_2) /
-           (NS_TO_CLK_CYCLE * clkFrequency[SYNC_CLK]);
+    // in unit of 100ns
+    return getU64BitReg(TIME_FROM_START_OUT_REG_1, TIME_FROM_START_OUT_REG_2) *
+           100;
 }
 
 int64_t getMeasurementTime() {
-    return getU64BitReg(FRAME_TIME_OUT_REG_1, FRAME_TIME_OUT_REG_2) /
-           (NS_TO_CLK_CYCLE * clkFrequency[SYNC_CLK]);
+    // in unit of 100ns
+    return getU64BitReg(FRAME_TIME_OUT_REG_1, FRAME_TIME_OUT_REG_2) * 100;
 }
 
 /* parameters - dac, adc, hv */
 
-void setDAC(enum DACINDEX ind, int val, int mV) {
-    char dacName[MAX_STR_LENGTH] = {0};
-    memset(dacName, 0, MAX_STR_LENGTH);
-    sprintf(dacName, "dac%d", (int)ind);
-
-    if (val < 0 && val != LTC2620_D_GetPowerDownValue())
-        return;
-
-    LOG(logDEBUG1, ("Setting dac[%d - %s]: %d %s \n", (int)ind, dacName, val,
-                    (mV ? "mV" : "dac units")));
-    int dacval = val;
-    if (LTC2620_D_SetDACValue((int)ind, val, mV, dacName, &dacval) == OK)
-        dacValues[ind] = dacval;
-}
-
-int getDAC(enum DACINDEX ind, int mV) {
-    if (!mV) {
-        LOG(logDEBUG1, ("Getting DAC %d : %d dac\n", ind, dacValues[ind]));
-        return dacValues[ind];
-    }
-    int voltage = -1;
-    LTC2620_D_DacToVoltage(dacValues[ind], &voltage);
-    LOG(logDEBUG1,
-        ("Getting DAC %d : %d dac (%d mV)\n", ind, dacValues[ind], voltage));
-    return voltage;
-}
-
-int getMaxDacSteps() { return LTC2620_D_GetMaxNumSteps(); }
-
-int dacToVoltage(int dac) {
-    int val;
-    if (LTC2620_D_DacToVoltage(dac, &val) == FAIL) {
-        return -1;
-    }
-    return val;
-}
-
-int checkVLimitCompliant(int mV) {
-    if (vLimit > 0 && mV > vLimit)
-        return FAIL;
-    return OK;
-}
-
-int checkVLimitDacCompliant(int dac) {
-    if (vLimit > 0 && dac != -1 && dac != LTC2620_D_GetPowerDownValue()) {
-        int mv = 0;
-        // could not convert
-        if (LTC2620_D_DacToVoltage(dac, &mv) == FAIL)
-            return FAIL;
-        if (mv > vLimit)
-            return FAIL;
-    }
-    return OK;
-}
-
 int getVLimit() { return vLimit; }
 
-void setVLimit(int l) {
-    if (l >= 0)
-        vLimit = l;
-}
-
-int getBitOffsetFromDACIndex(enum DACINDEX ind) {
-    switch (ind) {
-    case D_PWR_IO:
-        return POWER_VIO_OFST;
-    case D_PWR_A:
-        return POWER_VCC_A_OFST;
-    case D_PWR_B:
-        return POWER_VCC_B_OFST;
-    case D_PWR_C:
-        return POWER_VCC_C_OFST;
-    case D_PWR_D:
-        return POWER_VCC_D_OFST;
-    default:
-        LOG(logERROR,
-            ("DAC index %d is not defined to get offset in ctrl register\n",
-             ind));
-        return -1;
+int setVLimit(int val, char *mess) {
+    if (val < 0) {
+        sprintf(mess, "Could not set vlimit. Invalid value %d\n", val);
+        LOG(logERROR, (mess));
+        return FAIL;
     }
-}
-
-int isPowerValid(enum DACINDEX ind, int val) {
-    char *powerNames[] = {PWR_NAMES};
-    int pwrIndex = (int)(ind - D_PWR_D);
-
-    int min = POWER_RGLTR_MIN;
-    if (!strcmp(powerNames[pwrIndex], "IO")) {
-        min = VIO_MIN_MV;
-    }
-
-    // not power_rgltr_max because it is allowed only upto vchip max - 200
-    if (val != 0 && (val != LTC2620_D_GetPowerDownValue()) &&
-        (val < min || val > POWER_RGLTR_MAX)) {
-        LOG(logERROR,
-            ("Invalid value of %d mV for Power V%s. Is not between %d and "
-             "%d mV\n",
-             val, powerNames[pwrIndex], min, POWER_RGLTR_MAX));
-        return 0;
-    }
-    return 1;
-}
-
-int getPower(enum DACINDEX ind) {
-    // get bit offset in ctrl register
-    int bitOffset = getBitOffsetFromDACIndex(ind);
-    if (bitOffset == -1) {
-        return -1;
-    }
-
-    // powered enable off
-    {
-        uint32_t addr = CTRL_REG;
-        uint32_t mask = (1 << bitOffset);
-        if (!(bus_r(addr) & mask))
-            return 0;
-    }
-
-    char *powerNames[] = {PWR_NAMES};
-    int pwrIndex = (int)(ind - D_PWR_D);
-
-    // not set yet
-    if (dacValues[ind] == -1) {
-        LOG(logERROR,
-            ("Unknown dac value for Power V%s!\n", powerNames[pwrIndex]));
-        return -1;
-    }
-
-    // dac powered off
-    if (dacValues[ind] == LTC2620_D_GetPowerDownValue()) {
-        LOG(logWARNING, ("Power V%s enabled, but voltage is at minimum or 0.\n",
-                         powerNames[pwrIndex]));
-        return LTC2620_D_GetPowerDownValue();
-    }
-
-    // get dac in mV
-    int retval = -1;
-    ConvertToDifferentRange(LTC2620_D_GetMaxInput(), LTC2620_D_GetMinInput(),
-                            POWER_RGLTR_MIN, POWER_RGLTR_MAX, dacValues[ind],
-                            &retval);
-
-    return retval;
-}
-
-void setPower(enum DACINDEX ind, int val) {
-    // validate index and get bit offset in ctrl register
-    int bitOffset = getBitOffsetFromDACIndex(ind);
-    if (bitOffset == -1) {
-        return;
-    }
-    uint32_t addr = CTRL_REG;
-    uint32_t mask = (1 << bitOffset);
-
-    if (val == -1)
-        return;
-
-    char *powerNames[] = {PWR_NAMES};
-    int pwrIndex = (int)(ind - D_PWR_D);
-    LOG(logINFO, ("Setting Power V%s to %d mV\n", powerNames[pwrIndex], val));
-
-    // validate value (already checked at tcp (funcs.c))
-    if (!isPowerValid(ind, val)) {
-        LOG(logERROR, ("Invalid power value for V%s: %d mV\n",
-                       powerNames[pwrIndex], val));
-        return;
-    }
-
-    // Switch off power enable
-    LOG(logDEBUG1, ("Switching off power enable\n"));
-    bus_w(addr, bus_r(addr) & ~(mask));
-
-    // power down dac
-    LOG(logINFO, ("\tPowering down V%d\n", powerNames[pwrIndex]));
-    setDAC(ind, LTC2620_D_GetPowerDownValue(), 0);
-
-    //(power off is anyway done with power enable)
-    if (val == 0)
-        val = LTC2620_D_GetPowerDownValue();
-
-    // convert voltage to dac (power off is anyway done with power enable)
-    if (val != LTC2620_D_GetPowerDownValue()) {
-
-        int dacval = -1;
-        if (ConvertToDifferentRange(
-                POWER_RGLTR_MIN, POWER_RGLTR_MAX, LTC2620_D_GetMaxInput(),
-                LTC2620_D_GetMinInput(), val, &dacval) == FAIL) {
-            LOG(logERROR,
-                ("\tCannot convert Power V%s to dac value. Invalid value of %d "
-                 "mV. Is not between "
-                 "%d and %d mV\n",
-                 powerNames[pwrIndex], val, POWER_RGLTR_MIN, POWER_RGLTR_MAX));
-            return;
-        }
-
-        // set and power on/ update dac
-        LOG(logINFO, ("Setting Power V%s: %d mV (%d dac)\n",
-                      powerNames[pwrIndex], val, dacval));
-        setDAC(ind, dacval, 0);
-
-        // if valid, enable power
-        if (dacval >= 0) {
-            LOG(logDEBUG1, ("Switching on power enable\n"));
-            bus_w(addr, bus_r(addr) | mask);
-        }
-    }
-}
-
-int getADC(enum ADCINDEX ind, int *value) {
-    *value = 0;
-#ifdef VIRTUAL
+    LOG(logINFO, ("Setting vlimit to %d mV\n", val));
+    vLimit = val;
     return OK;
-#endif
+}
+
+int validateDACIndex(enum DACINDEX ind, char *mess) {
+    if (ind < 0 || ind >= NDAC_ONLY) {
+        sprintf(mess, "Could not set DAC. Invalid index %d\n", ind);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    return OK;
+}
+
+int validateDACVoltage(enum DACINDEX ind, int voltage, char *mess) {
+    // validate min value
+    if (voltage < 0) {
+        sprintf(mess,
+                "Could not set DAC %d. Input value %d cannot be negative\n",
+                ind, voltage);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    // validate max value
+    if (voltage > DAC_MAX_MV) {
+        sprintf(
+            mess,
+            "Could not set DAC %d. Input value %d mV exceeds maximum %d mV\n",
+            ind, voltage, DAC_MAX_MV);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    // validate vlimit
+    if (vLimit > 0 && voltage > vLimit) {
+        sprintf(mess,
+                "Could not set DAC %d. Input %d mV exceeds vLimit %d mV\n", ind,
+                voltage, vLimit);
+        LOG(logERROR, (mess))
+        return FAIL;
+    }
+    return OK;
+}
+
+int convertVoltageToDAC(enum DACINDEX ind, int voltage, int *retval_dacval,
+                        char *mess) {
+    *retval_dacval = -1;
+    if (LTC2620_D_VoltageToDac(voltage, retval_dacval) == FAIL) {
+        sprintf(mess,
+                "Could not set DAC %d. Could not convert %d mV to dac units.\n",
+                (int)ind, voltage);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    return OK;
+}
+
+int convertDACToVoltage(enum DACINDEX ind, int dacval, int *retval_voltage,
+                        char *mess) {
+    *retval_voltage = -1;
+    if (LTC2620_D_DacToVoltage(dacval, retval_voltage) == FAIL) {
+        sprintf(mess,
+                "Could not get DAC %d. Could not convert %d dac units to mV\n",
+                (int)ind, dacval);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    return OK;
+}
+
+int getDAC(enum DACINDEX ind, bool mV, int *retval, char *mess) {
+    *retval = -1;
+    if (validateDACIndex(ind, mess) == FAIL)
+        return FAIL;
+
+    int dacval = dacValues[ind];
+    if (dacval == LTC2620_D_GetPowerDownValue()) {
+        LOG(logWARNING, ("DAC %d is in power down mode.\n", ind));
+        *retval = dacval;
+        return OK;
+    }
+
+    if (mV) {
+        if (convertDACToVoltage(ind, dacval, retval, mess) == FAIL)
+            return FAIL;
+        return OK;
+    }
+
+    *retval = dacval;
+    return OK;
+}
+
+int setDAC(enum DACINDEX ind, int val, bool mV, char *mess) {
+    LOG(logINFO,
+        ("Setting DAC %d: %d %s \n", ind, val, (mV ? "mV" : "dac units")));
+
+    if (validateDACIndex(ind, mess) == FAIL)
+        return FAIL;
+
+    int dacval = val;
+    if (mV) {
+        if (validateDACVoltage(ind, val, mess) == FAIL)
+            return FAIL;
+
+        if (convertVoltageToDAC(ind, val, &dacval, mess) == FAIL)
+            return FAIL;
+    }
+
+    {
+        char dacName[20] = {0};
+        snprintf(dacName, sizeof(dacName), "dac %d", ind);
+        if (LTC2620_D_SetDacValue((int)ind, dacval, dacName, mess) == FAIL)
+            return FAIL;
+    }
+    dacValues[ind] = dacval;
+    return OK;
+}
+
+int validatePowerDACIndex(enum powerIndex ind, char *mess) {
+    if (ind < 0 || ind > V_POWER_IO) {
+        sprintf(mess, "Could not set Power DAC. Invalid index %d\n", ind);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+
+    return OK;
+}
+
+int validatePower(enum powerIndex ind, int voltage, char *mess) {
+    char *powerNames[] = {PWR_NAMES};
+
+    // validate min value
+    int min = (ind == V_POWER_IO) ? VIO_MIN_MV : POWER_RGLTR_MIN;
+    if (voltage < min && voltage != 0) {
+        sprintf(
+            mess,
+            "Could not set %s. Input value %d mV must be greater than %d mV.\n",
+            powerNames[ind], voltage, min);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    // validate max value
+    if (voltage > POWER_RGLTR_MAX) {
+        sprintf(
+            mess,
+            "Could not set %s. Input value %d mV must be less than %d mV.\n",
+            powerNames[ind], voltage, POWER_RGLTR_MAX);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    // validate vlimit
+    if (vLimit > 0 && voltage > vLimit) {
+        sprintf(mess, "Could not set %s. Input %d mV exceeds vLimit %d mV\n",
+                powerNames[ind], voltage, vLimit);
+        LOG(logERROR, (mess))
+        return FAIL;
+    }
+    return OK;
+}
+
+int convertVoltageToPowerDAC(enum powerIndex ind, int voltage,
+                             int *retval_dacval, char *mess) {
+    *retval_dacval = -1;
+    if (ConvertToDifferentRange(
+            POWER_RGLTR_MIN, POWER_RGLTR_MAX, LTC2620_D_GetMaxInput(),
+            LTC2620_D_GetMinInput(), voltage, retval_dacval) == FAIL) {
+        char *powerNames[] = {PWR_NAMES};
+        sprintf(mess,
+                "Could not set %s. Could not convert %d mV to dac units.\n",
+                powerNames[ind], voltage);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    return OK;
+}
+
+int convertPowerDACToVoltage(enum powerIndex ind, int dacval,
+                             int *retval_voltage, char *mess) {
+    *retval_voltage = -1;
+    if (ConvertToDifferentRange(
+            LTC2620_D_GetMaxInput(), LTC2620_D_GetMinInput(), POWER_RGLTR_MIN,
+            POWER_RGLTR_MAX, dacval, retval_voltage) == FAIL) {
+        char *powerNames[] = {PWR_NAMES};
+        sprintf(mess,
+                "Could not get %s. Could not convert %d dac units to mV\n",
+                powerNames[ind], dacval);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    return OK;
+}
+
+int getPowerDAC(enum powerIndex ind, int *retval, char *mess) {
+    *retval = -1;
+    if (validatePowerDACIndex(ind, mess) == FAIL)
+        return FAIL;
+
+    int dacval = powerValues[ind];
+    if (convertPowerDACToVoltage(ind, dacval, retval, mess) == FAIL)
+        return FAIL;
+
+    return OK;
+}
+
+int setPowerDAC(enum powerIndex ind, int voltage, char *mess) {
+    if (validatePowerDACIndex(ind, mess) == FAIL)
+        return FAIL;
+
+    char *powerNames[] = {PWR_NAMES};
+    LOG(logINFO, ("Setting DAC %s: %d mV\n", powerNames[ind], voltage));
+
+    if (validatePower(ind, voltage, mess) == FAIL)
+        return FAIL;
+
+    int dacval = -1;
+    if (convertVoltageToPowerDAC(ind, voltage, &dacval, mess) == FAIL)
+        return FAIL;
+
+    {
+        enum DACINDEX dacIndex = D_PWR_IO;
+        if (getDACIndexForPower(ind, &dacIndex, mess) == FAIL) {
+            return FAIL;
+        }
+
+        if (LTC2620_D_SetDacValue(dacIndex, dacval, powerNames[ind], mess) ==
+            FAIL)
+            return FAIL;
+    }
+
+    powerValues[ind] = dacval;
+    return OK;
+}
+
+int getDACIndexForPower(enum powerIndex pind, enum DACINDEX *dacIndex,
+                        char *mess) {
+    switch (pind) {
+    case V_POWER_IO:
+        *dacIndex = D_PWR_IO;
+        break;
+    case V_POWER_A:
+        *dacIndex = D_PWR_A;
+        break;
+    case V_POWER_B:
+        *dacIndex = D_PWR_B;
+        break;
+    case V_POWER_C:
+        *dacIndex = D_PWR_C;
+        break;
+    case V_POWER_D:
+        *dacIndex = D_PWR_D;
+        break;
+    default:
+        *dacIndex = -1;
+        sprintf(mess, "Power index %d has no corresponding dac index\n", pind);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    return OK;
+}
+
+int getPowerMask(enum powerIndex index, uint32_t *mask, char *mess) {
+    switch (index) {
+    case V_POWER_IO:
+        *mask |= POWER_VIO_MSK;
+        break;
+    case V_POWER_A:
+        *mask |= POWER_VCC_A_MSK;
+        break;
+    case V_POWER_B:
+        *mask |= POWER_VCC_B_MSK;
+        break;
+    case V_POWER_C:
+        *mask |= POWER_VCC_C_MSK;
+        break;
+    case V_POWER_D:
+        *mask |= POWER_VCC_D_MSK;
+        break;
+    default:
+        sprintf(mess, "Index %d has no power rail index\n", index);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    return OK;
+}
+
+void powerOff() {
+    LOG(logINFOBLUE, ("Powering OFF all rails\n"));
+    uint32_t mask = POWER_VIO_MSK | POWER_VCC_A_MSK | POWER_VCC_B_MSK |
+                    POWER_VCC_C_MSK | POWER_VCC_D_MSK;
+    bus_w(CTRL_REG, bus_r(CTRL_REG) & ~(mask));
+}
+
+int setPowerEnabled(enum powerIndex indices[], int count, bool enable,
+                    char *mess) {
+    uint32_t mask = 0;
+    for (int i = 0; i != count; ++i) {
+        if (getPowerMask(indices[i], &mask, mess) == FAIL)
+            return FAIL;
+    }
+    // log message
+    {
+        char *powerNames[] = {PWR_NAMES};
+        char message[256] = {0};
+        sprintf(message, "Switching %s power for [", enable ? "on" : "off");
+        for (int i = 0; i != count; ++i) {
+            strcat(message, powerNames[indices[i]]);
+            strcat(message, ", ");
+        }
+        strcat(message, "]\n");
+        LOG(logINFO, ("%s", message));
+    }
+    // enable/disable power rails
+    uint32_t addr = CTRL_REG;
+    if (enable) {
+        bus_w(addr, bus_r(addr) | mask);
+    } else {
+        bus_w(addr, bus_r(addr) & ~(mask));
+    }
+    return OK;
+}
+
+int isPowerEnabled(enum powerIndex ind, bool *retval, char *mess) {
+    uint32_t mask = 0;
+    if (getPowerMask(ind, &mask, mess) == FAIL)
+        return FAIL;
+
+    *retval = (bus_r(CTRL_REG) & mask) != 0;
+    LOG(logDEBUG1, ("get power %d:%d\n", ind, *retval));
+    return OK;
+}
+
+int getADC(enum ADCINDEX ind, int *value, char *mess) {
+    *value = 0;
     switch (ind) {
         // slow adcs
     case S_ADC0:
@@ -1366,44 +1304,60 @@ int getADC(enum ADCINDEX ind, int *value) {
     case S_ADC6:
     case S_ADC7:
         LOG(logDEBUG1, ("Reading Slow ADC Channel %d\n", (int)ind - S_ADC0));
-        return getSlowADC((int)ind - S_ADC0, value);
+        return getSlowADC((int)ind - S_ADC0, value, mess);
     case TEMP_FPGA:
         LOG(logDEBUG1, ("Reading FPGA Temperature\n"));
-        return getTemperature(value);
+        return getTemperature(value, mess);
     default:
-        LOG(logERROR, ("Adc Index %d not defined \n", (int)ind));
+        snprintf(mess, MAX_STR_LENGTH, "Adc Index %d not defined\n", (int)ind);
+        LOG(logERROR, (mess));
         return FAIL;
     }
 }
 
-int getSlowADC(int ichan, int *retval) {
+int getSlowADC(int ichan, int *retval, char *mess) {
     *retval = 0;
-#ifndef VIRTUAL
+    int fval = 0;
+
+#ifdef VIRTUAL
+    fval = 1;
+#else
     char fname[MAX_STR_LENGTH];
     memset(fname, 0, MAX_STR_LENGTH);
     sprintf(fname, SLOWADC_DRIVER_FILE_NAME, ichan);
     LOG(logDEBUG1, ("fname %s\n", fname));
-
-    if (readParameterFromFile(fname, "slow adc", retval) == FAIL) {
-        LOG(logERROR, ("Could not get slow adc\n"));
+    if (readParameterFromFile(fname, "slow adc", &fval) == FAIL) {
+        snprintf(mess, MAX_STR_LENGTH, "Could not read slow adc channel %d\n",
+                 ichan);
+        LOG(logERROR, (mess));
         return FAIL;
     }
-    // TODO assuming already converted to uV
-    // convert to uV
-    // double value = SLOWDAC_CONVERTION_FACTOR_TO_UV * (double)(*retval);
-    // LOG(logINFO, ("Slow ADC [%d]: %f uV\n", ichan, value));
-    //*retval = (int)value;
-
-    LOG(logINFO, ("Slow ADC [%d]: %d uV\n", ichan, (*retval)));
 #endif
+
+    // value in uV
+    int refMaxuv = SLOW_ADC_MAX_MV * 1000;
+    int regMinuv = 0;
+    int maxSteps = SLOW_ADC_MAX_STEPS;
+    if (ConvertToDifferentRange(0, maxSteps, regMinuv, refMaxuv, fval,
+                                retval) == FAIL) {
+        snprintf(mess, MAX_STR_LENGTH,
+                 "Could not convert slow adc channel (fval:0x%x) to uv\n",
+                 fval);
+        LOG(logERROR, (mess));
+        return -1;
+    }
+
+    LOG(logINFO,
+        ("\tSlow adc [%d]: %d uV (reg: 0x%x)\n", ichan, *retval, fval));
     return OK;
 }
 
-int getTemperature(int *retval) {
+int getTemperature(int *retval, char *mess) {
     *retval = 0;
 #ifndef VIRTUAL
     if (readParameterFromFile(TEMP_DRIVER_FILE_NAME, "temperature", retval) ==
         FAIL) {
+        snprintf(mess, MAX_STR_LENGTH, "Could not read temperature\n");
         LOG(logERROR, ("Could not get temperature\n"));
         return FAIL;
     }
@@ -1577,12 +1531,7 @@ int startStateMachine() {
 #endif
 
     LOG(logINFOBLUE, ("Starting readout\n"));
-
-    // MM:readout via pattern does not work right now due to firmware bug,
-    // readout via MatterhornCTRL for the moment
-    // bus_w(FLOW_CONTROL_REG, bus_r(FLOW_CONTROL_REG) | START_F_MSK);
-    bus_w(MATTERHORNSPICTRL, bus_r(MATTERHORNSPICTRL) | STARTREAD_P_MSK);
-
+    bus_w(FLOW_CONTROL_REG, bus_r(FLOW_CONTROL_REG) | START_F_MSK);
     return OK;
 }
 
@@ -1591,11 +1540,22 @@ void *start_timer(void *arg) {
     if (!isControlServer) {
         return NULL;
     }
+    int64_t periodNs = 0;
+    int64_t expUs = 0;
+    {
+        char mess[MAX_STR_LENGTH] = {0};
+        if (getPeriod(&periodNs, mess) == FAIL) {
+            LOG(logERROR, ("Failed to get period.\n"));
+            return NULL;
+        }
+        if (getExpTime(&expUs, mess) == FAIL) {
+            LOG(logERROR, ("Failed to get exposure time.\n"));
+            return NULL;
+        }
+        expUs /= 1000;
+    }
 
-    int64_t periodNs = getPeriod();
     int numFrames = (getNumFrames() * getNumTriggers());
-    int64_t expUs = getExpTime() / 1000;
-
     int imageSize = calculateDataBytes();
     int maxDataSize = MAX_DATA_SIZE_IN_PACKET;
     int packetSize = sizeof(sls_detector_header) + maxDataSize;
@@ -1860,11 +1820,11 @@ int setFrequency(enum CLKINDEX ind, int val) {
     }
 
     char *clock_names[] = {CLK_NAMES};
-    LOG(logINFO, ("\tSetting %s clock (%d) frequency to %d kHz\n",
+    LOG(logINFO, ("\tSetting %s clock (%d) frequency to %d Hz\n",
                   clock_names[ind], ind, val));
 
     if (XILINX_PLL_setFrequency(ind, val) == FAIL) {
-        LOG(logERROR, ("\tCould not set %s clock (%d) frequency to %d kHz\n",
+        LOG(logERROR, ("\tCould not set %s clock (%d) frequency to %d Hz\n",
                        clock_names[ind], ind, val));
         return FAIL;
     }

@@ -63,6 +63,12 @@ int InferAction::adcclk() {
     }
 
     if (args.size() == 1) {
+        throw RuntimeError(
+            "sls_detector is disabled for command: adcclk with number of "
+            "arguments 1. Use sls_detector_get or sls_detector_put");
+    }
+
+    if (args.size() == 2) {
         return slsDetectorDefs::PUT_ACTION;
     }
 
@@ -711,6 +717,12 @@ int InferAction::dbitclk() {
     }
 
     if (args.size() == 1) {
+        throw RuntimeError(
+            "sls_detector is disabled for command: dbitclk with number of "
+            "arguments 1. Use sls_detector_get or sls_detector_put");
+    }
+
+    if (args.size() == 2) {
         return slsDetectorDefs::PUT_ACTION;
     }
 
@@ -1686,6 +1698,18 @@ int InferAction::imagetest() {
     }
 }
 
+int InferAction::include() {
+
+    if (args.size() == 1) {
+        return slsDetectorDefs::PUT_ACTION;
+    }
+
+    else {
+
+        throw RuntimeError("Could not infer action: Wrong number of arguments");
+    }
+}
+
 int InferAction::initialchecks() {
 
     if (args.size() == 0) {
@@ -2244,6 +2268,12 @@ int InferAction::port() {
     }
 }
 
+int InferAction::power() {
+
+    throw RuntimeError("sls_detector is disabled for command: power. Use "
+                       "sls_detector_get or sls_detector_put");
+}
+
 int InferAction::powerchip() {
 
     if (args.size() == 0) {
@@ -2251,6 +2281,22 @@ int InferAction::powerchip() {
     }
 
     if (args.size() == 1) {
+        return slsDetectorDefs::PUT_ACTION;
+    }
+
+    else {
+
+        throw RuntimeError("Could not infer action: Wrong number of arguments");
+    }
+}
+
+int InferAction::powerdac() {
+
+    if (args.size() == 1) {
+        return slsDetectorDefs::GET_ACTION;
+    }
+
+    if (args.size() == 2) {
         return slsDetectorDefs::PUT_ACTION;
     }
 
@@ -2561,6 +2607,12 @@ int InferAction::runclk() {
     }
 
     if (args.size() == 1) {
+        throw RuntimeError(
+            "sls_detector is disabled for command: runclk with number of "
+            "arguments 1. Use sls_detector_get or sls_detector_put");
+    }
+
+    if (args.size() == 2) {
         return slsDetectorDefs::PUT_ACTION;
     }
 
@@ -3443,6 +3495,10 @@ int InferAction::syncclk() {
         return slsDetectorDefs::GET_ACTION;
     }
 
+    if (args.size() == 1) {
+        return slsDetectorDefs::GET_ACTION;
+    }
+
     else {
 
         throw RuntimeError("Could not infer action: Wrong number of arguments");
@@ -4233,102 +4289,6 @@ int InferAction::user() {
         throw RuntimeError(
             "sls_detector is disabled for command: user with number of "
             "arguments 0. Use sls_detector_get or sls_detector_put");
-    }
-
-    else {
-
-        throw RuntimeError("Could not infer action: Wrong number of arguments");
-    }
-}
-
-int InferAction::v_a() {
-
-    if (args.size() == 0) {
-        return slsDetectorDefs::GET_ACTION;
-    }
-
-    if (args.size() == 1) {
-        return slsDetectorDefs::PUT_ACTION;
-    }
-
-    else {
-
-        throw RuntimeError("Could not infer action: Wrong number of arguments");
-    }
-}
-
-int InferAction::v_b() {
-
-    if (args.size() == 0) {
-        return slsDetectorDefs::GET_ACTION;
-    }
-
-    if (args.size() == 1) {
-        return slsDetectorDefs::PUT_ACTION;
-    }
-
-    else {
-
-        throw RuntimeError("Could not infer action: Wrong number of arguments");
-    }
-}
-
-int InferAction::v_c() {
-
-    if (args.size() == 0) {
-        return slsDetectorDefs::GET_ACTION;
-    }
-
-    if (args.size() == 1) {
-        return slsDetectorDefs::PUT_ACTION;
-    }
-
-    else {
-
-        throw RuntimeError("Could not infer action: Wrong number of arguments");
-    }
-}
-
-int InferAction::v_chip() {
-
-    if (args.size() == 0) {
-        return slsDetectorDefs::GET_ACTION;
-    }
-
-    if (args.size() == 1) {
-        return slsDetectorDefs::PUT_ACTION;
-    }
-
-    else {
-
-        throw RuntimeError("Could not infer action: Wrong number of arguments");
-    }
-}
-
-int InferAction::v_d() {
-
-    if (args.size() == 0) {
-        return slsDetectorDefs::GET_ACTION;
-    }
-
-    if (args.size() == 1) {
-        return slsDetectorDefs::PUT_ACTION;
-    }
-
-    else {
-
-        throw RuntimeError("Could not infer action: Wrong number of arguments");
-    }
-}
-
-int InferAction::v_io() {
-
-    if (args.size() == 0) {
-        return slsDetectorDefs::GET_ACTION;
-    }
-
-    if (args.size() == 1) {
-        return slsDetectorDefs::PUT_ACTION;
     }
 
     else {

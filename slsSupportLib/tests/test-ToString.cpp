@@ -26,6 +26,24 @@ TEST_CASE("Convert string to bool", "[support]") {
     REQUIRE(StringTo<bool>("0") == false);
 }
 
+TEST_CASE("Convert bool format to string", "[support]") {
+    REQUIRE(ToString(true, defs::boolFormat::TrueFalse) == "true");
+    REQUIRE(ToString(false, defs::boolFormat::TrueFalse) == "false");
+    REQUIRE(ToString(true, defs::boolFormat::OnOff) == "on");
+    REQUIRE(ToString(false, defs::boolFormat::OnOff) == "off");
+    REQUIRE(ToString(true, defs::boolFormat::OneZero) == "1");
+    REQUIRE(ToString(false, defs::boolFormat::OneZero) == "0");
+}
+
+TEST_CASE("Convert string to bool format", "[support]") {
+    REQUIRE(StringTo("1", defs::boolFormat::OneZero) == true);
+    REQUIRE(StringTo("0", defs::boolFormat::OneZero) == false);
+    REQUIRE(StringTo("true", defs::boolFormat::TrueFalse) == true);
+    REQUIRE(StringTo("false", defs::boolFormat::TrueFalse) == false);
+    REQUIRE(StringTo("on", defs::boolFormat::OnOff) == true);
+    REQUIRE(StringTo("off", defs::boolFormat::OnOff) == false);
+}
+
 TEST_CASE("Integer conversions", "[support]") {
     REQUIRE(ToString(0) == "0");
     REQUIRE(ToString(1) == "1");
@@ -56,6 +74,15 @@ TEST_CASE("conversion from duration to string", "[support]") {
     REQUIRE(ToString(us(0), "s") == "0s");
     REQUIRE(ToString(s(-1)) == "-1s");
     REQUIRE(ToString(us(-100)) == "-100us");
+}
+
+TEST_CASE("conversion from frequency to string", "[support]") {
+    REQUIRE(ToString(defs::Hz(150)) == "150Hz");
+    REQUIRE(ToString(defs::Hz(1500)) == "1.5kHz");
+    REQUIRE(ToString(defs::Hz(1500000)) == "1.5MHz");
+    REQUIRE(ToString(defs::Hz(150), defs::FrequencyUnit::Hz) == "150Hz");
+    REQUIRE(ToString(defs::Hz(150), defs::FrequencyUnit::kHz) == "0.15kHz");
+    REQUIRE(ToString(defs::Hz(150), defs::FrequencyUnit::MHz) == "0.00015MHz");
 }
 
 TEST_CASE("Convert vector of time", "[support]") {
@@ -135,6 +162,15 @@ TEST_CASE("string to std::chrono::duration", "[support]") {
     REQUIRE(StringTo<s>("3 s") == s(3));
     REQUIRE_THROWS(StringTo<ns>("5xs"));
     REQUIRE_THROWS(StringTo<ns>("asvn"));
+}
+
+TEST_CASE("string to frequency", "[support]") {
+    REQUIRE(StringTo<defs::Hz>("150") == defs::Hz(150));
+    REQUIRE(StringTo<defs::Hz>("150Hz") == defs::Hz(150));
+    REQUIRE(StringTo<defs::Hz>("1.5kHz") == defs::Hz(1500));
+    REQUIRE(StringTo<defs::Hz>("1.5MHz") == defs::Hz(1500000));
+    REQUIRE_THROWS(StringTo<defs::Hz>("5xs"));
+    REQUIRE_THROWS(StringTo<defs::Hz>("asvn"));
 }
 
 TEST_CASE("string to detectorType") {

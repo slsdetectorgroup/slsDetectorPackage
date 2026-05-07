@@ -1009,7 +1009,7 @@ Document parse_binary_master_attributes(std::string file_path) {
 
     Document doc;
     ParseResult result = doc.Parse(json_str.c_str());
-    if (result == 0) {
+    if (!result) {
         std::cout << "JSON parse error: " << GetParseError_En(result.Code())
                   << " (at offset " << result.Offset() << ")" << std::endl;
 
@@ -1019,7 +1019,7 @@ Document parse_binary_master_attributes(std::string file_path) {
             json_str.substr(std::max(0, (int)offset - 20), 40);
         std::cout << "Context around error: \"" << context << "\"" << std::endl;
     }
-    REQUIRE(result != 0);
+    REQUIRE(result);
     return doc;
 }
 
@@ -1032,7 +1032,8 @@ void open_hdf5_file(const std::string &file_path) {
 }
 #endif
 
-TEST_CASE("check_master_file_attributes", "[.cmdcall][.cmdacquire][.cmdattr]") {
+TEST_CASE("check_master_file_attributes",
+          "[.detectorintegration][.disable_check_data_file]") {
 
     Detector det;
     Caller caller(&det);
@@ -1041,8 +1042,8 @@ TEST_CASE("check_master_file_attributes", "[.cmdcall][.cmdacquire][.cmdattr]") {
 
     int64_t num_frames = 1;
     switch (det_type) {
-    case defs::EIGER:
     case defs::JUNGFRAU:
+    case defs::EIGER:
     case defs::MOENCH:
     case defs::MYTHEN3:
     case defs::GOTTHARD2:

@@ -78,7 +78,7 @@ void test_valid_port_caller(const std::string &command,
                             int detector_id, int action);
 
 void test_dac_caller(slsDetectorDefs::dacIndex index,
-                     const std::string &dacname, int dacvalue);
+                     const std::string &dacname, int dacvalue, bool mV = false);
 void test_onchip_dac_caller(slsDetectorDefs::dacIndex index,
                             const std::string &dacname, int dacvalue);
 
@@ -87,8 +87,6 @@ void set_file_state(Detector &det, const testFileInfo &file_info);
 void test_acquire_binary_file_size(const testFileInfo &file_info,
                                    uint64_t num_frames_to_acquire,
                                    uint64_t expected_image_size);
-
-void test_frames_caught(const Detector &det, int num_frames_to_acquire);
 
 void test_acquire_with_receiver(Caller &caller, const Detector &det);
 

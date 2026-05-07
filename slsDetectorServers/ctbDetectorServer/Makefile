@@ -16,7 +16,7 @@ DESTDIR		?= 	bin
 INSTMODE	= 	0777
 
 SRCS 		= 	slsDetectorFunctionList.c  
-SRCS		+=	$(main_src)slsDetectorServer.c $(main_src)slsDetectorServer_funcs.c $(main_src)communication_funcs.c $(main_src)blackfin.c $(main_src)common.c $(main_src)commonServerFunctions.c $(main_src)communication_funcs_UDP.c $(main_src)UDPPacketHeaderGenerator.c $(main_src)AD9257.c $(main_src)ALTERA_PLL.c  $(main_src)I2C.c  $(main_src)INA226.c  $(main_src)LTC2620.c $(main_src)MAX1932.c $(main_src)programViaBlackfin.c $(main_src)/sharedMemory.c  $(main_src)/loadPattern.c $(md5_dir)md5.c
+SRCS		+=	$(main_src)slsDetectorServer.c $(main_src)slsDetectorServer_funcs.c $(main_src)communication_funcs.c $(main_src)blackfin.c $(main_src)common.c $(main_src)commonServerFunctions.c $(main_src)communication_funcs_UDP.c $(main_src)UDPPacketHeaderGenerator.c $(main_src)AD9257.c $(main_src)ALTERA_PLL.c $(main_src)LTC2620.c $(main_src)MAX1932.c $(main_src)programViaBlackfin.c $(main_src)/sharedMemory.c  $(main_src)/loadPattern.c $(md5_dir)md5.c
 
 OBJS 		= 	$(SRCS:.c=.o) 
  
@@ -28,7 +28,7 @@ boot: $(OBJS)
 version_name=APICTB
 version_path=slsDetectorServers/ctbDetectorServer
 versioning: 
-	cd ../../ && echo $(PWD) && echo `tput setaf 6; python updateAPIVersion.py $(version_name) $(version_path);  tput sgr0;`
+	cd ../../ && echo $(PWD) && echo `tput setaf 6; python etc/updateAPIVersion.py $(version_name) $(version_path);  tput sgr0;`
 
 
 $(PROGS): $(OBJS)

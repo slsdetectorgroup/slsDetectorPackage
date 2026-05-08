@@ -4,7 +4,7 @@ import random
 from pathlib import Path
 
 import numpy as np
-from PyQt5 import QtWidgets, QtGui, uic
+from PyQt5 import QtWidgets, QtGui, QtCore, uic
 
 from aare import transform, ReadoutMode 
 from aare._aare import Matterhorn10, Matterhorn02, Moench04
@@ -43,6 +43,7 @@ class PlotTab(QtWidgets.QWidget):
         self.pedestalApply: bool = True
         self.__acqFrames = None
         self.logger = logging.getLogger('PlotTab')
+        self.plotSplitter = None 
 
     def setup_ui(self):
         self.signalsTab = self.mainWindow.signalsTab
@@ -54,8 +55,30 @@ class PlotTab(QtWidgets.QWidget):
         self.imagePlots = (
             self.mainWindow.plotAnalogImage,
             self.mainWindow.plotDigitalImage,
-            self.mainWindow.plotTransceiverImage,
+            self.mainWindow.transceiverImageViews,
         )
+
+        #self.setupPlotSplitter()
+
+    def setupPlotSplitter(self):
+        self.plotSplitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal, self.mainWindow.framePlot)
+        #layout = self.mainWindow.framePlot.layout()
+        #layout.addWidget(self.plotSplitter)
+        for counter in range(self.mainWindow.nCounters): 
+            self.plotSplitter.addWidget(self.imagePlots[counter]) # self.imagePlots[counter]
+
+        # set sizes: 
+        if self.mainWindow.nCounters == 1:
+            self.plotSplitter.setSizes([1,0,0,0])
+        elif self.mainWindow.nCounters == 2:  
+            self.plotSplitter.setSizes([1,1,0,0])
+        elif self.mainWindow.nCounters == 3: 
+            self.plotSplitter.setSizes([1,1,1,0])
+        elif self.mainWindow.nCounters == 4: 
+            self.plotSplitter.setSizes([1,1,1,1]) # for 4 counters we only
+        else:
+            raise ValueError(f"Can only handle 1 to 4 counters, got: {self.mainWindow.nCounters}")
+
 
     def connect_ui(self):
         self.view.radioButtonNoPlot.clicked.connect(self.plotOptions)
@@ -93,9 +116,9 @@ class PlotTab(QtWidgets.QWidget):
         self.view.radioButtonFixed.clicked.connect(partial(self.setColorRangeMode, Defines.colorRange.fixed))
         self.view.radioButtonCenter.clicked.connect(partial(self.setColorRangeMode, Defines.colorRange.center))
 
-        for plot in self.imagePlots:
-            plot.scene.sigMouseMoved.connect(partial(self.showPlotValues, plot))
-            plot.getHistogramWidget().item.sigLevelChangeFinished.connect(partial(self.handleHistogramChange, plot))
+        #for plot in self.imagePlots:
+            #plot.scene.sigMouseMoved.connect(partial(self.showPlotValues, plot))
+            #plot.getHistogramWidget().item.sigLevelChangeFinished.connect(partial(self.handleHistogramChange, plot))
 
         self.view.checkBoxShowLegend.stateChanged.connect(self.toggleLegend)
 
@@ -262,7 +285,11 @@ class PlotTab(QtWidgets.QWidget):
         updates UI views should be called after every change to cmin or cmax
         """
         for plot in self.imagePlots:
-            plot.getHistogramWidget().item.setLevels(min=self.cmin, max=self.cmax)
+            if isinstance(plot, list): # hacky for now only transceiver image is a PlotSplitter 
+                for p in plot:
+                    p.getHistogramWidget().item.setLevels(min=self.cmin, max=self.cmax)
+            else:
+                plot.getHistogramWidget().item.setLevels(min=self.cmin, max=self.cmax)
         self.view.cminSpinBox.setValue(self.cmin)
         self.view.cmaxSpinBox.setValue(self.cmax)
 
@@ -271,7 +298,9 @@ class PlotTab(QtWidgets.QWidget):
         # print(f'color map:{self.comboBoxColorMap.currentText()}')
         self.mainWindow.plotAnalogImage.setColorMap(cm)
         self.mainWindow.plotDigitalImage.setColorMap(cm)
-        self.mainWindow.plotTransceiverImage.setColorMap(cm)
+        for transceiverImage in self.mainWindow.transceiverImageViews:
+            transceiverImage.setColorMap(cm)
+        #self.mainWindow.plotTransceiverImage.setColorMap(cm)
 
     def getZMQHWM(self):
 
@@ -356,7 +385,8 @@ class PlotTab(QtWidgets.QWidget):
         self.mainWindow.plotTransceiverWaveform.hide()
         self.mainWindow.plotAnalogImage.hide()
         self.mainWindow.plotDigitalImage.hide()
-        self.mainWindow.plotTransceiverImage.hide()
+        #self.mainWindow.plotTransceiverImage.hide()
+        self.mainWindow.transceiverImageSplitter.hide()
         self.view.labelDigitalWaveformOption.setDisabled(True)
         self.view.radioButtonOverlay.setDisabled(True)
         self.view.radioButtonStripe.setDisabled(True)
@@ -379,7 +409,11 @@ class PlotTab(QtWidgets.QWidget):
             if self.view.radioButtonWaveform.isChecked():
                 self.mainWindow.plotTransceiverWaveform.show()
             elif self.view.radioButtonImage.isChecked():
-                self.mainWindow.plotTransceiverImage.show()
+                #self.mainWindow.plotTransceiverImage.show()
+                for iv in self.mainWindow.transceiverImageViews:
+                    if iv.getImageItem().image is not None: # only show if image is set, otherwise we get a blank plot which is confusing for the user
+                        iv.show()
+                self.mainWindow.transceiverImageSplitter.show()
 
     def plotOptions(self):
 
@@ -408,6 +442,7 @@ class PlotTab(QtWidgets.QWidget):
         elif self.view.radioButtonImage.isChecked():
             self.view.stackedWidgetPlotType.setCurrentIndex(2)
             self.setDecoder()
+            #self.setupPlotSplitter()
 
         if self.view.radioButtonNoPlot.isChecked():
             self.view.labelPlotOptions.hide()
@@ -419,6 +454,8 @@ class PlotTab(QtWidgets.QWidget):
             self.mainWindow.read_timer.start(Defines.Time_Plot_Refresh_ms)
 
     def setDecoder(self):
+        # TODO: really dont like to set attributes on the fly - hard to understand whats going on
+        self.mainWindow.nCounters = 1 # default value, will be updated by decoder if needed
         if self.view.comboBoxPlot.currentText() == "Matterhorn02":
             print("Initializing decoder for Matterhorn02")
             self.mainWindow.nTransceiverRows = Matterhorn02.nRows
@@ -428,31 +465,37 @@ class PlotTab(QtWidgets.QWidget):
             print("Initializing decoder for Matterhorn1 with 1 counter 16 bit dynamic range")
             self.mainWindow.nTransceiverRows = Matterhorn10.nRows
             self.mainWindow.nTransceiverCols = Matterhorn10.nCols
+            self.mainWindow.nCounters = 1
             self.mainWindow.decoder = transform.Matterhorn10Transform(16, 1)
         elif self.view.comboBoxPlot.currentText() == "Matterhorn1_16bit_4_counters":
             print("Initializing decoder for Matterhorn1 with 4 counters 16 bit dynamic range")
-            self.mainWindow.nTransceiverRows = Matterhorn10.nRows*4
+            self.mainWindow.nTransceiverRows = Matterhorn10.nRows
             self.mainWindow.nTransceiverCols = Matterhorn10.nCols
+            self.mainWindow.nCounters = 4
             self.mainWindow.decoder = transform.Matterhorn10Transform(16, 4)
         elif self.view.comboBoxPlot.currentText() == "Matterhorn1_8bit_1_counter":
             print("Initializing decoder for Matterhorn1 with 1 counter 8 bit dynamic range")
             self.mainWindow.nTransceiverRows = Matterhorn10.nRows
             self.mainWindow.nTransceiverCols = Matterhorn10.nCols
+            self.mainWindow.nCounters = 1
             self.mainWindow.decoder = transform.Matterhorn10Transform(8, 1)
         elif self.view.comboBoxPlot.currentText() == "Matterhorn1_8bit_4_counters":
             print("Initializing decoder for Matterhorn1 with 4 counters 8 bit dynamic range")
-            self.mainWindow.nTransceiverRows = Matterhorn10.nRows*4
+            self.mainWindow.nTransceiverRows = Matterhorn10.nRows
             self.mainWindow.nTransceiverCols = Matterhorn10.nCols
+            self.mainWindow.nCounters = 4
             self.mainWindow.decoder = transform.Matterhorn10Transform(8, 4)
         elif self.view.comboBoxPlot.currentText() == "Matterhorn1_4bit_4_counters":
             print("Initializing decoder for Matterhorn1 with 4 counters 4 bit dynamic range")
-            self.mainWindow.nTransceiverRows = Matterhorn10.nRows*4
+            self.mainWindow.nTransceiverRows = Matterhorn10.nRows
             self.mainWindow.nTransceiverCols = Matterhorn10.nCols
+            self.mainWindow.nCounters = 4
             self.mainWindow.decoder = transform.Matterhorn10Transform(4, 4)
         elif self.view.comboBoxPlot.currentText() == "Matterhorn1_4bit_1_counter":
             print("Initializing decoder for Matterhorn1 with 1 counter 4 bit dynamic range")
             self.mainWindow.nTransceiverRows = Matterhorn10.nRows
             self.mainWindow.nTransceiverCols = Matterhorn10.nCols
+            self.mainWindow.nCounters = 1
             self.mainWindow.decoder = transform.Matterhorn10Transform(4, 1)
         elif self.view.comboBoxPlot.currentText() == "Moench04":
             self.mainWindow.nAnalogRows = Moench04.nRows
@@ -544,6 +587,7 @@ class PlotTab(QtWidgets.QWidget):
             nMaxY = self.mainWindow.nDigitalRows
             nMaxX = self.mainWindow.nDigitalCols
             frame = self.mainWindow.digital_frame
+        # TODO: update this as well 
         elif sender == self.mainWindow.plotTransceiverImage:
             nMaxY = self.mainWindow.nTransceiverRows
             nMaxX = self.mainWindow.nTransceiverCols

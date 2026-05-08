@@ -2,7 +2,7 @@ from functools import partial
 from pathlib import Path
 
 import numpy as np
-from PyQt5 import QtWidgets, uic
+from PyQt5 import QtWidgets, QtCore, uic
 import pyqtgraph as pg
 from pyqtgraph import LegendItem
 
@@ -135,7 +135,7 @@ class TransceiverTab(QtWidgets.QWidget):
         
         tmp = self.mainWindow.decoder(trans_array)
 
-        return tmp
+        return tmp.reshape(self.mainWindow.nCounters, self.mainWindow.nTransceiverRows, self.mainWindow.nTransceiverCols)
 
     def processImageData(self, data, dSamples):
         """
@@ -145,14 +145,17 @@ class TransceiverTab(QtWidgets.QWidget):
         data: raw image data
         """
         # get zoom state
-        viewBox = self.mainWindow.plotTransceiverImage.getView()
-
-        state = viewBox.getState()
+        state = None
+        if self.mainWindow.transceiverImageViews:
+            vb0 = self.mainWindow.transceiverImageViews[0].getView()
+            state = vb0.getState()
+        
         try:
             self.mainWindow.transceiver_frame = self._processImageData(data, dSamples, self.mainWindow.romode.value,
                                                                        self.mainWindow.nDBitEnabled)
             self.plotTab.ignoreHistogramSignal = True
-            self.mainWindow.plotTransceiverImage.setImage(self.mainWindow.transceiver_frame)
+            for i in range(self.mainWindow.nCounters):
+                self.mainWindow.transceiverImageViews[i].setImage(self.mainWindow.transceiver_frame[i])
         except Exception as e:
             self.mainWindow.statusbar.setStyleSheet("color:red")
             self.acquisitionTab.updateCurrentFrame('Invalid Image')
@@ -165,7 +168,8 @@ class TransceiverTab(QtWidgets.QWidget):
         if self.mainWindow.firstTransceiverImage:
             self.mainWindow.firstTransceiverImage = False
         else:
-            viewBox.setState(state)
+            for iv in self.mainWindow.transceiverImageViews:
+                iv.getView().setState(state)
         return self.mainWindow.transceiver_frame
 
     def initializeAllTransceiverPlots(self):
@@ -182,16 +186,27 @@ class TransceiverTab(QtWidgets.QWidget):
                                                                                                name=legendName)
             self.mainWindow.transceiverPlots[i].hide()
 
-        self.mainWindow.plotTransceiverImage = pg.ImageView()
+        # initialize image 
+
         self.mainWindow.nTransceiverRows = 0
         self.mainWindow.nTransceiverCols = 0
-        self.mainWindow.transceiver_frame = np.zeros(
-            (self.mainWindow.nTransceiverRows, self.mainWindow.nTransceiverCols))
-        self.mainWindow.plotTransceiverImage.setImage(self.mainWindow.transceiver_frame) 
-        self.mainWindow.verticalLayoutPlot.addWidget(self.mainWindow.plotTransceiverImage, 6) 
+        self.mainWindow.nCounters = 4 #initialize to max 
+        #self.mainWindow.transceiver_frame = np.zeros(
+            #(self.mainWindow.nCounters, self.mainWindow.nTransceiverRows, self.mainWindow.nTransceiverCols))
 
-        cm = pg.colormap.get('CET-L9')  # prepare a linear color map
-        self.mainWindow.plotTransceiverImage.setColorMap(cm)
+        self.mainWindow.transceiverImageSplitter = QtWidgets.QSplitter(QtCore.Qt.Vertical)
+        self.mainWindow.transceiverImageViews = []
+
+        cm = pg.colormap.get('CET-L9')  # prepare a linear color map)
+
+        for i in range(self.mainWindow.nCounters): 
+            imageView = pg.ImageView()
+            imageView.setColorMap(cm)
+            self.mainWindow.transceiverImageViews.append(imageView)
+            self.mainWindow.transceiverImageSplitter.addWidget(imageView)
+
+        self.mainWindow.verticalLayoutPlot.addWidget(self.mainWindow.transceiverImageSplitter, 6) 
+
 
     def getTransceiverEnableReg(self):
         retval = self.det.transceiverenable

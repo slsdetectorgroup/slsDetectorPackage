@@ -12,6 +12,9 @@ from utils_for_test import (
 )
 from slsdet import Detector
 
+from slsdet._slsdet import slsDetectorDefs
+
+detectorType = slsDetectorDefs.detectorType
 
 
 @pytest.mark.detectorintegration
@@ -903,3 +906,17 @@ def test_dac(session_simulator, request):
 
     Log(LogLevel.INFOGREEN, f"✅ {request.node.name} passed")
 
+@pytest.mark.detectorintegration
+@pytest.mark.parametrize("session_simulator",[("moench", 1, 2)],indirect=True)
+def test_type(session_simulator):
+
+    d = Detector()
+    assert d.type == detectorType.MOENCH
+
+
+@pytest.mark.detectorintegration
+@pytest.mark.parametrize("session_simulator",[("moench", 1, 2), ("jungfrau", 1, 2)],indirect=True)
+def test_numinterfaces(session_simulator):
+
+    d = Detector()
+    assert d.numinterfaces == 1

@@ -913,6 +913,8 @@ class Detector {
     void setDataStream(const defs::portPosition port, const bool enable,
                        Positions pos = {});
 
+    /* list of possible port positions */
+    std::vector<defs::portPosition> getPortPositionList() const;
     ///@}
 
     /** @name Receiver Configuration */

@@ -1095,6 +1095,10 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
         // number of portrois should be equal to number of interfaces
         ResetRois();
 
+        // reset udp data stream
+        udpDataStream[0] = true;
+        udpDataStream[1] = true;
+
         // create threads
         for (int i = 0; i < generalData->numUDPInterfaces; ++i) {
             // listener and dataprocessor threads

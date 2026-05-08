@@ -281,6 +281,8 @@ class Module : public virtual slsDetectorDefs {
     void setTransmissionDelayRight(int value);
     bool getDataStream(const portPosition port) const;
     void setDataStream(const portPosition port, const bool enable);
+    void
+    updateRxUDPDatastreamMetadata(const std::array<std::vector<bool>, 2> &res);
 
     /**************************************************
      *                                                *

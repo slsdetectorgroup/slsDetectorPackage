@@ -1090,6 +1090,7 @@ void Detector::setNumberofUDPInterfaces(int n, Positions pos) {
     }
     // also called by vetostream (for gotthard2)
     setNumberofUDPInterfaces_(n, pos);
+    pimpl->updateRxUDPDatastreamMetadata();
 }
 
 void Detector::setNumberofUDPInterfaces_(int n, Positions pos) {
@@ -1325,6 +1326,11 @@ Result<bool> Detector::getDataStream(const defs::portPosition port,
 void Detector::setDataStream(const defs::portPosition port, const bool enable,
                              Positions pos) {
     pimpl->Parallel(&Module::setDataStream, pos, port, enable);
+    pimpl->updateRxUDPDatastreamMetadata();
+}
+
+std::vector<defs::portPosition> Detector::getPortPositionList() const {
+    return pimpl->getPortPositionList();
 }
 
 // Receiver

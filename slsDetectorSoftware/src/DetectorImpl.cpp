@@ -1644,6 +1644,42 @@ void DetectorImpl::verifyUniqueHost(
     }
 }
 
+std::vector<defs::portPosition> DetectorImpl::getPortPositionList() const {
+    switch (shm()->detType) {
+    case defs::JUNGFRAU:
+    case defs::MOENCH:
+        return std::vector<defs::portPosition>{defs::TOP, defs::BOTTOM};
+    case defs::EIGER:
+        return std::vector<defs::portPosition>{defs::LEFT, defs::RIGHT};
+    default:
+        throw RuntimeError("port Position does not exist for this detector");
+    }
+}
+
+void DetectorImpl::updateRxUDPDatastreamMetadata() {
+    auto detType = shm()->detType;
+    if (detType != defs::EIGER && detType != defs::JUNGFRAU &&
+        detType != defs::MOENCH)
+        throw RuntimeError(
+            "Datastream enable not implemented for this detector");
+    auto portList = getPortPositionList();
+    if (portList.size() != 2) {
+        throw RuntimeError("Invalid port size. Expected 2.");
+    }
+    std::array<std::vector<bool>, 2> results;
+    size_t i = 0;
+    for (const auto &port : portList) {
+        results[i] = Parallel(&Module::getDataStream, {}, port);
+        if (static_cast<int>(results[i].size()) != size()) {
+            throw RuntimeError("udp datastream enable list does not match size "
+                               "of module list");
+        }
+        ++i;
+    }
+
+    modules[0]->updateRxUDPDatastreamMetadata(results);
+}
+
 std::vector<defs::ROI> DetectorImpl::getRxROI(int module_id) const {
     if (shm()->detType == CHIPTESTBOARD ||
         shm()->detType == defs::XILINX_CHIPTESTBOARD) {

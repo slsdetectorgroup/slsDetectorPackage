@@ -257,7 +257,7 @@ def connectToVirtualServers(name, num_mods, ctb_object=False):
     counts_sec = 5
     while (counts_sec != 0):
         try:
-            d.virtual = [num_mods, SERVER_START_PORTNO]
+            d.virtual = [num_mods, SERVER_START_PORTNO] # sets the hostnames 
             break
         except Exception as e:
             # stop server still not up, wait a bit longer
@@ -287,9 +287,11 @@ def startReceiver(num_mods, fp, no_log_file = False, quiet_mode=False):
 
 def loadConfig(name, rx_hostname = 'localhost', settingsdir = None, log_file_fp = None, num_mods = 1, num_frames = 1, num_interfaces = 1):
     Log(LogLevel.INFO, 'Loading config', log_file_fp, True)
-    Log(LogLevel.INFORED, f"Config for {name}, num_mods={num_mods}, num_interfaces={num_interfaces}", log_file_fp, True)
     try:
-        d = connectToVirtualServers(name, num_mods)
+        if name == 'ctb' or name == 'xilinx_ctb':
+            d = connectToVirtualServers(name, num_mods, ctb_object=True)
+        else: 
+            d = connectToVirtualServers(name, num_mods)
 
         if name == 'jungfrau' or name == 'moench':
             d.numinterfaces = num_interfaces

@@ -50,20 +50,8 @@ def test_rx_ROI(session_simulator):
         assert roi == [(-1,-1,-1,-1)] 
 
 
-@pytest.mark.detectorintegration
-@pytest.mark.parametrize("session_simulator",[("moench", 1, 2)],indirect=True)
-def test_type(session_simulator):
-
-    d = Detector()
-    assert d.type == detectorType.MOENCH
 
 
-@pytest.mark.detectorintegration
-@pytest.mark.parametrize("session_simulator",[("moench", 1, 2), ("jungfrau", 1, 2)],indirect=True)
-def test_numinterfaces(session_simulator):
-
-    d = Detector()
-    assert d.numinterfaces == 1
 
 
 

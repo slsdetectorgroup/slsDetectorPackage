@@ -39,7 +39,7 @@ class qDefs : public QWidget {
     /**
      * Empty Constructor
      */
-    qDefs() {};
+    qDefs(){};
 
     static QFont GetDefaultFont() {
         return QFont("Cantarell", 10, QFont::Normal);

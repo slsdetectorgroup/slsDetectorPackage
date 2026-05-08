@@ -17,8 +17,8 @@ namespace sls {
 class File : private virtual slsDetectorDefs {
 
   public:
-    File() {};
-    virtual ~File() {};
+    File(){};
+    virtual ~File(){};
 
     virtual fileFormat GetFileFormat() const = 0;
     virtual void CloseFile() = 0;

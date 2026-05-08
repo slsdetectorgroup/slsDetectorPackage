@@ -7,9 +7,11 @@
 #define REQRD_FRMWRE_VRSN_BOARD2 0x444445 // 1.0 pcb (version = 010)
 #define REQRD_FRMWRE_VRSN        0x231026 // 2.0 pcb (version = 011)
 
-#define NUM_HARDWARE_VERSIONS    (2)
-#define HARDWARE_VERSION_NUMBERS {0x2, 0x3}
-#define HARDWARE_VERSION_NAMES   {"1.0", "2.0"}
+#define NUM_HARDWARE_VERSIONS (2)
+#define HARDWARE_VERSION_NUMBERS                                               \
+    { 0x2, 0x3 }
+#define HARDWARE_VERSION_NAMES                                                 \
+    { "1.0", "2.0" }
 
 #define ID_FILE            ("detid_moench.txt")
 #define LINKED_SERVER_NAME "moenchDetectorServer"

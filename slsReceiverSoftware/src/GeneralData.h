@@ -193,8 +193,8 @@ class GeneralData {
         slsDetectorDefs::NO_DISCARD};
     /* actual image size after ctboffset and ctbreorder */
     uint32_t actualImageSize{0};
-    GeneralData() {};
-    virtual ~GeneralData() {};
+    GeneralData(){};
+    virtual ~GeneralData(){};
 
     // Returns the pixel depth in byte, 4 bits being 0.5 byte
     float GetPixelDepth() { return float(dynamicRange) / 8; }

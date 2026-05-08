@@ -1683,6 +1683,9 @@ int ClientInterface::set_port_udp_datastream(Interface &socket) {
     portPosition port = static_cast<portPosition>(args[0]);
     validate_port_position(port);
     bool enable = static_cast<bool>(args[1]);
+    if (impl()->getNumberofUDPInterfaces() == 1)
+        throw RuntimeError("Cannot change UDP port datastream with only 1 "
+                           "interface enabled. Hint: set 'numinterfaces' to 2");
     LOG(logDEBUG1) << "Setting udp datastream (" << ToString(port) << ") to "
                    << ToString(enable);
     verifyIdle(socket);

@@ -101,7 +101,7 @@ To run only tests requiring virtual detectors use the following command:
     #in build
     python -m pytest -m detectorintegration ../python/tests/
 
-There is a helper test fixture in ``slsDetectorSoftware/python/tests/conftest.py`` called ``test_with_simulators`` that sets up virtual detectors and yields the test for all detectors. The set up is done for every test automatically.
+There is a helper test fixture in ``slsDetectorSoftware/python/tests/conftest.py`` called ``session_simulator`` that sets up virtual detectors and yields the test for all detectors. The set up is done for every test automatically. Note that the fixture persist over the entire session e.g. the fixture is setup one detector at a time and runs all tests using this fixture before cleaning up and moving on to the next detector. It saves time if the setup and cleanup is expensive.
 
 Example usage: 
 
@@ -110,10 +110,13 @@ Example usage:
     import pytest
 
     @pytest.mark.detectorintegration
-    def test_example_with_simulator(test_with_simulators):
+    def test_example_with_simulator(session_simulator):
         # your test code here
 
-If you want to run the test only for a specific test use the parametrized test fixture: 
+.. Note:: 
+    As the detector is set up only once makes sure to not change the state of the detector in a way that affects other tests. If you want to change the state of the detector make sure to reset it at the end of your test.
+
+If you want to run the test only for a specific detector use the parametrized test fixture: 
 
 Example usage: 
 
@@ -122,45 +125,10 @@ Example usage:
     import pytest
 
     @pytest.mark.detectorintegration
-    @pytest.mark.parametrize("setup_parameters", [(["<my_detector>"], <num_modules>)], indirect=True)
-    def test_example_with_specific_simulators(test_with_simulators, setup_parameters):
+    @pytest.mark.parametrize("session_simulator", [("<my_detector>", <num_interfaces>, <num_modules>), ("<another_detector>", <num_interfaces>, <num_modules>)], indirect=True)
+    def test_example_with_specific_simulators(session_simulator):
         # your test code here
 
+.. Note::
+    The parametrized test fixture is setup per file and not for the entire session. 
 
-There is another helper test fixture in ``slsDetectorSoftware/python/tests/conftest.py`` called ``session_simulator`` that sets up virtual detectors and yields the test for all detectors. The difference with the previous fixture ``test_with_simulators`` is that this fixture will set up one detector at a time and run all the tests using this fixture before cleaning up and moving on to the next detector. It saves time if the setup and cleanup is expensive.
-
-Example usage: 
-
-.. code-block:: python
-
-    import pytest
-
-    @pytest.mark.detectorintegration
-    def test_define_reg(session_simulator, request):
-        """ Test setting define_reg for ctb and xilinx_ctb."""
-        det_type, num_interfaces, num_mods, d = session_simulator
-        assert d is not None
-
-        from slsdet import RegisterAddress
-
-        if det_type in ['ctb', 'xilinx_ctb']:
-        # your test code here
-
-For more specific parameters, you can parametrize the fixture like below:
-
-.. code-block:: python
-
-    import pytest
-
-    @pytest.mark.detectorintegration
-    @pytest.mark.parametrize(
-        "session_simulator",
-        [
-            ("ctb", 1, 1),
-            ("xilinx_ctb", 1, 1),
-        ],
-        indirect=True,
-    )
-    def test_define_reg(session_simulator):
-        det_type, num_interfaces, num_mods, d = session_simulator
-        # your test code here

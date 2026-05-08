@@ -1,15 +1,13 @@
 import pytest 
 import sys 
 
-from conftest import session_simulator, test_with_specific_simulator
+from conftest import session_simulator
 
 from slsdet import Detector
 
 from slsdet._slsdet import slsDetectorDefs
 
-
 detectorType = slsDetectorDefs.detectorType
-
 
 @pytest.mark.detectorintegration
 def test_rx_ROI(session_simulator):

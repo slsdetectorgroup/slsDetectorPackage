@@ -1436,6 +1436,7 @@ void Module::setDataStream(const portPosition port, const bool enable) {
 
 void Module::updateRxUDPDatastreamMetadata(
     const std::array<std::vector<bool>, 2> &res) {
+
     if (!shm()->useReceiverFlag) {
         return;
     }

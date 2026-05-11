@@ -55,6 +55,8 @@ void MasterAttributes::GetJungfrauBinaryAttributes(writer *w) {
     WriteBinaryNumberOfUDPInterfaces(w);
     WriteBinaryNumberOfRows(w);
     WriteBinaryReadoutSpeed(w);
+    if (numUDPInterfaces == 2)
+        WriteBinaryUDPPortEnables(w);
 }
 
 #ifdef HDF5C
@@ -65,6 +67,8 @@ void MasterAttributes::WriteJungfrauHDF5Attributes(H5::Group *group) {
     WriteHDF5NumberOfUDPInterfaces(group);
     WriteHDF5NumberOfRows(group);
     WriteHDF5ReadoutSpeed(group);
+    if (numUDPInterfaces == 2)
+        WriteHDF5UDPPortEnables(group);
 }
 #endif
 
@@ -75,6 +79,8 @@ void MasterAttributes::GetMoenchBinaryAttributes(writer *w) {
     WriteBinaryNumberOfUDPInterfaces(w);
     WriteBinaryNumberOfRows(w);
     WriteBinaryReadoutSpeed(w);
+    if (numUDPInterfaces == 2)
+        WriteBinaryUDPPortEnables(w);
 }
 
 #ifdef HDF5C
@@ -85,6 +91,8 @@ void MasterAttributes::WriteMoenchHDF5Attributes(H5::Group *group) {
     WriteHDF5NumberOfUDPInterfaces(group);
     WriteHDF5NumberOfRows(group);
     WriteHDF5ReadoutSpeed(group);
+    if (numUDPInterfaces == 2)
+        WriteHDF5UDPPortEnables(group);
 }
 #endif
 
@@ -101,6 +109,7 @@ void MasterAttributes::GetEigerBinaryAttributes(writer *w) {
     WriteBinaryNumberOfRows(w);
     WriteBinaryRateCorrections(w);
     WriteBinaryReadoutSpeed(w);
+    WriteBinaryUDPPortEnables(w);
 }
 
 #ifdef HDF5C
@@ -117,6 +126,7 @@ void MasterAttributes::WriteEigerHDF5Attributes(H5::Group *group) {
     WriteHDF5NumberOfRows(group);
     WriteHDF5RateCorrections(group);
     WriteHDF5ReadoutSpeed(group);
+    WriteHDF5UDPPortEnables(group);
 }
 #endif
 
@@ -687,6 +697,38 @@ void MasterAttributes::WriteBinaryTransceiverSamples(writer *w) {
 #ifdef HDF5C
 void MasterAttributes::WriteHDF5TransceiverSamples(H5::Group *group) {
     WriteHDF5Int(group, N_TRANSCEIVER_SAMPLES.data(), transceiverSamples);
+}
+#endif
+
+void MasterAttributes::WriteBinaryUDPPortEnables(writer *w) {
+    for (size_t i = 0; i != udpPortType.size(); ++i) {
+        std::string key = udpPortType[i] + std::string(N_UDP_PORT_ENABLES);
+        w->Key(key.c_str());
+        w->StartArray();
+        for (const int u : udpPortEnables[i]) {
+            w->Int(u);
+        }
+        w->EndArray();
+    }
+}
+
+#ifdef HDF5C
+void MasterAttributes::WriteHDF5UDPPortEnables(H5::Group *group) {
+    for (size_t i = 0; i != udpPortType.size(); ++i) {
+        // convert vector<bool> -> vector<uint8_t>
+        std::vector<int> vals(udpPortEnables[i].begin(),
+                              udpPortEnables[i].end());
+
+        hsize_t dims[1] = {vals.size()};
+        H5::DataSpace dataspace(1, dims);
+
+        std::string key = udpPortType[i] + std::string(N_UDP_PORT_ENABLES);
+
+        H5::DataSet dataset =
+            group->createDataSet(key, H5::PredType::NATIVE_UINT32, dataspace);
+
+        dataset.write(vals.data(), H5::PredType::NATIVE_UINT32);
+    }
 }
 #endif
 

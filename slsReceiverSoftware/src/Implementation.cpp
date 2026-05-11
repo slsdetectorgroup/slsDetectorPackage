@@ -994,6 +994,9 @@ void Implementation::StartMasterWriter() {
             masterAttributes.gates = numberOfGates;
             masterAttributes.additionalJsonHeader = additionalJsonHeader;
             masterAttributes.readoutSpeed = readoutSpeed;
+            masterAttributes.udpPortEnables = udpPortEnables;
+            masterAttributes.udpPortType[0] = ToString(udpDataStreamType[0]);
+            masterAttributes.udpPortType[1] = ToString(udpDataStreamType[1]);
 
             // create master file
             masterFileName = dataProcessor[0]->CreateMasterFile(
@@ -1707,6 +1710,11 @@ void Implementation::setUDPDataStream(const portPosition port,
     }
     for (size_t i = 0; i != listener.size(); ++i)
         listener[i]->SetUDPDatastream(udpDataStream[i]);
+}
+
+void Implementation::updateUDPDatastreamMetadata(
+    const std::array<std::vector<int>, 2> &portEnables) {
+    udpPortEnables = portEnables;
 }
 
 int Implementation::getReadNRows() const { return readNRows; }

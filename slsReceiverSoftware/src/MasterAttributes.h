@@ -68,6 +68,8 @@ class MasterAttributes {
     std::map<std::string, std::string> additionalJsonHeader;
     uint64_t framesInFile{0};
     slsDetectorDefs::speedLevel readoutSpeed{slsDetectorDefs::FULL_SPEED};
+    std::array<std::vector<int>, 2> udpPortEnables;
+    std::array<std::string, 2> udpPortType;
 
     inline static const std::string_view N_DETECTOR_TYPE = "Detector Type";
     inline static const std::string_view N_TIMING_MODE = "Timing Mode";
@@ -125,6 +127,8 @@ class MasterAttributes {
     inline static const std::string_view N_SCAN_PARAMETERS = "Scan Parameters";
     inline static const std::string_view N_ADDITIONAL_JSON_HEADER =
         "Additional JSON Header";
+    inline static const std::string_view N_UDP_PORT_ENABLES =
+        " UDP Port Enables";
 
     MasterAttributes() = default;
     ~MasterAttributes() = default;
@@ -334,7 +338,10 @@ class MasterAttributes {
 #ifdef HDF5C
     void WriteHDF5TransceiverSamples(H5::Group *group);
 #endif
-
+    void WriteBinaryUDPPortEnables(writer *w);
+#ifdef HDF5C
+    void WriteHDF5UDPPortEnables(H5::Group *group);
+#endif
     /** writes according to type */
     template <typename T> void WriteBinaryValue(writer *w, const T &value) {
         if constexpr (std::is_same_v<T, int>) {

@@ -264,12 +264,12 @@ class Caller {
     std::string rx_padding(int action);
     std::string rx_printconfig(int action);
     std::string rx_realudpsocksize(int action);
-    std::string rx_restreamstop(int action);
     std::string rx_roi(int action);
     std::string rx_silent(int action);
     std::string rx_start(int action);
     std::string rx_status(int action);
     std::string rx_stop(int action);
+    std::string rx_streamdummyheader(int action);
     std::string rx_tcpport(int action);
     std::string rx_threads(int action);
     std::string rx_udpsocksize(int action);
@@ -636,12 +636,12 @@ class Caller {
         {"rx_padding", &Caller::rx_padding},
         {"rx_printconfig", &Caller::rx_printconfig},
         {"rx_realudpsocksize", &Caller::rx_realudpsocksize},
-        {"rx_restreamstop", &Caller::rx_restreamstop},
         {"rx_roi", &Caller::rx_roi},
         {"rx_silent", &Caller::rx_silent},
         {"rx_start", &Caller::rx_start},
         {"rx_status", &Caller::rx_status},
         {"rx_stop", &Caller::rx_stop},
+        {"rx_streamdummyheader", &Caller::rx_streamdummyheader},
         {"rx_tcpport", &Caller::rx_tcpport},
         {"rx_threads", &Caller::rx_threads},
         {"rx_udpsocksize", &Caller::rx_udpsocksize},

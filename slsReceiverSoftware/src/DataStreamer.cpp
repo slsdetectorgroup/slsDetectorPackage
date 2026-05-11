@@ -29,6 +29,10 @@ void DataStreamer::SetGeneralData(GeneralData *g) { generalData = g; }
 
 void DataStreamer::SetFileIndex(uint64_t value) { fileIndex = value; }
 
+void DataStreamer::SetFileName(const std::string &fname) {
+    fileNametoStream = fname;
+}
+
 void DataStreamer::SetNumberofPorts(xy np) { numPorts = np; }
 
 void DataStreamer::SetFlipRows(bool fd) {
@@ -61,11 +65,10 @@ void DataStreamer::SetPortROI(ROI roi) {
     }
 }
 
-void DataStreamer::ResetParametersforNewAcquisition(const std::string &fname) {
+void DataStreamer::ResetParametersforNewAcquisition() {
     StopRunning();
     startedFlag = false;
     firstIndex = 0;
-    fileNametoStream = fname;
 }
 
 void DataStreamer::RecordFirstIndex(uint64_t fnum, size_t firstImageIndex) {
@@ -202,36 +205,36 @@ int DataStreamer::SendDataHeader(sls_detector_header header, uint32_t size) {
     zmqHeader zHeader = prepareRxZmqHeader();
     zHeader.data = true;
 
-    // parameter coming from the detector (raw and derived)
-    uint64_t frameIndex = header.frameNumber - firstIndex;
-    uint64_t acquisitionIndex = header.frameNumber;
-
-    zHeader.acqIndex = acquisitionIndex;
+    // parameter from detector header
     zHeader.column = header.column;
-    zHeader.completeImage =
-        (header.packetNumber < generalData->packetsPerFrame ? false : true);
     zHeader.detSpec1 = header.detSpec1;
     zHeader.detSpec2 = header.detSpec2;
     zHeader.detSpec3 = header.detSpec3;
     zHeader.detSpec4 = header.detSpec4;
     zHeader.detType = header.detType;
     zHeader.expLength = header.expLength;
-    zHeader.frameIndex = frameIndex;
     zHeader.frameNumber = header.frameNumber;
-    zHeader.imageSize = size;
     zHeader.modId = header.modId;
     zHeader.packetNumber = header.packetNumber;
-    zHeader.progress =
-        100 * ((double)(frameIndex + 1) / (double)(nTotalFrames));
     zHeader.row = header.row;
     zHeader.timestamp = header.timestamp;
     zHeader.version = header.version;
 
+    // parameter derived from header and receiver
+    uint64_t frameIndex = header.frameNumber - firstIndex;
+    uint64_t acquisitionIndex = header.frameNumber;
+    zHeader.acqIndex = acquisitionIndex;
+    zHeader.completeImage =
+        (header.packetNumber < generalData->packetsPerFrame ? false : true);
+    zHeader.frameIndex = frameIndex;
+    zHeader.imageSize = size;
+    zHeader.progress =
+        100 * ((double)(frameIndex + 1) / (double)(nTotalFrames));
+
     return zmqSocket->SendHeader(index, zHeader);
 }
 
-void DataStreamer::RestreamStop(const std::string &fname) {
-    fileNametoStream = fname;
+void DataStreamer::RestreamStop() {
     if (!SendDummyHeader()) {
         throw RuntimeError("Could not restream Dummy Header via ZMQ for port " +
                            std::to_string(zmqSocket->GetPortNumber()));

@@ -1698,12 +1698,12 @@ rx_stop:
     PUT:
       function: stopReceiver
 
-rx_restreamstop:
+rx_streamdummyheader:
   inherit_actions: EXECUTE_SET_COMMAND
   help: "\n\tSends ZMQ dummy header. The detector related fields are not set, the receiver related fields are set."
   actions:
     PUT:
-      function: restreamRxStop
+      function: streamRxDummyHeader
 
 readout:
   inherit_actions: EXECUTE_SET_COMMAND_NOID

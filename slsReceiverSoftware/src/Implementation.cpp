@@ -844,8 +844,10 @@ void Implementation::shutDownUDPSockets() {
 
 void Implementation::restreamStop() {
     std::string fnametostream = (filePath / fileName).string();
-    for (const auto &it : dataStreamer)
-        it->RestreamStop(fnametostream);
+    for (const auto &it : dataStreamer) {
+        it->SetFileName(fnametostream);
+        it->RestreamStop();
+    }
     LOG(logINFO) << "Restreaming Dummy Header via ZMQ successful";
 }
 
@@ -857,8 +859,10 @@ void Implementation::ResetParametersforNewAcquisition() {
 
     if (dataStreamEnable) {
         std::string fnametostream = (filePath / fileName).string();
-        for (const auto &it : dataStreamer)
-            it->ResetParametersforNewAcquisition(fnametostream);
+        for (const auto &it : dataStreamer) {
+            it->ResetParametersforNewAcquisition();
+            it->SetFileName(fnametostream);
+        }
     }
 }
 

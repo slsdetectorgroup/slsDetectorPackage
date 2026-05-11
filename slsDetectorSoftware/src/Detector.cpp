@@ -1636,7 +1636,7 @@ void Detector::setRxZmqHwm(const int limit) {
     }
 }
 
-void Detector::restreamRxStop(Positions pos) const {
+void Detector::streamRxDummyHeader(Positions pos) const {
     pimpl->Parallel(&Module::restreamStopFromReceiver, pos);
 }
 

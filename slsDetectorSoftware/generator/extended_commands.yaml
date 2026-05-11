@@ -8965,28 +8965,6 @@ rx_realudpsocksize:
     \ to kernel bookkeeping."
   infer_action: true
   template: true
-rx_restreamstop:
-  actions:
-    PUT:
-      args:
-      - arg_types: []
-        argc: 0
-        cast_input: []
-        check_det_id: false
-        convert_det_id: true
-        function: restreamRxStop
-        input: []
-        input_types: []
-        output:
-        - '"successful"'
-        require_det_id: true
-        store_result_in_t: false
-  command_name: rx_restreamstop
-  function_alias: rx_restreamstop
-  help: "\n\tSends ZMQ dummy header. The detector related fields are not set, the\
-    \ receiver related fields are set."
-  infer_action: true
-  template: true
 rx_roi:
   actions:
     GET:
@@ -9137,6 +9115,28 @@ rx_stop:
   function_alias: rx_stop
   help: "\n\tStops receiver listener for detector data packets and closes current\
     \ data file (if file write enabled)."
+  infer_action: true
+  template: true
+rx_streamdummyheader:
+  actions:
+    PUT:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: streamRxDummyHeader
+        input: []
+        input_types: []
+        output:
+        - '"successful"'
+        require_det_id: true
+        store_result_in_t: false
+  command_name: rx_streamdummyheader
+  function_alias: rx_streamdummyheader
+  help: "\n\tSends ZMQ dummy header. The detector related fields are not set, the\
+    \ receiver related fields are set."
   infer_action: true
   template: true
 rx_tcpport:

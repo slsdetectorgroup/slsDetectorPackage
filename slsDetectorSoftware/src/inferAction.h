@@ -215,12 +215,12 @@ class InferAction {
     int rx_padding();
     int rx_printconfig();
     int rx_realudpsocksize();
-    int rx_restreamstop();
     int rx_roi();
     int rx_silent();
     int rx_start();
     int rx_status();
     int rx_stop();
+    int rx_streamdummyheader();
     int rx_tcpport();
     int rx_threads();
     int rx_udpsocksize();
@@ -552,12 +552,12 @@ class InferAction {
         {"rx_padding", &InferAction::rx_padding},
         {"rx_printconfig", &InferAction::rx_printconfig},
         {"rx_realudpsocksize", &InferAction::rx_realudpsocksize},
-        {"rx_restreamstop", &InferAction::rx_restreamstop},
         {"rx_roi", &InferAction::rx_roi},
         {"rx_silent", &InferAction::rx_silent},
         {"rx_start", &InferAction::rx_start},
         {"rx_status", &InferAction::rx_status},
         {"rx_stop", &InferAction::rx_stop},
+        {"rx_streamdummyheader", &InferAction::rx_streamdummyheader},
         {"rx_tcpport", &InferAction::rx_tcpport},
         {"rx_threads", &InferAction::rx_threads},
         {"rx_udpsocksize", &InferAction::rx_udpsocksize},

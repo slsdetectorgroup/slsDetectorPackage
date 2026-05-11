@@ -33,6 +33,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
     void SetGeneralData(GeneralData *g);
 
     void SetFileIndex(uint64_t value);
+    void SetFileName(const std::string &fname);
     void SetNumberofPorts(xy np);
     void SetFlipRows(bool fd);
     void SetQuadEnable(bool value);
@@ -41,7 +42,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
     SetAdditionalJsonHeader(const std::map<std::string, std::string> &json);
     void SetPortROI(ROI roi);
 
-    void ResetParametersforNewAcquisition(const std::string &fname);
+    void ResetParametersforNewAcquisition();
     /**
      * Creates Zmq Sockets
      * (throws an exception if it couldnt create zmq sockets)
@@ -50,7 +51,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
      */
     void CreateZmqSockets(uint16_t port, int hwm);
     void CloseZmqSocket();
-    void RestreamStop(const std::string &fname);
+    void RestreamStop();
 
   private:
     /**

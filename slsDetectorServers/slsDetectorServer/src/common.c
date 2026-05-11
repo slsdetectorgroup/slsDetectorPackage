@@ -11,6 +11,12 @@
 #include <sys/stat.h>    // stat
 #include <sys/utsname.h> // uname
 #include <unistd.h>      // readlink
+#ifdef __APPLE__
+#include <limits.h>      // PATH_MAX
+#include <mach-o/dyld.h> // _NSGetExecutablePath
+#include <stdint.h>      // uint32_t
+#include <stdlib.h>      // realpath
+#endif
 
 extern int executeCommand(char *command, char *result, enum TLogLevel level);
 
@@ -58,12 +64,33 @@ int getAbsPath(char *buf, size_t bufSize, char *fname) {
     // get path of current binary
     char path[bufSize];
     memset(path, 0, bufSize);
+#ifdef __APPLE__
+    // macOS has no /proc; use _NSGetExecutablePath and canonicalize with
+    // realpath (the path returned may contain ".." or symlinks).
+    char raw[PATH_MAX];
+    uint32_t rawSize = sizeof(raw);
+    if (_NSGetExecutablePath(raw, &rawSize) != 0) {
+        LOG(logWARNING,
+            ("Could not get current binary path for %s (buffer too small)\n",
+             fname));
+        return FAIL;
+    }
+    char resolved[PATH_MAX];
+    const char *src = realpath(raw, resolved) != NULL ? resolved : raw;
+    if (strlen(src) >= bufSize) {
+        LOG(logWARNING,
+            ("Current binary path too long for buffer (%s)\n", fname));
+        return FAIL;
+    }
+    strcpy(path, src);
+#else
     ssize_t len = readlink("/proc/self/exe", path, bufSize - 1);
     if (len < 0) {
         LOG(logWARNING, ("Could not readlink current binary for %s\n", fname));
         return FAIL;
     }
     path[len] = '\0';
+#endif
 
     // get dir path and attach file name
     char *dir = dirname(path);

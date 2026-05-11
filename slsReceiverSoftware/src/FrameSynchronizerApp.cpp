@@ -7,6 +7,7 @@
  */
 #include "CommandLineOptions.h"
 #include "sls/Receiver.h"
+#include "sls/thread_utils.h"
 #include "sls/ToString.h"
 #include "sls/container_utils.h"
 #include "sls/logger.h"
@@ -30,12 +31,6 @@
 
 std::vector<std::thread> threads;
 sls::TLogLevel printHeadersLevel = sls::logDEBUG;
-
-// gettid added in glibc 2.30
-#if __GLIBC__ == 2 && __GLIBC_MINOR__ < 30
-#include <sys/syscall.h>
-#define gettid() syscall(SYS_gettid)
-#endif
 
 /** Define Colors to print data call back in different colors for different
  * recievers */
@@ -522,7 +517,8 @@ int main(int argc, char *argv[]) {
         return EXIT_SUCCESS;
     }
 
-    LOG(sls::logINFOBLUE) << "Current Process [ Tid: " << gettid() << ']';
+    LOG(sls::logINFOBLUE) << "Current Process [ Tid: " << sls::getThreadId()
+                          << ']';
 
     // close files on ctrl+c
     sls::setupSignalHandler(SIGINT, sigInterruptHandler);
@@ -548,8 +544,8 @@ int main(int argc, char *argv[]) {
         sem_t *semaphore = &semaphores[i];
         threads.emplace_back(
             [i, semaphore, port, user_data, &threadException]() {
-                LOG(sls::logINFOBLUE)
-                    << "Thread " << i << " [ Tid: " << gettid() << ']';
+                LOG(sls::logINFOBLUE) << "Thread " << i << " [ Tid: "
+                                      << sls::getThreadId() << ']';
                 try {
                     sls::Receiver receiver(port);
                     receiver.registerCallBackStartAcquisition(
@@ -567,8 +563,8 @@ int main(int argc, char *argv[]) {
                     threadException = std::current_exception();
                     raise(SIGINT);
                 }
-                LOG(sls::logINFOBLUE)
-                    << "Exiting Thread " << i << " [ Tid: " << gettid() << " ]";
+                LOG(sls::logINFOBLUE) << "Exiting Thread " << i << " [ Tid: "
+                                      << sls::getThreadId() << " ]";
             });
     }
 

@@ -3,6 +3,7 @@
 /* slsReceiver */
 #include "CommandLineOptions.h"
 #include "sls/Receiver.h"
+#include "sls/thread_utils.h"
 #include "sls/ToString.h"
 #include "sls/container_utils.h"
 #include "sls/logger.h"
@@ -10,25 +11,8 @@
 #include "sls/sls_detector_defs.h"
 
 #include <csignal> //SIGINT
-#include <semaphore.h>
+#include <pthread.h>
 #include <unistd.h>
-
-// gettid added in glibc 2.30
-#if __GLIBC__ == 2 && __GLIBC_MINOR__ < 30
-#include <sys/syscall.h>
-#define gettid() syscall(SYS_gettid)
-#endif
-
-sem_t semaphore;
-
-/**
- * Control+C Interrupt Handler
- * to let all the other process know to exit properly
- */
-void sigInterruptHandler(int signal) {
-    (void)signal; // suppress unused warning if needed
-    sem_post(&semaphore);
-}
 
 int main(int argc, char *argv[]) {
 
@@ -44,26 +28,36 @@ int main(int argc, char *argv[]) {
         return EXIT_SUCCESS;
     }
 
-    LOG(sls::logINFOBLUE) << "Current Process [ Tid: " << gettid() << " ]";
+    LOG(sls::logINFOBLUE) << "Current Process [ Tid: " << sls::getThreadId()
+                          << " ]";
 
-    // close files on ctrl+c
-    sls::setupSignalHandler(SIGINT, sigInterruptHandler);
+    // Block SIGINT on this thread before any other thread is created so that
+    // every thread spawned by Receiver inherits the block. We wait for the
+    // signal synchronously with sigwait() further down. This avoids needing a
+    // signal handler that posts to a semaphore, which is not portable to
+    // macOS (sem_init on unnamed semaphores is unimplemented there).
+    sigset_t sigset;
+    sigemptyset(&sigset);
+    sigaddset(&sigset, SIGINT);
+    if (pthread_sigmask(SIG_BLOCK, &sigset, nullptr) != 0) {
+        LOG(sls::logERROR) << "Could not block SIGINT";
+        return EXIT_FAILURE;
+    }
+
     // handle locally on socket crash
     sls::setupSignalHandler(SIGPIPE, SIG_IGN);
-
-    sem_init(&semaphore, 1, 0);
 
     try {
         sls::Receiver r(o.port);
         LOG(sls::logINFO) << "[ Press \'Ctrl+c\' to exit ]";
-        sem_wait(&semaphore);
-        sem_destroy(&semaphore);
+        int sig = 0;
+        sigwait(&sigset, &sig);
     } catch (...) {
-        sem_destroy(&semaphore);
-        LOG(sls::logINFOBLUE) << "Exiting [ Tid: " << gettid() << " ]";
+        LOG(sls::logINFOBLUE)
+            << "Exiting [ Tid: " << sls::getThreadId() << " ]";
         throw;
     }
-    LOG(sls::logINFOBLUE) << "Exiting [ Tid: " << gettid() << " ]";
+    LOG(sls::logINFOBLUE) << "Exiting [ Tid: " << sls::getThreadId() << " ]";
     LOG(sls::logINFO) << "Exiting Receiver";
     return EXIT_SUCCESS;
 }

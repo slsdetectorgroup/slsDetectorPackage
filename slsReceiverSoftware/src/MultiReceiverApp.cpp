@@ -4,6 +4,7 @@
  * binary */
 #include "CommandLineOptions.h"
 #include "sls/Receiver.h"
+#include "sls/thread_utils.h"
 #include "sls/ToString.h"
 #include "sls/container_utils.h"
 #include "sls/logger.h"
@@ -15,12 +16,6 @@
 #include <semaphore.h>
 #include <sys/wait.h> //wait
 #include <unistd.h>
-
-// gettid added in glibc 2.30
-#if __GLIBC__ == 2 && __GLIBC_MINOR__ < 30
-#include <sys/syscall.h>
-#define gettid() syscall(SYS_gettid)
-#endif
 
 /** Define Colors to print data call back in different colors for different
  * recievers */
@@ -156,7 +151,8 @@ int main(int argc, char *argv[]) {
         return EXIT_SUCCESS;
     }
 
-    LOG(sls::logINFOBLUE) << "Current Process [ Tid: " << gettid() << ']';
+    LOG(sls::logINFOBLUE) << "Current Process [ Tid: " << sls::getThreadId()
+                          << ']';
 
     // close files on ctrl+c
     sls::setupSignalHandler(SIGINT, sigInterruptHandler);
@@ -182,7 +178,8 @@ int main(int argc, char *argv[]) {
         /**	- if child process */
         else if (pid == 0) {
             LOG(sls::logINFOBLUE)
-                << "Child process " << i << " [ Tid: " << gettid() << ']';
+                << "Child process " << i << " [ Tid: " << sls::getThreadId()
+                << ']';
 
             try {
                 uint16_t port = m.port + i;
@@ -213,13 +210,13 @@ int main(int argc, char *argv[]) {
                 // each child process gets a copy of the semaphore
                 sem_wait(&semaphore);
                 sem_destroy(&semaphore);
-                LOG(sls::logINFOBLUE)
-                    << "Exiting Child Process [ Tid: " << gettid() << ']';
+                LOG(sls::logINFOBLUE) << "Exiting Child Process [ Tid: "
+                                      << sls::getThreadId() << ']';
                 exit(EXIT_SUCCESS);
             } catch (...) {
                 sem_destroy(&semaphore);
-                LOG(sls::logINFOBLUE)
-                    << "Exiting Child Process [ Tid: " << gettid() << " ]";
+                LOG(sls::logINFOBLUE) << "Exiting Child Process [ Tid: "
+                                      << sls::getThreadId() << " ]";
                 exit(EXIT_FAILURE);
             }
         }

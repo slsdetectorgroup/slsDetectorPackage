@@ -196,7 +196,7 @@ void DetectorImpl::setHostname(const std::vector<std::string> &name) {
 }
 
 void DetectorImpl::addModule(const std::string &name) {
-    LOG(logINFO) << "Adding module " << name;
+    LOG(TLogLevel::logINFO) << "Adding module " << name;
     auto host = verifyUniqueDetHost(name);
     std::string hostname = host.first;
     uint16_t port = host.second;

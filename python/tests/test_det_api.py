@@ -12,6 +12,9 @@ from utils_for_test import (
 )
 from slsdet import Detector
 
+from slsdet._slsdet import slsDetectorDefs
+
+detectorType = slsDetectorDefs.detectorType
 
 
 @pytest.mark.detectorintegration
@@ -396,6 +399,193 @@ def test_patternstart(session_simulator, request):
     Log(LogLevel.INFOGREEN, f"✅ {request.node.name} passed")
 
 
+
+@pytest.mark.detectorintegration
+def test_runclk(session_simulator, request):
+    """ Test using runclk for ctb and xilinx_ctb."""
+    det_type, num_interfaces, num_mods, d = session_simulator
+    assert d is not None
+
+    from slsdet import Hz, MHz, kHz
+
+    if det_type in ['ctb', 'xilinx_ctb']:
+        prev_runclk = d.getRUNClock()
+
+        d.runclk
+
+        # invalid value type
+        with pytest.raises(Exception) as exc_info:
+            d.runclk = 5e6
+
+        with pytest.raises(Exception) as exc_info:
+            d.runclk = 5 * 1000 * 1000
+
+        with pytest.raises(Exception) as exc_info:
+            d.runclk = Hz(5e6)
+
+        d.runclk = MHz(15)
+        assert d.runclk.value == 15_000_000
+
+        d.runclk = MHz(14.5)
+        assert d.runclk.value == 14_500_000
+
+        d.runclk = kHz(15000.5)
+        assert d.runclk.value == 15_000_500
+
+        # invalid values from server
+        # max is 300MHz
+        with pytest.raises(Exception) as exc_info:
+            d.runclk = MHz(301)
+
+        # min is 2MHz for ctb and 10MHz for xilinx_ctb
+        if det_type == 'ctb':
+            with pytest.raises(Exception) as exc_info:
+                d.runclk = MHz(1)
+        else:
+            with pytest.raises(Exception) as exc_info:
+                d.runclk = MHz(9)
+
+        c = MHz(2)
+        for rc in [5, 10, 15, 20]:
+            d.runclk = rc * c
+        assert d.runclk.value == 40_000_000
+
+        for i in range(len(d)):
+            d.setRUNClock(prev_runclk[i], [i])
+
+    Log(LogLevel.INFOGREEN, f"✅ {request.node.name} passed")
+
+
+@pytest.mark.detectorintegration
+def test_adcclk(session_simulator, request):
+    """ Test using adcclk for ctb and xilinx_ctb."""
+    det_type, num_interfaces, num_mods, d = session_simulator
+    assert d is not None
+
+    from slsdet import Hz, MHz, kHz
+
+    if det_type in ['ctb', 'xilinx_ctb']:
+        prev_adcclk = d.getADCClock()
+
+        d.adcclk
+
+        # invalid value type
+        with pytest.raises(Exception) as exc_info:
+            d.adcclk = 5e6
+
+        with pytest.raises(Exception) as exc_info:
+            d.adcclk = 5 * 1000 * 1000
+
+        with pytest.raises(Exception) as exc_info:
+            d.adcclk = Hz(5e6)
+
+        d.adcclk = MHz(15)
+        assert d.adcclk.value == 15_000_000
+
+        d.adcclk = MHz(14.5)
+        assert d.adcclk.value == 14_500_000
+
+        d.adcclk = kHz(15000.5)
+        assert d.adcclk.value == 15_000_500
+
+        # invalid values from server
+        # max is 300MHz for xilinx and 54 MHz for ctb
+        if det_type == 'ctb':
+            with pytest.raises(Exception) as exc_info:
+                d.adcclk = MHz(66)
+        else:
+            with pytest.raises(Exception) as exc_info:
+                d.adcclk = MHz(301)
+
+        # min is 2MHz for ctb and 10MHz for xilinx_ctb
+        if det_type == 'ctb':
+            with pytest.raises(Exception) as exc_info:
+                d.adcclk = MHz(1)
+        else:
+            with pytest.raises(Exception) as exc_info:
+                d.adcclk = MHz(9)
+
+        c = MHz(2)
+        for rc in [5, 10, 15, 20]:
+            d.adcclk = rc * c
+        assert d.adcclk.value == 40_000_000
+
+        for i in range(len(d)):
+            d.setADCClock(prev_adcclk[i], [i])
+         
+    Log(LogLevel.INFOGREEN, f"✅ {request.node.name} passed")
+
+
+@pytest.mark.detectorintegration
+def test_dbitclk(session_simulator, request):
+    """ Test using dbitclk for ctb and xilinx_ctb."""
+    det_type, num_interfaces, num_mods, d = session_simulator
+    assert d is not None
+
+    from slsdet import Hz, MHz, kHz
+
+    if det_type in ['ctb', 'xilinx_ctb']:
+        prev_dbitclk = d.getDBITClock()
+
+        d.dbitclk
+
+        # invalid value type
+        with pytest.raises(Exception) as exc_info:
+            d.dbitclk = 5e6
+
+        with pytest.raises(Exception) as exc_info:
+            d.dbitclk = 5 * 1000 * 1000
+
+        with pytest.raises(Exception) as exc_info:
+            d.dbitclk = Hz(5e6)
+
+        d.dbitclk = MHz(15)
+        assert d.dbitclk.value == 15_000_000
+
+        d.dbitclk = MHz(14.5)
+        assert d.dbitclk.value == 14_500_000
+
+        d.dbitclk = kHz(15000.5)
+        assert d.dbitclk.value == 15_000_500
+
+        # invalid values from server
+        # max is 300MHz
+        with pytest.raises(Exception) as exc_info:
+            d.dbitclk = MHz(301)
+
+        # min is 2MHz for ctb and 10MHz for xilinx_ctb
+        if det_type == 'ctb':
+            with pytest.raises(Exception) as exc_info:
+                d.dbitclk = MHz(1)
+        else:
+            with pytest.raises(Exception) as exc_info:
+                d.dbitclk = MHz(9)
+
+        c = MHz(2)
+        for rc in [5, 10, 15, 20]:
+            d.dbitclk = rc * c
+        assert d.dbitclk.value == 40_000_000
+
+        for i in range(len(d)):
+            d.setDBITClock(prev_dbitclk[i], [i])
+
+    Log(LogLevel.INFOGREEN, f"✅ {request.node.name} passed")
+
+
+
+@pytest.mark.detectorintegration
+def test_syncclk(session_simulator, request):
+    """ Test using syncclk for ctb."""
+    det_type, num_interfaces, num_mods, d = session_simulator
+    assert d is not None
+
+    if det_type in ['ctb']:
+        d.syncclk
+
+    Log(LogLevel.INFOGREEN, f"✅ {request.node.name} passed")
+
+
+
 @pytest.mark.detectorintegration
 def test_v_limit(session_simulator, request):
     """Test v_limit."""
@@ -715,3 +905,18 @@ def test_dac(session_simulator, request):
    
 
     Log(LogLevel.INFOGREEN, f"✅ {request.node.name} passed")
+
+@pytest.mark.detectorintegration
+@pytest.mark.parametrize("session_simulator",[("moench", 1, 2)],indirect=True)
+def test_type(session_simulator):
+
+    d = Detector()
+    assert d.type == detectorType.MOENCH
+
+
+@pytest.mark.detectorintegration
+@pytest.mark.parametrize("session_simulator",[("moench", 1, 2), ("jungfrau", 1, 2)],indirect=True)
+def test_numinterfaces(session_simulator):
+
+    d = Detector()
+    assert d.numinterfaces == 1

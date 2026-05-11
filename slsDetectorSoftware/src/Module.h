@@ -536,7 +536,7 @@ class Module : public virtual slsDetectorDefs {
      *    Pattern                                     *
      *                                                *
      * ************************************************/
-    std::string getPatterFileName() const;
+    std::string getPatternFileName() const;
     void setPattern(const Pattern &pat, const std::string &fname);
     Pattern getPattern();
     void loadDefaultPattern();

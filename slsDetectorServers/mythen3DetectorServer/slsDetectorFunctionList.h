@@ -195,7 +195,6 @@ int setPhase(enum CLKINDEX ind, int val, int degrees);
 int getPhase(enum CLKINDEX ind, int degrees);
 int getMaxPhase(enum CLKINDEX ind);
 int validatePhaseinDegrees(enum CLKINDEX ind, int val, int retval);
-// void       	setFrequency(enum CLKINDEX ind, int val);
 int getFrequency(enum CLKINDEX ind);
 int getVCOFrequency(enum CLKINDEX ind);
 int getMaxClockDivider();

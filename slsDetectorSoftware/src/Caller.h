@@ -54,6 +54,9 @@ class Caller {
         return ToString(value, unit);
     }
 
+    std::string OutString(const Result<defs::Hz> &value,
+                          const std::string &unit);
+
     std::vector<std::string> getAllCommands();
     std::map<std::string, std::string> GetDeprecatedCommands();
     std::string list(int action);
@@ -422,6 +425,7 @@ class Caller {
     defs::dacIndex parseDacIndex(int argIndex, bool isCtb);
     bool parseMV(int argIndex);
     defs::powerIndex parsePowerIndex(int argIndex);
+    defs::FrequencyUnit parseFrequencyUnit(const std::string &s);
 
     FunctionMap functions{
         {"list", &Caller::list},

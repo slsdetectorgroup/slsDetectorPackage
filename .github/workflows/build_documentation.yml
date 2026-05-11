@@ -54,7 +54,7 @@ jobs:
             - name: Install System Packages
               uses: awalsh128/cache-apt-pkgs-action@latest
               with:
-                packages: libhdf5-dev doxygen
+                packages: libhdf5-dev doxygen libfmt-dev
                 version: 1.0
 
             - name: Setup Python

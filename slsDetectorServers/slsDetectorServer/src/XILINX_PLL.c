@@ -11,9 +11,9 @@
 // leave some things away)
 
 // clang-format off
-#define XILINX_PLL_INPUT_FREQ           (100000) // 100 MHz
-#define XILINX_PLL_MIN_FREQ             (10000)
-#define XILINX_PLL_MAX_FREQ             (250000)
+#define XILINX_PLL_INPUT_FREQ           (100000000) // 100 MHz
+#define XILINX_PLL_MIN_FREQ             (10000000)
+#define XILINX_PLL_MAX_FREQ             (250000000)
 #define XILINX_PLL_MAX_CLK_DIV          (256)
 #define XILINX_PLL_NUM_CLKS             (7)
 #define XILINX_PLL_MAX_NUM_CLKS_FOR_GET (3)
@@ -71,14 +71,14 @@
 
 // clang-format on
 
-// freq in kHz !!
+// freq in Hz !!
 int XILINX_PLL_setFrequency(uint32_t clk_index, uint32_t freq) {
     if (clk_index >= XILINX_PLL_NUM_CLKS) {
         LOG(logERROR, ("XILINX_PLL: Invalid clock index %d\n", clk_index));
         return 1;
     }
     if (freq < XILINX_PLL_MIN_FREQ || freq > XILINX_PLL_MAX_FREQ) {
-        LOG(logERROR, ("XILINX_PLL: Frequency %d kHz is out of range\n", freq));
+        LOG(logERROR, ("XILINX_PLL: Frequency %d Hz is out of range\n", freq));
         return 1;
     }
 
@@ -160,11 +160,7 @@ uint32_t XILINX_PLL_getFrequency(uint32_t clk_index) {
         clk_index -= XILINX_PLL_MEASURE_BASE_ADDR0_MAX_CLKS;
         base_addr = XILINX_PLL_MEASURE_BASE_ADDR1;
     }
-    uint32_t addr = base_addr + clk_index * XILINX_PLL_MEASURE_WIDTH;
-    uint32_t counter_val = bus_r_csp2(addr);
-    // Hz => round to nearest kHz
-    uint32_t freq_kHz = (counter_val + 500) / 1000; // round to nearest kHz
-    return freq_kHz;
+    return bus_r_csp2(base_addr + clk_index * XILINX_PLL_MEASURE_WIDTH);
 }
 
 bool XILINX_PLL_isLocked() {

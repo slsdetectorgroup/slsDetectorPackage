@@ -628,11 +628,14 @@
 #define ADC_SLOW_CTRL_DONE_OFST (1)
 #define ADC_SLOW_CTRL_DONE_MSK  (0x00000001 << ADC_SLOW_CTRL_DONE_OFST)
 
+/* Clock Measurement base reg */
+#define PLL_FREQ_MEASURE_REG (0x44 << MEM_MAP_SHIFT)
+
 /* SPI */
 #define SPI_CTRL_REG (0x48 << MEM_MAP_SHIFT)
-    #define SPI_CTRL_RX_EMPTY_BIT    2
-    #define SPI_CTRL_CHIPSELECT_BIT  4
-    #define SPI_CTRL_NBIT_OFST       16
+#define SPI_CTRL_RX_EMPTY_BIT    2
+#define SPI_CTRL_CHIPSELECT_BIT  4
+#define SPI_CTRL_NBIT_OFST       16
 #define SPI_WRITEDATA_REG (0x49 << MEM_MAP_SHIFT)
 #define SPI_READDATA_REG (0x4A << MEM_MAP_SHIFT)
 

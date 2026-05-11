@@ -50,7 +50,6 @@ class CommandParser:
         if len(arg['input_types']) != len(arg['input']):
             raise ValueError(f'Argument {arg} does not have the correct number of inputs')
         if 'separate_time_units' in arg:
-
             if arg['separate_time_units']['input'] == "":
                 raise ValueError(f'Argument {arg} does not have the correct number of inputs for separate_time_units')
             if len(arg['separate_time_units']['output']) != 2:
@@ -60,6 +59,16 @@ class CommandParser:
                 raise ValueError(f'Argument {arg} does not have the correct number of inputs for convert_to_time')
             if len(arg['convert_to_time']['output']) == "":
                 raise ValueError(f'Argument {arg} does not have the correct number of outputs for convert_to_time')
+        if 'separate_freq_units' in arg:
+            if arg['separate_freq_units']['input'] == "":
+                raise ValueError(f'Argument {arg} does not have the correct number of inputs for separate_freq_units')
+            if len(arg['separate_freq_units']['output']) != 2:
+                raise ValueError(f'Argument {arg} does not have the correct number of outputs for separate_freq_units')
+        if 'convert_to_freq' in arg:
+            if len(arg['convert_to_freq']['input']) != 2:
+                raise ValueError(f'Argument {arg} does not have the correct number of inputs for convert_to_freq')
+            if len(arg['convert_to_freq']['output']) == "":
+                raise ValueError(f'Argument {arg} does not have the correct number of outputs for convert_to_freq')
         # if infer_action:
         #     if arg['argc'] in self.argc_set:
         #         raise ValueError(f'Argument {arg} has a duplicate argc')

@@ -96,9 +96,17 @@ return 0
 }
 __adcclk() {
 FCN_RETURN=""
+if [[ ${IS_GET} -eq 1 ]]; then
+if [[ "${cword}" == "2" ]]; then
+FCN_RETURN="Hz MHz kHz"
+fi
+fi
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
 FCN_RETURN=""
+fi
+if [[ "${cword}" == "3" ]]; then
+FCN_RETURN="Hz MHz kHz"
 fi
 fi
 return 0
@@ -565,12 +573,12 @@ __dacname() {
 FCN_RETURN=""
 if [[ ${IS_GET} -eq 1 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
 fi
 fi
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
 fi
 if [[ "${cword}" == "3" ]]; then
 FCN_RETURN=""
@@ -611,9 +619,17 @@ return 0
 }
 __dbitclk() {
 FCN_RETURN=""
+if [[ ${IS_GET} -eq 1 ]]; then
+if [[ "${cword}" == "2" ]]; then
+FCN_RETURN="Hz MHz kHz"
+fi
+fi
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
 FCN_RETURN=""
+fi
+if [[ "${cword}" == "3" ]]; then
+FCN_RETURN="Hz MHz kHz"
 fi
 fi
 return 0
@@ -648,21 +664,21 @@ __defaultdac() {
 FCN_RETURN=""
 if [[ ${IS_GET} -eq 1 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
 fi
 if [[ "${cword}" == "3" ]]; then
-FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
 fi
 fi
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
 fi
 if [[ "${cword}" == "3" ]]; then
 FCN_RETURN=""
 fi
 if [[ "${cword}" == "4" ]]; then
-FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
 fi
 fi
 return 0
@@ -671,13 +687,13 @@ __defaultpattern() {
 FCN_RETURN=""
 if [[ ${IS_GET} -eq 1 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
 fi
 if [[ "${cword}" == "3" ]]; then
 FCN_RETURN=""
 fi
 if [[ "${cword}" == "4" ]]; then
-FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
 fi
 fi
 return 0
@@ -2120,9 +2136,17 @@ return 0
 }
 __runclk() {
 FCN_RETURN=""
+if [[ ${IS_GET} -eq 1 ]]; then
+if [[ "${cword}" == "2" ]]; then
+FCN_RETURN="Hz MHz kHz"
+fi
+fi
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
 FCN_RETURN=""
+fi
+if [[ "${cword}" == "3" ]]; then
+FCN_RETURN="Hz MHz kHz"
 fi
 fi
 return 0
@@ -2412,7 +2436,7 @@ __scan() {
 FCN_RETURN=""
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
 fi
 if [[ "${cword}" == "3" ]]; then
 FCN_RETURN=""
@@ -2465,7 +2489,7 @@ __settings() {
 FCN_RETURN=""
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
 fi
 fi
 return 0
@@ -2575,12 +2599,12 @@ __slowadcname() {
 FCN_RETURN=""
 if [[ ${IS_GET} -eq 1 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
 fi
 fi
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
 fi
 if [[ "${cword}" == "3" ]]; then
 FCN_RETURN=""
@@ -2684,6 +2708,16 @@ return 0
 }
 __syncclk() {
 FCN_RETURN=""
+if [[ ${IS_GET} -eq 1 ]]; then
+if [[ "${cword}" == "2" ]]; then
+FCN_RETURN="Hz MHz kHz"
+fi
+fi
+if [[ ${IS_GET} -eq 0 ]]; then
+if [[ "${cword}" == "2" ]]; then
+FCN_RETURN="Hz MHz kHz"
+fi
+fi
 return 0
 }
 __temp_10ge() {
@@ -2777,13 +2811,13 @@ if [[ "${cword}" == "2" ]]; then
 FCN_RETURN=""
 fi
 if [[ "${cword}" == "3" ]]; then
-FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
 fi
 if [[ "${cword}" == "4" ]]; then
 FCN_RETURN=""
 fi
 if [[ "${cword}" == "5" ]]; then
-FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
 fi
 fi
 return 0
@@ -2795,13 +2829,13 @@ if [[ "${cword}" == "2" ]]; then
 FCN_RETURN=""
 fi
 if [[ "${cword}" == "3" ]]; then
-FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
 fi
 if [[ "${cword}" == "4" ]]; then
 FCN_RETURN=""
 fi
 if [[ "${cword}" == "5" ]]; then
-FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
 fi
 fi
 return 0
@@ -2810,7 +2844,7 @@ __timing() {
 FCN_RETURN=""
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="`sls_detector_get timinglist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN="`sls_detector_get timinglist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
 fi
 fi
 return 0

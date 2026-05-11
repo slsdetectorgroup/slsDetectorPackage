@@ -27,11 +27,6 @@ enum TLogLevel {
     logDEBUG5
 };
 
-// Compiler should optimize away anything below this value
-#ifndef LOG_MAX_REPORTING_LEVEL
-#define LOG_MAX_REPORTING_LEVEL sls::logINFO
-#endif
-
 #define __AT__                                                                 \
     std::string(__FILE__) + std::string("::") + std::string(__func__) +        \
         std::string("(): ")
@@ -43,7 +38,7 @@ enum TLogLevel {
 
 class Logger {
     std::ostringstream os;
-    TLogLevel level = LOG_MAX_REPORTING_LEVEL;
+    TLogLevel level = ReportingLevel();
 
   public:
     Logger() = default;
@@ -55,7 +50,7 @@ class Logger {
     }
 
     static TLogLevel &ReportingLevel() { // singelton eeh
-        static TLogLevel reportingLevel = logINFO;
+        static TLogLevel reportingLevel = LOG_MAX_REPORTING_LEVEL;
         return reportingLevel;
     }
 

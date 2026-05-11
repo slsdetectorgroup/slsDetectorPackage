@@ -2,6 +2,7 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #pragma once
 
+#include "clogger.h"
 #include "sls/md5.h"
 #include <stdint.h> // int64_t
 #include <stdio.h>
@@ -20,6 +21,19 @@
 
 enum numberMode { DEC, HEX };
 enum PROGRAM_INDEX { PROGRAM_FPGA, PROGRAM_KERNEL, PROGRAM_SERVER };
+
+#define NS_PER_SEC      1000000000ULL
+#define HALF_NS_PER_SEC (NS_PER_SEC / 2)
+static inline uint64_t ns_to_clocks(uint64_t t, uint32_t freq_hz) {
+    return (t * (uint64_t)freq_hz + HALF_NS_PER_SEC) / NS_PER_SEC;
+}
+static inline uint64_t clocks_to_ns(uint64_t clocks, uint32_t freq_hz) {
+    if (freq_hz == 0) {
+        LOG(logERROR, ("Frequency is 0, cannot convert clocks to ns\n"));
+        return (uint64_t)-1;
+    }
+    return (clocks * (uint64_t)NS_PER_SEC + freq_hz / 2) / freq_hz;
+}
 
 /**
  * Convert a value from a range to a different range (eg voltage to dac or vice

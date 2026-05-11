@@ -46,6 +46,9 @@
 #define DEFAULT_UDP_SRC_PORTNO   32410
 #define DEFAULT_UDP_DST_PORTNO   50001
 
+/** for virtual detectors */
+#define LOCALHOSTIP_INT 2130706433
+
 #define MAX_UDP_DESTINATION 32
 
 #define SLS_DETECTOR_HEADER_VERSION      0x2
@@ -82,8 +85,13 @@
 #define DEFAULT_STREAMING_TIMER_IN_MS 500
 
 #define NUM_RX_THREAD_IDS 9
+
 // NOLINTEND(cppcoreguidelines-macro-usage)
 #ifdef __cplusplus
+
+// TODO: why are all these defs inside a class? - why not static
+enum ReturnCode { OK = 0, FAIL = 1 };
+
 class slsDetectorDefs {
   public:
 #endif
@@ -98,7 +106,9 @@ class slsDetectorDefs {
         MOENCH,
         MYTHEN3,
         GOTTHARD2,
-        XILINX_CHIPTESTBOARD
+        XILINX_CHIPTESTBOARD,
+        MATTERHORN // TODO: maybe better to have it under a namespace
+                   // slsDetectorDefs instead of grouped in a class
     };
 
     /**  return values */
@@ -210,6 +220,16 @@ class slsDetectorDefs {
         bool flipRows;
         std::map<std::string, std::string> addJsonHeader;
     };
+
+    struct Hz {
+        int value{0};
+        explicit Hz(int v) : value(v){};
+        constexpr bool operator==(const Hz &other) const {
+            return (value == other.value);
+        }
+    };
+
+    enum class FrequencyUnit { Hz, kHz, MHz };
 
 #endif
     enum frameDiscardPolicy {
@@ -758,6 +778,13 @@ struct detParameters {
             nChipY = 1;
             nDacs = 14;
             break;
+        case slsDetectorDefs::detectorType::MATTERHORN:
+            nChanX = 256;
+            nChanY = 256;
+            nChipX = 4;
+            nChipY = 2;
+            nDacs = 31;
+            break;
         default:
             throw sls::RuntimeError("Unknown detector type! " +
                                     std::to_string(type));
@@ -837,7 +864,6 @@ typedef struct {
 #endif
 
 #ifdef __cplusplus
-
 // TODO! discuss this
 #include <vector> //hmm... but currently no way around
 namespace sls {

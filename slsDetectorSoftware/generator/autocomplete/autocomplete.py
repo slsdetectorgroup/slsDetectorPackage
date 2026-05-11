@@ -16,6 +16,7 @@ type_values = {
     'special::mv': ["mv", "mV"],
     "special::deg": ["deg"],
     "special::time_unit": ["s", "ms", "us", "ns"],
+    "special::freq_unit": ["Hz", "kHz", "MHz"],
     "special::hard": ["hard"],
     "special::force-delete-normal-file": ["--force-delete-normal-file"],
     "special::currentSourceFix": ["fix", "nofix"],
@@ -40,11 +41,11 @@ def get_types(arg_types):
     #list of options with a command line call that fetches them
     #TODO! Rename sls_detector_get 
     if "defs::dacIndex" in arg_types:
-        return "`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
+        return r"`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
     elif "defs::detectorSettings" in arg_types:
-        return "`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
+        return r"`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
     elif "defs::timingMode" in arg_types:
-        return "`sls_detector_get timinglist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
+        return r"`sls_detector_get timinglist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
 
     
     return ret

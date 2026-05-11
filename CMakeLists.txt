@@ -32,6 +32,7 @@ if(NOT CMAKE_USE_PTHREADS_INIT)
     message(FATAL_ERROR "A POSIX threads (pthread) implementation is required, but was not found.")
 endif()
 
+set(SLS_LOG_MAX_REPORTING_LEVEL "sls::TLogLevel::logINFO" CACHE STRING "Set the maximum logging level for the project")
 
 option(SLS_USE_SYSTEM_ZMQ "Use system installed libzmq" OFF)
 
@@ -39,6 +40,7 @@ option(SLS_USE_SYSTEM_ZMQ "Use system installed libzmq" OFF)
 include(FetchContent)
 option(SLS_FETCH_ZMQ_FROM_GITHUB "Fetch zmq from github" OFF)
 option(SLS_FETCH_PYBIND11_FROM_GITHUB "Fetch pybind11 from github" OFF)
+option(SLS_FETCH_FMT_FROM_GITHUB "Fetch fmt from github" OFF)
 
 # Allow FetchContent_Populate to be called with a single argument
 # otherwise deprecated warning is issued
@@ -187,6 +189,40 @@ if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     set(SLS_MASTER_PROJECT ON)
 endif()
 
+if (SLS_FETCH_FMT_FROM_GITHUB)
+    set(FMT_TEST OFF CACHE INTERNAL "disabling fmt tests")
+    FetchContent_Declare(
+            fmt
+            GIT_REPOSITORY  https://github.com/fmtlib/fmt.git
+            GIT_TAG         12.1.0
+            GIT_PROGRESS    TRUE
+            USES_TERMINAL_DOWNLOAD TRUE
+    )
+    set(FMT_INSTALL ON CACHE BOOL "")
+    FetchContent_MakeAvailable(fmt)
+    set_property(TARGET fmt PROPERTY POSITION_INDEPENDENT_CODE ON)
+else()
+     # downloaded from https://github.com/fmtlib/fmt/releases/tag/12.1.0
+     set(FMT_TEST OFF CACHE INTERNAL "disabling fmt tests")
+     FetchContent_Declare(
+            fmt
+            URL ${CMAKE_CURRENT_SOURCE_DIR}/libs/fmt/fmt-12.1.0.tar.gz
+            # Compute hash: md5sum fmt-12.1.0.tar.gz 
+            URL_HASH MD5=92eb6f492e4838e5f024ce5207beafc7) 
+    FetchContent_MakeAvailable(fmt)
+    set_property(TARGET fmt PROPERTY POSITION_INDEPENDENT_CODE ON)
+endif()
+
+# Export fmt 
+if(SLS_MASTER_PROJECT)
+    install(TARGETS fmt
+        EXPORT ${TARGETS_EXPORT_NAME}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    )
+endif()
 
 
 option(SLS_USE_HDF5 "HDF5 File format" OFF)
@@ -194,6 +230,7 @@ option(SLS_BUILD_SHARED_LIBRARIES "Build shared libaries" OFF)
 option(SLS_USE_TEXTCLIENT "Text Client" ON)
 option(SLS_USE_DETECTOR "Detector libs" ON)
 option(SLS_USE_RECEIVER "Receiver" ON)
+option(SLS_USE_SERVER "Server" ON)
 option(SLS_USE_RECEIVER_BINARIES "Receiver binaries" ON)
 option(SLS_USE_GUI "GUI" OFF)
 option(SLS_USE_SIMULATOR "Simulator" OFF)
@@ -208,6 +245,7 @@ option(SLS_TUNE_LOCAL "tune to local machine" OFF)
 option(SLS_DEVEL_HEADERS "install headers for devel" OFF)
 option(SLS_USE_MOENCH "compile zmq and post processing for Moench" OFF)
 option(SLS_USE_JUNGFRAU "compile post processing for Jungfrau" OFF)
+option(SLS_USE_MATTERHORN "compile matterhorn server" OFF)
 option(SLS_INSTALL_VERSIONED_BINARIES "Add version number to binaries on install" OFF) #Needed for multi version RPM
 
 #Convenience option to switch off defaults when building Moench binaries only
@@ -282,18 +320,15 @@ if(SLS_EXT_BUILD)
 endif()
 
 
-
 # slsProjectOptions and slsProjectWarnings are used
 # to control options for the libraries
 if(NOT TARGET slsProjectOptions)
     add_library(slsProjectOptions INTERFACE)
-   target_compile_features(slsProjectOptions INTERFACE cxx_std_17)
+    target_compile_features(slsProjectOptions INTERFACE cxx_std_17)
+    target_compile_definitions(slsProjectOptions
+    INTERFACE LOG_MAX_REPORTING_LEVEL=${SLS_LOG_MAX_REPORTING_LEVEL})
 endif()
 
-set(LOG_MAX_REPORTING_LEVEL sls::logINFO CACHE STRING "set logging level")
-target_compile_definitions(slsProjectOptions
-    INTERFACE LOG_MAX_REPORTING_LEVEL=${LOG_MAX_REPORTING_LEVEL}
-)
 
 if (NOT TARGET slsProjectWarnings)
     add_library(slsProjectWarnings INTERFACE)
@@ -393,7 +428,12 @@ endif()
 
 if (SLS_USE_DETECTOR OR SLS_USE_TEXTCLIENT)
     add_subdirectory(slsDetectorSoftware)
-endif ()
+endif()
+
+# TODO refactor with simulators 
+if (SLS_USE_SERVER) 
+    add_subdirectory(slsDetectorServers/slsDetectorServer_cpp)
+endif()
 
 if (SLS_USE_RECEIVER)
     add_subdirectory(slsReceiverSoftware) 
@@ -403,6 +443,10 @@ if (SLS_USE_GUI)
     add_subdirectory(libs/qwt)  
     add_subdirectory(slsDetectorGui)
 endif (SLS_USE_GUI)
+
+if (SLS_USE_MATTERHORN)
+    add_subdirectory(slsDetectorServers/matterhornServer)
+endif() 
 
 if (SLS_USE_SIMULATOR)
     add_subdirectory(slsDetectorServers)

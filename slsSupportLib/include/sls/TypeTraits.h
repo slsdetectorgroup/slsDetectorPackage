@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #pragma once
+#include "sls/sls_detector_defs.h"
+
 #include <type_traits>
 #include <vector>
 
@@ -120,4 +122,9 @@ struct has_bool_isValid : std::false_type {};
 template <typename T>
 struct has_bool_isValid<T, std::void_t<decltype(std::declval<T>().isValid)>>
     : std::is_same<decltype(std::declval<T>().isValid), bool> {};
+
+template <typename T> struct is_frequency : std::false_type {};
+
+template <> struct is_frequency<defs::Hz> : std::true_type {};
+
 } // namespace sls

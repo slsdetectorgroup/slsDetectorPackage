@@ -921,23 +921,65 @@ TEST_CASE("adcclk", "[.detectorintegration]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         auto prev_val = det.getADCClock();
+
+        REQUIRE_NOTHROW(caller.call("adcclk", {"MHZ"}, -1, GET));
+        REQUIRE_NOTHROW(caller.call("adcclk", {"mhz"}, -1, GET));
+        REQUIRE_NOTHROW(caller.call("adcclk", {"MHz"}, -1, GET));
+        REQUIRE_NOTHROW(caller.call("adcclk", {"kHz"}, -1, GET));
+        REQUIRE_NOTHROW(caller.call("adcclk", {"Hz"}, -1, GET));
+        REQUIRE_NOTHROW(caller.call("adcclk", {}, -1, GET));
+        // min
+        if (det_type == defs::CHIPTESTBOARD)
+            REQUIRE_THROWS(caller.call("adcclk", {"1", "MHz"}, -1, PUT));
+        else
+            REQUIRE_THROWS(caller.call("adcclk", {"9", "MHz"}, -1, PUT));
+        // max
+        if (det_type == defs::CHIPTESTBOARD)
+            REQUIRE_THROWS(caller.call("adcclk", {"66", "MHz"}, -1, PUT));
+        else
+            REQUIRE_THROWS(caller.call("adcclk", {"301", "MHz"}, -1, PUT));
+
         {
             std::ostringstream oss;
-            caller.call("adcclk", {"20"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "adcclk 20\n");
+            caller.call("adcclk", {"20MHz"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "adcclk 20MHz\n");
         }
         {
             std::ostringstream oss;
-            caller.call("adcclk", {"10"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "adcclk 10\n");
+            caller.call("adcclk", {"10000000"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "adcclk 10000000\n");
+        }
+
+        {
+            std::ostringstream oss;
+            caller.call("adcclk", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "adcclk 10MHz\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("adcclk", {"15000", "kHz"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "adcclk 15000kHz\n");
         }
         {
             std::ostringstream oss;
             caller.call("adcclk", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "adcclk 10\n");
+            REQUIRE(oss.str() == "adcclk 15MHz\n");
         }
+        {
+            std::ostringstream oss;
+            caller.call("adcclk", {"15.75", "MHz"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "adcclk 15.75MHz\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("adcclk", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "adcclk 15.75MHz\n");
+        }
+        std::cout << "Resetting adc clock to :" << ToString(prev_val)
+                  << std::endl;
         for (int i = 0; i != det.size(); ++i) {
             det.setADCClock(prev_val[i], {i});
         }
@@ -952,25 +994,119 @@ TEST_CASE("runclk", "[.detectorintegration]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         auto prev_val = det.getRUNClock();
+
+        REQUIRE_NOTHROW(caller.call("runclk", {"MHZ"}, -1, GET));
+        REQUIRE_NOTHROW(caller.call("runclk", {"mhz"}, -1, GET));
+        REQUIRE_NOTHROW(caller.call("runclk", {"MHz"}, -1, GET));
+        REQUIRE_NOTHROW(caller.call("runclk", {"kHz"}, -1, GET));
+        REQUIRE_NOTHROW(caller.call("runclk", {"Hz"}, -1, GET));
+        REQUIRE_NOTHROW(caller.call("runclk", {}, -1, GET));
+        // min
+        if (det_type == defs::CHIPTESTBOARD)
+            REQUIRE_THROWS(caller.call("runclk", {"1", "MHz"}, -1, PUT));
+        else
+            REQUIRE_THROWS(caller.call("runclk", {"9", "MHz"}, -1, PUT));
+        // max
+        REQUIRE_THROWS(caller.call("runclk", {"301", "MHz"}, -1, PUT));
+
         {
             std::ostringstream oss;
-            caller.call("runclk", {"20"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "runclk 20\n");
+            caller.call("runclk", {"20MHz"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "runclk 20MHz\n");
         }
         {
             std::ostringstream oss;
-            caller.call("runclk", {"10"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "runclk 10\n");
+            caller.call("runclk", {"10000000"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "runclk 10000000\n");
+        }
+
+        {
+            std::ostringstream oss;
+            caller.call("runclk", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "runclk 10MHz\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("runclk", {"15000", "kHz"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "runclk 15000kHz\n");
         }
         {
             std::ostringstream oss;
             caller.call("runclk", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "runclk 10\n");
+            REQUIRE(oss.str() == "runclk 15MHz\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("runclk", {"15.75", "MHz"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "runclk 15.75MHz\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("runclk", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "runclk 15.75MHz\n");
+        }
+        // tolerance
+        auto prev_exptime = det.getExptime();
+        auto prev_period = det.getPeriod();
+        auto prev_delay = det.getDelayAfterTrigger();
+        {
+            caller.call("runclk", {"80", "MHz"}, -1, PUT);
+            {
+                std::ostringstream oss;
+                REQUIRE_NOTHROW(
+                    caller.call("exptime", {"10012", "ns"}, -1, PUT));
+                REQUIRE_NOTHROW(caller.call("exptime", {"ns"}, -1, GET, oss));
+                REQUIRE(oss.str() == "exptime 10013ns\n");
+            }
+            {
+                std::ostringstream oss;
+                REQUIRE_NOTHROW(
+                    caller.call("exptime", {"10013", "ns"}, -1, PUT));
+                REQUIRE_NOTHROW(caller.call("exptime", {"ns"}, -1, GET, oss));
+                REQUIRE(oss.str() == "exptime 10013ns\n");
+            }
+            {
+                std::ostringstream oss;
+                REQUIRE_NOTHROW(
+                    caller.call("exptime", {"10019", "ns"}, -1, PUT));
+                REQUIRE_NOTHROW(caller.call("exptime", {"ns"}, -1, GET, oss));
+                REQUIRE(oss.str() == "exptime 10025ns\n");
+            }
+            {
+                std::ostringstream oss;
+                REQUIRE_NOTHROW(
+                    caller.call("period", {"10125", "ns"}, -1, PUT));
+                REQUIRE_NOTHROW(caller.call("period", {"ns"}, -1, GET, oss));
+                REQUIRE(oss.str() == "period 10125ns\n");
+            }
+            {
+                std::ostringstream oss;
+                REQUIRE_NOTHROW(
+                    caller.call("period", {"10124", "ns"}, -1, PUT));
+                REQUIRE_NOTHROW(caller.call("period", {"ns"}, -1, GET, oss));
+                REQUIRE(oss.str() == "period 10125ns\n");
+            }
+            {
+                std::ostringstream oss;
+                REQUIRE_NOTHROW(caller.call("delay", {"10125", "ns"}, -1, PUT));
+                REQUIRE_NOTHROW(caller.call("delay", {"ns"}, -1, GET, oss));
+                REQUIRE(oss.str() == "delay 10125ns\n");
+            }
+            {
+                std::ostringstream oss;
+                REQUIRE_NOTHROW(caller.call("delay", {"10124", "ns"}, -1, PUT));
+                REQUIRE_NOTHROW(caller.call("delay", {"ns"}, -1, GET, oss));
+                REQUIRE(oss.str() == "delay 10125ns\n");
+            }
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setRUNClock(prev_val[i], {i});
+            det.setExptime(prev_exptime[i], {i});
+            det.setPeriod(prev_period[i], {i});
+            det.setDelayAfterTrigger(prev_delay[i], {i});
         }
     } else {
         // clock index might work
@@ -983,6 +1119,11 @@ TEST_CASE("syncclk", "[.detectorintegration]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::CHIPTESTBOARD) {
+        REQUIRE_NOTHROW(caller.call("syncclk", {"MHZ"}, -1, GET));
+        REQUIRE_NOTHROW(caller.call("syncclk", {"mhz"}, -1, GET));
+        REQUIRE_NOTHROW(caller.call("syncclk", {"MHz"}, -1, GET));
+        REQUIRE_NOTHROW(caller.call("syncclk", {"kHz"}, -1, GET));
+        REQUIRE_NOTHROW(caller.call("syncclk", {"Hz"}, -1, GET));
         REQUIRE_NOTHROW(caller.call("syncclk", {}, -1, GET));
     } else {
         // clock index might work
@@ -1249,22 +1390,59 @@ TEST_CASE("dbitclk", "[.detectorintegration]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         auto prev_val = det.getDBITClock();
+
+        REQUIRE_NOTHROW(caller.call("dbitclk", {"MHZ"}, -1, GET));
+        REQUIRE_NOTHROW(caller.call("dbitclk", {"mhz"}, -1, GET));
+        REQUIRE_NOTHROW(caller.call("dbitclk", {"MHz"}, -1, GET));
+        REQUIRE_NOTHROW(caller.call("dbitclk", {"kHz"}, -1, GET));
+        REQUIRE_NOTHROW(caller.call("dbitclk", {"Hz"}, -1, GET));
+        REQUIRE_NOTHROW(caller.call("dbitclk", {}, -1, GET));
+        // min
+        if (det_type == defs::CHIPTESTBOARD)
+            REQUIRE_THROWS(caller.call("dbitclk", {"1", "MHz"}, -1, PUT));
+        else
+            REQUIRE_THROWS(caller.call("dbitclk", {"9", "MHz"}, -1, PUT));
+        // max
+        REQUIRE_THROWS(caller.call("dbitclk", {"301", "MHz"}, -1, PUT));
+
         {
             std::ostringstream oss;
-            caller.call("dbitclk", {"20"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "dbitclk 20\n");
+            caller.call("dbitclk", {"20MHz"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "dbitclk 20MHz\n");
         }
         {
             std::ostringstream oss;
-            caller.call("dbitclk", {"10"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "dbitclk 10\n");
+            caller.call("dbitclk", {"10000000"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "dbitclk 10000000\n");
+        }
+
+        {
+            std::ostringstream oss;
+            caller.call("dbitclk", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "dbitclk 10MHz\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("dbitclk", {"15000", "kHz"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "dbitclk 15000kHz\n");
         }
         {
             std::ostringstream oss;
             caller.call("dbitclk", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "dbitclk 10\n");
+            REQUIRE(oss.str() == "dbitclk 15MHz\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("dbitclk", {"15.75", "MHz"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "dbitclk 15.75MHz\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("dbitclk", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "dbitclk 15.75MHz\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setDBITClock(prev_val[i], {i});

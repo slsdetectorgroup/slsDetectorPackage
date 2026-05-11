@@ -50,8 +50,6 @@ std::string Module::getHostname() const { return shm()->hostname; }
 void Module::setHostname(const std::string &hostname,
                          const bool initialChecks) {
     strcpy_safe(shm()->hostname, hostname.c_str());
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.close();
     try {
         checkDetectorVersionCompatibility();
         initialDetectorServerChecks();
@@ -87,9 +85,11 @@ std::string Module::getControlServerLongVersion() const {
     // throw with old server version (sends 8 bytes)
     catch (RuntimeError &e) {
         std::string emsg = std::string(e.what());
+
         if (emsg.find(F_GET_SERVER_VERSION) && emsg.find("8 bytes")) {
             throwDeprecatedServerVersion();
         }
+
         throw;
     }
 }
@@ -146,7 +146,6 @@ std::string Module::getReceiverSoftwareVersion() const {
 // static function
 slsDetectorDefs::detectorType
 Module::getTypeFromDetector(const std::string &hostname, uint16_t cport) {
-    LOG(logDEBUG1) << "Getting Module type ";
     ClientSocket socket("Detector", hostname, cport);
     socket.Send(F_GET_DETECTOR_TYPE);
     socket.setFnum(F_GET_DETECTOR_TYPE);
@@ -2669,7 +2668,7 @@ void Module::configureTransceiver() {
 }
 
 // Pattern
-std::string Module::getPatterFileName() const {
+std::string Module::getPatternFileName() const {
     char retval[MAX_STR_LENGTH]{};
     sendToDetector(F_GET_PATTERN_FILE_NAME, nullptr, retval);
     return retval;
@@ -3515,6 +3514,9 @@ void Module::initialDetectorServerChecks() {
 void Module::checkDetectorVersionCompatibility() {
     std::string detServers[2] = {getControlServerLongVersion(),
                                  getStopServerLongVersion()};
+    LOG(logDEBUG1)
+        << "Checking detector version compatibility with client version "
+        << detServers[0] << " and " << detServers[1];
     for (int i = 0; i != 2; ++i) {
         // det and client (sem. versioning)
         Version det(detServers[i]);
@@ -3563,6 +3565,8 @@ const std::string Module::getDetectorAPI() const {
         return APIGOTTHARD2;
     case XILINX_CHIPTESTBOARD:
         return APIXILINXCTB;
+    case MATTERHORN:
+        return APIMATTERHORN;
     default:
         throw NotImplementedError(
             "Detector type not implemented to get Detector API");

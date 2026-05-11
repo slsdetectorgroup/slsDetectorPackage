@@ -1613,20 +1613,26 @@ class Detector {
     /** [CTB] */
     void setNumberOfAnalogSamples(int value, Positions pos = {});
 
-    /** [CTB] in MHz, [XCTB] in kHz */
-    Result<int> getADCClock(Positions pos = {}) const;
+    /** [CTB][XCTB] */
+    Result<defs::Hz> getADCClock(Positions pos = {}) const;
 
-    /** [CTB] in MHz, [XCTB] in kHz */
-    void setADCClock(int value_in_MHz, Positions pos = {});
+    /** [CTB][XCTB] */
+    void setADCClock(defs::Hz val, Positions pos = {});
 
-    /** [CTB] in MHz, [XCTB] in kHz */
-    Result<int> getRUNClock(Positions pos = {}) const;
+    /** [CTB][XCTB] */
+    Result<defs::Hz> getRUNClock(Positions pos = {}) const;
 
-    /** [CTB] in MHz, [XCTB] in kHz */
-    void setRUNClock(int value_in_MHz, Positions pos = {});
+    /** [CTB][XCTB] */
+    void setRUNClock(defs::Hz val, Positions pos = {});
 
-    /** [CTB]  in MHZ */
-    Result<int> getSYNCClock(Positions pos = {}) const;
+    /** [CTB][XCTB] */
+    Result<defs::Hz> getDBITClock(Positions pos = {}) const;
+
+    /** [CTB][XCTB] */
+    void setDBITClock(defs::Hz val, Positions pos = {});
+
+    /** [CTB][XCTB] */
+    Result<defs::Hz> getSYNCClock(Positions pos = {}) const;
 
     /** gets list of power enums */
     std::vector<defs::powerIndex> getPowerList() const;
@@ -1720,12 +1726,6 @@ class Detector {
      * [Xilinx CTB] Options: TRANSCEIVER_ONLY (default)
      */
     void setReadoutMode(defs::readoutMode value, Positions pos = {});
-
-    /** [CTB] in MHz, [XCTB] in kHz */
-    Result<int> getDBITClock(Positions pos = {}) const;
-
-    /** [CTB] in MHz, [XCTB] in kHz */
-    void setDBITClock(int value_in_MHz, Positions pos = {});
 
     /** [CTB] */
     Result<int> getExternalSamplingSource(Positions pos = {}) const;
@@ -1934,7 +1934,7 @@ class Detector {
     /** [CTB][Mythen3][Xilinx CTB] Gets the pattern file name including path of
      * the last pattern uploaded. \n Returns an empty if nothing was uploaded or
      * via a server default file*/
-    Result<std::string> getPatterFileName(Positions pos = {}) const;
+    Result<std::string> getPatternFileName(Positions pos = {}) const;
 
     /** [CTB][Mythen3][Xilinx CTB] Loads ASCII pattern file directly to server
      * (instead of executing line by line)*/

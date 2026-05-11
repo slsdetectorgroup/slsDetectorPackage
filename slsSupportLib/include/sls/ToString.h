@@ -108,6 +108,12 @@ ToString(From t) {
     }
 }
 
+/** Convert frequency with specified output unit */
+std::string ToString(defs::Hz f, defs::FrequencyUnit unit);
+
+/** Convert frequency automatically selecting the unit */
+std::string ToString(defs::Hz f);
+
 /** Conversion of floating point values, removes trailing zeros*/
 template <typename T>
 typename std::enable_if<std::is_floating_point<T>::value, std::string>::type
@@ -279,7 +285,23 @@ ToString(const T &container, const std::string &unit) {
     return os.str();
 }
 
+/** Container and specified unit, call ToString(value, FrequencyUnit) */
 template <typename T>
+typename std::enable_if<is_container<T>::value, std::string>::type
+ToString(const T &container, defs::FrequencyUnit unit) {
+    std::ostringstream os;
+    os << '[';
+    if (!container.empty()) {
+        auto it = container.cbegin();
+        os << ToString(*it++, unit);
+        while (it != container.cend())
+            os << ", " << ToString(*it++, unit);
+    }
+    os << ']';
+    return os.str();
+}
+
+template <typename T, std::enable_if_t<sls::is_duration<T>::value, int> = 0>
 T StringTo(const std::string &t, const std::string &unit) {
     double tval{0};
     try {
@@ -301,6 +323,33 @@ T StringTo(const std::string &t, const std::string &unit) {
     } else {
         throw RuntimeError(
             "Invalid unit in conversion from string to std::chrono::duration");
+    }
+}
+
+template <typename T, std::enable_if_t<sls::is_frequency<T>::value, int> = 0>
+T StringTo(const std::string &f, const std::string &unit) {
+    double fval{0};
+    try {
+        fval = std::stod(f);
+    } catch (const std::invalid_argument &e) {
+        throw RuntimeError("Could not convert string to frequency");
+    }
+    auto unitLower = [&] {
+        std::string result = unit;
+        std::transform(result.begin(), result.end(), result.begin(),
+                       [](unsigned char c) { return std::tolower(c); });
+        return result;
+    }();
+
+    if (unitLower == "mhz") {
+        return T(static_cast<int>(fval * 1e6));
+    } else if (unitLower == "khz") {
+        return T(static_cast<int>(fval * 1e3));
+    } else if (unitLower.empty() || unitLower == "hz") {
+        return T(static_cast<int>(fval));
+    } else {
+        throw RuntimeError(
+            "Invalid unit in conversion from string to frequency");
     }
 }
 

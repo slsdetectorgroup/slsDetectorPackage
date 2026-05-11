@@ -13,6 +13,7 @@ pybind11_add_module(_slsdet
     src/DurationWrapper.cpp
     src/pedestal.cpp
     src/bit.cpp
+    src/frequency.cpp
 )
 
 target_link_libraries(_slsdet PUBLIC 

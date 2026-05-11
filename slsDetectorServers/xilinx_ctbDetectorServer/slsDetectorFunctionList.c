@@ -363,7 +363,7 @@ void initStopServer() {
             return;
         }
 #ifdef VIRTUAL
-        sharedMemory_setStop(0);
+        setupDetector();
 #endif
     }
     initCheckDone = 1;
@@ -389,9 +389,13 @@ void setupDetector() {
     vLimit = DEFAULT_VLIMIT;
 
 #ifdef VIRTUAL
-    sharedMemory_setStatus(IDLE);
-    setupUDPCommParameters();
-    initializePatternWord();
+    if (isControlServer) {
+        sharedMemory_setStatus(IDLE);
+        setupUDPCommParameters();
+        initializePatternWord();
+    } else {
+        sharedMemory_setStop(0);
+    }
 #endif
     // initialization only at start up (restart fpga)
     initError = waitTransceiverReset(initErrorMessage);
@@ -444,9 +448,15 @@ void setupDetector() {
     setNumFrames(DEFAULT_NUM_FRAMES);
     setNumTriggers(DEFAULT_NUM_CYCLES);
     setTiming(DEFAULT_TIMING_MODE);
-    setExpTime(DEFAULT_EXPTIME);
-    setPeriod(DEFAULT_PERIOD);
-    setDelayAfterTrigger(DEFAULT_DELAY);
+    initError = setExpTime(DEFAULT_EXPTIME, initErrorMessage);
+    if (initError == FAIL)
+        return;
+    initError = setPeriod(DEFAULT_PERIOD, initErrorMessage);
+    if (initError == FAIL)
+        return;
+    initError = setDelayAfterTrigger(DEFAULT_DELAY, initErrorMessage);
+    if (initError == FAIL)
+        return;
 
     setNextFrameNumber(DEFAULT_STARTING_FRAME_NUMBER);
 }
@@ -766,63 +776,132 @@ int getNumTransceiverSamples() {
     return ((bus_r(NO_SAMPLES_X_REG) & NO_SAMPLES_X_MSK) >> NO_SAMPLES_X_OFST);
 }
 
-int setExpTime(int64_t val) {
+int setExpTime(int64_t val, char *mess) {
     setPatternWaitInterval(0, val);
 
-    // validate for tolerance
-    int64_t retval = getExpTime();
+    // validate
+    uint64_t arg_clocks = ns_to_clocks(val, clkFrequency[RUN_CLK]);
+    uint64_t retval_clocks = getPatternWaitClocks(0);
+    if (arg_clocks != retval_clocks) {
+        sprintf(mess,
+                "Failed to set exposure time. Could not set number of clocks "
+                "to %lld, read %lld\n",
+                (long long int)arg_clocks, (long long int)retval_clocks);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+
+    // log rounding if any
+    int64_t retval = getPatternWaitInterval(0);
     if (val != retval) {
+        LOG(logWARNING, ("Rounding to %lld ns due to clock frequency\n",
+                         (long long int)retval));
+    }
+
+    return OK;
+}
+
+int getExpTime(int64_t *retval, char *mess) {
+    *retval = getPatternWaitInterval(0);
+    if (*retval == -1) {
+        sprintf(mess, "Failed to get exposure time.\n");
+        LOG(logERROR, (mess));
         return FAIL;
     }
     return OK;
 }
 
-int64_t getExpTime() { return getPatternWaitInterval(0); }
-
-int setPeriod(int64_t val) {
+int setPeriod(int64_t val, char *mess) {
     if (val < 0) {
-        LOG(logERROR, ("Invalid period: %lld ns\n", (long long int)val));
+        sprintf(mess, "Invalid period: %lld ns\n", (long long int)val);
+        LOG(logERROR, (mess));
         return FAIL;
     }
     LOG(logINFO, ("Setting period %lld ns\n", (long long int)val));
-    val *= (NS_TO_CLK_CYCLE * clkFrequency[RUN_CLK]);
-    setU64BitReg(val, PERIOD_IN_REG_1, PERIOD_IN_REG_2);
+    uint64_t arg_clocks = ns_to_clocks(val, clkFrequency[RUN_CLK]);
+    setU64BitReg(arg_clocks, PERIOD_IN_REG_1, PERIOD_IN_REG_2);
 
-    // validate for tolerance
-    int64_t retval = getPeriod();
-    val /= (NS_TO_CLK_CYCLE * clkFrequency[RUN_CLK]);
-    if (val != retval) {
+    // validate
+    uint64_t retval_clocks = getU64BitReg(PERIOD_IN_REG_1, PERIOD_IN_REG_2);
+    if (arg_clocks != retval_clocks) {
+        sprintf(mess,
+                "Failed to set period. Could not set number of clocks "
+                "to %lld, red %lld\n",
+                (long long int)arg_clocks, (long long int)retval_clocks);
+        LOG(logERROR, (mess));
         return FAIL;
     }
+
+    // log rounding if any
+    int64_t retval = 0;
+    if (getPeriod(&retval, mess) == FAIL) {
+        return FAIL;
+    }
+    if (val != retval) {
+        LOG(logWARNING, ("Rounding to %lld ns due to clock frequency\n",
+                         (long long int)retval));
+    }
+
     return OK;
 }
 
-int64_t getPeriod() {
-    return getU64BitReg(PERIOD_IN_REG_1, PERIOD_IN_REG_2) /
-           (NS_TO_CLK_CYCLE * clkFrequency[RUN_CLK]);
+int getPeriod(int64_t *retval, char *mess) {
+    if (clkFrequency[RUN_CLK] == 0) {
+        sprintf(mess, "Cannot get period. Run clock frequency is 0.\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    uint64_t numClocks = getU64BitReg(PERIOD_IN_REG_1, PERIOD_IN_REG_2);
+    *retval = clocks_to_ns(numClocks, clkFrequency[RUN_CLK]);
+    return OK;
 }
 
-int setDelayAfterTrigger(int64_t val) {
+int setDelayAfterTrigger(int64_t val, char *mess) {
     if (val < 0) {
-        LOG(logERROR, ("Invalid delay after trigger: %ld ns\n", val));
+        sprintf(mess, "Invalid delay after trigger: %lld ns\n",
+                (long long int)val);
+        LOG(logERROR, (mess));
         return FAIL;
     }
-    LOG(logINFO, ("Setting delay after trigger %ld ns\n", val));
-    val *= (NS_TO_CLK_CYCLE * clkFrequency[RUN_CLK]);
-    setU64BitReg(val, DELAY_IN_REG_1, DELAY_IN_REG_2);
+    LOG(logINFO, ("Setting delay after trigger %lld ns\n", (long long int)val));
+    uint64_t arg_clocks = ns_to_clocks(val, clkFrequency[RUN_CLK]);
+    setU64BitReg(arg_clocks, DELAY_IN_REG_1, DELAY_IN_REG_2);
 
-    // validate for tolerance
-    int64_t retval = getDelayAfterTrigger();
-    val /= (NS_TO_CLK_CYCLE * clkFrequency[RUN_CLK]);
-    if (val != retval) {
+    // validate
+    uint64_t retval_clocks = getU64BitReg(DELAY_IN_REG_1, DELAY_IN_REG_2);
+    if (arg_clocks != retval_clocks) {
+        sprintf(
+            mess,
+            "Failed to set delay after trigger. Could not set number of clocks "
+            "to %lld, read %lld\n",
+            (long long int)arg_clocks, (long long int)retval_clocks);
+        LOG(logERROR, (mess));
         return FAIL;
     }
+
+    // log rounding if any
+    int64_t retval = 0;
+    if (getDelayAfterTrigger(&retval, mess) == FAIL) {
+        return FAIL;
+    }
+    if (val != retval) {
+        LOG(logWARNING, ("Rounding to %lld ns due to clock frequency\n",
+                         (long long int)retval));
+    }
+
     return OK;
 }
 
-int64_t getDelayAfterTrigger() {
-    return getU64BitReg(DELAY_IN_REG_1, DELAY_IN_REG_2) /
-           (NS_TO_CLK_CYCLE * clkFrequency[RUN_CLK]);
+int getDelayAfterTrigger(int64_t *retval, char *mess) {
+    if (clkFrequency[RUN_CLK] == 0) {
+        sprintf(mess,
+                "Cannot get delay after trigger. Run clock frequency is 0.\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    uint64_t numClocks = getU64BitReg(DELAY_IN_REG_1, DELAY_IN_REG_2);
+    *retval = clocks_to_ns(numClocks, clkFrequency[RUN_CLK]);
+    return OK;
 }
 
 int64_t getNumFramesLeft() {
@@ -833,14 +912,27 @@ int64_t getNumTriggersLeft() {
     return getU64BitReg(CYCLES_OUT_REG_1, CYCLES_OUT_REG_2);
 }
 
-int64_t getDelayAfterTriggerLeft() {
-    return getU64BitReg(DELAY_OUT_REG_1, DELAY_OUT_REG_2) /
-           (NS_TO_CLK_CYCLE * clkFrequency[RUN_CLK]);
+int getDelayAfterTriggerLeft(int64_t *retval, char *mess) {
+    if (clkFrequency[RUN_CLK] == 0) {
+        sprintf(mess, "Cannot get delay after trigger left. Run clock "
+                      "frequency is 0.\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    uint64_t numClocks = getU64BitReg(DELAY_OUT_REG_1, DELAY_OUT_REG_2);
+    *retval = clocks_to_ns(numClocks, clkFrequency[RUN_CLK]);
+    return OK;
 }
 
-int64_t getPeriodLeft() {
-    return getU64BitReg(PERIOD_OUT_REG_1, PERIOD_OUT_REG_2) /
-           (NS_TO_CLK_CYCLE * clkFrequency[RUN_CLK]);
+int getPeriodLeft(int64_t *retval, char *mess) {
+    if (clkFrequency[RUN_CLK] == 0) {
+        sprintf(mess, "Cannot get period left. Run clock frequency is 0.\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    uint64_t numClocks = getU64BitReg(PERIOD_OUT_REG_1, PERIOD_OUT_REG_2);
+    *retval = clocks_to_ns(numClocks, clkFrequency[RUN_CLK]);
+    return OK;
 }
 
 int64_t getFramesFromStart() {
@@ -849,13 +941,14 @@ int64_t getFramesFromStart() {
 }
 
 int64_t getActualTime() {
-    return getU64BitReg(TIME_FROM_START_OUT_REG_1, TIME_FROM_START_OUT_REG_2) /
-           (NS_TO_CLK_CYCLE * clkFrequency[SYNC_CLK]);
+    // in unit of 100ns
+    return getU64BitReg(TIME_FROM_START_OUT_REG_1, TIME_FROM_START_OUT_REG_2) *
+           100;
 }
 
 int64_t getMeasurementTime() {
-    return getU64BitReg(FRAME_TIME_OUT_REG_1, FRAME_TIME_OUT_REG_2) /
-           (NS_TO_CLK_CYCLE * clkFrequency[SYNC_CLK]);
+    // in unit of 100ns
+    return getU64BitReg(FRAME_TIME_OUT_REG_1, FRAME_TIME_OUT_REG_2) * 100;
 }
 
 /* parameters - dac, adc, hv */
@@ -1447,11 +1540,22 @@ void *start_timer(void *arg) {
     if (!isControlServer) {
         return NULL;
     }
+    int64_t periodNs = 0;
+    int64_t expUs = 0;
+    {
+        char mess[MAX_STR_LENGTH] = {0};
+        if (getPeriod(&periodNs, mess) == FAIL) {
+            LOG(logERROR, ("Failed to get period.\n"));
+            return NULL;
+        }
+        if (getExpTime(&expUs, mess) == FAIL) {
+            LOG(logERROR, ("Failed to get exposure time.\n"));
+            return NULL;
+        }
+        expUs /= 1000;
+    }
 
-    int64_t periodNs = getPeriod();
     int numFrames = (getNumFrames() * getNumTriggers());
-    int64_t expUs = getExpTime() / 1000;
-
     int imageSize = calculateDataBytes();
     int maxDataSize = MAX_DATA_SIZE_IN_PACKET;
     int packetSize = sizeof(sls_detector_header) + maxDataSize;
@@ -1716,11 +1820,11 @@ int setFrequency(enum CLKINDEX ind, int val) {
     }
 
     char *clock_names[] = {CLK_NAMES};
-    LOG(logINFO, ("\tSetting %s clock (%d) frequency to %d kHz\n",
+    LOG(logINFO, ("\tSetting %s clock (%d) frequency to %d Hz\n",
                   clock_names[ind], ind, val));
 
     if (XILINX_PLL_setFrequency(ind, val) == FAIL) {
-        LOG(logERROR, ("\tCould not set %s clock (%d) frequency to %d kHz\n",
+        LOG(logERROR, ("\tCould not set %s clock (%d) frequency to %d Hz\n",
                        clock_names[ind], ind, val));
         return FAIL;
     }

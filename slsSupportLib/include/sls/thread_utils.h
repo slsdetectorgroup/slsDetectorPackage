@@ -49,18 +49,19 @@ inline pid_t getThreadId() noexcept {
 }
 
 /**
- * Minimal C++17 backport of the subset of std::binary_semaphore used in this
- * project. API matches std::binary_semaphore so call sites can switch to
- * <semaphore> verbatim once the project moves to C++20. Built on
- * std::mutex + std::condition_variable; therefore NOT async-signal-safe, do
- * not call release() from a signal handler.
+ * Minimal C++17 backport of the subset of std::counting_semaphore /
+ * std::binary_semaphore used in this project. API matches the C++20 std types
+ * (acquire / try_acquire / release with optional update count) so call sites
+ * can switch to <semaphore> verbatim once the project moves to C++20. Built
+ * on std::mutex + std::condition_variable; therefore NOT async-signal-safe,
+ * do not call release() from a signal handler.
  */
-class binary_semaphore {
+class counting_semaphore {
   public:
-    explicit binary_semaphore(int desired) : count_(desired) {}
+    explicit counting_semaphore(int desired) : count_(desired) {}
 
-    binary_semaphore(const binary_semaphore &) = delete;
-    binary_semaphore &operator=(const binary_semaphore &) = delete;
+    counting_semaphore(const counting_semaphore &) = delete;
+    counting_semaphore &operator=(const counting_semaphore &) = delete;
 
     void acquire() {
         std::unique_lock<std::mutex> lk(mtx_);
@@ -68,12 +69,23 @@ class binary_semaphore {
         --count_;
     }
 
-    void release() {
+    bool try_acquire() noexcept {
+        std::lock_guard<std::mutex> lk(mtx_);
+        if (count_ == 0)
+            return false;
+        --count_;
+        return true;
+    }
+
+    void release(int update = 1) {
         {
             std::lock_guard<std::mutex> lk(mtx_);
-            ++count_;
+            count_ += update;
         }
-        cv_.notify_one();
+        if (update == 1)
+            cv_.notify_one();
+        else
+            cv_.notify_all();
     }
 
   private:
@@ -81,5 +93,7 @@ class binary_semaphore {
     std::condition_variable cv_;
     int count_;
 };
+
+using binary_semaphore = counting_semaphore;
 
 } // namespace sls

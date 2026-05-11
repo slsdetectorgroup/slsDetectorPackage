@@ -9,8 +9,10 @@
  * modified by the sls detector group
  * */
 
-#include <iostream>
-#include <semaphore.h>
+#include "sls/thread_utils.h"
+
+#include <atomic>
+#include <cstddef>
 #include <vector>
 
 namespace sls {
@@ -23,23 +25,21 @@ template <typename Element> class CircularFifo {
     size_t head{0};
     size_t capacity;
     std::vector<Element *> data;
-    mutable sem_t data_mutex;
-    mutable sem_t free_mutex;
-    size_t increment(size_t i) const;
+    counting_semaphore data_sem; // # of items available to read
+    counting_semaphore free_sem; // # of slots available to write
+    std::atomic<int> count_{0};  // current number of items, for diagnostics
+
+    size_t increment(size_t i) const { return (i + 1) % capacity; }
 
   public:
-    explicit CircularFifo(size_t size) : capacity(size + 1), data(capacity) {
-        sem_init(&data_mutex, 0, 0);
-        sem_init(&free_mutex, 0, size);
-    }
+    explicit CircularFifo(size_t size)
+        : capacity(size + 1), data(capacity), data_sem(0),
+          free_sem(static_cast<int>(size)) {}
 
     CircularFifo(const CircularFifo &) = delete;
     CircularFifo(CircularFifo &&) = delete;
 
-    virtual ~CircularFifo() {
-        sem_destroy(&data_mutex);
-        sem_destroy(&free_mutex);
-    }
+    virtual ~CircularFifo() = default;
 
     bool push(Element *&item, bool no_block = false);
     bool pop(Element *&item, bool no_block = false);
@@ -52,15 +52,11 @@ template <typename Element> class CircularFifo {
 };
 
 template <typename Element> int CircularFifo<Element>::getDataValue() const {
-    int value;
-    sem_getvalue(&data_mutex, &value);
-    return value;
+    return count_.load(std::memory_order_relaxed);
 }
 
 template <typename Element> int CircularFifo<Element>::getFreeValue() const {
-    int value;
-    sem_getvalue(&free_mutex, &value);
-    return value;
+    return static_cast<int>(capacity - 1) - getDataValue();
 }
 
 /** Producer only: Adds item to the circular queue.
@@ -72,14 +68,16 @@ template <typename Element> int CircularFifo<Element>::getFreeValue() const {
  * \return whether operation was successful or not */
 template <typename Element>
 bool CircularFifo<Element>::push(Element *&item, bool no_block) {
-    // check for fifo full
-    if (no_block && isFull())
-        return false;
-
-    sem_wait(&free_mutex);
+    if (no_block) {
+        if (!free_sem.try_acquire())
+            return false;
+    } else {
+        free_sem.acquire();
+    }
     data[tail] = item;
     tail = increment(tail);
-    sem_post(&data_mutex);
+    count_.fetch_add(1, std::memory_order_relaxed);
+    data_sem.release();
     return true;
 }
 
@@ -92,14 +90,16 @@ bool CircularFifo<Element>::push(Element *&item, bool no_block) {
  * \return whether operation was successful or not */
 template <typename Element>
 bool CircularFifo<Element>::pop(Element *&item, bool no_block) {
-    // check for fifo empty
-    if (no_block && isEmpty())
-        return false;
-
-    sem_wait(&data_mutex);
+    if (no_block) {
+        if (!data_sem.try_acquire())
+            return false;
+    } else {
+        data_sem.acquire();
+    }
     item = data[head];
     head = increment(head);
-    sem_post(&free_mutex);
+    count_.fetch_sub(1, std::memory_order_relaxed);
+    free_sem.release();
     return true;
 }
 
@@ -109,7 +109,7 @@ bool CircularFifo<Element>::pop(Element *&item, bool no_block) {
  *
  * \return true if circular buffer is empty */
 template <typename Element> bool CircularFifo<Element>::isEmpty() const {
-    return (getDataValue() == 0);
+    return getDataValue() == 0;
 }
 
 /** Useful for testing and Producer check of status
@@ -118,18 +118,7 @@ template <typename Element> bool CircularFifo<Element>::isEmpty() const {
  *
  * \return true if circular buffer is full.  */
 template <typename Element> bool CircularFifo<Element>::isFull() const {
-    return (getFreeValue() == 0);
-}
-
-/** Increment helper function for index of the circular queue
- * index is incremented or wrapped
- *
- *  \param i the index to the incremented/wrapped
- *  \return new value for the index */
-template <typename Element>
-size_t CircularFifo<Element>::increment(size_t i) const {
-    i = (i + 1) % capacity;
-    return i;
+    return getFreeValue() == 0;
 }
 
 } // namespace sls

@@ -115,30 +115,33 @@ class PlotTab(QtWidgets.QWidget):
         self.view.radioButtonCenter.clicked.connect(partial(self.setColorRangeMode, Defines.colorRange.center))
 
         # show image Values for analog image
-        nMaxY = self.mainWindow.nAnalogRows
-        nMaxX = self.mainWindow.nAnalogCols
-        frame = self.mainWindow.analog_frame
+        nMaxY = lambda : self.mainWindow.nAnalogRows
+        nMaxX = lambda : self.mainWindow.nAnalogCols
+        frame = lambda : self.mainWindow.analog_frame
         plot = self.mainWindow.plotAnalogImage
-        plot.scene.sigMouseMoved.connect(partial(self.showPlotValues, plot))
+        plot.scene.sigMouseMoved.connect(partial(self.showPlotValues, plot, nMaxX, nMaxY, frame))
         plot.getHistogramWidget().item.sigLevelChangeFinished.connect(partial(self.handleHistogramChange, plot))
 
         # show image Values for digital image
-        nMaxY = self.mainWindow.nDigitalRows
-        nMaxX = self.mainWindow.nDigitalCols
-        frame = self.mainWindow.digital_frame
+        nMaxY = lambda : self.mainWindow.nDigitalRows
+        nMaxX = lambda : self.mainWindow.nDigitalCols
+        frame = lambda : self.mainWindow.digital_frame
         plot = self.mainWindow.plotDigitalImage
-        plot.scene.sigMouseMoved.connect(partial(self.showPlotValues, plot))
+        plot.scene.sigMouseMoved.connect(partial(self.showPlotValues, plot, nMaxX, nMaxY, frame))
         plot.getHistogramWidget().item.sigLevelChangeFinished.connect(partial(self.handleHistogramChange, plot))
 
         # show image Values for transceiver image
-        nMaxY = self.mainWindow.nTransceiverRows
-        nMaxX = self.mainWindow.nTransceiverCols
+        nMaxY = lambda : self.mainWindow.nTransceiverRows
+        nMaxX = lambda : self.mainWindow.nTransceiverCols
 
         for index, image_view in enumerate(self.mainWindow.transceiverImageViews):
-            frame = self.mainWindow.transceiver_frame[index]
-            if image_view.getImageItem().image is not None: # only show if image is set   
-                image_view.scene.sigMouseMoved.connect(partial(self.showPlotValues, image_view))
-                image_view.getHistogramWidget().item.sigLevelChangeFinished.connect(partial(self.handleHistogramChange, image_view))
+            frame = lambda idx=index: self.mainWindow.transceiver_frame[idx]
+            #if image_view.getImageItem().image is not None: # only show if image is set 
+                #print("image is not NOne")  
+            image_view.scene.sigMouseMoved.connect(partial(self.showPlotValues, image_view, nMaxX, nMaxY, frame))
+            image_view.getHistogramWidget().item.sigLevelChangeFinished.connect(partial(self.handleHistogramChange, image_view))
+            #else: 
+                #print("image is none")
 
         self.view.checkBoxShowLegend.stateChanged.connect(self.toggleLegend)
 
@@ -596,10 +599,13 @@ class PlotTab(QtWidgets.QWidget):
             # get the RGB Values
             # print(color.getRgb())
 
-    def showPlotValues(self, sender, nMaxX, nMaxY, frame, pos):   
+    def showPlotValues(self, sender, get_nMaxX, get_nMaxY, get_frame, pos):  
         x = sender.getImageItem().mapFromScene(pos).x()
         y = sender.getImageItem().mapFromScene(pos).y()
         val = 0
+        nMaxX = get_nMaxX()
+        nMaxY = get_nMaxY()
+        frame = get_frame()
         if 0 <= x < nMaxX and 0 <= y < nMaxY and not np.array_equal(frame, []):
             val = frame[int(y), int(x)]
             message = f'[row, col]: [{y:.2f}, {x:.2f}] = {val:.2f}'

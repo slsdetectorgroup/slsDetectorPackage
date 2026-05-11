@@ -191,8 +191,8 @@ class TransceiverTab(QtWidgets.QWidget):
         self.mainWindow.nTransceiverRows = 0
         self.mainWindow.nTransceiverCols = 0
         self.mainWindow.nCounters = 4 #initialize to max 
-        #self.mainWindow.transceiver_frame = np.zeros(
-            #(self.mainWindow.nCounters, self.mainWindow.nTransceiverRows, self.mainWindow.nTransceiverCols))
+        self.mainWindow.transceiver_frame = np.zeros(
+            (self.mainWindow.nCounters, self.mainWindow.nTransceiverRows, self.mainWindow.nTransceiverCols))
 
         self.mainWindow.transceiverImageSplitter = QtWidgets.QSplitter(QtCore.Qt.Vertical)
         self.mainWindow.transceiverImageViews = []

@@ -58,8 +58,6 @@ class PlotTab(QtWidgets.QWidget):
             self.mainWindow.transceiverImageViews,
         )
 
-        #self.setupPlotSplitter()
-
     def setupPlotSplitter(self):
         self.plotSplitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal, self.mainWindow.framePlot)
         #layout = self.mainWindow.framePlot.layout()
@@ -116,9 +114,31 @@ class PlotTab(QtWidgets.QWidget):
         self.view.radioButtonFixed.clicked.connect(partial(self.setColorRangeMode, Defines.colorRange.fixed))
         self.view.radioButtonCenter.clicked.connect(partial(self.setColorRangeMode, Defines.colorRange.center))
 
-        #for plot in self.imagePlots:
-            #plot.scene.sigMouseMoved.connect(partial(self.showPlotValues, plot))
-            #plot.getHistogramWidget().item.sigLevelChangeFinished.connect(partial(self.handleHistogramChange, plot))
+        # show image Values for analog image
+        nMaxY = self.mainWindow.nAnalogRows
+        nMaxX = self.mainWindow.nAnalogCols
+        frame = self.mainWindow.analog_frame
+        plot = self.mainWindow.plotAnalogImage
+        plot.scene.sigMouseMoved.connect(partial(self.showPlotValues, plot))
+        plot.getHistogramWidget().item.sigLevelChangeFinished.connect(partial(self.handleHistogramChange, plot))
+
+        # show image Values for digital image
+        nMaxY = self.mainWindow.nDigitalRows
+        nMaxX = self.mainWindow.nDigitalCols
+        frame = self.mainWindow.digital_frame
+        plot = self.mainWindow.plotDigitalImage
+        plot.scene.sigMouseMoved.connect(partial(self.showPlotValues, plot))
+        plot.getHistogramWidget().item.sigLevelChangeFinished.connect(partial(self.handleHistogramChange, plot))
+
+        # show image Values for transceiver image
+        nMaxY = self.mainWindow.nTransceiverRows
+        nMaxX = self.mainWindow.nTransceiverCols
+
+        for index, image_view in enumerate(self.mainWindow.transceiverImageViews):
+            frame = self.mainWindow.transceiver_frame[index]
+            if image_view.getImageItem().image is not None: # only show if image is set   
+                image_view.scene.sigMouseMoved.connect(partial(self.showPlotValues, image_view))
+                image_view.getHistogramWidget().item.sigLevelChangeFinished.connect(partial(self.handleHistogramChange, image_view))
 
         self.view.checkBoxShowLegend.stateChanged.connect(self.toggleLegend)
 
@@ -411,7 +431,7 @@ class PlotTab(QtWidgets.QWidget):
             elif self.view.radioButtonImage.isChecked():
                 #self.mainWindow.plotTransceiverImage.show()
                 for iv in self.mainWindow.transceiverImageViews:
-                    if iv.getImageItem().image is not None: # only show if image is set, otherwise we get a blank plot which is confusing for the user
+                    if iv.getImageItem().image is not None: # only show if image is set
                         iv.show()
                 self.mainWindow.transceiverImageSplitter.show()
 
@@ -576,22 +596,10 @@ class PlotTab(QtWidgets.QWidget):
             # get the RGB Values
             # print(color.getRgb())
 
-    def showPlotValues(self, sender, pos):
+    def showPlotValues(self, sender, nMaxX, nMaxY, frame, pos):   
         x = sender.getImageItem().mapFromScene(pos).x()
         y = sender.getImageItem().mapFromScene(pos).y()
         val = 0
-        nMaxY = self.mainWindow.nAnalogRows
-        nMaxX = self.mainWindow.nAnalogCols
-        frame = self.mainWindow.analog_frame
-        if sender == self.mainWindow.plotDigitalImage:
-            nMaxY = self.mainWindow.nDigitalRows
-            nMaxX = self.mainWindow.nDigitalCols
-            frame = self.mainWindow.digital_frame
-        # TODO: update this as well 
-        elif sender == self.mainWindow.plotTransceiverImage:
-            nMaxY = self.mainWindow.nTransceiverRows
-            nMaxX = self.mainWindow.nTransceiverCols
-            frame = self.mainWindow.transceiver_frame
         if 0 <= x < nMaxX and 0 <= y < nMaxY and not np.array_equal(frame, []):
             val = frame[int(y), int(x)]
             message = f'[row, col]: [{y:.2f}, {x:.2f}] = {val:.2f}'

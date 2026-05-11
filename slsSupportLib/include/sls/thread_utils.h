@@ -18,6 +18,8 @@
  * within a single process.
  */
 
+#include <condition_variable>
+#include <mutex>
 #include <sys/types.h> // pid_t
 
 #if defined(__APPLE__)
@@ -45,5 +47,39 @@ inline pid_t getThreadId() noexcept {
     return static_cast<pid_t>(::syscall(SYS_gettid));
 #endif
 }
+
+/**
+ * Minimal C++17 backport of the subset of std::binary_semaphore used in this
+ * project. API matches std::binary_semaphore so call sites can switch to
+ * <semaphore> verbatim once the project moves to C++20. Built on
+ * std::mutex + std::condition_variable; therefore NOT async-signal-safe, do
+ * not call release() from a signal handler.
+ */
+class binary_semaphore {
+  public:
+    explicit binary_semaphore(int desired) : count_(desired) {}
+
+    binary_semaphore(const binary_semaphore &) = delete;
+    binary_semaphore &operator=(const binary_semaphore &) = delete;
+
+    void acquire() {
+        std::unique_lock<std::mutex> lk(mtx_);
+        cv_.wait(lk, [this] { return count_ > 0; });
+        --count_;
+    }
+
+    void release() {
+        {
+            std::lock_guard<std::mutex> lk(mtx_);
+            ++count_;
+        }
+        cv_.notify_one();
+    }
+
+  private:
+    std::mutex mtx_;
+    std::condition_variable cv_;
+    int count_;
+};
 
 } // namespace sls

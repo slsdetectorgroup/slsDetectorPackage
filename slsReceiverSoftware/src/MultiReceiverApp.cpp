@@ -13,7 +13,7 @@
 
 #include <csignal> //SIGINT
 #include <cstring>
-#include <semaphore.h>
+#include <pthread.h>
 #include <sys/wait.h> //wait
 #include <unistd.h>
 
@@ -125,18 +125,6 @@ void GetData(slsDetectorDefs::sls_receiver_header &header,
     // imageSize = 26000;
 }
 
-sem_t semaphore;
-
-/**
- * Control+C Interrupt Handler
- * to let all the processes know to exit properly
- * All child processes will call the handler (parent process set to ignore)
- */
-void sigInterruptHandler(int signal) {
-    (void)signal; // suppress unused warning if needed
-    sem_post(&semaphore);
-}
-
 int main(int argc, char *argv[]) {
 
     CommandLineOptions cli(AppType::MultiReceiver);
@@ -154,12 +142,19 @@ int main(int argc, char *argv[]) {
     LOG(sls::logINFOBLUE) << "Current Process [ Tid: " << sls::getThreadId()
                           << ']';
 
-    // close files on ctrl+c
-    sls::setupSignalHandler(SIGINT, sigInterruptHandler);
+    // Block SIGINT before fork() so every child inherits the block. Each
+    // child waits for SIGINT synchronously via sigwait() instead of using a
+    // signal handler that posts to a semaphore. This avoids relying on
+    // sem_init() on unnamed semaphores, which is unimplemented on macOS.
+    sigset_t sigset;
+    sigemptyset(&sigset);
+    sigaddset(&sigset, SIGINT);
+    if (pthread_sigmask(SIG_BLOCK, &sigset, nullptr) != 0) {
+        LOG(sls::logERROR) << "Could not block SIGINT";
+        return EXIT_FAILURE;
+    }
     // handle locally on socket crash
     sls::setupSignalHandler(SIGPIPE, SIG_IGN);
-
-    sem_init(&semaphore, 1, 0);
 
     /** - loop over receivers */
     for (int i = 0; i < m.numReceivers; ++i) {
@@ -207,14 +202,15 @@ int main(int argc, char *argv[]) {
                 }
 
                 /**	- as long as no Ctrl+C */
-                // each child process gets a copy of the semaphore
-                sem_wait(&semaphore);
-                sem_destroy(&semaphore);
+                // SIGINT is blocked in this child (inherited from parent);
+                // sigwait atomically waits for it without competing with any
+                // signal handler.
+                int sig = 0;
+                sigwait(&sigset, &sig);
                 LOG(sls::logINFOBLUE) << "Exiting Child Process [ Tid: "
                                       << sls::getThreadId() << ']';
                 exit(EXIT_SUCCESS);
             } catch (...) {
-                sem_destroy(&semaphore);
                 LOG(sls::logINFOBLUE) << "Exiting Child Process [ Tid: "
                                       << sls::getThreadId() << " ]";
                 exit(EXIT_FAILURE);
@@ -222,9 +218,9 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    /** - Parent process ignores SIGINT and waits for all the child processes to
-     * handle the signal */
-    sls::setupSignalHandler(SIGINT, SIG_IGN);
+    /** - Parent process keeps SIGINT blocked (set above before fork) so it is
+     * never delivered here while waitpid() runs. Each child handles SIGINT
+     * via sigwait(). */
 
     /** - Print Ready and Instructions how to exit */
     std::cout << "Ready ... \n";

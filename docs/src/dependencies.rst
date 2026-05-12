@@ -53,9 +53,9 @@ To build the python module the following dependencies are needed:
 
     Refer :ref:`pybind11 notes. <pybind for different slsDetectorPackage versions>`  
 
--------------------------------
+------------------------------------
 Dependencies to build documentation
--------------------------------
+------------------------------------
 
 To build this documentation that you are reading now the following dependencies are needed: 
 
@@ -76,7 +76,7 @@ To build the GUI the following dependencies are needed:
 
     Qwt is bundled in libs. One does not need to pre-install it on the system.
 
-------------------------------------------------------
+-----------------------------------------------------
 Dependencies to build Moench and Jungfrau executables
 -----------------------------------------------------
 

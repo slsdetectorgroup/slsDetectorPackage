@@ -41,6 +41,8 @@ Detector.pattern (python) accepts also a pattern object, not only a pattern file
 
 added patternstart to python (ctb, xilinx_ctb , mythen3), only the detector class api was exposed (startPattern())
 
+removed unused function readDataFile/writeDataFile from file_utils.h
+
 2  On-board Detector Server Compatibility
 ==========================================
 

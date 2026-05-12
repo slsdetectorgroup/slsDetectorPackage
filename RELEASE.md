@@ -41,6 +41,26 @@ Detector.pattern (python) accepts also a pattern object, not only a pattern file
 
 added patternstart to python (ctb, xilinx_ctb , mythen3), only the detector class api was exposed (startPattern())
 
+
+can build virtual servers on mac OS
+
+documentation for all branches and developer now online and build and pushed automatically
+
+gui: mouse zooms not reset at start of acquisition
+
+m3: fixed patwaittime in intervals, which is hardly used. patwaittime in clocks stays the same and working.
+
+m3: getPatternFileName typo fixed
+
+libfmt added to dependency
+
+python dacs=> using deprecated np.int. dacs return float (default dtype of numpy)
+=> changed to np.int32 (meant for v10.0.1)
+
+support for building rpms
+
+
+
 2  On-board Detector Server Compatibility
 ==========================================
 

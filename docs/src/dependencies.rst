@@ -49,9 +49,15 @@ GUI
  * Qt 5.9
  * Qwt 6.1.5 (packaged in libs)
 
------------------------
-Moench executables
------------------------
+.. note:: 
+
+    Qwt is bundled in libs. One does not need to pre-install it on the system.
+
+-----------------------------------------------------
+Dependencies to build Moench and Jungfrau executables
+-----------------------------------------------------
+
+To build the Moench and Jungfrau executables for preprocessing and calibration the following dependencies are needed:
 
  * libtiff
 

@@ -804,10 +804,10 @@ class Detector(CppDetectorApi):
         Note
         ----
         Sets up the following for every module:\n
-        \t\t[Eiger] txdelay_left to (2 * mod_index * n_delay), \n
-        \t\t[Eiger] txdelay_right to ((2 * mod_index + 1) * n_delay) and \n
-        \t\t[Eiger] txdelay_frame to (2 *num_modules * n_delay)  \n
-        \t\t[Jungfrau][Moench][Mythen3] txdelay_frame to (num_modules * n_delay)\n\n
+        \t\t[Eiger] txdelay_left to (2 \* mod_index \* n_delay), \n
+        \t\t[Eiger] txdelay_right to ((2 \* mod_index + 1) \* n_delay) and \n
+        \t\t[Eiger] txdelay_frame to (2 \* num_modules \* n_delay)  \n
+        \t\t[Jungfrau][Moench][Mythen3] txdelay_frame to (num_modules \* n_delay)\n\n
         Please refer txdelay_left, txdelay_right and txdelay_frame for details.
         """
         return self.getTransmissionDelay()
@@ -1284,10 +1284,10 @@ class Detector(CppDetectorApi):
     @property
     def zmqhwm(self):
         """
-        Client's zmq receive high water mark. Default is the zmq library's default (1000), can also be set here using -1. 
-        This is a high number and can be set to 2 for gui purposes. 
+        Client's zmq receive high water mark. Default is the zmq library's default (1000), can also be set here using -1.
+        This is a high number and can be set to 2 for gui purposes.
         One must also set the receiver's send high water mark to similar value. Final effect is sum of them.
-	    Setting it via command line is useful only before zmq enabled (before opening gui).
+        Setting it via command line is useful only before zmq enabled (before opening gui).
         """
         return self.getClientZmqHwm()
 
@@ -2218,13 +2218,16 @@ class Detector(CppDetectorApi):
     @property
     @element
     def threshold(self):
-        """[Eiger][Mythen3] Threshold in eV
+        """
+        [Eiger][Mythen3] Threshold in eV
         
         Note
         ----
-        To change settings as well or set threshold without trimbits, use setThresholdEnergy.
+        To change settings as well or set threshold without trimbits, 
+        use setThresholdEnergy.
 
-        :setter: It loads trim files from settingspath.\n [Mythen3] An energy of -1 will pick up values from detector.
+        :setter: It loads trim files from settingspath.\n 
+            [Mythen3] An energy of -1 will pick up values from detector.
         """
         
         if self.type == detectorType.MYTHEN3:

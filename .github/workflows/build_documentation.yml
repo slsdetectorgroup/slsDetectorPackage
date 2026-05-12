@@ -64,7 +64,7 @@ jobs:
                 cache: 'pip'
             
             - name: Install Python Packages
-              run: pip install sphinx sphinx_rtd_theme breathe pyyaml jinja2
+              run: pip install sphinx sphinx_rtd_theme breathe pyyaml jinja2 numpy
                
 
             - name: Build Documentation

@@ -35,6 +35,7 @@ set(SPHINX_SOURCE_FILES
   src/consuming.rst
   src/dependencies.rst
   src/detector.rst
+  src/pyctb.rst
   src/index.rst
   src/installation.rst
   src/pydetector.rst
@@ -71,6 +72,8 @@ set(SPHINX_SOURCE_FILES
   src/softwarearchitecture.rst
   src/configcommands.rst
   src/Versioning.rst
+  src/Testing.rst
+  src/pypower.rst 
 )
 
 foreach(filename ${SPHINX_SOURCE_FILES})
@@ -104,7 +107,7 @@ add_custom_target(docs
               gendoc
               COMMAND python gen_server_doc.py
               COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
-              COMMAND ${SPHINX_EXECUTABLE} -a -b html
+              COMMAND ${SPHINX_EXECUTABLE} -W -a -b html
               -Dbreathe_projects.slsDetectorPackage=${CMAKE_CURRENT_BINARY_DIR}/xml
               -c "${SPHINX_BUILD}"
               ${SPHINX_BUILD}/src 
@@ -112,7 +115,7 @@ add_custom_target(docs
               COMMENT "Generating documentation with Sphinx")
 
 add_custom_target(rst
-              COMMAND ${SPHINX_EXECUTABLE} -a -b html
+              COMMAND ${SPHINX_EXECUTABLE} -W -a -b html
               -Dbreathe_projects.slsDetectorPackage=${CMAKE_CURRENT_BINARY_DIR}/xml
               -c "${SPHINX_BUILD}"
               ${SPHINX_BUILD}/src 

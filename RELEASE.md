@@ -60,6 +60,7 @@ python dacs=> using deprecated np.int. dacs return float (default dtype of numpy
 support for building rpms
 
 
+removed unused function readDataFile/writeDataFile from file_utils.h
 
 2  On-board Detector Server Compatibility
 ==========================================

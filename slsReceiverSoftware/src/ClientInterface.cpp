@@ -222,7 +222,7 @@ int ClientInterface::functionTable(){
     flist[F_RECEIVER_GET_ROI_METADATA]      =   &ClientInterface::get_roi_metadata;
     flist[F_SET_RECEIVER_READOUT_SPEED]     =   &ClientInterface::set_readout_speed;
     flist[F_RECEIVER_GET_UDP_DATASTREAM]    =   &ClientInterface::get_port_udp_datastream;
-    flist[F_RECEIVER_UDP_DATASTREAM_METADATA]=  &ClientInterface::update_udp_datastream_metadata;
+    flist[F_RECEIVER_UDP_PORT_DISABLE_META] =   &ClientInterface::update_udp_port_disable_meta;
 
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
@@ -1918,33 +1918,19 @@ int ClientInterface::set_readout_speed(Interface &socket) {
     return socket.Send(OK);
 }
 
-int ClientInterface::update_udp_datastream_metadata(Interface &socket) {
+int ClientInterface::update_udp_port_disable_meta(Interface &socket) {
     auto nports = socket.Receive<int>();
-    if (nports != 2) {
-        throw RuntimeError("Could not update udp datastream meatdata. "
-                           "Expecting max number of ports to be 2. Received " +
-                           std::to_string(nports));
+    std::vector<int> portsDisabled;
+    if (nports > 0) {
+        portsDisabled.resize(nports);
+        socket.Receive(portsDisabled);
+        LOG(logDEBUG1) << "Disabled Ports Metadata:" << ToString(portsDisabled);
     }
-    auto nmods = socket.Receive<int>();
-    if (nmods < 1) {
-        throw RuntimeError("Could not update udp datastream metadata. "
-                           "Expecting at least 1 module. Received " +
-                           std::to_string(nmods));
-    }
-    std::array<std::vector<int>, 2> portEnables;
-    for (auto &v : portEnables) {
-        v.resize(nmods);
-    }
-    socket.Receive(portEnables[0]);
-    socket.Receive(portEnables[1]);
-    LOG(logDEBUG1) << "Update UDP Datastream Metadata";
-    LOG(logDEBUG1) << "Port 1:" << ToString(portEnables[0]);
-    LOG(logDEBUG1) << "Port 2:" << ToString(portEnables[1]);
     verifyIdle(socket);
     try {
-        impl()->updateUDPDatastreamMetadata(portEnables);
+        impl()->updateUDPPortsDisabledMetadata(portsDisabled);
     } catch (const std::exception &e) {
-        throw RuntimeError("Could not update UDP datastream metadata [" +
+        throw RuntimeError("Could not update UDP ports disabled metadata [" +
                            std::string(e.what()) + ']');
     }
     return socket.Send(OK);

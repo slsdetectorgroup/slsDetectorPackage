@@ -230,8 +230,7 @@ class Implementation : private virtual slsDetectorDefs {
      *  [Eiger] deactivated at module level
      */
     void setUDPDataStream(const portPosition port, const bool enable);
-    void updateUDPDatastreamMetadata(
-        const std::array<std::vector<int>, 2> &portEnables);
+    void updateUDPPortsDisabledMetadata(const std::vector<int> &portsDisabled);
     int getReadNRows() const;
     /* [Eiger][Jungfrau][Moench] */
     void setReadNRows(const int value);
@@ -368,7 +367,7 @@ class Implementation : private virtual slsDetectorDefs {
     bool quadEnable{false};
     bool activated{true};
     std::array<bool, 2> udpDataStream = {{true, true}};
-    std::array<std::vector<int>, 2> udpPortEnables;
+    std::vector<int> udpPortsDisabledMetadata;
     std::vector<bool> udpPort2Enable;
     std::array<portPosition, 2> udpDataStreamType = {{LEFT, RIGHT}};
     // only for Eiger to remember (10Gbe selectable)

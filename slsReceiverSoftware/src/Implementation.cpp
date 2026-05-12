@@ -1679,7 +1679,8 @@ void Implementation::setActivate(bool enable) {
 
 bool Implementation::getUDPDataStream(const portPosition port) const {
     int index = 0;
-    if (port == BOTTOM || port == RIGHT)
+    // top goes to udp port 2 (jungfrau & moench)
+    if (port == TOP || port == RIGHT)
         index = 1;
     return udpDataStream[index];
 }
@@ -1687,7 +1688,8 @@ bool Implementation::getUDPDataStream(const portPosition port) const {
 void Implementation::setUDPDataStream(const portPosition port,
                                       const bool enable) {
     int index = 0;
-    if (port == BOTTOM || port == RIGHT)
+    // top goes to udp port 2 (jungfrau & moench)
+    if (port == TOP || port == RIGHT)
         index = 1;
     udpDataStreamType[index] = port;
     // jungfrau and moench: straightforward

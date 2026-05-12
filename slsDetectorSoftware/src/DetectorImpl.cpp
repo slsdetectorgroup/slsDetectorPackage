@@ -1648,7 +1648,7 @@ std::vector<defs::portPosition> DetectorImpl::getPortPositionList() const {
     switch (shm()->detType) {
     case defs::JUNGFRAU:
     case defs::MOENCH:
-        return std::vector<defs::portPosition>{defs::TOP, defs::BOTTOM};
+        return std::vector<defs::portPosition>{defs::BOTTOM, defs::TOP};
     case defs::EIGER:
         return std::vector<defs::portPosition>{defs::LEFT, defs::RIGHT};
     default:
@@ -1662,22 +1662,42 @@ void DetectorImpl::updateRxUDPDatastreamMetadata() {
         detType != defs::MOENCH)
         throw RuntimeError(
             "Datastream enable not implemented for this detector");
-    auto portList = getPortPositionList();
-    if (portList.size() != 2) {
-        throw RuntimeError("Invalid port size. Expected 2.");
-    }
-    std::array<std::vector<bool>, 2> results;
-    size_t i = 0;
-    for (const auto &port : portList) {
-        results[i] = Parallel(&Module::getDataStream, {}, port);
-        if (static_cast<int>(results[i].size()) != size()) {
-            throw RuntimeError("udp datastream enable list does not match size "
-                               "of module list");
-        }
-        ++i;
+
+    // check num interfaces
+    auto numInterfaces =
+        Parallel(&Module::getNumberofUDPInterfacesFromShm, {})
+            .tsquash("Inconsistent number of UDP interfaces among modules");
+    if (numInterfaces != 2) {
+        throw RuntimeError("Invalid number of UDP interfaces. Expected 2.");
     }
 
-    modules[0]->updateRxUDPDatastreamMetadata(results);
+    std::vector<int> disable;
+    // 1 interface: empty vector (disable none)
+    // 2 interface: check each enable
+    if (numInterfaces == 2) {
+        auto portList = getPortPositionList();
+        if (portList.size() != 2) {
+            throw RuntimeError("Invalid port size. Expected 2.");
+        }
+        // bottom and left is port 0
+        auto port0 = Parallel(&Module::getDataStream, {}, portList[0]);
+        auto port1 = Parallel(&Module::getDataStream, {}, portList[1]);
+
+        // if any of them are disabled
+        if (port0.any(false) || port1.any(false)) {
+            // for each module: if disabled, push port index
+            for (size_t i = 0; i != port0.size(); ++i) {
+                if (!port0[i]) {
+                    disable.push_back(i * 2);
+                }
+                if (!port1[i]) {
+                    disable.push_back(i * 2 + 1);
+                }
+            }
+        }
+    }
+
+    modules[0]->updateRxUDPPortDisableMetadata(disable);
 }
 
 std::vector<defs::ROI> DetectorImpl::getRxROI(int module_id) const {

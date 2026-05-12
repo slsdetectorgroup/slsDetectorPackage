@@ -1434,35 +1434,20 @@ void Module::setDataStream(const portPosition port, const bool enable) {
     }
 }
 
-void Module::updateRxUDPDatastreamMetadata(
-    const std::array<std::vector<bool>, 2> &res) {
-
+void Module::updateRxUDPPortDisableMetadata(const std::vector<int> &disable) {
     if (!shm()->useReceiverFlag) {
         return;
     }
-    LOG(logDEBUG) << "Updating UDP data stream enable in receiver (metadata)";
+    LOG(logDEBUG) << "Updating UDP port disable metadata in Receiver 0";
     auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
 
-    client.Send(F_RECEIVER_UDP_DATASTREAM_METADATA);
-    client.setFnum(F_RECEIVER_UDP_DATASTREAM_METADATA);
-    // ensure both port list size match
-    if (res[0].size() != res[1].size()) {
-        throw RuntimeError(
-            "Size Mismatch of udp datastream enable list for ports");
-    }
-    // send udp data stream enable of all ports in all modules
-    auto nports = static_cast<int>(res.size());
-    auto nmods = static_cast<int>(res[0].size());
+    client.Send(F_RECEIVER_UDP_PORT_DISABLE_META);
+    client.setFnum(F_RECEIVER_UDP_PORT_DISABLE_META);
+
+    auto nports = static_cast<int>(disable.size());
     client.Send(nports);
-    client.Send(nmods);
-    for (const auto &r : res) {
-        // convert vector of bool to vector of int to send
-        std::vector<int> tmp;
-        tmp.reserve(r.size());
-        for (bool b : r) {
-            tmp.push_back(static_cast<int>(b));
-        }
-        client.Send(tmp);
+    if (nports > 0) {
+        client.Send(disable);
     }
     if (client.Receive<int>() == FAIL) {
         throw ReceiverError("Receiver " + std::to_string(moduleIndex) +

@@ -201,7 +201,7 @@ class TransceiverTab(QtWidgets.QWidget):
 
         for i in range(self.mainWindow.nCounters): 
             imageView = pg.ImageView()
-            imageView.setColorMap(cm)
+            #imageView.setColorMap(cm)
             self.mainWindow.transceiverImageViews.append(imageView)
             self.mainWindow.transceiverImageSplitter.addWidget(imageView)
 

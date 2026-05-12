@@ -136,12 +136,8 @@ class PlotTab(QtWidgets.QWidget):
 
         for index, image_view in enumerate(self.mainWindow.transceiverImageViews):
             frame = lambda idx=index: self.mainWindow.transceiver_frame[idx]
-            #if image_view.getImageItem().image is not None: # only show if image is set 
-                #print("image is not NOne")  
             image_view.scene.sigMouseMoved.connect(partial(self.showPlotValues, image_view, nMaxX, nMaxY, frame))
             image_view.getHistogramWidget().item.sigLevelChangeFinished.connect(partial(self.handleHistogramChange, image_view))
-            #else: 
-                #print("image is none")
 
         self.view.checkBoxShowLegend.stateChanged.connect(self.toggleLegend)
 
@@ -322,7 +318,8 @@ class PlotTab(QtWidgets.QWidget):
         self.mainWindow.plotAnalogImage.setColorMap(cm)
         self.mainWindow.plotDigitalImage.setColorMap(cm)
         for transceiverImage in self.mainWindow.transceiverImageViews:
-            transceiverImage.setColorMap(cm)
+            if transceiverImage.getImageItem().image is not None: # only set if image is set
+                transceiverImage.setColorMap(cm)
         #self.mainWindow.plotTransceiverImage.setColorMap(cm)
 
     def getZMQHWM(self):
@@ -432,7 +429,6 @@ class PlotTab(QtWidgets.QWidget):
             if self.view.radioButtonWaveform.isChecked():
                 self.mainWindow.plotTransceiverWaveform.show()
             elif self.view.radioButtonImage.isChecked():
-                #self.mainWindow.plotTransceiverImage.show()
                 for iv in self.mainWindow.transceiverImageViews:
                     if iv.getImageItem().image is not None: # only show if image is set
                         iv.show()

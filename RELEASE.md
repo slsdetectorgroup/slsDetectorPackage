@@ -41,6 +41,7 @@ Detector.pattern (python) accepts also a pattern object, not only a pattern file
 
 added patternstart to python (ctb, xilinx_ctb , mythen3), only the detector class api was exposed (startPattern())
 
+<<<<<<< HEAD
 
 can build virtual servers on mac OS
 
@@ -73,6 +74,10 @@ setting number of UDP interfaces can only be set at detector level and not at mo
 
 zmqsocket - allowing hwm to be set already at the constructor level. As before, can still be set after construction with socket reconnection.
 
+=======
+removed unused function readDataFile/writeDataFile from file_utils.h
+
+>>>>>>> d94c0d0e7 (removed unused function readDataFile/writeDataFile (#1456))
 2  On-board Detector Server Compatibility
 ==========================================
 

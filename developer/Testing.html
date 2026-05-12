@@ -1,0 +1,296 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Testing &mdash; slsDetectorPackage 0.0.0  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="_static/css/extra.css?v=2be88464" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Firmware Upgrade" href="firmware.html" />
+    <link rel="prev" title="Package Versioning" href="Versioning.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            slsDetectorPackage 0.0.0
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Installation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="consuming.html">Consuming slsDetectorPackage</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">how to</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="softwarearchitecture.html">Software Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configcommands.html">Setup Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick_start_guide.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dataformat.html">Detector Image Size and Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="multidet.html">Using multiple detectors</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">C++ API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="detector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="result.html">Result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="receiver_api.html">Receiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pygettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pydetector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyctb.html">Ctb</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyenums.html">Enums</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pypower.html">Power Supply</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyexamples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyPatternGenerator.html">PatternGenerator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pattern.html">Pattern</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Command line</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="commandline.html">Command line interface</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="container_utils.html">ContainerUtils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="type_traits.html">TypeTraits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ToString.html">ToString</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Versioning.html">Package Versioning</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Testing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#catch2-tests">CATCH2 Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#naming-policy">Naming Policy:</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#simulator-script">Simulator Script:</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pytest-tests">Pytest Tests</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Firmware</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="firmware.html">Firmware Upgrade</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="servers.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverupgrade.html">Upgrade</a></li>
+<li class="toctree-l1"><a class="reference internal" href="virtualserver.html">Simulators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverdefaults.html">Default Values</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector UDP Header</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="udpheader.html">Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udpconfig.html">Config file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udpdetspec.html">Detector Specific Fields</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiver.html">In-built Receiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="receivers.html">Custom Receiver</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver Files</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="fileformat.html">File format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiverheaderformat.html">SLS Receiver Header Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dataformat.html">Detector Image Size and Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="masterfileattributes.html">Master File Attributes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="binaryfileformat.html">Binary File Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hdf5fileformat.html">HDF5 File Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver ZMQ Stream</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="zmqjsonheaderformat.html">ZMQ: Json Header Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Troubleshooting</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">slsDetectorPackage 0.0.0</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Testing</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/Testing.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="testing">
+<h1>Testing<a class="headerlink" href="#testing" title="Link to this heading"></a></h1>
+<p>We use <code class="docutils literal notranslate"><span class="pre">catch2</span></code> and <code class="docutils literal notranslate"><span class="pre">pytest</span></code> for unit testing the C++ and Python code.</p>
+<section id="catch2-tests">
+<h2>CATCH2 Tests<a class="headerlink" href="#catch2-tests" title="Link to this heading"></a></h2>
+<p>To build and run the catch2 tests use the following commands:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">cd build</span>
+<span class="go">cmake -DSLS_USE_TESTS=ON ../</span>
+<span class="go">bin/tests</span>
+</pre></div>
+</div>
+<p>Note that this requires that you have catch2 installed on your system.</p>
+</section>
+<section id="naming-policy">
+<h2>Naming Policy:<a class="headerlink" href="#naming-policy" title="Link to this heading"></a></h2>
+<p>Per default all tests should be visible to catch2.</p>
+<p>If a test fails in the github or gitea actions hide the test by adding the tag <code class="docutils literal notranslate"><span class="pre">[.]</span></code> to the test name.</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">TEST_CASE</span><span class="p">(</span><span class="s">&quot;This test is hidden from default runs&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;[.]&quot;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">REQUIRE</span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">2</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>You can run all tests requiring a detector by running the following command:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">tests &quot;[.detectorintegration]&quot;</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This only works if a configured simulator (or an actual configured detector) and receiver are already set up to run the tests. There is a script that automatically sets up virtual detectors and runs all integration tests. See Section <a class="reference internal" href="#python-simulator-script"><span class="std std-ref">Simulator Script.</span></a>  below.</p>
+</div>
+<p>If you want to disable testing that involves a data file that require pc tuning optimizations, add the hidden tag <code class="docutils literal notranslate"><span class="pre">[.disable_check_data_file]</span></code> to the test case. Please note that only some specific disable tests have been implemented so far.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">tests &quot;[detectorintegration]~[disable_check_data_file]&quot;</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Ensure that there are no spaces betweent the tags and no ‘.’, else hardly any test will be matched.</p>
+</div>
+</section>
+<section id="simulator-script">
+<span id="python-simulator-script"></span><h2>Simulator Script:<a class="headerlink" href="#simulator-script" title="Link to this heading"></a></h2>
+<p>One can also just run the following script, which will run your tests for all the detector types (simulators only) with a pre-determined configuration.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">cd build</span>
+<span class="go">python bin/test_simulators.py</span>
+</pre></div>
+</div>
+<p>This runs all tests marked with the tag <code class="docutils literal notranslate"><span class="pre">[.detectorintegration]</span></code> for all detector simulators.
+If you want to run them for a specific virtual detector or a specific test use the following command:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">cd build</span>
+<span class="go">python bin/test_simulators.py --servers jungfrau --test &quot;[dacs]&quot;</span>
+</pre></div>
+</div>
+<p>You can exclude specific tests by adding the option <code class="docutils literal notranslate"><span class="pre">~[&lt;disable_test_name&gt;]</span></code>. Again, we assume that this marker is added to the tests that you want to exclude.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">cd build</span>
+<span class="go">python bin/test_simulators.py --servers eiger jungfrau moench --test &quot;[detectorintegration]~[disable_check_data_file]&quot;</span>
+</pre></div>
+</div>
+<p>You can additionally run all the tests not requiring detectors using the script <code class="docutils literal notranslate"><span class="pre">bin/test_simulators.py</span></code> by passing the option <code class="docutils literal notranslate"><span class="pre">--general-tests</span></code>.</p>
+<p>One can use <code class="docutils literal notranslate"><span class="pre">--no-log-file</span></code> if you dont want to create a log files and instead print to console. If you prefer to not print to console either, add <code class="docutils literal notranslate"><span class="pre">--quiet</span></code>.</p>
+</section>
+<section id="pytest-tests">
+<h2>Pytest Tests<a class="headerlink" href="#pytest-tests" title="Link to this heading"></a></h2>
+<p>To run the python tests use the following commands:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">cd build</span>
+<span class="go">cmake ../ -DSLS_USE_PYTHON=ON</span>
+<span class="go">export PYTHONPATH=$PWD/bin</span>
+<span class="go">python -m pytest ../python/tests/</span>
+</pre></div>
+</div>
+<p>If a test requires a detector mark them with the pytest marker <code class="docutils literal notranslate"><span class="pre">&#64;pytest.mark.detectorintegration</span></code>.</p>
+<p>To run only tests requiring virtual detectors use the following command:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span><span class="k">in</span><span class="w"> </span>build
+<span class="go">python -m pytest -m detectorintegration ../python/tests/</span>
+</pre></div>
+</div>
+<p>There is a helper test fixture in <code class="docutils literal notranslate"><span class="pre">slsDetectorSoftware/python/tests/conftest.py</span></code> called <code class="docutils literal notranslate"><span class="pre">session_simulator</span></code> that sets up virtual detectors and yields the test for all detectors. The set up is done for every test automatically. Note that the fixture persist over the entire session e.g. the fixture is setup one detector at a time and runs all tests using this fixture before cleaning up and moving on to the next detector. It saves time if the setup and cleanup is expensive.</p>
+<p>Example usage:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
+
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">detectorintegration</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_example_with_simulator</span><span class="p">(</span><span class="n">session_simulator</span><span class="p">):</span>
+    <span class="c1"># your test code here</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As the detector is set up only once makes sure to not change the state of the detector in a way that affects other tests. If you want to change the state of the detector make sure to reset it at the end of your test.</p>
+</div>
+<p>If you want to run the test only for a specific detector use the parametrized test fixture:</p>
+<p>Example usage:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
+
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">detectorintegration</span>
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span><span class="s2">&quot;session_simulator&quot;</span><span class="p">,</span> <span class="p">[(</span><span class="s2">&quot;&lt;my_detector&gt;&quot;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">num_interfaces</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">num_modules</span><span class="o">&gt;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;&lt;another_detector&gt;&quot;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">num_interfaces</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">num_modules</span><span class="o">&gt;</span><span class="p">)],</span> <span class="n">indirect</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_example_with_specific_simulators</span><span class="p">(</span><span class="n">session_simulator</span><span class="p">):</span>
+    <span class="c1"># your test code here</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The parametrized test fixture is setup per file and not for the entire session.</p>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Versioning.html" class="btn btn-neutral float-left" title="Package Versioning" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="firmware.html" class="btn btn-neutral float-right" title="Firmware Upgrade" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, PSD Detector Group.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

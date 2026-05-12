@@ -3,25 +3,25 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Search &mdash; slsDetectorPackage 0.0.0  documentation</title>
+  <title>Power Supply &mdash; slsDetectorPackage 0.0.0  documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/css/extra.css?v=2be88464" />
 
   
-    
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="_static/documentation_options.js?v=5929fcd5"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
-    <script src="_static/searchtools.js"></script>
-    <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="#" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Examples" href="pyexamples.html" />
+    <link rel="prev" title="Enums" href="pyenums.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -36,7 +36,7 @@
             slsDetectorPackage 0.0.0
           </a>
 <div role="search">
-  <form id="rtd-search-form" class="wy-form" action="#" method="get">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
@@ -65,12 +65,21 @@
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Python API</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="pygettingstarted.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pydetector.html">Detector</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pyctb.html">Ctb</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pyenums.html">Enums</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pypower.html">Power Supply</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Power Supply</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#slsdet.Power"><code class="docutils literal notranslate"><span class="pre">Power</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#slsdet.Power.dac"><code class="docutils literal notranslate"><span class="pre">Power.dac</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slsdet.Power.disable"><code class="docutils literal notranslate"><span class="pre">Power.disable()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slsdet.Power.enable"><code class="docutils literal notranslate"><span class="pre">Power.enable()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slsdet.Power.enabled"><code class="docutils literal notranslate"><span class="pre">Power.enabled</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="pyexamples.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pyPatternGenerator.html">PatternGenerator</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pattern.html">Pattern</a></li>
@@ -141,8 +150,9 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Search</li>
+      <li class="breadcrumb-item active">Power Supply</li>
       <li class="wy-breadcrumbs-aside">
+            <a href="_sources/pypower.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -150,22 +160,54 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <noscript>
-  <div id="fallback" class="admonition warning">
-    <p class="last">
-      Please activate JavaScript to enable the search functionality.
-    </p>
-  </div>
-  </noscript>
+  <section id="power-supply">
+<h1>Power Supply<a class="headerlink" href="#power-supply" title="Link to this heading"></a></h1>
+<p>Helper class to control power supplies on the Chip Test Board (CTB, Xilinx CTB).</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="slsdet.Power">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">slsdet.</span></span><span class="sig-name descname"><span class="pre">Power</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enum</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detector</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#slsdet.Power" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class represents a power supply on the Chip Test Board.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This class is used to build up NamedPowers and is in general
+not directly accessible to the user.</p>
+</div>
+<dl class="py property">
+<dt class="sig sig-object py" id="slsdet.Power.dac">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">dac</span></span><a class="headerlink" href="#slsdet.Power.dac" title="Link to this definition"></a></dt>
+<dd><p>Returns the dac value for this power supply in mV.</p>
+</dd></dl>
 
-  
-  <div id="search-results">
-  
-  </div>
+<dl class="py method">
+<dt class="sig sig-object py" id="slsdet.Power.disable">
+<span class="sig-name descname"><span class="pre">disable</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#slsdet.Power.disable" title="Link to this definition"></a></dt>
+<dd><p>Disable this power supply.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slsdet.Power.enable">
+<span class="sig-name descname"><span class="pre">enable</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#slsdet.Power.enable" title="Link to this definition"></a></dt>
+<dd><p>Enable this power supply.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="slsdet.Power.enabled">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">enabled</span></span><a class="headerlink" href="#slsdet.Power.enabled" title="Link to this definition"></a></dt>
+<dd><p>Returns whether this power supply is enabled.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
 
            </div>
           </div>
-          <footer>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="pyenums.html" class="btn btn-neutral float-left" title="Enums" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pyexamples.html" class="btn btn-neutral float-right" title="Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
   <hr/>
 
@@ -187,14 +229,7 @@
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-  <script>
-    jQuery(function() { Search.loadIndex("searchindex.js"); });
-  </script>
-  
-  <script id="searchindexloader"></script>
-   
-
+  </script> 
 
 </body>
 </html>

@@ -67,12 +67,14 @@ This runs all tests marked with the tag ``[.detectorintegration]`` for all detec
 If you want to run them for a specific virtual detector or a specific test use the following command:
 
 .. code-block:: console
+
     cd build
     python bin/test_simulators.py --servers jungfrau --test "[dacs]"
 
 You can exclude specific tests by adding the option ``~[<disable_test_name>]``. Again, we assume that this marker is added to the tests that you want to exclude. 
 
 .. code-block:: console
+
     cd build
     python bin/test_simulators.py --servers eiger jungfrau moench --test "[detectorintegration]~[disable_check_data_file]"
 
@@ -98,6 +100,7 @@ If a test requires a detector mark them with the pytest marker ``@pytest.mark.de
 To run only tests requiring virtual detectors use the following command:
 
 .. code-block:: console
+    
     #in build
     python -m pytest -m detectorintegration ../python/tests/
 

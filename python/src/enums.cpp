@@ -27,6 +27,7 @@ void init_enums(py::module &m) {
         .value("GOTTHARD2", slsDetectorDefs::detectorType::GOTTHARD2)
         .value("XILINX_CHIPTESTBOARD",
                slsDetectorDefs::detectorType::XILINX_CHIPTESTBOARD)
+        .value("MATTERHORN", slsDetectorDefs::detectorType::MATTERHORN)
         .export_values();
 
     py::enum_<slsDetectorDefs::boolFormat>(Defs, "boolFormat")
@@ -48,6 +49,12 @@ void init_enums(py::module &m) {
     py::enum_<slsDetectorDefs::dimension>(Defs, "dimension")
         .value("X", slsDetectorDefs::dimension::X)
         .value("Y", slsDetectorDefs::dimension::Y)
+        .export_values();
+
+    py::enum_<slsDetectorDefs::FrequencyUnit>(Defs, "FrequencyUnit")
+        .value("Hz", slsDetectorDefs::FrequencyUnit::Hz)
+        .value("kHz", slsDetectorDefs::FrequencyUnit::kHz)
+        .value("MHz", slsDetectorDefs::FrequencyUnit::MHz)
         .export_values();
 
     py::enum_<slsDetectorDefs::frameDiscardPolicy>(Defs, "frameDiscardPolicy")

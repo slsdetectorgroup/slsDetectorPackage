@@ -7053,8 +7053,12 @@ std::string Caller::numinterfaces(int action) {
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 1) {
+            if (det_id != -1) {
+                throw RuntimeError(
+                    "Cannot execute numinterfaces at module level");
+            }
             auto arg0 = StringTo<int>(args[0]);
-            det->setNumberofUDPInterfaces(arg0, std::vector<int>{det_id});
+            det->setNumberofUDPInterfaces(arg0);
             os << args.front() << '\n';
         }
     }

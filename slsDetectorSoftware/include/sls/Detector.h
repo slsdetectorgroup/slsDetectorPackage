@@ -719,8 +719,9 @@ class Detector {
      * restarts client and receiver zmq sockets if zmq streaming enabled. \n
      * [Gotthard2] second interface enabled to send veto information via 10Gbps
      * for debugging. By default, if veto enabled, it is sent via 2.5 gbps
-     * interface. \nSetting this resets the receiver roi */
-    void setNumberofUDPInterfaces(int n, Positions pos = {});
+     * interface. \nSetting this resets the receiver roi and any udp datastream
+     * disables */
+    void setNumberofUDPInterfaces(int n);
 
     /** [Jungfrau][Moench] */
     Result<int> getSelectedUDPInterface(Positions pos = {}) const;
@@ -2279,7 +2280,7 @@ class Detector {
   private:
     std::vector<uint16_t> getValidPortNumbers(uint16_t start_port);
     void updateRxRateCorrections();
-    void setNumberofUDPInterfaces_(int n, Positions pos);
+    void setNumberofUDPInterfaces_(int n);
 };
 
 } // namespace sls

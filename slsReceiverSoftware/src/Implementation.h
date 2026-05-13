@@ -368,8 +368,6 @@ class Implementation : private virtual slsDetectorDefs {
     bool activated{true};
     std::array<bool, 2> udpDataStream = {{true, true}};
     std::vector<int> udpPortsDisabledMetadata;
-    std::vector<bool> udpPort2Enable;
-    std::array<portPosition, 2> udpDataStreamType = {{LEFT, RIGHT}};
     // only for Eiger to remember (10Gbe selectable)
     std::array<bool, 2> udpDataStream10GbE = {{true, true}};
     int readNRows{0};

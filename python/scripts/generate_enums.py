@@ -30,7 +30,17 @@ def extract_enums(lines):
 
     line_iter = iter(lines)
     enums = {}
+    inside_defs = False
+
     for line in line_iter:
+
+        # only pick up what is inside slsDetectorDefs
+        if "class slsDetectorDefs" in line:
+            inside_defs = True
+
+        if not inside_defs:
+            continue
+
         #Hack away class enum defs
         if "class" in line:
             line = line.replace("class", "")

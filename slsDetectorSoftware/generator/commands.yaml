@@ -826,15 +826,6 @@ nextframenumber:
       function: setNextFrameNumber
       input_types: [ uint64_t ]
 
-numinterfaces:
-  help: "[1, 2]\n\t[Jungfrau][Moench] Number of udp interfaces to stream data from detector. Default: 1.\n\tAlso enables second interface in receiver for listening (Writes a file per interface if writing enabled).\n\tAlso restarts client and receiver zmq sockets if zmq streaming enabled.\n\t[Eiger] Only gets with result 2."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getNumberofUDPInterfaces
-    PUT:
-      function: setNumberofUDPInterfaces
-
 selinterface:
   help: "[0, 1]\n\t[Jungfrau][Moench] The udp interface to stream data from detector. Effective only when number of interfaces is 1. Default: 0 (outer)"
   inherit_actions: INTEGER_COMMAND_VEC_ID
@@ -1521,6 +1512,15 @@ zmqport:
       function: setClientZmqPort
 
 ################# INTEGER_COMMAND_SET_NOID_GET_ID ############
+numinterfaces:
+  help: "[1, 2]\n\t[Jungfrau][Moench] Number of udp interfaces to stream data from detector. Default: 1.\n\tAlso enables second interface in receiver for listening (Writes a file per interface if writing enabled).\n\tAlso restarts client and receiver zmq sockets if zmq streaming enabled.\n\t[Eiger] Only gets with result 2."
+  inherit_actions: INTEGER_COMMAND_SET_NOID_GET_ID
+  actions:
+    GET:
+      function: getNumberofUDPInterfaces
+    PUT:
+      function: setNumberofUDPInterfaces
+
 sync:
   inherit_actions: INTEGER_COMMAND_SET_NOID_GET_ID
   help: "[0, 1]\n\t[Jungfrau][Moench] Enables or disables synchronization between modules. Sync mode requires at least one master configured. Also requires flatband cabling between master and slave with termination board."

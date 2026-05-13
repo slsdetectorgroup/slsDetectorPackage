@@ -5674,7 +5674,7 @@ numinterfaces:
         argc: 1
         cast_input:
         - true
-        check_det_id: false
+        check_det_id: true
         convert_det_id: true
         function: setNumberofUDPInterfaces
         input:
@@ -5683,7 +5683,7 @@ numinterfaces:
         - int
         output:
         - args.front()
-        require_det_id: true
+        require_det_id: false
         store_result_in_t: false
   command_name: numinterfaces
   function_alias: numinterfaces

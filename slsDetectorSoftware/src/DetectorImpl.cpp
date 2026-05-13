@@ -1657,12 +1657,6 @@ std::vector<defs::portPosition> DetectorImpl::getPortPositionList() const {
 }
 
 void DetectorImpl::updateRxUDPDatastreamMetadata() {
-    auto detType = shm()->detType;
-    if (detType != defs::EIGER && detType != defs::JUNGFRAU &&
-        detType != defs::MOENCH)
-        throw RuntimeError(
-            "Datastream enable not implemented for this detector");
-
     // check num interfaces
     auto numInterfaces =
         Parallel(&Module::getNumberofUDPInterfacesFromShm, {})
@@ -1672,27 +1666,23 @@ void DetectorImpl::updateRxUDPDatastreamMetadata() {
     }
 
     std::vector<int> disable;
-    // 1 interface: empty vector (disable none)
-    // 2 interface: check each enable
-    if (numInterfaces == 2) {
-        auto portList = getPortPositionList();
-        if (portList.size() != 2) {
-            throw RuntimeError("Invalid port size. Expected 2.");
-        }
-        // bottom and left is port 0
-        auto port0 = Parallel(&Module::getDataStream, {}, portList[0]);
-        auto port1 = Parallel(&Module::getDataStream, {}, portList[1]);
+    auto portList = getPortPositionList();
+    if (portList.size() != 2) {
+        throw RuntimeError("Invalid port size. Expected 2.");
+    }
+    // bottom and left is port 0
+    auto port0 = Parallel(&Module::getDataStream, {}, portList[0]);
+    auto port1 = Parallel(&Module::getDataStream, {}, portList[1]);
 
-        // if any of them are disabled
-        if (port0.any(false) || port1.any(false)) {
-            // for each module: if disabled, push port index
-            for (size_t i = 0; i != port0.size(); ++i) {
-                if (!port0[i]) {
-                    disable.push_back(i * 2);
-                }
-                if (!port1[i]) {
-                    disable.push_back(i * 2 + 1);
-                }
+    // if any of them are disabled
+    if (port0.any(false) || port1.any(false)) {
+        // for each module: if disabled, push port index
+        for (size_t i = 0; i != port0.size(); ++i) {
+            if (!port0[i]) {
+                disable.push_back(i * 2);
+            }
+            if (!port1[i]) {
+                disable.push_back(i * 2 + 1);
             }
         }
     }

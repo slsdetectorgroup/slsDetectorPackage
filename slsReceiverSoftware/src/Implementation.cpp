@@ -747,8 +747,8 @@ void Implementation::stopReceiver() {
             if (!activated) {
                 summary = "\n\tDeactivated Receiver";
             } else if (!udpDataStream[i]) {
-                summary = "\n\tDeactivated " + ToString(udpDataStreamType[i]) +
-                          " Port";
+                summary = "\n\tDeactivated " +
+                          ToString(generalData->udpPortTypes[i]) + " Port";
             } else if (portRois[i].noRoi()) {
                 summary = "\n\tNo Roi on Port[" + std::to_string(i) + ']';
             } else {
@@ -994,9 +994,10 @@ void Implementation::StartMasterWriter() {
             masterAttributes.gates = numberOfGates;
             masterAttributes.additionalJsonHeader = additionalJsonHeader;
             masterAttributes.readoutSpeed = readoutSpeed;
-            masterAttributes.udpPortEnables = udpPortEnables;
-            masterAttributes.udpPortType[0] = ToString(udpDataStreamType[0]);
-            masterAttributes.udpPortType[1] = ToString(udpDataStreamType[1]);
+            masterAttributes.udpPortTypes = {
+                ToString(generalData->udpPortTypes[0]),
+                ToString(generalData->udpPortTypes[1])};
+            masterAttributes.udpPortsDisabled = udpPortsDisabledMetadata;
 
             // create master file
             masterFileName = dataProcessor[0]->CreateMasterFile(
@@ -1101,6 +1102,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
         // reset udp data stream
         udpDataStream[0] = true;
         udpDataStream[1] = true;
+        udpPortsDisabledMetadata.clear();
 
         // create threads
         for (int i = 0; i < generalData->numUDPInterfaces; ++i) {
@@ -1691,7 +1693,6 @@ void Implementation::setUDPDataStream(const portPosition port,
     // top goes to udp port 2 (jungfrau & moench)
     if (port == TOP || port == RIGHT)
         index = 1;
-    udpDataStreamType[index] = port;
     // jungfrau and moench: straightforward
     if (generalData->detType != EIGER) {
         udpDataStream[index] = enable;
@@ -1714,9 +1715,9 @@ void Implementation::setUDPDataStream(const portPosition port,
         listener[i]->SetUDPDatastream(udpDataStream[i]);
 }
 
-void Implementation::updateUDPDatastreamMetadata(
-    const std::array<std::vector<int>, 2> &portEnables) {
-    udpPortEnables = portEnables;
+void Implementation::updateUDPPortsDisabledMetadata(
+    const std::vector<int> &portsDisabled) {
+    udpPortsDisabledMetadata = portsDisabled;
 }
 
 int Implementation::getReadNRows() const { return readNRows; }

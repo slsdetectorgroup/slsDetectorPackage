@@ -414,10 +414,16 @@ class MasterAttributes {
     template <typename T>
     typename std::enable_if<!std::is_class<T>::value, void>::type
     WriteHDF5Int(H5::Group *group, const std::string &name, const T &value) {
-        H5::DataSpace dataspace(H5S_SCALAR);
-        auto h5type = GetHDF5Type<T>();
-        H5::DataSet dataset = group->createDataSet(name, *h5type, dataspace);
-        dataset.write(&value, *h5type);
+        try {
+            H5::DataSpace dataspace(H5S_SCALAR);
+            auto h5type = GetHDF5Type<T>();
+            H5::DataSet dataset =
+                group->createDataSet(name, *h5type, dataspace);
+            dataset.write(&value, *h5type);
+        } catch (std::exception &e) {
+            throw RuntimeError("Could not write attribute " + name +
+                               " in HDf5 file");
+        }
     }
 
     /** For arrays */
@@ -425,11 +431,17 @@ class MasterAttributes {
     typename std::enable_if<std::is_class<T>::value, void>::type
     WriteHDF5Int(H5::Group *group, const std::string &name, const T &value) {
         using ElemT = typename T::value_type;
-        auto h5type = GetHDF5Type<ElemT>();
-        hsize_t dims[1] = {value.size()};
-        H5::DataSpace dataspace(1, dims);
-        H5::DataSet dataset = group->createDataSet(name, *h5type, dataspace);
-        dataset.write(value.data(), *h5type);
+        try {
+            auto h5type = GetHDF5Type<ElemT>();
+            hsize_t dims[1] = {value.size()};
+            H5::DataSpace dataspace(1, dims);
+            H5::DataSet dataset =
+                group->createDataSet(name, *h5type, dataspace);
+            dataset.write(value.data(), *h5type);
+        } catch (std::exception &e) {
+            throw RuntimeError("Could not write attribute " + name +
+                               " in HDf5 file");
+        }
     }
 
 #endif

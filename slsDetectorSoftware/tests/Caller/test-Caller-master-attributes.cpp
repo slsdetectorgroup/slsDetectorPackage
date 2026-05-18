@@ -1,5 +1,8 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
+#include "master_file/Context.h"
+#include "master_file/Readers.h"
+
 #include "Caller.h"
 #include "MasterAttributes.h"
 #include "catch.hpp"
@@ -29,262 +32,14 @@ using test::GET;
 using test::PUT;
 using namespace rapidjson;
 
+namespace mf = test::master_file;
+#ifdef HDF5C
+std::optional<mf::H5Context> h5ctx;
+#endif
+
 inline bool operator==(sls::ns lhs, sls::ns rhs) {
     return lhs.count() == rhs.count();
 }
-
-#ifdef HDF5C
-std::optional<H5::H5File> h5File{};
-#endif
-
-/** std::string */
-void read_from_json(const Document &doc, const std::string &name,
-                    std::string &retval) {
-    retval = doc[name.c_str()].GetString();
-}
-#ifdef HDF5C
-void read_from_h5_dataset(const H5::DataSet &dataset, const std::string &name,
-                          std::string &retval) {
-    dataset.read(retval, dataset.getStrType());
-}
-#endif
-
-/** int */
-void read_from_json(const Document &doc, const std::string &name, int &retval) {
-    retval = doc[name.c_str()].GetInt();
-}
-#ifdef HDF5C
-void read_from_h5_dataset(const H5::DataSet &dataset, const std::string &name,
-                          int &retval) {
-    dataset.read(&retval, H5::PredType::NATIVE_INT);
-}
-#endif
-
-/** uint64_t */
-void read_from_json(const Document &doc, const std::string &name,
-                    uint64_t &retval) {
-    retval = doc[name.c_str()].GetUint64();
-}
-#ifdef HDF5C
-void read_from_h5_dataset(const H5::DataSet &dataset, const std::string &name,
-                          uint64_t &retval) {
-    dataset.read(&retval, H5::PredType::STD_U64LE);
-}
-#endif
-
-/** uint32_t */
-void read_from_json(const Document &doc, const std::string &name,
-                    uint32_t &retval) {
-    retval = doc[name.c_str()].GetUint();
-}
-#ifdef HDF5C
-void read_from_h5_dataset(const H5::DataSet &dataset, const std::string &name,
-                          uint32_t &retval) {
-    dataset.read(&retval, H5::PredType::STD_U32LE);
-}
-#endif
-
-/** double */
-void read_from_json(const Document &doc, const std::string &name,
-                    double &retval) {
-    retval = doc[name.c_str()].GetDouble();
-}
-#ifdef HDF5C
-void read_from_h5_dataset(const H5::DataSet &dataset, const std::string &name,
-                          double &retval) {
-    dataset.read(&retval, H5::PredType::NATIVE_DOUBLE);
-}
-#endif
-
-/** std::vector<int64_t> */
-void read_from_json(const Document &doc, const std::string &name,
-                    std::vector<int64_t> &retval) {
-    for (const auto &item : doc[name.c_str()].GetArray()) {
-        retval.push_back(item.GetInt64());
-    }
-}
-#ifdef HDF5C
-void read_from_h5_dataset(const H5::DataSet &dataset, const std::string &name,
-                          std::vector<int64_t> &retval) {
-    H5::DataSpace dataspace = dataset.getSpace();
-    hsize_t dims[1];
-    dataspace.getSimpleExtentDims(dims);
-    retval.resize(dims[0]);
-    dataset.read(retval.data(), H5::PredType::STD_I64LE);
-}
-#endif
-
-/** std::vector<defs::ROI> */
-void read_from_json(const Document &doc, const std::string &name,
-                    std::vector<defs::ROI> &retval) {
-    for (const auto &item : doc[name.c_str()].GetArray()) {
-        defs::ROI r{};
-        r.xmin = item["xmin"].GetInt();
-        r.xmax = item["xmax"].GetInt();
-        r.ymin = item["ymin"].GetInt();
-        r.ymax = item["ymax"].GetInt();
-        retval.push_back(r);
-    }
-}
-#ifdef HDF5C
-void read_from_h5_dataset(const H5::DataSet &dataset, const std::string &name,
-                          std::vector<defs::ROI> &retval) {
-    H5::DataSpace dataspace = dataset.getSpace();
-    hsize_t dims[1];
-    dataspace.getSimpleExtentDims(dims);
-    H5::CompType cType(sizeof(defs::ROI));
-    cType.insertMember("xmin", HOFFSET(defs::ROI, xmin),
-                       H5::PredType::NATIVE_INT);
-    cType.insertMember("xmax", HOFFSET(defs::ROI, xmax),
-                       H5::PredType::NATIVE_INT);
-    cType.insertMember("ymin", HOFFSET(defs::ROI, ymin),
-                       H5::PredType::NATIVE_INT);
-    cType.insertMember("ymax", HOFFSET(defs::ROI, ymax),
-                       H5::PredType::NATIVE_INT);
-    retval.resize(dims[0]);
-    dataset.read(retval.data(), cType);
-}
-#endif
-
-/** std::array<int, 3UL> */
-void read_from_json(const Document &doc, const std::string &name,
-                    std::array<int, 3UL> &retval) {
-    const auto &json_values = doc[name.c_str()].GetArray();
-    if (json_values.Size() != retval.size()) {
-        throw sls::RuntimeError("JSON array " + name +
-                                " does not have num elements as expected");
-    }
-    int index = 0;
-    for (const auto &item : json_values) {
-        retval[index++] = item.GetInt();
-    }
-}
-#ifdef HDF5C
-void read_from_h5_dataset(const H5::DataSet &dataset, const std::string &name,
-                          std::array<int, 3UL> &retval) {
-    H5::DataSpace dataspace = dataset.getSpace();
-    hsize_t dims[1];
-    dataspace.getSimpleExtentDims(dims);
-    if (dims[0] != retval.size()) {
-        throw sls::RuntimeError("HDF5 dataset " + name +
-                                " does not have num elements as expected");
-    }
-    dataset.read(retval.data(), H5::PredType::NATIVE_INT);
-}
-#endif
-
-/* std::array<sls::ns, 3UL> */
-void read_from_json(const Document &doc, const std::string &name,
-                    std::array<sls::ns, 3UL> &retval) {
-    const auto &json_values = doc[name.c_str()].GetArray();
-    if (json_values.Size() != retval.size()) {
-        throw sls::RuntimeError("JSON array " + name +
-                                " does not have num elements as expected");
-    }
-    int index = 0;
-    for (const auto &item : json_values) {
-        std::string sval = item.GetString();
-        retval[index++] = StringTo<sls::ns>(sval);
-    }
-}
-#ifdef HDF5C
-void read_from_h5_dataset(const H5::DataSet &dataset, const std::string &name,
-                          std::array<sls::ns, 3UL> &retval) {
-    H5::DataSpace dataspace = dataset.getSpace();
-    hsize_t dims[1];
-    dataspace.getSimpleExtentDims(dims);
-    if (dims[0] != retval.size()) {
-        throw sls::RuntimeError("HDF5 dataset " + name +
-                                " does not have num elements as expected");
-    }
-    std::vector<const char *> strValues(dims[0]);
-    dataset.read(strValues.data(), dataset.getStrType());
-    for (size_t i = 0; i < dims[0]; ++i) {
-        retval[i] = StringTo<sls::ns>(strValues[i]);
-    }
-}
-#endif
-
-/** defs::xy */
-void read_from_json(const Document &doc, const std::string &name,
-                    defs::xy &retval) {
-    retval.x = doc[name.c_str()]["x"].GetInt();
-    retval.y = doc[name.c_str()]["y"].GetInt();
-}
-#ifdef HDF5C
-void read_from_h5_dataset(const H5::DataSet &dataset, const std::string &name,
-                          defs::xy &retval) {
-    H5::CompType cType(sizeof(defs::xy));
-    cType.insertMember("x", HOFFSET(defs::xy, x), H5::PredType::NATIVE_INT);
-    cType.insertMember("y", HOFFSET(defs::xy, y), H5::PredType::NATIVE_INT);
-    dataset.read(&retval, cType);
-}
-#endif
-
-/** defs::scanParameters */
-void read_from_json(const Document &doc, const std::string &name,
-                    defs::scanParameters &retval) {
-    const auto &s = doc[name.c_str()].GetObject();
-    retval.enable = s["enable"].GetInt();
-    retval.dacInd = static_cast<defs::dacIndex>(s["dacInd"].GetInt());
-    retval.startOffset = s["start offset"].GetInt();
-    retval.stopOffset = s["stop offset"].GetInt();
-    retval.stepSize = s["step size"].GetInt();
-    retval.dacSettleTime_ns = s["dac settle time ns"].GetInt64();
-}
-#ifdef HDF5C
-void read_from_h5_dataset(const H5::DataSet &dataset, const std::string &name,
-                          defs::scanParameters &retval) {
-    H5::CompType cType(sizeof(defs::scanParameters));
-    cType.insertMember("enable", HOFFSET(defs::scanParameters, enable),
-                       H5::PredType::NATIVE_INT);
-    cType.insertMember("dacInd", HOFFSET(defs::scanParameters, dacInd),
-                       H5::PredType::NATIVE_INT);
-    cType.insertMember("startOffset",
-                       HOFFSET(defs::scanParameters, startOffset),
-                       H5::PredType::NATIVE_INT);
-    cType.insertMember("stopOffset", HOFFSET(defs::scanParameters, stopOffset),
-                       H5::PredType::NATIVE_INT);
-    cType.insertMember("stepSize", HOFFSET(defs::scanParameters, stepSize),
-                       H5::PredType::NATIVE_INT);
-    cType.insertMember("dacSettleTime_ns",
-                       HOFFSET(defs::scanParameters, dacSettleTime_ns),
-                       H5::PredType::STD_I64LE);
-    dataset.read(&retval, cType);
-}
-#endif
-
-/** std::map<std::string, std::string> */
-void read_from_json(const Document &doc, const std::string &name,
-                    std::map<std::string, std::string> &retval) {
-    for (const auto &m : doc[name.c_str()].GetObject()) {
-        retval[m.name.GetString()] = m.value.GetString();
-    }
-}
-#ifdef HDF5C
-void read_from_h5_dataset(const H5::DataSet &dataset, const std::string &name,
-                          std::map<std::string, std::string> &retval) {
-    H5::DataSpace dataspace = dataset.getSpace();
-    hsize_t dims[1];
-    dataspace.getSimpleExtentDims(dims);
-    if (dims[0] == 0) {
-        return; // empty dataset
-    }
-    auto strType = dataset.getStrType();
-    H5::CompType mapType(sizeof(char *) * 2);
-    mapType.insertMember("key", 0, strType);
-    mapType.insertMember("value", sizeof(char *), strType);
-    struct KeyValue {
-        const char *key;
-        const char *value;
-    };
-    std::vector<KeyValue> kv_vector(dims[0]);
-    dataset.read(kv_vector.data(), mapType);
-    for (const auto &kv : kv_vector) {
-        retval[kv.key] = kv.value;
-    }
-}
-#endif
 
 /** test parameter in file */
 template <typename T>
@@ -292,15 +47,17 @@ void test_json_parameter(const Document &doc, const std::string &name,
                          const T &expected) {
     REQUIRE(doc.HasMember(name.c_str()));
     T retval{};
-    read_from_json(doc, name, retval);
+    mf::read_from_json(doc, name, retval);
     REQUIRE(retval == expected);
 }
 #ifdef HDF5C
 template <typename T>
 void test_h5_dataset(const std::string &name, const T &expected) {
-    auto dataset = h5File->openDataSet(HDF5_GROUP + name);
+    REQUIRE(h5ctx.has_value());
+    auto dataset = h5ctx->file.openDataSet(HDF5_GROUP + name);
     T retval{};
-    read_from_h5_dataset(dataset, name, retval);
+    mf::read_from_h5_dataset(dataset, name, retval);
+    // auto retval = mf::read<mf::H5Doc, T>(mf::H5Doc{dataset}, name);
     REQUIRE(retval == expected);
 }
 #endif
@@ -313,7 +70,7 @@ void check_master_file(const std::optional<Document> &doc,
         test_json_parameter(d, name, expected);
     } else {
 #ifdef HDF5C
-        if (!h5File.has_value()) {
+        if (!h5ctx.has_value()) {
             throw sls::RuntimeError("HDF5 file is not opened for testing " +
                                     name);
         }
@@ -334,15 +91,16 @@ void test_master_file_version(const Detector &det,
     if (doc.has_value()) {
         const auto &d = *doc;
         REQUIRE(d.HasMember(MasterAttributes::N_VERSION.data()));
-        read_from_json(d, name, retval);
+        mf::read_from_json(d, name, retval);
         REQUIRE(retval == BINARY_WRITER_VERSION);
     } else {
 #ifdef HDF5C
-        if (!h5File.has_value()) {
+        if (!h5ctx.has_value()) {
             throw sls::RuntimeError(
                 "HDF5 file is not opened for testing Version");
         }
-        auto attr = h5File->openAttribute(MasterAttributes::N_VERSION.data());
+        auto attr =
+            h5ctx->file.openAttribute(MasterAttributes::N_VERSION.data());
         attr.read(attr.getDataType(), &retval);
         REQUIRE(retval == HDF5_WRITER_VERSION);
 #else
@@ -1023,6 +781,8 @@ Document parse_binary_master_attributes(std::string file_path) {
     return doc;
 }
 
+// todo: to be moved to checkers if group exists.
+/*
 #ifdef HDF5C
 void open_hdf5_file(const std::string &file_path) {
     REQUIRE(std::filesystem::exists(file_path) == true);
@@ -1031,6 +791,7 @@ void open_hdf5_file(const std::string &file_path) {
             true);
 }
 #endif
+*/
 
 TEST_CASE("check_master_file_attributes",
           "[.detectorintegration][.disable_check_data_file]") {
@@ -1072,7 +833,7 @@ TEST_CASE("check_master_file_attributes",
 #ifdef HDF5C
     fname = master_file_prefix + ".h5"; // /tmp/sls_test_master_0.h5
     try {
-        open_hdf5_file(fname);
+        h5ctx.emplace(fname);
         test_master_file_metadata(det, std::nullopt);
         test_master_file_frames_in_file(std::nullopt, num_frames);
     } catch (H5::Exception &e) {

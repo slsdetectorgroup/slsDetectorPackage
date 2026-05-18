@@ -9,8 +9,8 @@
 #include <sys/mman.h>
 #include <vector>
 
-// TODO: maybe should be templated on address type (e.g. uint32_t or uint64_t)
-// for more flexibility?
+// TODO: maybe should be templated on address type (e.g. uint32_t register or
+// uint64_t register) for more flexibility?
 
 namespace sls {
 
@@ -38,14 +38,14 @@ class BusCommunication {
     void mapToMemory();
 
     uint32_t readRegister(const Register &register_) const;
-    void writeRegister(const Register &register_, const uint32_t data) const;
+    void writeRegister(const Register &register_, const uint32_t data);
 
   private:
     /// @brief stores register blocks for each IP core
     IpCoreRegisterBlock<IPCoreEnumType, MemoryModel> ipcoreregisterblocks;
 
     void bus_w(const uint32_t offset, IPCoreEnumType baseadress,
-               const uint32_t data) const;
+               const uint32_t data);
 
     uint32_t bus_r(const uint32_t offset, IPCoreEnumType baseadress) const;
 };
@@ -66,7 +66,7 @@ uint32_t BusCommunication<IPCoreEnumType, MemoryModel>::readRegister(
 
 template <typename IPCoreEnumType, typename MemoryModel>
 void BusCommunication<IPCoreEnumType, MemoryModel>::writeRegister(
-    const Register &register_, const uint32_t data) const {
+    const Register &register_, const uint32_t data) {
     bus_w(register_.offset_in_bytes, register_.ip_core, data);
 }
 
@@ -81,7 +81,7 @@ uint32_t BusCommunication<IPCoreEnumType, MemoryModel>::bus_r(
 template <typename IPCoreEnumType, typename MemoryModel>
 void BusCommunication<IPCoreEnumType, MemoryModel>::bus_w(
     const uint32_t offset, const IPCoreEnumType baseadress,
-    const uint32_t data) const {
+    const uint32_t data) {
     auto ptr1 = ipcoreregisterblocks().at(baseadress).getMappedMemoryPtr() +
                 offset / (sizeof(uint32_t));
     *ptr1 = data;

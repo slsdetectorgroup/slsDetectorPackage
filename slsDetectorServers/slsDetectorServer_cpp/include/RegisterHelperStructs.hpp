@@ -6,6 +6,7 @@ namespace sls {
 
 enum class IPCore : uint32_t; // forward declaration of IPCore enum class
 
+/// @brief struct representing 32 bit register
 struct Register {
     /// @brief IP core address space
     const IPCore ip_core{}; // TODO replace by enum type
@@ -26,5 +27,28 @@ struct RegisterField {
     /// @brief Bitmask for the field
     const uint32_t bitmask{};
 };
+
+// TODO: maybe static member function of RegisterField?
+template <typename T>
+void setRegisterField(uint32_t &registervalue, const RegisterField &reg_field,
+                      T field_value) {
+    // Clear the bits corresponding to the field
+    registervalue &= ~(reg_field.bitmask << reg_field.bit_position);
+    // Set the new value for the field
+    registervalue |= (static_cast<uint32_t>(field_value) & reg_field.bitmask)
+                     << reg_field.bit_position;
+}
+
+template <typename T>
+T getRegisterField(const uint32_t &registervalue,
+                   const RegisterField &reg_field) {
+    // Extract the bits corresponding to the field and shift them to get the
+    // value
+
+    auto field_value =
+        (registervalue >> reg_field.bit_position) & reg_field.bitmask;
+
+    return static_cast<T>(field_value);
+}
 
 } // namespace sls

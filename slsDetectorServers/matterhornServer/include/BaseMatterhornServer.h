@@ -53,9 +53,15 @@ class BaseMatterhornServer
 
     ReturnCode get_receiver_parameters(ServerInterface &socket) const;
 
-    ReturnCode get_num_frames(ServerInterface &socket) const;
+    ReturnCode set_module_position(ServerInterface &socket);
 
-    uint64_t get_frames() const;
+    uint64_t getNumFrames() const;
+
+    void setNumFrames(const uint64_t num_frames);
+
+    uint32_t getNumTriggers() const;
+
+    void setNumTriggers(const uint32_t num_triggers);
 
     /**
      * @brief call function corresponding to the function ID received from the
@@ -71,12 +77,17 @@ class BaseMatterhornServer
         std::is_same_v<DerivedServer, VirtualMatterhornServer>,
         VirtualMemoryModel, HardwareMemoryModel>;
 
+    // TODO: for now in MatterhornServer and not generic Server but can be
+    // templated on different IPCore types for each detector
     BusCommunication<IPCore, MemoryModel> busCommunication{};
+
+    // TODO: probably virtaul server specific details, can be moved to derived
+    // class
+    /// @brief initial setup of detector
+    void setupDetector();
 
   private:
     static std::string getMatterhornServerVersion();
-
-    int64_t getNumFrames() const;
 
     static constexpr uint8_t numUDPInterfaces =
         1; // only one udp per module for now
@@ -93,6 +104,14 @@ BaseMatterhornServer<DerivedServer>::processFunction(const detFuncs function_id,
             fmt::format("Function {} not implemented",
                         getFunctionNameFromEnum((enum detFuncs)function_id)));
     }
+}
+
+template <typename DerivedServer>
+void BaseMatterhornServer<DerivedServer>::setupDetector() {
+    // TODO: extend
+    setNumFrames(1); // maybe have a file with constexpr default values
+
+    setNumTriggers(1);
 }
 
 template <typename DerivedServer>
@@ -154,9 +173,11 @@ ReturnCode BaseMatterhornServer<DerivedServer>::get_receiver_parameters(
 
     rx_params.udp_dstmac = this->udpDetails[0].dstmac;
 
-    rx_params.frames = get_frames();
+    rx_params.frames = getNumFrames();
 
-    // rx_params.triggers = 0;
+    rx_params.triggers = getNumTriggers();
+
+    // TODO: extend
 
     // rx_params.expTimeNs = 0;
 
@@ -172,17 +193,125 @@ ReturnCode BaseMatterhornServer<DerivedServer>::get_receiver_parameters(
 }
 
 template <typename DerivedServer>
-ReturnCode BaseMatterhornServer<DerivedServer>::get_num_frames(
-    ServerInterface &socket) const {
+uint64_t BaseMatterhornServer<DerivedServer>::getNumFrames() const {
 
-    uint64_t num_frames = get_frames();
-    return static_cast<ReturnCode>(socket.sendResult(num_frames));
+    try {
+        uint32_t num_frames =
+            busCommunication.readRegister(Reg::MH_SM_Frames_Reg);
+        return static_cast<uint64_t>(num_frames);
+    } catch (const std::exception &e) {
+        LOG(logERROR) << "Failed to read number of frames from register: "
+                      << e.what();
+        throw;
+    }
 }
 
 template <typename DerivedServer>
-uint64_t BaseMatterhornServer<DerivedServer>::get_frames() const {
-    return static_cast<uint64_t>(
-        busCommunication.readRegister(Reg::MH_SM_Frames_Reg));
+void BaseMatterhornServer<DerivedServer>::setNumFrames(
+    const uint64_t num_frames) {
+
+    try {
+        busCommunication.writeRegister(Reg::MH_SM_Frames_Reg,
+                                       static_cast<uint32_t>(num_frames));
+    } catch (const std::exception &e) {
+        LOG(logERROR) << "Failed to set number of frames: " << e.what();
+        throw;
+    }
+    // TODO: maybe always check that the value is correctly set by reading back
+    // the register and comparing
+}
+
+template <typename DerivedServer>
+void BaseMatterhornServer<DerivedServer>::setNumTriggers(
+    const uint32_t num_triggers) {
+
+    try {
+        busCommunication.writeRegister(Reg::MH_SM_Triggers_Reg, num_triggers);
+    } catch (const std::exception &e) {
+        LOG(logERROR) << "Failed to set number of triggers: " << e.what();
+        throw;
+    }
+}
+
+template <typename DerivedServer>
+uint32_t BaseMatterhornServer<DerivedServer>::getNumTriggers() const {
+
+    try {
+        uint32_t num_triggers =
+            busCommunication.readRegister(Reg::MH_SM_Triggers_Reg);
+        return num_triggers;
+    } catch (const std::exception &e) {
+        LOG(logERROR) << "Failed to read number of triggers from register: "
+                      << e.what();
+        throw;
+    }
+}
+
+template <typename DerivedServer>
+ReturnCode BaseMatterhornServer<DerivedServer>::set_module_position(
+    ServerInterface &socket) {
+
+    std::array<int, 2> position_info{}; // [num_modules_in_y, module_index]
+    try {
+        int ret = socket.Receive(position_info.data(),
+                                 position_info.size() * sizeof(int));
+    } catch (const SocketError &e) {
+        LOG(logERROR)
+            << "Failed to receive num modules in y dimension and module index: "
+            << e.what();
+        return ReturnCode::FAIL;
+    }
+
+    const size_t module_row = position_info[1] % position_info[0];
+    const size_t module_col = position_info[1] / position_info[0];
+
+    // write to register
+    uint32_t register_value_LSB{};
+    uint32_t register_value_MSB{};
+
+    try {
+        register_value_LSB =
+            busCommunication.readRegister(Reg::Frame_HDR_ModCoord_LSB_Reg);
+        register_value_MSB =
+            busCommunication.readRegister(Reg::Frame_HDR_ModCoord_MSB_Reg);
+    } catch (const std::exception &e) {
+        LOG(logERROR) << "Failed to read module position register: "
+                      << e.what();
+        return ReturnCode::FAIL;
+    }
+
+    setRegisterField(register_value_LSB, Reg::ModuleRow, module_row);
+    setRegisterField(register_value_LSB, Reg::ModuleCol, module_col);
+    setRegisterField(register_value_MSB, Reg::ModuleCoordz, 0);
+    setRegisterField(register_value_MSB, Reg::ModuleIndex, position_info[1]);
+
+    try {
+        busCommunication.writeRegister(Reg::Frame_HDR_ModCoord_LSB_Reg,
+                                       register_value_LSB);
+        busCommunication.writeRegister(Reg::Frame_HDR_ModCoord_MSB_Reg,
+                                       register_value_MSB);
+    } catch (const std::exception &e) {
+        LOG(logERROR) << "Failed to write module position register: "
+                      << e.what();
+        return ReturnCode::FAIL;
+    }
+
+    // configure mac address based on module position
+    if (this->udpDetails[0].srcmac ==
+        0) { // only configure if source mac address is not set already
+        this->udpDetails[0].srcmac = generaterandomMacAddress();
+        uint64_t newSrcMac = (this->udpDetails[0].srcmac & 0xffffffffffff0000) |
+                             (module_row << 16) | module_col;
+        try {
+            this->updateSrcMacAddress(newSrcMac);
+        } catch (const std::invalid_argument &e) {
+            LOG(logERROR) << "Failed to update source MAC address: "
+                          << e.what();
+            return ReturnCode::FAIL;
+        }
+    }
+
+    return static_cast<ReturnCode>(socket.Send(ReturnCode::OK));
 }
 
 } // namespace sls

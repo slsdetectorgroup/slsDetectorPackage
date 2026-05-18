@@ -1,6 +1,6 @@
 #include "fmt/format.h"
 #include <cstdint>
-#include <memory>
+#include <vector>
 
 /// @brief class to handle memory mapping and access for hardware IP cores
 class HardwareMemoryModel {
@@ -38,19 +38,14 @@ class VirtualMemoryModel {
 
     ~VirtualMemoryModel() = default;
 
-    VirtualMemoryModel(const VirtualMemoryModel &) = delete;
-    VirtualMemoryModel &operator=(const VirtualMemoryModel &) = delete;
-
-    VirtualMemoryModel(VirtualMemoryModel &&) noexcept = default;
-    VirtualMemoryModel &
-    operator=(VirtualMemoryModel &&) = delete; // const members
-
     void mapToMemory();
 
-    uint32_t *getMappedMemoryPtr() const;
+    uint32_t *getMappedMemoryPtr();
+
+    const uint32_t *getMappedMemoryPtr() const;
 
   private:
-    std::unique_ptr<uint32_t[]> mapped_memory_ptr;
+    std::vector<uint32_t> mapped_memory{};
 
     /// @brief offset of the IP core base address in the memory space, used for
     /// mapping

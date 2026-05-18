@@ -4,14 +4,15 @@ namespace sls {
 
 MatterhornServer::MatterhornServer(uint16_t port)
     : BaseMatterhornServer<MatterhornServer>(port) {
-
     // map the IP core base addresses to memory
     busCommunication.mapToMemory(); // TODO: should this happen in constructor?
 
     // should maybe be part of the constructor?
     tcpInterface->startTCPServer();
 
-    // need a function to setup detector - e.g. set all registers etc.
+    // TODO: no init_server function for now is it neccessary to set the init
+    // flag
+    this->setupDetector();
 }
 
 ReturnCode MatterhornServer::initial_checks(ServerInterface &socket) {

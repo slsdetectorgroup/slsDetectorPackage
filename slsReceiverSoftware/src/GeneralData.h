@@ -474,14 +474,15 @@ class MatterhornData : public GeneralData {
     MatterhornData() {
         detType = slsDetectorDefs::MATTERHORN;
         headerSizeinPacket = sizeof(slsDetectorDefs::sls_detector_header);
-        framesPerFile = 10000; // TODO: dummy value
-        fifoDepth = 50000;     // TODO: dummy value
+        framesPerFile = MATTERHORN_MAX_FRAMES_PER_FILE; // TODO: dummy value
+        fifoDepth = 50000;                              // TODO: dummy value
         standardheader = true;
         // udpSocketBufferSize = 0; // TODO: dummy value
         dynamicRange = 16;    // default
-        tengigaEnable = true; // TODO: not sure
+        tengigaEnable = true; // TODO: not sure should also be 100g
         SetCounterMask(0xf);  // default all 4 counters enabled
         UpdateImageSize();
+        calculatefifoDepth();
     };
 
     void SetDynamicRange(int dr) {
@@ -499,6 +500,8 @@ class MatterhornData : public GeneralData {
         ncounters = n;
         UpdateImageSize();
     };
+
+    void calculatefifoDepth() { fifoDepth = max_fifo_depth / imageSize; }
 
   private:
     void UpdateImageSize() {
@@ -528,6 +531,8 @@ class MatterhornData : public GeneralData {
     int ncounters{0};
     int nChannelsX{1024};
     int nChannelsY{512};
+
+    constexpr static int max_fifo_depth = 100000; // TODO: dummy value for now
 };
 
 class Gotthard2Data : public GeneralData {

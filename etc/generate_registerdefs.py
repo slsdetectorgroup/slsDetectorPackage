@@ -78,6 +78,17 @@ constexpr RegisterField ModuleIndex{
 """
 
 postpend = r""" 
+constexpr RegisterField ModuleRow{
+     Frame_HDR_ModCoord_LSB_Reg, 0, 0xffff}; 
+
+constexpr RegisterField ModuleCol{
+     Frame_HDR_ModCoord_LSB_Reg, 16, 0xffff};
+
+constexpr RegisterField ModuleCoordz{
+     Frame_HDR_ModCoord_MSB_Reg, 0, 0xffff};
+
+constexpr RegisterField ModuleIndex{
+     Frame_HDR_ModCoord_MSB_Reg, 16, 0xffff};
 } // namespace Reg
 } // namespace sls
 // clang-format on

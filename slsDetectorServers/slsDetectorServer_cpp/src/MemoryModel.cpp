@@ -59,10 +59,15 @@ VirtualMemoryModel::VirtualMemoryModel(const uint32_t IPcore_base_address,
 
 void VirtualMemoryModel::mapToMemory() {
 
-    mapped_memory_ptr =
-        std::make_unique<uint32_t[]>(size_memory_space / sizeof(uint32_t));
+    mapped_memory.resize(
+        size_memory_space /
+        sizeof(uint32_t)); // TODO: should it be zero initialized?
 }
 
-uint32_t *VirtualMemoryModel::getMappedMemoryPtr() const {
-    return mapped_memory_ptr.get();
+uint32_t *VirtualMemoryModel::getMappedMemoryPtr() {
+    return mapped_memory.data();
+}
+
+const uint32_t *VirtualMemoryModel::getMappedMemoryPtr() const {
+    return mapped_memory.data();
 }

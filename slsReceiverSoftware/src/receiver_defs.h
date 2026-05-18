@@ -31,6 +31,9 @@ namespace sls {
 #define XILINX_CTB_MAX_FRAMES_PER_FILE 20000
 #define MYTHEN3_MAX_FRAMES_PER_FILE    10000
 #define GOTTHARD2_MAX_FRAMES_PER_FILE  20000
+#define MATTERHORN_MAX_FRAMES_PER_FILE                                         \
+    20000 // dummy value for now - maybe even specialized receiver for
+          // matterhorn?
 
 #define STATISTIC_FRAMENUMBER_INFINITE (20000)
 

@@ -14,7 +14,9 @@ VirtualMatterhornServer::VirtualMatterhornServer(uint16_t port)
     // should maybe be part of the constructor?
     tcpInterface->startTCPServer();
 
-    // need a function to setup detector - e.g. set all registers etc.
+    // TODO: no init_server function for now is it neccessary to set the init
+    // flag
+    this->setupDetector();
 }
 
 ReturnCode VirtualMatterhornServer::initial_checks(ServerInterface &socket) {

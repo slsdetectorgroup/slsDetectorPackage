@@ -125,6 +125,24 @@ void read_from_h5_dataset(const H5::DataSet &dataset, const std::string &name,
 }
 #endif
 
+/** std::vector<int> */
+void read_from_json(const Document &doc, const std::string &name,
+                    std::vector<int> &retval) {
+    for (const auto &item : doc[name.c_str()].GetArray()) {
+        retval.push_back(item.GetInt());
+    }
+}
+#ifdef HDF5C
+void read_from_h5_dataset(const H5::DataSet &dataset, const std::string &name,
+                          std::vector<int> &retval) {
+    H5::DataSpace dataspace = dataset.getSpace();
+    hsize_t dims[1];
+    dataspace.getSimpleExtentDims(dims);
+    retval.resize(dims[0]);
+    dataset.read(retval.data(), H5::PredType::STD_I32LE);
+}
+#endif
+
 /** std::vector<int64_t> */
 void read_from_json(const Document &doc, const std::string &name,
                     std::vector<int64_t> &retval) {
@@ -658,14 +676,10 @@ void test_master_file_udp_interfaces_disable(
     if (num_udp_interfaces == 1)
         return;
 
-    // expected values
-    // auto disabled_udp_ports = det.getDisabled//
+    auto disabled_udp_ports = det.getRxDisabledUDPPortIndices();
 
-    /*
-        REQUIRE_NOTHROW(check_master_file<int>(
-            doc, MasterAttributes::N_NUM_UDP_INTERFACES.data(),
-            num_udp_interfaces));
-    */
+    REQUIRE_NOTHROW(check_master_file<std::vector<int>>(
+        doc, MasterAttributes::N_UDP_PORTS_DISBLED.data(), disabled_udp_ports));
 }
 
 void test_master_file_read_n_rows(const Detector &det,

@@ -282,6 +282,7 @@ class Module : public virtual slsDetectorDefs {
     bool getDataStream(const portPosition port) const;
     void setDataStream(const portPosition port, const bool enable);
     void updateRxUDPPortDisableMetadata(const std::vector<int> &disable);
+    std::vector<int> getRxUDPPortDisableMetadata() const;
 
     /**************************************************
      *                                                *

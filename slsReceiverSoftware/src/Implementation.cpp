@@ -1715,9 +1715,13 @@ void Implementation::setUDPDataStream(const portPosition port,
         listener[i]->SetUDPDatastream(udpDataStream[i]);
 }
 
-void Implementation::updateUDPPortsDisabledMetadata(
+void Implementation::setUDPPortsDisabledMetadata(
     const std::vector<int> &portsDisabled) {
     udpPortsDisabledMetadata = portsDisabled;
+}
+
+std::vector<int> Implementation::getUDPPortsDisabledMetadata() const {
+    return udpPortsDisabledMetadata;
 }
 
 int Implementation::getReadNRows() const { return readNRows; }

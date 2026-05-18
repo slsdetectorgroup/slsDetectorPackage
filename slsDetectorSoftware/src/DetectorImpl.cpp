@@ -1644,26 +1644,33 @@ void DetectorImpl::verifyUniqueHost(
     }
 }
 
-std::vector<defs::portPosition> DetectorImpl::getPortPositionList() const {
-    switch (shm()->detType) {
-    case defs::JUNGFRAU:
-    case defs::MOENCH:
-        return std::vector<defs::portPosition>{defs::BOTTOM, defs::TOP};
-    case defs::EIGER:
-        return std::vector<defs::portPosition>{defs::LEFT, defs::RIGHT};
-    default:
-        throw RuntimeError("port Position does not exist for this detector");
-    }
-}
-
-void DetectorImpl::updateRxUDPDatastreamMetadata() {
-    // check num interfaces
+void DetectorImpl::assertTwoUDPInterfaces(const std::string &cmd) const {
+    // assert globally
     auto numInterfaces =
         Parallel(&Module::getNumberofUDPInterfacesFromShm, {})
             .tsquash("Inconsistent number of UDP interfaces among modules");
     if (numInterfaces != 2) {
-        throw RuntimeError("Invalid number of UDP interfaces. Expected 2.");
+        throw RuntimeError(
+            "Cannot " + cmd +
+            ". Change number of udp interfaces to 2 (cmd = numinterfaces).");
     }
+}
+
+Result<bool> DetectorImpl::getDataStream(const defs::portPosition port,
+                                         Positions pos) const {
+    assertTwoUDPInterfaces("get enable/disable UDP ports");
+    return Parallel(&Module::getDataStream, pos, port);
+}
+
+void DetectorImpl::setDataStream(const defs::portPosition port,
+                                 const bool enable, Positions pos) {
+    assertTwoUDPInterfaces("set enable/disable UDP ports");
+    Parallel(&Module::setDataStream, pos, port, enable);
+    updateRxUDPDatastreamMetadata();
+}
+
+void DetectorImpl::updateRxUDPDatastreamMetadata() {
+    assertTwoUDPInterfaces("update Disbaled UDP ports metadata in receiver");
 
     std::vector<int> disable;
     auto portList = getPortPositionList();
@@ -1688,6 +1695,23 @@ void DetectorImpl::updateRxUDPDatastreamMetadata() {
     }
 
     modules[0]->updateRxUDPPortDisableMetadata(disable);
+}
+
+std::vector<int> DetectorImpl::getRxDisabledUDPPortIndices() const {
+    assertTwoUDPInterfaces("get Disbaled UDP ports metadata from receiver");
+    return modules[0]->getRxUDPPortDisableMetadata();
+}
+
+std::vector<defs::portPosition> DetectorImpl::getPortPositionList() const {
+    switch (shm()->detType) {
+    case defs::JUNGFRAU:
+    case defs::MOENCH:
+        return std::vector<defs::portPosition>{defs::BOTTOM, defs::TOP};
+    case defs::EIGER:
+        return std::vector<defs::portPosition>{defs::LEFT, defs::RIGHT};
+    default:
+        throw RuntimeError("port Position does not exist for this detector");
+    }
 }
 
 std::vector<defs::ROI> DetectorImpl::getRxROI(int module_id) const {

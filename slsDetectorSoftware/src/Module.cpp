@@ -1441,8 +1441,8 @@ void Module::updateRxUDPPortDisableMetadata(const std::vector<int> &disable) {
     LOG(logDEBUG) << "Updating UDP port disable metadata in Receiver 0";
     auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
 
-    client.Send(F_RECEIVER_UDP_PORT_DISABLE_META);
-    client.setFnum(F_RECEIVER_UDP_PORT_DISABLE_META);
+    client.Send(F_RECEIVER_SET_UDP_PORT_DISABLE_META);
+    client.setFnum(F_RECEIVER_SET_UDP_PORT_DISABLE_META);
 
     auto nports = static_cast<int>(disable.size());
     client.Send(nports);
@@ -1453,6 +1453,29 @@ void Module::updateRxUDPPortDisableMetadata(const std::vector<int> &disable) {
         throw ReceiverError("Receiver " + std::to_string(moduleIndex) +
                             " returned error: " + client.readErrorMessage());
     }
+}
+
+std::vector<int> Module::getRxUDPPortDisableMetadata() const {
+    if (!shm()->useReceiverFlag) {
+        throw RuntimeError("No receiver to get disabled udp port indices.");
+    }
+
+    LOG(logDEBUG) << "Getting UDP port disable metadata in Receiver 0";
+    auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
+
+    client.Send(F_RECEIVER_GET_UDP_PORT_DISABLE_META);
+    client.setFnum(F_RECEIVER_GET_UDP_PORT_DISABLE_META);
+    if (client.Receive<int>() == FAIL) {
+        throw ReceiverError("Receiver " + std::to_string(moduleIndex) +
+                            " returned error: " + client.readErrorMessage());
+    }
+    auto nports = client.Receive<int>();
+    std::vector<int> retval(nports);
+    client.Send(nports);
+    if (nports > 0) {
+        client.Receive(retval);
+    }
+    return retval;
 }
 
 // Receiver Config

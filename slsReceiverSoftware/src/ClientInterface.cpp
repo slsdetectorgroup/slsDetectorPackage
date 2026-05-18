@@ -222,7 +222,8 @@ int ClientInterface::functionTable(){
     flist[F_RECEIVER_GET_ROI_METADATA]      =   &ClientInterface::get_roi_metadata;
     flist[F_SET_RECEIVER_READOUT_SPEED]     =   &ClientInterface::set_readout_speed;
     flist[F_RECEIVER_GET_UDP_DATASTREAM]    =   &ClientInterface::get_port_udp_datastream;
-    flist[F_RECEIVER_UDP_PORT_DISABLE_META] =   &ClientInterface::update_udp_port_disable_meta;
+    flist[F_RECEIVER_SET_UDP_PORT_DISABLE_META] =   &ClientInterface::set_udp_port_disable_meta;
+    flist[F_RECEIVER_GET_UDP_PORT_DISABLE_META] =   &ClientInterface::get_udp_port_disable_meta;
 
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
@@ -1918,7 +1919,7 @@ int ClientInterface::set_readout_speed(Interface &socket) {
     return socket.Send(OK);
 }
 
-int ClientInterface::update_udp_port_disable_meta(Interface &socket) {
+int ClientInterface::set_udp_port_disable_meta(Interface &socket) {
     auto nports = socket.Receive<int>();
     std::vector<int> portsDisabled;
     if (nports > 0) {
@@ -1928,12 +1929,25 @@ int ClientInterface::update_udp_port_disable_meta(Interface &socket) {
     }
     verifyIdle(socket);
     try {
-        impl()->updateUDPPortsDisabledMetadata(portsDisabled);
+
+        impl()->setUDPPortsDisabledMetadata(portsDisabled);
     } catch (const std::exception &e) {
         throw RuntimeError("Could not update UDP ports disabled metadata [" +
                            std::string(e.what()) + ']');
     }
     return socket.Send(OK);
+}
+
+int ClientInterface::get_udp_port_disable_meta(Interface &socket) {
+    auto retvals = impl()->getUDPPortsDisabledMetadata();
+    LOG(logDEBUG1) << "Receiver disabled udp ports retval:"
+                   << ToString(retvals);
+    socket.Send(OK);
+    auto size = static_cast<int>(retvals.size());
+    socket.Send(size);
+    if (size > 0)
+        socket.Send(retvals);
+    return OK;
 }
 
 } // namespace sls

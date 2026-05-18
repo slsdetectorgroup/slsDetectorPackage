@@ -170,7 +170,8 @@ class ClientInterface : private virtual slsDetectorDefs {
     int set_dbit_reorder(ServerInterface &socket);
     int get_roi_metadata(ServerInterface &socket);
     int set_readout_speed(ServerInterface &socket);
-    int update_udp_port_disable_meta(ServerInterface &socket);
+    int set_udp_port_disable_meta(ServerInterface &socket);
+    int get_udp_port_disable_meta(ServerInterface &socket);
 
     Implementation *impl() {
         if (receiver != nullptr) {

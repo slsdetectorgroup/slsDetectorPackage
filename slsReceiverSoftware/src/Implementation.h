@@ -230,7 +230,8 @@ class Implementation : private virtual slsDetectorDefs {
      *  [Eiger] deactivated at module level
      */
     void setUDPDataStream(const portPosition port, const bool enable);
-    void updateUDPPortsDisabledMetadata(const std::vector<int> &portsDisabled);
+    void setUDPPortsDisabledMetadata(const std::vector<int> &portsDisabled);
+    std::vector<int> getUDPPortsDisabledMetadata() const;
     int getReadNRows() const;
     /* [Eiger][Jungfrau][Moench] */
     void setReadNRows(const int value);

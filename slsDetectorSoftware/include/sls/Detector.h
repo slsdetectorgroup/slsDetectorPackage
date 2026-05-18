@@ -914,7 +914,18 @@ class Detector {
     void setDataStream(const defs::portPosition port, const bool enable,
                        Positions pos = {});
 
-    /* list of possible port positions */
+    /** List of disabled udp ports with index (moduleIndex * 2 + portIndex),
+     * where portIndex is 0 for BOTTOM/LEFT port, and 1 for TOP/RIGHT port
+     * [Eiger] LEFT, RIGHT
+     * [Jungfrau][Moench] throws for single UDP interface. Otherwise, TOP,
+     * BOTTOM
+     */
+    std::vector<int> getRxDisabledUDPPortIndices() const;
+
+    /* list of possible port positions.
+     * [Eiger] TOP, BOTTOM
+     * [Jungfrau][Moench] LEFT, RIGHT
+     */
     std::vector<defs::portPosition> getPortPositionList() const;
     ///@}
 

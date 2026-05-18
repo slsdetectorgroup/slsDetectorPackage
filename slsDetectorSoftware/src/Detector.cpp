@@ -1319,22 +1319,16 @@ void Detector::setTransmissionDelay(int step) {
 
 Result<bool> Detector::getDataStream(const defs::portPosition port,
                                      Positions pos) const {
-    return pimpl->Parallel(&Module::getDataStream, pos, port);
+    return pimpl->getDataStream(port, pos);
 }
 
 void Detector::setDataStream(const defs::portPosition port, const bool enable,
                              Positions pos) {
-    // check num interfaces
-    auto numInterfaces =
-        pimpl->Parallel(&Module::getNumberofUDPInterfacesFromShm, {})
-            .tsquash("Inconsistent number of UDP interfaces among modules");
-    if (numInterfaces != 2) {
-        throw RuntimeError(
-            "Cannot enable/disable individual udp ports. Change number of udp "
-            "interfaces to 2 (cmd = numinterfaces).");
-    }
-    pimpl->Parallel(&Module::setDataStream, pos, port, enable);
-    pimpl->updateRxUDPDatastreamMetadata();
+    pimpl->setDataStream(port, enable, pos);
+}
+
+std::vector<int> Detector::getRxDisabledUDPPortIndices() const {
+    return pimpl->getRxDisabledUDPPortIndices();
 }
 
 std::vector<defs::portPosition> Detector::getPortPositionList() const {

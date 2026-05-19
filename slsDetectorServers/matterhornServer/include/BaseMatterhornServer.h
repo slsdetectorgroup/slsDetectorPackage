@@ -1,10 +1,10 @@
 #pragma once
 #include "ArmBusCommunication.hpp"
 #include "DetectorServer.h"
+#include "MatterhornDefs.hpp"
 #include "MemoryModel.hpp"
 #include "RegisterDefs.hpp"
 #include "SPICommunication.h"
-#include "SpecializedTemplates.h"
 #include "TCPInterface.h"
 #include "fmt/format.h"
 #include "sls/logger.h"
@@ -84,11 +84,13 @@ class BaseMatterhornServer
 
     // TODO: for now in MatterhornServer and not generic Server but can be
     // templated on different IPCore types for each detector
-    BusCommunication<IPCore, MemoryModel> busCommunication{};
+    BusCommunication<MatterhornDefs::MatterHornIPCores, MemoryModel>
+        busCommunication{};
 
     using SPICommunicationClass = std::conditional_t<
         std::is_same_v<DerivedServer, VirtualMatterhornServer>,
-        SPICommunication<VirtualSPICommunication<MatterhornSPIRegisters>>,
+        SPICommunication<
+            VirtualSPICommunication<MatterhornDefs::MatterhornSPIRegisters>>,
         SPICommunication<HardwareSPICommunication>>;
 
     SPICommunicationClass spiCommunication{};

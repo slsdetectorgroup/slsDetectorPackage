@@ -3,19 +3,24 @@
 #pragma once
 
 #include "Context.h"
-
-#ifdef HDF5C
-#include "H5Cpp.h"
-#endif
-
-#include <rapidjson/document.h>
+#include "sls/sls_detector_defs.h"
 
 namespace sls::test::master_file {
+
 template <typename Context, typename T> struct Reader;
 
 template <typename Context, typename T>
 T read(const Context &ctx, const std::string &name) {
     return Reader<Context, T>::read(ctx, name);
+}
+
+inline void check_size(size_t actual, size_t expected, const std::string &name,
+                       const std::string &doc) {
+    if (actual != expected) {
+        throw sls::RuntimeError(
+            doc + " array " + name + " has " + std::to_string(actual) +
+            " elements instead of " + std::to_string(expected));
+    }
 }
 
 } // namespace sls::test::master_file

@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "master_file/Context.h"
-#include "master_file/Readers.h"
+#include "master_file/ReadersJson.h"
+#ifdef HDF5C
+#include "master_file/ReadersH5.h"
+#endif
 
 #include "Caller.h"
 #include "MasterAttributes.h"
@@ -23,7 +26,6 @@
 
 #ifdef HDF5C
 #include "H5Cpp.h"
-const std::string HDF5_GROUP = "/entry/instrument/detector/";
 #endif
 
 namespace sls {
@@ -41,40 +43,26 @@ inline bool operator==(sls::ns lhs, sls::ns rhs) {
     return lhs.count() == rhs.count();
 }
 
-/** test parameter in file */
-template <typename T>
-void test_json_parameter(const Document &doc, const std::string &name,
-                         const T &expected) {
-    REQUIRE(doc.HasMember(name.c_str()));
-    T retval{};
-    mf::read_from_json(doc, name, retval);
-    REQUIRE(retval == expected);
-}
-#ifdef HDF5C
-template <typename T>
-void test_h5_dataset(const std::string &name, const T &expected) {
-    REQUIRE(h5ctx.has_value());
-    auto dataset = h5ctx->file.openDataSet(HDF5_GROUP + name);
-    T retval{};
-    mf::read_from_h5_dataset(dataset, name, retval);
-    // auto retval = mf::read<mf::H5Doc, T>(mf::H5Doc{dataset}, name);
-    REQUIRE(retval == expected);
-}
-#endif
-
 template <typename T>
 void check_master_file(const std::optional<Document> &doc,
                        const std::string &name, const T &expected) {
-    if (doc.has_value()) {
+    if (doc) {
         const auto &d = *doc;
-        test_json_parameter(d, name, expected);
+        REQUIRE(d.HasMember(name.c_str()));
+        mf::JsonContext ctx{d};
+        auto retval = mf::read<mf::JsonContext, T>(ctx, name);
+        REQUIRE(retval == expected);
     } else {
 #ifdef HDF5C
         if (!h5ctx.has_value()) {
             throw sls::RuntimeError("HDF5 file is not opened for testing " +
                                     name);
         }
-        test_h5_dataset(name, expected);
+        REQUIRE(h5ctx.has_value());
+        // require hdf5 has dataset with this name
+        // REQUIRE(h5ctx.)
+        auto retval = mf::read<mf::H5Context, T>(*h5ctx, name);
+        REQUIRE(retval == expected);
 #else
         throw sls::RuntimeError("Document is not available for testing " +
                                 name);
@@ -86,12 +74,12 @@ void test_master_file_version(const Detector &det,
                               const std::optional<Document> &doc) {
     // different values for json and hdf5
     // hdf5 version in atttribute and not dataset
-    double retval{};
-    std::string name = MasterAttributes::N_VERSION.data();
-    if (doc.has_value()) {
+    const auto name = MasterAttributes::N_VERSION.data();
+    if (doc) {
         const auto &d = *doc;
-        REQUIRE(d.HasMember(MasterAttributes::N_VERSION.data()));
-        mf::read_from_json(d, name, retval);
+        REQUIRE(d.HasMember(name));
+        mf::JsonContext ctx{d};
+        double retval = mf::read<mf::JsonContext, double>(ctx, name);
         REQUIRE(retval == BINARY_WRITER_VERSION);
     } else {
 #ifdef HDF5C
@@ -101,6 +89,7 @@ void test_master_file_version(const Detector &det,
         }
         auto attr =
             h5ctx->file.openAttribute(MasterAttributes::N_VERSION.data());
+        double retval{};
         attr.read(attr.getDataType(), &retval);
         REQUIRE(retval == HDF5_WRITER_VERSION);
 #else

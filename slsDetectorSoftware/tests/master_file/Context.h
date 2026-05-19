@@ -13,7 +13,7 @@
 namespace sls::test::master_file {
 
 struct JsonContext {
-    const rapidjson::Document doc;
+    rapidjson::Document doc;
 };
 #ifdef HDF5C
 struct H5Context {

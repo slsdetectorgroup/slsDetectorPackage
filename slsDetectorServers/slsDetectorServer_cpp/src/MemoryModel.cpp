@@ -51,23 +51,3 @@ void HardwareMemoryModel::unmapMemory() {
 }
 
 HardwareMemoryModel::~HardwareMemoryModel() { unmapMemory(); }
-
-VirtualMemoryModel::VirtualMemoryModel(const uint32_t IPcore_base_address,
-                                       const size_t size_memory_space_)
-    : IPCore_base_address(IPcore_base_address),
-      size_memory_space(size_memory_space_) {}
-
-void VirtualMemoryModel::mapToMemory() {
-
-    mapped_memory.resize(
-        size_memory_space /
-        sizeof(uint32_t)); // TODO: should it be zero initialized?
-}
-
-uint32_t *VirtualMemoryModel::getMappedMemoryPtr() {
-    return mapped_memory.data();
-}
-
-const uint32_t *VirtualMemoryModel::getMappedMemoryPtr() const {
-    return mapped_memory.data();
-}

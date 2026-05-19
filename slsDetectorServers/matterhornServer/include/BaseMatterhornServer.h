@@ -3,6 +3,7 @@
 #include "DetectorServer.h"
 #include "MemoryModel.hpp"
 #include "RegisterDefs.hpp"
+#include "SPICommunication.h"
 #include "SpecializedTemplates.h"
 #include "TCPInterface.h"
 #include "fmt/format.h"
@@ -55,6 +56,10 @@ class BaseMatterhornServer
 
     ReturnCode set_module_position(ServerInterface &socket);
 
+    ReturnCode set_counter_mask(ServerInterface &socket);
+
+    ReturnCode get_counter_mask(ServerInterface &socket) const;
+
     uint64_t getNumFrames() const;
 
     void setNumFrames(const uint64_t num_frames);
@@ -75,11 +80,18 @@ class BaseMatterhornServer
   protected:
     using MemoryModel = std::conditional_t<
         std::is_same_v<DerivedServer, VirtualMatterhornServer>,
-        VirtualMemoryModel, HardwareMemoryModel>;
+        VirtualMemoryModel<uint32_t>, HardwareMemoryModel>; // 32 bit registers
 
     // TODO: for now in MatterhornServer and not generic Server but can be
     // templated on different IPCore types for each detector
     BusCommunication<IPCore, MemoryModel> busCommunication{};
+
+    using SPICommunicationClass = std::conditional_t<
+        std::is_same_v<DerivedServer, VirtualMatterhornServer>,
+        SPICommunication<VirtualSPICommunication<MatterhornSPIRegisters>>,
+        SPICommunication<HardwareSPICommunication>>;
+
+    SPICommunicationClass spiCommunication{};
 
     // TODO: probably virtaul server specific details, can be moved to derived
     // class
@@ -99,6 +111,10 @@ BaseMatterhornServer<DerivedServer>::processFunction(const detFuncs function_id,
                                                      ServerInterface &socket) {
 
     switch (function_id) {
+    case detFuncs::F_SET_COUNTER_MASK:
+        return set_counter_mask(socket);
+    case detFuncs::F_GET_COUNTER_MASK:
+        return get_counter_mask(socket);
     default:
         throw RuntimeError(
             fmt::format("Function {} not implemented",
@@ -312,6 +328,63 @@ ReturnCode BaseMatterhornServer<DerivedServer>::set_module_position(
     }
 
     return static_cast<ReturnCode>(socket.Send(ReturnCode::OK));
+}
+
+template <typename DerivedServer>
+ReturnCode
+BaseMatterhornServer<DerivedServer>::set_counter_mask(ServerInterface &socket) {
+
+    // TODO: update properly
+
+    uint32_t counter_mask{};
+    try {
+        int ret = socket.Receive(counter_mask);
+    } catch (const SocketError &e) {
+        LOG(logERROR) << "Failed to receive counter mask: " << e.what();
+        return ReturnCode::FAIL;
+    }
+
+    try {
+        auto reg_value = spiCommunication.SPIread(
+            SPIRegisters::NUM_COUNTERS.register_,
+            0); // TODO: how to handle different chip ids -> e.g. broadcast do
+                // we want it to be configurable for different chip ids? -
+                // Command overload for some of the SPI registers
+
+        setSPIRegisterField(reg_value, SPIRegisters::NUM_COUNTERS,
+                            counter_mask);
+
+        spiCommunication.SPIwrite(SPIRegisters::NUM_COUNTERS.register_, 0,
+                                  reg_value);
+    } catch (const std::exception &e) {
+        LOG(logERROR) << "Failed to set counter mask: " << e.what();
+        return ReturnCode::FAIL;
+    }
+
+    return static_cast<ReturnCode>(socket.Send(ReturnCode::OK));
+}
+
+template <typename DerivedServer>
+ReturnCode BaseMatterhornServer<DerivedServer>::get_counter_mask(
+    ServerInterface &socket) const {
+
+    // TODO: update properly
+
+    std::vector<std::byte> reg_value{};
+    try {
+        reg_value = spiCommunication.SPIread(
+            SPIRegisters::NUM_COUNTERS.register_,
+            0); // TODO: how to handle different chip ids -
+    } catch (const std::exception &e) {
+        LOG(logERROR) << "Failed to read counter mask from SPI register: "
+                      << e.what();
+        return ReturnCode::FAIL;
+    }
+
+    uint32_t counter_mask =
+        getSPIRegisterField(reg_value, SPIRegisters::NUM_COUNTERS);
+
+    return static_cast<ReturnCode>(socket.sendResult(counter_mask));
 }
 
 } // namespace sls

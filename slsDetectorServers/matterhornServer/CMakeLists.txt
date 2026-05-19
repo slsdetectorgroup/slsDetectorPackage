@@ -2,6 +2,7 @@
 
 set(MATTERHORN_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/MatterhornApp.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/SPICommunication.cpp
 )
 
 if(SLS_USE_SIMULATOR)

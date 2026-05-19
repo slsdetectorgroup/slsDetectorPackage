@@ -1,3 +1,4 @@
+#pragma once
 #include "fmt/format.h"
 #include <cstdint>
 #include <vector>
@@ -30,22 +31,28 @@ class HardwareMemoryModel {
 
 /// @brief class to handle memory mapping and access for virtual IP cores (e.g.
 /// use software implementation of memory)
-class VirtualMemoryModel {
+template <typename DataType> class VirtualMemoryModel {
 
   public:
     VirtualMemoryModel(const uint32_t IPcore_base_address,
-                       const size_t size_memory_space_);
+                       const size_t size_memory_space_)
+        : IPCore_base_address(IPcore_base_address),
+          size_memory_space(size_memory_space_) {}
 
     ~VirtualMemoryModel() = default;
 
-    void mapToMemory();
+    void mapToMemory() {
+        mapped_memory.resize(
+            size_memory_space /
+            sizeof(DataType)); // TODO: should it be zero initialized?
+    }
 
-    uint32_t *getMappedMemoryPtr();
+    DataType *getMappedMemoryPtr() { return mapped_memory.data(); }
 
-    const uint32_t *getMappedMemoryPtr() const;
+    const DataType *getMappedMemoryPtr() const { return mapped_memory.data(); }
 
   private:
-    std::vector<uint32_t> mapped_memory{};
+    std::vector<DataType> mapped_memory{};
 
     /// @brief offset of the IP core base address in the memory space, used for
     /// mapping

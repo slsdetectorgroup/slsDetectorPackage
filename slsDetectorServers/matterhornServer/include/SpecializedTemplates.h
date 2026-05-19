@@ -1,5 +1,6 @@
 #pragma once
 #include "ArmBusCommunication.hpp"
+#include "MemoryModel.hpp"
 #include "RegisterDefs.hpp"
 
 /**
@@ -7,7 +8,6 @@
  * @short contains specializations of the template classes for the Matterhorn
  * server implementation
  */
-
 namespace sls {
 
 template <typename MemoryModel>
@@ -20,7 +20,7 @@ struct IpCoreRegisterBlock<IPCore, MemoryModel> {
     }
 
   private:
-        std::map<IPCore, MemoryModel> memoryblocks_{
+    std::map<IPCore, MemoryModel> memoryblocks_{
         {IPCore::MH_RO_SM_AXI,
          MemoryModel{static_cast<uint32_t>(IPCore::MH_RO_SM_AXI),
                      IPCORE_REGISTER_BLOCK_SIZE}},

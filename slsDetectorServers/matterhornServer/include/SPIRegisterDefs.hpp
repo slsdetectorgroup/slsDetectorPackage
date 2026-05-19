@@ -38,7 +38,7 @@ constexpr SPIRegister SPI_REG_ExtraClocks{12,
 constexpr SPIRegisterField OUTPUT_MODE{SPI_REG_ConfigUnit, 4, 3};
 
 /// @brief first two bits starting counter, second two bits number of counters
-/// to read e.g. 0001 -> read counter 0 and 1, 0100 -> read counter 1
+/// to read e.g. 0b0100 -> read counter 0 and 1, 0b0001 -> read counter 1
 constexpr SPIRegisterField NUM_COUNTERS{SPI_REG_ConfigUnit, 8, 4};
 
 /// @brief 00-> 16 bit, 01 -> 8 bit, 10 -> 4 bit, 11 -> reserved 16 bit

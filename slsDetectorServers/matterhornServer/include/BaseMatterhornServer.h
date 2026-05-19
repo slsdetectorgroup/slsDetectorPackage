@@ -1,6 +1,7 @@
 #pragma once
 #include "ArmBusCommunication.hpp"
 #include "DetectorServer.h"
+#include "HelperFunctions.hpp"
 #include "MatterhornDefs.hpp"
 #include "MemoryModel.hpp"
 #include "RegisterDefs.hpp"
@@ -336,8 +337,6 @@ template <typename DerivedServer>
 ReturnCode
 BaseMatterhornServer<DerivedServer>::set_counter_mask(ServerInterface &socket) {
 
-    // TODO: update properly
-
     uint32_t counter_mask{};
     try {
         int ret = socket.Receive(counter_mask);
@@ -345,6 +344,23 @@ BaseMatterhornServer<DerivedServer>::set_counter_mask(ServerInterface &socket) {
         LOG(logERROR) << "Failed to receive counter mask: " << e.what();
         return ReturnCode::FAIL;
     }
+
+    // counter mask update to num_counters and starting_counter
+    uint32_t counter_to_set{};
+    // TODO: update properly
+    /*
+    switch (counter_mask) {
+    case 0b1:
+        counter_to_set = 0b0000; // counter 0 enabled
+    case 0b10:
+        counter_to_set = 0b0001; // counter 1 enabled
+    case 0b100:
+        counter_to_set = 0b0010; // counter 2 enabled
+    case 0b1000:
+        counter_to_set = 0b0011; // counter 3 enabled
+    case 0b11:
+    }
+    */
 
     try {
         auto reg_value = spiCommunication.SPIread(
@@ -370,8 +386,6 @@ template <typename DerivedServer>
 ReturnCode BaseMatterhornServer<DerivedServer>::get_counter_mask(
     ServerInterface &socket) const {
 
-    // TODO: update properly
-
     std::vector<std::byte> reg_value{};
     try {
         reg_value = spiCommunication.SPIread(
@@ -383,10 +397,15 @@ ReturnCode BaseMatterhornServer<DerivedServer>::get_counter_mask(
         return ReturnCode::FAIL;
     }
 
-    uint32_t counter_mask =
+    // stores num_counters and starting_counter 0b0000 -> counter 0 enabled,
+    // 0b0001 -> counter 1 enabled, 0b0010
+    uint32_t spi_counter_mask =
         getSPIRegisterField(reg_value, SPIRegisters::NUM_COUNTERS);
 
-    return static_cast<ReturnCode>(socket.sendResult(counter_mask));
+    uint32_t actual_counter_mask =
+        convertSPICounterMaskToCounterMask(spi_counter_mask);
+
+    return static_cast<ReturnCode>(socket.sendResult(actual_counter_mask));
 }
 
 } // namespace sls

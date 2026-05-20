@@ -1,6 +1,8 @@
 #include "HelperFunctions.hpp"
 #include <stdexcept>
 
+namespace sls {
+
 uint32_t convertCounterMaskToSPICounterMask(const uint32_t counter_mask) {
     uint32_t spi_counter_mask = 0;
 
@@ -55,11 +57,11 @@ uint32_t convertCounterMaskToSPICounterMask(const uint32_t counter_mask) {
 
 uint32_t convertSPICounterMaskToCounterMask(const uint32_t spi_counter_mask) {
 
-    uint32_t counter_mask = 0;
+    uint32_t counter_mask{};
 
     uint8_t start_counter = spi_counter_mask & 0b11; // extract starting counter
     uint8_t num_counters =
-        (spi_counter_mask >> 2) & 0b11; // extract number of counters
+        ((spi_counter_mask >> 2) & 0b11) + 1; // extract number of counters
 
     constexpr uint8_t max_counters = 4;
 
@@ -69,3 +71,5 @@ uint32_t convertSPICounterMaskToCounterMask(const uint32_t spi_counter_mask) {
 
     return counter_mask;
 }
+
+} // namespace sls

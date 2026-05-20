@@ -55,6 +55,10 @@ else()
 
 endif()
 
+if(SLS_USE_TESTS)
+    add_subdirectory(tests)
+endif()
+
 
 #target_compile_definitions(matterhornDetectorServer_virtual
 #    PUBLIC VIRTUAL STOP_SERVER #what is this stop server should we really have a generic ServerAPP and pass compile options to create server e.g. MatterHorn? 

@@ -4,6 +4,7 @@
 
 #include "Readers.h"
 #include "sls/sls_detector_defs.h"
+#include <iostream>
 
 #ifdef HDF5C
 #include "H5Cpp.h"
@@ -11,11 +12,31 @@
 namespace sls::test::master_file {
 using ns = std::chrono::nanoseconds;
 
-const std::string HDF5_GROUP = "/entry/instrument/detector/";
+static const std::string HDF5_GROUP = "/entry/instrument/detector/";
+
+/* --safety checks-- */
+inline void require_dataset(const H5Context &ctx, const std::string &name) {
+    const std::string full_name = HDF5_GROUP + name;
+    if (H5Lexists(ctx.file.getId(), full_name.c_str(), H5P_DEFAULT) <= 0) {
+        throw sls::RuntimeError("Missing HDF5 dataset: " + full_name);
+    }
+}
+
+inline void require_file_attribute(const H5Context &ctx,
+                                   const std::string &name) {
+    if (!H5Aexists_by_name(ctx.file.getId(), "/", name.c_str(), H5P_DEFAULT)) {
+        throw sls::RuntimeError("Missing HDF5 attribute: " + name);
+    }
+}
 
 /* --scalar reads-- */
 template <> struct Reader<H5Context, int> {
-    static int read(const H5Context &ctx, const std::string &name) {
+    static int read(const H5Context &ctx, const std::string &name,
+                    AccessType access) {
+        if (access == AccessType::Attribute) {
+            throw RuntimeError("int attribute access not supported for HDF5");
+        }
+        require_dataset(ctx, name);
         auto ds = ctx.file.openDataSet(HDF5_GROUP + name);
         int out{};
         ds.read(&out, H5::PredType::NATIVE_INT);
@@ -24,7 +45,13 @@ template <> struct Reader<H5Context, int> {
 };
 
 template <> struct Reader<H5Context, uint32_t> {
-    static uint32_t read(const H5Context &ctx, const std::string &name) {
+    static uint32_t read(const H5Context &ctx, const std::string &name,
+                         AccessType access) {
+        if (access == AccessType::Attribute) {
+            throw RuntimeError(
+                "uint32_t attribute access not supported for HDF5");
+        }
+        require_dataset(ctx, name);
         auto ds = ctx.file.openDataSet(HDF5_GROUP + name);
         uint32_t out{};
         ds.read(&out, H5::PredType::STD_U32LE);
@@ -33,25 +60,46 @@ template <> struct Reader<H5Context, uint32_t> {
 };
 
 template <> struct Reader<H5Context, uint64_t> {
-    static uint64_t read(const H5Context &ctx, const std::string &name) {
-        auto ds = ctx.file.openDataSet(HDF5_GROUP + name);
+    static uint64_t read(const H5Context &ctx, const std::string &name,
+                         AccessType access) {
+        if (access == AccessType::Attribute) {
+            throw RuntimeError(
+                "'uint64_t' attribute access not supported for HDF5");
+        }
         uint64_t out{};
+        require_dataset(ctx, name);
+        auto ds = ctx.file.openDataSet(HDF5_GROUP + name);
         ds.read(&out, H5::PredType::STD_U64LE);
         return out;
     }
 };
 
 template <> struct Reader<H5Context, double> {
-    static double read(const H5Context &ctx, const std::string &name) {
-        auto ds = ctx.file.openDataSet(HDF5_GROUP + name);
+    static double read(const H5Context &ctx, const std::string &name,
+                       AccessType access) {
         double out{};
+        if (access == AccessType::Attribute) {
+            require_file_attribute(ctx, name);
+            auto attr = ctx.file.openAttribute(name);
+            attr.read(attr.getDataType(), &out);
+            return out;
+        }
+        // dataset
+        require_dataset(ctx, name);
+        auto ds = ctx.file.openDataSet(HDF5_GROUP + name);
         ds.read(&out, H5::PredType::NATIVE_DOUBLE);
         return out;
     }
 };
 
 template <> struct Reader<H5Context, std::string> {
-    static std::string read(const H5Context &ctx, const std::string &name) {
+    static std::string read(const H5Context &ctx, const std::string &name,
+                            AccessType access) {
+        if (access == AccessType::Attribute) {
+            throw RuntimeError(
+                "string attribute access not supported for HDF5");
+        }
+        require_dataset(ctx, name);
         auto ds = ctx.file.openDataSet(HDF5_GROUP + name);
         std::string out{};
         ds.read(out, ds.getStrType());
@@ -61,7 +109,13 @@ template <> struct Reader<H5Context, std::string> {
 
 /** complex types */
 template <> struct Reader<H5Context, defs::xy> {
-    static defs::xy read(const H5Context &ctx, const std::string &name) {
+    static defs::xy read(const H5Context &ctx, const std::string &name,
+                         AccessType access) {
+        if (access == AccessType::Attribute) {
+            throw RuntimeError(
+                "'defs::xy' attribute access not supported for HDF5");
+        }
+        require_dataset(ctx, name);
         auto ds = ctx.file.openDataSet(HDF5_GROUP + name);
         // define type
         H5::CompType type(sizeof(defs::xy));
@@ -82,8 +136,13 @@ inline hsize_t get_1d_size(const H5::DataSet &ds) {
 }
 
 template <> struct Reader<H5Context, std::vector<defs::ROI>> {
-    static std::vector<defs::ROI> read(const H5Context &ctx,
-                                       const std::string &name) {
+    static std::vector<defs::ROI>
+    read(const H5Context &ctx, const std::string &name, AccessType access) {
+        if (access == AccessType::Attribute) {
+            throw RuntimeError("'std::vector<defs::ROI>' attribute access not "
+                               "supported for HDF5");
+        }
+        require_dataset(ctx, name);
         // define type
         H5::CompType type(sizeof(defs::ROI));
         type.insertMember("xmin", HOFFSET(defs::ROI, xmin),
@@ -105,8 +164,13 @@ template <> struct Reader<H5Context, std::vector<defs::ROI>> {
 };
 
 template <> struct Reader<H5Context, defs::scanParameters> {
-    static defs::scanParameters read(const H5Context &ctx,
-                                     const std::string &name) {
+    static defs::scanParameters
+    read(const H5Context &ctx, const std::string &name, AccessType access) {
+        if (access == AccessType::Attribute) {
+            throw RuntimeError("'defs::scanParameters' attribute access not "
+                               "supported for HDF5");
+        }
+        require_dataset(ctx, name);
         // define type
         H5::CompType type(sizeof(defs::scanParameters));
         type.insertMember("enable", HOFFSET(defs::scanParameters, enable),
@@ -134,8 +198,13 @@ template <> struct Reader<H5Context, defs::scanParameters> {
 
 /** arrays/vectors/maps */
 template <> struct Reader<H5Context, std::array<int, 3UL>> {
-    static std::array<int, 3UL> read(const H5Context &ctx,
-                                     const std::string &name) {
+    static std::array<int, 3UL>
+    read(const H5Context &ctx, const std::string &name, AccessType access) {
+        if (access == AccessType::Attribute) {
+            throw RuntimeError("'std::array<int, 3UL>' attribute access not "
+                               "supported for HDF5");
+        }
+        require_dataset(ctx, name);
         auto ds = ctx.file.openDataSet(HDF5_GROUP + name);
         auto len = get_1d_size(ds);
         check_size(len, 3, name, "HDF5");
@@ -146,8 +215,13 @@ template <> struct Reader<H5Context, std::array<int, 3UL>> {
 };
 
 template <> struct Reader<H5Context, std::array<ns, 3UL>> {
-    static std::array<ns, 3UL> read(const H5Context &ctx,
-                                    const std::string &name) {
+    static std::array<ns, 3UL>
+    read(const H5Context &ctx, const std::string &name, AccessType access) {
+        if (access == AccessType::Attribute) {
+            throw RuntimeError("'std::array<ns, 3UL>' attribute access not "
+                               "supported for HDF5");
+        }
+        require_dataset(ctx, name);
         auto ds = ctx.file.openDataSet(HDF5_GROUP + name);
         auto len = get_1d_size(ds);
         check_size(len, 3, name, "HDF5");
@@ -165,8 +239,13 @@ template <> struct Reader<H5Context, std::array<ns, 3UL>> {
 };
 
 template <> struct Reader<H5Context, std::vector<int64_t>> {
-    static std::vector<int64_t> read(const H5Context &ctx,
-                                     const std::string &name) {
+    static std::vector<int64_t>
+    read(const H5Context &ctx, const std::string &name, AccessType access) {
+        if (access == AccessType::Attribute) {
+            throw RuntimeError("'std::vector<int64_t>' attribute access not "
+                               "supported for HDF5");
+        }
+        require_dataset(ctx, name);
         auto ds = ctx.file.openDataSet(HDF5_GROUP + name);
         auto len = get_1d_size(ds);
         std::vector<int64_t> out{};
@@ -177,8 +256,13 @@ template <> struct Reader<H5Context, std::vector<int64_t>> {
 };
 
 template <> struct Reader<H5Context, std::map<std::string, std::string>> {
-    static std::map<std::string, std::string> read(const H5Context &ctx,
-                                                   const std::string &name) {
+    static std::map<std::string, std::string>
+    read(const H5Context &ctx, const std::string &name, AccessType access) {
+        if (access == AccessType::Attribute) {
+            throw RuntimeError("'std::map<std::string, std::string>' attribute "
+                               "access not supported for HDF5");
+        }
+        require_dataset(ctx, name);
         std::map<std::string, std::string> out{};
         // dim
         auto ds = ctx.file.openDataSet(HDF5_GROUP + name);

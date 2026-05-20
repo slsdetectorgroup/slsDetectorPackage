@@ -8,10 +8,14 @@
 namespace sls::test::master_file {
 
 template <typename Context, typename T> struct Reader;
+template <typename Context, typename T> struct AttributeReader;
+
+enum class AccessType { Dataset, Attribute };
 
 template <typename Context, typename T>
-T read(const Context &ctx, const std::string &name) {
-    return Reader<Context, T>::read(ctx, name);
+T read(const Context &ctx, const std::string &name,
+       AccessType access = AccessType::Dataset) {
+    return Reader<Context, T>::read(ctx, name, access);
 }
 
 inline void check_size(size_t actual, size_t expected, const std::string &name,

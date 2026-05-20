@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Readers.h"
+
 #include "sls/ToString.h"
 #include "sls/sls_detector_defs.h"
 
@@ -13,38 +14,44 @@ using ns = std::chrono::nanoseconds;
 
 /* --scalar reads-- */
 template <> struct Reader<JsonContext, int> {
-    static int read(const JsonContext &ctx, const std::string &name) {
+    static int read(const JsonContext &ctx, const std::string &name,
+                    AccessType access) {
         return ctx.doc[name.c_str()].GetInt();
     }
 };
 
 template <> struct Reader<JsonContext, uint32_t> {
-    static uint32_t read(const JsonContext &ctx, const std::string &name) {
+    static uint32_t read(const JsonContext &ctx, const std::string &name,
+                         AccessType access) {
         return ctx.doc[name.c_str()].GetUint();
     }
 };
 
 template <> struct Reader<JsonContext, uint64_t> {
-    static uint64_t read(const JsonContext &ctx, const std::string &name) {
+    static uint64_t read(const JsonContext &ctx, const std::string &name,
+                         AccessType access) {
         return ctx.doc[name.c_str()].GetUint64();
     }
 };
 
 template <> struct Reader<JsonContext, double> {
-    static double read(const JsonContext &ctx, const std::string &name) {
+    static double read(const JsonContext &ctx, const std::string &name,
+                       AccessType access) {
         return ctx.doc[name.c_str()].GetDouble();
     }
 };
 
 template <> struct Reader<JsonContext, std::string> {
-    static std::string read(const JsonContext &ctx, const std::string &name) {
+    static std::string read(const JsonContext &ctx, const std::string &name,
+                            AccessType access) {
         return ctx.doc[name.c_str()].GetString();
     }
 };
 
 /** complex types */
 template <> struct Reader<JsonContext, defs::xy> {
-    static defs::xy read(const JsonContext &ctx, const std::string &name) {
+    static defs::xy read(const JsonContext &ctx, const std::string &name,
+                         AccessType access) {
         defs::xy out{};
         out.x = ctx.doc[name.c_str()]["x"].GetInt();
         out.y = ctx.doc[name.c_str()]["y"].GetInt();
@@ -53,8 +60,8 @@ template <> struct Reader<JsonContext, defs::xy> {
 };
 
 template <> struct Reader<JsonContext, std::vector<defs::ROI>> {
-    static std::vector<defs::ROI> read(const JsonContext &ctx,
-                                       const std::string &name) {
+    static std::vector<defs::ROI>
+    read(const JsonContext &ctx, const std::string &name, AccessType access) {
         std::vector<defs::ROI> out{};
         for (const auto &item : ctx.doc[name.c_str()].GetArray()) {
             defs::ROI r{};
@@ -69,8 +76,8 @@ template <> struct Reader<JsonContext, std::vector<defs::ROI>> {
 };
 
 template <> struct Reader<JsonContext, defs::scanParameters> {
-    static defs::scanParameters read(const JsonContext &ctx,
-                                     const std::string &name) {
+    static defs::scanParameters
+    read(const JsonContext &ctx, const std::string &name, AccessType access) {
         defs::scanParameters out{};
         const auto &s = ctx.doc[name.c_str()].GetObject();
         out.enable = s["enable"].GetInt();
@@ -85,8 +92,8 @@ template <> struct Reader<JsonContext, defs::scanParameters> {
 
 /** arrays/vectors/maps */
 template <> struct Reader<JsonContext, std::array<int, 3UL>> {
-    static std::array<int, 3UL> read(const JsonContext &ctx,
-                                     const std::string &name) {
+    static std::array<int, 3UL>
+    read(const JsonContext &ctx, const std::string &name, AccessType access) {
         const auto &arr = ctx.doc[name.c_str()].GetArray();
         check_size(arr.Size(), 3, name, "JSON");
 
@@ -99,8 +106,8 @@ template <> struct Reader<JsonContext, std::array<int, 3UL>> {
 };
 
 template <> struct Reader<JsonContext, std::array<ns, 3UL>> {
-    static std::array<ns, 3UL> read(const JsonContext &ctx,
-                                    const std::string &name) {
+    static std::array<ns, 3UL>
+    read(const JsonContext &ctx, const std::string &name, AccessType access) {
         const auto &arr = ctx.doc[name.c_str()].GetArray();
         check_size(arr.Size(), 3, name, "JSON");
 
@@ -114,8 +121,8 @@ template <> struct Reader<JsonContext, std::array<ns, 3UL>> {
 };
 
 template <> struct Reader<JsonContext, std::vector<int64_t>> {
-    static std::vector<int64_t> read(const JsonContext &ctx,
-                                     const std::string &name) {
+    static std::vector<int64_t>
+    read(const JsonContext &ctx, const std::string &name, AccessType access) {
         std::vector<int64_t> out{};
         for (const auto &item : ctx.doc[name.c_str()].GetArray()) {
             out.push_back(item.GetInt64());
@@ -125,8 +132,8 @@ template <> struct Reader<JsonContext, std::vector<int64_t>> {
 };
 
 template <> struct Reader<JsonContext, std::map<std::string, std::string>> {
-    static std::map<std::string, std::string> read(const JsonContext &ctx,
-                                                   const std::string &name) {
+    static std::map<std::string, std::string>
+    read(const JsonContext &ctx, const std::string &name, AccessType access) {
         std::map<std::string, std::string> out{};
         for (const auto &m : ctx.doc[name.c_str()].GetObject()) {
             out[m.name.GetString()] = m.value.GetString();

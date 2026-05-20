@@ -415,4 +415,13 @@ TEST_CASE("string to timingInfoDecoder") {
             defs::timingInfoDecoder::SHINE);
 }
 
+
+TEST_CASE("Convert string to vector of ints") {
+    REQUIRE(StringTo<std::vector<int>>("1, 2, 3") == std::vector<int>{1, 2, 3});
+    REQUIRE(StringTo<std::vector<int>>(" 4 ,5,6 ") == std::vector<int>{4, 5, 6});
+    REQUIRE(StringTo<std::vector<int>>("[8]") == std::vector<int>{8});
+    REQUIRE(StringTo<std::vector<int>>("9, ") == std::vector<int>{9});
+    REQUIRE(StringTo<std::vector<int>>("") == std::vector<int>{});
+}
+
 } // namespace sls

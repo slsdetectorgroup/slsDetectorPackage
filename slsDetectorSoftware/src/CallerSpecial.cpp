@@ -1226,11 +1226,7 @@ std::string Caller::rx_dbitlist(int action) {
         }
         // 'none' option already covered as t is empty by default
         else if (args[0] != "none") {
-            unsigned int ntrim = args.size();
-            t.resize(ntrim);
-            for (unsigned int i = 0; i < ntrim; ++i) {
-                t[i] = StringTo<int>(args[i]);
-            }
+            t = StringTo<std::vector<int>>(ToString(args));
         }
         det->setRxDbitList(t, std::vector<int>{det_id});
         os << ToString(args) << '\n';

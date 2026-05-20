@@ -345,22 +345,15 @@ BaseMatterhornServer<DerivedServer>::set_counter_mask(ServerInterface &socket) {
         return ReturnCode::FAIL;
     }
 
-    // counter mask update to num_counters and starting_counter
-    uint32_t counter_to_set{};
-    // TODO: update properly
-    /*
-    switch (counter_mask) {
-    case 0b1:
-        counter_to_set = 0b0000; // counter 0 enabled
-    case 0b10:
-        counter_to_set = 0b0001; // counter 1 enabled
-    case 0b100:
-        counter_to_set = 0b0010; // counter 2 enabled
-    case 0b1000:
-        counter_to_set = 0b0011; // counter 3 enabled
-    case 0b11:
+    // counter mask update to num consecutive counters and starting_counter
+    uint32_t spi_counter_mask{};
+    try {
+        spi_counter_mask = convertCounterMaskToSPICounterMask(counter_mask);
+    } catch (const std::invalid_argument &e) {
+        LOG(logERROR) << "Failed to convert counter mask to SPI counter mask: "
+                      << e.what();
+        return ReturnCode::FAIL;
     }
-    */
 
     try {
         auto reg_value = spiCommunication.SPIread(
@@ -370,7 +363,7 @@ BaseMatterhornServer<DerivedServer>::set_counter_mask(ServerInterface &socket) {
                 // Command overload for some of the SPI registers
 
         setSPIRegisterField(reg_value, SPIRegisters::NUM_COUNTERS,
-                            counter_mask);
+                            spi_counter_mask);
 
         spiCommunication.SPIwrite(SPIRegisters::NUM_COUNTERS.register_, 0,
                                   reg_value);

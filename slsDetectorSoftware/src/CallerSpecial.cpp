@@ -1000,7 +1000,8 @@ std::string Caller::counters(int action) {
     std::ostringstream os;
     if (action == defs::HELP_ACTION) {
         os << "[i0] [i1] [i2]... \n\t[Mythen3] List of counters indices "
-              "enabled. Each element in list can be 0 - 2 and must be non "
+              "enabled, support both comma and/or space separation. Each "
+              "element in list can be 0 - 2 and must be non "
               "repetitive. Enabling counters sets vth dacs to remembered "
               "values and disabling sets them to disabled values."
            << '\n';
@@ -1198,7 +1199,8 @@ std::string Caller::rx_dbitlist(int action) {
     if (action == defs::HELP_ACTION) {
         os << "[all] or [none] or [i0] [i1] [i2]... \n\t[Ctb] List of digital "
               "signal bits enabled and rearranged according to the signals "
-              "(all samples of each signal is put together). If 'all' is used "
+              "(all samples of each signal is put together). Support both "
+              "comma and/or space separation. If 'all' is used "
               "instead of a list, all digital bits (64) enabled. Each element "
               "in list can be 0 - 63 and must be non repetitive. The option "
               "'none' will still spit out all data as is from the detector, "

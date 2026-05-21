@@ -1151,7 +1151,7 @@ int DetectorImpl::acquire() {
             setJoinThreadFlag(true);
         } else if (receiver) {
             while (numZmqRunning != 0) {
-                Parallel(&Module::restreamStopFromReceiver, {});
+                Parallel(&Module::streamRxDummyHeader, {});
                 std::this_thread::sleep_for(std::chrono::milliseconds(200));
             }
         }

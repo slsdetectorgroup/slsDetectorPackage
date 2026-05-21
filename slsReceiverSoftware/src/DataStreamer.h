@@ -51,7 +51,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
      */
     void CreateZmqSockets(uint16_t port, int hwm);
     void CloseZmqSocket();
-    void RestreamStop();
+    void StreamRxDummyHeader();
 
   private:
     /**

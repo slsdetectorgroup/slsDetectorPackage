@@ -1637,7 +1637,7 @@ void Detector::setRxZmqHwm(const int limit) {
 }
 
 void Detector::streamRxDummyHeader(Positions pos) const {
-    pimpl->Parallel(&Module::restreamStopFromReceiver, pos);
+    pimpl->Parallel(&Module::streamRxDummyHeader, pos);
 }
 
 // Eiger Specific

@@ -206,23 +206,23 @@ int DataStreamer::SendDataHeader(sls_detector_header header, uint32_t size) {
     zHeader.data = true;
 
     // parameter from detector header
-    zHeader.column = header.column;
+    zHeader.frameNumber = header.frameNumber;
+    zHeader.expLength = header.expLength;
+    zHeader.packetNumber = header.packetNumber;
     zHeader.detSpec1 = header.detSpec1;
+    zHeader.timestamp = header.timestamp;
+    zHeader.modId = header.modId;
+    zHeader.row = header.row;
+    zHeader.column = header.column;
     zHeader.detSpec2 = header.detSpec2;
     zHeader.detSpec3 = header.detSpec3;
     zHeader.detSpec4 = header.detSpec4;
     zHeader.detType = header.detType;
-    zHeader.expLength = header.expLength;
-    zHeader.frameNumber = header.frameNumber;
-    zHeader.modId = header.modId;
-    zHeader.packetNumber = header.packetNumber;
-    zHeader.row = header.row;
-    zHeader.timestamp = header.timestamp;
     zHeader.version = header.version;
 
     // parameter derived from header and receiver
-    uint64_t frameIndex = header.frameNumber - firstIndex;
     uint64_t acquisitionIndex = header.frameNumber;
+    uint64_t frameIndex = header.frameNumber - firstIndex;
     zHeader.acqIndex = acquisitionIndex;
     zHeader.completeImage =
         (header.packetNumber < generalData->packetsPerFrame ? false : true);
@@ -234,9 +234,9 @@ int DataStreamer::SendDataHeader(sls_detector_header header, uint32_t size) {
     return zmqSocket->SendHeader(index, zHeader);
 }
 
-void DataStreamer::RestreamStop() {
+void DataStreamer::StreamRxDummyHeader() {
     if (!SendDummyHeader()) {
-        throw RuntimeError("Could not restream Dummy Header via ZMQ for port " +
+        throw RuntimeError("Could not stream Dummy Header via ZMQ for port " +
                            std::to_string(zmqSocket->GetPortNumber()));
     }
 }

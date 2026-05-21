@@ -46,6 +46,7 @@ target_compile_options(tests
 target_include_directories(tests 
     PUBLIC 
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>/Caller"
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../src>"
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include/sls>"
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../slsReceiverSoftware/src>"

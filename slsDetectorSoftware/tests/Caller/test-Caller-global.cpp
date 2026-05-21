@@ -8,6 +8,8 @@
 #include "sls/logger.h"
 #include "tests/globals.h"
 
+#include "acquire/Acquire.h"
+
 namespace sls {
 
 using test::GET;

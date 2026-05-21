@@ -20,10 +20,24 @@
 #include <arpa/inet.h>
 #include <pthread.h>
 #include <string.h>
+#ifndef __APPLE__
 #include <sys/sysinfo.h>
+#endif
 #include <unistd.h>
 
+#ifdef __APPLE__
+// spidev is Linux-only; provide a minimal stub so virtual builds compile.
+// The real ioctl(SPI_IOC_MESSAGE(...)) calls are guarded by detector
+// macros (XILINX_CHIPTESTBOARDD) that are never set on macOS.
+struct spi_ioc_transfer {
+    unsigned long tx_buf;
+    unsigned long rx_buf;
+    unsigned int len;
+    unsigned char cs_change;
+};
+#else
 #include <linux/spi/spidev.h>
+#endif
 
 // defined in the detector specific Makefile
 #ifdef EIGERD
@@ -127,6 +141,10 @@ int sendError(int file_des) {
 }
 
 void setMemoryAllocationErrorMessage() {
+#ifdef __APPLE__
+    sprintf(mess, "Memory allocation error (%s). Please reboot",
+            getFunctionNameFromEnum((enum detFuncs)fnum));
+#else
     struct sysinfo info;
     sysinfo(&info);
     sprintf(
@@ -134,6 +152,7 @@ void setMemoryAllocationErrorMessage() {
         "Memory allocation error (%s). Available space: %d MB. Please reboot",
         getFunctionNameFromEnum((enum detFuncs)fnum),
         (int)(info.freeram / (1024 * 1024)));
+#endif
 #ifdef EIGERD
     strcat(mess, ".\n");
 #else
@@ -9784,12 +9803,17 @@ void receive_program_default(int file_des, enum PROGRAM_INDEX index,
     if (ret == OK) {
         src = malloc(filesize);
         if (src == NULL) {
+#ifdef __APPLE__
+            sprintf(mess, "Could not %s. Memory allocation failure.\n",
+                    functionType);
+#else
             struct sysinfo info;
             sysinfo(&info);
             sprintf(mess,
                     "Could not %s. Memory allocation failure. Free "
                     "space: %d MB\n",
                     functionType, (int)(info.freeram / (1024 * 1024)));
+#endif
             LOG(logERROR, (mess));
             ret = FAIL;
         }

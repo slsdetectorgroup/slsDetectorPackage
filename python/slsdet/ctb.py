@@ -27,10 +27,34 @@ class Ctb(Detector):
 
     @property
     def powers(self):
+        """ 
+        [Chiptestboard][Xilinx CTB] Power names and values of all power supplies.
+
+        Example
+        -----------
+        >>> # print all powers with DAC and info if enabled
+        >>> d.powers 
+        >>> # set DAC or enables for power supply VA 
+        >>> d.powers.VA = 1200
+        >>> # enable or disable power subbly VA
+        >>> d.powers.VA.enable()
+        >>> d.powers.VA.disable()
+        >>> # get dac value of power supply VA
+        >>> d.powers.VA.dac
+        >>> # check if power supply VA is enabled
+        >>> d.powers.VA.enabled
+        >>> # print both enabled and dac value of power supply VA
+        >>> d.powers.VA
+        """
         return self._powers
     
     @property
     def powerlist(self):
+        """
+        List of power supply names on the Chip Test Board.
+
+        :setter: List of custom power supply names to set. 
+        """
         return self.getPowerNames()
 
     @powerlist.setter

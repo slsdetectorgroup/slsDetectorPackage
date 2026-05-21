@@ -1586,7 +1586,7 @@ std::string Caller::define_bit(int action) {
 std::string Caller::definelist_reg(int action) {
     std::ostringstream os;
     if (action == defs::HELP_ACTION) {
-        os << "List of user-defined register definitions in shared memory."
+        os << "\n\t List of user-defined register definitions in shared memory."
            << '\n';
     } else if (action == defs::PUT_ACTION) {
         throw RuntimeError("cannot put");
@@ -1605,7 +1605,8 @@ std::string Caller::definelist_reg(int action) {
 std::string Caller::definelist_bit(int action) {
     std::ostringstream os;
     if (action == defs::HELP_ACTION) {
-        os << "List of user-defined bit definitions in shared memory." << '\n';
+        os << "\n\t List of user-defined bit definitions in shared memory."
+           << '\n';
     } else if (action == defs::PUT_ACTION) {
         throw RuntimeError("cannot put");
     } else if (action == defs::GET_ACTION) {

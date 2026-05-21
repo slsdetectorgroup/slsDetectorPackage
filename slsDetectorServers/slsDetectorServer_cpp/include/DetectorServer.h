@@ -25,6 +25,8 @@ struct UDPInfo {
     uint32_t dstip{};
 };
 
+using ReturnCode = slsDetectorDefs::ReturnCode;
+
 template <typename DerivedDetectorServer> class DetectorServer {
 
   public:

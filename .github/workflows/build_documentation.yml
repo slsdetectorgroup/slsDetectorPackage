@@ -35,7 +35,7 @@ jobs:
                 shell: "bash -l {0}"
 
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v6
               with:
                 fetch-depth: 0  # Fetch all history for proper git operations
                 token: ${{ secrets.GITHUB_TOKEN }}  # Use the default token
@@ -58,7 +58,7 @@ jobs:
                 version: 1.0
 
             - name: Setup Python
-              uses: actions/setup-python@v5
+              uses: actions/setup-python@v6
               with:
                 python-version: 3.12
                 cache: 'pip'
@@ -84,7 +84,7 @@ jobs:
                 --date "$(date +'%d.%m.%Y')" 
             
             - name: Checkout gh-pages
-              uses: actions/checkout@v4
+              uses: actions/checkout@v6
               with:
                 ref: gh-pages
                 path: gh-pages

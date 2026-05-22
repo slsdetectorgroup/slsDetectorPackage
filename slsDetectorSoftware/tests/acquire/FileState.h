@@ -34,7 +34,8 @@ inline FileState get_file_state(const Detector &det) {
 }
 
 inline void set_file_state(Detector &det, const FileState &s) {
-    det.setFilePath(s.file_path);
+    if (!s.file_path.empty())
+        det.setFilePath(s.file_path);
     det.setFileNamePrefix(s.file_prefix);
     det.setAcquisitionIndex(s.file_acq_index);
     det.setFileWrite(s.file_write);

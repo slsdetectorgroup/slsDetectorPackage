@@ -5,6 +5,8 @@
 #ifdef HDF5C
 #include "master_file/ReadersH5.h"
 #endif
+#include "acquire/Acquire.h"
+#include "acquire/FileState.h"
 #include "master_file/Checker.h"
 
 #include "Caller.h"
@@ -31,14 +33,8 @@
 
 namespace sls {
 
-using test::GET;
-using test::PUT;
-using namespace rapidjson;
-
-namespace mf = test::master_file;
-#ifdef HDF5C
-
-#endif
+namespace mf = sls::test::master_file;
+namespace acq = sls::test::acquire;
 
 inline bool operator==(sls::ns lhs, sls::ns rhs) {
     return lhs.count() == rhs.count();
@@ -221,7 +217,6 @@ void test_master_file_total_frames(const Detector &det, CheckerT &checker) {
         auto burst_mode = det.getBurstMode().tsquash("Inconsistent burst mode");
         auto numBursts =
             det.getNumberOfBursts().tsquash("Inconsistent number of bursts");
-        // auto
         if (timing_mode == defs::AUTO_TIMING) {
             // burst mode, repeats = #bursts
             if (burst_mode == defs::BURST_INTERNAL ||
@@ -232,9 +227,8 @@ void test_master_file_total_frames(const Detector &det, CheckerT &checker) {
             else {
                 repeats = 1;
             }
-        }
-        // trigger
-        else {
+        } else {
+            // trigger
             // continuous, numFrames is limited
             if (burst_mode == defs::CONTINUOUS_INTERNAL ||
                 burst_mode == defs::CONTINUOUS_EXTERNAL) {
@@ -713,7 +707,7 @@ void test_master_file_metadata(const Detector &det, CheckerT &checker) {
     }
 }
 
-Document parse_binary_master_attributes(std::string file_path) {
+rapidjson::Document parse_binary_master_attributes(std::string file_path) {
     REQUIRE(std::filesystem::exists(file_path) == true);
     std::ifstream file(file_path);
     REQUIRE(file.is_open());
@@ -721,7 +715,7 @@ Document parse_binary_master_attributes(std::string file_path) {
     buffer << file.rdbuf();
     std::string json_str = buffer.str();
 
-    Document doc;
+    rapidjson::Document doc;
     ParseResult result = doc.Parse(json_str.c_str());
     if (!result) {
         std::cout << "JSON parse error: " << GetParseError_En(result.Code())
@@ -741,43 +735,22 @@ TEST_CASE("check_master_file_attributes",
           "[.detectorintegration][.disable_check_data_file]") {
 
     Detector det;
-    Caller caller(&det);
-    auto det_type =
-        det.getDetectorType().tsquash("Inconsistent detector types to test");
-
     int64_t num_frames = 1;
-    switch (det_type) {
-    case defs::JUNGFRAU:
-    case defs::EIGER:
-    case defs::MOENCH:
-    case defs::MYTHEN3:
-    case defs::GOTTHARD2:
-        create_files_for_acquire(det, caller, num_frames);
-        break;
-    case defs::CHIPTESTBOARD:
-    case defs::XILINX_CHIPTESTBOARD: {
-        testCtbAcquireInfo test_ctb_config{};
-        create_files_for_acquire(det, caller, num_frames, test_ctb_config);
-    } break;
-    default:
-        throw sls::RuntimeError("Unsupported detector type for this test");
-    }
 
-    testFileInfo file_info;
-    std::string master_file_prefix = file_info.getMasterFileNamePrefix();
+    acq::run(det, num_frames);
+    std::string master_file_prefix =
+        get_master_file_name_prefix(acq::default_file_state());
 
-    // binary
-    std::string fname =
-        master_file_prefix + ".json"; // /tmp/sls_test_master_0.json
+    // binary (/tmp/sls_test_master_0.json)
+    std::string fname = master_file_prefix + ".json";
     auto doc = parse_binary_master_attributes(fname);
-
     mf::Checker<mf::JsonContext> checker(mf::JsonContext{doc});
     test_master_file_metadata(det, checker);
     test_master_file_frames_in_file(checker, num_frames);
 
-    // hdf5
+    // hdf5 (/tmp/sls_test_master_0.h5)
 #ifdef HDF5C
-    fname = master_file_prefix + ".h5"; // /tmp/sls_test_master_0.h5
+    fname = master_file_prefix + ".h5";
     try {
         mf::Checker<mf::H5Context> checker(mf::H5Context{fname});
         test_master_file_metadata(det, checker);

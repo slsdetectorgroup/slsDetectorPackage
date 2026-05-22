@@ -4,6 +4,8 @@
 
 #include "sls/Detector.h"
 
+#include <string>
+
 namespace sls::test::acquire {
 
 struct FileState {
@@ -12,32 +14,25 @@ struct FileState {
     int64_t file_acq_index;
     bool file_write;
     bool file_overwrite;
-    slsDetectorDefs::fileFormat file_format;   
+    slsDetectorDefs::fileFormat file_format;
 };
 
 inline FileState default_file_state() {
-    return {
-        "/tmp",
-        "sls_test",
-        0,
-        true,
-        true,
-        slsDetectorDefs::BINARY
-    };
+    return {"/tmp", "sls_test", 0, true, true, slsDetectorDefs::BINARY};
 }
 
-inline FileState get_file_state(const Detector& det) {
+inline FileState get_file_state(const Detector &det) {
     return FileState{
         det.getFilePath().tsquash("Inconsistent file path"),
         det.getFileNamePrefix().tsquash("Inconsistent file prefix"),
-        det.getAcquisitionIndex().tsquash("Inconsistent file acquisition index"),
+        det.getAcquisitionIndex().tsquash(
+            "Inconsistent file acquisition index"),
         det.getFileWrite().tsquash("Inconsistent file write"),
         det.getFileOverWrite().tsquash("Inconsistent file overwrite"),
-        det.getFileFormat().tsquash("Inconsistent file format")
-    };
+        det.getFileFormat().tsquash("Inconsistent file format")};
 }
 
-inline void set_file_state(Detector& det, const FileState& s) {
+inline void set_file_state(Detector &det, const FileState &s) {
     det.setFilePath(s.file_path);
     det.setFileNamePrefix(s.file_prefix);
     det.setAcquisitionIndex(s.file_acq_index);
@@ -46,17 +41,38 @@ inline void set_file_state(Detector& det, const FileState& s) {
     det.setFileFormat(s.file_format);
 }
 
-class FileStateGuard {
-public:
-    explicit FileStateGuard(Detector& det) : det(det), saved_(get_file_state(det)) {}
-    ~FileStateGuard() {
-        set_file_state(det, saved_);
-    }
+inline std::string get_master_file_name_prefix(const FileState &s) {
+    return s.file_path + "/" + s.file_prefix + "_master_" +
+           std::to_string(s.file_acq_index);
+}
 
-private:
-    Detector& det;
-    FileState saved_;
-};
+inline std::string get_virtual_file_name(const FileState &s) {
+    return s.file_path + "/" + s.file_prefix + "_virtual_" +
+           std::to_string(s.file_acq_index) + ".h5";
+}
 
+inline void print_file_state(const FileState &s) {
+    LOG(logINFO) << "File State:"
+                 << "\n  Path: " << s.file_path
+                 << "\n  Prefix: " << s.file_prefix
+                 << "\n  Acq Index: " << s.file_acq_index
+                 << "\n  Write: " << s.file_write
+                 << "\n  Overwrite: " << s.file_overwrite
+                 << "\n  Format: " << ToString(s.file_format)
+                 << "\n  Master File: " << get_master_file_name_prefix(s)
+                 << "\n  Virtual File: " << get_virtual_file_name(s);
+
+    class FileStateGuard {
+      public:
+        explicit FileStateGuard(Detector &det, const FileState &new_state)
+            : det(det), saved_(get_file_state(det)) {
+            set_file_state(det, new_state);
+        }
+        ~FileStateGuard() { set_file_state(det, saved_); }
+
+      private:
+        Detector &det;
+        FileState saved_;
+    };
 
 } // namespace sls::test::acquire

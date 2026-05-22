@@ -3,16 +3,31 @@
 
 #pragma once
 
-#include "FileState.h"
-#include "CTBState.h"
-#include "sls/Detector.h"
-
-#include <optional>
+class FileState;
+class CTBState;
+class Detector;
 
 namespace sls::test::acquire {
 
-    void wait_until_idle(const Detector &det);
-    void acquire(Detector &det);
-    void run(Detector &det, int64_t num_frames = 1, const FileState& file_state = default_file_state(), const std::optional<CTBState>& ctb_state = std::nullopt);
+void wait_until_idle(const Detector &det);
+void run_acquisition(Detector &det);
+void run(Detector &det, int64_t num_frames = 1,
+         const CTBState &ctb_state = default_ctb_state(),
+         const FileState &file_state = default_file_state());
+
+class FrameGuard {
+  public:
+    FrameGuard(Detector &det, int64_t new_frames)
+        : det(det), prev(det.getNumberOfFrames().tsquash(
+                        "Inconsistent number of frames")) {
+        det.setNumberOfFrames(new_frames);
+    }
+
+    ~FrameGuard() { det.setNumberOfFrames(prev); }
+
+  private:
+    Detector &det;
+    int64_t prev;
+};
 
 } // namespace sls::test::acquire

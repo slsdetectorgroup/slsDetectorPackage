@@ -38,8 +38,9 @@ TEST_CASE("jungfrau_or_moench_acquire_check_file_size",
         auto num_udp_interfaces = det.getNumberofUDPInterfaces().tsquash(
             "inconsistent number of udp interfaces");
 
-        int num_frames_to_acquire = 2;
-        acq::run(det, num_frames_to_acquire);
+        int64_t num_frames_to_acquire = 2;
+        auto f = acq::default_file_state();
+        acq::run(det, num_frames_to_acquire, f);
 
         // check file size (assuming local pc)
         {
@@ -50,8 +51,7 @@ TEST_CASE("jungfrau_or_moench_acquire_check_file_size",
                                           par.nChipY * bytes_per_pixel) /
                                          num_udp_interfaces;
             REQUIRE_NOTHROW(test_acquire_binary_file_size(
-                acq::default_file_state(), num_frames_to_acquire,
-                expected_image_size));
+                f, num_frames_to_acquire, expected_image_size));
         }
     }
 }
@@ -70,8 +70,9 @@ TEST_CASE("eiger_acquire_check_file_size",
             throw RuntimeError(
                 "Eiger detector must have dynamic range 16 to test");
         }
-        int num_frames_to_acquire = 2;
-        acq::run(det, num_frames_to_acquire);
+        int64_t num_frames_to_acquire = 2;
+        auto f = acq::default_file_state();
+        acq::run(det, num_frames_to_acquire, f);
 
         // check file size (assuming local pc)
         {
@@ -82,8 +83,7 @@ TEST_CASE("eiger_acquire_check_file_size",
             size_t expected_image_size =
                 par.nChanX * par.nChanY * num_chips * bytes_per_pixel;
             REQUIRE_NOTHROW(test_acquire_binary_file_size(
-                acq::default_file_state(), num_frames_to_acquire,
-                expected_image_size));
+                f, num_frames_to_acquire, expected_image_size));
         }
     }
 }
@@ -104,8 +104,9 @@ TEST_CASE("mythen3_acquire_check_file_size",
                                "and counter mask 0x3 to test");
         }
         int num_counters = __builtin_popcount(counter_mask);
-        int num_frames_to_acquire = 2;
-        acq::run(det, num_frames_to_acquire);
+        int64_t num_frames_to_acquire = 2;
+        auto f = acq::default_file_state();
+        acq::run(det, num_frames_to_acquire, f);
 
         // check file size (assuming local pc)
         {
@@ -116,8 +117,7 @@ TEST_CASE("mythen3_acquire_check_file_size",
                                          num_counters * par.nChipX *
                                          bytes_per_pixel;
             REQUIRE_NOTHROW(test_acquire_binary_file_size(
-                acq::default_file_state(), num_frames_to_acquire,
-                expected_image_size));
+                f, num_frames_to_acquire, expected_image_size));
         }
     }
 }
@@ -131,8 +131,9 @@ TEST_CASE("gotthard2_acquire_check_file_size",
 
     if (det_type == defs::GOTTHARD2) {
 
-        int num_frames_to_acquire = 2;
-        acq::run(det, num_frames_to_acquire);
+        int64_t num_frames_to_acquire = 2;
+        auto f = acq::default_file_state();
+        acq::run(det, num_frames_to_acquire, f);
 
         // check file size (assuming local pc)
         {
@@ -141,23 +142,23 @@ TEST_CASE("gotthard2_acquire_check_file_size",
             size_t expected_image_size =
                 par.nChanX * par.nChipX * bytes_per_pixel;
             REQUIRE_NOTHROW(test_acquire_binary_file_size(
-                acq::default_file_state(), num_frames_to_acquire,
-                expected_image_size));
+                f, num_frames_to_acquire, expected_image_size));
         }
     }
 }
 
 void test_ctb_file_size_with_acquire(Detector &det, int64_t num_frames,
-                                     const CTBState &test_info,
+                                     const acq::CTBState &test_info,
                                      bool isXilinxCtb) {
 
-    acq::run(det, num_frames, test_info);
+    auto f = acq::default_file_state();
+    acq::run(det, num_frames, test_info, f);
 
     // check file size (assuming local pc)
     uint64_t expected_image_size =
         calculate_ctb_image_size(test_info, isXilinxCtb).first;
-    REQUIRE_NOTHROW(test_acquire_binary_file_size(
-        acq::default_file_state(), num_frames, expected_image_size));
+    REQUIRE_NOTHROW(
+        test_acquire_binary_file_size(f, num_frames, expected_image_size));
 }
 
 // disable for xilinx_ctb as it requires higher maximum receive buffer size
@@ -172,8 +173,9 @@ TEST_CASE("ctb_acquire_check_file_size",
 
     if (det_type == defs::CHIPTESTBOARD ||
         det_type == defs::XILINX_CHIPTESTBOARD) {
-        bool isAltera = (det_type == defs::CHIPTESTBOARD);
-        int num_frames_to_acquire = 2;
+        bool isXilinxCtb = (det_type == defs::XILINX_CHIPTESTBOARD);
+        bool isAltera = !isXilinxCtb;
+        int64_t num_frames_to_acquire = 2;
         // all the test cases
         acq::CTBState ctb_state = acq::default_ctb_state(isAltera);
         ctb_state.readout_mode = defs::ANALOG_AND_DIGITAL;

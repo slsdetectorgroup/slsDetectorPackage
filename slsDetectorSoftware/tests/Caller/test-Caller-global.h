@@ -9,6 +9,8 @@
 #include "sls/sls_detector_defs.h"
 
 #include "acquire/Acquire.h"
+#include "acquire/CTBState.h"
+#include "acquire/FileState.h"
 
 #include <chrono>
 #include <filesystem>

@@ -5,8 +5,6 @@
 #ifdef HDF5C
 #include "master_file/ReadersH5.h"
 #endif
-#include "acquire/Acquire.h"
-#include "acquire/FileState.h"
 #include "master_file/Checker.h"
 
 #include "Caller.h"
@@ -123,7 +121,7 @@ void test_master_file_image_size(const Detector &det, CheckerT &checker) {
 
     case defs::CHIPTESTBOARD:
     case defs::XILINX_CHIPTESTBOARD: {
-        testCtbAcquireInfo test_info{};
+        acq::CTBState test_info = acq::default_ctb_state();
         image_size = calculate_ctb_image_size(
                          test_info, (det_type == defs::XILINX_CHIPTESTBOARD))
                          .first;
@@ -154,7 +152,7 @@ void test_master_file_det_size(const Detector &det, CheckerT &checker) {
         portSize.x = nchan * num_counters;
     } else if (det_type == defs::CHIPTESTBOARD ||
                det_type == defs::XILINX_CHIPTESTBOARD) {
-        testCtbAcquireInfo test_info{};
+        acq::CTBState test_info = acq::default_ctb_state();
         portSize.x = calculate_ctb_image_size(
                          test_info, det_type == defs::XILINX_CHIPTESTBOARD)
                          .second;
@@ -456,7 +454,7 @@ void test_master_file_burst_mode(const Detector &det, CheckerT &checker) {
 
 template <typename CheckerT>
 void test_master_file_adc_mask(const Detector &det, CheckerT &checker) {
-    testCtbAcquireInfo test_ctb_config{};
+    acq::CTBState test_ctb_config = acq::default_ctb_state();
     auto adc_mask = test_ctb_config.adc_enable_10g;
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::CHIPTESTBOARD) {
@@ -471,7 +469,7 @@ void test_master_file_adc_mask(const Detector &det, CheckerT &checker) {
 
 template <typename CheckerT>
 void test_master_file_analog_flag(const Detector &det, CheckerT &checker) {
-    testCtbAcquireInfo test_info{};
+    acq::CTBState test_info = acq::default_ctb_state();
     auto romode = test_info.readout_mode;
     auto analog = static_cast<int>(
         (romode == defs::ANALOG_ONLY || romode == defs::ANALOG_AND_DIGITAL));
@@ -482,7 +480,7 @@ void test_master_file_analog_flag(const Detector &det, CheckerT &checker) {
 
 template <typename CheckerT>
 void test_master_file_analog_samples(const Detector &det, CheckerT &checker) {
-    testCtbAcquireInfo test_info{};
+    acq::CTBState test_info = acq::default_ctb_state();
     auto analog_samples = test_info.num_adc_samples;
 
     REQUIRE_NOTHROW(checker.template check<int>(
@@ -491,7 +489,7 @@ void test_master_file_analog_samples(const Detector &det, CheckerT &checker) {
 
 template <typename CheckerT>
 void test_master_file_digital_flag(const Detector &det, CheckerT &checker) {
-    testCtbAcquireInfo test_info{};
+    acq::CTBState test_info = acq::default_ctb_state();
     auto romode = test_info.readout_mode;
     auto digital = static_cast<int>(romode == defs::DIGITAL_ONLY ||
                                     romode == defs::ANALOG_AND_DIGITAL ||
@@ -503,7 +501,7 @@ void test_master_file_digital_flag(const Detector &det, CheckerT &checker) {
 
 template <typename CheckerT>
 void test_master_file_digital_samples(const Detector &det, CheckerT &checker) {
-    testCtbAcquireInfo test_info{};
+    acq::CTBState test_info = acq::default_ctb_state();
     auto digital_samples = test_info.num_dbit_samples;
 
     REQUIRE_NOTHROW(checker.template check<int>(
@@ -512,7 +510,7 @@ void test_master_file_digital_samples(const Detector &det, CheckerT &checker) {
 
 template <typename CheckerT>
 void test_master_file_dbit_offset(const Detector &det, CheckerT &checker) {
-    testCtbAcquireInfo test_info{};
+    acq::CTBState test_info = acq::default_ctb_state();
     auto dbit_offset = test_info.dbit_offset;
 
     REQUIRE_NOTHROW(checker.template check<int>(
@@ -521,7 +519,7 @@ void test_master_file_dbit_offset(const Detector &det, CheckerT &checker) {
 
 template <typename CheckerT>
 void test_master_file_dbit_reorder(const Detector &det, CheckerT &checker) {
-    testCtbAcquireInfo test_info{};
+    acq::CTBState test_info = acq::default_ctb_state();
     auto dbit_reorder = test_info.dbit_reorder;
 
     REQUIRE_NOTHROW(checker.template check<int>(
@@ -530,7 +528,7 @@ void test_master_file_dbit_reorder(const Detector &det, CheckerT &checker) {
 
 template <typename CheckerT>
 void test_master_file_dbit_bitset(const Detector &det, CheckerT &checker) {
-    testCtbAcquireInfo test_info{};
+    acq::CTBState test_info = acq::default_ctb_state();
     uint64_t dbit_bitset = 0;
     for (auto &i : test_info.dbit_list) {
         dbit_bitset |= (static_cast<uint64_t>(1) << i);
@@ -542,7 +540,7 @@ void test_master_file_dbit_bitset(const Detector &det, CheckerT &checker) {
 
 template <typename CheckerT>
 void test_master_file_transceiver_mask(const Detector &det, CheckerT &checker) {
-    testCtbAcquireInfo test_info{};
+    acq::CTBState test_info = acq::default_ctb_state();
     auto trans_mask = test_info.transceiver_mask;
 
     REQUIRE_NOTHROW(checker.template check<int>(
@@ -551,7 +549,7 @@ void test_master_file_transceiver_mask(const Detector &det, CheckerT &checker) {
 
 template <typename CheckerT>
 void test_master_file_transceiver_flag(const Detector &det, CheckerT &checker) {
-    testCtbAcquireInfo test_info{};
+    acq::CTBState test_info = acq::default_ctb_state();
     auto romode = test_info.readout_mode;
     auto trans = static_cast<int>(romode == defs::DIGITAL_AND_TRANSCEIVER ||
                                   romode == defs::TRANSCEIVER_ONLY);
@@ -563,7 +561,7 @@ void test_master_file_transceiver_flag(const Detector &det, CheckerT &checker) {
 template <typename CheckerT>
 void test_master_file_transceiver_samples(const Detector &det,
                                           CheckerT &checker) {
-    testCtbAcquireInfo test_info{};
+    acq::CTBState test_info = acq::default_ctb_state();
     auto trans_samples = test_info.num_trans_samples;
     REQUIRE_NOTHROW(checker.template check<int>(
         MasterAttributes::N_TRANSCEIVER_SAMPLES.data(), trans_samples));
@@ -716,7 +714,7 @@ rapidjson::Document parse_binary_master_attributes(std::string file_path) {
     std::string json_str = buffer.str();
 
     rapidjson::Document doc;
-    ParseResult result = doc.Parse(json_str.c_str());
+    rapidjson::ParseResult result = doc.Parse(json_str.c_str());
     if (!result) {
         std::cout << "JSON parse error: " << GetParseError_En(result.Code())
                   << " (at offset " << result.Offset() << ")" << std::endl;
@@ -737,9 +735,9 @@ TEST_CASE("check_master_file_attributes",
     Detector det;
     int64_t num_frames = 1;
 
-    acq::run(det, num_frames);
-    std::string master_file_prefix =
-        get_master_file_name_prefix(acq::default_file_state());
+    auto f = acq::default_file_state();
+    acq::run(det, num_frames, f);
+    std::string master_file_prefix = acq::get_master_file_name_prefix(f);
 
     // binary (/tmp/sls_test_master_0.json)
     std::string fname = master_file_prefix + ".json";

@@ -3,17 +3,19 @@
 
 #pragma once
 
-class FileState;
-class CTBState;
-class Detector;
+#include "sls/Detector.h"
+#include <cstdint>
 
 namespace sls::test::acquire {
 
+class FileState;
+class CTBState;
+
 void wait_until_idle(const Detector &det);
 void run_acquisition(Detector &det);
-void run(Detector &det, int64_t num_frames = 1,
-         const CTBState &ctb_state = default_ctb_state(),
-         const FileState &file_state = default_file_state());
+void run(Detector &det, int64_t num_frames, const CTBState &ctb_state,
+         const FileState &file_state);
+void run(Detector &det, int64_t num_frames, const FileState &file_state);
 
 class FrameGuard {
   public:

@@ -8,9 +8,9 @@
 #include "sls/logger.h"
 #include "tests/globals.h"
 
-#include "acquire/Acquire.h"
-
 namespace sls {
+
+namespace acq = sls::test::acquire;
 
 using test::GET;
 using test::PUT;

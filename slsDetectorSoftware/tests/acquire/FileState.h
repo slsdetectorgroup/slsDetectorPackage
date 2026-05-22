@@ -3,6 +3,7 @@
 #pragma once
 
 #include "sls/Detector.h"
+#include "sls/logger.h"
 
 #include <string>
 
@@ -41,12 +42,14 @@ inline void set_file_state(Detector &det, const FileState &s) {
     det.setFileFormat(s.file_format);
 }
 
-inline std::string get_master_file_name_prefix(const FileState &s) {
+inline std::string
+get_master_file_name_prefix(const FileState &s = default_file_state()) {
     return s.file_path + "/" + s.file_prefix + "_master_" +
            std::to_string(s.file_acq_index);
 }
 
-inline std::string get_virtual_file_name(const FileState &s) {
+inline std::string
+get_virtual_file_name(const FileState &s = default_file_state()) {
     return s.file_path + "/" + s.file_prefix + "_virtual_" +
            std::to_string(s.file_acq_index) + ".h5";
 }
@@ -61,18 +64,19 @@ inline void print_file_state(const FileState &s) {
                  << "\n  Format: " << ToString(s.file_format)
                  << "\n  Master File: " << get_master_file_name_prefix(s)
                  << "\n  Virtual File: " << get_virtual_file_name(s);
+}
 
-    class FileStateGuard {
-      public:
-        explicit FileStateGuard(Detector &det, const FileState &new_state)
-            : det(det), saved_(get_file_state(det)) {
-            set_file_state(det, new_state);
-        }
-        ~FileStateGuard() { set_file_state(det, saved_); }
+class FileStateGuard {
+  public:
+    explicit FileStateGuard(Detector &det, const FileState &new_state)
+        : det(det), saved_(get_file_state(det)) {
+        set_file_state(det, new_state);
+    }
+    ~FileStateGuard() { set_file_state(det, saved_); }
 
-      private:
-        Detector &det;
-        FileState saved_;
-    };
+  private:
+    Detector &det;
+    FileState saved_;
+};
 
 } // namespace sls::test::acquire

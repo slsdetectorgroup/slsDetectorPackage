@@ -3,6 +3,7 @@
 #pragma once
 
 #include "sls/Detector.h"
+#include "sls/logger.h"
 
 #include <cstdint>
 #include <vector>
@@ -23,7 +24,7 @@ struct CTBState {
     uint32_t transceiver_mask;
 };
 
-inline CTBState default_ctb_state(bool isAltera) {
+inline CTBState default_ctb_state(bool isAltera = false) {
     return {defs::ANALOG_AND_DIGITAL,
             isAltera ? false : true,
             5000,

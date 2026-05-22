@@ -32,6 +32,11 @@ void run_acquisition(Detector &det) {
     det.stopReceiver();
 }
 
+void run(Detector &det, int64_t num_frames, const FileState &file_state) {
+    auto ctb_state = default_ctb_state();
+    run(det, num_frames, ctb_state, file_state);
+}
+
 void run(Detector &det, int64_t num_frames, const CTBState &ctb_state,
          const FileState &file_state) {
     FrameGuard frame_guard(det, num_frames);
@@ -42,7 +47,7 @@ void run(Detector &det, int64_t num_frames, const CTBState &ctb_state,
         auto binary_state = file_state;
         binary_state.file_format = defs::BINARY;
         FileStateGuard file_guard(det, binary_state);
-        acquire(det);
+        run_acquisition(det);
         auto frames_caught = det.getFramesCaught()[0][0];
         REQUIRE(frames_caught == num_frames);
     }
@@ -53,7 +58,7 @@ void run(Detector &det, int64_t num_frames, const CTBState &ctb_state,
         auto h5_state = file_state;
         h5_state.file_format = defs::HDF5;
         FileStateGuard file_guard(det, h5_state);
-        acquire(det);
+        run_acquisition(det);
         auto frames_caught = det.getFramesCaught()[0][0];
         REQUIRE(frames_caught == num_frames);
     }

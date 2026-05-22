@@ -15,6 +15,8 @@
 
 namespace sls {
 
+namespace acq = sls::test::acquire;
+
 using test::GET;
 using test::PUT;
 
@@ -835,10 +837,11 @@ TEST_CASE("rx_roi", "[.detectorintegration][.disable_check_data_file]") {
         // check master file creation
         // TODO: check roi in master file
         {
-            REQUIRE_NOTHROW(create_files_for_acquire(det, caller));
-            testFileInfo file_info;
+            auto f = acq::default_file_state();
+            int64_t num_frames = 1;
+            REQUIRE_NOTHROW(acq::run(det, num_frames, f));
             std::string master_file_prefix =
-                file_info.getMasterFileNamePrefix();
+                acq::get_master_file_name_prefix(f);
 
             std::string fname = master_file_prefix + ".json";
             REQUIRE(std::filesystem::exists(fname) == true);
@@ -846,7 +849,7 @@ TEST_CASE("rx_roi", "[.detectorintegration][.disable_check_data_file]") {
             fname = master_file_prefix + ".h5";
             REQUIRE(std::filesystem::exists(fname) == true);
             if (det.size() > 1 || numinterfaces > 1) {
-                fname = file_info.getVirtualFileName();
+                fname = acq::get_virtual_file_name(f);
                 REQUIRE(std::filesystem::exists(fname) == true);
             }
 #endif

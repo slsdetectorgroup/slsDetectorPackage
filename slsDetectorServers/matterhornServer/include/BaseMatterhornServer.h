@@ -90,9 +90,8 @@ class BaseMatterhornServer
 
     using SPICommunicationClass = std::conditional_t<
         std::is_same_v<DerivedServer, VirtualMatterhornServer>,
-        SPICommunication<
-            VirtualSPICommunication<MatterhornDefs::MatterhornSPIRegisters>>,
-        SPICommunication<HardwareSPICommunication>>;
+        VirtualSPICommunication<MatterhornDefs::MatterhornSPIRegisters>,
+        HardwareSPICommunication>;
 
     SPICommunicationClass spiCommunication{};
 

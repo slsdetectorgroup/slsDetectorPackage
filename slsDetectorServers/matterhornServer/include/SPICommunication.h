@@ -12,7 +12,7 @@ namespace sls {
 template <typename DerivedSPIModel> class SPICommunication {
 
   public:
-    SPICommunication();
+    SPICommunication() = default;
 
     ~SPICommunication();
 
@@ -21,15 +21,24 @@ template <typename DerivedSPIModel> class SPICommunication {
 
     void SPIwrite(const SPIRegister &spi_reg, const uint8_t chip_id,
                   const std::vector<std::byte> &data);
+
+    void MapToMemory();
+
+    void UnmapMemory();
 };
 
 template <typename DerivedSPIModel>
-SPICommunication<DerivedSPIModel>::SPICommunication() {
+SPICommunication<DerivedSPIModel>::~SPICommunication() {
+    UnmapMemory();
+}
+
+template <typename DerivedSPIModel>
+void SPICommunication<DerivedSPIModel>::MapToMemory() {
     static_cast<DerivedSPIModel *>(this)->map_to_memory();
 }
 
 template <typename DerivedSPIModel>
-SPICommunication<DerivedSPIModel>::~SPICommunication() {
+void SPICommunication<DerivedSPIModel>::UnmapMemory() {
     static_cast<DerivedSPIModel *>(this)->unmap_memory();
 }
 
@@ -74,6 +83,8 @@ void SPICommunication<DerivedSPIModel>::SPIwrite(
  */
 class HardwareSPICommunication
     : public SPICommunication<HardwareSPICommunication> {
+
+    HardwareSPICommunication() = default;
 
   public:
     void map_to_memory();

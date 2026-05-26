@@ -15,7 +15,8 @@ constexpr uint8_t NUM_CHIPS_PER_MODULE = 8;
 /// @brief list of Matterhorn SPI registers
 struct MatterhornSPIRegisters {
 
-    constexpr static std::array<SPIRegister, 10> spiregisters{
+    constexpr static std::array<SPIRegister, 11> spiregisters{
+        SPIRegisters::SPI_REG_ConfigUnit,
         SPIRegisters::SPI_REG_ConfigCML,
         SPIRegisters::SPI_REG_ManualSelector,
         SPIRegisters::SPI_REG_CoreRSTUnit,

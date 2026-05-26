@@ -6,10 +6,14 @@ namespace sls {
 VirtualMatterhornServer::VirtualMatterhornServer(uint16_t port)
     : BaseMatterhornServer<VirtualMatterhornServer>(port) {
 
+    LOG(logDEBUG) << "Initializing virtual Matterhorn server on port " << port;
+
     udpDetails[0].srcip = LOCALHOSTIP_INT;
 
     // map the IP core base addresses to virtual memory
     busCommunication.mapToMemory();
+
+    spiCommunication.MapToMemory();
 
     // should maybe be part of the constructor?
     tcpInterface->startTCPServer();

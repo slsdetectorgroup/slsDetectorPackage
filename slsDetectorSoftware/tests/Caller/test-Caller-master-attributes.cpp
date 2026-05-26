@@ -5,7 +5,9 @@
 #ifdef HDF5C
 #include "master_file/ReadersH5.h"
 #endif
+#include "acquire/ExpectedState.h"
 #include "master_file/Checker.h"
+#include "test-Caller-global.h"
 
 #include "Caller.h"
 #include "MasterAttributes.h"
@@ -15,7 +17,6 @@
 #include "sls/ToString.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
-#include "test-Caller-global.h"
 #include "tests/globals.h"
 
 #include <filesystem>
@@ -734,7 +735,6 @@ TEST_CASE("check_master_file_attributes",
 
     Detector det;
     int64_t num_frames = 1;
-
     auto f = acq::default_file_state();
     acq::run(det, num_frames, f);
     std::string master_file_prefix = acq::get_master_file_name_prefix(f);
@@ -743,6 +743,9 @@ TEST_CASE("check_master_file_attributes",
     std::string fname = master_file_prefix + ".json";
     auto doc = parse_binary_master_attributes(fname);
     mf::Checker<mf::JsonContext> checker(mf::JsonContext{doc});
+
+    auto expected_state = acq::build_expected_state(det);
+
     test_master_file_metadata(det, checker);
     test_master_file_frames_in_file(checker, num_frames);
 

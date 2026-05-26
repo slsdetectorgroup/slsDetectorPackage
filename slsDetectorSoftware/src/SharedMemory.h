@@ -92,7 +92,7 @@ template <typename T> class SharedMemory {
 
     ~SharedMemory() {
         if (shared_struct)
-            unmapSharedMemory();
+            unmapSharedMemory(); // only unmapped as resued in command line
     }
 
     /** memory is valid if it has the IsValid flag and is true */

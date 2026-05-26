@@ -70,6 +70,8 @@ template <typename DerivedDetectorServer> class DetectorServer {
      */
     explicit DetectorServer(uint16_t port = DEFAULT_TCP_CNTRL_PORTNO);
 
+    ~DetectorServer();
+
   protected:
     /// @brief TCP/IP interface for communication with the client
     std::unique_ptr<TCPInterface> tcpInterface;
@@ -145,6 +147,11 @@ DetectorServer<DerivedDetectorServer>::DetectorServer(uint16_t port) {
         };
 
     tcpInterface = std::make_unique<TCPInterface>(fn, port);
+}
+
+template <typename DerivedDetectorServer>
+DetectorServer<DerivedDetectorServer>::~DetectorServer() {
+    shm.removeSharedMemory();
 }
 
 template <typename DerivedDetectorServer>

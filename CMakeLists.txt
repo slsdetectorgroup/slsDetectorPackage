@@ -249,6 +249,18 @@ if(SLS_BUILD_ONLY_MOENCH)
     set(SLS_USE_MOENCH ON CACHE BOOL "Enable" FORCE)
 endif()
 
+option(SLS_BUILD_ONLY_MATTERHORN "compile only Matterhorn" OFF)
+if(SLS_BUILD_ONLY_MATTERHORN)
+    message(STATUS "Build MATTERHORN server only!")
+    set(SLS_BUILD_SHARED_LIBRARIES OFF CACHE BOOL "Disabled for MATTERHORN_ONLY" FORCE)
+    set(SLS_USE_TEXTCLIENT OFF CACHE BOOL "Disabled for MATTERHORN_ONLY" FORCE)
+    set(SLS_USE_DETECTOR ON CACHE BOOL "Disabled for MATTERHORN_ONLY" FORCE)
+    set(SLS_USE_RECEIVER OFF CACHE BOOL "Disabled for MATTERHORN_ONLY" FORCE)
+    set(SLS_USE_RECEIVER_BINARIES OFF CACHE BOOL "Disabled for MATTERHORN_ONLY" FORCE)
+    set(SLS_USE_SERVER ON CACHE BOOL "Enable building cpp server" FORCE)
+    set(SLS_USE_MATTERHORN ON CACHE BOOL "Enable Matterhorn" FORCE)
+endif()
+
 #Convenience option to switch off defaults when building Jungfrau binaries only
 option(SLS_BUILD_ONLY_JUNGFRAU "compile only Jungfrau" OFF)
 if(SLS_BUILD_ONLY_JUNGFRAU)

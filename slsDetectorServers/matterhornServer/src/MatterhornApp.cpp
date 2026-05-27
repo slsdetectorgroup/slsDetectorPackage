@@ -1,5 +1,5 @@
 #include "CommandLineOptions.h"
-#include "VirtualMatterhornServer.h"
+#include MATTERHORN_SERVER_HEADER
 #include "sls/logger.h"
 #include "sls/sls_detector_exceptions.h"
 #include "sls/versionAPI.h"
@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
 
         LOG(TLogLevel::logINFOBLUE) << "Stop Server [" << opts.port + 1 << "]";
         try {
-            VirtualMatterhornServer stopServer(opts.port + 1);
+            MATTERHORN_SERVER_CLASS stopServer(opts.port + 1);
             while (!interruption) {
                 pause(); // wait for signal to exit
             }
@@ -93,7 +93,7 @@ int main(int argc, char *argv[]) {
         LOG(TLogLevel::logINFOBLUE) << "Control Server [" << opts.port << "]\n";
 
         try {
-            VirtualMatterhornServer server(
+            MATTERHORN_SERVER_CLASS server(
                 opts.port); // TODO use virtual if compiled with virtual
                             // simulators on
             while (!interruption) {

@@ -4,7 +4,7 @@
 #pragma once
 
 #include "sls/Detector.h"
-#include <cstdint>
+#include "sls/logger.h"
 
 namespace sls::test::acquire {
 
@@ -13,23 +13,43 @@ class CTBState;
 
 void wait_until_idle(const Detector &det);
 void run_acquisition(Detector &det);
-void run(Detector &det, int64_t num_frames, const CTBState &ctb_state,
-         const FileState &file_state);
-void run(Detector &det, int64_t num_frames, const FileState &file_state);
+void run(Detector &det,
+         const AcquisitionState &acq_state = default_acquisition_state(),
+         const FileState &file_state = default_file_state(),
+         const CTBState &ctb_state = default_ctb_state());
 
-class FrameGuard {
+struct AcquisitionState {
+    int64_t num_frames;
+};
+
+inline AcquisitionState default_acquisition_state() { return {1}; }
+
+inline AcquisitionState get_acquisition_state(const Detector &det) {
+    return AcquisitionState{
+        det.getNumberOfFrames().tsquash("Inconsistent number of frames")};
+}
+
+inline void set_acquisition_state(Detector &det, const AcquisitionState &s) {
+    det.setNumberOfFrames(s.num_frames);
+}
+
+inline void print_acquisition_state(const AcquisitionState &s) {
+    LOG(logINFO) << "Acquisition State:"
+                 << "\n  Number of Frames: " << s.num_frames;
+}
+
+class AcquisitionStateGuard {
   public:
-    FrameGuard(Detector &det, int64_t new_frames)
-        : det(det), prev(det.getNumberOfFrames().tsquash(
-                        "Inconsistent number of frames")) {
-        det.setNumberOfFrames(new_frames);
+    explicit AcquisitionStateGuard(Detector &det,
+                                   const AcquisitionState &new_state)
+        : det(det), saved_(get_acquisition_state(det)) {
+        set_acquisition_state(det, new_state);
     }
-
-    ~FrameGuard() { det.setNumberOfFrames(prev); }
+    ~AcquisitionStateGuard() { set_acquisition_state(det, saved_); }
 
   private:
     Detector &det;
-    int64_t prev;
+    AcquisitionState saved_;
 };
 
 } // namespace sls::test::acquire

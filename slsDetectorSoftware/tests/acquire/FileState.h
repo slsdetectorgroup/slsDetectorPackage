@@ -44,9 +44,12 @@ inline void set_file_state(Detector &det, const FileState &s) {
 }
 
 inline std::string
-get_master_file_name_prefix(const FileState &s = default_file_state()) {
-    return s.file_path + "/" + s.file_prefix + "_master_" +
-           std::to_string(s.file_acq_index);
+get_master_file_name(const FileState &s = default_file_state()) {
+    auto master_file_prefix = s.file_path + "/" + s.file_prefix + "_master_" +
+                              std::to_string(s.file_acq_index);
+    if (s.file_format == defs::BINARY)
+        return master_file_prefix + ".json";
+    return master_file_prefix + ".h5";
 }
 
 inline std::string
@@ -63,7 +66,7 @@ inline void print_file_state(const FileState &s) {
                  << "\n  Write: " << s.file_write
                  << "\n  Overwrite: " << s.file_overwrite
                  << "\n  Format: " << ToString(s.file_format)
-                 << "\n  Master File: " << get_master_file_name_prefix(s)
+                 << "\n  Master File: " << get_master_file_name(s)
                  << "\n  Virtual File: " << get_virtual_file_name(s);
 }
 

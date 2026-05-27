@@ -3,6 +3,7 @@
 
 #include "ExpectedState.h"
 #include "Caller/test-Caller-global.h"
+#include "receiver_defs.h"
 
 namespace {
 using sls::defs;
@@ -196,12 +197,14 @@ acq::CommonExpectedState build_common_state(const Detector& det) {
     e.geometry = get_geometry(det);
     e.image_size = get_image_size(det);
     e.port_shape = get_port_shape(det);
-    e.frames_per_file = det.getFramesPerFile().tsquash("Inconsistent frames per file");
+    e.max_frames_per_file =
+        det.getFramesPerFile().tsquash("Inconsistent frames per file");
     e.frame_discard_policy = det.getRxFrameDiscardPolicy().tsquash("Inconsistent frame discard policy");
     e.partial_frames_padding = static_cast<int>(
         det.getPartialFramesPadding().tsquash("Inconsistent frame padding"));
     e.scan_parameters = det.getScan().tsquash("Inconsistent scan parameters");
     e.total_frames = get_total_frames(det);
+    e.frames_in_file = det.getFramesCaught()[0][0];
     e.additional_json_header = det.getAdditionalJsonHeader().tsquash("Inconsistent JSON header");
     return e;
 }
@@ -243,7 +246,7 @@ acq::EigerExpectedState build_eiger_specific_state(const Detector& det) {
     e.read_n_rows = get_read_n_rows(det);
     {
         for (auto item : det.getRateCorrection())
-            e.dead_times.push_back(item.count());       
+            e.rate_corrections.push_back(item.count());
     }
     e.readout_speed = get_readout_speed(det);
     return e;

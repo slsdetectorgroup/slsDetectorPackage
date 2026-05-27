@@ -10,17 +10,18 @@
 
 namespace sls::test::acquire {
 
-    struct CommonExpectedState {
+struct CommonExpectedState {
     defs::detectorType det_type{};  
     defs::timingMode timing_mode{};
     defs::xy geometry{};
     int image_size{};
     defs::xy port_shape{};
-    int frames_per_file{};
+    int max_frames_per_file{};
     int frame_discard_policy{};
     int partial_frames_padding{};
     defs::scanParameters scan_parameters{};
     uint64_t total_frames{};
+    uint64_t frames_in_file{};
     std::map<std::string, std::string> additional_json_header{};
 };
 
@@ -53,7 +54,7 @@ struct EigerExpectedState {
     ns sub_period{};
     bool quad{};
     int read_n_rows{};
-    std::vector<int> dead_times{};
+    std::vector<int> rate_corrections{};
     defs::speedLevel readout_speed{};
 };
 

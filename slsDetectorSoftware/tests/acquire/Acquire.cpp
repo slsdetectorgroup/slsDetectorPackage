@@ -32,37 +32,14 @@ void run_acquisition(Detector &det) {
     det.stopReceiver();
 }
 
-void run(Detector &det, int64_t num_frames, const FileState &file_state) {
-    auto ctb_state = default_ctb_state();
-    run(det, num_frames, ctb_state, file_state);
-}
-
-void run(Detector &det, int64_t num_frames, const CTBState &ctb_state,
-         const FileState &file_state) {
-    FrameGuard frame_guard(det, num_frames);
+void run(Detector &det, const AcquisitionState &acq_state,
+         const FileState &file_state, const CTBState &ctb_state) {
     CTBStateGuard ctb_guard(det, ctb_state);
-
-    {
-        // binary
-        auto binary_state = file_state;
-        binary_state.file_format = defs::BINARY;
-        FileStateGuard file_guard(det, binary_state);
-        run_acquisition(det);
-        auto frames_caught = det.getFramesCaught()[0][0];
-        REQUIRE(frames_caught == num_frames);
-    }
-
-#ifdef HDF5C
-    {
-        // hdf5
-        auto h5_state = file_state;
-        h5_state.file_format = defs::HDF5;
-        FileStateGuard file_guard(det, h5_state);
-        run_acquisition(det);
-        auto frames_caught = det.getFramesCaught()[0][0];
-        REQUIRE(frames_caught == num_frames);
-    }
-#endif
+    FileStateGuard file_guard(det, file_state);
+    AcquisitionStateGuard acq_guard(det, acq_state);
+    run_acquisition(det);
+    auto frames_caught = det.getFramesCaught()[0][0];
+    REQUIRE(frames_caught == acq_state.num_frames);
 }
 
 } // namespace sls::test::acquire

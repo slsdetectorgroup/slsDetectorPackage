@@ -55,7 +55,13 @@ class BaseMatterhornServer
 
     ReturnCode get_receiver_parameters(ServerInterface &socket) const;
 
-    ReturnCode set_module_position(ServerInterface &socket);
+    ReturnCode set_source_udp_mac(ServerInterface &socket);
+
+    ReturnCode
+    set_module_position_and_update_srcudpmac(ServerInterface &socket);
+
+    void set_module_position(const size_t module_row, const size_t module_col,
+                             const size_t module_index);
 
     ReturnCode set_counter_mask(ServerInterface &socket);
 
@@ -266,22 +272,9 @@ uint32_t BaseMatterhornServer<DerivedServer>::getNumTriggers() const {
 }
 
 template <typename DerivedServer>
-ReturnCode BaseMatterhornServer<DerivedServer>::set_module_position(
-    ServerInterface &socket) {
-
-    std::array<int, 2> position_info{}; // [num_modules_in_y, module_index]
-    try {
-        int ret = socket.Receive(position_info.data(),
-                                 position_info.size() * sizeof(int));
-    } catch (const SocketError &e) {
-        LOG(logERROR)
-            << "Failed to receive num modules in y dimension and module index: "
-            << e.what();
-        return ReturnCode::FAIL;
-    }
-
-    const size_t module_row = position_info[1] % position_info[0];
-    const size_t module_col = position_info[1] / position_info[0];
+void BaseMatterhornServer<DerivedServer>::set_module_position(
+    const size_t module_row, const size_t module_col,
+    const size_t module_index) {
 
     // write to register
     uint32_t register_value_LSB{};
@@ -295,13 +288,13 @@ ReturnCode BaseMatterhornServer<DerivedServer>::set_module_position(
     } catch (const std::exception &e) {
         LOG(logERROR) << "Failed to read module position register: "
                       << e.what();
-        return ReturnCode::FAIL;
+        throw;
     }
 
     setRegisterField(register_value_LSB, Reg::ModuleRow, module_row);
     setRegisterField(register_value_LSB, Reg::ModuleCol, module_col);
     setRegisterField(register_value_MSB, Reg::ModuleCoordz, 0);
-    setRegisterField(register_value_MSB, Reg::ModuleIndex, position_info[1]);
+    setRegisterField(register_value_MSB, Reg::ModuleIndex, module_index);
 
     try {
         busCommunication.writeRegister(Reg::Frame_HDR_ModCoord_LSB_Reg,
@@ -311,25 +304,8 @@ ReturnCode BaseMatterhornServer<DerivedServer>::set_module_position(
     } catch (const std::exception &e) {
         LOG(logERROR) << "Failed to write module position register: "
                       << e.what();
-        return ReturnCode::FAIL;
+        throw;
     }
-
-    // configure mac address based on module position
-    if (this->udpDetails[0].srcmac ==
-        0) { // only configure if source mac address is not set already
-        this->udpDetails[0].srcmac = generaterandomMacAddress();
-        uint64_t newSrcMac = (this->udpDetails[0].srcmac & 0xffffffffffff0000) |
-                             (module_row << 16) | module_col;
-        try {
-            this->updateSrcMacAddress(newSrcMac);
-        } catch (const std::invalid_argument &e) {
-            LOG(logERROR) << "Failed to update source MAC address: "
-                          << e.what();
-            return ReturnCode::FAIL;
-        }
-    }
-
-    return static_cast<ReturnCode>(socket.Send(ReturnCode::OK));
 }
 
 template <typename DerivedServer>
@@ -398,6 +374,20 @@ ReturnCode BaseMatterhornServer<DerivedServer>::get_counter_mask(
         convertSPICounterMaskToCounterMask(spi_counter_mask);
 
     return static_cast<ReturnCode>(socket.sendResult(actual_counter_mask));
+}
+
+template <typename DerivedServer>
+ReturnCode BaseMatterhornServer<DerivedServer>::set_source_udp_mac(
+    ServerInterface &socket) {
+    return static_cast<DerivedServer *>(this)->set_source_udp_mac(socket);
+}
+
+template <typename DerivedServer>
+ReturnCode
+BaseMatterhornServer<DerivedServer>::set_module_position_and_update_srcudpmac(
+    ServerInterface &socket) {
+    return static_cast<DerivedServer *>(this)
+        ->set_module_position_and_update_srcudpmac(socket);
 }
 
 } // namespace sls

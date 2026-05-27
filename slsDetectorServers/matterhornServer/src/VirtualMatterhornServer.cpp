@@ -51,4 +51,68 @@ VirtualMatterhornServer::get_run_status(ServerInterface &socket) const {
     return static_cast<ReturnCode>(socket.sendResult(status));
 }
 
+ReturnCode VirtualMatterhornServer::set_module_position_and_update_srcudpmac(
+    ServerInterface &socket) {
+
+    std::array<int, 2> position_info{}; // [num_modules_in_y, module_index]
+    try {
+        int ret = socket.Receive(position_info.data(),
+                                 position_info.size() * sizeof(int));
+    } catch (const SocketError &e) {
+        LOG(logERROR)
+            << "Failed to receive num modules in y dimension and module index: "
+            << e.what();
+        return ReturnCode::FAIL;
+    }
+
+    const size_t module_row = position_info[1] % position_info[0];
+    const size_t module_col = position_info[1] / position_info[0];
+
+    try {
+        this->set_module_position(module_row, module_col, position_info[1]);
+    } catch (const std::exception &e) {
+        LOG(logERROR) << "Failed to set module position: " << e.what();
+        return ReturnCode::FAIL;
+    }
+
+    // configure mac address based on module position
+    if (this->udpDetails[0].srcmac ==
+        0) { // only configure if source mac address is not set already
+        uint64_t newSrcMac = generaterandomMacAddress();
+        newSrcMac =
+            (newSrcMac & 0xffffffffffff0000) | (module_row << 16) | module_col;
+        try {
+            this->updateSrcMacAddress(newSrcMac);
+        } catch (const std::invalid_argument &e) {
+            LOG(logERROR) << "Failed to update source MAC address: "
+                          << e.what();
+            return ReturnCode::FAIL;
+        }
+    }
+
+    return static_cast<ReturnCode>(socket.Send(ReturnCode::OK));
+}
+
+ReturnCode
+VirtualMatterhornServer::set_source_udp_mac(ServerInterface &socket) {
+    uint64_t newsrcudpMac;
+
+    try {
+        int ret = socket.Receive<uint64_t>(newsrcudpMac);
+    } catch (const SocketError &e) {
+        LOG(logERROR) << "Failed to receive new source UDP MAC address: "
+                      << e.what();
+        return ReturnCode::FAIL;
+    }
+
+    try {
+        updateSrcMacAddress(newsrcudpMac);
+    } catch (const std::invalid_argument &e) {
+        LOG(logERROR) << "Failed to update source MAC address: " << e.what();
+        return ReturnCode::FAIL;
+    }
+
+    return static_cast<ReturnCode>(socket.Send(ReturnCode::OK));
+}
+
 } // namespace sls

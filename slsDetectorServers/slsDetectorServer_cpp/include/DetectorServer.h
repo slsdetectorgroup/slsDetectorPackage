@@ -103,8 +103,6 @@ template <typename DerivedDetectorServer> class DetectorServer {
 
     ReturnCode get_source_udp_mac(ServerInterface &socket) const;
 
-    ReturnCode set_source_udp_mac(ServerInterface &socket);
-
     ReturnCode get_source_udp_ip(ServerInterface &socket) const;
 
     ReturnCode set_source_udp_ip(ServerInterface &socket);
@@ -173,7 +171,8 @@ ReturnCode DetectorServer<DerivedDetectorServer>::processFunction(
     case detFuncs::F_GET_UPDATE_MODE:
         return get_update_mode(socket);
     case detFuncs::F_SET_SOURCE_UDP_MAC:
-        return set_source_udp_mac(socket);
+        return static_cast<DerivedDetectorServer *>(this)->set_source_udp_mac(
+            socket);
     case detFuncs::F_GET_SOURCE_UDP_MAC:
         return get_source_udp_mac(socket);
     case detFuncs::F_SET_SOURCE_UDP_IP:
@@ -207,8 +206,8 @@ ReturnCode DetectorServer<DerivedDetectorServer>::processFunction(
         return static_cast<DerivedDetectorServer *>(this)
             ->get_receiver_parameters(socket);
     case detFuncs::F_SET_POSITION:
-        return static_cast<DerivedDetectorServer *>(this)->set_module_position(
-            socket);
+        return static_cast<DerivedDetectorServer *>(this)
+            ->set_module_position_and_update_srcudpmac(socket);
     default:
         LOG(logDEBUG) << "Checking specific server functions for function ID: "
                       << function_id;
@@ -266,32 +265,10 @@ ReturnCode DetectorServer<DerivedDetectorServer>::get_update_mode(
 }
 
 template <typename DerivedDetectorServer>
-ReturnCode DetectorServer<DerivedDetectorServer>::set_source_udp_mac(
-    ServerInterface &socket) {
-    uint64_t newsrcudpMac;
-
-    try {
-        int ret = socket.Receive<uint64_t>(newsrcudpMac);
-    } catch (const SocketError &e) {
-        LOG(logERROR) << "Failed to receive new source UDP MAC address: "
-                      << e.what();
-        return ReturnCode::FAIL;
-    }
-
-    try {
-        updateSrcMacAddress(newsrcudpMac);
-    } catch (const std::invalid_argument &e) {
-        LOG(logERROR) << "Failed to update source MAC address: " << e.what();
-        return ReturnCode::FAIL;
-    }
-
-    return static_cast<ReturnCode>(socket.Send(ReturnCode::OK));
-}
-
-template <typename DerivedDetectorServer>
 ReturnCode DetectorServer<DerivedDetectorServer>::get_source_udp_mac(
     ServerInterface &socket) const {
-    return static_cast<ReturnCode>(socket.sendResult(udpDetails[0].srcmac));
+    auto srcUdpMac = udpDetails[0].srcmac;
+    return static_cast<ReturnCode>(socket.sendResult(srcUdpMac));
 }
 
 template <typename DerivedDetectorServer>

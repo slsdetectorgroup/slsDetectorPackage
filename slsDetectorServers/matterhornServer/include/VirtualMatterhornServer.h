@@ -21,6 +21,11 @@ class VirtualMatterhornServer
     ReturnCode initial_checks(ServerInterface &socket);
 
     ReturnCode get_run_status(ServerInterface &socket) const;
+
+    ReturnCode
+    set_module_position_and_update_srcudpmac(ServerInterface &socket);
+
+    ReturnCode set_source_udp_mac(ServerInterface &socket);
 };
 
 } // namespace sls

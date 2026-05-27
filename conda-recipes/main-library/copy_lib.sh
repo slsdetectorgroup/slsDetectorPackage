@@ -6,7 +6,7 @@ mkdir -p $PREFIX/bin
 mkdir -p $PREFIX/include/sls
 
 #Shared and static libraries
-cp build/install/lib/* $PREFIX/lib/
+cp -r build/install/lib/* $PREFIX/lib/
 
 #Binaries
 cp build/install/bin/sls_detector_acquire $PREFIX/bin/.

@@ -48,7 +48,9 @@ slsDetectorPackage
 
     pygettingstarted
     pydetector
+    pyctb
     pyenums
+    pypower
     pyexamples
     pyPatternGenerator
     pattern

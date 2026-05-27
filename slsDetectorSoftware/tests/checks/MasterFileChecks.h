@@ -115,129 +115,71 @@ void check_readout_speed(CheckerT &checker, const acq::ExpectedState& expected) 
     checker.template check<std::string>(MasterAttributes::N_READOUT_SPEED.data(), ToString(expected.detector_specific_state.readout_speed));
 }
 
+template <typename CheckerT>
+void check_dynamic_range(CheckerT &checker, const acq::ExpectedState& expected) {
+    checker.template check<int>(MasterAttributes::N_DYNAMIC_RANGE.data(), expected.detector_specific_state.dynamic_range);
+}
 
+template <typename CheckerT>
+void check_ten_giga(CheckerT &checker, const acq::ExpectedState& expected) {
+    checker.template check<int>(MasterAttributes::N_TEN_GIGA.data(), static_cast<int>(expected.detector_specific_state.ten_giga));
+}
+
+template <typename CheckerT>
+void check_threshold_energy(CheckerT &checker, const acq::ExpectedState& expected) {
+    checker.template check<int>(MasterAttributes::N_THRESHOLD_ENERGY.data(), expected.detector_specific_state.threshold_energy);
+}
+
+template <typename CheckerT>
+void check_sub_exptime(CheckerT &checker, const acq::ExpectedState& expected) {
+    checker.template check<std::string>(MasterAttributes::N_SUB_EXPOSURE_TIME.data(), ToString(expected.detector_specific_state.sub_exptime));
+}
+
+template <typename CheckerT>
+void check_sub_period(CheckerT &checker, const acq::ExpectedState& expected) {
+    checker.template check<std::string>(MasterAttributes::N_SUB_ACQUISITION_PERIOD.data(), ToString(expected.detector_specific_state.sub_period));
+}
+
+template <typename CheckerT>
+void check_quad(CheckerT &checker, const acq::ExpectedState& expected) {
+    checker.template check<int>(MasterAttributes::N_QUAD.data(), static_cast<int>(expected.detector_specific_state.quad));
+}
+
+template <typename CheckerT>
+void check_rate_corrections(CheckerT &checker, const acq::ExpectedState& expected) {
+    checker.template check<std::vector<int64_t>>(MasterAttributes::N_RATE_CORRECTIONS.data(), expected.detector_specific_state.rate_corrections);
+}
+
+template <typename CheckerT>
+void check_counter_mask(CheckerT &checker, const acq::ExpectedState& expected) {
+    checker.template check<int>(MasterAttributes::N_COUNTER_MASK.data(), expected.detector_specific_state.counter_mask);
+}
+
+template <typename CheckerT>
+void check_exptime_array(CheckerT &checker, const acq::ExpectedState& expected) {
+    checker.template check<std::array<sls::ns, 3UL>>(MasterAttributes::N_EXPOSURE_TIMES.data(), expected.detector_specific_state.exp_times);
+}
+
+template <typename CheckerT>
+void check_gate_delay_array(CheckerT &checker, const acq::ExpectedState& expected) {
+    checker.template check<std::array<sls::ns, 3UL>>(MasterAttributes::N_GATE_DELAYS.data(), expected.detector_specific_state.gate_delays);
+}
+
+template <typename CheckerT>
+void check_gates(CheckerT &checker, const acq::ExpectedState& expected) {
+    checker.template check<int>(MasterAttributes::N_GATES.data(), expected.detector_specific_state.num_gates);
+}
+
+template <typename CheckerT>
+void check_threshold_energies(CheckerT &checker, const acq::ExpectedState& expected) {
+    checker.template check<std::array<int, 3UL>>(MasterAttributes::N_THRESHOLD_ENERGIES.data(), expected.detector_specific_state.thresholdAllEnergyeV);
+}
+
+template <typename CheckerT>
+void check_burst_mode(CheckerT &checker, const acq::ExpectedState& expected) {
+    checker.template check<std::string>(MasterAttributes::N_BURST_MODE.data(), ToString(expected.detector_specific_state.burst_mode));
+}
 /*
-
-
-
-
-
-template <typename CheckerT>
-void test_master_file_dynamic_range(const Detector &det, CheckerT &checker) {
-    auto dr = det.getDynamicRange().tsquash("Inconsistent dynamic range");
-
-    REQUIRE_NOTHROW(checker.template check<int>(
-        MasterAttributes::N_DYNAMIC_RANGE.data(), dr));
-}
-
-template <typename CheckerT>
-void test_master_file_ten_giga(const Detector &det, CheckerT &checker) {
-    auto ten_giga =
-        static_cast<int>(det.getTenGiga().tsquash("Inconsistent ten giga"));
-
-    REQUIRE_NOTHROW(checker.template check<int>(
-        MasterAttributes::N_TEN_GIGA.data(), ten_giga));
-}
-
-template <typename CheckerT>
-void test_master_file_threshold_energy(const Detector &det, CheckerT &checker) {
-    auto threshold =
-        det.getThresholdEnergy().tsquash("Inconsistent threshold energy");
-
-    REQUIRE_NOTHROW(checker.template check<int>(
-        MasterAttributes::N_THRESHOLD_ENERGY.data(), threshold));
-}
-
-template <typename CheckerT>
-void test_master_file_sub_exptime(const Detector &det, CheckerT &checker) {
-    auto sub_exptime =
-        det.getSubExptime().tsquash("Inconsistent sub exposure time");
-
-    REQUIRE_NOTHROW(checker.template check<std::string>(
-        MasterAttributes::N_SUB_EXPOSURE_TIME.data(), ToString(sub_exptime)));
-}
-
-template <typename CheckerT>
-void test_master_file_sub_period(const Detector &det, CheckerT &checker) {
-    auto exptime = det.getSubExptime().tsquash("Inconsistent sub exptime");
-    auto deadtime = det.getSubDeadTime().tsquash("Inconsistent sub deadtime");
-    auto sub_period = exptime + deadtime;
-
-    REQUIRE_NOTHROW(checker.template check<std::string>(
-        MasterAttributes::N_SUB_ACQUISITION_PERIOD.data(),
-        ToString(sub_period)));
-}
-
-template <typename CheckerT>
-void test_master_file_quad(const Detector &det, CheckerT &checker) {
-    auto quad = static_cast<int>(det.getQuad().tsquash("Inconsistent quad"));
-
-    REQUIRE_NOTHROW(
-        checker.template check<int>(MasterAttributes::N_QUAD.data(), quad));
-}
-
-template <typename CheckerT>
-void test_master_file_rate_corrections(const Detector &det, CheckerT &checker) {
-    std::vector<int64_t> dead_times;
-    for (auto item : det.getRateCorrection())
-        dead_times.push_back(item.count());
-
-    REQUIRE_NOTHROW(checker.template check<std::vector<int64_t>>(
-        MasterAttributes::N_RATE_CORRECTIONS.data(), dead_times));
-}
-
-template <typename CheckerT>
-void test_master_file_counter_mask(const Detector &det, CheckerT &checker) {
-    auto counter_mask = static_cast<int>(
-        det.getCounterMask().tsquash("Inconsistent counter mask"));
-
-    REQUIRE_NOTHROW(checker.template check<int>(
-        MasterAttributes::N_COUNTER_MASK.data(), counter_mask));
-}
-
-template <typename CheckerT>
-void test_master_file_exptimes(const Detector &det, CheckerT &checker) {
-    auto exptimes =
-        det.getExptimeForAllGates().tsquash("Inconsistent exposure times");
-
-    REQUIRE_NOTHROW(checker.template check<std::array<sls::ns, 3UL>>(
-        MasterAttributes::N_EXPOSURE_TIMES.data(), exptimes));
-}
-
-template <typename CheckerT>
-void test_master_file_gate_delays(const Detector &det, CheckerT &checker) {
-    auto gate_delays =
-        det.getGateDelayForAllGates().tsquash("Inconsistent GateDelay");
-
-    REQUIRE_NOTHROW(checker.template check<std::array<sls::ns, 3UL>>(
-        MasterAttributes::N_GATE_DELAYS.data(), gate_delays));
-}
-
-template <typename CheckerT>
-void test_master_file_gates(const Detector &det, CheckerT &checker) {
-    auto gates = det.getNumberOfGates().tsquash("Inconsistent number of gates");
-
-    REQUIRE_NOTHROW(
-        checker.template check<int>(MasterAttributes::N_GATES.data(), gates));
-}
-
-template <typename CheckerT>
-void test_master_file_threadhold_energies(const Detector &det,
-                                          CheckerT &checker) {
-    auto threshold_energies =
-        det.getAllThresholdEnergy().tsquash("Inconsistent threshold energies");
-
-    REQUIRE_NOTHROW(checker.template check<std::array<int, 3UL>>(
-        MasterAttributes::N_THRESHOLD_ENERGIES.data(), threshold_energies));
-}
-
-template <typename CheckerT>
-void test_master_file_burst_mode(const Detector &det, CheckerT &checker) {
-    auto burst_mode = det.getBurstMode().tsquash("Inconsistent burst mode");
-
-    REQUIRE_NOTHROW(checker.template check<std::string>(
-        MasterAttributes::N_BURST_MODE.data(), ToString(burst_mode)));
-}
 
 template <typename CheckerT>
 void test_master_file_adc_mask(const Detector &det, CheckerT &checker) {
@@ -854,19 +796,43 @@ void check_moench_metadata(CheckerT &checker, const acq::ExpectedState& expected
 template <typename CheckerT>
 void check_eiger_metadata(CheckerT &checker, const acq::ExpectedState& expected) {
     check_rois(checker, expected);
-    
+    check_dynamic_range(checker, expected);
+    check_ten_giga(checker, expected);
+    check_exptime(checker, expected);
+    check_period(checker, expected);
+    check_threshold_energy(checker, expected);
+    check_sub_exptime(checker, expected);
+    check_sub_period(checker, expected);
+    check_quad(checker, expected);
+    check_read_n_rows(checker, expected);
+    check_rate_corrections(checker, expected);
+    check_readout_speed(checker, expected);
 }
 
 template <typename CheckerT>
-void check_mythen3_metadata(CheckerT &checker, const acq::ExpectedState& expected);
+void check_mythen3_metadata(CheckerT &checker, const acq::ExpectedState& expected) {
+    check_rois(checker, expected);
+    check_dynamic_range(checker, expected);
+    check_ten_giga(checker, expected);
+    check_period(checker, expected);
+    check_counter_mask(checker, expected);
+    check_exptime_array(checker, expected);
+    check_gate_delay_array(checker, expected);
+    check_gates(checker, expected);
+    check_threshold_energies(checker, expected);
+    check_readout_speed(checker, expected);
+}
 
 template <typename CheckerT>
-void check_gotthard2_metadata(CheckerT &checker, const acq::ExpectedState& expected);
+void check_gotthard2_metadata(CheckerT &checker, const acq::ExpectedState& expected) {
+    check_rois(checker, expected);
+    check_exptime(checker, expected);
+    check_period(checker, expected);
+    check_burst_mode(checker, expected);
+    check_readout_speed(checker, expected);
+}
 
 template <typename CheckerT>
 void check_ctb_metadata(CheckerT &checker, const acq::ExpectedState& expected);
-
-template <typename CheckerT>
-void check_det_type(CheckerT &checker, const acq::ExpectedState& expected);
 
 }

@@ -277,17 +277,15 @@ acq::Gotthard2ExpectedState build_gotthard2_specific_state(const Detector& det) 
     return e;
 }
 
-acq::CTBExpectedState build_ctb_specific_state(const Detector& det) {
+acq::CTBExpectedState build_ctb_specific_state(const Detector& det, const acq::CTBState& ctb_state) {
     acq::CTBExpectedState e;
     e.exptime = get_exptime(det);
     e.period = get_period(det);
-    auto detType = get_detector_type(det);
-    bool isAltera = (detType == defs::CHIPTESTBOARD);
-    e.ctb_acq_state = acq::get_ctb_state(det, isAltera);
+    e.ctb_acq_state = ctb_state;
     return e;
 }
 
-acq::DetectorSpecificState build_detector_specific_state(const Detector& det) {
+acq::DetectorSpecificState build_detector_specific_state(const Detector& det, const acq::CTBState& ctb_state) {
     switch (det.getDetectorType().tsquash("bad type")) {
         case defs::JUNGFRAU:
             return build_jungfrau_specific_state(det);
@@ -301,7 +299,7 @@ acq::DetectorSpecificState build_detector_specific_state(const Detector& det) {
             return build_gotthard2_specific_state(det);
         case defs::CHIPTESTBOARD:
         case defs::XILINX_CHIPTESTBOARD:
-            return build_ctb_specific_state(det);
+            return build_ctb_specific_state(det, ctb_state);
     }
     throw sls::RuntimeError("Unsupported detector type");
 }
@@ -311,11 +309,12 @@ acq::DetectorSpecificState build_detector_specific_state(const Detector& det) {
 
 namespace sls::test::acquire {
 
-ExpectedState build_expected_state(const Detector& det) {
+ExpectedState build_expected_state(const Detector& det, const AcquisitionState &acq_state, const FileState &file_state, const CTBState &ctb_state) {
     ExpectedState e;
     e.common_state = build_common_state(det);
-    e.file_state = get_file_state(det);
-    e.detector_specific_state = build_detector_specific_state(det);
+    e.file_state = file_state;
+    e.acquisition_state = acq_state;
+    e.detector_specific_state = build_detector_specific_state(det, ctb_state);
     return e;
 }
 

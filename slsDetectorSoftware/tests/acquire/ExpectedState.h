@@ -5,6 +5,7 @@
 
 #include "CTBState.h"
 #include "FileState.h"
+#include "Acquire.h"
 
 #include <variant>
 
@@ -54,7 +55,7 @@ struct EigerExpectedState {
     ns sub_period{};
     bool quad{};
     int read_n_rows{};
-    std::vector<int> rate_corrections{};
+    std::vector<int64_t> rate_corrections{};
     defs::speedLevel readout_speed{};
 };
 
@@ -95,6 +96,7 @@ using DetectorSpecificState = std::variant<
 
 struct ExpectedState {
     FileState file_state{};
+    AcquisitionState acquisition_state{};
     CommonExpectedState common_state{};
     DetectorSpecificState detector_specific_state{};
 };
@@ -104,6 +106,6 @@ const T& get_detector_specific_state(const ExpectedState& expected_state) {
     return std::get<T>(expected_state.detector_specific_state);
 }
 
-ExpectedState build_expected_state(const Detector& det);
+ExpectedState build_expected_state(const Detector& det, const AcquisitionState &acq_state = default_acquisition_state(), const FileState &file_state = default_file_state(), const CTBState &ctb_state = default_ctb_state());
 
 } // namespace sls::test::acquire

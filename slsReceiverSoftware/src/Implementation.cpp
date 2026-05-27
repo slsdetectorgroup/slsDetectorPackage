@@ -269,7 +269,8 @@ void Implementation::setModulePositionId(const int id) {
     xy portGeometry = GetPortGeometry();
     streamingPort = DEFAULT_ZMQ_RX_PORTNO + modulePos * portGeometry.x;
 
-    assert(numModules.y != 0);
+    assert(numModules.y !=
+           0); // TODO why an assert here? should we throw an exception instead?
     for (unsigned int i = 0; i < listener.size(); ++i) {
         uint16_t row = 0, col = 0;
         row = (modulePos % numModules.y) * portGeometry.y;

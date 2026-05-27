@@ -22,23 +22,23 @@ template <typename DerivedSPIModel> class SPICommunication {
     void SPIwrite(const SPIRegister &spi_reg, const uint8_t chip_id,
                   const std::vector<std::byte> &data);
 
-    void MapToMemory();
+    void mapToMemory();
 
-    void UnmapMemory();
+    void unmapMemory();
 };
 
 template <typename DerivedSPIModel>
 SPICommunication<DerivedSPIModel>::~SPICommunication() {
-    UnmapMemory();
+    unmapMemory();
 }
 
 template <typename DerivedSPIModel>
-void SPICommunication<DerivedSPIModel>::MapToMemory() {
+void SPICommunication<DerivedSPIModel>::mapToMemory() {
     static_cast<DerivedSPIModel *>(this)->map_to_memory();
 }
 
 template <typename DerivedSPIModel>
-void SPICommunication<DerivedSPIModel>::UnmapMemory() {
+void SPICommunication<DerivedSPIModel>::unmapMemory() {
     static_cast<DerivedSPIModel *>(this)->unmap_memory();
 }
 
@@ -120,12 +120,28 @@ class VirtualSPICommunication
          ...);
          */
 
+        LOG(logDEBUG) << fmt::format(
+            "Initializing virtual SPI communication with {} registers for {} "
+            "chips per module",
+            SPIRegisters::spiregisters.size(),
+            SPIRegisters::NUM_CHIPS_PER_MODULE);
+
         for (const auto &reg : SPIRegisters::spiregisters) {
             virtual_registers.emplace(
                 reg.spi_register_id,
                 VirtualMemoryModel<std::byte>{
                     reg.spi_register_id,
                     reg.n_bytes * SPIRegisters::NUM_CHIPS_PER_MODULE});
+        }
+
+        LOG(logDEBUG) << fmt::format(
+            "Initialized virtual SPI communication with {} registers for {} "
+            "chips per module",
+            virtual_registers.size(), SPIRegisters::NUM_CHIPS_PER_MODULE);
+
+        for (const auto &[register_id, register_memory] : virtual_registers) {
+            LOG(logDEBUG) << fmt::format(
+                "Virtual SPI register with id {} has virtual", register_id);
         }
     }
 
@@ -134,6 +150,9 @@ class VirtualSPICommunication
         // resize the virtual register memory to the correct size based on
         // the defined SPI registers
         for (auto &[register_id, register_memory] : virtual_registers) {
+            LOG(logDEBUG) << fmt::format("Mapping virtual SPI register with id "
+                                         "{} to virtual memory",
+                                         register_id);
             register_memory.mapToMemory();
         }
     }

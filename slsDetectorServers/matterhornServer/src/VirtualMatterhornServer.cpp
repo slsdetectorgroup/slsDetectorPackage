@@ -13,7 +13,7 @@ VirtualMatterhornServer::VirtualMatterhornServer(uint16_t port)
     // map the IP core base addresses to virtual memory
     busCommunication.mapToMemory();
 
-    spiCommunication.MapToMemory();
+    spiCommunication.mapToMemory();
 
     // should maybe be part of the constructor?
     tcpInterface->startTCPServer();

@@ -398,7 +398,7 @@ int ClientInterface::setup_receiver(Interface &socket) {
             }
             impl()->setThresholdEnergy(val);
         }
-        if (detType == EIGER || detType == MYTHEN3) {
+        if (detType == EIGER || detType == MYTHEN3 || detType == MATTERHORN) {
             impl()->setDynamicRange(arg.dynamicRange);
         }
         impl()->setTimingMode(arg.timMode);
@@ -429,6 +429,10 @@ int ClientInterface::setup_receiver(Interface &socket) {
             impl()->setGateDelay3(std::chrono::nanoseconds(arg.gateDelay3Ns));
             impl()->setNumberOfGates(arg.gates);
         }
+        if (detType == MATTERHORN) {
+            impl()->setCounterMask(arg.countermask);
+        }
+        LOG(logDEBUG) << "set counter mask to " << arg.countermask;
         if (detType == GOTTHARD2) {
             impl()->setBurstMode(arg.burstType);
         }

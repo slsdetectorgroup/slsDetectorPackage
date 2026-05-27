@@ -1,7 +1,10 @@
 #pragma once
 #include "fmt/format.h"
+#include "sls/logger.h"
 #include <cstdint>
 #include <vector>
+
+namespace sls {
 
 /// @brief class to handle memory mapping and access for hardware IP cores
 class HardwareMemoryModel {
@@ -61,3 +64,5 @@ template <typename DataType> class VirtualMemoryModel {
     /// @brief size mapped memory region [bytes]
     const size_t size_memory_space{0};
 };
+
+} // namespace sls

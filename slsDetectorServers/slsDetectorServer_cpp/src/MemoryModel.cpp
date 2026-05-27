@@ -6,6 +6,8 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
+namespace sls {
+
 HardwareMemoryModel::HardwareMemoryModel(const uint32_t IPcore_base_address,
                                          const size_t size_memory_space_)
     : IPCore_base_address(IPcore_base_address),
@@ -51,3 +53,5 @@ void HardwareMemoryModel::unmapMemory() {
 }
 
 HardwareMemoryModel::~HardwareMemoryModel() { unmapMemory(); }
+
+} // namespace sls

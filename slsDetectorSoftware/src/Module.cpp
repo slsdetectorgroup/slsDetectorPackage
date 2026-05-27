@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "Module.h"
-#include "SharedMemory.h"
 #include "sls/ClientSocket.h"
+#include "sls/SharedMemory.h"
 #include "sls/ToString.h"
 #include "sls/Version.h"
 #include "sls/bit_utils.h"

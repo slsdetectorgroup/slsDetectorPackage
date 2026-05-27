@@ -1,6 +1,6 @@
 #pragma once
-#include "SharedMemory.h"
 #include "TCPInterface.h"
+#include "sls/SharedMemory.h"
 #include "sls/logger.h"
 #include "sls/network_utils.h"
 #include "sls/sls_detector_defs.h"

@@ -84,9 +84,9 @@ void SPICommunication<DerivedSPIModel>::SPIwrite(
 class HardwareSPICommunication
     : public SPICommunication<HardwareSPICommunication> {
 
+  public:
     HardwareSPICommunication() = default;
 
-  public:
     void map_to_memory();
 
     void unmap_memory();

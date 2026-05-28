@@ -827,16 +827,21 @@ class Detector(CppDetectorApi):
     @property
     @element
     def txdelay(self):
-        """
+        r"""
         [Eiger][Jungfrau][Moench][Mythen3] Set transmission delay for all modules in the detector using the step size provided.
         
         Note
         ----
-        Sets up the following for every module:\n
-        \t\t[Eiger] txdelay_left to (2 \* mod_index \* n_delay), \n
-        \t\t[Eiger] txdelay_right to ((2 \* mod_index + 1) \* n_delay) and \n
-        \t\t[Eiger] txdelay_frame to (2 \* num_modules \* n_delay)  \n
-        \t\t[Jungfrau][Moench][Mythen3] txdelay_frame to (num_modules \* n_delay)\n\n
+        Sets up the following for every module:
+
+        [Eiger] txdelay_left to (2 \* mod_index \* n_delay), 
+
+        [Eiger] txdelay_right to ((2 \* mod_index + 1) \* n_delay) and 
+
+        [Eiger] txdelay_frame to (2 \* num_modules \* n_delay)  
+
+        [Jungfrau][Moench][Mythen3] txdelay_frame to (num_modules \* n_delay)
+        
         Please refer txdelay_left, txdelay_right and txdelay_frame for details.
         """
         return self.getTransmissionDelay()

@@ -30,7 +30,7 @@ template <> class Checker<JsonContext> {
     }
 
   private:
-    const JsonContext &ctx_;
+    JsonContext ctx_;
 };
 
 /** HDF5 Specialization */
@@ -38,7 +38,7 @@ template <> class Checker<JsonContext> {
 
 template <> class Checker<H5Context> {
   public:
-    explicit Checker(const std::string& path) : ctx_(path) {}
+    explicit Checker(const std::string &path) : ctx_(path) {}
     explicit Checker(H5Context ctx) : ctx_(std::move(ctx)) {}
     const H5Context &context() const { return ctx_; }
 

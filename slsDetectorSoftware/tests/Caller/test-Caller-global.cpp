@@ -98,7 +98,6 @@ void test_onchip_dac_caller(defs::dacIndex index, const std::string &dacname,
     }
 }
 
-
 std::pair<uint64_t, int>
 calculate_ctb_image_size(const acq::CTBState &test_info, bool isXilinxCtb) {
 

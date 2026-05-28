@@ -2,11 +2,12 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #pragma once
 
+#include "catch.hpp"
+#include <filesystem>
+#include <fstream>
 #include <optional>
 #include <rapidjson/document.h>
 #include <rapidjson/error/en.h>
-#include <filesystem>
-#include <fstream>
 #include <sstream>
 #include <string>
 
@@ -17,13 +18,13 @@
 namespace sls::test::master_file {
 
 struct JsonContext {
-    const rapidjson::Document doc;
+    rapidjson::Document doc;
 
     explicit JsonContext(const std::string &path) {
         parse_binary_master_attributes(path);
     }
 
-    private:
+  private:
     void parse_binary_master_attributes(const std::string &file_path) {
         REQUIRE(std::filesystem::exists(file_path));
 
@@ -38,15 +39,14 @@ struct JsonContext {
         rapidjson::ParseResult result = doc.Parse(json_str.c_str());
 
         if (!result) {
-            std::cout << "JSON parse error: " 
-            << GetParseError_En(result.Code())
-                    << " (at offset " << result.Offset() << ")" 
-                    << std::endl;
+            std::cout << "JSON parse error: " << GetParseError_En(result.Code())
+                      << " (at offset " << result.Offset() << ")" << std::endl;
 
             size_t offset = result.Offset();
             std::string context =
                 json_str.substr(std::max(0, (int)offset - 20), 40);
-            std::cout << "Context around error: \"" << context << "\"" << std::endl;
+            std::cout << "Context around error: \"" << context << "\""
+                      << std::endl;
         }
 
         REQUIRE(result);

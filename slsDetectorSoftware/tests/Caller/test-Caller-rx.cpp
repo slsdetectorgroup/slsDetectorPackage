@@ -841,14 +841,14 @@ TEST_CASE("rx_roi", "[.detectorintegration][.disable_check_data_file]") {
             auto file_state = acq::default_file_state();
 
             file_state.file_format = defs::BINARY;
-            acq::run(det, acq_state.num_frames, file_state);
+            acq::run(det, acq_state, file_state);
             std::string fname = acq::get_master_file_name(file_state);
             REQUIRE(std::filesystem::exists(fname));
 
 #ifdef HDF5C
             file_state.file_format = defs::HDF5;
-            acq::run(det, acq_state.num_frames, file_state);
-            std::string fname = acq::get_master_file_name(file_state);
+            acq::run(det, acq_state, file_state);
+            fname = acq::get_master_file_name(file_state);
             REQUIRE(std::filesystem::exists(fname));
             if (det.size() > 1 || numinterfaces > 1) {
                 fname = acq::get_virtual_file_name(file_state);

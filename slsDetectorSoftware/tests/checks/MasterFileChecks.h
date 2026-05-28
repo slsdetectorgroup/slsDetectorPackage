@@ -12,22 +12,22 @@ namespace sls::test::checks {
 namespace acq = sls::test::acquire;
 namespace mf = sls::test::master_file;
 
-
-
 inline bool operator==(sls::ns lhs, sls::ns rhs) {
     return lhs.count() == rhs.count();
 }
 
 // different values based on file format
-template <typename CheckerT>
-void check_version(CheckerT &checker) {
+template <typename CheckerT> void check_version(CheckerT &checker) {
 #ifdef HDF5C
-    if constexpr(std::is_same_v<CheckerT, mf::Checker<mf::H5Context>>) {
-        checker.template check<double>(MasterAttributes::N_VERSION.data(), HDF5_WRITER_VERSION, mf::AccessType::Attribute);
+    if constexpr (std::is_same_v<CheckerT, mf::Checker<mf::H5Context>>) {
+        checker.template check<double>(MasterAttributes::N_VERSION.data(),
+                                       HDF5_WRITER_VERSION,
+                                       mf::AccessType::Attribute);
     } else
 #endif
     {
-        checker.template check<double>(MasterAttributes::N_VERSION.data(), BINARY_WRITER_VERSION);
+        checker.template check<double>(MasterAttributes::N_VERSION.data(),
+                                       BINARY_WRITER_VERSION);
     }
 }
 
@@ -45,7 +45,8 @@ void check_timing_mode(CheckerT &checker, const defs::timingMode &value) {
 
 template <typename CheckerT>
 void check_geometry(CheckerT &checker, const defs::xy &value) {
-    checker.template check<defs::xy>(MasterAttributes::N_GEOMETRY.data(), expected.common_state.geometry);
+    checker.template check<defs::xy>(MasterAttributes::N_GEOMETRY.data(),
+                                     value);
 }
 
 template <typename CheckerT>
@@ -230,14 +231,14 @@ void check_readout_mode(CheckerT &checker, const defs::readoutMode &value) {
                                   value == defs::TRANSCEIVER_ONLY);
 
     if (analog)
-        checker.template check<std::string>(MasterAttributes::N_ANALOG.data(),
-                                            analog);
+        checker.template check<int>(MasterAttributes::N_ANALOG.data(),
+                                    static_cast<int>(analog));
     if (digital)
-        checker.template check<std::string>(MasterAttributes::N_DIGITAL.data(),
-                                            digital);
+        checker.template check<int>(MasterAttributes::N_DIGITAL.data(),
+                                    static_cast<int>(digital));
     if (trans)
-        checker.template check<std::string>(
-            MasterAttributes::N_TRANSCEIVER.data(), trans);
+        checker.template check<int>(MasterAttributes::N_TRANSCEIVER.data(),
+                                    static_cast<int>(trans));
 }
 
 template <typename CheckerT>
@@ -275,7 +276,7 @@ void check_dbit_list(CheckerT &checker, const std::vector<int> &value) {
     for (auto &i : value) {
         dbit_bitset |= (static_cast<uint64_t>(1) << i);
     }
-    checker.template check<uint64_t>(MasterAttributes::N_DBIT_LIST.data(),
+    checker.template check<uint64_t>(MasterAttributes::N_DBIT_BITSET.data(),
                                      dbit_bitset);
 }
 
@@ -285,34 +286,14 @@ void check_dbit_reorder(CheckerT &checker, const int &value) {
 }
 
 template <typename CheckerT>
-void check_metadata(CheckerT &checker, const acq::ExpectedState &expected) {
-    switch (expected.common_state.det_type) {
-    case defs::JUNGFRAU:
-        check_jungfrau_metadata(checker, expected);
-        break;
-    case defs::MOENCH:
-        check_moench_metadata(checker, expected);
-        break;
-    case defs::EIGER:
-        check_eiger_metadata(checker, expected);
-        break;
-    case defs::MYTHEN3:
-        check_mythen3_metadata(checker, expected);
-        break;
-    case defs::GOTTHARD2:
-        check_gotthard2_metadata(checker, expected);
-        break;
-    case defs::CHIPTESTBOARD:
-        check_ctb_metadata(checker, expected);
-        break;
-    default:
-        throw std::runtime_error(
-            "Unsupported detector type for metadata checks");
-    }
+void check_transceiver_mask(CheckerT &checker, const uint32_t &value) {
+    checker.template check<uint32_t>(
+        MasterAttributes::N_TRANSCEIVER_MASK.data(), value);
 }
 
 template <typename CheckerT>
-void check_common_metadata(CheckerT &checker, const acq::ExpectedState& expected) {
+void check_common_metadata(CheckerT &checker,
+                           const acq::ExpectedState &expected) {
     check_version(checker);
     auto st = expected.common_state;
     check_detector_type(checker, st.det_type);
@@ -329,7 +310,8 @@ void check_common_metadata(CheckerT &checker, const acq::ExpectedState& expected
 }
 
 template <typename CheckerT>
-void check_jungfrau_metadata(CheckerT &checker, const acq::ExpectedState& expected) {
+void check_jungfrau_metadata(CheckerT &checker,
+                             const acq::ExpectedState &expected) {
     const auto &st =
         std::get<acq::JungfrauExpectedState>(expected.detector_specific_state);
     check_rois(checker, st.rois);
@@ -341,7 +323,8 @@ void check_jungfrau_metadata(CheckerT &checker, const acq::ExpectedState& expect
 }
 
 template <typename CheckerT>
-void check_moench_metadata(CheckerT &checker, const acq::ExpectedState& expected) {
+void check_moench_metadata(CheckerT &checker,
+                           const acq::ExpectedState &expected) {
     const auto &st =
         std::get<acq::MoenchExpectedState>(expected.detector_specific_state);
     check_rois(checker, st.rois);
@@ -353,7 +336,8 @@ void check_moench_metadata(CheckerT &checker, const acq::ExpectedState& expected
 }
 
 template <typename CheckerT>
-void check_eiger_metadata(CheckerT &checker, const acq::ExpectedState& expected) {
+void check_eiger_metadata(CheckerT &checker,
+                          const acq::ExpectedState &expected) {
     const auto &st =
         std::get<acq::EigerExpectedState>(expected.detector_specific_state);
     check_rois(checker, st.rois);
@@ -371,7 +355,8 @@ void check_eiger_metadata(CheckerT &checker, const acq::ExpectedState& expected)
 }
 
 template <typename CheckerT>
-void check_mythen3_metadata(CheckerT &checker, const acq::ExpectedState& expected) {
+void check_mythen3_metadata(CheckerT &checker,
+                            const acq::ExpectedState &expected) {
     const auto &st =
         std::get<acq::Mythen3ExpectedState>(expected.detector_specific_state);
     check_rois(checker, st.rois);
@@ -387,7 +372,8 @@ void check_mythen3_metadata(CheckerT &checker, const acq::ExpectedState& expecte
 }
 
 template <typename CheckerT>
-void check_gotthard2_metadata(CheckerT &checker, const acq::ExpectedState& expected) {
+void check_gotthard2_metadata(CheckerT &checker,
+                              const acq::ExpectedState &expected) {
     const auto &st =
         std::get<acq::Gotthard2ExpectedState>(expected.detector_specific_state);
     check_rois(checker, st.rois);
@@ -422,14 +408,42 @@ void check_ctb_metadata(CheckerT &checker, const acq::ExpectedState &expected) {
     check_digital_samples(checker, st.ctb_acq_state.num_dbit_samples);
     check_transceiver_samples(checker, st.ctb_acq_state.num_trans_samples);
     check_dbit_offset(checker, st.ctb_acq_state.dbit_offset);
-    check_dbit_bitset(checker, st.ctb_acq_state.dbit_list);
+    check_dbit_list(checker, st.ctb_acq_state.dbit_list);
     check_dbit_reorder(checker, st.ctb_acq_state.dbit_reorder);
     check_transceiver_mask(checker, st.ctb_acq_state.transceiver_mask);
 }
 
-void check_binary_file_size(
-    const int expected_image_size, const int64_t num_frames,
-    const acq::FileState &st = acq::default_file_state()) {
+template <typename CheckerT>
+void check_metadata(CheckerT &checker, const acq::ExpectedState &expected) {
+    check_common_metadata(checker, expected);
+    switch (expected.common_state.det_type) {
+    case defs::JUNGFRAU:
+        check_jungfrau_metadata(checker, expected);
+        break;
+    case defs::MOENCH:
+        check_moench_metadata(checker, expected);
+        break;
+    case defs::EIGER:
+        check_eiger_metadata(checker, expected);
+        break;
+    case defs::MYTHEN3:
+        check_mythen3_metadata(checker, expected);
+        break;
+    case defs::GOTTHARD2:
+        check_gotthard2_metadata(checker, expected);
+        break;
+    case defs::CHIPTESTBOARD:
+        check_ctb_metadata(checker, expected);
+        break;
+    default:
+        throw std::runtime_error(
+            "Unsupported detector type for metadata checks");
+    }
+}
+
+inline void
+check_binary_file_size(const int expected_image_size, const int64_t num_frames,
+                       const acq::FileState &st = acq::default_file_state()) {
     assert(st.file_format == defs::BINARY);
     auto fname = acq::get_first_port_first_file_name(st);
     auto expected_file_size =

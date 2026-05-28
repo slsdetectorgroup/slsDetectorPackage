@@ -15,11 +15,11 @@ defs::detectorType get_detector_type(const Detector &det) {
     return det.getDetectorType().tsquash("Inconsistent detector type");
 }
 
-defs::xy get_geometry (const Detector& det) {
+defs::xy get_geometry(const Detector &det) {
     auto modGeometry = det.getModuleGeometry();
     auto portperModGeometry = det.getPortPerModuleGeometry();
     return defs::xy{modGeometry.x * portperModGeometry.x,
-                            modGeometry.y * portperModGeometry.y};
+                    modGeometry.y * portperModGeometry.y};
 }
 
 int get_dynamic_range(const Detector &det) {
@@ -126,7 +126,8 @@ ns get_period(const Detector &det) {
 }
 
 int get_num_udp_interfaces(const Detector &det) {
-    return det.getNumberofUDPInterfaces().tsquash("Inconsistent number of UDP interfaces");
+    return det.getNumberofUDPInterfaces().tsquash(
+        "Inconsistent number of UDP interfaces");
 }
 
 int get_read_n_rows(const Detector &det) {
@@ -141,7 +142,7 @@ bool ten_giga(const Detector &det) {
     return det.getTenGiga().tsquash("Inconsistent 10Giga setting");
 }
 
-std::pair<ns, ns> get_sub_exptime_and_sub_period(const Detector& det) {
+std::pair<ns, ns> get_sub_exptime_and_sub_period(const Detector &det) {
     auto exptime = det.getSubExptime().tsquash("Inconsistent sub exptime");
     auto deadtime = det.getSubDeadTime().tsquash("Inconsistent sub deadtime");
     auto sub_period = exptime + deadtime;
@@ -158,17 +159,19 @@ acq::CommonExpectedState build_common_state(const Detector &det,
     e.port_shape = get_port_shape(det);
     e.max_frames_per_file =
         det.getFramesPerFile().tsquash("Inconsistent frames per file");
-    e.frame_discard_policy = det.getRxFrameDiscardPolicy().tsquash("Inconsistent frame discard policy");
+    e.frame_discard_policy = det.getRxFrameDiscardPolicy().tsquash(
+        "Inconsistent frame discard policy");
     e.partial_frames_padding = static_cast<int>(
         det.getPartialFramesPadding().tsquash("Inconsistent frame padding"));
     e.scan_parameters = det.getScan().tsquash("Inconsistent scan parameters");
     e.total_frames = get_total_frames(det);
     e.frames_in_file = det.getFramesCaught()[0][0];
-    e.additional_json_header = det.getAdditionalJsonHeader().tsquash("Inconsistent JSON header");
+    e.additional_json_header =
+        det.getAdditionalJsonHeader().tsquash("Inconsistent JSON header");
     return e;
 }
 
-acq::JungfrauExpectedState build_jungfrau_specific_state(const Detector& det) {
+acq::JungfrauExpectedState build_jungfrau_specific_state(const Detector &det) {
     acq::JungfrauExpectedState e;
     e.rois = get_rois(det);
     e.exptime = get_exptime(det);
@@ -179,7 +182,7 @@ acq::JungfrauExpectedState build_jungfrau_specific_state(const Detector& det) {
     return e;
 }
 
-acq::MoenchExpectedState build_moench_specific_state(const Detector& det) {
+acq::MoenchExpectedState build_moench_specific_state(const Detector &det) {
     acq::MoenchExpectedState e;
     e.rois = get_rois(det);
     e.exptime = get_exptime(det);
@@ -190,14 +193,15 @@ acq::MoenchExpectedState build_moench_specific_state(const Detector& det) {
     return e;
 }
 
-acq::EigerExpectedState build_eiger_specific_state(const Detector& det) {
+acq::EigerExpectedState build_eiger_specific_state(const Detector &det) {
     acq::EigerExpectedState e;
     e.rois = get_rois(det);
     e.dynamic_range = get_dynamic_range(det);
     e.ten_giga = ten_giga(det);
     e.exptime = get_exptime(det);
     e.period = get_period(det);
-    e.threshold_energy = det.getThresholdEnergy().tsquash("Inconsistent threshold energy");
+    e.threshold_energy =
+        det.getThresholdEnergy().tsquash("Inconsistent threshold energy");
     auto [sub_exptime, sub_period] = get_sub_exptime_and_sub_period(det);
     e.sub_exptime = sub_exptime;
     e.sub_period = sub_period;
@@ -211,22 +215,28 @@ acq::EigerExpectedState build_eiger_specific_state(const Detector& det) {
     return e;
 }
 
-acq::Mythen3ExpectedState build_mythen3_specific_state(const Detector& det) {
+acq::Mythen3ExpectedState build_mythen3_specific_state(const Detector &det) {
     acq::Mythen3ExpectedState e;
     e.rois = get_rois(det);
     e.dynamic_range = get_dynamic_range(det);
     e.ten_giga = ten_giga(det);
     e.period = get_period(det);
-    e.counter_mask = det.getCounterMask().tsquash("Inconsistent counter mask for Mythen3 detector");
-    e.exp_times = det.getExptimeForAllGates().tsquash("Inconsistent exposure times for all gates");
-    e.gate_delays = det.getGateDelayForAllGates().tsquash("Inconsistent gate delays");
-    e.num_gates = det.getNumberOfGates().tsquash("Inconsistent number of gates for Mythen3 detector");
-    e.threshold_energies = det.getAllThresholdEnergy().tsquash("Inconsistent threshold energies");
+    e.counter_mask = det.getCounterMask().tsquash(
+        "Inconsistent counter mask for Mythen3 detector");
+    e.exp_times = det.getExptimeForAllGates().tsquash(
+        "Inconsistent exposure times for all gates");
+    e.gate_delays =
+        det.getGateDelayForAllGates().tsquash("Inconsistent gate delays");
+    e.num_gates = det.getNumberOfGates().tsquash(
+        "Inconsistent number of gates for Mythen3 detector");
+    e.threshold_energies =
+        det.getAllThresholdEnergy().tsquash("Inconsistent threshold energies");
     e.readout_speed = get_readout_speed(det);
     return e;
 }
 
-acq::Gotthard2ExpectedState build_gotthard2_specific_state(const Detector& det) {
+acq::Gotthard2ExpectedState
+build_gotthard2_specific_state(const Detector &det) {
     acq::Gotthard2ExpectedState e;
     e.rois = get_rois(det);
     e.exptime = get_exptime(det);
@@ -236,7 +246,8 @@ acq::Gotthard2ExpectedState build_gotthard2_specific_state(const Detector& det) 
     return e;
 }
 
-acq::CTBExpectedState build_ctb_specific_state(const Detector& det, const acq::CTBState& ctb_state) {
+acq::CTBExpectedState build_ctb_specific_state(const Detector &det,
+                                               const acq::CTBState &ctb_state) {
     acq::CTBExpectedState e;
     e.exptime = get_exptime(det);
     e.period = get_period(det);
@@ -244,31 +255,34 @@ acq::CTBExpectedState build_ctb_specific_state(const Detector& det, const acq::C
     return e;
 }
 
-acq::DetectorSpecificState build_detector_specific_state(const Detector& det, const acq::CTBState& ctb_state) {
+acq::DetectorSpecificState
+build_detector_specific_state(const Detector &det,
+                              const acq::CTBState &ctb_state) {
     switch (det.getDetectorType().tsquash("bad type")) {
-        case defs::JUNGFRAU:
-            return build_jungfrau_specific_state(det);
-        case defs::MOENCH:
-            return build_moench_specific_state(det);
-        case defs::EIGER:
-            return build_eiger_specific_state(det);
-        case defs::MYTHEN3:
-            return build_mythen3_specific_state(det);
-        case defs::GOTTHARD2:
-            return build_gotthard2_specific_state(det);
-        case defs::CHIPTESTBOARD:
-        case defs::XILINX_CHIPTESTBOARD:
-            return build_ctb_specific_state(det, ctb_state);
+    case defs::JUNGFRAU:
+        return build_jungfrau_specific_state(det);
+    case defs::MOENCH:
+        return build_moench_specific_state(det);
+    case defs::EIGER:
+        return build_eiger_specific_state(det);
+    case defs::MYTHEN3:
+        return build_mythen3_specific_state(det);
+    case defs::GOTTHARD2:
+        return build_gotthard2_specific_state(det);
+    case defs::CHIPTESTBOARD:
+    case defs::XILINX_CHIPTESTBOARD:
+        return build_ctb_specific_state(det, ctb_state);
     }
     throw sls::RuntimeError("Unsupported detector type");
 }
 } // anonymous namespace
 
-
-
 namespace sls::test::acquire {
 
-ExpectedState build_expected_state(const Detector& det, const AcquisitionState &acq_state, const FileState &file_state, const CTBState &ctb_state) {
+ExpectedState build_expected_state(const Detector &det,
+                                   const AcquisitionState &acq_state,
+                                   const FileState &file_state,
+                                   const CTBState &ctb_state) {
     ExpectedState e;
     e.common_state = build_common_state(det, ctb_state);
     e.file_state = file_state;

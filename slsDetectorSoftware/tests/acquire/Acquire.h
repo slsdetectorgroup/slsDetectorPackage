@@ -11,13 +11,6 @@ namespace sls::test::acquire {
 class FileState;
 class CTBState;
 
-void wait_until_idle(const Detector &det);
-void run_acquisition(Detector &det);
-void run(Detector &det,
-         const AcquisitionState &acq_state = default_acquisition_state(),
-         const FileState &file_state = default_file_state(),
-         const CTBState &ctb_state = default_ctb_state());
-
 struct AcquisitionState {
     int64_t num_frames;
 };
@@ -51,5 +44,12 @@ class AcquisitionStateGuard {
     Detector &det;
     AcquisitionState saved_;
 };
+
+void wait_until_idle(const Detector &det);
+void run_acquisition(Detector &det);
+void run(Detector &det, const AcquisitionState &acq_state,
+         const FileState &file_state);
+void run(Detector &det, const AcquisitionState &acq_state,
+         const FileState &file_state, const CTBState &ctb_state);
 
 } // namespace sls::test::acquire

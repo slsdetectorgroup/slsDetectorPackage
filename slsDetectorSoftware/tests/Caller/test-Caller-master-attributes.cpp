@@ -25,7 +25,6 @@ namespace mf = sls::test::master_file;
 namespace acq = sls::test::acquire;
 namespace checks = sls::test::checks;
 
-
 TEST_CASE("check_master_file_attributes",
           "[.detectorintegration][.disable_check_data_file]") {
 

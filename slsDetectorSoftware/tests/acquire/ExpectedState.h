@@ -3,16 +3,16 @@
 
 #pragma once
 
+#include "Acquire.h"
 #include "CTBState.h"
 #include "FileState.h"
-#include "Acquire.h"
 
 #include <variant>
 
 namespace sls::test::acquire {
 
 struct CommonExpectedState {
-    defs::detectorType det_type{};  
+    defs::detectorType det_type{};
     defs::timingMode timing_mode{};
     defs::xy geometry{};
     int image_size{};
@@ -86,13 +86,10 @@ struct CTBExpectedState {
     CTBState ctb_acq_state{};
 };
 
-using DetectorSpecificState = std::variant<
-    JungfrauExpectedState, 
-    MoenchExpectedState, 
-    EigerExpectedState, 
-    Mythen3ExpectedState,
-    Gotthard2ExpectedState, 
-    CTBExpectedState>;
+using DetectorSpecificState =
+    std::variant<JungfrauExpectedState, MoenchExpectedState, EigerExpectedState,
+                 Mythen3ExpectedState, Gotthard2ExpectedState,
+                 CTBExpectedState>;
 
 struct ExpectedState {
     FileState file_state{};
@@ -102,7 +99,7 @@ struct ExpectedState {
 };
 
 template <typename T>
-const T& get_detector_specific_state(const ExpectedState& expected_state) {
+const T &get_detector_specific_state(const ExpectedState &expected_state) {
     return std::get<T>(expected_state.detector_specific_state);
 }
 
@@ -110,7 +107,11 @@ template <typename T> bool is_type(const ExpectedState &e) {
     return std::holds_alternative<T>(e.detector_specific_state);
 }
 
-ExpectedState build_expected_state(const Detector& det, const AcquisitionState &acq_state = default_acquisition_state(), const FileState &file_state = default_file_state(), const CTBState &ctb_state = default_ctb_state());
+ExpectedState build_expected_state(
+    const Detector &det,
+    const AcquisitionState &acq_state = default_acquisition_state(),
+    const FileState &file_state = default_file_state(),
+    const CTBState &ctb_state = default_ctb_state());
 
 int get_expected_image_size(const Detector &det,
                             const CTBState &ctb_state = default_ctb_state());

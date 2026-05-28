@@ -10,7 +10,9 @@
 
 #include "acquire/Acquire.h"
 #include "acquire/CTBState.h"
+#include "acquire/ExpectedState.h"
 #include "acquire/FileState.h"
+#include "checks/MasterFileChecks.h"
 
 #include <filesystem>
 #include <sstream>
@@ -18,6 +20,7 @@
 namespace sls {
 
 namespace acq = sls::test::acquire;
+namespace checks = sls::test::checks;
 
 using test::GET;
 using test::PUT;
@@ -25,140 +28,32 @@ using test::PUT;
 // disable for jungfrau as it requires higher maximum receive buffer size
 //  sysctl net.core.rmem_max=$((100*1024*1024))
 //  sysctl net.core.rmem_default=$((100*1024*1024))
-TEST_CASE("jungfrau_or_moench_acquire_check_file_size",
+TEST_CASE("acquire_check_binary_file_size",
           "[.detectorintegration][.disable_check_data_file]") {
 
     Detector det;
-    Caller caller(&det);
     auto det_type =
         det.getDetectorType().tsquash("Inconsistent detector types to test");
-
-    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
-
-        auto num_udp_interfaces = det.getNumberofUDPInterfaces().tsquash(
-            "inconsistent number of udp interfaces");
-
-        int64_t num_frames_to_acquire = 2;
-        auto f = acq::default_file_state();
-        acq::run(det, num_frames_to_acquire, f);
-
-        // check file size (assuming local pc)
-        {
-            detParameters par(det_type);
-            int bytes_per_pixel = det.getDynamicRange().squash() / 8;
-            // if 2 udp interfaces, data split into half
-            size_t expected_image_size = (par.nChanX * par.nChanY * par.nChipX *
-                                          par.nChipY * bytes_per_pixel) /
-                                         num_udp_interfaces;
-            REQUIRE_NOTHROW(test_acquire_binary_file_size(
-                f, num_frames_to_acquire, expected_image_size));
-        }
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
+        // skip for CTB as it has different tests for file size
+        return;
     }
-}
-
-TEST_CASE("eiger_acquire_check_file_size",
-          "[.detectorintegration][.disable_check_data_file]") {
-    Detector det;
-    Caller caller(&det);
-    auto det_type =
-        det.getDetectorType().tsquash("Inconsistent detector types to test");
-
-    if (det_type == defs::EIGER) {
-
-        int dynamic_range = det.getDynamicRange().squash();
-        if (dynamic_range != 16) {
-            throw RuntimeError(
-                "Eiger detector must have dynamic range 16 to test");
-        }
-        int64_t num_frames_to_acquire = 2;
-        auto f = acq::default_file_state();
-        acq::run(det, num_frames_to_acquire, f);
-
-        // check file size (assuming local pc)
-        {
-            detParameters par(det_type);
-            // data split into half due to 2 udp interfaces per half module
-            int num_chips = (par.nChipX / 2);
-            int bytes_per_pixel = (dynamic_range / 8);
-            size_t expected_image_size =
-                par.nChanX * par.nChanY * num_chips * bytes_per_pixel;
-            REQUIRE_NOTHROW(test_acquire_binary_file_size(
-                f, num_frames_to_acquire, expected_image_size));
-        }
-    }
-}
-
-TEST_CASE("mythen3_acquire_check_file_size",
-          "[.detectorintegration][.disable_check_data_file]") {
-    Detector det;
-    Caller caller(&det);
-    auto det_type =
-        det.getDetectorType().tsquash("Inconsistent detector types to test");
-
-    if (det_type == defs::MYTHEN3) {
-
-        int dynamic_range = det.getDynamicRange().squash();
-        int counter_mask = det.getCounterMask().squash();
-        if (dynamic_range != 16 && counter_mask != 0x3) {
-            throw RuntimeError("Mythen3 detector must have dynamic range 16 "
-                               "and counter mask 0x3 to test");
-        }
-        int num_counters = __builtin_popcount(counter_mask);
-        int64_t num_frames_to_acquire = 2;
-        auto f = acq::default_file_state();
-        acq::run(det, num_frames_to_acquire, f);
-
-        // check file size (assuming local pc)
-        {
-            detParameters par(det_type);
-            int bytes_per_pixel = dynamic_range / 8;
-            int num_channels_per_counter = par.nChanX / 3;
-            size_t expected_image_size = num_channels_per_counter *
-                                         num_counters * par.nChipX *
-                                         bytes_per_pixel;
-            REQUIRE_NOTHROW(test_acquire_binary_file_size(
-                f, num_frames_to_acquire, expected_image_size));
-        }
-    }
-}
-
-TEST_CASE("gotthard2_acquire_check_file_size",
-          "[.detectorintegration][.disable_check_data_file]") {
-    Detector det;
-    Caller caller(&det);
-    auto det_type =
-        det.getDetectorType().tsquash("Inconsistent detector types to test");
-
-    if (det_type == defs::GOTTHARD2) {
-
-        int64_t num_frames_to_acquire = 2;
-        auto f = acq::default_file_state();
-        acq::run(det, num_frames_to_acquire, f);
-
-        // check file size (assuming local pc)
-        {
-            detParameters par(det_type);
-            int bytes_per_pixel = det.getDynamicRange().squash() / 8;
-            size_t expected_image_size =
-                par.nChanX * par.nChipX * bytes_per_pixel;
-            REQUIRE_NOTHROW(test_acquire_binary_file_size(
-                f, num_frames_to_acquire, expected_image_size));
-        }
-    }
+    auto acq_state = acq::default_acquisition_state();
+    acq_state.num_frames = 2;
+    acq::run(det, acq_state);
+    auto image_size = acq::get_expected_image_size(det);
+    checks::check_binary_file_size(image_size, acq_state.num_frames);
 }
 
 void test_ctb_file_size_with_acquire(Detector &det, int64_t num_frames,
                                      const acq::CTBState &test_info,
                                      bool isXilinxCtb) {
-
-    auto f = acq::default_file_state();
-    acq::run(det, num_frames, test_info, f);
-
-    // check file size (assuming local pc)
-    uint64_t expected_image_size =
-        calculate_ctb_image_size(test_info, isXilinxCtb).first;
-    REQUIRE_NOTHROW(
-        test_acquire_binary_file_size(f, num_frames, expected_image_size));
+    auto acq_state = acq::default_acquisition_state();
+    acq_state.num_frames = num_frames;
+    acq::run(det, acq_state);
+    auto image_size = acq::get_expected_image_size(det, test_info);
+    checks::check_binary_file_size(image_size, acq_state.num_frames);
 }
 
 // disable for xilinx_ctb as it requires higher maximum receive buffer size

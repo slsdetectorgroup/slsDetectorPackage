@@ -18,8 +18,8 @@ struct CommonExpectedState {
     int image_size{};
     defs::xy port_shape{};
     int max_frames_per_file{};
-    int frame_discard_policy{};
-    int partial_frames_padding{};
+    defs::frameDiscardPolicy frame_discard_policy{};
+    bool partial_frames_padding{};
     defs::scanParameters scan_parameters{};
     uint64_t total_frames{};
     uint64_t frames_in_file{};
@@ -106,6 +106,13 @@ const T& get_detector_specific_state(const ExpectedState& expected_state) {
     return std::get<T>(expected_state.detector_specific_state);
 }
 
+template <typename T> bool is_type(const ExpectedState &e) {
+    return std::holds_alternative<T>(e.detector_specific_state);
+}
+
 ExpectedState build_expected_state(const Detector& det, const AcquisitionState &acq_state = default_acquisition_state(), const FileState &file_state = default_file_state(), const CTBState &ctb_state = default_ctb_state());
+
+int get_expected_image_size(const Detector &det,
+                            const CTBState &ctb_state = default_ctb_state());
 
 } // namespace sls::test::acquire

@@ -26,48 +26,6 @@ int get_dynamic_range(const Detector &det) {
     return det.getDynamicRange().tsquash("Inconsistent dynamic range");
 }
 
-int get_image_size(const Detector &det) {
-    auto det_type = get_detector_type(det);
-    auto dynamic_range = get_dynamic_range(det);
-    int bytes_per_pixel = dynamic_range / 8;
-    int image_size = 0;
-    detParameters par(det_type);
-
-    switch (det_type) {
-        case defs::EIGER: {
-            int num_chips = (par.nChipX / 2);
-            image_size = par.nChanX * par.nChanY * num_chips * bytes_per_pixel;
-        } break;
-        case defs::JUNGFRAU:
-        case defs::MOENCH: {
-            auto num_udp_interfaces = det.getNumberofUDPInterfaces().tsquash(
-                "inconsistent number of udp interfaces");
-            image_size = (par.nChanX * par.nChanY * par.nChipX * par.nChipY *
-                        bytes_per_pixel) /
-                        num_udp_interfaces;
-        } break;
-        case defs::MYTHEN3: {
-            int counter_mask = det.getCounterMask().squash();
-            int num_counters = __builtin_popcount(counter_mask);
-            int num_channels_per_counter = par.nChanX / MAX_NUM_COUNTERS;
-            image_size = num_channels_per_counter * num_counters * par.nChipX *
-                        bytes_per_pixel;
-        } break;
-        case defs::GOTTHARD2: {
-            image_size = par.nChanX * par.nChipX * bytes_per_pixel;
-        } break;
-        case defs::CHIPTESTBOARD:
-        case defs::XILINX_CHIPTESTBOARD: {
-            acq::CTBState test_info = acq::default_ctb_state();
-            image_size = sls::calculate_ctb_image_size(
-                            test_info, (det_type == defs::XILINX_CHIPTESTBOARD))
-                            .first;
-        } break;
-        default:
-            throw sls::RuntimeError("Unsupported detector type for this test");
-    }
-}
-
 defs::xy get_port_shape(const Detector &det) {
     auto det_type = get_detector_type(det);
     auto portSize = det.getPortSize()[0];
@@ -190,12 +148,13 @@ std::pair<ns, ns> get_sub_exptime_and_sub_period(const Detector& det) {
     return std::make_pair(ns(exptime), ns(sub_period));
 }
 
-acq::CommonExpectedState build_common_state(const Detector& det) {
+acq::CommonExpectedState build_common_state(const Detector &det,
+                                            const acq::CTBState &ctb_state) {
     acq::CommonExpectedState e;
     e.det_type = get_detector_type(det);
     e.timing_mode = det.getTimingMode().tsquash("Inconsistent timing mode");
     e.geometry = get_geometry(det);
-    e.image_size = get_image_size(det);
+    e.image_size = acq::get_expected_image_size(det, ctb_state);
     e.port_shape = get_port_shape(det);
     e.max_frames_per_file =
         det.getFramesPerFile().tsquash("Inconsistent frames per file");
@@ -311,11 +270,53 @@ namespace sls::test::acquire {
 
 ExpectedState build_expected_state(const Detector& det, const AcquisitionState &acq_state, const FileState &file_state, const CTBState &ctb_state) {
     ExpectedState e;
-    e.common_state = build_common_state(det);
+    e.common_state = build_common_state(det, ctb_state);
     e.file_state = file_state;
     e.acquisition_state = acq_state;
     e.detector_specific_state = build_detector_specific_state(det, ctb_state);
     return e;
+}
+
+int get_expected_image_size(const Detector &det, const CTBState &ctb_state) {
+    auto det_type = get_detector_type(det);
+    auto dynamic_range = get_dynamic_range(det);
+    int bytes_per_pixel = dynamic_range / 8;
+    int image_size = 0;
+    detParameters par(det_type);
+
+    switch (det_type) {
+    case defs::EIGER: {
+        int num_chips = (par.nChipX / 2);
+        image_size = par.nChanX * par.nChanY * num_chips * bytes_per_pixel;
+    } break;
+    case defs::JUNGFRAU:
+    case defs::MOENCH: {
+        auto num_udp_interfaces = det.getNumberofUDPInterfaces().tsquash(
+            "inconsistent number of udp interfaces");
+        image_size = (par.nChanX * par.nChanY * par.nChipX * par.nChipY *
+                      bytes_per_pixel) /
+                     num_udp_interfaces;
+    } break;
+    case defs::MYTHEN3: {
+        int counter_mask = det.getCounterMask().squash();
+        int num_counters = __builtin_popcount(counter_mask);
+        int num_channels_per_counter = par.nChanX / MAX_NUM_COUNTERS;
+        image_size = num_channels_per_counter * num_counters * par.nChipX *
+                     bytes_per_pixel;
+    } break;
+    case defs::GOTTHARD2: {
+        image_size = par.nChanX * par.nChipX * bytes_per_pixel;
+    } break;
+    case defs::CHIPTESTBOARD:
+        image_size = sls::calculate_ctb_image_size(ctb_state, false).first;
+        break;
+    case defs::XILINX_CHIPTESTBOARD: {
+        image_size = sls::calculate_ctb_image_size(ctb_state, true).first;
+    } break;
+    default:
+        throw sls::RuntimeError("Unsupported detector type for this test");
+    }
+    return image_size;
 }
 
 } // namespace sls::test::acquire

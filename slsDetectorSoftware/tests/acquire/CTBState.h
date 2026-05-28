@@ -12,10 +12,10 @@ namespace sls::test::acquire {
 
 struct CTBState {
     defs::readoutMode readout_mode;
-    bool ten_giga;
     int num_adc_samples;
     int num_dbit_samples;
     int num_trans_samples;
+    bool ten_giga;
     uint32_t adc_enable_1g;
     uint32_t adc_enable_10g;
     int dbit_offset;
@@ -25,30 +25,22 @@ struct CTBState {
 };
 
 inline CTBState default_ctb_state(bool isAltera = false) {
-    return {defs::ANALOG_AND_DIGITAL,
-            isAltera ? false : true,
-            5000,
-            6000,
-            288,
-            0xFFFFFF00,
-            0xFF00FFFF,
-            0,
-            {0, 12, 2, 43},
-            false,
-            0x3};
+    return {defs::ANALOG_AND_DIGITAL, 5000,       6000,       288,
+            isAltera ? false : true,  0xFFFFFF00, 0xFF00FFFF, 0,
+            {0, 12, 2, 43},           false,      0x3};
 }
 
 inline CTBState get_ctb_state(const Detector &det, bool isAltera) {
     return CTBState{
         det.getReadoutMode().tsquash("Inconsistent readout mode"),
-        isAltera ? det.getTenGiga().tsquash("Inconsisten ten giga enable")
-                 : true,
         det.getNumberOfAnalogSamples().tsquash(
             "Inconsistent number of analog samples"),
         det.getNumberOfDigitalSamples().tsquash(
             "Inconsistent number of digital samples"),
         det.getNumberOfTransceiverSamples().tsquash(
             "Inconsistent number of transceiver samples"),
+        isAltera ? det.getTenGiga().tsquash("Inconsisten ten giga enable")
+                 : true,
         isAltera
             ? det.getADCEnableMask().tsquash("Inconsistent adc enable mask")
             : 0,
@@ -80,10 +72,10 @@ inline void set_ctb_state(Detector &det, const CTBState &s, bool isAltera) {
 inline void print_ctb_state(const CTBState &s) {
     LOG(logINFO) << "CTB State:"
                  << "\n  Readout Mode: " << ToString(s.readout_mode)
-                 << "\n  Ten Giga: " << s.ten_giga
                  << "\n  Num ADC Samples: " << s.num_adc_samples
                  << "\n  Num DBIT Samples: " << s.num_dbit_samples
                  << "\n  Num Trans Samples: " << s.num_trans_samples
+                 << "\n  Ten Giga: " << s.ten_giga
                  << "\n  ADC Enable 1G: " << ToStringHex(s.adc_enable_1g)
                  << "\n  ADC Enable 10G: " << ToStringHex(s.adc_enable_10g)
                  << "\n  DBIT Offset: " << s.dbit_offset

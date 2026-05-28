@@ -98,19 +98,6 @@ void test_onchip_dac_caller(defs::dacIndex index, const std::string &dacname,
     }
 }
 
-void test_acquire_binary_file_size(const acq::FileState &file_info,
-                                   uint64_t num_frames_to_acquire,
-                                   uint64_t expected_image_size) {
-    assert(file_info.file_format == defs::BINARY);
-    std::string fname = file_info.file_path + "/" + file_info.file_prefix +
-                        "_d0_f0_" + std::to_string(file_info.file_acq_index) +
-                        ".raw";
-    uint64_t expected_file_size =
-        num_frames_to_acquire *
-        (expected_image_size + sizeof(defs::sls_receiver_header));
-    auto actual_file_size = std::filesystem::file_size(fname);
-    REQUIRE(actual_file_size == expected_file_size);
-}
 
 std::pair<uint64_t, int>
 calculate_ctb_image_size(const acq::CTBState &test_info, bool isXilinxCtb) {

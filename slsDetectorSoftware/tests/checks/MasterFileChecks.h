@@ -12,6 +12,12 @@ namespace sls::test::checks {
 namespace acq = sls::test::acquire;
 namespace mf = sls::test::master_file;
 
+
+
+inline bool operator==(sls::ns lhs, sls::ns rhs) {
+    return lhs.count() == rhs.count();
+}
+
 // different values based on file format
 template <typename CheckerT>
 void check_version(CheckerT &checker) {

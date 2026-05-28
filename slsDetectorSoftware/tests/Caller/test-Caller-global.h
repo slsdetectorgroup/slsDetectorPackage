@@ -30,10 +30,6 @@ void test_dac_caller(slsDetectorDefs::dacIndex index,
 void test_onchip_dac_caller(slsDetectorDefs::dacIndex index,
                             const std::string &dacname, int dacvalue);
 
-void test_acquire_binary_file_size(const acq::FileState &file_info,
-                                   uint64_t num_frames_to_acquire,
-                                   uint64_t expected_image_size);
-
 std::pair<uint64_t, int>
 calculate_ctb_image_size(const acq::CTBState &test_info, bool isXilinxCtb);
 

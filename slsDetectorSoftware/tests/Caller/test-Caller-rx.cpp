@@ -837,20 +837,22 @@ TEST_CASE("rx_roi", "[.detectorintegration][.disable_check_data_file]") {
         // check master file creation
         // TODO: check roi in master file
         {
-            auto f = acq::default_file_state();
-            int64_t num_frames = 1;
-            REQUIRE_NOTHROW(acq::run(det, num_frames, f));
-            std::string master_file_prefix =
-                acq::get_master_file_name_prefix(f);
+            auto acq_state = acq::default_acquisition_state();
+            auto file_state = acq::default_file_state();
 
-            std::string fname = master_file_prefix + ".json";
-            REQUIRE(std::filesystem::exists(fname) == true);
+            file_state.file_format = defs::BINARY;
+            acq::run(det, acq_state.num_frames, file_state);
+            std::string fname = acq::get_master_file_name(file_state);
+            REQUIRE(std::filesystem::exists(fname));
+
 #ifdef HDF5C
-            fname = master_file_prefix + ".h5";
-            REQUIRE(std::filesystem::exists(fname) == true);
+            file_state.file_format = defs::HDF5;
+            acq::run(det, acq_state.num_frames, file_state);
+            std::string fname = acq::get_master_file_name(file_state);
+            REQUIRE(std::filesystem::exists(fname));
             if (det.size() > 1 || numinterfaces > 1) {
-                fname = acq::get_virtual_file_name(f);
-                REQUIRE(std::filesystem::exists(fname) == true);
+                fname = acq::get_virtual_file_name(file_state);
+                REQUIRE(std::filesystem::exists(fname));
             }
 #endif
         }

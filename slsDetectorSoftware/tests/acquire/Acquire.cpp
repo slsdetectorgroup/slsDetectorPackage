@@ -34,7 +34,7 @@ void run_acquisition(Detector &det) {
 
 void run(Detector &det, const AcquisitionState &acq_state,
          const FileState &file_state, const CTBState &ctb_state) {
-    CTBStateGuard ctb_guard(det, ctb_state);
+    //CTBStateGuard ctb_guard(det, ctb_state);
     FileStateGuard file_guard(det, file_state);
     AcquisitionStateGuard acq_guard(det, acq_state);
     run_acquisition(det);

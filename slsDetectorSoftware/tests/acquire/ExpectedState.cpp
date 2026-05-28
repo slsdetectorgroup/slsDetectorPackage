@@ -138,7 +138,7 @@ defs::speedLevel get_readout_speed(const Detector &det) {
     return det.getReadoutSpeed().tsquash("Inconsistent readout speed");
 }
 
-bool ten_giga(const Detector &det) {
+bool get_ten_giga(const Detector &det) {
     return det.getTenGiga().tsquash("Inconsistent 10Giga setting");
 }
 
@@ -197,7 +197,7 @@ acq::EigerExpectedState build_eiger_specific_state(const Detector &det) {
     acq::EigerExpectedState e;
     e.rois = get_rois(det);
     e.dynamic_range = get_dynamic_range(det);
-    e.ten_giga = ten_giga(det);
+    e.ten_giga = get_ten_giga(det);
     e.exptime = get_exptime(det);
     e.period = get_period(det);
     e.threshold_energy =
@@ -219,7 +219,7 @@ acq::Mythen3ExpectedState build_mythen3_specific_state(const Detector &det) {
     acq::Mythen3ExpectedState e;
     e.rois = get_rois(det);
     e.dynamic_range = get_dynamic_range(det);
-    e.ten_giga = ten_giga(det);
+    e.ten_giga = get_ten_giga(det);
     e.period = get_period(det);
     e.counter_mask = det.getCounterMask().tsquash(
         "Inconsistent counter mask for Mythen3 detector");
@@ -272,8 +272,9 @@ build_detector_specific_state(const Detector &det,
     case defs::CHIPTESTBOARD:
     case defs::XILINX_CHIPTESTBOARD:
         return build_ctb_specific_state(det, ctb_state);
+    default:
+     throw sls::RuntimeError("Unsupported detector type");
     }
-    throw sls::RuntimeError("Unsupported detector type");
 }
 } // anonymous namespace
 

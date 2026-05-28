@@ -79,6 +79,12 @@ inline void print_file_state(const FileState &s) {
                  << "\n  Virtual File: " << get_virtual_file_name(s);
 }
 
+/**
+ * @brief RAII guard for restoring the file state of a detector.
+ *
+ * The constructor saves the current file state and sets a new state, while the
+ * destructor restores the original state.
+ */
 class FileStateGuard {
   public:
     explicit FileStateGuard(Detector &det, const FileState &new_state)

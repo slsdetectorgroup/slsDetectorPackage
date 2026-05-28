@@ -24,6 +24,7 @@ struct CTBState {
     uint32_t transceiver_mask;
 };
 
+/** an example of CTB config */
 inline CTBState default_ctb_state(bool isAltera = false) {
     return {defs::ANALOG_AND_DIGITAL, 5000,       6000,       288,
             isAltera ? false : true,  0xFFFFFF00, 0xFF00FFFF, 0,
@@ -84,6 +85,12 @@ inline void print_ctb_state(const CTBState &s) {
                  << "\n  Transceiver Mask: " << ToStringHex(s.transceiver_mask);
 }
 
+/**
+ * @brief RAII guard for restoring the existing ctb configuration after a test.
+ *
+ * The constructor saves the current ctb config and sets a new config, while the
+ * destructor restores the original config.
+ */
 class CTBStateGuard {
   public:
     explicit CTBStateGuard(Detector &det, const CTBState &new_state)

@@ -31,6 +31,12 @@ inline void print_acquisition_state(const AcquisitionState &s) {
                  << "\n  Number of Frames: " << s.num_frames;
 }
 
+/**
+ * @brief RAII guard for restoring the acquisition state of a detector.
+ * The constructor saves the current acquisition state and sets a new state,
+ * while the destructor restores the original state.
+ *
+ */
 class AcquisitionStateGuard {
   public:
     explicit AcquisitionStateGuard(Detector &det,

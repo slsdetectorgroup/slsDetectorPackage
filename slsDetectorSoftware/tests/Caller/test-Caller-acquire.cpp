@@ -2,11 +2,6 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "Caller.h"
 #include "catch.hpp"
-#include "sls/Detector.h"
-#include "sls/sls_detector_defs.h"
-#include "sls/versionAPI.h"
-#include "test-Caller-global.h"
-#include "tests/globals.h"
 
 #include "acquire/Acquire.h"
 #include "acquire/CTBState.h"
@@ -14,16 +9,10 @@
 #include "acquire/FileState.h"
 #include "checks/MasterFileChecks.h"
 
-#include <filesystem>
-#include <sstream>
-
 namespace sls {
 
 namespace acq = sls::test::acquire;
 namespace checks = sls::test::checks;
-
-using test::GET;
-using test::PUT;
 
 void acquire_and_check_file_size(
     Detector &det, const acq::CTBState &ctb_state = acq::default_ctb_state()) {

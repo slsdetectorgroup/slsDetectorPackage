@@ -3,10 +3,11 @@
 #include "test-Caller-global.h"
 #include "Caller.h"
 #include "GeneralData.h"
-#include "catch.hpp"
 #include "sls/Detector.h"
 #include "sls/logger.h"
 #include "tests/globals.h"
+
+#include "catch.hpp"
 
 namespace sls {
 

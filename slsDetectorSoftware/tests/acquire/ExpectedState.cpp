@@ -274,7 +274,7 @@ build_detector_specific_state(const Detector &det,
     case defs::XILINX_CHIPTESTBOARD:
         return build_ctb_specific_state(det, ctb_state);
     default:
-     throw sls::RuntimeError("Unsupported detector type");
+        throw sls::RuntimeError("Unsupported detector type");
     }
 }
 } // anonymous namespace

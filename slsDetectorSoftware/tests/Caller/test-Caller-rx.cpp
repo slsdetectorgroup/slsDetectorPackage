@@ -1,17 +1,16 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "Caller.h"
-#include "catch.hpp"
 #include "sls/Detector.h"
 #include "sls/Version.h"
-#include "sls/sls_detector_defs.h"
-#include "test-Caller-global.h"
-
-#include <filesystem>
-#include <sstream>
-
 #include "sls/versionAPI.h"
+#include "test-Caller-global.h"
 #include "tests/globals.h"
+
+#include "acquire/Acquire.h"
+#include "acquire/FileState.h"
+
+#include "catch.hpp"
 
 namespace sls {
 

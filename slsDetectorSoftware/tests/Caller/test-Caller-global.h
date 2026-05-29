@@ -2,15 +2,8 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #pragma once
 
-#include "Caller.h"
-#include "sls/Detector.h"
-#include "sls/ToString.h"
-#include "sls/logger.h"
-#include "sls/sls_detector_defs.h"
-
-#include "acquire/Acquire.h"
 #include "acquire/CTBState.h"
-#include "acquire/FileState.h"
+#include "sls/sls_detector_defs.h"
 
 #include <chrono>
 #include <filesystem>

@@ -5,6 +5,7 @@
 #include "Caller/test-Caller-global.h"
 #include "receiver_defs.h"
 
+// unnamed namespace for internal linkage
 namespace {
 using sls::defs;
 using sls::Detector;

@@ -1317,14 +1317,14 @@ void Detector::setTransmissionDelay(int step) {
     pimpl->setTransmissionDelay(step);
 }
 
-Result<bool> Detector::getDataStream(const defs::portPosition port,
-                                     Positions pos) const {
-    return pimpl->getDataStream(port, pos);
+Result<bool> Detector::getUDPDataStream(const defs::portPosition port,
+                                        Positions pos) const {
+    return pimpl->getUDPDataStream(port, pos);
 }
 
-void Detector::setDataStream(const defs::portPosition port, const bool enable,
-                             Positions pos) {
-    pimpl->setDataStream(port, enable, pos);
+void Detector::setUDPDataStream(const defs::portPosition port,
+                                const bool enable, Positions pos) {
+    pimpl->setUDPDataStream(port, enable, pos);
 }
 
 std::vector<int> Detector::getRxDisabledUDPPortIndices() const {

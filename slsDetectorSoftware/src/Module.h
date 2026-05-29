@@ -279,8 +279,8 @@ class Module : public virtual slsDetectorDefs {
     void setTransmissionDelayLeft(int value);
     int getTransmissionDelayRight() const;
     void setTransmissionDelayRight(int value);
-    bool getDataStream(const portPosition port) const;
-    void setDataStream(const portPosition port, const bool enable);
+    bool getUDPDataStream(const portPosition port) const;
+    void setUDPDataStream(const portPosition port, const bool enable);
     void updateRxUDPPortDisableMetadata(const std::vector<int> &disable);
     std::vector<int> getRxUDPPortDisableMetadata() const;
 

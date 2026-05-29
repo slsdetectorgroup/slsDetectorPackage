@@ -1407,11 +1407,11 @@ void Module::setTransmissionDelayRight(int value) {
     sendToDetector(F_SET_TRANSMISSION_DELAY_RIGHT, value, nullptr);
 }
 
-bool Module::getDataStream(const portPosition port) const {
+bool Module::getUDPDataStream(const portPosition port) const {
     // receiver only
     if (shm()->detType == JUNGFRAU || shm()->detType == MOENCH) {
         if (!shm()->useReceiverFlag) {
-            throw RuntimeError("No receiver to get datastream.");
+            throw RuntimeError("No receiver to get udp datastream.");
         }
         return sendToReceiver<int>(F_RECEIVER_GET_UDP_DATASTREAM,
                                    static_cast<int>(port));
@@ -1419,11 +1419,11 @@ bool Module::getDataStream(const portPosition port) const {
         return sendToDetector<int>(F_GET_DATASTREAM, static_cast<int>(port));
 }
 
-void Module::setDataStream(const portPosition port, const bool enable) {
+void Module::setUDPDataStream(const portPosition port, const bool enable) {
     int args[]{static_cast<int>(port), static_cast<int>(enable)};
     if (shm()->detType == JUNGFRAU || shm()->detType == MOENCH) {
         if (!shm()->useReceiverFlag) {
-            throw RuntimeError("No receiver to set datastream.");
+            throw RuntimeError("No receiver to set udp datastream.");
         }
         sendToReceiver(F_RECEIVER_SET_UDP_DATASTREAM, args, nullptr);
     } else {

@@ -2038,56 +2038,6 @@ dacvalues:
   help: ''
   infer_action: true
   is_description: true
-datastream:
-  actions:
-    GET:
-      args:
-      - arg_types:
-        - defs::portPosition
-        argc: 1
-        cast_input:
-        - true
-        check_det_id: false
-        convert_det_id: true
-        function: getDataStream
-        input:
-        - args[0]
-        input_types:
-        - defs::portPosition
-        output:
-        - OutString(t)
-        require_det_id: true
-        store_result_in_t: true
-    PUT:
-      args:
-      - arg_types:
-        - defs::portPosition
-        - bool
-        argc: 2
-        cast_input:
-        - true
-        - true
-        check_det_id: false
-        convert_det_id: true
-        function: setDataStream
-        input:
-        - args[0]
-        - args[1]
-        input_types:
-        - defs::portPosition
-        - bool
-        output:
-        - ToString(args)
-        require_det_id: true
-        store_result_in_t: false
-  command_name: datastream
-  function_alias: datastream
-  help: "[left|right|top|bottom] [0, 1]\n\t[Eiger] Enables or disables data streaming\
-    \ from left or/and right side of detector for 10 GbE mode. Options: left, right.\
-    \ 1 (enabled) by default.\n\t[Jungfrau][Moench] Enables or disables data stream\
-    \ from top or/and bottom side of receiver. Can change only if numinterfaces is\
-    \ 2. Options: top, bottom.1 (enabled) by default."
-  infer_action: true
 dbitclk:
   actions:
     GET:
@@ -12016,6 +11966,57 @@ udp_cleardst:
   help: "\n\tClears udp destination details on the detector."
   infer_action: true
   template: true
+udp_datastream:
+  actions:
+    GET:
+      args:
+      - arg_types:
+        - defs::portPosition
+        argc: 1
+        cast_input:
+        - true
+        check_det_id: false
+        convert_det_id: true
+        function: getUDPDataStream
+        input:
+        - args[0]
+        input_types:
+        - defs::portPosition
+        output:
+        - OutString(t)
+        require_det_id: true
+        store_result_in_t: true
+    PUT:
+      args:
+      - arg_types:
+        - defs::portPosition
+        - bool
+        argc: 2
+        cast_input:
+        - true
+        - true
+        check_det_id: false
+        convert_det_id: true
+        function: setUDPDataStream
+        input:
+        - args[0]
+        - args[1]
+        input_types:
+        - defs::portPosition
+        - bool
+        output:
+        - ToString(args)
+        require_det_id: true
+        store_result_in_t: false
+  command_name: udp_datastream
+  function_alias: udp_datastream
+  help: "[left|right|top|bottom] [0, 1]\n\t[Eiger] Enable or disable UDP data streaming\
+    \ from the left and/or right detector ports in 10 GbE mode. Options: left, right.\
+    \ Both ports are enabled (1) by default.\n\t[Jungfrau][Moench] Enable or disable\
+    \ UDP data streaming from the top and/or bottom receiver interfaces. This option\
+    \ is available only when numinterfaces is set to 2. Options: top, bottom. Both\
+    \ interfaces are enabled (1) by default."
+  infer_action: true
 udp_dstip:
   actions:
     GET:

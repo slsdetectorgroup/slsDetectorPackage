@@ -841,16 +841,19 @@ void init_det(py::module &m) {
     CppDetectorApi.def(
         "setTransmissionDelay",
         (void (Detector::*)(int)) & Detector::setTransmissionDelay, py::arg());
-    CppDetectorApi.def("getDataStream",
+    CppDetectorApi.def("getUDPDataStream",
                        (Result<bool>(Detector::*)(const defs::portPosition,
                                                   sls::Positions) const) &
-                           Detector::getDataStream,
+                           Detector::getUDPDataStream,
                        py::arg(), py::arg() = Positions{});
-    CppDetectorApi.def("setDataStream",
+    CppDetectorApi.def("setUDPDataStream",
                        (void (Detector::*)(const defs::portPosition, const bool,
                                            sls::Positions)) &
-                           Detector::setDataStream,
+                           Detector::setUDPDataStream,
                        py::arg(), py::arg(), py::arg() = Positions{});
+    CppDetectorApi.def("getRxDisabledUDPPortIndices",
+                       (std::vector<int>(Detector::*)() const) &
+                           Detector::getRxDisabledUDPPortIndices);
     CppDetectorApi.def("getPortPositionList",
                        (std::vector<defs::portPosition>(Detector::*)() const) &
                            Detector::getPortPositionList);

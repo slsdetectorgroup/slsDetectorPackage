@@ -899,26 +899,24 @@ class Detector {
     void setTransmissionDelay(int step);
 
     /** [Eiger] Module Level disable. Options: LEFT, RIGHT
-     * [Jungfrau][Moench] Only Receiver level diable. Options: TOP, BOTTOM
+     * [Jungfrau][Moench] Only Receiver level disable. Options: TOP, BOTTOM
      *
      */
-    Result<bool> getDataStream(const defs::portPosition port,
-                               Positions pos = {}) const;
+    Result<bool> getUDPDataStream(const defs::portPosition port,
+                                  Positions pos = {}) const;
 
-    /** [Eiger] enable or disable data streaming from left or right of detector
-     * for 10GbE. Default: enabled
-     * [Jungfrau][Moench] Enable/Disable data streaming from the top or bottom
-     * of receiver. Default: enabled. Disabling of any port works only if number
-     * of interfaces is 2.
+    /** [Eiger] enable or disable UDP data streaming from left or right of
+     * detector for 10GbE. Default: enabled \n [Jungfrau][Moench] Enable/Disable
+     * UDP data streaming from the top or bottom of receiver. Default: enabled.
+     * Disabling of any port works only if number of interfaces is 2.
      */
-    void setDataStream(const defs::portPosition port, const bool enable,
-                       Positions pos = {});
+    void setUDPDataStream(const defs::portPosition port, const bool enable,
+                          Positions pos = {});
 
-    /** List of disabled udp ports with index (moduleIndex * 2 + portIndex),
+    /** List of disabled UDP ports with index (moduleIndex * 2 + portIndex),
      * where portIndex is 0 for BOTTOM/LEFT port, and 1 for TOP/RIGHT port
      * [Eiger] LEFT, RIGHT
-     * [Jungfrau][Moench] throws for single UDP interface. Otherwise, TOP,
-     * BOTTOM
+     * [Jungfrau][Moench] TOP, BOTTOM, but throws for a single UDP interface
      */
     std::vector<int> getRxDisabledUDPPortIndices() const;
 

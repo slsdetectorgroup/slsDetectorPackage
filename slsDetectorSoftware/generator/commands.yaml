@@ -3610,13 +3610,13 @@ quad:
       cast_input: [ true ]
       output: [ args.front() ]
 
-datastream:
-  help: "[left|right|top|bottom] [0, 1]\n\t[Eiger] Enables or disables data streaming from left or/and right side of detector for 10 GbE mode. Options: left, right. 1 (enabled) by default.\n\t[Jungfrau][Moench] Enables or disables data stream from top or/and bottom side of receiver. Can change only if numinterfaces is 2. Options: top, bottom.1 (enabled) by default."
+udp_datastream:
+  help: "[left|right|top|bottom] [0, 1]\n\t[Eiger] Enable or disable UDP data streaming from the left and/or right detector ports in 10 GbE mode. Options: left, right. Both ports are enabled (1) by default.\n\t[Jungfrau][Moench] Enable or disable UDP data streaming from the top and/or bottom receiver interfaces. This option is available only when numinterfaces is set to 2. Options: top, bottom. Both interfaces are enabled (1) by default."
   actions:
     GET:
       argc: 1
       require_det_id: true
-      function: getDataStream
+      function: getUDPDataStream
       input: [ 'args[0]' ]
       input_types: [ defs::portPosition ]
       cast_input: [ true ]
@@ -3624,7 +3624,7 @@ datastream:
     PUT:
       argc: 2
       require_det_id: true
-      function: setDataStream
+      function: setUDPDataStream
       input: [ 'args[0]', 'args[1]' ]
       input_types: [ defs::portPosition, bool ]
       cast_input: [ true, true ]

@@ -62,6 +62,9 @@ support for building rpms
 
 removed unused function readDataFile/writeDataFile from file_utils.h
 
+changed api: datastream=>udp_datastream, set/getDatastream=>set/getUDPDatastream
+also implemetned for jungfrau, moench at receiver side (top/bottom)
+
 2  On-board Detector Server Compatibility
 ==========================================
 

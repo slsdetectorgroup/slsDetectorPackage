@@ -2429,11 +2429,12 @@ class Detector(CppDetectorApi):
     """
 
     @property
-    def datastream(self):
+    def udp_datastream(self):
         """
-        datastream [LEFT|RIGHT|TOP|BOTTOM] [0, 1]
-	    [Eiger] Enables or disables data streaming from left or/and right side of detector for 10GbE mode. 1 (enabled) by default. Options: LEFT, RIGHT.
-        [Jungfrau][Moench] Enables or disables data stream from top or/and bottom receiver. Can change only if numinterfaces is 2. 1 (enabled) by default. Options: TOP, BOTTOM.
+        [Eiger] Enable or disable UDP data streaming from the left and/or right detector ports in 10 GbE mode. Options: LEFT, RIGHT. Both ports are enabled by default.
+
+        [Jungfrau][Moench] Enable or disable UDP data streaming from the top and/or bottom receiver interfaces. This option is available only when numinterfaces is set to 2. Options: TOP, BOTTOM. Both interfaces are enabled by default.
+
         Enum: portPosition
         """
         result = {}
@@ -2443,12 +2444,12 @@ class Detector(CppDetectorApi):
             ports = [defs.LEFT, defs.RIGHT]     
 
         for port in ports:
-            result[port] = element_if_equal(self.getDataStream(port))
+            result[port] = element_if_equal(self.getUDPDataStream(port))
         return result
 
-    @datastream.setter
-    def datastream(self, value):
-        ut.set_using_dict(self.setDataStream, *value)
+    @udp_datastream.setter
+    def udp_datastream(self, value):
+        self.setUDPDataStream(*value)
 
     @property
     @element

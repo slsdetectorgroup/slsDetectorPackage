@@ -1656,16 +1656,16 @@ void DetectorImpl::assertTwoUDPInterfaces(const std::string &cmd) const {
     }
 }
 
-Result<bool> DetectorImpl::getDataStream(const defs::portPosition port,
-                                         Positions pos) const {
+Result<bool> DetectorImpl::getUDPDataStream(const defs::portPosition port,
+                                            Positions pos) const {
     assertTwoUDPInterfaces("get enable/disable UDP ports");
-    return Parallel(&Module::getDataStream, pos, port);
+    return Parallel(&Module::getUDPDataStream, pos, port);
 }
 
-void DetectorImpl::setDataStream(const defs::portPosition port,
-                                 const bool enable, Positions pos) {
+void DetectorImpl::setUDPDataStream(const defs::portPosition port,
+                                    const bool enable, Positions pos) {
     assertTwoUDPInterfaces("set enable/disable UDP ports");
-    Parallel(&Module::setDataStream, pos, port, enable);
+    Parallel(&Module::setUDPDataStream, pos, port, enable);
     updateRxUDPDatastreamMetadata();
 }
 
@@ -1678,8 +1678,8 @@ void DetectorImpl::updateRxUDPDatastreamMetadata() {
         throw RuntimeError("Invalid port size. Expected 2.");
     }
     // bottom and left is port 0
-    auto port0 = Parallel(&Module::getDataStream, {}, portList[0]);
-    auto port1 = Parallel(&Module::getDataStream, {}, portList[1]);
+    auto port0 = Parallel(&Module::getUDPDataStream, {}, portList[0]);
+    auto port1 = Parallel(&Module::getUDPDataStream, {}, portList[1]);
 
     // if any of them are disabled
     if (port0.any(false) || port1.any(false)) {

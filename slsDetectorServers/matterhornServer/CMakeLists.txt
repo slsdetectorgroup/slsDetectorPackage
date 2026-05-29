@@ -41,7 +41,21 @@ endif() # maybe better to have a else if build with simulators on one always use
 
 list(APPEND MATTERHORN_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/MatterhornServer.cpp)
 
+#mmh should slsSupportLib be considered as well when updating version? 
+if(CMAKE_TOOLCHAIN_FILE AND NOT CMAKE_TOOLCHAIN_FILE STREQUAL "") # only update version if cross compiling binaries 
+    find_package(Python3 REQUIRED COMPONENTS Interpreter REQUIRED)
+    add_custom_target(update_server_version ALL
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/etc/updateAPIVersion.py APIMATTERHORN ${CMAKE_SOURCE_DIR}/slsDetectorServers/matterhornServer ${CMAKE_SOURCE_DIR}/slsDetectorServers/slsDetectorServer_cpp ${CMAKE_SOURCE_DIR}/slsSupportLib  
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        COMMENT "Updating APIMATTERHORN version"
+        VERBATIM)
+endif() 
+
 add_executable(matterhornDetectorServer ${MATTERHORN_SOURCES})
+
+if(CMAKE_TOOLCHAIN_FILE AND NOT CMAKE_TOOLCHAIN_FILE STREQUAL "") # only update version if cross compiling binaries 
+    add_dependencies(matterhornDetectorServer update_server_version)
+endif()
 
 target_compile_definitions(matterhornDetectorServer PRIVATE
     MATTERHORN_SERVER_HEADER=<MatterhornServer.h>

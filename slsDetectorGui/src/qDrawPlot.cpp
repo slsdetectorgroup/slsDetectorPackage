@@ -620,11 +620,6 @@ void qDrawPlot::StartAcquisition() {
                       "qDrawPlot::StartAcquisition");
     }
 
-    // refixing all the zooming
-    {
-        std::lock_guard<std::mutex> lock(mPlots);
-        xyRangeChanged = true;
-    }
 
     QtConcurrent::run(this, &qDrawPlot::AcquireThread);
 

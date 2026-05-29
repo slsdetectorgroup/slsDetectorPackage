@@ -11,8 +11,10 @@
 #include <stdlib.h>
 
 #include <fcntl.h>
+#ifndef __APPLE__
 #include <linux/spi/spidev.h>
 #include <linux/types.h>
+#endif
 #include <string.h>
 #include <sys/ioctl.h>
 #include <unistd.h>

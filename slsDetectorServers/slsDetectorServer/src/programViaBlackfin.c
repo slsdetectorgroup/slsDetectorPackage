@@ -8,7 +8,9 @@
 
 #include <string.h>
 #include <sys/stat.h>
+#ifndef __APPLE__
 #include <sys/sysinfo.h>
+#endif
 #include <unistd.h> // usleep
 
 /* global variables */
@@ -309,6 +311,7 @@ int preparetoCopyProgram(char *mess, char *functionType, FILE **fd,
     }
 
     // check available memory to copy program
+#ifndef __APPLE__
     {
         struct sysinfo info;
         sysinfo(&info);
@@ -322,6 +325,7 @@ int preparetoCopyProgram(char *mess, char *functionType, FILE **fd,
             return FAIL;
         }
     }
+#endif
 
     // open file to copy program
     *fd = fopen(TEMP_PROG_FILE_NAME, "w");

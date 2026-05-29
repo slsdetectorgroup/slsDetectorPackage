@@ -8,8 +8,8 @@
 namespace sls {
 
 TCPInterface::TCPInterface(
-    std::function<ReturnCode(const detFuncs &, ServerInterface &)>
-        &processFunction_,
+    std::function<slsDetectorDefs::ReturnCode(
+        const detFuncs &, ServerInterface &)> &processFunction_,
     const uint16_t portNumber_)
     : processFunction(processFunction_), portNumber(portNumber_),
       server(portNumber_) {
@@ -53,7 +53,7 @@ void TCPInterface::startTCPServerClientConnection() {
                 auto returncode = processReceivedData(
                     static_cast<detFuncs>(function_id), socket);
 
-                if (returncode == FAIL) {
+                if (returncode == slsDetectorDefs::ReturnCode::FAIL) {
                     throw RuntimeError(fmt::format(
                         "Error processing command with fnum: {}",
                         getFunctionNameFromEnum((enum detFuncs)function_id)));
@@ -76,14 +76,16 @@ void TCPInterface::startTCPServerClientConnection() {
     LOG(logINFOBLUE) << "Exiting TCP Server";
 }
 
-ReturnCode TCPInterface::processReceivedData(const detFuncs function_id,
-                                             ServerInterface &socket) {
+slsDetectorDefs::ReturnCode
+TCPInterface::processReceivedData(const detFuncs function_id,
+                                  ServerInterface &socket) {
 
     LOG(logDEBUG1) << "calling function fnum: " << function_id << " ("
                    << getFunctionNameFromEnum((enum detFuncs)function_id)
                    << ")";
 
-    ReturnCode returncode = processFunction(function_id, socket);
+    slsDetectorDefs::ReturnCode returncode =
+        processFunction(function_id, socket);
 
     LOG(logDEBUG1) << "Function "
                    << getFunctionNameFromEnum((enum detFuncs)function_id)

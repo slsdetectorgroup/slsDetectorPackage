@@ -80,6 +80,14 @@ install(TARGETS matterhornDetectorServer
     RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
+if(CMAKE_TOOLCHAIN_FILE AND NOT CMAKE_TOOLCHAIN_FILE STREQUAL "") # copy the server binary  
+    add_custom_command(TARGET matterhornDetectorServer POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                $<TARGET_FILE:matterhornDetectorServer>
+                ${CMAKE_CURRENT_BINARY_DIR}/bin/matterhornDetectorServer
+    )
+endif()
+
 
 if(SLS_USE_TESTS)
     add_subdirectory(tests)

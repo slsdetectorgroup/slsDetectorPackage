@@ -84,7 +84,9 @@ if(CMAKE_TOOLCHAIN_FILE AND NOT CMAKE_TOOLCHAIN_FILE STREQUAL "") # copy the ser
     add_custom_command(TARGET matterhornDetectorServer POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 $<TARGET_FILE:matterhornDetectorServer>
-                ${CMAKE_CURRENT_BINARY_DIR}/bin/matterhornDetectorServer
+                ${CMAKE_CURRENT_SOURCE_DIR}/bin/matterhornDetectorServer
+        DEPENDS matterhornDetectorServer
+        COMMENT "Copying matterhornDetectorServer binary to bin for cross compilation"
     )
 endif()
 

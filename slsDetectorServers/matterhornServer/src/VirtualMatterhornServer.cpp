@@ -23,15 +23,17 @@ VirtualMatterhornServer::VirtualMatterhornServer(uint16_t port)
     this->setupDetector();
 }
 
-ReturnCode VirtualMatterhornServer::initial_checks(ServerInterface &socket) {
+ProcessedResult
+VirtualMatterhornServer::initial_checks(ServerInterface &socket) {
 
     // TODO: add more checks here, for now just return true to be able to test
     // the should check firmware -client compatibility
     bool initial_checks_passed = true;
-    return static_cast<ReturnCode>(socket.sendResult(initial_checks_passed));
+    return ProcessedResult{
+        static_cast<ReturnCode>(socket.sendResult(initial_checks_passed))};
 }
 
-ReturnCode
+ProcessedResult
 VirtualMatterhornServer::get_run_status(ServerInterface &socket) const {
 
     slsDetectorDefs::runStatus scanstatus{};
@@ -44,14 +46,16 @@ VirtualMatterhornServer::get_run_status(ServerInterface &socket) const {
     if (scanstatus == slsDetectorDefs::runStatus::ERROR ||
         scanstatus == slsDetectorDefs::runStatus::RUNNING) {
         LOG(logINFO) << fmt::format("Scan status: {}\n", ToString(scanstatus));
-        return static_cast<ReturnCode>(socket.sendResult(scanstatus));
+        return ProcessedResult{
+            static_cast<ReturnCode>(socket.sendResult(scanstatus))};
     }
 
     LOG(logINFO) << fmt::format("Status: {}\n", ToString(status));
-    return static_cast<ReturnCode>(socket.sendResult(status));
+    return ProcessedResult{static_cast<ReturnCode>(socket.sendResult(status))};
 }
 
-ReturnCode VirtualMatterhornServer::set_module_position_and_update_srcudpmac(
+ProcessedResult
+VirtualMatterhornServer::set_module_position_and_update_srcudpmac(
     ServerInterface &socket) {
 
     std::array<int, 2> position_info{}; // [num_modules_in_y, module_index]
@@ -62,7 +66,10 @@ ReturnCode VirtualMatterhornServer::set_module_position_and_update_srcudpmac(
         LOG(logERROR)
             << "Failed to receive num modules in y dimension and module index: "
             << e.what();
-        return ReturnCode::FAIL;
+        return ProcessedResult{
+            ReturnCode::FAIL,
+            "Failed to receive num modules in y dimension and module index : " +
+                std::string(e.what())};
     }
 
     const size_t module_row = position_info[1] % position_info[0];
@@ -72,7 +79,9 @@ ReturnCode VirtualMatterhornServer::set_module_position_and_update_srcudpmac(
         this->set_module_position(module_row, module_col, position_info[1]);
     } catch (const std::exception &e) {
         LOG(logERROR) << "Failed to set module position: " << e.what();
-        return ReturnCode::FAIL;
+        return ProcessedResult{ReturnCode::FAIL,
+                               "Failed to set module position: " +
+                                   std::string(e.what())};
     }
 
     // configure mac address based on module position
@@ -85,10 +94,11 @@ ReturnCode VirtualMatterhornServer::set_module_position_and_update_srcudpmac(
         this->updateSrcMacAddress(newSrcMac);
     }
 
-    return static_cast<ReturnCode>(socket.Send(ReturnCode::OK));
+    return ProcessedResult{
+        static_cast<ReturnCode>(socket.Send(ReturnCode::OK))};
 }
 
-ReturnCode
+ProcessedResult
 VirtualMatterhornServer::set_source_udp_mac(ServerInterface &socket) {
     uint64_t newsrcudpMac;
 
@@ -97,19 +107,24 @@ VirtualMatterhornServer::set_source_udp_mac(ServerInterface &socket) {
     } catch (const SocketError &e) {
         LOG(logERROR) << "Failed to receive new source UDP MAC address: "
                       << e.what();
-        return ReturnCode::FAIL;
+        return ProcessedResult{
+            ReturnCode::FAIL, "Failed to receive new source UDP MAC address: " +
+                                  std::string(e.what())};
     }
 
     if ((newsrcudpMac & 0x020000000000) == 0) {
         LOG(logERROR) << "Invalid source MAC address: unicast bit or local "
                          "administration bit is not set";
-        throw std::invalid_argument("Invalid source MAC address: unicast bit "
-                                    "or local administration bit is not set");
+        return ProcessedResult{
+            ReturnCode::FAIL,
+            "Invalid source MAC address: unicast bit or local "
+            "administration bit is not set"};
     }
 
     this->updateSrcMacAddress(newsrcudpMac);
 
-    return static_cast<ReturnCode>(socket.Send(ReturnCode::OK));
+    return ProcessedResult{
+        static_cast<ReturnCode>(socket.Send(ReturnCode::OK))};
 }
 
 } // namespace sls

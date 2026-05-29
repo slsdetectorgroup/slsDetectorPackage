@@ -10,6 +10,13 @@
 
 namespace sls {
 
+struct ProcessedResult {
+    /// @brief return code of the processed command
+    slsDetectorDefs::ReturnCode returnCode{};
+    /// @brief error message to be sent to client in case of failure
+    std::string error_message{};
+};
+
 /**
  * @brief TCPInterface class handles communication and processing of commands
  * from Client to Server.
@@ -19,9 +26,10 @@ class TCPInterface {
   public:
     ~TCPInterface();
 
-    TCPInterface(std::function<slsDetectorDefs::ReturnCode(
-                     const detFuncs &, ServerInterface &)> &processFunction_,
-                 const uint16_t portNumber = DEFAULT_TCP_CNTRL_PORTNO);
+    TCPInterface(
+        std::function<ProcessedResult(const detFuncs &, ServerInterface &)>
+            &processFunction_,
+        const uint16_t portNumber = DEFAULT_TCP_CNTRL_PORTNO);
 
     /// @brief creates tcp thread
     void startTCPServer();
@@ -40,12 +48,11 @@ class TCPInterface {
      *  @param function_id The ID of the function recived by the server and to
      * be executed
      */
-    slsDetectorDefs::ReturnCode processReceivedData(const detFuncs function_id,
-                                                    ServerInterface &socket);
+    ProcessedResult processReceivedData(const detFuncs function_id,
+                                        ServerInterface &socket);
 
     /// @brief map of function IDs and corresponding functions
-    std::function<slsDetectorDefs::ReturnCode(const detFuncs &,
-                                              ServerInterface &)>
+    std::function<ProcessedResult(const detFuncs &, ServerInterface &)>
         processFunction;
 
     /// @brief TCP/IP port number for the detector server

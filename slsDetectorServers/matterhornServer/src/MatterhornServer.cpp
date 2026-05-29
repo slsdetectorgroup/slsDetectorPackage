@@ -18,15 +18,16 @@ MatterhornServer::MatterhornServer(uint16_t port)
     this->setupDetector();
 }
 
-ReturnCode MatterhornServer::initial_checks(ServerInterface &socket) {
+ProcessedResult MatterhornServer::initial_checks(ServerInterface &socket) {
 
     // TODO: add more checks here, for now just return true to be able to test
     // the should check firmware -client compatibility
     bool initial_checks_passed = true;
-    return static_cast<ReturnCode>(socket.sendResult(initial_checks_passed));
+    return ProcessedResult{
+        static_cast<ReturnCode>(socket.sendResult(initial_checks_passed))};
 }
 
-ReturnCode MatterhornServer::set_module_position_and_update_srcudpmac(
+ProcessedResult MatterhornServer::set_module_position_and_update_srcudpmac(
     ServerInterface &socket) {
 
     std::array<int, 2> position_info{}; // [num_modules_in_y, module_index]
@@ -37,7 +38,10 @@ ReturnCode MatterhornServer::set_module_position_and_update_srcudpmac(
         LOG(logERROR)
             << "Failed to receive num modules in y dimension and module index: "
             << e.what();
-        return ReturnCode::FAIL;
+        return ProcessedResult{
+            ReturnCode::FAIL,
+            "Failed to receive num modules in y dimension and module index : " +
+                std::string(e.what())};
     }
 
     const size_t module_row = position_info[1] % position_info[0];
@@ -47,7 +51,9 @@ ReturnCode MatterhornServer::set_module_position_and_update_srcudpmac(
         this->set_module_position(module_row, module_col, position_info[1]);
     } catch (const std::exception &e) {
         LOG(logERROR) << "Failed to set module position: " << e.what();
-        return ReturnCode::FAIL;
+        return ProcessedResult{ReturnCode::FAIL,
+                               "Failed to set module position: " +
+                                   std::string(e.what())};
     }
 
     // TODO: update
@@ -59,14 +65,17 @@ ReturnCode MatterhornServer::set_module_position_and_update_srcudpmac(
         this->updateSrcMacAddress(newSrcMac);
     }
 
-    return static_cast<ReturnCode>(socket.Send(ReturnCode::OK));
+    return ProcessedResult{
+        static_cast<ReturnCode>(socket.Send(ReturnCode::OK))};
 }
 
-ReturnCode MatterhornServer::set_source_udp_mac(ServerInterface &socket) {
+ProcessedResult MatterhornServer::set_source_udp_mac(ServerInterface &socket) {
 
     LOG(logERROR) << "Cannot overwrite vendor specific source UDP MAC address.";
 
-    return static_cast<ReturnCode>(socket.Send(ReturnCode::FAIL));
+    return ProcessedResult{
+        ReturnCode::FAIL,
+        "Cannot overwrite vendor specific source UDP MAC address."};
 }
 
 } // namespace sls

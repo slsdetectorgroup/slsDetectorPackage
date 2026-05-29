@@ -43,30 +43,27 @@ class BaseMatterhornServer
 
     ~BaseMatterhornServer() = default;
 
-    ReturnCode get_version(ServerInterface &socket);
+    ProcessedResult get_version(ServerInterface &socket);
 
-    ReturnCode get_detector_type(ServerInterface &socket);
+    ProcessedResult get_detector_type(ServerInterface &socket);
 
-    ReturnCode initial_checks(ServerInterface &socket);
+    ProcessedResult initial_checks(ServerInterface &socket);
+    ProcessedResult get_num_udp_interfaces(ServerInterface &socket) const;
 
-    ReturnCode get_num_udp_interfaces(ServerInterface &socket) const;
+    ProcessedResult get_run_status(ServerInterface &socket) const;
 
-    ReturnCode get_run_status(ServerInterface &socket) const;
+    ProcessedResult get_receiver_parameters(ServerInterface &socket) const;
+    ProcessedResult set_source_udp_mac(ServerInterface &socket);
 
-    ReturnCode get_receiver_parameters(ServerInterface &socket) const;
-
-    ReturnCode set_source_udp_mac(ServerInterface &socket);
-
-    ReturnCode
+    ProcessedResult
     set_module_position_and_update_srcudpmac(ServerInterface &socket);
 
     void set_module_position(const size_t module_row, const size_t module_col,
                              const size_t module_index);
 
-    ReturnCode set_counter_mask(ServerInterface &socket);
+    ProcessedResult set_counter_mask(ServerInterface &socket);
 
-    ReturnCode get_counter_mask(ServerInterface &socket) const;
-
+    ProcessedResult get_counter_mask(ServerInterface &socket) const;
     uint64_t getNumFrames() const;
 
     void setNumFrames(const uint64_t num_frames);
@@ -81,8 +78,8 @@ class BaseMatterhornServer
      * @param function_id the function ID received from the client
      * @param socket the socket to send the result back to the client
      */
-    ReturnCode processFunction(const detFuncs function_id,
-                               ServerInterface &socket);
+    ProcessedResult processFunction(const detFuncs function_id,
+                                    ServerInterface &socket);
 
   protected:
     using MemoryModel = std::conditional_t<
@@ -114,7 +111,7 @@ class BaseMatterhornServer
 };
 
 template <typename DerivedServer>
-ReturnCode
+ProcessedResult
 BaseMatterhornServer<DerivedServer>::processFunction(const detFuncs function_id,
                                                      ServerInterface &socket) {
 
@@ -139,29 +136,30 @@ void BaseMatterhornServer<DerivedServer>::setupDetector() {
 }
 
 template <typename DerivedServer>
-ReturnCode BaseMatterhornServer<DerivedServer>::get_num_udp_interfaces(
+ProcessedResult BaseMatterhornServer<DerivedServer>::get_num_udp_interfaces(
     ServerInterface &socket) const {
-    return static_cast<ReturnCode>(
-        socket.sendResult(static_cast<int>(numUDPInterfaces)));
+    return ProcessedResult{static_cast<ReturnCode>(
+        socket.sendResult(static_cast<int>(numUDPInterfaces)))};
 }
 
 template <typename DerivedServer>
-ReturnCode
+ProcessedResult
 BaseMatterhornServer<DerivedServer>::get_version(ServerInterface &socket) {
 
     auto version = getMatterhornServerVersion();
     char version_cstr[MAX_STR_LENGTH]{};
     strncpy(version_cstr, version.c_str(), version.size());
     LOG(TLogLevel::logDEBUG) << "Matterhorn Server Version: " << version;
-    return static_cast<ReturnCode>(socket.sendResult(
-        version_cstr)); // TODO: check what would be possible return codes!!!
+    return ProcessedResult{static_cast<ReturnCode>(socket.sendResult(
+        version_cstr))}; // TODO: check what would be possible return codes!!!
 }
 
 template <typename DerivedServer>
-ReturnCode BaseMatterhornServer<DerivedServer>::get_detector_type(
+ProcessedResult BaseMatterhornServer<DerivedServer>::get_detector_type(
     ServerInterface &socket) {
     int detectortype = slsDetectorDefs::detectorType::MATTERHORN;
-    return static_cast<ReturnCode>(socket.sendResult(detectortype));
+    return ProcessedResult{
+        static_cast<ReturnCode>(socket.sendResult(detectortype))};
 }
 
 template <typename DerivedServer>
@@ -170,21 +168,21 @@ std::string BaseMatterhornServer<DerivedServer>::getMatterhornServerVersion() {
 }
 
 template <typename DerivedServer>
-ReturnCode
+ProcessedResult
 BaseMatterhornServer<DerivedServer>::initial_checks(ServerInterface &socket) {
 
     return static_cast<DerivedServer *>(this)->initial_checks(socket);
 }
 
 template <typename DerivedServer>
-ReturnCode BaseMatterhornServer<DerivedServer>::get_run_status(
+ProcessedResult BaseMatterhornServer<DerivedServer>::get_run_status(
     ServerInterface &socket) const {
 
     return static_cast<const DerivedServer *>(this)->get_run_status(socket);
 }
 
 template <typename DerivedServer>
-ReturnCode BaseMatterhornServer<DerivedServer>::get_receiver_parameters(
+ProcessedResult BaseMatterhornServer<DerivedServer>::get_receiver_parameters(
     ServerInterface &socket) const {
 
     slsDetectorDefs::rxParameters rx_params{};
@@ -213,7 +211,8 @@ ReturnCode BaseMatterhornServer<DerivedServer>::get_receiver_parameters(
 
     // rx_params.counterMask = 0;
 
-    return static_cast<ReturnCode>(socket.sendResult(rx_params));
+    return ProcessedResult{
+        static_cast<ReturnCode>(socket.sendResult(rx_params))};
 }
 
 template <typename DerivedServer>
@@ -309,7 +308,7 @@ void BaseMatterhornServer<DerivedServer>::set_module_position(
 }
 
 template <typename DerivedServer>
-ReturnCode
+ProcessedResult
 BaseMatterhornServer<DerivedServer>::set_counter_mask(ServerInterface &socket) {
 
     uint32_t counter_mask{};
@@ -317,7 +316,9 @@ BaseMatterhornServer<DerivedServer>::set_counter_mask(ServerInterface &socket) {
         int ret = socket.Receive(counter_mask);
     } catch (const SocketError &e) {
         LOG(logERROR) << "Failed to receive counter mask: " << e.what();
-        return ReturnCode::FAIL;
+        return ProcessedResult{ReturnCode::FAIL,
+                               "Failed to receive counter mask: " +
+                                   std::string(e.what())};
     }
 
     // counter mask update to num consecutive counters and starting_counter
@@ -327,7 +328,10 @@ BaseMatterhornServer<DerivedServer>::set_counter_mask(ServerInterface &socket) {
     } catch (const std::invalid_argument &e) {
         LOG(logERROR) << "Failed to convert counter mask to SPI counter mask: "
                       << e.what();
-        return ReturnCode::FAIL;
+        return ProcessedResult{
+            ReturnCode::FAIL,
+            "Failed to convert counter mask to SPI counter mask: " +
+                std::string(e.what())};
     }
 
     try {
@@ -344,14 +348,17 @@ BaseMatterhornServer<DerivedServer>::set_counter_mask(ServerInterface &socket) {
                                   reg_value);
     } catch (const std::exception &e) {
         LOG(logERROR) << "Failed to set counter mask: " << e.what();
-        return ReturnCode::FAIL;
+        return ProcessedResult{ReturnCode::FAIL,
+                               "Failed to set counter mask: " +
+                                   std::string(e.what())};
     }
 
-    return static_cast<ReturnCode>(socket.Send(ReturnCode::OK));
+    return ProcessedResult{
+        static_cast<ReturnCode>(socket.Send(ReturnCode::OK))};
 }
 
 template <typename DerivedServer>
-ReturnCode BaseMatterhornServer<DerivedServer>::get_counter_mask(
+ProcessedResult BaseMatterhornServer<DerivedServer>::get_counter_mask(
     ServerInterface &socket) const {
 
     std::vector<std::byte> reg_value{};
@@ -362,7 +369,10 @@ ReturnCode BaseMatterhornServer<DerivedServer>::get_counter_mask(
     } catch (const std::exception &e) {
         LOG(logERROR) << "Failed to read counter mask from SPI register: "
                       << e.what();
-        return ReturnCode::FAIL;
+        return ProcessedResult{
+            ReturnCode::FAIL,
+            "Failed to read counter mask from SPI register: " +
+                std::string(e.what())};
     }
 
     // stores num_counters and starting_counter 0b0000 -> counter 0 enabled,
@@ -373,17 +383,18 @@ ReturnCode BaseMatterhornServer<DerivedServer>::get_counter_mask(
     uint32_t actual_counter_mask =
         convertSPICounterMaskToCounterMask(spi_counter_mask);
 
-    return static_cast<ReturnCode>(socket.sendResult(actual_counter_mask));
+    return ProcessedResult{
+        static_cast<ReturnCode>(socket.sendResult(actual_counter_mask))};
 }
 
 template <typename DerivedServer>
-ReturnCode BaseMatterhornServer<DerivedServer>::set_source_udp_mac(
+ProcessedResult BaseMatterhornServer<DerivedServer>::set_source_udp_mac(
     ServerInterface &socket) {
     return static_cast<DerivedServer *>(this)->set_source_udp_mac(socket);
 }
 
 template <typename DerivedServer>
-ReturnCode
+ProcessedResult
 BaseMatterhornServer<DerivedServer>::set_module_position_and_update_srcudpmac(
     ServerInterface &socket) {
     return static_cast<DerivedServer *>(this)

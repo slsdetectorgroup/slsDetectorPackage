@@ -95,39 +95,38 @@ template <typename DerivedDetectorServer> class DetectorServer {
     /// @brief creates and maps shared memory
     void createSharedMemory();
 
-    ReturnCode processFunction(const detFuncs function_id,
-                               ServerInterface &socket);
+    ProcessedResult processFunction(const detFuncs function_id,
+                                    ServerInterface &socket);
 
     // TODO dont know what this does?
-    ReturnCode get_update_mode(ServerInterface &socket) const;
+    ProcessedResult get_update_mode(ServerInterface &socket) const;
+    ProcessedResult get_source_udp_mac(ServerInterface &socket) const;
 
-    ReturnCode get_source_udp_mac(ServerInterface &socket) const;
+    ProcessedResult get_source_udp_ip(ServerInterface &socket) const;
 
-    ReturnCode get_source_udp_ip(ServerInterface &socket) const;
+    ProcessedResult set_source_udp_ip(ServerInterface &socket);
 
-    ReturnCode set_source_udp_ip(ServerInterface &socket);
+    ProcessedResult get_source_udp_port(ServerInterface &socket) const;
 
-    ReturnCode get_source_udp_port(ServerInterface &socket) const;
+    ProcessedResult set_destination_udp_mac(ServerInterface &socket);
 
-    ReturnCode set_destination_udp_mac(ServerInterface &socket);
+    ProcessedResult get_destination_udp_mac(ServerInterface &socket) const;
 
-    ReturnCode get_destination_udp_mac(ServerInterface &socket) const;
+    ProcessedResult set_destination_udp_ip(ServerInterface &socket);
 
-    ReturnCode set_destination_udp_ip(ServerInterface &socket);
+    ProcessedResult get_destination_udp_ip(ServerInterface &socket) const;
 
-    ReturnCode get_destination_udp_ip(ServerInterface &socket) const;
+    ProcessedResult set_destination_udp_port(ServerInterface &socket);
 
-    ReturnCode set_destination_udp_port(ServerInterface &socket);
+    ProcessedResult get_destination_udp_port(ServerInterface &socket) const;
 
-    ReturnCode get_destination_udp_port(ServerInterface &socket) const;
+    ProcessedResult get_num_frames(ServerInterface &socket) const;
 
-    ReturnCode get_num_frames(ServerInterface &socket) const;
+    ProcessedResult set_num_frames(ServerInterface &socket);
 
-    ReturnCode set_num_frames(ServerInterface &socket);
+    ProcessedResult get_num_triggers(ServerInterface &socket) const;
 
-    ReturnCode get_num_triggers(ServerInterface &socket) const;
-
-    ReturnCode set_num_triggers(ServerInterface &socket);
+    ProcessedResult set_num_triggers(ServerInterface &socket);
 };
 
 template <typename DerivedDetectorServer>
@@ -139,7 +138,7 @@ DetectorServer<DerivedDetectorServer>::DetectorServer(uint16_t port) {
 
     createSharedMemory();
 
-    std::function<ReturnCode(const detFuncs &, ServerInterface &)> fn =
+    std::function<ProcessedResult(const detFuncs &, ServerInterface &)> fn =
         [this](const detFuncs &function_id, ServerInterface &socket) {
             return this->processFunction(function_id, socket);
         };
@@ -153,7 +152,7 @@ DetectorServer<DerivedDetectorServer>::~DetectorServer() {
 }
 
 template <typename DerivedDetectorServer>
-ReturnCode DetectorServer<DerivedDetectorServer>::processFunction(
+ProcessedResult DetectorServer<DerivedDetectorServer>::processFunction(
     const detFuncs function_id, ServerInterface &socket) {
 
     switch (function_id) {
@@ -216,7 +215,7 @@ ReturnCode DetectorServer<DerivedDetectorServer>::processFunction(
             function_id, socket);
     }
 
-    return ReturnCode::FAIL;
+    return ProcessedResult{ReturnCode::FAIL, "Function not implemented"};
 }
 
 template <typename DerivedDetectorServer>
@@ -250,22 +249,26 @@ void DetectorServer<DerivedDetectorServer>::updateSrcMacAddress(
 }
 
 template <typename DerivedDetectorServer>
-ReturnCode DetectorServer<DerivedDetectorServer>::get_update_mode(
+ProcessedResult DetectorServer<DerivedDetectorServer>::get_update_mode(
     ServerInterface &socket) const {
 
-    return static_cast<ReturnCode>(
-        socket.sendResult(static_cast<int>(updateMode)));
+    // TODO: catch the socket error during Send and add error message to the
+    // ProcessedResult but DatSocket shared with receiver - some refactoring
+    return ProcessedResult{static_cast<ReturnCode>(
+        socket.sendResult(static_cast<int>(updateMode)))};
 }
 
 template <typename DerivedDetectorServer>
-ReturnCode DetectorServer<DerivedDetectorServer>::get_source_udp_mac(
+ProcessedResult DetectorServer<DerivedDetectorServer>::get_source_udp_mac(
     ServerInterface &socket) const {
     auto srcUdpMac = udpDetails[0].srcmac;
-    return static_cast<ReturnCode>(socket.sendResult(srcUdpMac));
+
+    return ProcessedResult{
+        static_cast<ReturnCode>(socket.sendResult(srcUdpMac))};
 }
 
 template <typename DerivedDetectorServer>
-ReturnCode DetectorServer<DerivedDetectorServer>::set_source_udp_ip(
+ProcessedResult DetectorServer<DerivedDetectorServer>::set_source_udp_ip(
     ServerInterface &socket) {
 
     uint32_t newSrcIp;
@@ -275,21 +278,25 @@ ReturnCode DetectorServer<DerivedDetectorServer>::set_source_udp_ip(
     } catch (const SocketError &e) {
         LOG(logERROR) << "Failed to receive new source UDP IP address: "
                       << e.what();
-        return ReturnCode::FAIL;
+        return ProcessedResult{ReturnCode::FAIL,
+                               "Failed to receive new source UDP IP address: " +
+                                   std::string(e.what())};
     }
 
     udpDetails[0].srcip = newSrcIp;
-    return static_cast<ReturnCode>(socket.Send(ReturnCode::OK));
+    return ProcessedResult{
+        static_cast<ReturnCode>(socket.Send(ReturnCode::OK))};
 }
 
 template <typename DerivedDetectorServer>
-ReturnCode DetectorServer<DerivedDetectorServer>::get_source_udp_ip(
+ProcessedResult DetectorServer<DerivedDetectorServer>::get_source_udp_ip(
     ServerInterface &socket) const {
-    return static_cast<ReturnCode>(socket.sendResult(udpDetails[0].srcip));
+    return ProcessedResult{
+        static_cast<ReturnCode>(socket.sendResult(udpDetails[0].srcip))};
 }
 
 template <typename DerivedDetectorServer>
-ReturnCode DetectorServer<DerivedDetectorServer>::set_destination_udp_mac(
+ProcessedResult DetectorServer<DerivedDetectorServer>::set_destination_udp_mac(
     ServerInterface &socket) {
     uint64_t newDstMac;
 
@@ -298,22 +305,27 @@ ReturnCode DetectorServer<DerivedDetectorServer>::set_destination_udp_mac(
     } catch (const SocketError &e) {
         LOG(logERROR) << "Failed to receive new destination UDP MAC address: "
                       << e.what();
-        return ReturnCode::FAIL;
+        return ProcessedResult{
+            ReturnCode::FAIL,
+            "Failed to receive new destination UDP MAC address: " +
+                std::string(e.what())};
     }
 
     udpDetails[0].dstmac = newDstMac;
     // TODO: configuremac, check unicast address
-    return static_cast<ReturnCode>(socket.Send(ReturnCode::OK));
+    return ProcessedResult{
+        static_cast<ReturnCode>(socket.Send(ReturnCode::OK))};
 }
 
 template <typename DerivedDetectorServer>
-ReturnCode DetectorServer<DerivedDetectorServer>::get_destination_udp_mac(
+ProcessedResult DetectorServer<DerivedDetectorServer>::get_destination_udp_mac(
     ServerInterface &socket) const {
-    return static_cast<ReturnCode>(socket.sendResult(udpDetails[0].dstmac));
+    return ProcessedResult{
+        static_cast<ReturnCode>(socket.sendResult(udpDetails[0].dstmac))};
 }
 
 template <typename DerivedDetectorServer>
-ReturnCode DetectorServer<DerivedDetectorServer>::set_destination_udp_ip(
+ProcessedResult DetectorServer<DerivedDetectorServer>::set_destination_udp_ip(
     ServerInterface &socket) {
     uint32_t newDstIp;
 
@@ -322,21 +334,26 @@ ReturnCode DetectorServer<DerivedDetectorServer>::set_destination_udp_ip(
     } catch (const SocketError &e) {
         LOG(logERROR) << "Failed to receive new destination UDP IP address: "
                       << e.what();
-        return ReturnCode::FAIL;
+        return ProcessedResult{
+            ReturnCode::FAIL,
+            "Failed to receive new destination UDP IP address: " +
+                std::string(e.what())};
     }
 
     udpDetails[0].dstip = newDstIp;
-    return static_cast<ReturnCode>(socket.Send(ReturnCode::OK));
+    return ProcessedResult{
+        static_cast<ReturnCode>(socket.Send(ReturnCode::OK))};
 }
 
 template <typename DerivedDetectorServer>
-ReturnCode DetectorServer<DerivedDetectorServer>::get_destination_udp_ip(
+ProcessedResult DetectorServer<DerivedDetectorServer>::get_destination_udp_ip(
     ServerInterface &socket) const {
-    return static_cast<ReturnCode>(socket.sendResult(udpDetails[0].dstip));
+    return ProcessedResult{
+        static_cast<ReturnCode>(socket.sendResult(udpDetails[0].dstip))};
 }
 
 template <typename DerivedDetectorServer>
-ReturnCode DetectorServer<DerivedDetectorServer>::set_destination_udp_port(
+ProcessedResult DetectorServer<DerivedDetectorServer>::set_destination_udp_port(
     ServerInterface &socket) {
     uint16_t newDstPort;
 
@@ -345,21 +362,26 @@ ReturnCode DetectorServer<DerivedDetectorServer>::set_destination_udp_port(
     } catch (const SocketError &e) {
         LOG(logERROR) << "Failed to receive new destination UDP port number: "
                       << e.what();
-        return ReturnCode::FAIL;
+        return ProcessedResult{
+            ReturnCode::FAIL,
+            "Failed to receive new destination UDP port number: " +
+                std::string(e.what())};
     }
 
     udpDetails[0].dstport = newDstPort;
-    return static_cast<ReturnCode>(socket.Send(ReturnCode::OK));
+    return ProcessedResult{
+        static_cast<ReturnCode>(socket.Send(ReturnCode::OK))};
 }
 
 template <typename DerivedDetectorServer>
-ReturnCode DetectorServer<DerivedDetectorServer>::get_destination_udp_port(
+ProcessedResult DetectorServer<DerivedDetectorServer>::get_destination_udp_port(
     ServerInterface &socket) const {
-    return static_cast<ReturnCode>(socket.sendResult(udpDetails[0].dstport));
+    return ProcessedResult{
+        static_cast<ReturnCode>(socket.sendResult(udpDetails[0].dstport))};
 };
 
 template <typename DerivedDetectorServer>
-ReturnCode DetectorServer<DerivedDetectorServer>::get_num_frames(
+ProcessedResult DetectorServer<DerivedDetectorServer>::get_num_frames(
     ServerInterface &socket) const {
     uint64_t num_frames{};
     try {
@@ -367,32 +389,40 @@ ReturnCode DetectorServer<DerivedDetectorServer>::get_num_frames(
             static_cast<const DerivedDetectorServer *>(this)->getNumFrames();
     } catch (const std::exception &e) {
         LOG(logERROR) << "Failed to get number of frames: " << e.what();
-        return ReturnCode::FAIL;
+        return ProcessedResult{ReturnCode::FAIL,
+                               "Failed to get number of frames: " +
+                                   std::string(e.what())};
     }
-    return static_cast<ReturnCode>(socket.sendResult(num_frames));
+    return ProcessedResult{
+        static_cast<ReturnCode>(socket.sendResult(num_frames))};
 }
 
 template <typename DerivedDetectorServer>
-ReturnCode
+ProcessedResult
 DetectorServer<DerivedDetectorServer>::set_num_frames(ServerInterface &socket) {
     int64_t num_frames{};
     try {
         int ret = socket.Receive(num_frames);
     } catch (const SocketError &e) {
         LOG(logERROR) << "Failed to receive number of frames: " << e.what();
-        return ReturnCode::FAIL;
+        return ProcessedResult{ReturnCode::FAIL,
+                               "Failed to receive number of frames: " +
+                                   std::string(e.what())};
     }
     try {
         static_cast<DerivedDetectorServer *>(this)->setNumFrames(num_frames);
     } catch (const std::exception &e) {
         LOG(logERROR) << "Failed to set number of frames: " << e.what();
-        return ReturnCode::FAIL;
+        return ProcessedResult{ReturnCode::FAIL,
+                               "Failed to set number of frames: " +
+                                   std::string(e.what())};
     }
-    return static_cast<ReturnCode>(socket.Send(ReturnCode::OK));
+    return ProcessedResult{
+        static_cast<ReturnCode>(socket.Send(ReturnCode::OK))};
 }
 
 template <typename DerivedDetectorServer>
-ReturnCode DetectorServer<DerivedDetectorServer>::get_num_triggers(
+ProcessedResult DetectorServer<DerivedDetectorServer>::get_num_triggers(
     ServerInterface &socket) const {
     uint64_t num_triggers{};
     try {
@@ -400,29 +430,37 @@ ReturnCode DetectorServer<DerivedDetectorServer>::get_num_triggers(
             static_cast<const DerivedDetectorServer *>(this)->getNumTriggers());
     } catch (const std::exception &e) {
         LOG(logERROR) << "Failed to get number of triggers: " << e.what();
-        return ReturnCode::FAIL;
+        return ProcessedResult{ReturnCode::FAIL,
+                               "Failed to get number of triggers: " +
+                                   std::string(e.what())};
     }
-    return static_cast<ReturnCode>(socket.sendResult(num_triggers));
+    return ProcessedResult{
+        static_cast<ReturnCode>(socket.sendResult(num_triggers))};
 }
 
 template <typename DerivedDetectorServer>
-ReturnCode DetectorServer<DerivedDetectorServer>::set_num_triggers(
+ProcessedResult DetectorServer<DerivedDetectorServer>::set_num_triggers(
     ServerInterface &socket) {
     uint32_t num_triggers{};
     try {
         int ret = socket.Receive(num_triggers);
     } catch (const SocketError &e) {
         LOG(logERROR) << "Failed to receive number of triggers: " << e.what();
-        return ReturnCode::FAIL;
+        return ProcessedResult{ReturnCode::FAIL,
+                               "Failed to receive number of triggers: " +
+                                   std::string(e.what())};
     }
     try {
         static_cast<DerivedDetectorServer *>(this)->setNumTriggers(
             num_triggers);
     } catch (const std::exception &e) {
         LOG(logERROR) << "Failed to set number of triggers: " << e.what();
-        return ReturnCode::FAIL;
+        return ProcessedResult{ReturnCode::FAIL,
+                               "Failed to set number of triggers: " +
+                                   std::string(e.what())};
     }
-    return static_cast<ReturnCode>(socket.Send(ReturnCode::OK));
+    return ProcessedResult{
+        static_cast<ReturnCode>(socket.Send(ReturnCode::OK))};
 }
 
 } // namespace sls

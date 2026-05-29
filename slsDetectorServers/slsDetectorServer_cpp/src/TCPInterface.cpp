@@ -8,8 +8,8 @@
 namespace sls {
 
 TCPInterface::TCPInterface(
-    std::function<slsDetectorDefs::ReturnCode(
-        const detFuncs &, ServerInterface &)> &processFunction_,
+    std::function<ProcessedResult(const detFuncs &, ServerInterface &)>
+        &processFunction_,
     const uint16_t portNumber_)
     : processFunction(processFunction_), portNumber(portNumber_),
       server(portNumber_) {
@@ -50,13 +50,17 @@ void TCPInterface::startTCPServerClientConnection() {
                         "{}:{}", UNRECOGNIZED_FNUM_ENUM,
                         getFunctionNameFromEnum((enum detFuncs)function_id)));
                 }
-                auto returncode = processReceivedData(
+                auto processedResult = processReceivedData(
                     static_cast<detFuncs>(function_id), socket);
 
-                if (returncode == slsDetectorDefs::ReturnCode::FAIL) {
+                // TODO: should technically fail before
+                if (processedResult.returnCode ==
+                    slsDetectorDefs::ReturnCode::FAIL) {
                     throw RuntimeError(fmt::format(
-                        "Error processing command with fnum: {}",
-                        getFunctionNameFromEnum((enum detFuncs)function_id)));
+                        "Error while processing command with fnum: {}, Error: "
+                        "{}",
+                        getFunctionNameFromEnum((enum detFuncs)function_id),
+                        processedResult.error_message));
                 }
 
             } catch (const RuntimeError &e) {
@@ -76,22 +80,20 @@ void TCPInterface::startTCPServerClientConnection() {
     LOG(logINFOBLUE) << "Exiting TCP Server";
 }
 
-slsDetectorDefs::ReturnCode
-TCPInterface::processReceivedData(const detFuncs function_id,
-                                  ServerInterface &socket) {
+ProcessedResult TCPInterface::processReceivedData(const detFuncs function_id,
+                                                  ServerInterface &socket) {
 
     LOG(logDEBUG1) << "calling function fnum: " << function_id << " ("
                    << getFunctionNameFromEnum((enum detFuncs)function_id)
                    << ")";
 
-    slsDetectorDefs::ReturnCode returncode =
-        processFunction(function_id, socket);
+    ProcessedResult processedResult = processFunction(function_id, socket);
 
     LOG(logDEBUG1) << "Function "
                    << getFunctionNameFromEnum((enum detFuncs)function_id)
                    << " finished";
 
-    return returncode;
+    return processedResult;
 }
 
 } // namespace sls

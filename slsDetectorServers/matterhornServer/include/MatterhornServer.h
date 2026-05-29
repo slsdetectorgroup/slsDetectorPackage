@@ -21,12 +21,12 @@ class MatterhornServer : public BaseMatterhornServer<MatterhornServer> {
 
     ~MatterhornServer() = default;
 
-    ReturnCode initial_checks(ServerInterface &socket);
+    ProcessedResult initial_checks(ServerInterface &socket);
 
-    ReturnCode
+    ProcessedResult
     set_module_position_and_update_srcudpmac(ServerInterface &socket);
 
-    ReturnCode set_source_udp_mac(ServerInterface &socket);
+    ProcessedResult set_source_udp_mac(ServerInterface &socket);
 };
 
 } // namespace sls

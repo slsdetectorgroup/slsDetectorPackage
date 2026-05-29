@@ -11,6 +11,7 @@ namespace sls::test::acquire {
 class FileState;
 class CTBState;
 
+// at the moment, only number of frames
 struct AcquisitionState {
     int64_t num_frames;
 };

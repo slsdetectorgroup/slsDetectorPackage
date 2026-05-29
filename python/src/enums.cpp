@@ -30,6 +30,11 @@ void init_enums(py::module &m) {
         .value("MATTERHORN", slsDetectorDefs::detectorType::MATTERHORN)
         .export_values();
 
+    py::enum_<slsDetectorDefs::ReturnCode>(Defs, "ReturnCode")
+        .value("OK", slsDetectorDefs::ReturnCode::OK)
+        .value("FAIL", slsDetectorDefs::ReturnCode::FAIL)
+        .export_values();
+
     py::enum_<slsDetectorDefs::boolFormat>(Defs, "boolFormat")
         .value("TrueFalse", slsDetectorDefs::boolFormat::TrueFalse)
         .value("OnOff", slsDetectorDefs::boolFormat::OnOff)

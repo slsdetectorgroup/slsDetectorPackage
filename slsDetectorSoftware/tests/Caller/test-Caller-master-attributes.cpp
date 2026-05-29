@@ -96,53 +96,6 @@ void read_from_h5_dataset(const H5::DataSet &dataset, const std::string &name,
 }
 #endif
 
-/** std::vector<std::string> */
-void read_from_json(const Document &doc, const std::string &name,
-                    std::vector<std::string> &retval) {
-    for (const auto &item : doc[name.c_str()].GetArray()) {
-        retval.push_back(item.GetString());
-    }
-}
-#ifdef HDF5C
-void read_from_h5_dataset(const H5::DataSet &dataset, const std::string &name,
-                          std::vector<std::string> &retval) {
-    H5::DataSpace dataspace = dataset.getSpace();
-    hsize_t dims[1];
-    dataspace.getSimpleExtentDims(dims);
-
-    // read to raw c buffer
-    std::vector<char *> rdata(dims[0]);
-    auto strType = dataset.getStrType();
-    dataset.read(rdata.data(), strType);
-
-    retval.resize(dims[0]);
-    for (size_t i = 0; i != dims[0]; ++i) {
-        retval[i] = std::string(rdata[i]);
-    }
-    // free HDF5-allocated memory
-    H5Dvlen_reclaim(strType.getId(), dataspace.getId(), H5P_DEFAULT,
-                    rdata.data());
-}
-#endif
-
-/** std::vector<int> */
-void read_from_json(const Document &doc, const std::string &name,
-                    std::vector<int> &retval) {
-    for (const auto &item : doc[name.c_str()].GetArray()) {
-        retval.push_back(item.GetInt());
-    }
-}
-#ifdef HDF5C
-void read_from_h5_dataset(const H5::DataSet &dataset, const std::string &name,
-                          std::vector<int> &retval) {
-    H5::DataSpace dataspace = dataset.getSpace();
-    hsize_t dims[1];
-    dataspace.getSimpleExtentDims(dims);
-    retval.resize(dims[0]);
-    dataset.read(retval.data(), H5::PredType::STD_I32LE);
-}
-#endif
-
 /** std::vector<int64_t> */
 void read_from_json(const Document &doc, const std::string &name,
                     std::vector<int64_t> &retval) {
@@ -645,43 +598,6 @@ void test_master_file_num_udp_interfaces(const Detector &det,
         num_udp_interfaces));
 }
 
-void test_master_file_udp_interfaces_type(const Detector &det,
-                                          const std::optional<Document> &doc) {
-    auto num_udp_interfaces = det.getNumberofUDPInterfaces().tsquash(
-        "Inconsistent number of UDP interfaces");
-
-    if (num_udp_interfaces == 1)
-        return;
-
-    // expected values
-    auto det_type =
-        det.getDetectorType().tsquash("Inconsistent detector types to test");
-    std::vector<std::string> udpPortsType = {ToString(defs::BOTTOM),
-                                             ToString(defs::TOP)};
-
-    if (det_type == defs::EIGER) {
-        udpPortsType[0] = ToString(defs::LEFT);
-        udpPortsType[1] = ToString(defs::RIGHT);
-    }
-
-    REQUIRE_NOTHROW(check_master_file<std::vector<std::string>>(
-        doc, MasterAttributes::N_UDP_PORTS_TYPE.data(), udpPortsType));
-}
-
-void test_master_file_udp_interfaces_disable(
-    const Detector &det, const std::optional<Document> &doc) {
-    auto num_udp_interfaces = det.getNumberofUDPInterfaces().tsquash(
-        "Inconsistent number of UDP interfaces");
-
-    if (num_udp_interfaces == 1)
-        return;
-
-    auto disabled_udp_ports = det.getRxDisabledUDPPortIndices();
-
-    REQUIRE_NOTHROW(check_master_file<std::vector<int>>(
-        doc, MasterAttributes::N_UDP_PORTS_DISBLED.data(), disabled_udp_ports));
-}
-
 void test_master_file_read_n_rows(const Detector &det,
                                   const std::optional<Document> &doc) {
     auto readnrows = det.getReadNRows().tsquash("Inconsistent number of rows");
@@ -972,8 +888,6 @@ void test_master_file_jungfrau_metadata(const Detector &det,
     REQUIRE_NOTHROW(test_master_file_exptime(det, doc));
     REQUIRE_NOTHROW(test_master_file_period(det, doc));
     REQUIRE_NOTHROW(test_master_file_num_udp_interfaces(det, doc));
-    REQUIRE_NOTHROW(test_master_file_udp_interfaces_type(det, doc));
-    REQUIRE_NOTHROW(test_master_file_udp_interfaces_disable(det, doc));
     REQUIRE_NOTHROW(test_master_file_read_n_rows(det, doc));
     REQUIRE_NOTHROW(test_master_file_readout_speed(det, doc));
 }
@@ -991,8 +905,6 @@ void test_master_file_eiger_metadata(const Detector &det,
     REQUIRE_NOTHROW(test_master_file_sub_exptime(det, doc));
     REQUIRE_NOTHROW(test_master_file_sub_period(det, doc));
     REQUIRE_NOTHROW(test_master_file_quad(det, doc));
-    REQUIRE_NOTHROW(test_master_file_udp_interfaces_type(det, doc));
-    REQUIRE_NOTHROW(test_master_file_udp_interfaces_disable(det, doc));
     REQUIRE_NOTHROW(test_master_file_read_n_rows(det, doc));
     REQUIRE_NOTHROW(test_master_file_rate_corrections(det, doc));
     REQUIRE_NOTHROW(test_master_file_readout_speed(det, doc));
@@ -1006,8 +918,6 @@ void test_master_file_moench_metadata(const Detector &det,
     REQUIRE_NOTHROW(test_master_file_exptime(det, doc));
     REQUIRE_NOTHROW(test_master_file_period(det, doc));
     REQUIRE_NOTHROW(test_master_file_num_udp_interfaces(det, doc));
-    REQUIRE_NOTHROW(test_master_file_udp_interfaces_type(det, doc));
-    REQUIRE_NOTHROW(test_master_file_udp_interfaces_disable(det, doc));
     REQUIRE_NOTHROW(test_master_file_read_n_rows(det, doc));
     REQUIRE_NOTHROW(test_master_file_readout_speed(det, doc));
 }

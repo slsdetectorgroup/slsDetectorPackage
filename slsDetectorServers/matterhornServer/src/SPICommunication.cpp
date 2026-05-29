@@ -1,4 +1,5 @@
 #include "SPICommunication.h"
+#include <algorithm>
 #include <fcntl.h>
 #include <linux/spi/spidev.h>
 #include <sys/ioctl.h>
@@ -62,6 +63,15 @@ HardwareSPICommunication::spi_read(const size_t n_bytes, const uint8_t chip_id,
             fmt::format("SPI write failed with {}:{}", errno, strerror(errno)));
     }
 
+    // copy data to output buffer
+    std::vector<std::byte> output_data(n_bytes);
+    std::memcpy(output_data.data(), read_data_buffer.data() + 1, n_bytes);
+
+    LOG(logDEBUG1) << "Read data: ";
+    std::for_each(output_data.begin(), output_data.end(), [](std::byte b) {
+        LOG(logDEBUG1) << fmt::format("{} ", std::to_integer<int>(b));
+    });
+
     // copy the read out data back to the dummy data buffer to shift it back in
     send_cmd.tx_buf = send_cmd.rx_buf;
 
@@ -75,11 +85,6 @@ HardwareSPICommunication::spi_read(const size_t n_bytes, const uint8_t chip_id,
         throw std::runtime_error(
             fmt::format("SPI write failed with {}:{}", errno, strerror(errno)));
     }
-
-    // copy data to output buffer
-    std::vector<std::byte> output_data(n_bytes);
-    std::memcpy(output_data.data(),
-                reinterpret_cast<std::byte *>(send_cmd.tx_buf) + 1, n_bytes);
 
     return output_data;
 }
@@ -97,6 +102,11 @@ void HardwareSPICommunication::spi_write(const uint8_t chip_id,
         static_cast<std::byte>(((chip_id & 0xF) << 4) | (register_id & 0xF));
 
     std::memcpy(write_data.data() + 1, data.data(), n_bytes);
+
+    LOG(logDEBUG1) << "Write data: ";
+    std::for_each(write_data.begin(), write_data.end(), [](std::byte b) {
+        LOG(logDEBUG1) << fmt::format("{} ", std::to_integer<int>(b));
+    });
 
     std::vector<std::byte> read_back_buffer(n_bytes +
                                             1); // TODO: do we need this?

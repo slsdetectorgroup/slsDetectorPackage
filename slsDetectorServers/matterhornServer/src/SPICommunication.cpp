@@ -9,7 +9,7 @@ namespace sls {
 void HardwareSPICommunication::map_to_memory() {
 
     // TODO device can change
-    int spi_filedescriptor = open("/dev/spidev2.0", O_RDWR); // TODO use O_SYNC?
+    spi_filedescriptor = open("/dev/spidev2.0", O_RDWR); // TODO use O_SYNC?
 
     LOG(logINFO) << fmt::format("SPI Read: opened spidev2.0 with fd={}",
                                 spi_filedescriptor);

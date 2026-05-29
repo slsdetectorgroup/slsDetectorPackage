@@ -7,6 +7,7 @@ MatterhornServer::MatterhornServer(uint16_t port)
     // map the IP core base addresses to memory
     busCommunication.mapToMemory(); // TODO: should this happen in constructor?
 
+    // TODO: need to check if chip is attached
     spiCommunication.mapToMemory(); // TODO: should this happen in constructor?
 
     // should maybe be part of the constructor?
@@ -49,21 +50,13 @@ ReturnCode MatterhornServer::set_module_position_and_update_srcudpmac(
         return ReturnCode::FAIL;
     }
 
-    // configure mac address based on module position
-
     // TODO: update
     if (this->udpDetails[0].srcmac ==
         0) { // only configure if source mac address is not set already
-        this->udpDetails[0].srcmac = generaterandomMacAddress();
-        uint64_t newSrcMac = (this->udpDetails[0].srcmac & 0xffffffffffff0000) |
-                             (module_row << 16) | module_col;
-        try {
-            this->updateSrcMacAddress(newSrcMac);
-        } catch (const std::invalid_argument &e) {
-            LOG(logERROR) << "Failed to update source MAC address: "
-                          << e.what();
-            return ReturnCode::FAIL;
-        }
+        uint64_t newSrcMac =
+            0x000000000000; // TODO: vendor address will be on SOM memory/
+                            // different for 10G/100G
+        this->updateSrcMacAddress(newSrcMac);
     }
 
     return static_cast<ReturnCode>(socket.Send(ReturnCode::OK));

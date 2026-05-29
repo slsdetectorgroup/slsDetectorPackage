@@ -81,13 +81,8 @@ ReturnCode VirtualMatterhornServer::set_module_position_and_update_srcudpmac(
         uint64_t newSrcMac = generaterandomMacAddress();
         newSrcMac =
             (newSrcMac & 0xffffffffffff0000) | (module_row << 16) | module_col;
-        try {
-            this->updateSrcMacAddress(newSrcMac);
-        } catch (const std::invalid_argument &e) {
-            LOG(logERROR) << "Failed to update source MAC address: "
-                          << e.what();
-            return ReturnCode::FAIL;
-        }
+
+        this->updateSrcMacAddress(newSrcMac);
     }
 
     return static_cast<ReturnCode>(socket.Send(ReturnCode::OK));
@@ -105,12 +100,14 @@ VirtualMatterhornServer::set_source_udp_mac(ServerInterface &socket) {
         return ReturnCode::FAIL;
     }
 
-    try {
-        updateSrcMacAddress(newsrcudpMac);
-    } catch (const std::invalid_argument &e) {
-        LOG(logERROR) << "Failed to update source MAC address: " << e.what();
-        return ReturnCode::FAIL;
+    if ((newsrcudpMac & 0x020000000000) == 0) {
+        LOG(logERROR) << "Invalid source MAC address: unicast bit or local "
+                         "administration bit is not set";
+        throw std::invalid_argument("Invalid source MAC address: unicast bit "
+                                    "or local administration bit is not set");
     }
+
+    this->updateSrcMacAddress(newsrcudpMac);
 
     return static_cast<ReturnCode>(socket.Send(ReturnCode::OK));
 }

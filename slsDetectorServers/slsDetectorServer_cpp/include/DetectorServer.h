@@ -212,8 +212,8 @@ ReturnCode DetectorServer<DerivedDetectorServer>::processFunction(
         LOG(logDEBUG) << "Checking specific server functions for function ID: "
                       << function_id;
         // process detector specific functions
-        static_cast<DerivedDetectorServer *>(this)->processFunction(function_id,
-                                                                    socket);
+        return static_cast<DerivedDetectorServer *>(this)->processFunction(
+            function_id, socket);
     }
 
     return ReturnCode::FAIL;
@@ -241,13 +241,6 @@ void DetectorServer<DerivedDetectorServer>::updateSrcMacAddress(
                                 (srcmac >> 40) & 0xff, (srcmac >> 32) & 0xff,
                                 (srcmac >> 24) & 0xff, (srcmac >> 16) & 0xff,
                                 (srcmac >> 8) & 0xff, srcmac & 0xff);
-
-    if ((srcmac & 0x020000000000) == 0) {
-        LOG(logERROR) << "Invalid source MAC address: unicast bit or local "
-                         "administration bit is not set";
-        throw std::invalid_argument("Invalid source MAC address: unicast bit "
-                                    "or local administration bit is not set");
-    }
 
     udpDetails[0].srcmac = srcmac;
 
@@ -401,10 +394,10 @@ DetectorServer<DerivedDetectorServer>::set_num_frames(ServerInterface &socket) {
 template <typename DerivedDetectorServer>
 ReturnCode DetectorServer<DerivedDetectorServer>::get_num_triggers(
     ServerInterface &socket) const {
-    uint32_t num_triggers{};
+    uint64_t num_triggers{};
     try {
-        num_triggers =
-            static_cast<const DerivedDetectorServer *>(this)->getNumTriggers();
+        num_triggers = static_cast<uint64_t>(
+            static_cast<const DerivedDetectorServer *>(this)->getNumTriggers());
     } catch (const std::exception &e) {
         LOG(logERROR) << "Failed to get number of triggers: " << e.what();
         return ReturnCode::FAIL;

@@ -11,7 +11,7 @@ enum class IPCore : uint32_t {
     FHDR_AXI = 0xB0011000,
     AURORA_STATUS = 0xB0014000,
     AURORA_STATUS2 = 0xB0015000,
-    PACKETIZERREG = 4,
+    PACKETIZERREG = 0x00000000, // TODO: need to update with actual address
     UNKNOWN = 0x00000000 // dont know yet
 };
 

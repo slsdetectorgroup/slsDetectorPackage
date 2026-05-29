@@ -436,11 +436,6 @@ if (SLS_USE_SERVER)
     add_subdirectory(slsDetectorServers/slsDetectorServer_cpp)
 endif()
 
-# TODO refactor with simulators 
-if (SLS_USE_SERVER) 
-    add_subdirectory(slsDetectorServers/slsDetectorServer_cpp)
-endif()
-
 if (SLS_USE_RECEIVER)
     add_subdirectory(slsReceiverSoftware) 
 endif (SLS_USE_RECEIVER)

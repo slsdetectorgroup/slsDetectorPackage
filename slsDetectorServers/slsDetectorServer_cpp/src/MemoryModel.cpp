@@ -18,6 +18,7 @@ void HardwareMemoryModel::mapToMemory() {
     int fd = open("/dev/mem", O_RDWR | O_SYNC, 0);
 
     if (fd == -1) {
+        LOG(logERROR) << "Can't open /dev/mem: " << strerror(errno);
         throw std::runtime_error("Can't find /dev/mem");
     }
 
@@ -52,6 +53,9 @@ void HardwareMemoryModel::unmapMemory() {
     }
 }
 
-HardwareMemoryModel::~HardwareMemoryModel() { unmapMemory(); }
+HardwareMemoryModel::~HardwareMemoryModel() {
+    LOG(logDEBUG1) << "HardwareMemoryModel destructor called, unmapping memory";
+    unmapMemory();
+}
 
 } // namespace sls

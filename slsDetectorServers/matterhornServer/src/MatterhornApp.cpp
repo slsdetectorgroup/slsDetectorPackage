@@ -80,6 +80,7 @@ int main(int argc, char *argv[]) {
                 pause(); // wait for signal to exit
             }
         } catch (...) {
+            LOG(logERROR) << "Some Error occured in Stop Server, exiting";
             kill(getppid(), SIGINT); // tell parent to exit // TODO: should then
                                      // also return EXIT_FAILURE
         }
@@ -100,6 +101,7 @@ int main(int argc, char *argv[]) {
                 pause(); // wait for signal to exit
             }
         } catch (...) {
+            LOG(logERROR) << "Some Error occured in Control Server, exiting";
             LOG(sls::logINFOBLUE)
                 << "Exiting Control Server [ Tid: " << gettid() << " ]";
             LOG(sls::logINFO) << "Exiting Detector Server";

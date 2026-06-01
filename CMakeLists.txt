@@ -209,21 +209,10 @@ else()
             URL ${CMAKE_CURRENT_SOURCE_DIR}/libs/fmt/fmt-12.1.0.tar.gz
             # Compute hash: md5sum fmt-12.1.0.tar.gz 
             URL_HASH MD5=92eb6f492e4838e5f024ce5207beafc7) 
+    set(FMT_INSTALL ON CACHE BOOL "")
     FetchContent_MakeAvailable(fmt)
     set_property(TARGET fmt PROPERTY POSITION_INDEPENDENT_CODE ON)
 endif()
-
-# Export fmt 
-if(SLS_MASTER_PROJECT)
-    install(TARGETS fmt
-        EXPORT ${TARGETS_EXPORT_NAME}
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-        INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-    )
-endif()
-
 
 option(SLS_USE_HDF5 "HDF5 File format" OFF)
 option(SLS_BUILD_SHARED_LIBRARIES "Build shared libaries" OFF)

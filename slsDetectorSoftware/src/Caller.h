@@ -258,6 +258,7 @@ class Caller {
     std::string rx_start(int action);
     std::string rx_status(int action);
     std::string rx_stop(int action);
+    std::string rx_streamdummyheader(int action);
     std::string rx_tcpport(int action);
     std::string rx_threads(int action);
     std::string rx_udpsocksize(int action);
@@ -605,6 +606,7 @@ class Caller {
         {"rx_start", &Caller::rx_start},
         {"rx_status", &Caller::rx_status},
         {"rx_stop", &Caller::rx_stop},
+        {"rx_streamdummyheader", &Caller::rx_streamdummyheader},
         {"rx_tcpport", &Caller::rx_tcpport},
         {"rx_threads", &Caller::rx_threads},
         {"rx_udpsocksize", &Caller::rx_udpsocksize},

@@ -946,15 +946,15 @@ void Module::stopAcquisition() {
     try {
         if (shm()->useReceiverFlag && getReceiverStreaming()) {
             if (detStatus == IDLE && getReceiverStatus() == IDLE) {
-                restreamStopFromReceiver();
+                streamRxDummyHeader();
             }
         }
     } catch (...) {
     }
 }
 
-void Module::restreamStopFromReceiver() {
-    sendToReceiver(F_RESTREAM_STOP_FROM_RECEIVER);
+void Module::streamRxDummyHeader() {
+    sendToReceiver(F_STREAM_RX_DUMMY_HEADER_FROM_RECEIVER);
 }
 
 void Module::startAndReadAll() {

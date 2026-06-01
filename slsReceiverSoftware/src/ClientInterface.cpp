@@ -167,7 +167,7 @@ int ClientInterface::functionTable(){
 	flist[F_GET_RECEIVER_STREAMING_PORT]	= 	&ClientInterface::get_streaming_port;
 	flist[F_SET_RECEIVER_SILENT_MODE]		= 	&ClientInterface::set_silent_mode;
 	flist[F_GET_RECEIVER_SILENT_MODE]		= 	&ClientInterface::get_silent_mode;
-	flist[F_RESTREAM_STOP_FROM_RECEIVER]	= 	&ClientInterface::restream_stop;
+	flist[F_STREAM_RX_DUMMY_HEADER_FROM_RECEIVER]	= 	&ClientInterface::stream_rx_dummy_header;
 	flist[F_SET_ADDITIONAL_JSON_HEADER]     =   &ClientInterface::set_additional_json_header;
 	flist[F_GET_ADDITIONAL_JSON_HEADER]     =   &ClientInterface::get_additional_json_header;
     flist[F_RECEIVER_UDP_SOCK_BUF_SIZE]     =   &ClientInterface::set_udp_socket_buffer_size;
@@ -1081,14 +1081,14 @@ int ClientInterface::get_silent_mode(Interface &socket) {
     return socket.sendResult(retval);
 }
 
-int ClientInterface::restream_stop(Interface &socket) {
+int ClientInterface::stream_rx_dummy_header(Interface &socket) {
     verifyIdle(socket);
     if (!impl()->getDataStreamEnable()) {
         throw RuntimeError(
-            "Could not restream stop packet as data Streaming is disabled");
+            "Could not stream rx dummy header as data Streaming is disabled");
     } else {
         LOG(logDEBUG1) << "Restreaming stop";
-        impl()->restreamStop();
+        impl()->streamRxDummyHeader();
     }
     return socket.Send(OK);
 }

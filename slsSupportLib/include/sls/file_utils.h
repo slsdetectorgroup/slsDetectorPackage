@@ -11,7 +11,6 @@
 
 namespace sls {
 
-
 std::vector<char> readBinaryFile(const std::string &fname,
                                  const std::string &errorPrefix);
 

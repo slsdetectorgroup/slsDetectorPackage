@@ -1080,6 +1080,10 @@ void init_det(py::module &m) {
     CppDetectorApi.def("setRxZmqHwm",
                        (void (Detector::*)(const int)) & Detector::setRxZmqHwm,
                        py::arg());
+    CppDetectorApi.def("streamRxDummyHeader",
+                       (void (Detector::*)(sls::Positions) const) &
+                           Detector::streamRxDummyHeader,
+                       py::arg() = Positions{});
     CppDetectorApi.def("getSubExptime",
                        (Result<sls::ns>(Detector::*)(sls::Positions) const) &
                            Detector::getSubExptime,

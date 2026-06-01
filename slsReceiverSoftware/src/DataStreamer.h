@@ -10,6 +10,7 @@
  */
 
 #include "ThreadObject.h"
+#include "sls/ZmqSocket.h"
 #include "sls/network_utils.h"
 
 #include <map>
@@ -32,6 +33,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
     void SetGeneralData(GeneralData *g);
 
     void SetFileIndex(uint64_t value);
+    void SetFileName(const std::string &fname);
     void SetNumberofPorts(xy np);
     void SetFlipRows(bool fd);
     void SetQuadEnable(bool value);
@@ -40,7 +42,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
     SetAdditionalJsonHeader(const std::map<std::string, std::string> &json);
     void SetPortROI(ROI roi);
 
-    void ResetParametersforNewAcquisition(const std::string &fname);
+    void ResetParametersforNewAcquisition();
     /**
      * Creates Zmq Sockets
      * (throws an exception if it couldnt create zmq sockets)
@@ -49,7 +51,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
      */
     void CreateZmqSockets(uint16_t port, int hwm);
     void CloseZmqSocket();
-    void RestreamStop();
+    void StreamRxDummyHeader();
 
   private:
     /**
@@ -71,18 +73,16 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
      */
     void ProcessAnImage(sls_detector_header header, size_t size, char *data);
 
+    zmqHeader prepareRxZmqHeader();
     int SendDummyHeader();
 
     /**
      * Create and send Json Header
      * @param rheader header of image
      * @param size data size (could have been modified in call back)
-     * @param nx number of pixels in x dim
-     * @param ny number of pixels in y dim
      * @returns 0 if error, else 1
      */
-    int SendDataHeader(sls_detector_header header, uint32_t size = 0,
-                       uint32_t nx = 0, uint32_t ny = 0);
+    int SendDataHeader(sls_detector_header header, uint32_t size = 0);
 
     static const std::string TypeName;
     const GeneralData *generalData{nullptr};

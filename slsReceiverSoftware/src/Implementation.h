@@ -104,7 +104,7 @@ class Implementation : private virtual slsDetectorDefs {
     void stopReceiver();
     void startReadout();
     void shutDownUDPSockets();
-    void restreamStop();
+    void streamRxDummyHeader();
 
     /**************************************************
      *                                                 *

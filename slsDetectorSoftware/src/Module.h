@@ -206,7 +206,7 @@ class Module : public virtual slsDetectorDefs {
     void startAcquisition();
     void startReadout();
     void stopAcquisition();
-    void restreamStopFromReceiver();
+    void streamRxDummyHeader();
     void startAndReadAll();
     runStatus getRunStatus() const;
     runStatus getReceiverStatus() const;

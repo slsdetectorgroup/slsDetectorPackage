@@ -2819,6 +2819,18 @@ int InferAction::rx_stop() {
     }
 }
 
+int InferAction::rx_streamdummyheader() {
+
+    if (args.size() == 0) {
+        return slsDetectorDefs::PUT_ACTION;
+    }
+
+    else {
+
+        throw RuntimeError("Could not infer action: Wrong number of arguments");
+    }
+}
+
 int InferAction::rx_tcpport() {
 
     if (args.size() == 0) {

@@ -1732,6 +1732,13 @@ rx_stop:
     PUT:
       function: stopReceiver
 
+rx_streamdummyheader:
+  inherit_actions: EXECUTE_SET_COMMAND
+  help: "\n\tSends ZMQ dummy header. The detector related fields are not set, the receiver related fields are set."
+  actions:
+    PUT:
+      function: streamRxDummyHeader
+
 readout:
   inherit_actions: EXECUTE_SET_COMMAND_NOID
   help: "\n\t[Mythen3] Starts detector readout. Status changes to TRANSMITTING and automatically returns to idle at the end of readout."

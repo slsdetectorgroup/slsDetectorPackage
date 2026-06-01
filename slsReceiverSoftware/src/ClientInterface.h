@@ -111,7 +111,7 @@ class ClientInterface : private virtual slsDetectorDefs {
     int get_streaming_port(ServerInterface &socket);
     int set_silent_mode(ServerInterface &socket);
     int get_silent_mode(ServerInterface &socket);
-    int restream_stop(ServerInterface &socket);
+    int stream_rx_dummy_header(ServerInterface &socket);
     int set_additional_json_header(ServerInterface &socket);
     int get_additional_json_header(ServerInterface &socket);
     int set_udp_socket_buffer_size(ServerInterface &socket);

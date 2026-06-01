@@ -213,6 +213,7 @@ class InferAction {
     int rx_start();
     int rx_status();
     int rx_stop();
+    int rx_streamdummyheader();
     int rx_tcpport();
     int rx_threads();
     int rx_udpsocksize();
@@ -548,6 +549,7 @@ class InferAction {
         {"rx_start", &InferAction::rx_start},
         {"rx_status", &InferAction::rx_status},
         {"rx_stop", &InferAction::rx_stop},
+        {"rx_streamdummyheader", &InferAction::rx_streamdummyheader},
         {"rx_tcpport", &InferAction::rx_tcpport},
         {"rx_threads", &InferAction::rx_threads},
         {"rx_udpsocksize", &InferAction::rx_udpsocksize},

@@ -41,10 +41,6 @@ Detector.pattern (python) accepts also a pattern object, not only a pattern file
 
 added patternstart to python (ctb, xilinx_ctb , mythen3), only the detector class api was exposed (startPattern())
 
-<<<<<<< HEAD
-
-can build virtual servers on mac OS
-
 documentation for all branches and developer now online and build and pushed automatically
 
 gui: mouse zooms not reset at start of acquisition
@@ -53,31 +49,13 @@ m3: fixed patwaittime in intervals, which is hardly used. patwaittime in clocks 
 
 m3: getPatternFileName typo fixed
 
-libfmt added to dependency
-
-python dacs=> using deprecated np.int. dacs return float (default dtype of numpy)
-=> changed to np.int32 (meant for v10.0.1)
-
 support for building rpms
 
-
 removed unused function readDataFile/writeDataFile from file_utils.h
-
-changed api: datastream=>udp_datastream, set/getDatastream=>set/getUDPDatastream
-also implemetned for jungfrau, moench at receiver side (top/bottom)
 
 added rx_streamdummyheader to send the zmq dummy header any time. Allows pre-configuring zmq processing before acq begins.
 
-allow disabling one UDP interface in the receiver.
 
-setting number of UDP interfaces can only be set at detector level and not at module level. (individual modules)
-
-zmqsocket - allowing hwm to be set already at the constructor level. As before, can still be set after construction with socket reconnection.
-
-=======
-removed unused function readDataFile/writeDataFile from file_utils.h
-
->>>>>>> d94c0d0e7 (removed unused function readDataFile/writeDataFile (#1456))
 2  On-board Detector Server Compatibility
 ==========================================
 

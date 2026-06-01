@@ -11574,6 +11574,45 @@ std::string Caller::rx_stop(int action) {
     return os.str();
 }
 
+std::string Caller::rx_streamdummyheader(int action) {
+
+    std::ostringstream os;
+    // print help
+    if (action == slsDetectorDefs::HELP_ACTION) {
+        os << R"V0G0N(
+	Sends ZMQ dummy header. The detector related fields are not set, the receiver related fields are set. )V0G0N"
+           << std::endl;
+        return os.str();
+    }
+
+    // check if action and arguments are valid
+    if (action == slsDetectorDefs::PUT_ACTION) {
+        if (1 && args.size() != 0) {
+            throw RuntimeError("Wrong number of arguments for action PUT");
+        }
+
+        if (args.size() == 0) {
+        }
+
+    }
+
+    else {
+
+        throw RuntimeError(
+            "INTERNAL ERROR: Invalid action: supported actions are ['PUT']");
+    }
+
+    // generate code for each action
+    if (action == slsDetectorDefs::PUT_ACTION) {
+        if (args.size() == 0) {
+            det->streamRxDummyHeader(std::vector<int>{det_id});
+            os << "successful" << '\n';
+        }
+    }
+
+    return os.str();
+}
+
 std::string Caller::rx_tcpport(int action) {
 
     std::ostringstream os;

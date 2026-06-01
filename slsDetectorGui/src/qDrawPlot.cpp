@@ -620,7 +620,6 @@ void qDrawPlot::StartAcquisition() {
                       "qDrawPlot::StartAcquisition");
     }
 
-
     QtConcurrent::run(this, &qDrawPlot::AcquireThread);
 
     LOG(logDEBUG) << "End of Starting Acquisition in qDrawPlot";

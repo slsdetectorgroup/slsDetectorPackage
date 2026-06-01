@@ -1654,6 +1654,10 @@ void Detector::setRxZmqHwm(const int limit) {
     }
 }
 
+void Detector::streamRxDummyHeader(Positions pos) const {
+    pimpl->Parallel(&Module::streamRxDummyHeader, pos);
+}
+
 // Eiger Specific
 
 Result<ns> Detector::getSubExptime(Positions pos) const {

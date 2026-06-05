@@ -1162,6 +1162,7 @@ class Detector {
      */
     void setRxZmqHwm(const int limit);
 
+    void streamRxDummyHeader(Positions pos = {}) const;
     ///@}
 
     /** @name Eiger Specific */

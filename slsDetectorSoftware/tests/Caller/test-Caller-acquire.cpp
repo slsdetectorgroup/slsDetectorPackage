@@ -19,8 +19,6 @@ void acquire_and_check_file_size(
     auto acq_state = acq::default_acquisition_state();
     acq_state.num_frames = 2;
     auto file_state = acq::default_file_state();
-    INFO("Acquiring " << ToString(det.getDetectorType().squash(defs::GENERIC))
-                      << " with num_frames = " << acq_state.num_frames);
     acq::run(det, acq_state, file_state);
     auto image_size = acq::get_expected_image_size(det, ctb_state);
     REQUIRE_NOTHROW(
@@ -257,6 +255,7 @@ void test_ctb_binary_file_size(Detector &det) {
 //  sysctl net.core.rmem_default=$((100*1024*1024))
 TEST_CASE("acquire_check_binary_file_size",
           "[.detectorintegration][.disable_check_data_file]") {
+    INFO(__func__);
 
     Detector det;
     auto det_type =

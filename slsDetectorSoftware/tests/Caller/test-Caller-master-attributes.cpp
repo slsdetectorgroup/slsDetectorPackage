@@ -27,6 +27,7 @@ namespace checks = sls::test::checks;
 
 TEST_CASE("check_master_file_attributes",
           "[.detectorintegration][.disable_check_data_file]") {
+    INFO(__func__);
 
     Detector det;
     // currently num frame = 1 (default)
@@ -41,8 +42,6 @@ TEST_CASE("check_master_file_attributes",
         ctb_state = std::make_optional(acq::default_ctb_state(detType));
     }
     acq::CTBStateGuard ctb_guard(det, ctb_state);
-
-    INFO("Checking master file attributes for " << ToString(detType));
 
     // binary => /tmp/sls_test_master_0.json
     file_state.file_format = defs::BINARY;

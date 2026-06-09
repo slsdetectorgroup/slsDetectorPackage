@@ -14,13 +14,12 @@ namespace sls {
 namespace acq = sls::test::acquire;
 namespace checks = sls::test::checks;
 
-void acquire_and_check_file_size(
-    Detector &det, const acq::CTBState &ctb_state = acq::default_ctb_state()) {
+void acquire_and_check_file_size(Detector &det) {
     auto acq_state = acq::default_acquisition_state();
     acq_state.num_frames = 2;
     auto file_state = acq::default_file_state();
-    acq::run(det, acq_state, file_state, ctb_state);
-    auto image_size = acq::get_expected_image_size(det, ctb_state);
+    acq::run(det, acq_state, file_state);
+    auto image_size = acq::get_expected_image_size(det);
     REQUIRE_NOTHROW(
         checks::check_binary_file_size(image_size, acq_state.num_frames));
 }
@@ -44,158 +43,158 @@ void test_ctb_binary_file_size(Detector &det) {
     // trans mask = 0x3
     {
         acq::CTBStateGuard ctb_guard(det, ctb_state);
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
+        REQUIRE_NOTHROW(acquire_and_check_file_size(det));
     }
     {
         acq::CTBStateGuard ctb_guard(det, ctb_state);
         ctb_state.dbit_reorder = true;
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
+        REQUIRE_NOTHROW(acquire_and_check_file_size(det));
     }
     {
         acq::CTBStateGuard ctb_guard(det, ctb_state);
         ctb_state.dbit_offset = 16;
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
-    }
-    {
-        acq::CTBStateGuard ctb_guard(det, ctb_state);
-        ctb_state.dbit_offset = 16;
-        ctb_state.dbit_reorder = true;
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
-    }
-    {
-        acq::CTBStateGuard ctb_guard(det, ctb_state);
-        ctb_state.dbit_list.clear();
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
-    }
-    {
-        acq::CTBStateGuard ctb_guard(det, ctb_state);
-        ctb_state.dbit_offset = 16;
-        ctb_state.dbit_list.clear();
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
-    }
-    {
-        acq::CTBStateGuard ctb_guard(det, ctb_state);
-        ctb_state.dbit_reorder = true;
-        ctb_state.dbit_list.clear();
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
+        REQUIRE_NOTHROW(acquire_and_check_file_size(det));
     }
     {
         acq::CTBStateGuard ctb_guard(det, ctb_state);
         ctb_state.dbit_offset = 16;
         ctb_state.dbit_reorder = true;
+        REQUIRE_NOTHROW(acquire_and_check_file_size(det));
+    }
+    {
+        acq::CTBStateGuard ctb_guard(det, ctb_state);
         ctb_state.dbit_list.clear();
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
+        REQUIRE_NOTHROW(acquire_and_check_file_size(det));
+    }
+    {
+        acq::CTBStateGuard ctb_guard(det, ctb_state);
+        ctb_state.dbit_offset = 16;
+        ctb_state.dbit_list.clear();
+        REQUIRE_NOTHROW(acquire_and_check_file_size(det));
+    }
+    {
+        acq::CTBStateGuard ctb_guard(det, ctb_state);
+        ctb_state.dbit_reorder = true;
+        ctb_state.dbit_list.clear();
+        REQUIRE_NOTHROW(acquire_and_check_file_size(det));
+    }
+    {
+        acq::CTBStateGuard ctb_guard(det, ctb_state);
+        ctb_state.dbit_offset = 16;
+        ctb_state.dbit_reorder = true;
+        ctb_state.dbit_list.clear();
+        REQUIRE_NOTHROW(acquire_and_check_file_size(det));
     }
     {
         acq::CTBStateGuard ctb_guard(det, ctb_state);
         ctb_state.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
+        REQUIRE_NOTHROW(acquire_and_check_file_size(det));
     }
     {
         acq::CTBStateGuard ctb_guard(det, ctb_state);
         ctb_state.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
         ctb_state.dbit_offset = 16;
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
+        REQUIRE_NOTHROW(acquire_and_check_file_size(det));
     }
     {
         acq::CTBStateGuard ctb_guard(det, ctb_state);
         ctb_state.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
         ctb_state.dbit_reorder = true;
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
-    }
-    {
-        acq::CTBStateGuard ctb_guard(det, ctb_state);
-        ctb_state.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
-        ctb_state.dbit_offset = 16;
-        ctb_state.dbit_reorder = true;
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
-    }
-    {
-        acq::CTBStateGuard ctb_guard(det, ctb_state);
-        ctb_state.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
-        ctb_state.dbit_list.clear();
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
-    }
-    {
-        acq::CTBStateGuard ctb_guard(det, ctb_state);
-        ctb_state.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
-        ctb_state.dbit_offset = 16;
-        ctb_state.dbit_list.clear();
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
-    }
-    {
-        acq::CTBStateGuard ctb_guard(det, ctb_state);
-        ctb_state.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
-        ctb_state.dbit_reorder = true;
-        ctb_state.dbit_list.clear();
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
+        REQUIRE_NOTHROW(acquire_and_check_file_size(det));
     }
     {
         acq::CTBStateGuard ctb_guard(det, ctb_state);
         ctb_state.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
         ctb_state.dbit_offset = 16;
         ctb_state.dbit_reorder = true;
+        REQUIRE_NOTHROW(acquire_and_check_file_size(det));
+    }
+    {
+        acq::CTBStateGuard ctb_guard(det, ctb_state);
+        ctb_state.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
         ctb_state.dbit_list.clear();
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
+        REQUIRE_NOTHROW(acquire_and_check_file_size(det));
+    }
+    {
+        acq::CTBStateGuard ctb_guard(det, ctb_state);
+        ctb_state.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
+        ctb_state.dbit_offset = 16;
+        ctb_state.dbit_list.clear();
+        REQUIRE_NOTHROW(acquire_and_check_file_size(det));
+    }
+    {
+        acq::CTBStateGuard ctb_guard(det, ctb_state);
+        ctb_state.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
+        ctb_state.dbit_reorder = true;
+        ctb_state.dbit_list.clear();
+        REQUIRE_NOTHROW(acquire_and_check_file_size(det));
+    }
+    {
+        acq::CTBStateGuard ctb_guard(det, ctb_state);
+        ctb_state.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
+        ctb_state.dbit_offset = 16;
+        ctb_state.dbit_reorder = true;
+        ctb_state.dbit_list.clear();
+        REQUIRE_NOTHROW(acquire_and_check_file_size(det));
     }
     {
         acq::CTBStateGuard ctb_guard(det, ctb_state);
         ctb_state.readout_mode = defs::TRANSCEIVER_ONLY;
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
+        REQUIRE_NOTHROW(acquire_and_check_file_size(det));
     }
     {
         acq::CTBStateGuard ctb_guard(det, ctb_state);
         ctb_state.readout_mode = defs::TRANSCEIVER_ONLY;
         ctb_state.dbit_reorder = true;
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
+        REQUIRE_NOTHROW(acquire_and_check_file_size(det));
     }
     {
         acq::CTBStateGuard ctb_guard(det, ctb_state);
         ctb_state.readout_mode = defs::TRANSCEIVER_ONLY;
         ctb_state.dbit_offset = 16;
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
-    }
-    {
-        acq::CTBStateGuard ctb_guard(det, ctb_state);
-        ctb_state.readout_mode = defs::TRANSCEIVER_ONLY;
-        ctb_state.dbit_offset = 16;
-        ctb_state.dbit_reorder = true;
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
-    }
-    {
-        acq::CTBStateGuard ctb_guard(det, ctb_state);
-        ctb_state.readout_mode = defs::TRANSCEIVER_ONLY;
-        ctb_state.dbit_list.clear();
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
-    }
-    {
-        acq::CTBStateGuard ctb_guard(det, ctb_state);
-        ctb_state.readout_mode = defs::TRANSCEIVER_ONLY;
-        ctb_state.dbit_offset = 16;
-        ctb_state.dbit_list.clear();
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
-    }
-    {
-        acq::CTBStateGuard ctb_guard(det, ctb_state);
-        ctb_state.readout_mode = defs::TRANSCEIVER_ONLY;
-        ctb_state.dbit_reorder = true;
-        ctb_state.dbit_list.clear();
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
+        REQUIRE_NOTHROW(acquire_and_check_file_size(det));
     }
     {
         acq::CTBStateGuard ctb_guard(det, ctb_state);
         ctb_state.readout_mode = defs::TRANSCEIVER_ONLY;
         ctb_state.dbit_offset = 16;
         ctb_state.dbit_reorder = true;
+        REQUIRE_NOTHROW(acquire_and_check_file_size(det));
+    }
+    {
+        acq::CTBStateGuard ctb_guard(det, ctb_state);
+        ctb_state.readout_mode = defs::TRANSCEIVER_ONLY;
         ctb_state.dbit_list.clear();
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
+        REQUIRE_NOTHROW(acquire_and_check_file_size(det));
+    }
+    {
+        acq::CTBStateGuard ctb_guard(det, ctb_state);
+        ctb_state.readout_mode = defs::TRANSCEIVER_ONLY;
+        ctb_state.dbit_offset = 16;
+        ctb_state.dbit_list.clear();
+        REQUIRE_NOTHROW(acquire_and_check_file_size(det));
+    }
+    {
+        acq::CTBStateGuard ctb_guard(det, ctb_state);
+        ctb_state.readout_mode = defs::TRANSCEIVER_ONLY;
+        ctb_state.dbit_reorder = true;
+        ctb_state.dbit_list.clear();
+        REQUIRE_NOTHROW(acquire_and_check_file_size(det));
+    }
+    {
+        acq::CTBStateGuard ctb_guard(det, ctb_state);
+        ctb_state.readout_mode = defs::TRANSCEIVER_ONLY;
+        ctb_state.dbit_offset = 16;
+        ctb_state.dbit_reorder = true;
+        ctb_state.dbit_list.clear();
+        REQUIRE_NOTHROW(acquire_and_check_file_size(det));
     }
     {
         acq::CTBStateGuard ctb_guard(det, ctb_state);
         ctb_state.readout_mode = defs::ANALOG_ONLY;
         ctb_state.dbit_offset = 16;
         ctb_state.dbit_reorder = true;
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
+        REQUIRE_NOTHROW(acquire_and_check_file_size(det));
     }
 }
 

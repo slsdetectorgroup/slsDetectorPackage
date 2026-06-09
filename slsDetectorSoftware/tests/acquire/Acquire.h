@@ -9,7 +9,6 @@
 namespace sls::test::acquire {
 
 class FileState;
-class CTBState;
 
 // at the moment, only number of frames
 struct AcquisitionState {
@@ -56,7 +55,5 @@ void wait_until_idle(const Detector &det);
 void run_acquisition(Detector &det);
 void run(Detector &det, const AcquisitionState &acq_state,
          const FileState &file_state);
-void run(Detector &det, const AcquisitionState &acq_state,
-         const FileState &file_state, const CTBState &ctb_state);
 
 } // namespace sls::test::acquire

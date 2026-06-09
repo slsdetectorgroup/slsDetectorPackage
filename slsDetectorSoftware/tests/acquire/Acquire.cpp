@@ -2,7 +2,6 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 
 #include "Acquire.h"
-#include "CTBState.h"
 #include "FileState.h"
 
 #include "catch.hpp"
@@ -34,11 +33,6 @@ void run_acquisition(Detector &det) {
 
 void run(Detector &det, const AcquisitionState &acq_state,
          const FileState &file_state) {
-    run(det, acq_state, file_state, default_ctb_state());
-}
-
-void run(Detector &det, const AcquisitionState &acq_state,
-         const FileState &file_state, const CTBState &ctb_state) {
     FileStateGuard file_guard(det, file_state);
     AcquisitionStateGuard acq_guard(det, acq_state);
     run_acquisition(det);

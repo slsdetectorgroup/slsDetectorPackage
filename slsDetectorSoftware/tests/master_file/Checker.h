@@ -24,6 +24,7 @@ template <> class Checker<JsonContext> {
     template <typename T>
     void check(const std::string &name, const T &expected,
                AccessType = AccessType::Dataset) const {
+        CAPTURE(name);
         REQUIRE(ctx_.doc.HasMember(name.c_str()));
         auto retval = read<JsonContext, T>(ctx_, name);
         REQUIRE(retval == expected);

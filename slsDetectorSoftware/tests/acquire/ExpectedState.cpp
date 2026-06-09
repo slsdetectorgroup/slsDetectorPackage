@@ -27,7 +27,8 @@ int get_dynamic_range(const Detector &det) {
     return det.getDynamicRange().tsquash("Inconsistent dynamic range");
 }
 
-defs::xy get_port_shape(const Detector &det) {
+defs::xy get_port_shape(const Detector &det,
+                        std::optional<acq::CTBState> &ctb_state) {
     auto det_type = get_detector_type(det);
     auto portSize = det.getPortSize()[0];
 
@@ -41,10 +42,14 @@ defs::xy get_port_shape(const Detector &det) {
         portSize.x = nchan * num_counters;
     } else if (det_type == defs::CHIPTESTBOARD ||
                det_type == defs::XILINX_CHIPTESTBOARD) {
-        acq::CTBState test_info = acq::default_ctb_state();
-        portSize.x = sls::calculate_ctb_image_size(
-                         test_info, det_type == defs::XILINX_CHIPTESTBOARD)
-                         .second;
+        if (!ctb_state.has_value()) {
+            throw sls::RuntimeError(
+                "CTB state must be provided to calculate expected port shape");
+        }
+        portSize.x =
+            sls::calculate_ctb_image_size(
+                ctb_state.value(), det_type == defs::XILINX_CHIPTESTBOARD)
+                .second;
         portSize.y = 1;
     }
     return portSize;
@@ -150,14 +155,15 @@ std::pair<ns, ns> get_sub_exptime_and_sub_period(const Detector &det) {
     return std::make_pair(ns(exptime), ns(sub_period));
 }
 
-acq::CommonExpectedState build_common_state(const Detector &det,
-                                            const acq::CTBState &ctb_state) {
+acq::CommonExpectedState
+build_common_state(const Detector &det,
+                   std::optional<acq::CTBState> ctb_state) {
     acq::CommonExpectedState e;
     e.det_type = get_detector_type(det);
     e.timing_mode = det.getTimingMode().tsquash("Inconsistent timing mode");
     e.geometry = get_geometry(det);
     e.image_size = acq::get_expected_image_size(det, ctb_state);
-    e.port_shape = get_port_shape(det);
+    e.port_shape = get_port_shape(det, ctb_state);
     e.max_frames_per_file =
         det.getFramesPerFile().tsquash("Inconsistent frames per file");
     e.frame_discard_policy = det.getRxFrameDiscardPolicy().tsquash(
@@ -258,7 +264,7 @@ acq::CTBExpectedState build_ctb_specific_state(const Detector &det,
 
 acq::DetectorSpecificState
 build_detector_specific_state(const Detector &det,
-                              const acq::CTBState &ctb_state) {
+                              std::optional<acq::CTBState> ctb_state) {
     switch (det.getDetectorType().tsquash("bad type")) {
     case defs::JUNGFRAU:
         return build_jungfrau_specific_state(det);
@@ -272,7 +278,11 @@ build_detector_specific_state(const Detector &det,
         return build_gotthard2_specific_state(det);
     case defs::CHIPTESTBOARD:
     case defs::XILINX_CHIPTESTBOARD:
-        return build_ctb_specific_state(det, ctb_state);
+        if (!ctb_state.has_value()) {
+            throw sls::RuntimeError(
+                "CTB state must be provided to build expected state");
+        }
+        return build_ctb_specific_state(det, ctb_state.value());
     default:
         throw sls::RuntimeError("Unsupported detector type");
     }
@@ -284,7 +294,7 @@ namespace sls::test::acquire {
 ExpectedState build_expected_state(const Detector &det,
                                    const AcquisitionState &acq_state,
                                    const FileState &file_state,
-                                   const CTBState &ctb_state) {
+                                   std::optional<CTBState> ctb_state) {
     ExpectedState e;
     e.common_state = build_common_state(det, ctb_state);
     e.file_state = file_state;
@@ -293,7 +303,8 @@ ExpectedState build_expected_state(const Detector &det,
     return e;
 }
 
-int get_expected_image_size(const Detector &det, const CTBState &ctb_state) {
+int get_expected_image_size(const Detector &det,
+                            std::optional<CTBState> ctb_state) {
     auto det_type = get_detector_type(det);
     auto dynamic_range = get_dynamic_range(det);
     int bytes_per_pixel = dynamic_range / 8;
@@ -324,11 +335,17 @@ int get_expected_image_size(const Detector &det, const CTBState &ctb_state) {
         image_size = par.nChanX * par.nChipX * bytes_per_pixel;
     } break;
     case defs::CHIPTESTBOARD:
-        image_size = sls::calculate_ctb_image_size(ctb_state, false).first;
+    case defs::XILINX_CHIPTESTBOARD:
+        if (!ctb_state.has_value()) {
+            throw sls::RuntimeError(
+                "CTB state must be provided to calculate expected image size");
+        }
+        LOG(logINFORED) << ctb_state.value();
+        image_size =
+            sls::calculate_ctb_image_size(
+                ctb_state.value(), (det_type == defs::XILINX_CHIPTESTBOARD))
+                .first;
         break;
-    case defs::XILINX_CHIPTESTBOARD: {
-        image_size = sls::calculate_ctb_image_size(ctb_state, true).first;
-    } break;
     default:
         throw sls::RuntimeError("Unsupported detector type for this test");
     }

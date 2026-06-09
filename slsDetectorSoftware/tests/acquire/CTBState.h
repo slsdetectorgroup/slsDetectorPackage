@@ -6,6 +6,7 @@
 #include "sls/logger.h"
 
 #include <cstdint>
+#include <optional>
 #include <vector>
 
 namespace sls::test::acquire {
@@ -25,7 +26,13 @@ struct CTBState {
 };
 
 /** an example of CTB config */
-inline CTBState default_ctb_state(bool isAltera = false) {
+inline CTBState
+default_ctb_state(const defs::detectorType &detType = defs::GENERIC) {
+    if (detType == defs::GENERIC) {
+        throw sls::RuntimeError(
+            "Cannot determine default CTB state for generic detector type.");
+    }
+    auto isAltera = (detType == defs::CHIPTESTBOARD);
     return {defs::ANALOG_AND_DIGITAL, 5000,       6000,       288,
             isAltera ? false : true,  0xFFFFFF00, 0xFF00FFFF, 0,
             {0, 12, 2, 43},           false,      0x3};
@@ -103,14 +110,18 @@ inline void print_current_ctb_state(const Detector &det) {
  */
 class CTBStateGuard {
   public:
-    explicit CTBStateGuard(Detector &det, const CTBState &new_state)
+    explicit CTBStateGuard(Detector &det,
+                           std::optional<CTBState> new_state = std::nullopt)
         : det(det) {
         auto type = det.getDetectorType().squash(defs::GENERIC);
-        active =
-            (type == defs::CHIPTESTBOARD || type == defs::XILINX_CHIPTESTBOARD);
-        if (active) {
+        if (type == defs::CHIPTESTBOARD || type == defs::XILINX_CHIPTESTBOARD) {
+            active = true;
+            if (!new_state.has_value()) {
+                throw sls::RuntimeError(
+                    "New CTB state must be provided for CTBStateGuard.");
+            }
             saved_ = get_ctb_state(det);
-            set_ctb_state(det, new_state);
+            set_ctb_state(det, new_state.value());
         }
     }
     ~CTBStateGuard() {
@@ -121,7 +132,6 @@ class CTBStateGuard {
   private:
     Detector &det;
     bool active{false};
-    bool isAltera{false};
     CTBState saved_;
 };
 

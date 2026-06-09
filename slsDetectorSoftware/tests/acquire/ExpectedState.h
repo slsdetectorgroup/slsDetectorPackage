@@ -111,9 +111,9 @@ ExpectedState build_expected_state(
     const Detector &det,
     const AcquisitionState &acq_state = default_acquisition_state(),
     const FileState &file_state = default_file_state(),
-    const CTBState &ctb_state = default_ctb_state());
+    std::optional<CTBState> ctb_state = std::nullopt);
 
 int get_expected_image_size(const Detector &det,
-                            const CTBState &ctb_state = default_ctb_state());
+                            std::optional<CTBState> ctb_state = std::nullopt);
 
 } // namespace sls::test::acquire

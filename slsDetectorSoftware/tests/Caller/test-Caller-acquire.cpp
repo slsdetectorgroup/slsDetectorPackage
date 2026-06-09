@@ -15,10 +15,12 @@ namespace acq = sls::test::acquire;
 namespace checks = sls::test::checks;
 
 void acquire_and_check_file_size(
-    Detector &det, const acq::CTBState &ctb_state = acq::default_ctb_state()) {
+    Detector &det, std::optional<acq::CTBState> ctb_state = std::nullopt) {
     auto acq_state = acq::default_acquisition_state();
     acq_state.num_frames = 2;
     auto file_state = acq::default_file_state();
+    INFO("Acquiring " << ToString(det.getDetectorType().squash(defs::GENERIC))
+                      << " with num_frames = " << acq_state.num_frames);
     acq::run(det, acq_state, file_state);
     auto image_size = acq::get_expected_image_size(det, ctb_state);
     REQUIRE_NOTHROW(
@@ -26,9 +28,8 @@ void acquire_and_check_file_size(
 }
 
 void test_ctb_binary_file_size(Detector &det) {
-    bool isAltera =
-        (det.getDetectorType().squash(defs::GENERIC) == defs::CHIPTESTBOARD);
-    acq::CTBState ctb_state = acq::default_ctb_state(isAltera);
+    auto detType = det.getDetectorType().squash(defs::GENERIC);
+    acq::CTBState ctb_state = acq::default_ctb_state(detType);
     // default ctb state for tests
     // readout mode = defs::ANALOG_AND_DIGITAL
     // analog samples = 5000
@@ -42,187 +43,212 @@ void test_ctb_binary_file_size(Detector &det) {
     // dbit reorder = false
     // trans mask = 0x3
 
-    acq::CTBStateGuard ctb_guard(det, ctb_state);
+    acq::CTBStateGuard ctb_guard(det, std::make_optional(ctb_state));
 
     {
-        ctb_state = acq::default_ctb_state(isAltera);
+        ctb_state = acq::default_ctb_state(detType);
         acq::set_ctb_state(det, ctb_state);
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
+        REQUIRE_NOTHROW(
+            acquire_and_check_file_size(det, std::make_optional(ctb_state)));
     }
     {
-        ctb_state = acq::default_ctb_state(isAltera);
+        ctb_state = acq::default_ctb_state(detType);
         ctb_state.dbit_reorder = true;
         acq::set_ctb_state(det, ctb_state);
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
+        REQUIRE_NOTHROW(
+            acquire_and_check_file_size(det, std::make_optional(ctb_state)));
     }
     {
-        ctb_state = acq::default_ctb_state(isAltera);
+        ctb_state = acq::default_ctb_state(detType);
         ctb_state.dbit_offset = 16;
         acq::set_ctb_state(det, ctb_state);
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
+        REQUIRE_NOTHROW(
+            acquire_and_check_file_size(det, std::make_optional(ctb_state)));
     }
     {
-        ctb_state = acq::default_ctb_state(isAltera);
-        ctb_state.dbit_offset = 16;
-        ctb_state.dbit_reorder = true;
-        acq::set_ctb_state(det, ctb_state);
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
-    }
-    {
-        ctb_state = acq::default_ctb_state(isAltera);
-        ctb_state.dbit_list.clear();
-        acq::set_ctb_state(det, ctb_state);
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
-    }
-    {
-        ctb_state = acq::default_ctb_state(isAltera);
-        ctb_state.dbit_offset = 16;
-        ctb_state.dbit_list.clear();
-        acq::set_ctb_state(det, ctb_state);
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
-    }
-    {
-        ctb_state = acq::default_ctb_state(isAltera);
-        ctb_state.dbit_reorder = true;
-        ctb_state.dbit_list.clear();
-        acq::set_ctb_state(det, ctb_state);
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
-    }
-    {
-        ctb_state = acq::default_ctb_state(isAltera);
-        ctb_state.dbit_offset = 16;
-        ctb_state.dbit_reorder = true;
-        ctb_state.dbit_list.clear();
-        acq::set_ctb_state(det, ctb_state);
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
-    }
-    {
-        ctb_state = acq::default_ctb_state(isAltera);
-        ctb_state.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
-        acq::set_ctb_state(det, ctb_state);
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
-    }
-    {
-        ctb_state = acq::default_ctb_state(isAltera);
-        ctb_state.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
-        ctb_state.dbit_offset = 16;
-        acq::set_ctb_state(det, ctb_state);
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
-    }
-    {
-        ctb_state = acq::default_ctb_state(isAltera);
-        ctb_state.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
-        ctb_state.dbit_reorder = true;
-        acq::set_ctb_state(det, ctb_state);
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
-    }
-    {
-        ctb_state = acq::default_ctb_state(isAltera);
-        ctb_state.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
+        ctb_state = acq::default_ctb_state(detType);
         ctb_state.dbit_offset = 16;
         ctb_state.dbit_reorder = true;
         acq::set_ctb_state(det, ctb_state);
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
+        REQUIRE_NOTHROW(
+            acquire_and_check_file_size(det, std::make_optional(ctb_state)));
     }
     {
-        ctb_state = acq::default_ctb_state(isAltera);
-        ctb_state.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
+        ctb_state = acq::default_ctb_state(detType);
         ctb_state.dbit_list.clear();
         acq::set_ctb_state(det, ctb_state);
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
+        REQUIRE_NOTHROW(
+            acquire_and_check_file_size(det, std::make_optional(ctb_state)));
     }
     {
-        ctb_state = acq::default_ctb_state(isAltera);
-        ctb_state.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
+        ctb_state = acq::default_ctb_state(detType);
         ctb_state.dbit_offset = 16;
         ctb_state.dbit_list.clear();
         acq::set_ctb_state(det, ctb_state);
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
+        REQUIRE_NOTHROW(
+            acquire_and_check_file_size(det, std::make_optional(ctb_state)));
     }
     {
-        ctb_state = acq::default_ctb_state(isAltera);
-        ctb_state.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
+        ctb_state = acq::default_ctb_state(detType);
         ctb_state.dbit_reorder = true;
         ctb_state.dbit_list.clear();
         acq::set_ctb_state(det, ctb_state);
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
+        REQUIRE_NOTHROW(
+            acquire_and_check_file_size(det, std::make_optional(ctb_state)));
     }
     {
-        ctb_state = acq::default_ctb_state(isAltera);
+        ctb_state = acq::default_ctb_state(detType);
+        ctb_state.dbit_offset = 16;
+        ctb_state.dbit_reorder = true;
+        ctb_state.dbit_list.clear();
+        acq::set_ctb_state(det, ctb_state);
+        REQUIRE_NOTHROW(
+            acquire_and_check_file_size(det, std::make_optional(ctb_state)));
+    }
+    {
+        ctb_state = acq::default_ctb_state(detType);
+        ctb_state.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
+        acq::set_ctb_state(det, ctb_state);
+        REQUIRE_NOTHROW(
+            acquire_and_check_file_size(det, std::make_optional(ctb_state)));
+    }
+    {
+        ctb_state = acq::default_ctb_state(detType);
+        ctb_state.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
+        ctb_state.dbit_offset = 16;
+        acq::set_ctb_state(det, ctb_state);
+        REQUIRE_NOTHROW(
+            acquire_and_check_file_size(det, std::make_optional(ctb_state)));
+    }
+    {
+        ctb_state = acq::default_ctb_state(detType);
+        ctb_state.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
+        ctb_state.dbit_reorder = true;
+        acq::set_ctb_state(det, ctb_state);
+        REQUIRE_NOTHROW(
+            acquire_and_check_file_size(det, std::make_optional(ctb_state)));
+    }
+    {
+        ctb_state = acq::default_ctb_state(detType);
         ctb_state.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
         ctb_state.dbit_offset = 16;
         ctb_state.dbit_reorder = true;
+        acq::set_ctb_state(det, ctb_state);
+        REQUIRE_NOTHROW(
+            acquire_and_check_file_size(det, std::make_optional(ctb_state)));
+    }
+    {
+        ctb_state = acq::default_ctb_state(detType);
+        ctb_state.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
         ctb_state.dbit_list.clear();
         acq::set_ctb_state(det, ctb_state);
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
+        REQUIRE_NOTHROW(
+            acquire_and_check_file_size(det, std::make_optional(ctb_state)));
     }
     {
-        ctb_state = acq::default_ctb_state(isAltera);
-        ctb_state.readout_mode = defs::TRANSCEIVER_ONLY;
-        acq::set_ctb_state(det, ctb_state);
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
-    }
-    {
-        ctb_state = acq::default_ctb_state(isAltera);
-        ctb_state.readout_mode = defs::TRANSCEIVER_ONLY;
-        ctb_state.dbit_reorder = true;
-        acq::set_ctb_state(det, ctb_state);
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
-    }
-    {
-        ctb_state = acq::default_ctb_state(isAltera);
-        ctb_state.readout_mode = defs::TRANSCEIVER_ONLY;
-        ctb_state.dbit_offset = 16;
-        acq::set_ctb_state(det, ctb_state);
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
-    }
-    {
-        ctb_state = acq::default_ctb_state(isAltera);
-        ctb_state.readout_mode = defs::TRANSCEIVER_ONLY;
-        ctb_state.dbit_offset = 16;
-        ctb_state.dbit_reorder = true;
-        acq::set_ctb_state(det, ctb_state);
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
-    }
-    {
-        ctb_state = acq::default_ctb_state(isAltera);
-        ctb_state.readout_mode = defs::TRANSCEIVER_ONLY;
-        ctb_state.dbit_list.clear();
-        acq::set_ctb_state(det, ctb_state);
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
-    }
-    {
-        ctb_state = acq::default_ctb_state(isAltera);
-        ctb_state.readout_mode = defs::TRANSCEIVER_ONLY;
+        ctb_state = acq::default_ctb_state(detType);
+        ctb_state.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
         ctb_state.dbit_offset = 16;
         ctb_state.dbit_list.clear();
         acq::set_ctb_state(det, ctb_state);
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
+        REQUIRE_NOTHROW(
+            acquire_and_check_file_size(det, std::make_optional(ctb_state)));
     }
     {
-        ctb_state = acq::default_ctb_state(isAltera);
-        ctb_state.readout_mode = defs::TRANSCEIVER_ONLY;
+        ctb_state = acq::default_ctb_state(detType);
+        ctb_state.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
         ctb_state.dbit_reorder = true;
         ctb_state.dbit_list.clear();
         acq::set_ctb_state(det, ctb_state);
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
+        REQUIRE_NOTHROW(
+            acquire_and_check_file_size(det, std::make_optional(ctb_state)));
     }
     {
-        ctb_state = acq::default_ctb_state(isAltera);
-        ctb_state.readout_mode = defs::TRANSCEIVER_ONLY;
+        ctb_state = acq::default_ctb_state(detType);
+        ctb_state.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
         ctb_state.dbit_offset = 16;
         ctb_state.dbit_reorder = true;
         ctb_state.dbit_list.clear();
         acq::set_ctb_state(det, ctb_state);
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
+        REQUIRE_NOTHROW(
+            acquire_and_check_file_size(det, std::make_optional(ctb_state)));
     }
     {
-        ctb_state = acq::default_ctb_state(isAltera);
+        ctb_state = acq::default_ctb_state(detType);
+        ctb_state.readout_mode = defs::TRANSCEIVER_ONLY;
+        acq::set_ctb_state(det, ctb_state);
+        REQUIRE_NOTHROW(
+            acquire_and_check_file_size(det, std::make_optional(ctb_state)));
+    }
+    {
+        ctb_state = acq::default_ctb_state(detType);
+        ctb_state.readout_mode = defs::TRANSCEIVER_ONLY;
+        ctb_state.dbit_reorder = true;
+        acq::set_ctb_state(det, ctb_state);
+        REQUIRE_NOTHROW(
+            acquire_and_check_file_size(det, std::make_optional(ctb_state)));
+    }
+    {
+        ctb_state = acq::default_ctb_state(detType);
+        ctb_state.readout_mode = defs::TRANSCEIVER_ONLY;
+        ctb_state.dbit_offset = 16;
+        acq::set_ctb_state(det, ctb_state);
+        REQUIRE_NOTHROW(
+            acquire_and_check_file_size(det, std::make_optional(ctb_state)));
+    }
+    {
+        ctb_state = acq::default_ctb_state(detType);
+        ctb_state.readout_mode = defs::TRANSCEIVER_ONLY;
+        ctb_state.dbit_offset = 16;
+        ctb_state.dbit_reorder = true;
+        acq::set_ctb_state(det, ctb_state);
+        REQUIRE_NOTHROW(
+            acquire_and_check_file_size(det, std::make_optional(ctb_state)));
+    }
+    {
+        ctb_state = acq::default_ctb_state(detType);
+        ctb_state.readout_mode = defs::TRANSCEIVER_ONLY;
+        ctb_state.dbit_list.clear();
+        acq::set_ctb_state(det, ctb_state);
+        REQUIRE_NOTHROW(
+            acquire_and_check_file_size(det, std::make_optional(ctb_state)));
+    }
+    {
+        ctb_state = acq::default_ctb_state(detType);
+        ctb_state.readout_mode = defs::TRANSCEIVER_ONLY;
+        ctb_state.dbit_offset = 16;
+        ctb_state.dbit_list.clear();
+        acq::set_ctb_state(det, ctb_state);
+        REQUIRE_NOTHROW(
+            acquire_and_check_file_size(det, std::make_optional(ctb_state)));
+    }
+    {
+        ctb_state = acq::default_ctb_state(detType);
+        ctb_state.readout_mode = defs::TRANSCEIVER_ONLY;
+        ctb_state.dbit_reorder = true;
+        ctb_state.dbit_list.clear();
+        acq::set_ctb_state(det, ctb_state);
+        REQUIRE_NOTHROW(
+            acquire_and_check_file_size(det, std::make_optional(ctb_state)));
+    }
+    {
+        ctb_state = acq::default_ctb_state(detType);
+        ctb_state.readout_mode = defs::TRANSCEIVER_ONLY;
+        ctb_state.dbit_offset = 16;
+        ctb_state.dbit_reorder = true;
+        ctb_state.dbit_list.clear();
+        acq::set_ctb_state(det, ctb_state);
+        REQUIRE_NOTHROW(
+            acquire_and_check_file_size(det, std::make_optional(ctb_state)));
+    }
+    {
+        ctb_state = acq::default_ctb_state(detType);
         ctb_state.readout_mode = defs::ANALOG_ONLY;
         ctb_state.dbit_offset = 16;
         ctb_state.dbit_reorder = true;
         acq::set_ctb_state(det, ctb_state);
-        REQUIRE_NOTHROW(acquire_and_check_file_size(det, ctb_state));
+        REQUIRE_NOTHROW(
+            acquire_and_check_file_size(det, std::make_optional(ctb_state)));
     }
 }
 

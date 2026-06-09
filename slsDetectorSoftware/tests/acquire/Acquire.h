@@ -26,9 +26,10 @@ inline void set_acquisition_state(Detector &det, const AcquisitionState &s) {
     det.setNumberOfFrames(s.num_frames);
 }
 
-inline void print_acquisition_state(const AcquisitionState &s) {
-    LOG(logINFO) << "Acquisition State:"
-                 << "\n  Number of Frames: " << s.num_frames;
+inline std::ostream &operator<<(std::ostream &os, const AcquisitionState &s) {
+    os << "Acquisition State:"
+       << "\n  Number of Frames: " << s.num_frames;
+    return os;
 }
 
 /**

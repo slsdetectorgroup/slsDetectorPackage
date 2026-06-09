@@ -67,16 +67,15 @@ get_first_port_first_file_name(const FileState &s = default_file_state()) {
     return file_prefix + ".h5";
 }
 
-inline void print_file_state(const FileState &s) {
-    LOG(logINFO) << "File State:"
-                 << "\n  Path: " << s.file_path
-                 << "\n  Prefix: " << s.file_prefix
-                 << "\n  Acq Index: " << s.file_acq_index
-                 << "\n  Write: " << s.file_write
-                 << "\n  Overwrite: " << s.file_overwrite
-                 << "\n  Format: " << ToString(s.file_format)
-                 << "\n  Master File: " << get_master_file_name(s)
-                 << "\n  Virtual File: " << get_virtual_file_name(s);
+inline std::ostream &operator<<(std::ostream &os, const FileState &s) {
+    os << "File State:"
+       << "\n  Path: " << s.file_path << "\n  Prefix: " << s.file_prefix
+       << "\n  Acq Index: " << s.file_acq_index << "\n  Write: " << s.file_write
+       << "\n  Overwrite: " << s.file_overwrite
+       << "\n  Format: " << ToString(s.file_format)
+       << "\n  Master File: " << get_master_file_name(s)
+       << "\n  Virtual File: " << get_virtual_file_name(s);
+    return os;
 }
 
 /**

@@ -31,7 +31,9 @@ inline CTBState default_ctb_state(bool isAltera = false) {
             {0, 12, 2, 43},           false,      0x3};
 }
 
-inline CTBState get_ctb_state(const Detector &det, bool isAltera) {
+inline CTBState get_ctb_state(const Detector &det) {
+    auto isAltera =
+        (det.getDetectorType().squash(defs::GENERIC) == defs::CHIPTESTBOARD);
     return CTBState{
         det.getReadoutMode().tsquash("Inconsistent readout mode"),
         det.getNumberOfAnalogSamples().tsquash(
@@ -54,7 +56,9 @@ inline CTBState get_ctb_state(const Detector &det, bool isAltera) {
             "Inconsistent transceiver mask")};
 }
 
-inline void set_ctb_state(Detector &det, const CTBState &s, bool isAltera) {
+inline void set_ctb_state(Detector &det, const CTBState &s) {
+    auto isAltera =
+        (det.getDetectorType().squash(defs::GENERIC) == defs::CHIPTESTBOARD);
     det.setReadoutMode(s.readout_mode);
     if (isAltera) {
         det.setTenGiga(s.ten_giga);
@@ -70,19 +74,25 @@ inline void set_ctb_state(Detector &det, const CTBState &s, bool isAltera) {
     det.setTransceiverEnableMask(s.transceiver_mask);
 }
 
-inline void print_ctb_state(const CTBState &s) {
-    LOG(logINFO) << "CTB State:"
-                 << "\n  Readout Mode: " << ToString(s.readout_mode)
-                 << "\n  Num ADC Samples: " << s.num_adc_samples
-                 << "\n  Num DBIT Samples: " << s.num_dbit_samples
-                 << "\n  Num Trans Samples: " << s.num_trans_samples
-                 << "\n  Ten Giga: " << s.ten_giga
-                 << "\n  ADC Enable 1G: " << ToStringHex(s.adc_enable_1g)
-                 << "\n  ADC Enable 10G: " << ToStringHex(s.adc_enable_10g)
-                 << "\n  DBIT Offset: " << s.dbit_offset
-                 << "\n  DBIT List: " << ToString(s.dbit_list)
-                 << "\n  DBIT Reorder: " << s.dbit_reorder
-                 << "\n  Transceiver Mask: " << ToStringHex(s.transceiver_mask);
+inline std::ostream &operator<<(std::ostream &os, const CTBState &s) {
+    os << "CTB State:"
+       << "\n  Readout Mode: " << ToString(s.readout_mode)
+       << "\n  Num ADC Samples: " << s.num_adc_samples
+       << "\n  Num DBIT Samples: " << s.num_dbit_samples
+       << "\n  Num Trans Samples: " << s.num_trans_samples
+       << "\n  Ten Giga: " << s.ten_giga
+       << "\n  ADC Enable 1G: " << ToStringHex(s.adc_enable_1g)
+       << "\n  ADC Enable 10G: " << ToStringHex(s.adc_enable_10g)
+       << "\n  DBIT Offset: " << s.dbit_offset
+       << "\n  DBIT List: " << ToString(s.dbit_list)
+       << "\n  DBIT Reorder: " << s.dbit_reorder
+       << "\n  Transceiver Mask: " << ToStringHex(s.transceiver_mask);
+    return os;
+}
+
+inline void print_current_ctb_state(const Detector &det) {
+    auto ctb_state = get_ctb_state(det);
+    LOG(logINFO) << ctb_state;
 }
 
 /**
@@ -96,17 +106,16 @@ class CTBStateGuard {
     explicit CTBStateGuard(Detector &det, const CTBState &new_state)
         : det(det) {
         auto type = det.getDetectorType().squash(defs::GENERIC);
-        isAltera = (type == defs::CHIPTESTBOARD);
         active =
             (type == defs::CHIPTESTBOARD || type == defs::XILINX_CHIPTESTBOARD);
         if (active) {
-            saved_ = get_ctb_state(det, isAltera);
-            set_ctb_state(det, new_state, isAltera);
+            saved_ = get_ctb_state(det);
+            set_ctb_state(det, new_state);
         }
     }
     ~CTBStateGuard() {
         if (active)
-            set_ctb_state(det, saved_, isAltera);
+            set_ctb_state(det, saved_);
     }
 
   private:

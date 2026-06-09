@@ -35,8 +35,8 @@ class Defines:
         loops_count = 6
 
     class transceiver:
-        count = 4
-        tabIndex = 4
+        maxcount = 4
+        maxtabIndex = 4
 
     class slowAdc:
         tabIndex = 2

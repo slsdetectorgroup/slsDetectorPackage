@@ -60,10 +60,10 @@ get_virtual_file_name(const FileState &s = default_file_state()) {
 
 inline std::string
 get_first_port_first_file_name(const FileState &s = default_file_state()) {
-    auto file_prefix = s.file_path + "/" + s.file_prefix + "_" + "_d0_f0_" +
+    auto file_prefix = s.file_path + "/" + s.file_prefix + "_d0_f0_" +
                        std::to_string(s.file_acq_index);
     if (s.file_format == defs::BINARY)
-        return file_prefix + ".bin";
+        return file_prefix + ".raw";
     return file_prefix + ".h5";
 }
 

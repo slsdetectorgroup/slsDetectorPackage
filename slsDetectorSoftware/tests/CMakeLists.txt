@@ -5,6 +5,9 @@
 target_sources(tests PRIVATE 
     ${CMAKE_CURRENT_SOURCE_DIR}/test-SharedMemory.cpp
 
+    ${CMAKE_CURRENT_SOURCE_DIR}/acquire/Acquire.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/acquire/ExpectedState.cpp
+
     ${CMAKE_CURRENT_SOURCE_DIR}/Caller/test-Caller.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Caller/test-Caller-rx.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Caller/test-Caller-pattern.cpp
@@ -17,6 +20,7 @@ target_sources(tests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/Caller/test-Caller-moench.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Caller/test-Caller-global.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Caller/test-Caller-acquire.cpp
+
     ${CMAKE_CURRENT_SOURCE_DIR}/Caller/test-Caller-master-attributes.cpp
 
     
@@ -43,6 +47,8 @@ target_compile_options(tests
 
 target_include_directories(tests 
     PUBLIC 
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>/Caller"
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../src>"
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include/sls>"
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../slsReceiverSoftware/src>"

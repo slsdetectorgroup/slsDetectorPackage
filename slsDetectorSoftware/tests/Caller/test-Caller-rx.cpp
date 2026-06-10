@@ -1,19 +1,20 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "Caller.h"
-#include "catch.hpp"
 #include "sls/Detector.h"
 #include "sls/Version.h"
-#include "sls/sls_detector_defs.h"
-#include "test-Caller-global.h"
-
-#include <filesystem>
-#include <sstream>
-
 #include "sls/versionAPI.h"
+#include "test-Caller-global.h"
 #include "tests/globals.h"
 
+#include "acquire/Acquire.h"
+#include "acquire/FileState.h"
+
+#include "catch.hpp"
+
 namespace sls {
+
+namespace acq = sls::test::acquire;
 
 using test::GET;
 using test::PUT;
@@ -756,19 +757,22 @@ TEST_CASE("rx_roi", "[.detectorintegration][.disable_check_data_file]") {
         // check master file creation
         // TODO: check roi in master file
         {
-            REQUIRE_NOTHROW(create_files_for_acquire(det, caller));
-            testFileInfo file_info;
-            std::string master_file_prefix =
-                file_info.getMasterFileNamePrefix();
+            auto acq_state = acq::default_acquisition_state();
+            auto file_state = acq::default_file_state();
 
-            std::string fname = master_file_prefix + ".json";
-            REQUIRE(std::filesystem::exists(fname) == true);
+            file_state.file_format = defs::BINARY;
+            acq::run(det, acq_state, file_state);
+            std::string fname = acq::get_master_file_name(file_state);
+            REQUIRE(std::filesystem::exists(fname));
+
 #ifdef HDF5C
-            fname = master_file_prefix + ".h5";
-            REQUIRE(std::filesystem::exists(fname) == true);
+            file_state.file_format = defs::HDF5;
+            acq::run(det, acq_state, file_state);
+            fname = acq::get_master_file_name(file_state);
+            REQUIRE(std::filesystem::exists(fname));
             if (det.size() > 1 || numinterfaces > 1) {
-                fname = file_info.getVirtualFileName();
-                REQUIRE(std::filesystem::exists(fname) == true);
+                fname = acq::get_virtual_file_name(file_state);
+                REQUIRE(std::filesystem::exists(fname));
             }
 #endif
         }

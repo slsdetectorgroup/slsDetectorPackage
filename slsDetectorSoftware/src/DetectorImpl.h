@@ -278,10 +278,9 @@ class DetectorImpl : public virtual slsDetectorDefs {
     void stopDetector(Positions pos);
 
     /**
-     * Combines data from all readouts and gives it to the gui
-     * or just gives progress of acquisition by polling receivers
+     * gives progress of acquisition by polling receivers
      */
-    void processData(bool receiver);
+    void printRxProgress();
 
     /**
      * Convert raw file
@@ -450,7 +449,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
 
     void printProgress(double progress);
 
-    void startProcessingThread(bool receiver);
+    void startRxZmqProcessingThread();
+    void startRxProgressThread();
 
     /**
      * Check if processing thread is ready to join main thread

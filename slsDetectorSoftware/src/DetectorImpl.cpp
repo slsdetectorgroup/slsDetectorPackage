@@ -1126,10 +1126,17 @@ int DetectorImpl::acquire() {
 
         // start receiver
         if (receiver) {
-            Parallel(&Module::startReceiver, {});
-        }
 
-        startProcessingThread(receiver);
+            // to catch dummy zmq packets for disabled ports,
+            // start processing thread before startReceiver
+            if (dataReady != nullptr)
+                startRxZmqProcessingThread();
+
+            Parallel(&Module::startReceiver, {});
+
+            if (dataReady == nullptr)
+                startRxProgressThread();
+        }
 
         // start and read all
         try {
@@ -1314,53 +1321,46 @@ void DetectorImpl::printProgress(double progress) {
     std::cout << '\r' << std::flush;
 }
 
-void DetectorImpl::startProcessingThread(bool receiver) {
+void DetectorImpl::startRxZmqProcessingThread() {
     dataProcessingThread =
-        std::thread(&DetectorImpl::processData, this, receiver);
+        std::thread(&DetectorImpl::readFrameFromReceiver, this);
 }
 
-void DetectorImpl::processData(bool receiver) {
-    if (receiver) {
-        if (dataReady != nullptr) {
-            readFrameFromReceiver();
-        }
-        // only update progress
-        else {
-            LOG(logINFO) << "Type 'q' and hit enter to stop acquisition";
-            double progress = 0;
-            printProgress(progress);
+void DetectorImpl::startRxProgressThread() {
+    dataProcessingThread = std::thread(&DetectorImpl::printRxProgress, this);
+}
 
-            while (true) {
-                // to exit acquire by typing q
-                if (kbhit() != 0) {
-                    if (fgetc(stdin) == 'q') {
-                        LOG(logINFO)
-                            << "Caught the command to stop acquisition";
-                        stopDetector({});
-                    }
-                }
-                // get and print progress
-                double temp =
-                    (double)Parallel(&Module::getReceiverProgress, {0})
-                        .squash();
-                if (temp != progress) {
-                    printProgress(progress);
-                    progress = temp;
-                }
+void DetectorImpl::printRxProgress() {
+    LOG(logINFO) << "Type 'q' and hit enter to stop acquisition";
+    double progress = 0;
+    printProgress(progress);
 
-                // exiting loop
-                if (getJoinThreadFlag()) {
-                    // print progress one final time before exiting
-                    progress =
-                        (double)Parallel(&Module::getReceiverProgress, {0})
-                            .squash();
-                    printProgress(progress);
-                    break;
-                }
-                // otherwise error when connecting to the receiver too fast
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    while (true) {
+        // to exit acquire by typing q
+        if (kbhit() != 0) {
+            if (fgetc(stdin) == 'q') {
+                LOG(logINFO) << "Caught the command to stop acquisition";
+                stopDetector({});
             }
         }
+        // get and print progress
+        double temp =
+            (double)Parallel(&Module::getReceiverProgress, {0}).squash();
+        if (temp != progress) {
+            printProgress(progress);
+            progress = temp;
+        }
+
+        // exiting loop
+        if (getJoinThreadFlag()) {
+            // print progress one final time before exiting
+            progress =
+                (double)Parallel(&Module::getReceiverProgress, {0}).squash();
+            printProgress(progress);
+            break;
+        }
+        // otherwise error when connecting to the receiver too fast
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 }
 

@@ -182,10 +182,12 @@ class TransceiverTab(QtWidgets.QWidget):
     def update_numCounters(self, num_counters): 
         # update the number of counters and adjust the image splitter accordingly 
         self.nCounters = num_counters
-
         for i in range(Defines.transceiver.maxcount): 
             self.shownCounters[i] = i < self.nCounters
-            self.plotTab.enableCounterCheckBox(i, self.shownCounters[i])
+            self.plotTab.setCounterCheckBox(i, self.shownCounters[i]) # check the counter checkbox 
+            self.plotTab.enableCounterCheckBox(i, self.shownCounters[i]) # disable counter checkbox 
+        
+        self.update_ImageSplitter() # update the splitter to show/hide image views based on the number of counters
         
         
     def update_ImageSplitter(self):

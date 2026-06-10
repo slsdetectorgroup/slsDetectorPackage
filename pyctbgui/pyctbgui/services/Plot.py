@@ -56,8 +56,8 @@ class PlotTab(QtWidgets.QWidget):
         self.checkBoxCounters = [self.view.checkBoxCounter0, self.view.checkBoxCounter1, self.view.checkBoxCounter2, self.view.checkBoxCounter3]
         
         for checkBox in self.checkBoxCounters:
-            checkBox.setChecked(True)
-            checkBox.setEnabled(True)
+            checkBox.setChecked(False)
+            checkBox.setEnabled(False)
 
         self.imagePlots = (
             self.mainWindow.plotAnalogImage,
@@ -101,8 +101,6 @@ class PlotTab(QtWidgets.QWidget):
         self.view.radioButtonFixed.clicked.connect(partial(self.setColorRangeMode, Defines.colorRange.fixed))
         self.view.radioButtonCenter.clicked.connect(partial(self.setColorRangeMode, Defines.colorRange.center))
 
-        # TODO: need to disable for all but matterhorn/non transceiver I guess, need to be disabled
-        # shown counters 
         for index, checkBox in enumerate(self.checkBoxCounters): 
             checkBox.stateChanged.connect(partial(self.displayCounter, index))
 
@@ -139,8 +137,17 @@ class PlotTab(QtWidgets.QWidget):
         self.transceiverTab.shownCounters[index] = (state == QtCore.Qt.Checked) 
         self.transceiverTab.update_ImageSplitter()
 
+    def setCounterCheckBox(self, index : int, check : bool):
+        self.checkBoxCounters[index].setChecked(check)
+
     def enableCounterCheckBox(self, index : int, enabled : bool): 
-        self.checkBoxCounters[index].setEnabled(enabled)
+        is_transceiver = self.mainWindow.romode.value in [3, 4]
+        is_image = self.view.radioButtonImage.isChecked()
+        self.checkBoxCounters[index].setEnabled(enabled and is_transceiver and is_image)
+
+    def enableallCounterCheckBox(self, enabled : bool):
+        for checkBox in self.checkBoxCounters:
+            checkBox.setEnabled(enabled)
 
     def refresh(self):
         self.getZMQHWM()
@@ -456,14 +463,18 @@ class PlotTab(QtWidgets.QWidget):
                 'bottom', "<span style=\"color:black;font-size:14px\">Transceiver Sample [#]</span>")
 
             self.view.stackedWidgetPlotType.setCurrentIndex(0)
+            self.enableallCounterCheckBox(False) # disable counter checkboxes for waveform
 
         elif self.view.radioButtonImage.isChecked():
             self.view.stackedWidgetPlotType.setCurrentIndex(2)
+            is_transceiver = self.mainWindow.romode.value in [3, 4]
+            self.enableallCounterCheckBox(is_transceiver) # enable counter checkboxes for matterhorn
             self.setDecoder()
 
         if self.view.radioButtonNoPlot.isChecked():
             self.view.labelPlotOptions.hide()
             self.view.stackedWidgetPlotType.hide()
+            self.enableallCounterCheckBox(False) # disable counter checkboxes when no plot is selected
         # enable plotting
         else:
             self.view.labelPlotOptions.show()

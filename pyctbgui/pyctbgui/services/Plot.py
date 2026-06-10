@@ -52,6 +52,13 @@ class PlotTab(QtWidgets.QWidget):
         self.adcTab = self.mainWindow.adcTab
         self.initializeColorMaps()
 
+        # TODO use list comprehension 
+        self.checkBoxCounters = [self.view.checkBoxCounter0, self.view.checkBoxCounter1, self.view.checkBoxCounter2, self.view.checkBoxCounter3]
+        
+        for checkBox in self.checkBoxCounters:
+            checkBox.setChecked(True)
+            checkBox.setEnabled(True)
+
         self.imagePlots = (
             self.mainWindow.plotAnalogImage,
             self.mainWindow.plotDigitalImage,
@@ -94,6 +101,11 @@ class PlotTab(QtWidgets.QWidget):
         self.view.radioButtonFixed.clicked.connect(partial(self.setColorRangeMode, Defines.colorRange.fixed))
         self.view.radioButtonCenter.clicked.connect(partial(self.setColorRangeMode, Defines.colorRange.center))
 
+        # TODO: need to disable for all but matterhorn/non transceiver I guess, need to be disabled
+        # shown counters 
+        for index, checkBox in enumerate(self.checkBoxCounters): 
+            checkBox.stateChanged.connect(partial(self.displayCounter, index))
+
         # show image Values for analog image
         nMaxY = lambda : self.mainWindow.nAnalogRows
         nMaxX = lambda : self.mainWindow.nAnalogCols
@@ -120,6 +132,15 @@ class PlotTab(QtWidgets.QWidget):
             image_view.getHistogramWidget().item.sigLevelChangeFinished.connect(partial(self.handleHistogramChange, image_view))
 
         self.view.checkBoxShowLegend.stateChanged.connect(self.toggleLegend)
+
+
+    def displayCounter(self, index : int, state : int): 
+        # toggle the display of the counter i and update the splitter 
+        self.transceiverTab.shownCounters[index] = (state == QtCore.Qt.Checked) 
+        self.transceiverTab.update_ImageSplitter()
+
+    def enableCounterCheckBox(self, index : int, enabled : bool): 
+        self.checkBoxCounters[index].setEnabled(enabled)
 
     def refresh(self):
         self.getZMQHWM()

@@ -27,15 +27,16 @@ namespace checks = sls::test::checks;
 
 TEST_CASE("check_master_file_attributes",
           "[.detectorintegration][.disable_check_data_file]") {
-    INFO(__func__);
 
     Detector det;
+    auto detType = det.getDetectorType().squash(defs::GENERIC);
+    INFO("Testing master file attributes with " << ToString(detType));
+
     // currently num frame = 1 (default)
     auto acq_state = acq::default_acquisition_state();
     auto file_state = acq::default_file_state();
 
     // if ctb, set to default and restore after test
-    auto detType = det.getDetectorType().squash(defs::GENERIC);
     std::optional<acq::CTBState> ctb_state = std::nullopt;
     if (detType == defs::CHIPTESTBOARD ||
         detType == defs::XILINX_CHIPTESTBOARD) {

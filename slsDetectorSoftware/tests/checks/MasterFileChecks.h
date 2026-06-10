@@ -433,6 +433,7 @@ void check_metadata(CheckerT &checker, const acq::ExpectedState &expected) {
         check_gotthard2_metadata(checker, expected);
         break;
     case defs::CHIPTESTBOARD:
+    case defs::XILINX_CHIPTESTBOARD:
         check_ctb_metadata(checker, expected);
         break;
     default:

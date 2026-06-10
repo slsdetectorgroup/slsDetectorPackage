@@ -255,11 +255,13 @@ void test_ctb_binary_file_size(Detector &det) {
 //  sysctl net.core.rmem_default=$((100*1024*1024))
 TEST_CASE("acquire_check_binary_file_size",
           "[.detectorintegration][.disable_check_data_file]") {
-    INFO(__func__);
 
     Detector det;
     auto det_type =
         det.getDetectorType().tsquash("Inconsistent detector types to test");
+
+    INFO("Testing acquire and checking binary file size with "
+         << ToString(det_type));
 
     if (det_type == defs::CHIPTESTBOARD ||
         det_type == defs::XILINX_CHIPTESTBOARD)

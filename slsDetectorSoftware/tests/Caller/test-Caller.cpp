@@ -7,6 +7,8 @@
 #include "sls/sls_detector_defs.h"
 #include "test-Caller-global.h"
 
+#include "checks/MasterFileChecks.h"
+
 #include <chrono>
 #include <sstream>
 #include <thread>
@@ -16,6 +18,10 @@
 #include <filesystem>
 
 namespace sls {
+
+namespace acq = sls::test::acquire;
+namespace mf = sls::test::master_file;
+namespace checks = sls::test::checks;
 
 using test::GET;
 using test::PUT;
@@ -3086,6 +3092,28 @@ TEST_CASE("udp_datastream", "[.detectorintegration]") {
             caller.call("udp_datastream", {"left", "0"}, -1, PUT, oss);
             REQUIRE(oss.str() == "udp_datastream [left, 0]\n");
         }
+        // check master file
+        {
+            // expected
+            std::vector<defs::portPosition> expected_ports =
+                det.getPortPositionList();
+            std::vector<int> expected_disabled_ports =
+                det.getRxDisabledUDPPortIndices();
+            // run
+            auto acq_state = acq::default_acquisition_state();
+            auto file_state = acq::default_file_state();
+            std::vector<defs::fileFormat> formats = {defs::BINARY, defs::HDF5};
+            for (auto format : formats) {
+                file_state.file_format = format;
+                acq::run(det, acq_state, file_state);
+                std::string fname = acq::get_master_file_name(file_state);
+                mf::with_checker(fname, format, [&](auto &checker) {
+                    checks::check_udp_ports_type(checker, expected_ports);
+                    checks::check_udp_ports_disabled(checker,
+                                                     expected_disabled_ports);
+                });
+            }
+        }
         {
             std::ostringstream oss;
             caller.call("udp_datastream", {"right", "0"}, -1, PUT, oss);
@@ -3138,6 +3166,29 @@ TEST_CASE("udp_datastream", "[.detectorintegration]") {
                 std::ostringstream oss;
                 caller.call("udp_datastream", {"top", "1"}, -1, PUT, oss);
                 REQUIRE(oss.str() == "udp_datastream [top, 1]\n");
+            }
+            // check master file
+            {
+                // expected
+                std::vector<defs::portPosition> expected_ports =
+                    det.getPortPositionList();
+                std::vector<int> expected_disabled_ports =
+                    det.getRxDisabledUDPPortIndices();
+                // run
+                auto acq_state = acq::default_acquisition_state();
+                auto file_state = acq::default_file_state();
+                std::vector<defs::fileFormat> formats = {defs::BINARY,
+                                                         defs::HDF5};
+                for (auto format : formats) {
+                    file_state.file_format = format;
+                    acq::run(det, acq_state, file_state);
+                    std::string fname = acq::get_master_file_name(file_state);
+                    mf::with_checker(fname, format, [&](auto &checker) {
+                        checks::check_udp_ports_type(checker, expected_ports);
+                        checks::check_udp_ports_disabled(
+                            checker, expected_disabled_ports);
+                    });
+                }
             }
             {
                 std::ostringstream oss;

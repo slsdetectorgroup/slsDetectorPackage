@@ -136,6 +136,14 @@ int get_num_udp_interfaces(const Detector &det) {
         "Inconsistent number of UDP interfaces");
 }
 
+std::vector<defs::portPosition> get_udp_port_types(const Detector &det) {
+    return det.getPortPositionList();
+}
+
+std::vector<int> get_udp_ports_disabled(const Detector &det) {
+    return det.getRxDisabledUDPPortIndices();
+}
+
 int get_read_n_rows(const Detector &det) {
     return det.getReadNRows().tsquash("Inconsistent number of read rows");
 }
@@ -184,6 +192,10 @@ acq::JungfrauExpectedState build_jungfrau_specific_state(const Detector &det) {
     e.exptime = get_exptime(det);
     e.period = get_period(det);
     e.num_udp_interfaces = get_num_udp_interfaces(det);
+    if (e.num_udp_interfaces == 2) {
+        e.udp_port_types = get_udp_port_types(det);
+        e.udp_ports_disabled = get_udp_ports_disabled(det);
+    }
     e.read_n_rows = get_read_n_rows(det);
     e.readout_speed = get_readout_speed(det);
     return e;
@@ -195,6 +207,10 @@ acq::MoenchExpectedState build_moench_specific_state(const Detector &det) {
     e.exptime = get_exptime(det);
     e.period = get_period(det);
     e.num_udp_interfaces = get_num_udp_interfaces(det);
+    if (e.num_udp_interfaces == 2) {
+        e.udp_port_types = get_udp_port_types(det);
+        e.udp_ports_disabled = get_udp_ports_disabled(det);
+    }
     e.read_n_rows = get_read_n_rows(det);
     e.readout_speed = get_readout_speed(det);
     return e;
@@ -213,6 +229,8 @@ acq::EigerExpectedState build_eiger_specific_state(const Detector &det) {
     e.sub_exptime = sub_exptime;
     e.sub_period = sub_period;
     e.quad = det.getQuad().tsquash("Inconsistent quad setting");
+    e.udp_port_types = get_udp_port_types(det);
+    e.udp_ports_disabled = get_udp_ports_disabled(det);
     e.read_n_rows = get_read_n_rows(det);
     {
         for (auto item : det.getRateCorrection())

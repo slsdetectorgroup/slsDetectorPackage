@@ -721,12 +721,12 @@ void MasterAttributes::WriteHDF5UDPPortsType(H5::Group *group) {
 #endif
 
 void MasterAttributes::WriteBinaryUDPPortsDisabled(writer *w) {
-    WriteBinary(w, N_UDP_PORTS_DISBLED.data(), udpPortsDisabled);
+    WriteBinary(w, N_UDP_PORTS_DISABLED.data(), udpPortsDisabled);
 }
 
 #ifdef HDF5C
 void MasterAttributes::WriteHDF5UDPPortsDisabled(H5::Group *group) {
-    WriteHDF5Int(group, N_UDP_PORTS_DISBLED.data(), udpPortsDisabled);
+    WriteHDF5Int(group, N_UDP_PORTS_DISABLED.data(), udpPortsDisabled);
 }
 #endif
 

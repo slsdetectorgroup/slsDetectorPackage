@@ -127,7 +127,7 @@ class MasterAttributes {
     inline static const std::string_view N_SCAN_PARAMETERS = "Scan Parameters";
     inline static const std::string_view N_ADDITIONAL_JSON_HEADER =
         "Additional JSON Header";
-    inline static const std::string_view N_UDP_PORTS_DISBLED =
+    inline static const std::string_view N_UDP_PORTS_DISABLED =
         "UDP Ports Disabled";
     inline static const std::string_view N_UDP_PORTS_TYPE = "UDP Ports Type";
 

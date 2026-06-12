@@ -7,8 +7,6 @@
 #include "sls/sls_detector_defs.h"
 #include "test-Caller-global.h"
 
-#include "checks/MasterFileChecks.h"
-
 #include <chrono>
 #include <sstream>
 #include <thread>
@@ -18,10 +16,6 @@
 #include <filesystem>
 
 namespace sls {
-
-namespace acq = sls::test::acquire;
-namespace mf = sls::test::master_file;
-namespace checks = sls::test::checks;
 
 using test::GET;
 using test::PUT;
@@ -3181,22 +3175,13 @@ TEST_CASE("udp_datastream with master file",
                 det.getRxDisabledUDPPortIndices();
             REQUIRE(expected_disabled_ports.size() > 0);
 
-            // run
-            auto acq_state = acq::default_acquisition_state();
-            auto file_state = acq::default_file_state();
-            std::vector<defs::fileFormat> formats = {defs::BINARY, defs::HDF5};
-            for (auto format : formats) {
-                file_state.file_format = format;
-                acq::run(det, acq_state, file_state);
-                std::string fname = acq::get_master_file_name(file_state);
-
-                // check
-                mf::with_checker(fname, format, [&](auto &checker) {
+            test_run_with_master_file_checker(
+                det, [&](auto &det, auto &acq_state, auto &file_state,
+                         auto &checker) {
                     checks::check_udp_ports_type(checker, expected_ports);
                     checks::check_udp_ports_disabled(checker,
                                                      expected_disabled_ports);
                 });
-            }
         }
 
         for (int i = 0; i != det.size(); ++i) {
@@ -3218,22 +3203,13 @@ TEST_CASE("udp_datastream with master file",
                 det.getRxDisabledUDPPortIndices();
             REQUIRE(expected_disabled_ports.size() > 0);
 
-            // run
-            auto acq_state = acq::default_acquisition_state();
-            auto file_state = acq::default_file_state();
-            std::vector<defs::fileFormat> formats = {defs::BINARY, defs::HDF5};
-            for (auto format : formats) {
-                file_state.file_format = format;
-                acq::run(det, acq_state, file_state);
-                std::string fname = acq::get_master_file_name(file_state);
-
-                // check
-                mf::with_checker(fname, format, [&](auto &checker) {
+            test_run_with_master_file_checker(
+                det, [&](auto &det, auto &acq_state, auto &file_state,
+                         auto &checker) {
                     checks::check_udp_ports_type(checker, expected_ports);
                     checks::check_udp_ports_disabled(checker,
                                                      expected_disabled_ports);
                 });
-            }
         }
 
         for (int i = 0; i != det.size(); ++i) {

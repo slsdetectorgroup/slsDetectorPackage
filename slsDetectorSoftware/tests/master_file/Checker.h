@@ -56,23 +56,4 @@ template <> class Checker<H5Context> {
 
 #endif
 
-template <typename F>
-void with_checker(const std::string &fname, defs::fileFormat format,
-#ifdef HDF5C
-                  F &&f)
-#else
-                  F &&f)
-#endif
-{
-    if (format == defs::HDF5) {
-#ifdef HDF5C
-        Checker<H5Context> checker(fname);
-        f(checker);
-#endif
-    } else {
-        Checker<JsonContext> checker(fname);
-        f(checker);
-    }
-}
-
 } // namespace sls::test::master_file

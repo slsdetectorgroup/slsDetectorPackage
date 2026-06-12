@@ -135,4 +135,7 @@ class CTBStateGuard {
     CTBState saved_;
 };
 
+std::pair<uint64_t, int> calculate_ctb_image_size(const CTBState &test_info,
+                                                  bool isXilinxCtb);
+
 } // namespace sls::test::acquire

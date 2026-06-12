@@ -2,7 +2,6 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 
 #include "ExpectedState.h"
-#include "Caller/test-Caller-global.h"
 #include "receiver_defs.h"
 
 // unnamed namespace for internal linkage
@@ -47,7 +46,7 @@ defs::xy get_port_shape(const Detector &det,
                 "CTB state must be provided to calculate expected port shape");
         }
         portSize.x =
-            sls::calculate_ctb_image_size(
+            acq::calculate_ctb_image_size(
                 ctb_state.value(), det_type == defs::XILINX_CHIPTESTBOARD)
                 .second;
         portSize.y = 1;
@@ -360,7 +359,7 @@ int get_expected_image_size(const Detector &det,
         }
         LOG(logINFORED) << ctb_state.value();
         image_size =
-            sls::calculate_ctb_image_size(
+            acq::calculate_ctb_image_size(
                 ctb_state.value(), (det_type == defs::XILINX_CHIPTESTBOARD))
                 .first;
         break;

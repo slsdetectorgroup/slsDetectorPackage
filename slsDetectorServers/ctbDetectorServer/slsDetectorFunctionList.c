@@ -2346,6 +2346,10 @@ void *start_timer(void *arg) {
                    imageData + srcOffset, dataSize);
             srcOffset += dataSize;
 
+            dataSize = (srcOffset + dataSize > imageSize)
+                           ? (imageSize - srcOffset)
+                           : dataSize;
+
             sendUDPPacket(0, 0, packetData, packetSize);
             // LOG(logINFOBLUE, ("packetsize:%d\n", packetSize));
         }

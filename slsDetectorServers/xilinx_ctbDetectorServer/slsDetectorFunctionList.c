@@ -1589,6 +1589,10 @@ void *start_timer(void *arg) {
             srcOffset += dataSize;
             dataSent += dataSize;
 
+            dataSize = (srcOffset + dataSize > imageSize)
+                           ? (imageSize - srcOffset)
+                           : dataSize;
+
             sendUDPPacket(0, 0, packetData, packetSize);
         }
         LOG(logINFO, ("Sent frame: %d [%lld]\n", iframes, frameNr + iframes));

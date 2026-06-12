@@ -3092,28 +3092,6 @@ TEST_CASE("udp_datastream", "[.detectorintegration]") {
             caller.call("udp_datastream", {"left", "0"}, -1, PUT, oss);
             REQUIRE(oss.str() == "udp_datastream [left, 0]\n");
         }
-        // check master file
-        {
-            // expected
-            std::vector<defs::portPosition> expected_ports =
-                det.getPortPositionList();
-            std::vector<int> expected_disabled_ports =
-                det.getRxDisabledUDPPortIndices();
-            // run
-            auto acq_state = acq::default_acquisition_state();
-            auto file_state = acq::default_file_state();
-            std::vector<defs::fileFormat> formats = {defs::BINARY, defs::HDF5};
-            for (auto format : formats) {
-                file_state.file_format = format;
-                acq::run(det, acq_state, file_state);
-                std::string fname = acq::get_master_file_name(file_state);
-                mf::with_checker(fname, format, [&](auto &checker) {
-                    checks::check_udp_ports_type(checker, expected_ports);
-                    checks::check_udp_ports_disabled(checker,
-                                                     expected_disabled_ports);
-                });
-            }
-        }
         {
             std::ostringstream oss;
             caller.call("udp_datastream", {"right", "0"}, -1, PUT, oss);
@@ -3167,29 +3145,6 @@ TEST_CASE("udp_datastream", "[.detectorintegration]") {
                 caller.call("udp_datastream", {"top", "1"}, -1, PUT, oss);
                 REQUIRE(oss.str() == "udp_datastream [top, 1]\n");
             }
-            // check master file
-            {
-                // expected
-                std::vector<defs::portPosition> expected_ports =
-                    det.getPortPositionList();
-                std::vector<int> expected_disabled_ports =
-                    det.getRxDisabledUDPPortIndices();
-                // run
-                auto acq_state = acq::default_acquisition_state();
-                auto file_state = acq::default_file_state();
-                std::vector<defs::fileFormat> formats = {defs::BINARY,
-                                                         defs::HDF5};
-                for (auto format : formats) {
-                    file_state.file_format = format;
-                    acq::run(det, acq_state, file_state);
-                    std::string fname = acq::get_master_file_name(file_state);
-                    mf::with_checker(fname, format, [&](auto &checker) {
-                        checks::check_udp_ports_type(checker, expected_ports);
-                        checks::check_udp_ports_disabled(
-                            checker, expected_disabled_ports);
-                    });
-                }
-            }
             {
                 std::ostringstream oss;
                 caller.call("udp_datastream", {"bottom", "1"}, -1, PUT, oss);
@@ -3205,6 +3160,86 @@ TEST_CASE("udp_datastream", "[.detectorintegration]") {
         REQUIRE_THROWS(caller.call("udp_datastream", {"1"}, -1, PUT));
         REQUIRE_THROWS(caller.call("udp_datastream", {"left", "1"}, -1, PUT));
         REQUIRE_THROWS(caller.call("udp_datastream", {"top", "1"}, -1, PUT));
+    }
+}
+
+TEST_CASE("udp_datastream with master file",
+          "[.detectorintegration][.disable_check_data_file]") {
+    Detector det;
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER) {
+        auto prev_val_left = det.getUDPDataStream(defs::LEFT);
+        auto prev_val_right = det.getUDPDataStream(defs::RIGHT);
+
+        det.setUDPDataStream(defs::LEFT, false);
+        // check master file
+        {
+            // expected
+            std::vector<defs::portPosition> expected_ports =
+                det.getPortPositionList();
+            std::vector<int> expected_disabled_ports =
+                det.getRxDisabledUDPPortIndices();
+            REQUIRE(expected_disabled_ports.size() > 0);
+
+            // run
+            auto acq_state = acq::default_acquisition_state();
+            auto file_state = acq::default_file_state();
+            std::vector<defs::fileFormat> formats = {defs::BINARY, defs::HDF5};
+            for (auto format : formats) {
+                file_state.file_format = format;
+                acq::run(det, acq_state, file_state);
+                std::string fname = acq::get_master_file_name(file_state);
+
+                // check
+                mf::with_checker(fname, format, [&](auto &checker) {
+                    checks::check_udp_ports_type(checker, expected_ports);
+                    checks::check_udp_ports_disabled(checker,
+                                                     expected_disabled_ports);
+                });
+            }
+        }
+
+        for (int i = 0; i != det.size(); ++i) {
+            det.setUDPDataStream(defs::LEFT, prev_val_left[i], {i});
+            det.setUDPDataStream(defs::RIGHT, prev_val_right[i], {i});
+        }
+    } else if ((det_type == defs::JUNGFRAU || det_type == defs::MOENCH) &&
+               (det.getNumberofUDPInterfaces().squash(0) == 2)) {
+        auto prev_val_top = det.getUDPDataStream(defs::TOP);
+        auto prev_val_bottom = det.getUDPDataStream(defs::BOTTOM);
+
+        det.setUDPDataStream(defs::TOP, false);
+        // check master file
+        {
+            // expected
+            std::vector<defs::portPosition> expected_ports =
+                det.getPortPositionList();
+            std::vector<int> expected_disabled_ports =
+                det.getRxDisabledUDPPortIndices();
+            REQUIRE(expected_disabled_ports.size() > 0);
+
+            // run
+            auto acq_state = acq::default_acquisition_state();
+            auto file_state = acq::default_file_state();
+            std::vector<defs::fileFormat> formats = {defs::BINARY, defs::HDF5};
+            for (auto format : formats) {
+                file_state.file_format = format;
+                acq::run(det, acq_state, file_state);
+                std::string fname = acq::get_master_file_name(file_state);
+
+                // check
+                mf::with_checker(fname, format, [&](auto &checker) {
+                    checks::check_udp_ports_type(checker, expected_ports);
+                    checks::check_udp_ports_disabled(checker,
+                                                     expected_disabled_ports);
+                });
+            }
+        }
+
+        for (int i = 0; i != det.size(); ++i) {
+            det.setUDPDataStream(defs::TOP, prev_val_top[i], {i});
+            det.setUDPDataStream(defs::BOTTOM, prev_val_bottom[i], {i});
+        }
     }
 }
 

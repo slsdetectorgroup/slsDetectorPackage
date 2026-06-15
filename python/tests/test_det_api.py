@@ -920,3 +920,77 @@ def test_numinterfaces(session_simulator):
 
     d = Detector()
     assert d.numinterfaces == 1
+
+
+@pytest.mark.detectorintegration
+def test_udp_datastream(session_simulator, request):
+    """ Test using udp_datastream for eiger, jungfrau and moench."""
+    det_type, num_interfaces, num_mods, d = session_simulator
+    assert d is not None
+
+    from slsdet import portPosition
+
+    if det_type in ['eiger']:
+        prev = d.udp_datastream
+        assert all(isinstance(v, bool) for v in prev.values())
+        
+        with pytest.raises(Exception) as exc_info:
+            d.udp_datastream = (portPosition.LEFT, [True, False]) #list
+
+        with pytest.raises(Exception) as exc_info:
+            d.udp_datastream = (portPosition.TOP, True) # invalid port position
+            
+        with pytest.raises(Exception) as exc_info:
+            d.udp_datastream = (portPosition.BOTTOM, True) # invalid port position
+            
+        with pytest.raises(Exception) as exc_info:
+            d.udp_datastream = True # without port position
+
+        d.udp_datastream = (portPosition.LEFT, False)
+        assert d.udp_datastream[portPosition.LEFT] is False
+        d.udp_datastream = (portPosition.RIGHT, False)
+        assert d.udp_datastream[portPosition.RIGHT] is False
+        d.udp_datastream = (portPosition.LEFT, True)
+        assert d.udp_datastream[portPosition.LEFT] is True
+        d.udp_datastream = (portPosition.RIGHT, True)
+        assert d.udp_datastream[portPosition.RIGHT] is True
+
+        d.setUDPDataStream(portPosition.LEFT, prev[portPosition.LEFT])
+        d.setUDPDataStream(portPosition.RIGHT, prev[portPosition.RIGHT])
+
+    elif det_type in ['jungfrau', 'moench'] and num_interfaces == 2:
+        prev = d.udp_datastream
+        assert all(isinstance(v, bool) for v in prev.values())
+
+        
+        with pytest.raises(Exception) as exc_info:
+            d.udp_datastream = (portPosition.TOP, [True, False]) #list
+
+        with pytest.raises(Exception) as exc_info:
+            d.udp_datastream = (portPosition.LEFT, True) # invalid port position
+            
+        with pytest.raises(Exception) as exc_info:
+            d.udp_datastream = (portPosition.RIGHT, True) # invalid port position
+            
+        with pytest.raises(Exception) as exc_info:
+            d.udp_datastream = True # without port position
+
+        d.udp_datastream = (portPosition.TOP, False)
+        assert d.udp_datastream[portPosition.TOP] is False
+        d.udp_datastream = (portPosition.BOTTOM, False)
+        assert d.udp_datastream[portPosition.BOTTOM] is False
+        d.udp_datastream = (portPosition.TOP, True)
+        assert d.udp_datastream[portPosition.TOP] is True
+        d.udp_datastream = (portPosition.BOTTOM, True)
+        assert d.udp_datastream[portPosition.BOTTOM] is True
+
+        d.setUDPDataStream(portPosition.TOP, prev[portPosition.TOP])
+        d.setUDPDataStream(portPosition.BOTTOM, prev[portPosition.BOTTOM])
+
+    else:
+        with pytest.raises(Exception) as exc_info:
+            d.udp_datastream
+
+    
+
+    Log(LogLevel.INFOGREEN, f"✅ {request.node.name} passed")

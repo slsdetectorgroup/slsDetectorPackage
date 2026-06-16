@@ -4,9 +4,9 @@
 #include "sls/ansi.h"
 #include <iostream>
 
-//#include "moench03T1ZmqData.h"
-//#define DOUBLE_SPH
-//#define MANYFILES
+// #include "moench03T1ZmqData.h"
+// #define DOUBLE_SPH
+// #define MANYFILES
 
 #ifdef DOUBLE_SPH
 #include "single_photon_hit_double.h"
@@ -16,11 +16,11 @@
 #include "single_photon_hit.h"
 #endif
 
-//#include "etaInterpolationPosXY.h"
+// #include "etaInterpolationPosXY.h"
 #include "etaInterpolationPosXY.h"
 #include "noInterpolation.h"
-//#include "etaInterpolationCleverAdaptiveBins.h"
-//#include "etaInterpolationRandomBins.h"
+// #include "etaInterpolationCleverAdaptiveBins.h"
+// #include "etaInterpolationRandomBins.h"
 using namespace std;
 #define NC             400
 #define NR             400
@@ -33,7 +33,9 @@ int main(int argc, char *argv[]) {
 #ifndef FF
     if (argc < 9) {
         cout << "Wrong usage! Should be: " << argv[0]
-             << " infile  etafile outfile runmin runmax ns [cmin cmax xmin xmax ymin ymax]" << endl;
+             << " infile  etafile outfile runmin runmax ns [cmin cmax xmin "
+                "xmax ymin ymax]"
+             << endl;
         return 1;
     }
 #endif
@@ -41,7 +43,8 @@ int main(int argc, char *argv[]) {
 #ifdef FF
     if (argc < 7) {
         cout << "Wrong usage! Should be: " << argv[0]
-             << " infile  etafile runmin runmax [cmin cmax xmin xmax ymin ymax]" << endl;
+             << " infile  etafile runmin runmax [cmin cmax xmin xmax ymin ymax]"
+             << endl;
         return 1;
     }
 #endif
@@ -65,27 +68,27 @@ int main(int argc, char *argv[]) {
     nsubpix = atoi(argv[iarg++]);
     cout << "Subpix: " << nsubpix << endl;
 #endif
-    
+
     float cmin = 0;
-    float cmax=1000000;
-    if (argc>iarg)
-      cmin=atof(argv[iarg++]);
-    if (argc>iarg)
-      cmax= atof(argv[iarg++]);
+    float cmax = 1000000;
+    if (argc > iarg)
+        cmin = atof(argv[iarg++]);
+    if (argc > iarg)
+        cmax = atof(argv[iarg++]);
     cout << "Energy min: " << cmin << endl;
     cout << "Energy max: " << cmax << endl;
-    int xmin=0, xmax=NC, ymin=0, ymax=NR;
-    
-    if (argc>iarg)
-      xmin=atof(argv[iarg++]);
-    if (argc>iarg)
-      xmax= atof(argv[iarg++]);
-    
-    if (argc>iarg)
-      ymin=atof(argv[iarg++]);
-    if (argc>iarg)
-      ymax= atof(argv[iarg++]);
-    
+    int xmin = 0, xmax = NC, ymin = 0, ymax = NR;
+
+    if (argc > iarg)
+        xmin = atof(argv[iarg++]);
+    if (argc > iarg)
+        xmax = atof(argv[iarg++]);
+
+    if (argc > iarg)
+        ymin = atof(argv[iarg++]);
+    if (argc > iarg)
+        ymax = atof(argv[iarg++]);
+
     // int etabins=500;
     int etabins = 1000; // nsubpix*2*100;
     double etamin = -0.25, etamax = 1.25;
@@ -95,12 +98,12 @@ int main(int argc, char *argv[]) {
     double sDum[2][2];
     double etax, etay;
     // double eta3x, eta3y, int3_x, int3_y, noint_x, noint_y;
-   
+
     int ix, iy, isx, isy;
     int nframes = 0, lastframe = -1, iframe, nphFrame;
-    //double d_x, d_y, res = 5, xx, yy;
+    // double d_x, d_y, res = 5, xx, yy;
     int nph = 0, totph = 0;
-    //badph = 0, 
+    // badph = 0,
     FILE *f = NULL;
 
 #ifdef DOUBLE_SPH
@@ -111,11 +114,11 @@ int main(int argc, char *argv[]) {
     single_photon_hit cl(3, 3);
 #endif
 
-    //int f0 = -1;
-    //  int nSubPixels = nsubpix;
+    // int f0 = -1;
+    //   int nSubPixels = nsubpix;
 #ifndef NOINTERPOLATION
-    eta2InterpolationPosXY *interp =
-      new eta2InterpolationPosXY(NC, NR, nsubpix, nsubpix, etabins, etabins, etamin, etamax);
+    eta2InterpolationPosXY *interp = new eta2InterpolationPosXY(
+        NC, NR, nsubpix, nsubpix, etabins, etabins, etamin, etamax);
     // eta2InterpolationCleverAdaptiveBins *interp=new
     // eta2InterpolationCleverAdaptiveBins(NC, NR, nsubpix, etabins, etamin,
     // etamax);
@@ -124,7 +127,7 @@ int main(int argc, char *argv[]) {
     noInterpolation *interp = new noInterpolation(NC, NR, nsubpix);
 #endif
 
-    int quad; 
+    int quad;
 #ifndef FF
     double int_x, int_y;
     int *img;
@@ -165,108 +168,117 @@ int main(int argc, char *argv[]) {
         sprintf(outfname, argv[3], irun);
 #endif
 
-
         f = fopen(infname, "r");
         if (f) {
             cout << infname << endl;
             nframes = 0;
-            //f0 = -1;
+            // f0 = -1;
 
-	    //iff=0;
-	    while (fread((void*)&iframe, 1,  sizeof(int), f)) {
-	      //n=0;
-	      if (fread((void*)&nphFrame, 1,  sizeof(int), f)) {
-		for (int iph=0; iph<nphFrame; iph++) {
-		//while (cl.read(f)) {
-		  if (cl.read(f)) {
-                totph++;
-                if (lastframe != cl.iframe) {
-                    lastframe = cl.iframe;
-                    // cout << cl.iframe << endl;
-                    // f0=cl.iframe;
-                    // if (nframes == 0)
-                    //     f0 = lastframe;
-                    nframes++;
-                }
-                // quad=interp->calcQuad(cl.get_cluster(), sum, totquad, sDum);
-// #ifndef FF
-//                 quad = interp->calcEta(cl.get_cluster(), etax, etay, sum,
-//                                        totquad, sDum);
-// #endif
-// #ifdef FF
-	
-                quad = interp->calcEta(cl.get_cluster(), etax, etay, sum,
-                                       totquad, sDum);
-	
-		
-		/*	cl.print();
-		cout << "(" << etax <<","<< etay <<")"<< quad<< endl;
-		*/
-		//#endif
+            // iff=0;
+            while (fread((void *)&iframe, 1, sizeof(int), f)) {
+                // n=0;
+                if (fread((void *)&nphFrame, 1, sizeof(int), f)) {
+                    for (int iph = 0; iph < nphFrame; iph++) {
+                        // while (cl.read(f)) {
+                        if (cl.read(f)) {
+                            totph++;
+                            if (lastframe != cl.iframe) {
+                                lastframe = cl.iframe;
+                                // cout << cl.iframe << endl;
+                                // f0=cl.iframe;
+                                // if (nframes == 0)
+                                //     f0 = lastframe;
+                                nframes++;
+                            }
+                            // quad=interp->calcQuad(cl.get_cluster(), sum,
+                            // totquad, sDum);
+                            // #ifndef FF
+                            //                 quad =
+                            //                 interp->calcEta(cl.get_cluster(),
+                            //                 etax, etay, sum,
+                            //                                        totquad,
+                            //                                        sDum);
+                            // #endif
+                            // #ifdef FF
 
-		if (totquad > cmin && cl.x >= xmin && cl.x <= xmax && 
-		    cl.y >= ymin && cl.y <= ymax &&
-		    totquad < cmax) {
+                            quad = interp->calcEta(cl.get_cluster(), etax, etay,
+                                                   sum, totquad, sDum);
 
-		  //	if (sum > cmin && totquad / sum > 0.8 && totquad / sum < 1.2 &&
-		  //	sum < cmax) {
-		  nph++;
-                    //  if (sum>200 && sum<580) {
-                    //  interp->getInterpolatedPosition(cl.x,cl.y,
-                    //  totquad,quad,cl.get_cluster(),int_x, int_y);
+                            /*	cl.print();
+                            cout << "(" << etax <<","<< etay <<")"<< quad<<
+                            endl;
+                            */
+                            // #endif
+
+                            if (totquad > static_cast<double>(cmin) &&
+                                cl.x >= xmin && cl.x <= xmax && cl.y >= ymin &&
+                                cl.y <= ymax &&
+                                totquad < static_cast<double>(cmax)) {
+
+                                //	if (sum > cmin && totquad / sum > 0.8 &&
+                                // totquad / sum < 1.2 && 	sum < cmax) {
+                                nph++;
+                                //  if (sum>200 && sum<580) {
+                                //  interp->getInterpolatedPosition(cl.x,cl.y,
+                                //  totquad,quad,cl.get_cluster(),int_x, int_y);
 // #ifdef SOLEIL
 // 	    if (cl.x>210 && cl.x<240 && cl.y>210 && cl.y<240) {
 // #endif
 #ifndef FF
-                    // interp->getInterpolatedPosition(cl.x,cl.y,
-                    // cl.get_cluster(),int_x, int_y);
-                    interp->getInterpolatedPosition(cl.x, cl.y, etax, etay,
-                                                    quad, int_x, int_y);
-                    // cout <<"**************"<< endl;
-                    // cout << cl.x << " " << cl.y << " " << sum << endl;
-                    // cl.print();
-                    // cout << int_x << " " << int_y << endl;
-                    // cout <<"**************"<< endl;
-                    //  if (etax!=0 && etay!=0 && etax!=1 && etay!=1)
-                    interp->addToImage(int_x, int_y);
-                    if (int_x < 0 || int_y < 0 || int_x > 400 || int_y > 400) {
-                        cout << "**************" << endl;
-                        cout << cl.x << " " << cl.y << " " << sum << endl;
-                        cl.print();
-                        cout << int_x << " " << int_y << endl;
-                        cout << "**************" << endl;
-                    }
+                                // interp->getInterpolatedPosition(cl.x,cl.y,
+                                // cl.get_cluster(),int_x, int_y);
+                                interp->getInterpolatedPosition(
+                                    cl.x, cl.y, etax, etay, quad, int_x, int_y);
+                                // cout <<"**************"<< endl;
+                                // cout << cl.x << " " << cl.y << " " << sum <<
+                                // endl; cl.print(); cout << int_x << " " <<
+                                // int_y << endl; cout <<"**************"<<
+                                // endl;
+                                //  if (etax!=0 && etay!=0 && etax!=1 &&
+                                //  etay!=1)
+                                interp->addToImage(int_x, int_y);
+                                if (int_x < 0 || int_y < 0 || int_x > 400 ||
+                                    int_y > 400) {
+                                    cout << "**************" << endl;
+                                    cout << cl.x << " " << cl.y << " " << sum
+                                         << endl;
+                                    cl.print();
+                                    cout << int_x << " " << int_y << endl;
+                                    cout << "**************" << endl;
+                                }
 #endif
 #ifdef FF
-                    //	interp->addToFlatField(cl.get_cluster(), etax, etay);
-                    // #ifdef UCL
-                    // 	    if (cl.x>50)
-                    // #endif
-                    // 	    if (etax!=0 && etay!=0 && etax!=1 && etay!=1)
-                    interp->addToFlatFieldDistribution(etax, etay);
-                    //  if (etax==0 || etay==0) cout << cl.x << " " << cl.y <<
-                    //  endl;
+                                //	interp->addToFlatField(cl.get_cluster(),
+                                // etax, etay);
+                                // #ifdef UCL
+                                // 	    if (cl.x>50)
+                                // #endif
+                                // 	    if (etax!=0 && etay!=0 && etax!=1 &&
+                                // etay!=1)
+                                interp->addToFlatFieldDistribution(etax, etay);
+                                //  if (etax==0 || etay==0) cout << cl.x << " "
+                                //  << cl.y << endl;
 
 #endif
-                    // #ifdef SOLEIL
-                    // 	    }
-                    // #endif
+                                // #ifdef SOLEIL
+                                // 	    }
+                                // #endif
 
-                    if (nph % 1000000 == 0)
-                        cout << nph << endl;
-                    if (nph % 10000000 == 0) {
+                                if (nph % 1000000 == 0)
+                                    cout << nph << endl;
+                                if (nph % 10000000 == 0) {
 #ifndef FF
-                        interp->writeInterpolatedImage(outfname);
+                                    interp->writeInterpolatedImage(outfname);
 #endif
 #ifdef FF
-                        interp->writeFlatField(outfname);
+                                    interp->writeFlatField(outfname);
 #endif
-		    }
+                                }
+                            }
+                        }
                     }
                 }
-	      }
-	    }
-	    }
+            }
 
             fclose(f);
 #ifdef FF
@@ -290,7 +302,8 @@ int main(int argc, char *argv[]) {
                 }
             }
             // cout << "Read " << nframes << " frames (first frame: " << f0
-            //      << " last frame: " << lastframe << " delta:" << lastframe - f0
+            //      << " last frame: " << lastframe << " delta:" << lastframe -
+            //      f0
             //      << ") nph=" << nph << endl;
             interp->clearInterpolatedImage();
 #endif

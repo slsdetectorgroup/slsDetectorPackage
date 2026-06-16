@@ -496,7 +496,9 @@ if(SLS_USE_MOENCH)
 endif(SLS_USE_MOENCH)
 
 if(SLS_USE_JUNGFRAU)
-    add_subdirectory(slsDetectorCalibration/tiffio)
+    if(NOT SLS_USE_MOENCH)
+        add_subdirectory(slsDetectorCalibration/tiffio)
+    endif() 
     add_subdirectory(slsDetectorCalibration/jungfrauExecutables)
 endif(SLS_USE_JUNGFRAU)
 

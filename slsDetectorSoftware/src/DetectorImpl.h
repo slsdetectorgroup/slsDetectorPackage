@@ -309,7 +309,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
     std::vector<std::pair<std::string, uint16_t>>
     verifyUniqueRxHost(const std::vector<std::string> &names) const;
 
-    void assertTwoUDPInterfaces(const std::string &cmd) const;
+    void assertTwoUDPDataInterfaces(const std::string &cmd) const;
     Result<bool> getUDPDataStream(const defs::portPosition port,
                                   Positions pos) const;
     void setUDPDataStream(const defs::portPosition port, const bool enable,

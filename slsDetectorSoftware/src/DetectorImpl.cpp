@@ -1644,7 +1644,7 @@ void DetectorImpl::verifyUniqueHost(
     }
 }
 
-void DetectorImpl::assertTwoUDPInterfaces(const std::string &cmd) const {
+void DetectorImpl::assertTwoUDPDataInterfaces(const std::string &cmd) const {
     // assert globally
     auto numInterfaces =
         Parallel(&Module::getNumberofUDPInterfacesFromShm, {})
@@ -1658,19 +1658,20 @@ void DetectorImpl::assertTwoUDPInterfaces(const std::string &cmd) const {
 
 Result<bool> DetectorImpl::getUDPDataStream(const defs::portPosition port,
                                             Positions pos) const {
-    assertTwoUDPInterfaces("get enable/disable UDP ports");
+    assertTwoUDPDataInterfaces("get enable/disable UDP ports");
     return Parallel(&Module::getUDPDataStream, pos, port);
 }
 
 void DetectorImpl::setUDPDataStream(const defs::portPosition port,
                                     const bool enable, Positions pos) {
-    assertTwoUDPInterfaces("set enable/disable UDP ports");
+    assertTwoUDPDataInterfaces("set enable/disable UDP ports");
     Parallel(&Module::setUDPDataStream, pos, port, enable);
     updateRxUDPDatastreamMetadata();
 }
 
 void DetectorImpl::updateRxUDPDatastreamMetadata() {
-    assertTwoUDPInterfaces("update Disbaled UDP ports metadata in receiver");
+    assertTwoUDPDataInterfaces(
+        "update Disbaled UDP ports metadata in receiver");
 
     std::vector<int> disable;
     auto portList = getPortPositionList();
@@ -1698,7 +1699,7 @@ void DetectorImpl::updateRxUDPDatastreamMetadata() {
 }
 
 std::vector<int> DetectorImpl::getRxDisabledUDPPortIndices() const {
-    assertTwoUDPInterfaces("get Disbaled UDP ports metadata from receiver");
+    assertTwoUDPDataInterfaces("get Disbaled UDP ports metadata from receiver");
     return modules[0]->getRxUDPPortDisableMetadata();
 }
 

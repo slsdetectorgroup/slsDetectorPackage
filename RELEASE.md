@@ -62,6 +62,9 @@ support for building rpms
 
 removed unused function readDataFile/writeDataFile from file_utils.h
 
+added rx_streamdummyheader to send the zmq dummy header any time. Allows pre-configuring zmq processing before acq begins.
+
+
 2  On-board Detector Server Compatibility
 ==========================================
 

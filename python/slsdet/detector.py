@@ -2436,6 +2436,13 @@ class Detector(CppDetectorApi):
         [Jungfrau][Moench] Enable or disable UDP data streaming from the top and/or bottom receiver interfaces. This option is available only when numinterfaces is set to 2. Both ports are enabled by default. Options: TOP, BOTTOM.
 
         Enum: portPosition
+
+        Example
+        --------
+        >>> d.udp_datastream
+        {<portPosition.TOP: 2>: False, <portPosition.BOTTOM: 3>: True}
+        >>> from slsdet import portPosition
+        >>> d.udp_datastream = (portPosition.TOP, True)
         """
         result = {}
         if self.type in [detectorType.JUNGFRAU, detectorType.MOENCH]:

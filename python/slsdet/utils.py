@@ -60,7 +60,7 @@ def to_geo(value):
 
 def all_equal(mylist):
     """If all elements are equal return true otherwise false"""
-    return all(x == list(mylist[0]) for x in mylist)
+    return all(x == mylist[0] for x in mylist)
 
 
 def element_if_equal(mylist):

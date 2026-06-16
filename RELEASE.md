@@ -67,6 +67,7 @@ also implemetned for jungfrau, moench at receiver side (top/bottom)
 
 added rx_streamdummyheader to send the zmq dummy header any time. Allows pre-configuring zmq processing before acq begins.
 
+allow disabling one UDP interface in the receiver.
 
 2  On-board Detector Server Compatibility
 ==========================================

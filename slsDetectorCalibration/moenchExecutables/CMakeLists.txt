@@ -82,7 +82,7 @@ foreach(exe ${MOENCH_EXECUTABLES})
         -Wno-format-security 
         -Wno-double-promotion 
         -Wno-unused-variable
-        -Wno-Error)
+        -Wno-format-overflow)
 
 
     set_target_properties(${exe}  PROPERTIES 

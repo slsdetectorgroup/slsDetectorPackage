@@ -76,6 +76,14 @@ foreach(exe ${MOENCH_EXECUTABLES})
         slsProjectOptions
     )
 
+    target_compile_options(${exe} PRIVATE 
+        -Wno-unused-but-set-variable 
+        -Wno-format-nonliteral 
+        -Wno-format-security 
+        -Wno-double-promotion 
+        -Wno-unused-variable
+        -Wno-format-overflow)
+
 
     set_target_properties(${exe}  PROPERTIES 
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin

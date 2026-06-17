@@ -204,9 +204,9 @@ int main(int argc, char *argv[]) {
 		*/
 		//#endif
 
-		if (totquad > cmin && cl.x >= xmin && cl.x <= xmax && 
+		if (totquad > static_cast<double>(cmin) && cl.x >= xmin && cl.x <= xmax && 
 		    cl.y >= ymin && cl.y <= ymax &&
-		    totquad < cmax) {
+		    totquad < static_cast<double>(cmax)) {
 
 		  //	if (sum > cmin && totquad / sum > 0.8 && totquad / sum < 1.2 &&
 		  //	sum < cmax) {

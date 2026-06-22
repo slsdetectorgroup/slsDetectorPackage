@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <arpa/inet.h>
 #include <cassert>
+#include <cerrno>
 #include <cstring>
 #include <fcntl.h>
 #include <iostream>
@@ -50,8 +51,9 @@ int DataSocket::Receive(void *buffer, size_t size) {
     // TODO!(Erik) Add sleep? how many reties?
     int bytes_expected = static_cast<int>(size); // signed size
     int bytes_read = 0;
+    ssize_t this_read = 0; // last read result, kept for diagnostics
     while (bytes_read < bytes_expected) {
-        auto this_read =
+        this_read =
             ::read(getSocketId(), reinterpret_cast<char *>(buffer) + bytes_read,
                    bytes_expected - bytes_read);
         if (this_read <= 0)
@@ -61,10 +63,15 @@ int DataSocket::Receive(void *buffer, size_t size) {
     if (bytes_read == bytes_expected) {
         return bytes_read;
     } else {
+        int err = errno; // capture before any other call can clobber it
         std::ostringstream ss;
         ss << "TCP socket read " << bytes_read << " bytes instead of "
            << bytes_expected << " bytes ("
            << getFunctionNameFromEnum(static_cast<detFuncs>(fnum_)) << ')';
+        if (this_read == 0)
+            ss << ": connection closed by peer (EOF)";
+        else if (this_read < 0)
+            ss << ": read error: " << std::strerror(err);
         throw SocketError(ss.str());
     }
 }

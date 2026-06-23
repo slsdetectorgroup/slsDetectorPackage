@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "sls/DataSocket.h"
+#include "sls/Timer.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_exceptions.h"
 #include "sls/sls_detector_funcs.h"
@@ -52,6 +53,7 @@ int DataSocket::Receive(void *buffer, size_t size) {
     int bytes_expected = static_cast<int>(size); // signed size
     int bytes_read = 0;
     ssize_t this_read = 0; // last read result, kept for diagnostics
+    Timer timer;
     while (bytes_read < bytes_expected) {
         this_read =
             ::read(getSocketId(), reinterpret_cast<char *>(buffer) + bytes_read,
@@ -72,6 +74,7 @@ int DataSocket::Receive(void *buffer, size_t size) {
             ss << ": connection closed by peer (EOF)";
         else if (this_read < 0)
             ss << ": read error: " << std::strerror(err);
+        ss << " after " << timer.elapsed_ms() << " ms";
         throw SocketError(ss.str());
     }
 }

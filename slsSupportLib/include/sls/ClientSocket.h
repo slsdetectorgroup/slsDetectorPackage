@@ -21,6 +21,7 @@ class ClientSocket : public DataSocket {
 
   private:
     void readReply(int &ret, void *retval, size_t retval_size);
+    [[noreturn]] void throwError(const std::string &msg) const;
     struct sockaddr_in serverAddr {};
     std::string socketType;
 };

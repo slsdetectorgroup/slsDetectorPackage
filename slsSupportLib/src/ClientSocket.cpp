@@ -24,9 +24,9 @@ ClientSocket::ClientSocket(std::string stype, const std::string &host,
     hints.ai_flags |= AI_CANONNAME;
 
     if (getaddrinfo(host.c_str(), nullptr, &hints, &result) != 0) {
-        std::string msg = "ClientSocket cannot decode host:" + host +
+        std::string msg = socketType + " cannot decode host:" + host +
                           " on port " + std::to_string(port) + "\n";
-        throw SocketError(msg);
+        throwError(msg);
     }
 
     // TODO! Erik, results could have multiple entries do we need to loop
@@ -40,10 +40,9 @@ ClientSocket::ClientSocket(std::string stype, const std::string &host,
     if (::connect(getSocketId(), (struct sockaddr *)&serverAddr,
                   sizeof(serverAddr)) != 0) {
         freeaddrinfo(result);
-        std::string msg = "ClientSocket: Cannot connect to " + socketType +
-                          ":" + host + " on port " + std::to_string(port) +
-                          "\n";
-        throw SocketError(msg);
+        std::string msg = socketType + ": Cannot connect to " + host +
+                          " on port " + std::to_string(port) + "\n";
+        throwError(msg);
     }
     freeaddrinfo(result);
 }
@@ -54,10 +53,19 @@ ClientSocket::ClientSocket(std::string sType, struct sockaddr_in addr)
     if (::connect(getSocketId(), (struct sockaddr *)&addr, sizeof(addr)) != 0) {
         char address[INET_ADDRSTRLEN];
         inet_ntop(AF_INET, &addr.sin_addr, address, INET_ADDRSTRLEN);
-        std::string msg = "ClientSocket: Cannot connect to " + socketType +
-                          ":" + address + " on port " +
-                          std::to_string(addr.sin_port) + "\n";
-        throw SocketError(msg);
+        std::string msg = socketType + ": Cannot connect to " + address +
+                          " on port " + std::to_string(addr.sin_port) + "\n";
+        throwError(msg);
+    }
+}
+
+void ClientSocket::throwError(const std::string &msg) const {
+    if (socketType == "Receiver") {
+        throw ReceiverError(msg);
+    } else if (socketType == "Detector") {
+        throw DetectorError(msg);
+    } else {
+        throw GuiError(msg);
     }
 }
 
@@ -80,26 +88,14 @@ void ClientSocket::readReply(int &ret, void *retval, size_t retval_size) {
             std::string mess = readErrorMessage();
             // Do we need to know hostname here?
             // In that case save it???
-            if (socketType == "Receiver") {
-                throw ReceiverError("Receiver returned: " + std::string(mess));
-            } else if (socketType == "Detector") {
-                throw DetectorError("Detector returned: " + std::string(mess));
-            } else {
-                throw GuiError(mess);
-            }
+            throwError(socketType + " returned: " + mess);
         }
         // get retval
         Receive(retval, retval_size);
     }
     // debugging
     catch (SocketError &e) {
-        if (socketType == "Receiver") {
-            throw ReceiverError("Receiver returned: " + std::string(e.what()));
-        } else if (socketType == "Detector") {
-            throw DetectorError("Detector returned: " + std::string(e.what()));
-        } else {
-            throw GuiError(e.what());
-        }
+        throwError(socketType + " Socket Error: " + std::string(e.what()));
     }
 }
 

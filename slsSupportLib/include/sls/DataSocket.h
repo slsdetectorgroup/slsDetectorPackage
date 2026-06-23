@@ -88,6 +88,8 @@ class DataSocket {
   private:
     int sockfd_ = -1;
     int fnum_{0};
+
+    std::string_view errno_name(int e);
 };
 
 }; // namespace sls

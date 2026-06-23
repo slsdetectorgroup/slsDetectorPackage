@@ -73,7 +73,7 @@ int DataSocket::Receive(void *buffer, size_t size) {
         if (this_read == 0)
             ss << ": connection closed by peer (EOF)";
         else if (this_read < 0)
-            ss << ": read error: " << std::strerror(err);
+            ss << ": read error:  " << std::strerror(err) << " (" << errno_name(err) << ")";
         ss << " after " << timer.elapsed_ms() << " ms";
         throw SocketError(ss.str());
     }
@@ -164,5 +164,50 @@ void DataSocket::shutDownSocket() {
 }
 
 void DataSocket::shutdown() { ::shutdown(sockfd_, SHUT_RDWR); }
+
+std::string_view DataSocket::errno_name(int e) {
+    switch (e) {
+#ifdef EACCES
+    case EACCES: return "EACCES";
+#endif
+#ifdef EAGAIN
+    case EAGAIN: return "EAGAIN";
+#endif
+#ifdef EBADF
+    case EBADF: return "EBADF";
+#endif
+#ifdef ECONNABORTED
+    case ECONNABORTED: return "ECONNABORTED";
+#endif
+#ifdef ECONNREFUSED
+    case ECONNREFUSED: return "ECONNREFUSED";
+#endif
+#ifdef ECONNRESET
+    case ECONNRESET: return "ECONNRESET";
+#endif
+#ifdef EINPROGRESS
+    case EINPROGRESS: return "EINPROGRESS";
+#endif
+#ifdef EINTR
+    case EINTR: return "EINTR";
+#endif
+#ifdef EINVAL
+    case EINVAL: return "EINVAL";
+#endif
+#ifdef EPIPE
+    case EPIPE: return "EPIPE";
+#endif
+#ifdef ETIMEDOUT
+    case ETIMEDOUT: return "ETIMEDOUT";
+#endif
+#ifdef EWOULDBLOCK
+#if EWOULDBLOCK != EAGAIN
+    case EWOULDBLOCK: return "EWOULDBLOCK";
+#endif
+#endif
+    default:
+        return "UNKNOWN_ERRNO";
+    }
+}
 
 } // namespace sls

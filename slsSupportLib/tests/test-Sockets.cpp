@@ -10,6 +10,7 @@
 #include <iostream>
 #include <string>
 #include <thread>
+#include <unistd.h>
 
 namespace sls {
 
@@ -23,6 +24,18 @@ std::vector<char> echo_server(uint16_t port, size_t bytes_to_send,
     auto s = server.accept();
     std::vector<char> buffer(100, '\0');
     s.Receive(buffer.data(), buffer.size());
+
+    if (port==1960){
+        struct linger ling = {
+            .l_onoff = 1,
+            .l_linger = 0
+        };
+
+        auto fd = s.getSocketId();
+        setsockopt(fd, SOL_SOCKET, SO_LINGER, &ling, sizeof ling);
+        close(fd);
+        return buffer;
+    }
 
     if (bytes_to_send > 0) {
         std::vector<char> to_send(bytes_to_send, '\0');
@@ -125,5 +138,27 @@ TEST_CASE("Receiving with a socket error throws and reports the error",
                Catch::Matchers::Contains("read 0 bytes instead of 100 bytes"));
     CHECK_THAT(error_message, Catch::Matchers::Contains("read error:"));
 }
+
+
+TEST_CASE("Socket crash?", "[support]") {
+    std::vector<char> received_message(100, '\0');
+    std::vector<char> sent_message(100, '\0');
+    const char m[]{"some message"};
+    std::copy(std::begin(m), std::end(m), sent_message.data());
+
+    auto s = std::async(std::launch::async, echo_server, 1960, 100,
+                        std::chrono::milliseconds(0));
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    auto client = DetectorSocket("localhost", 1960);
+    client.Send(sent_message.data(), sent_message.size());
+    
+
+    REQUIRE_THROWS(client.Receive(received_message.data(), received_message.size()));
+    // client.close();
+
+
+
+}
+
 
 } // namespace sls

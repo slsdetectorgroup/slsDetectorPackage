@@ -168,41 +168,53 @@ void DataSocket::shutdown() { ::shutdown(sockfd_, SHUT_RDWR); }
 std::string_view DataSocket::errno_name(int e) {
     switch (e) {
 #ifdef EACCES
-    case EACCES: return "EACCES";
+    case EACCES:
+        return "EACCES";
 #endif
 #ifdef EAGAIN
-    case EAGAIN: return "EAGAIN";
+    case EAGAIN:
+        return "EAGAIN";
 #endif
 #ifdef EBADF
-    case EBADF: return "EBADF";
+    case EBADF:
+        return "EBADF";
 #endif
 #ifdef ECONNABORTED
-    case ECONNABORTED: return "ECONNABORTED";
+    case ECONNABORTED:
+        return "ECONNABORTED";
 #endif
 #ifdef ECONNREFUSED
-    case ECONNREFUSED: return "ECONNREFUSED";
+    case ECONNREFUSED:
+        return "ECONNREFUSED";
 #endif
 #ifdef ECONNRESET
-    case ECONNRESET: return "ECONNRESET";
+    case ECONNRESET:
+        return "ECONNRESET";
 #endif
 #ifdef EINPROGRESS
-    case EINPROGRESS: return "EINPROGRESS";
+    case EINPROGRESS:
+        return "EINPROGRESS";
 #endif
 #ifdef EINTR
-    case EINTR: return "EINTR";
+    case EINTR:
+        return "EINTR";
 #endif
 #ifdef EINVAL
-    case EINVAL: return "EINVAL";
+    case EINVAL:
+        return "EINVAL";
 #endif
 #ifdef EPIPE
-    case EPIPE: return "EPIPE";
+    case EPIPE:
+        return "EPIPE";
 #endif
 #ifdef ETIMEDOUT
-    case ETIMEDOUT: return "ETIMEDOUT";
+    case ETIMEDOUT:
+        return "ETIMEDOUT";
 #endif
 #ifdef EWOULDBLOCK
 #if EWOULDBLOCK != EAGAIN
-    case EWOULDBLOCK: return "EWOULDBLOCK";
+    case EWOULDBLOCK:
+        return "EWOULDBLOCK";
 #endif
 #endif
     default:

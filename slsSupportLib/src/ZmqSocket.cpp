@@ -15,7 +15,7 @@ namespace sls {
 
 using namespace rapidjson;
 ZmqSocket::ZmqSocket(const char *const hostname_or_ip,
-                     const uint16_t portnumber)
+                     const uint16_t portnumber, int hwm)
     : portno(portnumber), sockfd(false) {
     // Extra check that throws if conversion fails, could be removed
     auto ipstr = HostnameToIp(hostname_or_ip).str();
@@ -61,9 +61,14 @@ ZmqSocket::ZmqSocket(const char *const hostname_or_ip,
         PrintError();
         throw ZmqSocketError("Could not set ZMQ_IPV6");
     }
+
+    // set hwm if not default
+    if (hwm >= 0) {
+        SetReceiveHighWaterMark(hwm);
+    }
 }
 
-ZmqSocket::ZmqSocket(const uint16_t portnumber)
+ZmqSocket::ZmqSocket(const uint16_t portnumber, int hwm)
     : portno(portnumber), sockfd(true) {
 
     // create context
@@ -121,6 +126,10 @@ ZmqSocket::ZmqSocket(const uint16_t portnumber)
                        &keepalive, sizeof(keepalive))) {
         PrintError();
         throw ZmqSocketError("Could set socket opt ZMQ_TCP_KEEPALIVE_INTVL");
+    }
+    // set hwm if not default
+    if (hwm >= 0) {
+        SetSendHighWaterMark(hwm);
     }
 
     // bind address

@@ -529,6 +529,10 @@ class PlotTab(QtWidgets.QWidget):
             self.mainWindow.nAnalogRows = Moench04.nRows
             self.mainWindow.nAnalogCols = Moench04.nCols
             self.mainWindow.decoder = transform.Moench04AnalogTransform() 
+        elif self.view.comboBoxPlot.currentText() == "Moench05":
+            self.mainWindow.nAnalogRows = 160
+            self.mainWindow.nAnalogCols = 150
+            self.mainWindow.decoder = transform.Moench05Transform()
 
         try: 
             if hasattr(self.mainWindow.decoder, "compatibility") and callable(getattr(self.mainWindow.decoder, "compatibility")):

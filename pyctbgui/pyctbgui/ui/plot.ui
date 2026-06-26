@@ -425,6 +425,11 @@
             <string>Moench04</string>
            </property>
           </item>
+           <item>
+           <property name="text">
+            <string>Moench05</string>
+           </property>
+          </item>
           <item>
            <property name="text">
             <string/>

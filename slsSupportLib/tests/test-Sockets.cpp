@@ -3,13 +3,17 @@
 #include "catch.hpp"
 #include "sls/ClientSocket.h"
 #include "sls/ServerSocket.h"
+#include "sls/Timer.h"
 #include "sls/sls_detector_defs.h"
 #include "sls/sls_detector_exceptions.h"
 #include "sls/sls_detector_funcs.h"
+#include <atomic>
 #include <chrono>
 #include <future>
 #include <iostream>
 #include <string>
+#include <sys/socket.h>
+#include <sys/time.h>
 #include <thread>
 #include <unistd.h>
 
@@ -82,6 +86,23 @@ void short_reply_server(uint16_t port, size_t retval_bytes_to_send) {
         std::vector<char> partial(retval_bytes_to_send, '\0');
         s.Send(partial.data(), partial.size());
     }
+    s.close();
+}
+
+// Server that accepts a connection but never reads from it, so a client
+// trying to send more than fits in the kernel buffers will stall. A small
+// receive buffer keeps the amount the test must send modest. Stays open until
+// the client signals it is done (or a safety timeout) so it never closes
+// mid-transfer and races the client's Send.
+void non_reading_server(uint16_t port, std::atomic<bool> *client_done) {
+    auto server = ServerSocket(port);
+    auto s = server.accept();
+    int rcvbuf = 1024;
+    setsockopt(s.getSocketId(), SOL_SOCKET, SO_RCVBUF, &rcvbuf, sizeof(rcvbuf));
+    // Intentionally never Receive(): let the client's send path back up.
+    Timer t;
+    while (!client_done->load() && t.elapsed_ms() < 10000)
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     s.close();
 }
 
@@ -265,6 +286,49 @@ TEST_CASE("ServerSocket replies with a too short message", "[support]") {
                Catch::Matchers::Contains("read 1 bytes instead of 4 bytes"));
     CHECK_THAT(error_message,
                Catch::Matchers::Contains("connection closed by peer (EOF)"));
+}
+
+TEST_CASE("Client cannot send the expected number of bytes", "[support]") {
+    constexpr uint16_t port = 1963;
+
+    // Server accepts but never reads; it stays open until we tell it the
+    // client is done, so it cannot close mid-transfer.
+    std::atomic<bool> client_done{false};
+    auto s = std::async(std::launch::async, non_reading_server, port,
+                        &client_done);
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    auto client = DetectorSocket("localhost", port);
+
+    // Shrink the send buffer and add a short send timeout so the write stalls
+    // and returns before all the data is sent.
+    int sndbuf = 4096;
+    setsockopt(client.getSocketId(), SOL_SOCKET, SO_SNDBUF, &sndbuf,
+               sizeof(sndbuf));
+    struct timeval tv {};
+    tv.tv_sec = 0;
+    tv.tv_usec = 300000; // 300 ms
+    setsockopt(client.getSocketId(), SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv));
+
+    // Much more than fits in the (shrunken) send + receive buffers, so the
+    // send cannot complete while the server refuses to read.
+    std::vector<char> big_message(8 * 1024 * 1024, '\0');
+
+    std::string error_message;
+    try {
+        client.Send(big_message.data(), big_message.size());
+        FAIL("Send should have thrown when it could not send all bytes");
+    } catch (const SocketError &e) {
+        error_message = e.what();
+    }
+    client_done = true;
+    client.close();
+    s.get();
+
+    // Fewer bytes were sent than expected, reported as a write error (the
+    // send timed out with EAGAIN/EWOULDBLOCK).
+    CHECK_THAT(error_message, Catch::Matchers::Contains("bytes instead of"));
+    CHECK_THAT(error_message, Catch::Matchers::Contains("write error:"));
 }
 
 } // namespace sls

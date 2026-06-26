@@ -23,6 +23,14 @@ namespace sls {
 DataSocket::DataSocket(int socketId) : sockfd_(socketId) {
     int value = 1;
     setsockopt(sockfd_, SOL_SOCKET, SO_REUSEADDR, &value, sizeof(value));
+#ifdef SO_NOSIGPIPE
+    // macOS/BSD: suppress SIGPIPE when sending to a peer that closed the
+    // connection, so a failed send returns an error instead of killing the
+    // process. On Linux we instead pass MSG_NOSIGNAL to send() (see Send()).
+    int nosigpipe = 1;
+    setsockopt(sockfd_, SOL_SOCKET, SO_NOSIGPIPE, &nosigpipe,
+               sizeof(nosigpipe));
+#endif
 }
 
 DataSocket::~DataSocket() {
@@ -88,28 +96,56 @@ std::string DataSocket::Receive(size_t length) {
     return buff;
 }
 int DataSocket::Send(const void *buffer, size_t size) {
+    int bytes_expected = static_cast<int>(size); // signed size
     int bytes_sent = 0;
-    int data_size = static_cast<int>(size); // signed size
-    while (bytes_sent < (data_size)) {
-        auto this_send = ::write(getSocketId(), buffer, size);
+    ssize_t this_send = 0; // last write result, kept for diagnostics
+    // Linux: avoid SIGPIPE on a broken connection by using send() with
+    // MSG_NOSIGNAL. macOS/BSD lack the flag and use SO_NOSIGPIPE instead
+    // (set in the constructor).
+#ifdef MSG_NOSIGNAL
+    const int send_flags = MSG_NOSIGNAL;
+#else
+    const int send_flags = 0;
+#endif
+    Timer timer;
+    while (bytes_sent < bytes_expected) {
+        this_send = ::send(
+            getSocketId(),
+            reinterpret_cast<const char *>(buffer) + bytes_sent,
+            bytes_expected - bytes_sent, send_flags);
         if (this_send <= 0)
             break;
         bytes_sent += this_send;
     }
-    if (bytes_sent != data_size) {
+    if (bytes_sent == bytes_expected) {
+        return bytes_sent;
+    } else {
+        int err = errno; // capture before any other call can clobber it
         std::ostringstream ss;
         ss << "TCP socket sent " << bytes_sent << " bytes instead of "
-           << data_size << " bytes ("
+           << bytes_expected << " bytes ("
            << getFunctionNameFromEnum(static_cast<detFuncs>(fnum_)) << ')';
+        if (this_send == 0)
+            ss << ": 0 bytes sent";
+        else if (this_send < 0)
+            ss << ": write error:  " << std::strerror(err) << " ("
+               << errno_name(err) << ")";
+        ss << " after " << timer.elapsed_ms() << " ms";
         throw SocketError(ss.str());
     }
-    return bytes_sent;
 }
 
 int DataSocket::Send(const std::string &s) { return Send(&s[0], s.size()); }
 
 int DataSocket::write(void *buffer, size_t size) {
-    return ::write(getSocketId(), buffer, size);
+    // Use send() with MSG_NOSIGNAL (Linux) to avoid SIGPIPE on a broken
+    // connection; macOS/BSD rely on SO_NOSIGPIPE set in the constructor.
+#ifdef MSG_NOSIGNAL
+    const int send_flags = MSG_NOSIGNAL;
+#else
+    const int send_flags = 0;
+#endif
+    return ::send(getSocketId(), buffer, size, send_flags);
 }
 
 int DataSocket::read(void *buffer, size_t size) {

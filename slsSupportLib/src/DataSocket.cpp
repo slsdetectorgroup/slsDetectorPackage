@@ -150,7 +150,9 @@ int DataSocket::setTimeOut(int t_seconds) {
 void DataSocket::close() {
     if (sockfd_ > 0) {
         if (::close(sockfd_)) {
-            throw SocketError("could not close socket");
+            std::stringstream ss;
+            ss << "could not close socket (fd: " << sockfd_ << ")";
+            throw SocketError(ss.str());
         }
         sockfd_ = -1;
     } else {

@@ -3,6 +3,7 @@
 #include "catch.hpp"
 #include "sls/ClientSocket.h"
 #include "sls/ServerSocket.h"
+#include "sls/sls_detector_defs.h"
 #include "sls/sls_detector_exceptions.h"
 #include "sls/sls_detector_funcs.h"
 #include <chrono>
@@ -33,7 +34,7 @@ std::vector<char> echo_server(uint16_t port, size_t bytes_to_send,
 
         auto fd = s.getSocketId();
         setsockopt(fd, SOL_SOCKET, SO_LINGER, &ling, sizeof ling);
-        close(fd);
+        ::close(fd);
         return buffer;
     }
 
@@ -46,6 +47,42 @@ std::vector<char> echo_server(uint16_t port, size_t bytes_to_send,
     std::this_thread::sleep_for(hold);
     s.close();
     return buffer;
+}
+
+// Minimal command server speaking the same protocol as sendCommandThenRead:
+// accept a connection, read the function number and a single int argument,
+// then reply via ServerInterface::sendResult with OK and (arg * 2). Returns
+// the {fnum, arg} pair the server received so the test can verify them.
+std::pair<int, int> command_server(uint16_t port) {
+    auto server = ServerSocket(port);
+    auto s = server.accept();
+    int fnum = -1;
+    int arg = 0;
+    s.Receive(&fnum, sizeof(fnum));
+    s.Receive(&arg, sizeof(arg));
+    int retval = arg * 2;
+    s.sendResult(slsDetectorDefs::OK, &retval, sizeof(retval));
+    s.close();
+    return {fnum, arg};
+}
+
+// Command server that replies with a truncated message: it reads the request,
+// sends the OK return code, but then sends fewer retval bytes than the client
+// expects before closing, so the client's Receive hits EOF mid-read.
+void short_reply_server(uint16_t port, size_t retval_bytes_to_send) {
+    auto server = ServerSocket(port);
+    auto s = server.accept();
+    int fnum = -1;
+    int arg = 0;
+    s.Receive(&fnum, sizeof(fnum));
+    s.Receive(&arg, sizeof(arg));
+    int ret = slsDetectorDefs::OK;
+    s.Send(&ret, sizeof(ret));
+    if (retval_bytes_to_send > 0) {
+        std::vector<char> partial(retval_bytes_to_send, '\0');
+        s.Send(partial.data(), partial.size());
+    }
+    s.close();
 }
 
 TEST_CASE("The server recive the same message as we send", "[support]") {
@@ -70,6 +107,8 @@ TEST_CASE("The server recive the same message as we send", "[support]") {
 
 TEST_CASE("throws on no server", "[support]") {
     CHECK_THROWS(DetectorSocket("localhost", 1950));
+    CHECK_THROWS(ReceiverSocket("localhost", 1950));
+    CHECK_THROWS(GuiSocket("localhost", 1950));
 }
 
 TEST_CASE("Receiving a too short message throws and reports EOF", "[support]") {
@@ -154,11 +193,78 @@ TEST_CASE("Socket crash?", "[support]") {
     
 
     REQUIRE_THROWS(client.Receive(received_message.data(), received_message.size()));
-    // client.close();
+    
+    //Now try to send more
+    // client.Send(sent_message.data(), sent_message.size());
 
 
 
 }
 
+
+TEST_CASE("ClientSocket throws on invalid hostname", "[support]") {
+    CHECK_THROWS(ReceiverSocket("invalidhostname", 1950));
+    CHECK_THROWS(DetectorSocket("invalidhostname", 1950));
+    CHECK_THROWS(GuiSocket("invalidhostname", 1950));
+}
+
+
+TEST_CASE("Using DetectorSocket to talk to a Server Socket", "[support]") {
+    constexpr uint16_t port = 1961;
+    constexpr int fnum = F_GET_DETECTOR_TYPE;
+    constexpr int arg = 21;
+
+    auto s = std::async(std::launch::async, command_server, port);
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    auto client = DetectorSocket("localhost", port);
+    int retval = 0;
+    int ret =
+        client.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval,
+                                   sizeof(retval));
+    client.close();
+
+    auto server_received = s.get();
+
+    // Client got OK and the expected return value back from the server
+    CHECK(ret == slsDetectorDefs::OK);
+    CHECK(retval == arg * 2);
+    // Server received the function number and argument we sent
+    CHECK(server_received.first == fnum);
+    CHECK(server_received.second == arg);
+    // close() resets the underlying fd
+    CHECK(client.getSocketId() == -1);
+}
+
+TEST_CASE("ServerSocket replies with a too short message", "[support]") {
+    constexpr uint16_t port = 1962;
+    constexpr int fnum = F_GET_DETECTOR_TYPE;
+    constexpr int arg = 21;
+
+    // Server sends the OK return code, then only 1 of the 4 expected retval
+    // bytes before closing.
+    auto s = std::async(std::launch::async, short_reply_server, port, 1);
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    auto client = DetectorSocket("localhost", port);
+    int retval = 0;
+
+    std::string error_message;
+    try {
+        client.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval,
+                                   sizeof(retval));
+        FAIL("sendCommandThenRead should have thrown on a too short message");
+    } catch (const DetectorError &e) {
+        error_message = e.what();
+    }
+    client.close();
+    s.get();
+
+    // The client read only 1 of the 4 expected retval bytes and then hit EOF.
+    CHECK_THAT(error_message,
+               Catch::Matchers::Contains("read 1 bytes instead of 4 bytes"));
+    CHECK_THAT(error_message,
+               Catch::Matchers::Contains("connection closed by peer (EOF)"));
+}
 
 } // namespace sls

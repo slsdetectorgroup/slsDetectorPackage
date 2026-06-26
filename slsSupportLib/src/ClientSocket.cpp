@@ -5,9 +5,11 @@
 #include "sls/sls_detector_defs.h"
 #include "sls/sls_detector_exceptions.h"
 #include "sls/sls_detector_funcs.h"
+#include "sls/string_utils.h"
 #include <arpa/inet.h>
 #include <cassert>
 #include <cstring>
+#include <fmt/format.h>
 #include <iostream>
 #include <stdexcept>
 #include <unistd.h>
@@ -24,8 +26,9 @@ ClientSocket::ClientSocket(std::string stype, const std::string &host,
     hints.ai_flags |= AI_CANONNAME;
 
     if (getaddrinfo(host.c_str(), nullptr, &hints, &result) != 0) {
-        std::string msg = socketType + " cannot decode host:" + host +
-                          " on port " + std::to_string(port) + "\n";
+
+
+        auto msg = fmt::format("Cannot resolve {} hostname: '{}'", to_lower(socketType), host);
         throwError(msg);
     }
 
@@ -40,8 +43,10 @@ ClientSocket::ClientSocket(std::string stype, const std::string &host,
     if (::connect(getSocketId(), (struct sockaddr *)&serverAddr,
                   sizeof(serverAddr)) != 0) {
         freeaddrinfo(result);
-        std::string msg = socketType + ": Cannot connect to " + host +
-                          " on port " + std::to_string(port) + "\n";
+        auto msg = fmt::format(
+            "Cannot connect to {} on {}:{}\n",
+            to_lower(socketType), host, port);
+
         throwError(msg);
     }
     freeaddrinfo(result);
@@ -53,8 +58,7 @@ ClientSocket::ClientSocket(std::string sType, struct sockaddr_in addr)
     if (::connect(getSocketId(), (struct sockaddr *)&addr, sizeof(addr)) != 0) {
         char address[INET_ADDRSTRLEN];
         inet_ntop(AF_INET, &addr.sin_addr, address, INET_ADDRSTRLEN);
-        std::string msg = socketType + ": Cannot connect to " + address +
-                          " on port " + std::to_string(addr.sin_port) + "\n";
+        auto msg = fmt::format("Cannot connect to {} on {}:{}", to_lower(socketType), address, addr.sin_port);
         throwError(msg);
     }
 }
@@ -95,7 +99,8 @@ void ClientSocket::readReply(int &ret, void *retval, size_t retval_size) {
     }
     // debugging
     catch (SocketError &e) {
-        throwError(socketType + " Socket Error: " + std::string(e.what()));
+        auto msg = fmt::format("While reading reply from {} {}", to_lower(socketType), e.what());
+        throwError(msg);
     }
 }
 

@@ -46,6 +46,7 @@ DataSocket::~DataSocket() {
 
 void DataSocket::swap(DataSocket &other) noexcept {
     std::swap(sockfd_, other.sockfd_);
+    std::swap(fnum_, other.fnum_);
 }
 
 DataSocket::DataSocket(DataSocket &&move) noexcept { move.swap(*this); }
@@ -58,20 +59,22 @@ void DataSocket::setFnum(const int fnum) { fnum_ = fnum; }
 
 int DataSocket::Receive(void *buffer, size_t size) {
     // TODO!(Erik) Add sleep? how many reties?
-    int bytes_expected = static_cast<int>(size); // signed size
-    int bytes_read = 0;
+    ssize_t bytes_expected = static_cast<ssize_t>(size);
+    ssize_t bytes_read = 0;
     ssize_t this_read = 0; // last read result, kept for diagnostics
     Timer timer;
     while (bytes_read < bytes_expected) {
         this_read =
             ::read(getSocketId(), reinterpret_cast<char *>(buffer) + bytes_read,
                    bytes_expected - bytes_read);
+        if (this_read < 0 && errno == EINTR)
+            continue; // interrupted by a signal, retry
         if (this_read <= 0)
             break;
         bytes_read += this_read;
     }
     if (bytes_read == bytes_expected) {
-        return bytes_read;
+        return static_cast<int>(bytes_read);
     } else {
         int err = errno; // capture before any other call can clobber it
         std::ostringstream ss;
@@ -81,7 +84,8 @@ int DataSocket::Receive(void *buffer, size_t size) {
         if (this_read == 0)
             ss << ": connection closed by peer (EOF)";
         else if (this_read < 0)
-            ss << ": read error:  " << std::strerror(err) << " (" << errno_name(err) << ")";
+            ss << ": read error: " << std::strerror(err) << " ("
+               << errno_name(err) << ")";
         ss << " after " << timer.elapsed_ms() << " ms";
         throw SocketError(ss.str());
     }
@@ -96,8 +100,8 @@ std::string DataSocket::Receive(size_t length) {
     return buff;
 }
 int DataSocket::Send(const void *buffer, size_t size) {
-    int bytes_expected = static_cast<int>(size); // signed size
-    int bytes_sent = 0;
+    ssize_t bytes_expected = static_cast<ssize_t>(size);
+    ssize_t bytes_sent = 0;
     ssize_t this_send = 0; // last write result, kept for diagnostics
     // Linux: avoid SIGPIPE on a broken connection by using send() with
     // MSG_NOSIGNAL. macOS/BSD lack the flag and use SO_NOSIGPIPE instead
@@ -113,22 +117,22 @@ int DataSocket::Send(const void *buffer, size_t size) {
             getSocketId(),
             reinterpret_cast<const char *>(buffer) + bytes_sent,
             bytes_expected - bytes_sent, send_flags);
+        if (this_send < 0 && errno == EINTR)
+            continue; // interrupted by a signal, retry
         if (this_send <= 0)
             break;
         bytes_sent += this_send;
     }
     if (bytes_sent == bytes_expected) {
-        return bytes_sent;
+        return static_cast<int>(bytes_sent);
     } else {
         int err = errno; // capture before any other call can clobber it
         std::ostringstream ss;
         ss << "TCP socket sent " << bytes_sent << " bytes instead of "
            << bytes_expected << " bytes ("
            << getFunctionNameFromEnum(static_cast<detFuncs>(fnum_)) << ')';
-        if (this_send == 0)
-            ss << ": 0 bytes sent";
-        else if (this_send < 0)
-            ss << ": write error:  " << std::strerror(err) << " ("
+        if (this_send < 0)
+            ss << ": write error: " << std::strerror(err) << " ("
                << errno_name(err) << ")";
         ss << " after " << timer.elapsed_ms() << " ms";
         throw SocketError(ss.str());
@@ -154,8 +158,8 @@ int DataSocket::read(void *buffer, size_t size) {
 
 int DataSocket::setReceiveTimeout(int us) {
     timeval t{};
-    t.tv_sec = 0;
-    t.tv_usec = us;
+    t.tv_sec = us / 1000000;
+    t.tv_usec = us % 1000000;
     return ::setsockopt(getSocketId(), SOL_SOCKET, SO_RCVTIMEO, &t,
                         sizeof(struct timeval));
 }

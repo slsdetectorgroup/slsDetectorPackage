@@ -6,6 +6,11 @@ set(MATTERHORN_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/HelperFunctions.cpp
 )
 
+set(MATTERHORN_INCLUDE_DIRS
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../slsSupportLib/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/../slsDetectorServer_cpp/include
+)
 
 if(SLS_USE_SIMULATOR)
     list(APPEND MATTERHORN_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/VirtualMatterhornServer.cpp)
@@ -20,10 +25,7 @@ if(SLS_USE_SIMULATOR)
     )
 
     target_include_directories(matterhornDetectorServer_virtual
-        PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include
-        ${CMAKE_CURRENT_SOURCE_DIR}/../../slsSupportLib/include
-        ${CMAKE_CURRENT_SOURCE_DIR}/../slsDetectorServer_cpp/include
-        ${CMAKE_SOURCE_DIR}/slsDetectorSoftware/src) # because of SharedMemory TODO: should be in slsSupportLib?
+        PRIVATE ${MATTERHORN_INCLUDE_DIRS})
 
     target_link_libraries(matterhornDetectorServer_virtual
         PUBLIC 
@@ -39,67 +41,60 @@ if(SLS_USE_SIMULATOR)
     )
 endif() # maybe better to have a else if build with simulators on one always uses the virtual server in MatterhornApp 
 
-list(APPEND MATTERHORN_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/MatterhornServer.cpp)
+if(SLS_USE_MATTERHORN) 
+    list(APPEND MATTERHORN_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/MatterhornServer.cpp)
 
-#mmh should slsSupportLib be considered as well when updating version? 
-if(CMAKE_TOOLCHAIN_FILE AND NOT CMAKE_TOOLCHAIN_FILE STREQUAL "") # only update version if cross compiling binaries 
-    find_package(Python3 REQUIRED COMPONENTS Interpreter REQUIRED)
-    add_custom_target(update_server_version ALL
-        COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/etc/updateAPIVersion.py APIMATTERHORN ${CMAKE_SOURCE_DIR}/slsDetectorServers/matterhornServer ${CMAKE_SOURCE_DIR}/slsDetectorServers/slsDetectorServer_cpp ${CMAKE_SOURCE_DIR}/slsSupportLib  
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        COMMENT "Updating APIMATTERHORN version"
-        VERBATIM)
-endif() 
+    if(CMAKE_TOOLCHAIN_FILE AND NOT CMAKE_TOOLCHAIN_FILE STREQUAL "") 
+        set(CROSS_COMPILE TRUE)
+    endif()
 
-add_executable(matterhornDetectorServer ${MATTERHORN_SOURCES})
+    #mmh should slsSupportLib be considered as well when updating version? 
+    if(${CROSS_COMPILE}) # only update version if cross compiling binaries 
+        find_package(Python3 REQUIRED COMPONENTS Interpreter REQUIRED)
+        add_custom_target(update_server_version ALL
+            COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/etc/updateAPIVersion.py APIMATTERHORN ${CMAKE_SOURCE_DIR}/slsDetectorServers/matterhornServer ${CMAKE_SOURCE_DIR}/slsDetectorServers/slsDetectorServer_cpp   
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            COMMENT "Updating APIMATTERHORN version"
+            VERBATIM)
+    endif() 
 
-if(CMAKE_TOOLCHAIN_FILE AND NOT CMAKE_TOOLCHAIN_FILE STREQUAL "") # only update version if cross compiling binaries 
-    add_dependencies(matterhornDetectorServer update_server_version)
-endif()
+    add_executable(matterhornDetectorServer ${MATTERHORN_SOURCES})
 
-target_compile_definitions(matterhornDetectorServer PRIVATE
-    MATTERHORN_SERVER_HEADER=<MatterhornServer.h>
-    MATTERHORN_SERVER_CLASS=MatterhornServer
-)
+    if(${CROSS_COMPILE}) # only update version if cross compiling binaries 
+        add_dependencies(matterhornDetectorServer update_server_version)
+    endif()
 
-target_include_directories(matterhornDetectorServer
-        PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include
-        ${CMAKE_CURRENT_SOURCE_DIR}/../../slsSupportLib/include
-        ${CMAKE_CURRENT_SOURCE_DIR}/../slsDetectorServer_cpp/include)
-    
-target_link_libraries(matterhornDetectorServer
-    PUBLIC
-    slsSupportStatic
-    slsServerStatic)
+    target_compile_definitions(matterhornDetectorServer PRIVATE
+        MATTERHORN_SERVER_HEADER=<MatterhornServer.h>
+        MATTERHORN_SERVER_CLASS=MatterhornServer
+    )
 
-set_target_properties(matterhornDetectorServer PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-)
+    target_include_directories(matterhornDetectorServer
+            PRIVATE ${MATTERHORN_INCLUDE_DIRS})
+        
+    target_link_libraries(matterhornDetectorServer
+        PUBLIC
+        slsSupportStatic
+        slsServerStatic)
 
-install(TARGETS matterhornDetectorServer
-    RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
+    if(${CROSS_COMPILE}) # change output directory to stay consitent with c server binaries when cross compiling
+        set(RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
+    else()
+        set(RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+    endif()
 
-if(CMAKE_TOOLCHAIN_FILE AND NOT CMAKE_TOOLCHAIN_FILE STREQUAL "") # copy the server binary  
-    add_custom_command(TARGET matterhornDetectorServer POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                $<TARGET_FILE:matterhornDetectorServer>
-                ${CMAKE_CURRENT_SOURCE_DIR}/bin/matterhornDetectorServer
-        DEPENDS matterhornDetectorServer
-        COMMENT "Copying matterhornDetectorServer binary to bin for cross compilation"
+    set_target_properties(matterhornDetectorServer PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${RUNTIME_OUTPUT_DIRECTORY}
+    )
+
+    install(TARGETS matterhornDetectorServer
+        RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}
     )
 endif()
-
 
 if(SLS_USE_TESTS)
     add_subdirectory(tests)
 endif()
-
-
-#target_compile_definitions(matterhornDetectorServer_virtual
-#    PUBLIC VIRTUAL STOP_SERVER #what is this stop server should we really have a generic ServerAPP and pass compile options to create server e.g. MatterHorn? 
-#)
-
 
 
 

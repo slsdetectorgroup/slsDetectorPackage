@@ -477,12 +477,13 @@ class MatterhornData : public GeneralData {
         framesPerFile = MATTERHORN_MAX_FRAMES_PER_FILE; // TODO: dummy value
         fifoDepth = 50000;                              // TODO: dummy value
         standardheader = true;
+        dataSize = 8192;
+        packetSize = headerSizeinPacket + dataSize;
         // udpSocketBufferSize = 0; // TODO: dummy value
-        dynamicRange = 16;    // default
-        tengigaEnable = true; // TODO: not sure should also be 100g
-        SetCounterMask(0xf);  // default all 4 counters enabled
+        dynamicRange = 16;   // default
+        SetCounterMask(0xf); // default all 4 counters enabled
         UpdateImageSize();
-        calculatefifoDepth();
+        CalculatefifoDepth();
     };
 
     void SetDynamicRange(int dr) {
@@ -501,38 +502,29 @@ class MatterhornData : public GeneralData {
         UpdateImageSize();
     };
 
-    void calculatefifoDepth() { fifoDepth = max_fifo_depth / imageSize; }
+    void CalculatefifoDepth() { fifoDepth = max_memory_allocated / imageSize; }
 
   private:
     void UpdateImageSize() {
-        nPixelsX = (nChannelsX * ncounters);
-        nPixelsY = (nChannelsY * ncounters);
+        nPixelsX = nChannelsX;
+        nPixelsY = nChannelsY * ncounters;
 
         imageSize = nPixelsX * nPixelsY * GetPixelDepth();
         LOG(logINFO) << "imageSize: " << imageSize;
         actualImageSize = imageSize;
 
-        // 10g
-        // TODO: dont know what to do here
-        /*
-        if (tengigaEnable) {
-        }
-        // 1g
-        else {
-        }
-        */
+        packetsPerFrame = imageSize / dataSize;
 
         LOG(logINFO) << "Packets Per Frame: " << packetsPerFrame;
-        packetSize = headerSizeinPacket + dataSize;
-        LOG(logINFO) << "PacketSize: " << packetSize;
     };
 
   private:
     int ncounters{0};
-    int nChannelsX{1024};
-    int nChannelsY{512};
+    static constexpr int nChannelsX{1024};
+    static constexpr int nChannelsY{512};
 
-    constexpr static int max_fifo_depth = 100000; // TODO: dummy value for now
+    constexpr static int max_memory_allocated =
+        100000; // TODO: dummy value for now
 };
 
 class Gotthard2Data : public GeneralData {

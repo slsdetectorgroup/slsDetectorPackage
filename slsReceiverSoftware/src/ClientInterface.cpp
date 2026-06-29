@@ -671,12 +671,20 @@ int ClientInterface::set_dynamic_range(Interface &socket) {
             break;
         */
         case 4:
+            if (detType == MATTERHORN) {
+                exists = true;
+            }
+            break;
         case 12:
             if (detType == EIGER) {
                 exists = true;
             }
             break;
         case 8:
+            if (detType == MATTERHORN) {
+                exists = true;
+            }
+            break;
         case 32:
             if (detType == EIGER || detType == MYTHEN3) {
                 exists = true;

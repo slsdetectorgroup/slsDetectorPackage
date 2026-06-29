@@ -269,8 +269,13 @@ void Implementation::setModulePositionId(const int id) {
     xy portGeometry = GetPortGeometry();
     streamingPort = DEFAULT_ZMQ_RX_PORTNO + modulePos * portGeometry.x;
 
-    assert(numModules.y !=
-           0); // TODO why an assert here? should we throw an exception instead?
+    if (numModules.y == 0) {
+        LOG(logERROR) << "Number of modules in y direction is 0. Cannot set "
+                         "module position.";
+        throw RuntimeError("Number of modules in y direction is 0. Cannot set "
+                           "module position.");
+    }
+
     for (unsigned int i = 0; i < listener.size(); ++i) {
         uint16_t row = 0, col = 0;
         row = (modulePos % numModules.y) * portGeometry.y;
@@ -1602,7 +1607,8 @@ uint32_t Implementation::getDynamicRange() const {
 
 void Implementation::setDynamicRange(const uint32_t i) {
     if (generalData->dynamicRange != i) {
-        if (generalData->detType == EIGER || generalData->detType == MYTHEN3) {
+        if (generalData->detType == EIGER || generalData->detType == MYTHEN3 ||
+            generalData->detType == MATTERHORN) {
             generalData->SetDynamicRange(i);
             SetupFifoStructure();
         }

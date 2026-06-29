@@ -671,7 +671,7 @@ int ClientInterface::set_dynamic_range(Interface &socket) {
             break;
         */
         case 4:
-            if (detType == MATTERHORN) {
+            if (detType == MATTERHORN || detType == EIGER) {
                 exists = true;
             }
             break;
@@ -681,7 +681,8 @@ int ClientInterface::set_dynamic_range(Interface &socket) {
             }
             break;
         case 8:
-            if (detType == MATTERHORN) {
+            if (detType == MATTERHORN || detType == EIGER ||
+                detType == MYTHEN3) {
                 exists = true;
             }
             break;

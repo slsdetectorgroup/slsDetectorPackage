@@ -64,4 +64,6 @@ bool replace_first(std::string *s, const std::string &substr,
 
 std::pair<std::string, uint16_t> ParseHostPort(const std::string &s);
 
+std::string to_lower(const std::string &s);
+
 } // namespace sls

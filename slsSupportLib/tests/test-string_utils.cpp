@@ -123,6 +123,33 @@ TEST_CASE("port missing") {
     REQUIRE(res.second == 0);
 }
 
+TEST_CASE("to_lower converts uppercase to lowercase") {
+    REQUIRE(to_lower("HELLO") == "hello");
+    REQUIRE(to_lower("Hello World") == "hello world");
+}
+
+TEST_CASE("to_lower leaves an already lowercase string unchanged") {
+    REQUIRE(to_lower("already lower") == "already lower");
+}
+
+TEST_CASE("to_lower only affects alphabetic characters") {
+    REQUIRE(to_lower("ABC123!?_-XYZ") == "abc123!?_-xyz");
+}
+
+TEST_CASE("to_lower on an empty string returns an empty string") {
+    REQUIRE(to_lower("").empty());
+}
+
+TEST_CASE("to_lower does not modify the original string") {
+    std::string original = "MixedCase";
+    auto result = to_lower(original);
+    REQUIRE(result == "mixedcase");
+    // the source string must be untouched
+    REQUIRE(original == "MixedCase");
+}
+
+
+
 // TEST_CASE("concat things not being strings")
 
 } // namespace sls

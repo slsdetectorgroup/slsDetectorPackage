@@ -77,8 +77,6 @@ class DataSocket {
 
     std::string Receive(size_t length);
 
-    int read(void *buffer, size_t size);
-    int write(void *buffer, size_t size);
     int setTimeOut(int t_seconds);
     int setReceiveTimeout(int us);
     void close();

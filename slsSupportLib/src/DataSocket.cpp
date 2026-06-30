@@ -141,21 +141,6 @@ int DataSocket::Send(const void *buffer, size_t size) {
 
 int DataSocket::Send(const std::string &s) { return Send(&s[0], s.size()); }
 
-int DataSocket::write(void *buffer, size_t size) {
-    // Use send() with MSG_NOSIGNAL (Linux) to avoid SIGPIPE on a broken
-    // connection; macOS/BSD rely on SO_NOSIGPIPE set in the constructor.
-#ifdef MSG_NOSIGNAL
-    const int send_flags = MSG_NOSIGNAL;
-#else
-    const int send_flags = 0;
-#endif
-    return ::send(getSocketId(), buffer, size, send_flags);
-}
-
-int DataSocket::read(void *buffer, size_t size) {
-    return ::read(getSocketId(), buffer, size);
-}
-
 int DataSocket::setReceiveTimeout(int us) {
     timeval t{};
     t.tv_sec = us / 1000000;

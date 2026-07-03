@@ -26,18 +26,6 @@ struct UDPInfo {
 };
 
 using ReturnCode = slsDetectorDefs::ReturnCode;
-/// @brief generates a random locally administered unicast MAC address for the
-/// source UDP
-/// @return generated MAC address
-inline uint64_t generaterandomMacAddress() {
-    uint64_t mac =
-        0xAA0000000000; // locally administered unicast address (0xA: 0b1010) //
-                        // TODO maybe 0x02000000000 better?
-    for (int i = 2; i < 5; ++i) {
-        mac |= (static_cast<uint64_t>(rand() % 256) << (i * 8));
-    }
-    return mac;
-}
 
 /// @brief Shared memory structure for stop server to store run status
 struct acquisitionStatus {
@@ -274,7 +262,7 @@ ProcessedResult DetectorServer<DerivedDetectorServer>::set_source_udp_ip(
     uint32_t newSrcIp;
 
     try {
-        int ret = socket.Receive(newSrcIp);
+        (void)socket.Receive(newSrcIp);
     } catch (const SocketError &e) {
         LOG(logERROR) << "Failed to receive new source UDP IP address: "
                       << e.what();
@@ -301,7 +289,7 @@ ProcessedResult DetectorServer<DerivedDetectorServer>::set_destination_udp_mac(
     uint64_t newDstMac;
 
     try {
-        int ret = socket.Receive<uint64_t>(newDstMac);
+        (void)socket.Receive<uint64_t>(newDstMac);
     } catch (const SocketError &e) {
         LOG(logERROR) << "Failed to receive new destination UDP MAC address: "
                       << e.what();
@@ -330,7 +318,7 @@ ProcessedResult DetectorServer<DerivedDetectorServer>::set_destination_udp_ip(
     uint32_t newDstIp;
 
     try {
-        int ret = socket.Receive(newDstIp);
+        (void)socket.Receive(newDstIp);
     } catch (const SocketError &e) {
         LOG(logERROR) << "Failed to receive new destination UDP IP address: "
                       << e.what();
@@ -358,7 +346,7 @@ ProcessedResult DetectorServer<DerivedDetectorServer>::set_destination_udp_port(
     uint16_t newDstPort;
 
     try {
-        int ret = socket.Receive(newDstPort);
+        (void)socket.Receive(newDstPort);
     } catch (const SocketError &e) {
         LOG(logERROR) << "Failed to receive new destination UDP port number: "
                       << e.what();
@@ -402,7 +390,7 @@ ProcessedResult
 DetectorServer<DerivedDetectorServer>::set_num_frames(ServerInterface &socket) {
     int64_t num_frames{};
     try {
-        int ret = socket.Receive(num_frames);
+        (void)socket.Receive(num_frames);
     } catch (const SocketError &e) {
         LOG(logERROR) << "Failed to receive number of frames: " << e.what();
         return ProcessedResult{ReturnCode::FAIL,
@@ -443,7 +431,7 @@ ProcessedResult DetectorServer<DerivedDetectorServer>::set_num_triggers(
     ServerInterface &socket) {
     uint32_t num_triggers{};
     try {
-        int ret = socket.Receive(num_triggers);
+        (void)socket.Receive(num_triggers);
     } catch (const SocketError &e) {
         LOG(logERROR) << "Failed to receive number of triggers: " << e.what();
         return ProcessedResult{ReturnCode::FAIL,

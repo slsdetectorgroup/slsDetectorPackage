@@ -32,7 +32,7 @@ void inline setSPIRegisterField(std::vector<std::byte> &register_value,
                                 uint32_t field_value) {
 
     // check that the field value can fit in the bitmask
-    if (field_value > field.num_bits) {
+    if ((field_value >> field.num_bits) != 0) {
         throw std::invalid_argument(fmt::format(
             "Value {} cannot fit in field {}", field_value, field.num_bits));
     }
@@ -48,12 +48,15 @@ void inline setSPIRegisterField(std::vector<std::byte> &register_value,
 
         std::byte mask = std::byte(1) << bit_index;
 
-        register_value[byte_index] &=
-            ~mask; // clear the bit in the register value
+        const bool bit = (field_value >> i) & 0x1;
 
-        register_value[byte_index] |= std::byte(
-            ((field_value >> i) & 0x1)
-            << bit_index); // set the new field value bit in the register value
+        if (bit) {
+            register_value[byte_index] |=
+                mask; // set the bit in the register value
+        } else {
+            register_value[byte_index] &=
+                ~mask; // clear the bit in the register value
+        }
     }
 }
 

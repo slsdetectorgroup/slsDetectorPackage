@@ -44,7 +44,7 @@ void TCPInterface::startTCPServerClientConnection() {
             auto socket = server.accept();
             try {
 
-                socket.Receive(function_id);
+                (void)socket.Receive(function_id);
                 if (function_id < 0 || function_id >= NUM_DET_FUNCTIONS) {
                     throw RuntimeError(fmt::format(
                         "{}:{}", UNRECOGNIZED_FNUM_ENUM,

@@ -18,20 +18,20 @@ void HardwareMemoryModel::mapToMemory() {
     int fd = open("/dev/mem", O_RDWR | O_SYNC, 0);
 
     if (fd == -1) {
-        LOG(logERROR) << "Can't open /dev/mem: " << strerror(errno);
-        throw std::runtime_error("Can't find /dev/mem");
+        throw RuntimeError("Can't find /dev/mem");
     }
 
-    mapped_memory_ptr = reinterpret_cast<volatile uint32_t *>(
+    auto void_mmap_ptr =
         mmap(nullptr, size_memory_space, PROT_READ | PROT_WRITE, MAP_SHARED, fd,
-             IPCore_base_address));
+             IPCore_base_address);
 
-    if (mapped_memory_ptr ==
-        reinterpret_cast<volatile uint32_t *>(MAP_FAILED)) {
-        throw std::runtime_error(
+    if (void_mmap_ptr == MAP_FAILED) {
+        throw RuntimeError(
             fmt::format("Failed to map base address: {}",
                         IPCore_base_address)); // TODO: needs ToString
     }
+
+    mapped_memory_ptr = reinterpret_cast<volatile uint32_t *>(void_mmap_ptr);
 
     close(fd);
 }
@@ -43,9 +43,10 @@ volatile uint32_t *HardwareMemoryModel::getMappedMemoryPtr() const {
 void HardwareMemoryModel::unmapMemory() {
 
     if (mapped_memory_ptr != nullptr) {
-        if (munmap(const_cast<uint32_t *>(mapped_memory_ptr),
+        if (munmap(reinterpret_cast<void *>(
+                       const_cast<uint32_t *>(mapped_memory_ptr)),
                    size_memory_space) < 0) {
-            throw std::runtime_error(
+            throw RuntimeError(
                 fmt::format("Failed to unmap memory for IP core: {}",
                             IPCore_base_address)); // TODO: needs ToString
         }

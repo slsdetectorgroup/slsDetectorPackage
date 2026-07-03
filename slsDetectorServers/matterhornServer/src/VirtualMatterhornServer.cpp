@@ -1,4 +1,6 @@
 #include "VirtualMatterhornServer.h"
+#include "helpers/Defs.hpp"
+#include "helpers/Helpers.hpp"
 #include "sls/ToString.h"
 
 namespace sls {
@@ -13,7 +15,7 @@ VirtualMatterhornServer::VirtualMatterhornServer(uint16_t port)
     // map the IP core base addresses to virtual memory
     busCommunication.mapToMemory();
 
-    spiCommunication.mapToMemory();
+    spiCommunication.open_spi();
 
     // should maybe be part of the constructor?
     tcpInterface->startTCPServer();
@@ -87,9 +89,8 @@ VirtualMatterhornServer::set_module_position_and_update_srcudpmac(
     // configure mac address based on module position
     if (this->udpDetails[0].srcmac ==
         0) { // only configure if source mac address is not set already
-        uint64_t newSrcMac = generaterandomMacAddress();
-        newSrcMac =
-            (newSrcMac & 0xffffffffffff0000) | (module_row << 16) | module_col;
+        uint64_t newSrcMac =
+            generate_mac_address_from_module_position(module_row, module_col);
 
         this->updateSrcMacAddress(newSrcMac);
     }
@@ -112,7 +113,8 @@ VirtualMatterhornServer::set_source_udp_mac(ServerInterface &socket) {
                                   std::string(e.what())};
     }
 
-    if ((newsrcudpMac & 0x020000000000) == 0) {
+    if ((newsrcudpMac << INDIVIDUAL_GROUP_BIT_OFFSET) == 0 &&
+        (newsrcudpMac << UNIVERSAL_LOCAL_BIT_OFFSET) == 1) {
         LOG(logERROR) << "Invalid source MAC address: unicast bit or local "
                          "administration bit is not set";
         return ProcessedResult{

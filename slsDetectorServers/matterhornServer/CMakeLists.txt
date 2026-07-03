@@ -48,7 +48,6 @@ if(SLS_USE_MATTERHORN)
         set(CROSS_COMPILE TRUE)
     endif()
 
-    #mmh should slsSupportLib be considered as well when updating version? 
     if(${CROSS_COMPILE}) # only update version if cross compiling binaries 
         find_package(Python3 REQUIRED COMPONENTS Interpreter REQUIRED)
         add_custom_target(update_server_version ALL

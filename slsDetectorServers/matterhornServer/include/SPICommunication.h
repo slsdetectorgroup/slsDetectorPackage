@@ -1,8 +1,10 @@
+#include "MatterhornDefs.hpp"
 #include "MemoryModel.hpp"
 #include "SPIRegisterDefs.hpp"
 #include "SPIRegisterHelperStructs.hpp"
 #include "fmt/format.h"
 #include "sls/logger.h"
+#include "sls/sls_detector_exceptions.h"
 #include <map>
 #include <vector>
 
@@ -14,7 +16,7 @@ template <typename DerivedSPIModel> class SPICommunication {
   public:
     SPICommunication() = default;
 
-    ~SPICommunication();
+    ~SPICommunication() = default;
 
     std::vector<std::byte> SPIread(const SPIRegister &spi_reg,
                                    const uint8_t chip_id) const;
@@ -22,30 +24,24 @@ template <typename DerivedSPIModel> class SPICommunication {
     void SPIwrite(const SPIRegister &spi_reg, const uint8_t chip_id,
                   const std::vector<std::byte> &data);
 
-    void mapToMemory();
-
-    void unmapMemory();
+    void open_spi();
 };
 
 template <typename DerivedSPIModel>
-SPICommunication<DerivedSPIModel>::~SPICommunication() {
-    unmapMemory();
-}
-
-template <typename DerivedSPIModel>
-void SPICommunication<DerivedSPIModel>::mapToMemory() {
-    static_cast<DerivedSPIModel *>(this)->map_to_memory();
-}
-
-template <typename DerivedSPIModel>
-void SPICommunication<DerivedSPIModel>::unmapMemory() {
-    static_cast<DerivedSPIModel *>(this)->unmap_memory();
+void SPICommunication<DerivedSPIModel>::open_spi() {
+    static_cast<DerivedSPIModel *>(this)->open_spi();
 }
 
 template <typename DerivedSPIModel>
 std::vector<std::byte>
 SPICommunication<DerivedSPIModel>::SPIread(const SPIRegister &spi_reg,
                                            const uint8_t chip_id) const {
+
+    if (chip_id >= MatterhornDefs::NUM_CHIPS_PER_MODULE || chip_id < 0) {
+        throw RuntimeError(
+            fmt::format("Chip id {} is out of range (0-{})", chip_id,
+                        MatterhornDefs::NUM_CHIPS_PER_MODULE - 1));
+    }
     return static_cast<const DerivedSPIModel *>(this)->spi_read(
         spi_reg.n_bytes, chip_id, spi_reg.spi_register_id);
 }
@@ -55,15 +51,17 @@ void SPICommunication<DerivedSPIModel>::SPIwrite(
     const SPIRegister &spi_reg, const uint8_t chip_id,
     const std::vector<std::byte> &data) {
 
+    if (chip_id >= MatterhornDefs::NUM_CHIPS_PER_MODULE || chip_id < 0) {
+        throw RuntimeError(
+            fmt::format("Chip id {} is out of range (0-{})", chip_id,
+                        MatterhornDefs::NUM_CHIPS_PER_MODULE - 1));
+    }
+
     if (data.size() != spi_reg.n_bytes) {
-        LOG(logERROR) << fmt::format("Data size {} does not match number of "
-                                     "bytes {} for SPI register {}",
-                                     data.size(), spi_reg.n_bytes,
-                                     spi_reg.spi_register_id);
-        throw std::runtime_error(
-            fmt::format("Data size {} does not match number of bytes {} for "
-                        "SPI register {}",
-                        data.size(), spi_reg.n_bytes, spi_reg.spi_register_id));
+        throw RuntimeError(fmt::format("Data size {} does not match number of "
+                                       "bytes {} for SPI register {}",
+                                       data.size(), spi_reg.n_bytes,
+                                       spi_reg.spi_register_id));
     }
 
     static_cast<DerivedSPIModel *>(this)->spi_write(
@@ -87,9 +85,9 @@ class HardwareSPICommunication
   public:
     HardwareSPICommunication() = default;
 
-    void map_to_memory();
+    ~HardwareSPICommunication();
 
-    void unmap_memory();
+    void open_spi();
 
     void spi_write(const uint8_t chip_id, const uint8_t register_id,
                    const std::vector<std::byte> &data);
@@ -99,6 +97,8 @@ class HardwareSPICommunication
 
   private:
     int spi_filedescriptor = -1;
+
+    void close_spi();
 };
 
 // template <SPIRegister... SPIRegisters, uint8_t NUM_CHIPS_PER_MODULE> // non
@@ -145,7 +145,9 @@ class VirtualSPICommunication
         }
     }
 
-    void map_to_memory() {
+    ~VirtualSPICommunication() = default;
+
+    void open_spi() {
 
         // resize the virtual register memory to the correct size based on
         // the defined SPI registers
@@ -155,9 +157,6 @@ class VirtualSPICommunication
                                          register_id);
             register_memory.mapToMemory();
         }
-    }
-
-    void unmap_memory() { // do nothing
     }
 
     std::vector<std::byte> spi_read(const size_t n_bytes, const uint8_t chip_id,

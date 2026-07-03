@@ -290,10 +290,16 @@ void BaseMatterhornServer<DerivedServer>::set_module_position(
         throw;
     }
 
-    setRegisterField(register_value_LSB, Reg::ModuleRow, module_row);
-    setRegisterField(register_value_LSB, Reg::ModuleCol, module_col);
-    setRegisterField(register_value_MSB, Reg::ModuleCoordz, 0);
-    setRegisterField(register_value_MSB, Reg::ModuleIndex, module_index);
+    try {
+        setRegisterField(register_value_LSB, Reg::ModuleRow, module_row);
+        setRegisterField(register_value_LSB, Reg::ModuleCol, module_col);
+        setRegisterField(register_value_MSB, Reg::ModuleCoordz, 0);
+        setRegisterField(register_value_MSB, Reg::ModuleIndex, module_index);
+    } catch (const std::exception &e) {
+        LOG(logERROR) << "Failed to set module position register fields: "
+                      << e.what();
+        throw;
+    }
 
     try {
         busCommunication.writeRegister(Reg::Frame_HDR_ModCoord_LSB_Reg,
@@ -313,7 +319,7 @@ BaseMatterhornServer<DerivedServer>::set_counter_mask(ServerInterface &socket) {
 
     uint32_t counter_mask{};
     try {
-        int ret = socket.Receive(counter_mask);
+        (void)socket.Receive(counter_mask);
     } catch (const SocketError &e) {
         LOG(logERROR) << "Failed to receive counter mask: " << e.what();
         return ProcessedResult{ReturnCode::FAIL,

@@ -1,5 +1,7 @@
 #pragma once
 #include <cstdint>
+#include <exception>
+#include <fmt/format.h>
 #include <string_view>
 
 namespace sls {
@@ -32,6 +34,12 @@ struct RegisterField {
 template <typename T>
 void setRegisterField(uint32_t &registervalue, const RegisterField &reg_field,
                       T field_value) {
+
+    if (field_value > reg_field.bitmask) {
+        throw std::invalid_argument(
+            fmt::format("Value {} cannot fit in field with bitmask {}",
+                        field_value, reg_field.bitmask));
+    }
     // Clear the bits corresponding to the field
     registervalue &= ~(reg_field.bitmask << reg_field.bit_position);
     // Set the new value for the field

@@ -8,7 +8,7 @@ MatterhornServer::MatterhornServer(uint16_t port)
     busCommunication.mapToMemory(); // TODO: should this happen in constructor?
 
     // TODO: need to check if chip is attached
-    spiCommunication.mapToMemory(); // TODO: should this happen in constructor?
+    spiCommunication.open_spi(); // TODO: should this happen in constructor?
 
     // should maybe be part of the constructor?
     tcpInterface->startTCPServer();
@@ -32,8 +32,8 @@ ProcessedResult MatterhornServer::set_module_position_and_update_srcudpmac(
 
     std::array<int, 2> position_info{}; // [num_modules_in_y, module_index]
     try {
-        int ret = socket.Receive(position_info.data(),
-                                 position_info.size() * sizeof(int));
+        (void)socket.Receive(position_info.data(),
+                             position_info.size() * sizeof(int));
     } catch (const SocketError &e) {
         LOG(logERROR)
             << "Failed to receive num modules in y dimension and module index: "

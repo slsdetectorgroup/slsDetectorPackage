@@ -7,26 +7,28 @@
 
 namespace sls {
 
-void HardwareSPICommunication::map_to_memory() {
+void HardwareSPICommunication::open_spi() {
 
     // TODO device can change
     spi_filedescriptor = open("/dev/spidev2.0", O_RDWR); // TODO use O_SYNC?
 
+    if (spi_filedescriptor < 0) {
+        throw RuntimeError("Could not open /dev/spidev2.0");
+    }
+
     LOG(logINFO) << fmt::format("SPI Read: opened spidev2.0 with fd={}",
                                 spi_filedescriptor);
-
-    if (spi_filedescriptor < 0) {
-        LOG(logERROR) << "Could not open /dev/spidev2.0";
-        throw std::runtime_error("Could not open /dev/spidev2.0");
-    }
 }
 
-void HardwareSPICommunication::unmap_memory() {
+void HardwareSPICommunication::close_spi() {
     if (spi_filedescriptor >= 0) {
         close(spi_filedescriptor);
         LOG(logINFO) << "SPI Read: closed spidev2.0";
+        spi_filedescriptor = -1;
     }
 }
+
+HardwareSPICommunication::~HardwareSPICommunication() { close_spi(); }
 
 std::vector<std::byte>
 HardwareSPICommunication::spi_read(const size_t n_bytes, const uint8_t chip_id,
@@ -40,8 +42,7 @@ HardwareSPICommunication::spi_read(const size_t n_bytes, const uint8_t chip_id,
         static_cast<std::byte>(((chip_id & 0xF) << 4) | (register_id & 0xF));
 
     // allocate data buffer to read out data into
-    std::vector<std::byte> read_data_buffer(
-        n_bytes + 1, std::byte{0x00}); // TODO: is it neccessary to initialize?
+    std::vector<std::byte> read_data_buffer(n_bytes + 1, std::byte{0x00});
 
     spi_ioc_transfer send_cmd{};
     send_cmd.len = n_bytes + 1; // +1 for the command byte
@@ -51,15 +52,13 @@ HardwareSPICommunication::spi_read(const size_t n_bytes, const uint8_t chip_id,
     // 0 - Normal operation, 1 - CSN remains zero after operation
     // We use cs_change = 1 to not close the SPI transaction and
     // allow for shifting the read out data back in to restore the
-    // regitster
+    // register
     send_cmd.cs_change = 1;
 
     // transfer here
     if (ioctl(spi_filedescriptor, SPI_IOC_MESSAGE(1), &send_cmd) < 0) {
 
-        LOG(logERROR) << fmt::format("SPI write failed with {}:{}", errno,
-                                     strerror(errno));
-        throw std::runtime_error(
+        throw RuntimeError(
             fmt::format("SPI write failed with {}:{}", errno, strerror(errno)));
     }
 
@@ -67,10 +66,12 @@ HardwareSPICommunication::spi_read(const size_t n_bytes, const uint8_t chip_id,
     std::vector<std::byte> output_data(n_bytes);
     std::memcpy(output_data.data(), read_data_buffer.data() + 1, n_bytes);
 
+    /*
     LOG(logDEBUG1) << "Read data: ";
     std::for_each(output_data.begin(), output_data.end(), [](std::byte b) {
         LOG(logDEBUG1) << fmt::format("{} ", std::to_integer<int>(b));
     });
+    */
 
     // copy the read out data back to the dummy data buffer to shift it back in
     send_cmd.tx_buf = send_cmd.rx_buf;
@@ -79,10 +80,7 @@ HardwareSPICommunication::spi_read(const size_t n_bytes, const uint8_t chip_id,
         0; // end the SPI transaction after shifting back in the data
 
     if (ioctl(spi_filedescriptor, SPI_IOC_MESSAGE(1), &send_cmd) < 0) {
-
-        LOG(logERROR) << fmt::format("SPI write failed with {}:{}", errno,
-                                     strerror(errno));
-        throw std::runtime_error(
+        throw RuntimeError(
             fmt::format("SPI write failed with {}:{}", errno, strerror(errno)));
     }
 
@@ -103,28 +101,23 @@ void HardwareSPICommunication::spi_write(const uint8_t chip_id,
 
     std::memcpy(write_data.data() + 1, data.data(), n_bytes);
 
+    /*
     LOG(logDEBUG1) << "Write data: ";
     std::for_each(write_data.begin(), write_data.end(), [](std::byte b) {
         LOG(logDEBUG1) << fmt::format("{} ", std::to_integer<int>(b));
     });
-
-    std::vector<std::byte> read_back_buffer(n_bytes +
-                                            1); // TODO: do we need this?
+    */
 
     spi_ioc_transfer send_cmd{};
     send_cmd.len = n_bytes + 1; // +1 for the command byte
     send_cmd.tx_buf = reinterpret_cast<std::uintptr_t>(write_data.data());
-    send_cmd.rx_buf = reinterpret_cast<std::uintptr_t>(read_back_buffer.data());
 
     send_cmd.cs_change =
         0; // end the SPI transaction after the write (we dont need to shift
            // back in data here since we are not doing a read)
 
     if (ioctl(spi_filedescriptor, SPI_IOC_MESSAGE(1), &send_cmd) < 0) {
-
-        LOG(logERROR) << fmt::format("SPI write failed with {}:{}", errno,
-                                     strerror(errno));
-        throw std::runtime_error(
+        throw RuntimeError(
             fmt::format("SPI write failed with {}:{}", errno, strerror(errno)));
     }
 }

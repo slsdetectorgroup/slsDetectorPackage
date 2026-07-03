@@ -104,6 +104,9 @@ class BaseMatterhornServer
     void setupDetector();
 
   private:
+    const DerivedServer *getDerived() const {
+        return static_cast<const DerivedServer *>(this);
+    }
     static std::string getMatterhornServerVersion();
 
     static constexpr uint8_t numUDPInterfaces =
@@ -171,7 +174,7 @@ template <typename DerivedServer>
 ProcessedResult
 BaseMatterhornServer<DerivedServer>::initial_checks(ServerInterface &socket) {
 
-    return static_cast<DerivedServer *>(this)->initial_checks(socket);
+    return getDerived()->initial_checks(socket);
 }
 
 template <typename DerivedServer>
@@ -396,15 +399,14 @@ ProcessedResult BaseMatterhornServer<DerivedServer>::get_counter_mask(
 template <typename DerivedServer>
 ProcessedResult BaseMatterhornServer<DerivedServer>::set_source_udp_mac(
     ServerInterface &socket) {
-    return static_cast<DerivedServer *>(this)->set_source_udp_mac(socket);
+    return getDerived()->set_source_udp_mac(socket);
 }
 
 template <typename DerivedServer>
 ProcessedResult
 BaseMatterhornServer<DerivedServer>::set_module_position_and_update_srcudpmac(
     ServerInterface &socket) {
-    return static_cast<DerivedServer *>(this)
-        ->set_module_position_and_update_srcudpmac(socket);
+    return getDerived()->set_module_position_and_update_srcudpmac(socket);
 }
 
 } // namespace sls

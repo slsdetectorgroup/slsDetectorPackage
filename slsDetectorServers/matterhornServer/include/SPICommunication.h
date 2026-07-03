@@ -25,11 +25,16 @@ template <typename DerivedSPIModel> class SPICommunication {
                   const std::vector<std::byte> &data);
 
     void open_spi();
+
+  private:
+    const DerivedSPIModel *getDerived() const {
+        return static_cast<const DerivedSPIModel *>(this);
+    }
 };
 
 template <typename DerivedSPIModel>
 void SPICommunication<DerivedSPIModel>::open_spi() {
-    static_cast<DerivedSPIModel *>(this)->open_spi();
+    getDerived()->open_spi();
 }
 
 template <typename DerivedSPIModel>
@@ -64,14 +69,13 @@ void SPICommunication<DerivedSPIModel>::SPIwrite(
                                        spi_reg.spi_register_id));
     }
 
-    static_cast<DerivedSPIModel *>(this)->spi_write(
-        chip_id, spi_reg.spi_register_id, data);
+    getDerived()->spi_write(chip_id, spi_reg.spi_register_id, data);
 
-    static_cast<DerivedSPIModel *>(this)->spi_write(
-        chip_id, SPIRegisters::SPI_REG_ExtraClocks.spi_register_id,
-        std::vector<std::byte>{
-            std::byte{0x00}}); // extra clock trigger to actually load the
-                               // new value into the register
+    getDerived()->spi_write(chip_id,
+                            SPIRegisters::SPI_REG_ExtraClocks.spi_register_id,
+                            std::vector<std::byte>{std::byte{
+                                0x00}}); // extra clock trigger to actually load
+                                         // the new value into the register
 }
 
 /**

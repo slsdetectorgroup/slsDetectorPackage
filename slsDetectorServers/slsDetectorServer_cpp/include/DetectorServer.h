@@ -83,6 +83,11 @@ template <typename DerivedDetectorServer> class DetectorServer {
     /// @brief creates and maps shared memory
     void createSharedMemory();
 
+    /// @brief get derived class
+    const DerivedDetectorServer *getDerived() const {
+        return static_cast<const DerivedDetectorServer *>(this);
+    }
+
     ProcessedResult processFunction(const detFuncs function_id,
                                     ServerInterface &socket);
 
@@ -145,21 +150,17 @@ ProcessedResult DetectorServer<DerivedDetectorServer>::processFunction(
 
     switch (function_id) {
     case detFuncs::F_GET_SERVER_VERSION:
-        return static_cast<DerivedDetectorServer *>(this)->get_version(socket);
+        return getDerived()->get_version(socket);
     case detFuncs::F_GET_DETECTOR_TYPE:
-        return static_cast<DerivedDetectorServer *>(this)->get_detector_type(
-            socket);
+        return getDerived()->get_detector_type(socket);
     case detFuncs::F_INITIAL_CHECKS:
-        return static_cast<DerivedDetectorServer *>(this)->initial_checks(
-            socket);
+        return getDerived()->initial_checks(socket);
     case detFuncs::F_GET_NUM_INTERFACES:
-        return static_cast<DerivedDetectorServer *>(this)
-            ->get_num_udp_interfaces(socket);
+        return getDerived()->get_num_udp_interfaces(socket);
     case detFuncs::F_GET_UPDATE_MODE:
         return get_update_mode(socket);
     case detFuncs::F_SET_SOURCE_UDP_MAC:
-        return static_cast<DerivedDetectorServer *>(this)->set_source_udp_mac(
-            socket);
+        return getDerived()->set_source_udp_mac(socket);
     case detFuncs::F_GET_SOURCE_UDP_MAC:
         return get_source_udp_mac(socket);
     case detFuncs::F_SET_SOURCE_UDP_IP:
@@ -179,8 +180,7 @@ ProcessedResult DetectorServer<DerivedDetectorServer>::processFunction(
     case detFuncs::F_GET_DEST_UDP_PORT:
         return get_destination_udp_port(socket);
     case detFuncs::F_GET_RUN_STATUS:
-        return static_cast<DerivedDetectorServer *>(this)->get_run_status(
-            socket);
+        return getDerived()->get_run_status(socket);
     case detFuncs::F_GET_NUM_FRAMES:
         return get_num_frames(socket);
     case detFuncs::F_SET_NUM_FRAMES:
@@ -190,17 +190,14 @@ ProcessedResult DetectorServer<DerivedDetectorServer>::processFunction(
     case detFuncs::F_SET_NUM_TRIGGERS:
         return set_num_triggers(socket);
     case detFuncs::F_GET_RECEIVER_PARAMETERS:
-        return static_cast<DerivedDetectorServer *>(this)
-            ->get_receiver_parameters(socket);
+        return getDerived()->get_receiver_parameters(socket);
     case detFuncs::F_SET_POSITION:
-        return static_cast<DerivedDetectorServer *>(this)
-            ->set_module_position_and_update_srcudpmac(socket);
+        return getDerived()->set_module_position_and_update_srcudpmac(socket);
     default:
         LOG(logDEBUG) << "Checking specific server functions for function ID: "
                       << function_id;
         // process detector specific functions
-        return static_cast<DerivedDetectorServer *>(this)->processFunction(
-            function_id, socket);
+        return getDerived()->processFunction(function_id, socket);
     }
 
     return ProcessedResult{ReturnCode::FAIL, "Function not implemented"};
@@ -398,7 +395,7 @@ DetectorServer<DerivedDetectorServer>::set_num_frames(ServerInterface &socket) {
                                    std::string(e.what())};
     }
     try {
-        static_cast<DerivedDetectorServer *>(this)->setNumFrames(num_frames);
+        getDerived()->setNumFrames(num_frames);
     } catch (const std::exception &e) {
         LOG(logERROR) << "Failed to set number of frames: " << e.what();
         return ProcessedResult{ReturnCode::FAIL,
@@ -439,8 +436,7 @@ ProcessedResult DetectorServer<DerivedDetectorServer>::set_num_triggers(
                                    std::string(e.what())};
     }
     try {
-        static_cast<DerivedDetectorServer *>(this)->setNumTriggers(
-            num_triggers);
+        getDerived()->setNumTriggers(num_triggers);
     } catch (const std::exception &e) {
         LOG(logERROR) << "Failed to set number of triggers: " << e.what();
         return ProcessedResult{ReturnCode::FAIL,

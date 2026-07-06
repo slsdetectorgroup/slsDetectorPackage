@@ -21,7 +21,9 @@ class VirtualMatterhornServer
     ~VirtualMatterhornServer() = default;
 
   private:
-    ImplType *const getImpl() { return this->getDerivedImpl(); }
+    ImplType *getImpl() { return this->getDerivedImpl(); }
+
+    const ImplType *getImpl() const { return this->getDerivedImpl(); }
 };
 
 } // namespace sls

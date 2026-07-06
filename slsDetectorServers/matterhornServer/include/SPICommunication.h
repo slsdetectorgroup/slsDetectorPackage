@@ -27,8 +27,8 @@ template <typename DerivedSPIModel> class SPICommunication {
     void open_spi();
 
   private:
-    DerivedSPIModel *const getDerived() {
-        return static_cast<DerivedSPIModel *const>(this);
+    DerivedSPIModel *getDerived() {
+        return static_cast<DerivedSPIModel *>(this);
     }
 };
 
@@ -42,7 +42,7 @@ std::vector<std::byte>
 SPICommunication<DerivedSPIModel>::SPIread(const SPIRegister &spi_reg,
                                            const uint8_t chip_id) const {
 
-    if (chip_id >= MatterhornDefs::NUM_CHIPS_PER_MODULE || chip_id < 0) {
+    if (chip_id >= MatterhornDefs::NUM_CHIPS_PER_MODULE) {
         throw RuntimeError(
             fmt::format("Chip id {} is out of range (0-{})", chip_id,
                         MatterhornDefs::NUM_CHIPS_PER_MODULE - 1));
@@ -56,7 +56,7 @@ void SPICommunication<DerivedSPIModel>::SPIwrite(
     const SPIRegister &spi_reg, const uint8_t chip_id,
     const std::vector<std::byte> &data) {
 
-    if (chip_id >= MatterhornDefs::NUM_CHIPS_PER_MODULE || chip_id < 0) {
+    if (chip_id >= MatterhornDefs::NUM_CHIPS_PER_MODULE) {
         throw RuntimeError(
             fmt::format("Chip id {} is out of range (0-{})", chip_id,
                         MatterhornDefs::NUM_CHIPS_PER_MODULE - 1));

@@ -30,7 +30,11 @@ if(SLS_USE_SIMULATOR)
     target_link_libraries(matterhornDetectorServer_virtual
         PUBLIC 
         slsSupportStatic
-        slsServerStatic)
+        slsServerStatic
+        slsProjectOptions
+        PRIVATE
+        slsProjectWarnings
+    )
 
     set_target_properties(matterhornDetectorServer_virtual PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
@@ -74,7 +78,11 @@ if(SLS_USE_MATTERHORN)
     target_link_libraries(matterhornDetectorServer
         PUBLIC
         slsSupportStatic
-        slsServerStatic)
+        slsServerStatic
+        slsProjectOptions
+        PRIVATE
+        slsProjectWarnings
+    )
 
     if(${CROSS_COMPILE}) # change output directory to stay consitent with c server binaries when cross compiling
         set(RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)

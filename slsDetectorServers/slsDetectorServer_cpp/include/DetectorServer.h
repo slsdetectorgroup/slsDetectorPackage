@@ -38,15 +38,24 @@ template <typename DerivedDetectorServer> class DetectorServer {
 
     std::unique_ptr<DetectorServerImpl> impl;
 
-    auto *const getDerivedImpl() const {
-        return static_cast<typename DerivedDetectorServer::ImplType *const>(
+    auto *getDerivedImpl() {
+        return static_cast<typename DerivedDetectorServer::ImplType *>(
+            impl.get());
+    }
+
+    const auto *getDerivedImpl() const {
+        return static_cast<const typename DerivedDetectorServer::ImplType *>(
             impl.get());
     }
 
   private:
     /// @brief get derived class
-    DerivedDetectorServer *const getDerived() {
-        return static_cast<DerivedDetectorServer *const>(this);
+    DerivedDetectorServer *getDerived() {
+        return static_cast<DerivedDetectorServer *>(this);
+    }
+
+    const DerivedDetectorServer *getDerived() const {
+        return static_cast<const DerivedDetectorServer *>(this);
     }
 
     ProcessedResult processFunction(const detFuncs function_id,
@@ -423,7 +432,8 @@ ProcessedResult DetectorServer<DerivedDetectorServer>::get_version(
             ->get_server_version(); // TODO: get Impl from derived server
 
     char version_cstr[MAX_STR_LENGTH]{};
-    strncpy(version_cstr, version.c_str(), version.size());
+    std::snprintf(version_cstr, sizeof(version_cstr), "%s",
+                  version.c_str()); // ensures temination
     LOG(TLogLevel::logDEBUG) << "Server Version: " << version;
     return ProcessedResult{static_cast<ReturnCode>(socket.sendResult(
         version_cstr))}; // TODO: check what would be possible return codes!!!

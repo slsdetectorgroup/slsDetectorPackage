@@ -35,7 +35,7 @@ template <typename T>
 void setRegisterField(uint32_t &registervalue, const RegisterField &reg_field,
                       T field_value) {
 
-    if (field_value > reg_field.bitmask) {
+    if (field_value > static_cast<T>(reg_field.bitmask)) {
         throw std::invalid_argument(
             fmt::format("Value {} cannot fit in field with bitmask {}",
                         field_value, reg_field.bitmask));

@@ -25,7 +25,9 @@ class MatterhornServer : public BaseMatterhornServer<MatterhornServer> {
     ~MatterhornServer() = default;
 
   private:
-    ImplType *const getImpl() const { return this->getDerivedImpl(); }
+    ImplType *getImpl() { return this->getDerivedImpl(); }
+
+    const ImplType *getImpl() const { return this->getDerivedImpl(); }
 };
 
 } // namespace sls

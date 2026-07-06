@@ -53,9 +53,13 @@ class BaseMatterhornServer
     using ImplType = typename implementation_typetrait<DerivedServer>::ImplType;
 
   protected:
-    auto *const getImpl() const { return this->getDerivedImpl(); }
+    auto *getImpl() { return this->getDerivedImpl(); }
+
+    const auto *getImpl() const { return this->getDerivedImpl(); }
 
   private:
+    DerivedServer *getDerived() { return static_cast<DerivedServer *>(this); }
+
     const DerivedServer *getDerived() const {
         return static_cast<const DerivedServer *>(this);
     }

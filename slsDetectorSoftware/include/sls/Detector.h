@@ -920,7 +920,7 @@ class Detector {
      */
     std::vector<int> getRxDisabledUDPPortIndices() const;
 
-    /* list of possible port positions.
+    /** list of possible port positions.
      * [Eiger] TOP, BOTTOM
      * [Jungfrau][Moench] LEFT, RIGHT
      */

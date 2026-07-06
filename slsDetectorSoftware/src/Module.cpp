@@ -1471,7 +1471,6 @@ std::vector<int> Module::getRxUDPPortDisableMetadata() const {
     }
     auto nports = client.Receive<int>();
     std::vector<int> retval(nports);
-    client.Send(nports);
     if (nports > 0) {
         client.Receive(retval);
     }

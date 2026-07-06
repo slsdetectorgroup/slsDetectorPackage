@@ -133,6 +133,7 @@ class AcquisitionTab(QtWidgets.QWidget):
                 self.view.labelDigital.setDisabled(True)
                 self.view.labelTransceiver.setDisabled(True)
                 self.view.spinBoxTransceiver.setDisabled(True)
+                self.plotTab.enableallCounterCheckBox(False) 
             case readoutMode.DIGITAL_ONLY:
                 self.view.spinBoxAnalog.setDisabled(True)
                 self.view.labelAnalog.setDisabled(True)
@@ -140,6 +141,7 @@ class AcquisitionTab(QtWidgets.QWidget):
                 self.view.labelDigital.setEnabled(True)
                 self.view.labelTransceiver.setDisabled(True)
                 self.view.spinBoxTransceiver.setDisabled(True)
+                self.plotTab.enableallCounterCheckBox(False) 
             case readoutMode.ANALOG_AND_DIGITAL:
                 self.view.spinBoxAnalog.setEnabled(True)
                 self.view.labelAnalog.setEnabled(True)
@@ -147,6 +149,7 @@ class AcquisitionTab(QtWidgets.QWidget):
                 self.view.labelDigital.setEnabled(True)
                 self.view.labelTransceiver.setDisabled(True)
                 self.view.spinBoxTransceiver.setDisabled(True)
+                self.plotTab.enableallCounterCheckBox(False) 
             case readoutMode.TRANSCEIVER_ONLY:
                 self.view.spinBoxAnalog.setDisabled(True)
                 self.view.labelAnalog.setDisabled(True)
@@ -154,6 +157,7 @@ class AcquisitionTab(QtWidgets.QWidget):
                 self.view.labelDigital.setDisabled(True)
                 self.view.labelTransceiver.setEnabled(True)
                 self.view.spinBoxTransceiver.setEnabled(True)
+                self.plotTab.enableallCounterCheckBox(self.plotTab.view.radioButtonImage.isChecked()) # enable counter checkboxes for matterhorn
             case _:
                 self.view.spinBoxAnalog.setDisabled(True)
                 self.view.labelAnalog.setDisabled(True)
@@ -161,6 +165,7 @@ class AcquisitionTab(QtWidgets.QWidget):
                 self.view.labelDigital.setEnabled(True)
                 self.view.labelTransceiver.setEnabled(True)
                 self.view.spinBoxTransceiver.setEnabled(True)
+                self.plotTab.enableallCounterCheckBox(self.plotTab.view.radioButtonImage.isChecked()) # enable counter checkboxes for matterhorn
 
         self.view.comboBoxROMode.currentIndexChanged.connect(self.setReadOut)
         self.view.spinBoxAnalog.editingFinished.connect(self.setAnalog)

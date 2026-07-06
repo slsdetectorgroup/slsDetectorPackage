@@ -236,6 +236,7 @@ option(SLS_USE_MOENCH "compile zmq and post processing for Moench" OFF)
 option(SLS_USE_JUNGFRAU "compile post processing for Jungfrau" OFF)
 option(SLS_USE_MATTERHORN "compile matterhorn server" OFF)
 option(SLS_INSTALL_VERSIONED_BINARIES "Add version number to binaries on install" OFF) #Needed for multi version RPM
+option(SLS_TREAT_WARNINGS_AS_ERRORS "Treat warnings as errors" OFF)
 
 #Convenience option to switch off defaults when building Moench binaries only
 option(SLS_BUILD_ONLY_MOENCH "compile only Moench" OFF)
@@ -347,7 +348,9 @@ if (NOT TARGET slsProjectWarnings)
                                                 -Wno-missing-field-initializers)
     endif()
 
-
+    if(SLS_TREAT_WARNINGS_AS_ERRORS)
+        target_compile_options(slsProjectWarnings INTERFACE -Werror)
+    endif()
 endif()
 
 
@@ -376,6 +379,10 @@ if (NOT TARGET slsProjectCSettings)
         target_compile_options(slsProjectCSettings INTERFACE -fsanitize=address,undefined -fno-omit-frame-pointer)
         target_link_libraries(slsProjectCSettings INTERFACE -fsanitize=address,undefined)
     endif()
+
+    if(SLS_TREAT_WARNINGS_AS_ERRORS)
+        target_compile_options(slsProjectCSettings INTERFACE -Werror)
+    endif() 
 endif()
 
 
@@ -483,13 +490,15 @@ if(SLS_BUILD_DOCS)
     add_subdirectory(docs)
 endif(SLS_BUILD_DOCS)
 
-if(SLS_USE_MOENCH)
+if(SLS_USE_MOENCH OR SLS_USE_JUNGFRAU)
     add_subdirectory(slsDetectorCalibration/tiffio)
+endif() 
+
+if(SLS_USE_MOENCH)
     add_subdirectory(slsDetectorCalibration/moenchExecutables)
 endif(SLS_USE_MOENCH)
 
 if(SLS_USE_JUNGFRAU)
-    add_subdirectory(slsDetectorCalibration/tiffio)
     add_subdirectory(slsDetectorCalibration/jungfrauExecutables)
 endif(SLS_USE_JUNGFRAU)
 

@@ -37,7 +37,8 @@ jobs:
           -DSLS_USE_PYTHON=ON \
           -DSLS_USE_HDF5=ON \
           -DSLS_USE_GUI=ON \
-          -DSLS_USE_MOENCH=ON
+          -DSLS_USE_MOENCH=ON \
+          -DSLS_TREAT_WARNINGS_AS_ERRORS=ON
 
       - name: Build
         # Build your program with the given configuration

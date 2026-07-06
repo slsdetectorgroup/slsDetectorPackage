@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "sls/ansi.h"
+#include "clogger.h"
 
 #include <errno.h>
 #include <fcntl.h>         // File control definitions
-#include <linux/i2c-dev.h> // I2C_SLAVE, __u8 reg
 #include <stdio.h>
 #include <stdlib.h>    // atoi
 #include <string.h>    // memset
@@ -15,76 +15,114 @@
 #define PORTNAME           "/dev/ttyBF1"
 #define GOODBYE            200
 #define BUFFERSIZE         16
-#define I2C_DEVICE_FILE    "/dev/i2c-0"
-#define I2C_DEVICE_ADDRESS 0x4C
-// #define I2C_DEVICE_ADDRESS	0x48
-#define I2C_REGISTER_ADDRESS 0x40
+#define INFILE             "/sys/devices/platform/i2c-bfin-twi.0/i2c-0/0-0048/in0_input"
+#define OUTFILE            "/sys/devices/platform/i2c-bfin-twi.0/i2c-0/0-0048/out0_output"
+#define OUTENABLE          "/sys/devices/platform/i2c-bfin-twi.0/i2c-0/0-0048/out0_enable"
 
-int i2c_open(const char *file, unsigned int addr) {
 
-    // device file
-    int fd = open(file, O_RDWR);
-    if (fd < 0) {
-        LOG(logERROR, ("Warning: Unable to open file %s\n", file));
-        return -1;
-    }
+int set_hv(int dac_value)
+{
+	if ((dac_value > 255) || (dac_value < 0))
+	{
+		LOG(logERROR, ("Invalid dac value %d\n", dac_value));
+		return -1;
+	}
 
-    // device address
-    if (ioctl(fd, I2C_SLAVE, addr & 0x7F) < 0) {
-        LOG(logERROR, ("Warning: Unable to set slave address:0x%x \n", addr));
-        return -2;
-    }
-    return fd;
+	dac_value = dac_value*10;
+
+	FILE* file;
+	file = fopen(OUTFILE, "w");
+	if (file == NULL)
+	{
+		perror("set_hv:");
+		LOG(logERROR, ("Cannot open out0_output file\n"));
+		return -1;
+	}
+	if ( setvbuf (file, NULL, _IONBF, 0) != 0)
+	{
+		perror("set_hv:");
+		LOG(logERROR, ("Cannot disable buffering\n"));
+		return -1;
+	}
+	if (fprintf(file, "%d", dac_value) < 1)
+	{
+		ferror(file);
+		LOG(logERROR, ("Couldn't write to out0_output file\n"));
+		return -1;
+	}
+	if (fclose(file) != 0)
+	{
+		perror("set_hv:");
+		LOG(logERROR, ("Troubles closing out0_output file\n"));
+		return -1;
+	}
+	return 0;
 }
 
-int i2c_read() {
-
-    int fd = i2c_open(I2C_DEVICE_FILE, I2C_DEVICE_ADDRESS);
-    __u8 reg = I2C_REGISTER_ADDRESS & 0xff;
-
-    unsigned char buf = reg;
-    if (write(fd, &buf, 1) != 1) {
-        LOG(logERROR,
-            ("Warning: Unable to write read request to register %d\n", reg));
-        return -1;
-    }
-    // read and update value (but old value read out)
-    if (read(fd, &buf, 1) != 1) {
-        LOG(logERROR, ("Warning: Unable to read register %d\n", reg));
-        return -2;
-    }
-    // read again to read the updated value
-    if (read(fd, &buf, 1) != 1) {
-        LOG(logERROR, ("Warning: Unable to read register %d\n", reg));
-        return -2;
-    }
-    close(fd);
-    return buf;
+int enable_hv(int val)
+{
+	if ((val > 1) || (val < 0))
+		return -1;
+	FILE* file;
+	file = fopen(OUTENABLE, "w");
+	if (file == NULL)
+	{
+		perror("enable_hv:");
+		LOG(logERROR, ("Cannot open out0_enable file\n"));
+		return -1;
+	}
+	if ( setvbuf (file, NULL, _IONBF, 0) != 0)
+	{
+		perror("enable_hv:");
+		LOG(logERROR, ("Cannot disable buffering\n"));
+		return -1;
+	}
+	if (fprintf(file, "%d", val) < 1)
+	{
+		ferror(file);
+		LOG(logERROR, ("Couldn't write to out0_enable file\n"));
+		return -1;
+	}
+	if (fclose(file) != 0)
+	{
+		perror("enable_hv:");
+		LOG(logERROR, ("Troubles closing out0_enable file\n"));
+		return -1;
+	}
+	return 0;
 }
 
-int i2c_write(unsigned int value) {
-
-    __u8 val = value & 0xff;
-
-    int fd = i2c_open(I2C_DEVICE_FILE, I2C_DEVICE_ADDRESS);
-    if (fd < 0)
-        return fd;
-
-    __u8 reg = I2C_REGISTER_ADDRESS & 0xff;
-    char buf[3];
-    buf[0] = reg;
-    buf[1] = val;
-    if (write(fd, buf, 2) != 2) {
-        LOG(logERROR,
-            ("Warning: Unable to write %d to register %d\n", val, reg));
-        return -1;
-    }
-
-    close(fd);
-    return 0;
+int get_hv()
+{
+	int value;
+	FILE* file;
+	file = fopen(INFILE, "r");
+	if (file == NULL)
+	{
+		perror("get_hv:");
+		LOG(logERROR, ("Cannot open in0_input file\n"));
+		return -1;
+	}
+	if (fscanf(file, "%d", &value) < 1)
+	{
+		ferror(file);
+		LOG(logERROR, ("Couldn't read from in0_input file\n"));
+		return -1;
+	}
+	if (fclose(file) != 0)
+	{
+		perror("get_hv:");
+		LOG(logERROR, ("Troubles closing out0_enable file\n"));
+		return -1;
+	}
+	return value/10;
 }
+
 
 int main(int argc, char *argv[]) {
+
+    enable_hv(0);
+    set_hv(0);
 
     int fd = open(PORTNAME, O_RDWR | O_NOCTTY | O_SYNC);
     if (fd < 0) {
@@ -126,7 +164,7 @@ int main(int argc, char *argv[]) {
     int ival = 0;
     char buffer[BUFFERSIZE];
     memset(buffer, 0, BUFFERSIZE);
-    buffer[BUFFERSIZE - 1] = '\n';
+//    buffer[BUFFERSIZE - 1] = '\n';
     LOG(logINFO, ("Ready...\n"));
 
     while (ret != GOODBYE) {
@@ -149,17 +187,32 @@ int main(int argc, char *argv[]) {
             }
             // ok/ fail
             memset(buffer, 0, BUFFERSIZE);
-            buffer[BUFFERSIZE - 1] = '\n';
+//            buffer[BUFFERSIZE - 1] = '\n';
+
+	    if (set_hv(ival) < 0)
+                strcpy(buffer, "fail\n");
+	    else if (enable_hv(ival > 0 ? 1 : 0) < 0)
+		strcpy(buffer, "fail\n");
+	    else
+		strcpy(buffer, "success\n");
+/*
             if (i2c_write(ival) < 0)
                 strcpy(buffer, "fail ");
             else
                 strcpy(buffer, "success ");
+*/
             LOG(logINFO, ("Sending: '%s'\n", buffer));
-            n = write(fd, buffer, BUFFERSIZE);
+            n = write(fd, buffer, strlen(buffer));//BUFFERSIZE);
             LOG(logDEBUG1, ("Sent %d Bytes\n", n));
             break;
 
         case 'g':
+	    ival = get_hv();
+	    if (ival < 0)
+                strcpy(buffer, "fail\n");
+	    else
+		strcpy(buffer, "success\n");
+/*
             ival = i2c_read();
             // ok/ fail
             memset(buffer, 0, BUFFERSIZE);
@@ -168,16 +221,17 @@ int main(int argc, char *argv[]) {
                 strcpy(buffer, "fail ");
             else
                 strcpy(buffer, "success ");
-            n = write(fd, buffer, BUFFERSIZE);
+*/
+            n = write(fd, buffer, strlen(buffer));//BUFFERSIZE);
             LOG(logINFO, ("Sending: '%s'\n", buffer));
             LOG(logDEBUG1, ("Sent %d Bytes\n", n));
             // value
             memset(buffer, 0, BUFFERSIZE);
-            buffer[BUFFERSIZE - 1] = '\n';
+//            buffer[BUFFERSIZE - 1] = '\n';
             if (ival >= 0) {
                 LOG(logINFO, ("Sending: '%d'\n", ival));
-                sprintf(buffer, "%d ", ival);
-                n = write(fd, buffer, BUFFERSIZE);
+                sprintf(buffer, "%d\n", ival);
+                n = write(fd, buffer, strlen(buffer));//BUFFERSIZE);
                 LOG(logINFO, ("Sent %d Bytes\n", n));
             } else
                 LOG(logERROR, ("%s\n", buffer));

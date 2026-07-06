@@ -40,7 +40,7 @@ void test_run_with_master_file_checker(Detector &det, F f) {
 
     auto acq_state = acq::default_acquisition_state();
     auto file_state = acq::default_file_state();
-    std::vector<defs::fileFormat> formats = {defs::BINARY, defs::HDF5};
+    std::array<defs::fileFormat, 2> formats = {defs::BINARY, defs::HDF5};
 
 #ifdef HDF5C
     try {

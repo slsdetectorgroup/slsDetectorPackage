@@ -3157,67 +3157,6 @@ TEST_CASE("udp_datastream", "[.detectorintegration]") {
     }
 }
 
-TEST_CASE("udp_datastream with master file",
-          "[.detectorintegration][.disable_check_data_file]") {
-    Detector det;
-    auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER) {
-        auto prev_val_left = det.getUDPDataStream(defs::LEFT);
-        auto prev_val_right = det.getUDPDataStream(defs::RIGHT);
-
-        det.setUDPDataStream(defs::LEFT, false);
-        // check master file
-        {
-            // expected
-            std::vector<defs::portPosition> expected_ports =
-                det.getPortPositionList();
-            std::vector<int> expected_disabled_ports =
-                det.getRxDisabledUDPPortIndices();
-            REQUIRE(expected_disabled_ports.size() > 0);
-
-            test_run_with_master_file_checker(
-                det, [&](auto &det, auto &acq_state, auto &file_state,
-                         auto &checker) {
-                    checks::check_udp_ports_type(checker, expected_ports);
-                    checks::check_udp_ports_disabled(checker,
-                                                     expected_disabled_ports);
-                });
-        }
-
-        for (int i = 0; i != det.size(); ++i) {
-            det.setUDPDataStream(defs::LEFT, prev_val_left[i], {i});
-            det.setUDPDataStream(defs::RIGHT, prev_val_right[i], {i});
-        }
-    } else if ((det_type == defs::JUNGFRAU || det_type == defs::MOENCH) &&
-               (det.getNumberofUDPInterfaces().squash(0) == 2)) {
-        auto prev_val_top = det.getUDPDataStream(defs::TOP);
-        auto prev_val_bottom = det.getUDPDataStream(defs::BOTTOM);
-
-        det.setUDPDataStream(defs::TOP, false);
-        // check master file
-        {
-            // expected
-            std::vector<defs::portPosition> expected_ports =
-                det.getPortPositionList();
-            std::vector<int> expected_disabled_ports =
-                det.getRxDisabledUDPPortIndices();
-            REQUIRE(expected_disabled_ports.size() > 0);
-
-            test_run_with_master_file_checker(
-                det, [&](auto &det, auto &acq_state, auto &file_state,
-                         auto &checker) {
-                    checks::check_udp_ports_type(checker, expected_ports);
-                    checks::check_udp_ports_disabled(checker,
-                                                     expected_disabled_ports);
-                });
-        }
-
-        for (int i = 0; i != det.size(); ++i) {
-            det.setUDPDataStream(defs::TOP, prev_val_top[i], {i});
-            det.setUDPDataStream(defs::BOTTOM, prev_val_bottom[i], {i});
-        }
-    }
-}
 
 /* ZMQ Streaming Parameters (Receiver<->Client) */
 

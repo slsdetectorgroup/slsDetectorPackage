@@ -1,5 +1,6 @@
 #pragma once
 #include "BaseMatterhornServer.h"
+#include "MatterhornServerImpl.hpp"
 #include "TCPInterface.h"
 #include "sls/sls_detector_defs.h"
 #include <array>
@@ -10,6 +11,8 @@ namespace sls {
 class MatterhornServer : public BaseMatterhornServer<MatterhornServer> {
 
   public:
+    using ImplType = MatterhornServerImpl;
+
     /**
      * Constructor
      * Starts up a Matterhorn server.
@@ -21,12 +24,8 @@ class MatterhornServer : public BaseMatterhornServer<MatterhornServer> {
 
     ~MatterhornServer() = default;
 
-    ProcessedResult initial_checks(ServerInterface &socket);
-
-    ProcessedResult
-    set_module_position_and_update_srcudpmac(ServerInterface &socket);
-
-    ProcessedResult set_source_udp_mac(ServerInterface &socket);
+  private:
+    ImplType *const getImpl() const { return this->getDerivedImpl(); }
 };
 
 } // namespace sls

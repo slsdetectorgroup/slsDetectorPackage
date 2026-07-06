@@ -1,5 +1,6 @@
 
 #include "BaseMatterhornServer.h"
+#include "VirtualMatterhornServerImpl.hpp"
 
 namespace sls {
 
@@ -7,6 +8,7 @@ class VirtualMatterhornServer
     : public BaseMatterhornServer<VirtualMatterhornServer> {
 
   public:
+    using ImplType = VirtualMatterhornServerImpl;
     /**
      * Constructor
      * Starts up a virtual Matterhorn server.
@@ -18,14 +20,8 @@ class VirtualMatterhornServer
 
     ~VirtualMatterhornServer() = default;
 
-    ProcessedResult initial_checks(ServerInterface &socket);
-
-    ProcessedResult get_run_status(ServerInterface &socket) const;
-
-    ProcessedResult
-    set_module_position_and_update_srcudpmac(ServerInterface &socket);
-
-    ProcessedResult set_source_udp_mac(ServerInterface &socket);
+  private:
+    ImplType *const getImpl() { return this->getDerivedImpl(); }
 };
 
 } // namespace sls

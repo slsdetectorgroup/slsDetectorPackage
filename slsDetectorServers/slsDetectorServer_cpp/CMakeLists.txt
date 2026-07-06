@@ -2,6 +2,7 @@ set(SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/TCPInterface.cpp 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/CommandLineOptions.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/MemoryModel.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/DetectorServerImpl.cpp
 )
 
 add_library(slsServerObject OBJECT

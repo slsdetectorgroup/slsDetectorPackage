@@ -10,12 +10,25 @@
 
 namespace sls {
 
+using ReturnCode = slsDetectorDefs::ReturnCode;
+
 struct ProcessedResult {
     /// @brief return code of the processed command
     slsDetectorDefs::ReturnCode returnCode{};
     /// @brief error message to be sent to client in case of failure
     std::string error_message{};
 };
+
+// communication helpers
+inline ProcessedResult return_fail(std::string_view error_message) {
+    return ProcessedResult{ReturnCode::FAIL,
+                           static_cast<std::string>(error_message)};
+}
+
+inline ProcessedResult send_ok(ServerInterface &socket) {
+    return ProcessedResult{
+        static_cast<ReturnCode>(socket.Send(ReturnCode::OK))};
+}
 
 /**
  * @brief TCPInterface class handles communication and processing of commands

@@ -27,8 +27,8 @@ template <typename DerivedSPIModel> class SPICommunication {
     void open_spi();
 
   private:
-    const DerivedSPIModel *getDerived() const {
-        return static_cast<const DerivedSPIModel *>(this);
+    DerivedSPIModel *const getDerived() {
+        return static_cast<DerivedSPIModel *const>(this);
     }
 };
 

@@ -1,17 +1,12 @@
 #pragma once
-#include "ArmBusCommunication.hpp"
 #include "DetectorServer.h"
-#include "HelperFunctions.hpp"
-#include "MatterhornDefs.hpp"
-#include "MemoryModel.hpp"
-#include "RegisterDefs.hpp"
-#include "SPICommunication.h"
 #include "TCPInterface.h"
 #include "fmt/format.h"
+#include "helpers/Helpers.hpp"
 #include "sls/logger.h"
 #include "sls/network_utils.h"
 #include "sls/sls_detector_defs.h"
-#include "sls/versionAPI.h"
+#include "utils/type_traits.hpp"
 #include <array>
 #include <cstring>
 #include <functional>
@@ -20,9 +15,6 @@
 #include <unordered_map>
 
 namespace sls {
-
-class VirtualMatterhornServer; // forward declaration
-class MatterhornServer;        // forward declaration
 
 /// @brief Base class for Matterhorn Server, can be used to implement a virtual
 /// server for testing and actual server
@@ -38,39 +30,16 @@ class BaseMatterhornServer
      * throws an exception in case of failure
      * @param port TCP/IP port number
      */
-    explicit BaseMatterhornServer(uint16_t port = DEFAULT_TCP_CNTRL_PORTNO)
-        : DetectorServer<BaseMatterhornServer<DerivedServer>>(port) {}
+    explicit BaseMatterhornServer(std::unique_ptr<DetectorServerImpl> impl,
+                                  uint16_t port = DEFAULT_TCP_CNTRL_PORTNO)
+        : DetectorServer<BaseMatterhornServer<DerivedServer>>(std::move(impl),
+                                                              port) {}
 
     ~BaseMatterhornServer() = default;
-
-    ProcessedResult get_version(ServerInterface &socket);
-
-    ProcessedResult get_detector_type(ServerInterface &socket);
-
-    ProcessedResult initial_checks(ServerInterface &socket);
-    ProcessedResult get_num_udp_interfaces(ServerInterface &socket) const;
-
-    ProcessedResult get_run_status(ServerInterface &socket) const;
-
-    ProcessedResult get_receiver_parameters(ServerInterface &socket) const;
-    ProcessedResult set_source_udp_mac(ServerInterface &socket);
-
-    ProcessedResult
-    set_module_position_and_update_srcudpmac(ServerInterface &socket);
-
-    void set_module_position(const size_t module_row, const size_t module_col,
-                             const size_t module_index);
 
     ProcessedResult set_counter_mask(ServerInterface &socket);
 
     ProcessedResult get_counter_mask(ServerInterface &socket) const;
-    uint64_t getNumFrames() const;
-
-    void setNumFrames(const uint64_t num_frames);
-
-    uint32_t getNumTriggers() const;
-
-    void setNumTriggers(const uint32_t num_triggers);
 
     /**
      * @brief call function corresponding to the function ID received from the
@@ -81,36 +50,15 @@ class BaseMatterhornServer
     ProcessedResult processFunction(const detFuncs function_id,
                                     ServerInterface &socket);
 
+    using ImplType = typename implementation_typetrait<DerivedServer>::ImplType;
+
   protected:
-    using MemoryModel = std::conditional_t<
-        std::is_same_v<DerivedServer, VirtualMatterhornServer>,
-        VirtualMemoryModel<uint32_t>, HardwareMemoryModel>; // 32 bit registers
-
-    // TODO: for now in MatterhornServer and not generic Server but can be
-    // templated on different IPCore types for each detector
-    BusCommunication<MatterhornDefs::MatterHornIPCores, MemoryModel>
-        busCommunication{};
-
-    using SPICommunicationClass = std::conditional_t<
-        std::is_same_v<DerivedServer, VirtualMatterhornServer>,
-        VirtualSPICommunication<MatterhornDefs::MatterhornSPIRegisters>,
-        HardwareSPICommunication>;
-
-    SPICommunicationClass spiCommunication{};
-
-    // TODO: probably virtaul server specific details, can be moved to derived
-    // class
-    /// @brief initial setup of detector
-    void setupDetector();
+    auto *const getImpl() const { return this->getDerivedImpl(); }
 
   private:
     const DerivedServer *getDerived() const {
         return static_cast<const DerivedServer *>(this);
     }
-    static std::string getMatterhornServerVersion();
-
-    static constexpr uint8_t numUDPInterfaces =
-        1; // only one udp per module for now
 };
 
 template <typename DerivedServer>
@@ -131,192 +79,6 @@ BaseMatterhornServer<DerivedServer>::processFunction(const detFuncs function_id,
 }
 
 template <typename DerivedServer>
-void BaseMatterhornServer<DerivedServer>::setupDetector() {
-    // TODO: extend
-    setNumFrames(1); // maybe have a file with constexpr default values
-
-    setNumTriggers(1);
-}
-
-template <typename DerivedServer>
-ProcessedResult BaseMatterhornServer<DerivedServer>::get_num_udp_interfaces(
-    ServerInterface &socket) const {
-    return ProcessedResult{static_cast<ReturnCode>(
-        socket.sendResult(static_cast<int>(numUDPInterfaces)))};
-}
-
-template <typename DerivedServer>
-ProcessedResult
-BaseMatterhornServer<DerivedServer>::get_version(ServerInterface &socket) {
-
-    auto version = getMatterhornServerVersion();
-    char version_cstr[MAX_STR_LENGTH]{};
-    strncpy(version_cstr, version.c_str(), version.size());
-    LOG(TLogLevel::logDEBUG) << "Matterhorn Server Version: " << version;
-    return ProcessedResult{static_cast<ReturnCode>(socket.sendResult(
-        version_cstr))}; // TODO: check what would be possible return codes!!!
-}
-
-template <typename DerivedServer>
-ProcessedResult BaseMatterhornServer<DerivedServer>::get_detector_type(
-    ServerInterface &socket) {
-    int detectortype = slsDetectorDefs::detectorType::MATTERHORN;
-    return ProcessedResult{
-        static_cast<ReturnCode>(socket.sendResult(detectortype))};
-}
-
-template <typename DerivedServer>
-std::string BaseMatterhornServer<DerivedServer>::getMatterhornServerVersion() {
-    return APIMATTERHORN;
-}
-
-template <typename DerivedServer>
-ProcessedResult
-BaseMatterhornServer<DerivedServer>::initial_checks(ServerInterface &socket) {
-
-    return getDerived()->initial_checks(socket);
-}
-
-template <typename DerivedServer>
-ProcessedResult BaseMatterhornServer<DerivedServer>::get_run_status(
-    ServerInterface &socket) const {
-
-    return static_cast<const DerivedServer *>(this)->get_run_status(socket);
-}
-
-template <typename DerivedServer>
-ProcessedResult BaseMatterhornServer<DerivedServer>::get_receiver_parameters(
-    ServerInterface &socket) const {
-
-    slsDetectorDefs::rxParameters rx_params{};
-
-    rx_params.udpInterfaces = numUDPInterfaces;
-
-    rx_params.udp_dstip = this->udpDetails[0].dstip;
-
-    rx_params.udp_dstport = this->udpDetails[0].dstport;
-
-    rx_params.udp_dstmac = this->udpDetails[0].dstmac;
-
-    rx_params.frames = getNumFrames();
-
-    rx_params.triggers = getNumTriggers();
-
-    // TODO: extend
-
-    // rx_params.expTimeNs = 0;
-
-    // rx_params.periodNs = 0;
-
-    // rx_params.dynamicRange = 0;
-
-    // rx_params.timMode = AUTO_TIMING;
-
-    // rx_params.counterMask = 0;
-
-    return ProcessedResult{
-        static_cast<ReturnCode>(socket.sendResult(rx_params))};
-}
-
-template <typename DerivedServer>
-uint64_t BaseMatterhornServer<DerivedServer>::getNumFrames() const {
-
-    try {
-        uint32_t num_frames =
-            busCommunication.readRegister(Reg::MH_SM_Frames_Reg);
-        return static_cast<uint64_t>(num_frames);
-    } catch (const std::exception &e) {
-        LOG(logERROR) << "Failed to read number of frames from register: "
-                      << e.what();
-        throw;
-    }
-}
-
-template <typename DerivedServer>
-void BaseMatterhornServer<DerivedServer>::setNumFrames(
-    const uint64_t num_frames) {
-
-    try {
-        busCommunication.writeRegister(Reg::MH_SM_Frames_Reg,
-                                       static_cast<uint32_t>(num_frames));
-    } catch (const std::exception &e) {
-        LOG(logERROR) << "Failed to set number of frames: " << e.what();
-        throw;
-    }
-    // TODO: maybe always check that the value is correctly set by reading back
-    // the register and comparing
-}
-
-template <typename DerivedServer>
-void BaseMatterhornServer<DerivedServer>::setNumTriggers(
-    const uint32_t num_triggers) {
-
-    try {
-        busCommunication.writeRegister(Reg::MH_SM_Triggers_Reg, num_triggers);
-    } catch (const std::exception &e) {
-        LOG(logERROR) << "Failed to set number of triggers: " << e.what();
-        throw;
-    }
-}
-
-template <typename DerivedServer>
-uint32_t BaseMatterhornServer<DerivedServer>::getNumTriggers() const {
-
-    try {
-        uint32_t num_triggers =
-            busCommunication.readRegister(Reg::MH_SM_Triggers_Reg);
-        return num_triggers;
-    } catch (const std::exception &e) {
-        LOG(logERROR) << "Failed to read number of triggers from register: "
-                      << e.what();
-        throw;
-    }
-}
-
-template <typename DerivedServer>
-void BaseMatterhornServer<DerivedServer>::set_module_position(
-    const size_t module_row, const size_t module_col,
-    const size_t module_index) {
-
-    // write to register
-    uint32_t register_value_LSB{};
-    uint32_t register_value_MSB{};
-
-    try {
-        register_value_LSB =
-            busCommunication.readRegister(Reg::Frame_HDR_ModCoord_LSB_Reg);
-        register_value_MSB =
-            busCommunication.readRegister(Reg::Frame_HDR_ModCoord_MSB_Reg);
-    } catch (const std::exception &e) {
-        LOG(logERROR) << "Failed to read module position register: "
-                      << e.what();
-        throw;
-    }
-
-    try {
-        setRegisterField(register_value_LSB, Reg::ModuleRow, module_row);
-        setRegisterField(register_value_LSB, Reg::ModuleCol, module_col);
-        setRegisterField(register_value_MSB, Reg::ModuleCoordz, 0);
-        setRegisterField(register_value_MSB, Reg::ModuleIndex, module_index);
-    } catch (const std::exception &e) {
-        LOG(logERROR) << "Failed to set module position register fields: "
-                      << e.what();
-        throw;
-    }
-
-    try {
-        busCommunication.writeRegister(Reg::Frame_HDR_ModCoord_LSB_Reg,
-                                       register_value_LSB);
-        busCommunication.writeRegister(Reg::Frame_HDR_ModCoord_MSB_Reg,
-                                       register_value_MSB);
-    } catch (const std::exception &e) {
-        LOG(logERROR) << "Failed to write module position register: "
-                      << e.what();
-        throw;
-    }
-}
-
-template <typename DerivedServer>
 ProcessedResult
 BaseMatterhornServer<DerivedServer>::set_counter_mask(ServerInterface &socket) {
 
@@ -325,88 +87,32 @@ BaseMatterhornServer<DerivedServer>::set_counter_mask(ServerInterface &socket) {
         (void)socket.Receive(counter_mask);
     } catch (const SocketError &e) {
         LOG(logERROR) << "Failed to receive counter mask: " << e.what();
-        return ProcessedResult{ReturnCode::FAIL,
-                               "Failed to receive counter mask: " +
-                                   std::string(e.what())};
-    }
-
-    // counter mask update to num consecutive counters and starting_counter
-    uint32_t spi_counter_mask{};
-    try {
-        spi_counter_mask = convertCounterMaskToSPICounterMask(counter_mask);
-    } catch (const std::invalid_argument &e) {
-        LOG(logERROR) << "Failed to convert counter mask to SPI counter mask: "
-                      << e.what();
-        return ProcessedResult{
-            ReturnCode::FAIL,
-            "Failed to convert counter mask to SPI counter mask: " +
-                std::string(e.what())};
+        return_fail("Failed to receive counter mask: " + std::string(e.what()));
     }
 
     try {
-        auto reg_value = spiCommunication.SPIread(
-            SPIRegisters::NUM_COUNTERS.register_,
-            0); // TODO: how to handle different chip ids -> e.g. broadcast do
-                // we want it to be configurable for different chip ids? -
-                // Command overload for some of the SPI registers
-
-        setSPIRegisterField(reg_value, SPIRegisters::NUM_COUNTERS,
-                            spi_counter_mask);
-
-        spiCommunication.SPIwrite(SPIRegisters::NUM_COUNTERS.register_, 0,
-                                  reg_value);
+        getImpl()->set_counter_mask(counter_mask);
     } catch (const std::exception &e) {
-        LOG(logERROR) << "Failed to set counter mask: " << e.what();
-        return ProcessedResult{ReturnCode::FAIL,
-                               "Failed to set counter mask: " +
-                                   std::string(e.what())};
+        return_fail("Failed to set counter mask: " + std::string(e.what()));
     }
 
-    return ProcessedResult{
-        static_cast<ReturnCode>(socket.Send(ReturnCode::OK))};
+    return send_ok(socket);
 }
 
 template <typename DerivedServer>
 ProcessedResult BaseMatterhornServer<DerivedServer>::get_counter_mask(
     ServerInterface &socket) const {
 
-    std::vector<std::byte> reg_value{};
+    uint32_t counter_mask{};
+
     try {
-        reg_value = spiCommunication.SPIread(
-            SPIRegisters::NUM_COUNTERS.register_,
-            0); // TODO: how to handle different chip ids -
+        counter_mask = getImpl()->get_counter_mask();
     } catch (const std::exception &e) {
-        LOG(logERROR) << "Failed to read counter mask from SPI register: "
-                      << e.what();
-        return ProcessedResult{
-            ReturnCode::FAIL,
-            "Failed to read counter mask from SPI register: " +
-                std::string(e.what())};
+        return_fail("Failed to get counter mask: " + std::string(e.what()));
     }
 
-    // stores num_counters and starting_counter 0b0000 -> counter 0 enabled,
-    // 0b0001 -> counter 1 enabled, 0b0010
-    uint32_t spi_counter_mask =
-        getSPIRegisterField(reg_value, SPIRegisters::NUM_COUNTERS);
-
-    uint32_t actual_counter_mask =
-        convertSPICounterMaskToCounterMask(spi_counter_mask);
-
     return ProcessedResult{
-        static_cast<ReturnCode>(socket.sendResult(actual_counter_mask))};
-}
-
-template <typename DerivedServer>
-ProcessedResult BaseMatterhornServer<DerivedServer>::set_source_udp_mac(
-    ServerInterface &socket) {
-    return getDerived()->set_source_udp_mac(socket);
-}
-
-template <typename DerivedServer>
-ProcessedResult
-BaseMatterhornServer<DerivedServer>::set_module_position_and_update_srcudpmac(
-    ServerInterface &socket) {
-    return getDerived()->set_module_position_and_update_srcudpmac(socket);
+        static_cast<ReturnCode>(socket.sendResult(counter_mask))};
 }
 
 } // namespace sls

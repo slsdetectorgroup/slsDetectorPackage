@@ -1,6 +1,9 @@
 #pragma once
+#include "sls/sls_detector_defs.h"
 #include <cstdint>
 #include <cstdlib>
+
+namespace sls {
 
 constexpr uint64_t mac_mask = 0xffffffffffff0000;
 constexpr uint8_t offset_row_position_in_mac = 16; // given in bits
@@ -36,3 +39,5 @@ generate_mac_address_from_module_position(const size_t module_row,
 
     return newSrcMac;
 }
+
+} // namespace sls

@@ -13,7 +13,7 @@ set(MATTERHORN_INCLUDE_DIRS
 )
 
 if(SLS_USE_SIMULATOR)
-    list(APPEND MATTERHORN_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/VirtualMatterhornServer.cpp)
+    list(APPEND MATTERHORN_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/VirtualMatterhornServer.cpp ${CMAKE_CURRENT_SOURCE_DIR}/include/VirtualMatterhornServerImpl.cpp)
 
     set(MATTERHORN_SERVER_HEADER "VirtualMatterhornServer.h")
 
@@ -42,7 +42,7 @@ if(SLS_USE_SIMULATOR)
 endif() # maybe better to have a else if build with simulators on one always uses the virtual server in MatterhornApp 
 
 if(SLS_USE_MATTERHORN) 
-    list(APPEND MATTERHORN_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/MatterhornServer.cpp)
+    list(APPEND MATTERHORN_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/MatterhornServer.cpp ${CMAKE_CURRENT_SOURCE_DIR}/include/MatterhornServerImpl.cpp)
 
     if(CMAKE_TOOLCHAIN_FILE AND NOT CMAKE_TOOLCHAIN_FILE STREQUAL "") 
         set(CROSS_COMPILE TRUE)

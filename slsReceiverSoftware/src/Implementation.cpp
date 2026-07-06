@@ -1626,8 +1626,8 @@ void Implementation::setTenGigaEnable(const bool b) {
         // datastream can be disabled/enabled only for Eiger 10GbE
         if (generalData->detType == EIGER) {
             if (!b) {
-                udpDataStream[LEFT] = 1;
-                udpDataStream[RIGHT] = 1;
+                udpDataStream[LEFT] = true;
+                udpDataStream[RIGHT] = true;
             } else {
                 udpDataStream[LEFT] = udpDataStream10GbE[LEFT];
                 udpDataStream[RIGHT] = udpDataStream10GbE[RIGHT];

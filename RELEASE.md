@@ -69,6 +69,8 @@ added rx_streamdummyheader to send the zmq dummy header any time. Allows pre-con
 
 allow disabling one UDP interface in the receiver.
 
+setting number of UDP interfaces can only be set at detector level and not at module level. (individual modules)
+
 2  On-board Detector Server Compatibility
 ==========================================
 

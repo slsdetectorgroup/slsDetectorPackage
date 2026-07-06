@@ -1681,6 +1681,8 @@ void ClientInterface::validate_port_position(const portPosition port) {
 }
 
 int ClientInterface::set_port_udp_datastream(Interface &socket) {
+    if (detType != EIGER && detType != JUNGFRAU && detType != MOENCH)
+        functionNotImplemented();
     int args[2]{-1, -1};
     socket.Receive(args);
     portPosition port = static_cast<portPosition>(args[0]);
@@ -1692,8 +1694,6 @@ int ClientInterface::set_port_udp_datastream(Interface &socket) {
     LOG(logDEBUG1) << "Setting udp datastream (" << ToString(port) << ") to "
                    << ToString(enable);
     verifyIdle(socket);
-    if (detType != EIGER && detType != JUNGFRAU && detType != MOENCH)
-        functionNotImplemented();
     impl()->setUDPDataStream(port, enable);
     return socket.Send(OK);
 }

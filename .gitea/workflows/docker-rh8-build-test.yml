@@ -15,6 +15,7 @@ jobs:
     steps:
       - name: Clone repository
         run: |
+          git lfs install
           echo Cloning ${{ github.ref_name }}
           git clone https://${{secrets.GITHUB_TOKEN}}@gitea.psi.ch/${{ github.repository }}.git --branch=${{ github.ref_name }} .
 

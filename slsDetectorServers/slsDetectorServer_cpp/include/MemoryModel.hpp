@@ -40,9 +40,11 @@ template <typename DataType> class VirtualMemoryModel {
   public:
     // IPcore_base_address is not used for virtual memory model but kept for
     // compatibility with HardwareMemoryModel interface
-    VirtualMemoryModel([[maybe_unused]] const uint32_t IPcore_base_address,
+    VirtualMemoryModel(const uint32_t IPcore_base_address,
                        const size_t size_memory_space_)
-        : size_memory_space(size_memory_space_) {}
+        : size_memory_space(size_memory_space_) {
+        (void)IPcore_base_address; // suppress unused parameter warning
+    }
 
     ~VirtualMemoryModel() = default;
 

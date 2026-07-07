@@ -31,7 +31,7 @@ set(PUBLICHEADERS
 #Shared library
 if(SLS_BUILD_SHARED_LIBRARIES)
     add_library(slsServerShared SHARED $<TARGET_OBJECTS:slsServerObject>)
-    target_link_libraries(slsServerShared PUBLIC slsServerObject)
+    target_link_libraries(slsServerShared PUBLIC slsServerObject PRIVATE slsProjectWarnings)
     set_target_properties(slsServerShared PROPERTIES
         VERSION ${PACKAGE_VERSION_MAJOR}.${PACKAGE_VERSION_MINOR}.${PACKAGE_VERSION_PATCH}
         SOVERSION ${PACKAGE_VERSION_MAJOR}
@@ -44,7 +44,7 @@ endif(SLS_BUILD_SHARED_LIBRARIES)
 
 #Static library
 add_library(slsServerStatic STATIC $<TARGET_OBJECTS:slsServerObject>)
-target_link_libraries(slsServerStatic PUBLIC slsServerObject)
+target_link_libraries(slsServerStatic PUBLIC slsServerObject PRIVATE slsProjectWarnings)
 
 set_target_properties(slsServerStatic PROPERTIES
     ARCHIVE_OUTPUT_NAME SlsServerStatic

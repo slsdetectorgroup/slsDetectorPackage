@@ -20,9 +20,7 @@ class MatterhornServerImpl
     void set_module_position_and_update_srcudpmac(
         const std::array<int, 2> &position_info);
 
-    void
-    set_source_udp_mac([[maybe_unused]] const uint64_t
-                           src_mac); // TODO: doesnt it need to receive src_mac?
+    void set_source_udp_mac([[maybe_unused]] const uint64_t src_mac);
 };
 
 } // end namespace sls

@@ -11,7 +11,7 @@ jobs:
     # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
     # You can convert this to a matrix build if you need cross-platform coverage.
     # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     name: Configure and build using cmake
     steps:
       - uses: actions/checkout@v6
@@ -24,7 +24,7 @@ jobs:
       - uses: awalsh128/cache-apt-pkgs-action@latest
         with:
           packages: libhdf5-dev qtbase5-dev qt5-qmake libqt5svg5-dev libpng-dev libtiff-dev libfmt-dev
-          version: 1.1
+          version: 1.2
 
       # verify packages restored from cache are installed.
       # This catches incomplete apt installs after cache restore.

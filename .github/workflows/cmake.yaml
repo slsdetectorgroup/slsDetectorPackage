@@ -34,6 +34,9 @@ jobs:
           ls /var/lib/dpkg/info | grep hdf5 || true
           which h5cc || true
           find /usr/include -name H5public.h || true
+          h5c++ -show
+          ls /usr/lib/x86_64-linux-gnu/hdf5/serial
+          pkg-config --modversion hdf5 || true
 
       # verify packages restored from cache are installed.
       # This catches incomplete apt installs after cache restore.

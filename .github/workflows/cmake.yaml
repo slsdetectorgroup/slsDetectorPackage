@@ -24,7 +24,7 @@ jobs:
       - uses: awalsh128/cache-apt-pkgs-action@v1.6.1
         with:
           packages: libhdf5-dev qtbase5-dev qt5-qmake libqt5svg5-dev libpng-dev libtiff-dev libfmt-dev
-          version: 1.4
+          version: 1.0
 
       # verify packages restored from cache are installed.
       # This catches incomplete apt installs after cache restore.

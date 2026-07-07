@@ -25,6 +25,42 @@ jobs:
           packages: libhdf5-dev libfmt-dev
           version: 1.0
 
+      # verify packages restored from cache are installed.
+      # This catches incomplete apt installs after cache restore.
+      - name: Verify apt packages
+        id: verify_packages
+        continue-on-error: true
+        run: |
+          failed=""
+
+          for pkg in \
+            libhdf5-dev \
+            libfmt-dev
+          # remember failed packages to repair in next step
+          do
+            if ! dpkg -s "$pkg" >/dev/null 2>&1; then
+              echo "Missing: $pkg"
+              failed="$failed $pkg"
+            fi
+          done
+
+          echo "failed_packages=$failed" >> "$GITHUB_OUTPUT"
+
+          if [ -n "$failed" ]; then
+            echo "Missing packages after cache restore: $failed"
+            exit 1
+          else
+            echo "All apt packages are installed"  
+          fi
+
+      - name: Repair missing apt packages
+        if: steps.verify_packages.outputs.failed_packages != ''
+        run: |
+          sudo apt-get update
+          sudo apt-get install --fix-broken -y
+          sudo apt-get install --reinstall -y ${{ steps.verify_packages.outputs.failed_packages }}
+
+
       - name: Configure CMake
         run: |
           cmake -B ${{github.workspace}}/build \

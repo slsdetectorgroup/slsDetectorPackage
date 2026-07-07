@@ -28,7 +28,26 @@ jobs:
 
       - name: Verify apt packages
         run: |
-          apt-cache policy libhdf5-dev libfmt-dev
+          failed=""
+
+          for pkg in \
+            libhdf5-dev \
+            libfmt-dev
+          do
+            installed=$(apt-cache policy "$pkg" | awk '/Installed:/ {print $2}')
+
+            if [ "$installed" = "(none)" ]; then
+              echo "Missing: $pkg"
+              failed="$failed $pkg"
+            fi
+          done
+
+          if [ -n "$failed" ]; then
+            echo "Missing packages after cache restore: $failed. Try deleting the cache and rerunning the workflow."
+            exit 1
+          fi
+          
+          echo "All apt packages are installed"  
           
       - name: Configure CMake
         run: |

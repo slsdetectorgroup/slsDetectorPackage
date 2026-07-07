@@ -20,10 +20,36 @@ jobs:
           cache: 'pip'
       - run: pip install pytest numpy colorama
 
-      - uses: awalsh128/cache-apt-pkgs-action@latest
+      # using a stable action version instead of latest to create/restore cache for now
+      - uses: awalsh128/cache-apt-pkgs-action@v1.6.1
         with:
           packages: libhdf5-dev 
           version: 1.0
+
+      # verify packages restored from cache are installed.
+      # This catches incomplete apt installs after cache restore.
+      - name: Verify apt packages
+        id: verify_packages
+        run: |
+          failed=""
+
+          for pkg in \
+            libhdf5-dev \
+            libfmt-dev
+          do
+            if ! dpkg -s "$pkg" >/dev/null 2>&1; then
+              echo "Missing: $pkg"
+              failed="$failed $pkg"
+            fi
+          done
+
+          if [ -n "$failed" ]; then
+            echo "Missing packages after cache restore: $failed. Try deleting the cache and rerunning the workflow."
+            exit 1
+          else
+            echo "All apt packages are installed"  
+          fi
+
 
       - name: Configure CMake
         run: |

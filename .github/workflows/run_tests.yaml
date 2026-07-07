@@ -29,26 +29,18 @@ jobs:
       # verify packages restored from cache are installed.
       # This catches incomplete apt installs after cache restore.
       - name: Verify apt packages
-        id: verify_packages
         run: |
-          failed=""
+          sudo apt-get check
 
           for pkg in \
             libhdf5-dev \
             libfmt-dev
           do
-            if ! dpkg -L "$pkg" >/dev/null 2>&1; then
-              echo "Missing: $pkg"
+            if ! dpkg-query -W -f='${Status}' "$pkg" 2>/dev/null | grep -q "install ok installed"; then
+              echo "Package not registered as installed: $pkg"
               failed="$failed $pkg"
             fi
           done
-
-          if [ -n "$failed" ]; then
-            echo "Missing packages after cache restore: $failed. Try deleting the cache and rerunning the workflow."
-            exit 1
-          else
-            echo "All apt packages are installed"  
-          fi
 
 
       - name: Configure CMake

@@ -26,6 +26,13 @@ jobs:
           packages: libhdf5-dev libfmt-dev
           version: 1.0
 
+      - name: Debug HDF5
+        run: |
+          dpkg -s libhdf5-dev || true
+          ls /var/lib/dpkg/info | grep hdf5 || true
+          which h5cc || true
+          find /usr/include -name H5public.h || true
+
       # verify packages restored from cache are installed.
       # This catches incomplete apt installs after cache restore.
       - name: Verify apt packages

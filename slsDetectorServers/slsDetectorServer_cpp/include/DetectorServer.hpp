@@ -1,6 +1,6 @@
 #pragma once
 #include "DetectorServerImpl.hpp"
-#include "TCPInterface.h"
+#include "TCPInterface.hpp"
 #include "helpers/Helpers.hpp"
 #include "sls/logger.h"
 #include "sls/network_utils.h"

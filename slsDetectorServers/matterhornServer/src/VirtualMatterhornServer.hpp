@@ -1,5 +1,5 @@
 
-#include "BaseMatterhornServer.h"
+#include "BaseMatterhornServer.hpp"
 #include "VirtualMatterhornServerImpl.hpp"
 
 namespace sls {

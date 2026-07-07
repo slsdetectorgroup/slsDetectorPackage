@@ -1,12 +1,12 @@
 #pragma once
 #include "ArmBusCommunication.hpp"
 #include "DetectorServerImpl.hpp"
-#include "HelperFunctions.hpp"
-#include "MatterhornDefs.hpp"
 #include "MemoryModel.hpp"
-#include "RegisterDefs.hpp"
-#include "SPICommunication.h"
+#include "communication/SPICommunication.hpp"
+#include "defs/MatterhornDefs.hpp"
+#include "defs/RegisterDefs.hpp"
 #include "sls/versionAPI.h"
+#include "utils/HelperFunctions.hpp"
 #include <cstdint>
 #include <string>
 

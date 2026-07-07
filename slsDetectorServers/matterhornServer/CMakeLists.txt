@@ -2,25 +2,28 @@
 
 set(MATTERHORN_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/MatterhornApp.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/SPICommunication.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/HelperFunctions.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/communication/SPICommunication.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/HelperFunctions.cpp
 )
 
 set(MATTERHORN_INCLUDE_DIRS
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/communication
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/utils
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/defs
     ${CMAKE_CURRENT_SOURCE_DIR}/../../slsSupportLib/include
     ${CMAKE_CURRENT_SOURCE_DIR}/../slsDetectorServer_cpp/include
 )
 
 if(SLS_USE_SIMULATOR)
-    list(APPEND MATTERHORN_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/VirtualMatterhornServer.cpp ${CMAKE_CURRENT_SOURCE_DIR}/include/VirtualMatterhornServerImpl.cpp)
+    list(APPEND MATTERHORN_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/VirtualMatterhornServer.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/VirtualMatterhornServerImpl.cpp)
 
-    set(MATTERHORN_SERVER_HEADER "VirtualMatterhornServer.h")
+    set(MATTERHORN_SERVER_HEADER "VirtualMatterhornServer.hpp")
 
     add_executable(matterhornDetectorServer_virtual ${MATTERHORN_SOURCES})
 
     target_compile_definitions(matterhornDetectorServer_virtual PRIVATE
-        MATTERHORN_SERVER_HEADER=<VirtualMatterhornServer.h>
+        MATTERHORN_SERVER_HEADER=<VirtualMatterhornServer.hpp>
         MATTERHORN_SERVER_CLASS=VirtualMatterhornServer
     )
 
@@ -46,7 +49,7 @@ if(SLS_USE_SIMULATOR)
 endif() # maybe better to have a else if build with simulators on one always uses the virtual server in MatterhornApp 
 
 if(SLS_USE_MATTERHORN) 
-    list(APPEND MATTERHORN_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/MatterhornServer.cpp ${CMAKE_CURRENT_SOURCE_DIR}/include/MatterhornServerImpl.cpp)
+    list(APPEND MATTERHORN_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/MatterhornServer.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/MatterhornServerImpl.cpp)
 
     if(CMAKE_TOOLCHAIN_FILE AND NOT CMAKE_TOOLCHAIN_FILE STREQUAL "") 
         set(CROSS_COMPILE TRUE)
@@ -68,7 +71,7 @@ if(SLS_USE_MATTERHORN)
     endif()
 
     target_compile_definitions(matterhornDetectorServer PRIVATE
-        MATTERHORN_SERVER_HEADER=<MatterhornServer.h>
+        MATTERHORN_SERVER_HEADER=<MatterhornServer.hpp>
         MATTERHORN_SERVER_CLASS=MatterhornServer
     )
 

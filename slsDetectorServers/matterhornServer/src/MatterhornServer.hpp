@@ -1,7 +1,7 @@
 #pragma once
-#include "BaseMatterhornServer.h"
+#include "BaseMatterhornServer.hpp"
 #include "MatterhornServerImpl.hpp"
-#include "TCPInterface.h"
+#include "TCPInterface.hpp"
 #include "sls/sls_detector_defs.h"
 #include <array>
 #include <memory>

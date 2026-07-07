@@ -1,8 +1,7 @@
 #pragma once
-#include "DetectorServer.h"
-#include "TCPInterface.h"
+#include "DetectorServer.hpp"
+#include "TCPInterface.hpp"
 #include "fmt/format.h"
-#include "helpers/Helpers.hpp"
 #include "sls/logger.h"
 #include "sls/network_utils.h"
 #include "sls/sls_detector_defs.h"

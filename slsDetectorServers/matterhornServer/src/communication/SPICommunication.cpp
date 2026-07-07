@@ -1,4 +1,4 @@
-#include "SPICommunication.h"
+#include "SPICommunication.hpp"
 #include <algorithm>
 #include <fcntl.h>
 #include <linux/spi/spidev.h>

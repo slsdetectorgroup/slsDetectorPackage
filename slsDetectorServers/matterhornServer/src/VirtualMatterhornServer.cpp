@@ -1,4 +1,4 @@
-#include "VirtualMatterhornServer.h"
+#include "VirtualMatterhornServer.hpp"
 #include "helpers/Defs.hpp"
 #include "helpers/Helpers.hpp"
 #include "sls/ToString.h"

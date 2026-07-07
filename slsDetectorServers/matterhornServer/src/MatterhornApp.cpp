@@ -1,4 +1,4 @@
-#include "CommandLineOptions.h"
+#include "CommandLineOptions.hpp"
 #include MATTERHORN_SERVER_HEADER
 #include "sls/logger.h"
 #include "sls/sls_detector_exceptions.h"

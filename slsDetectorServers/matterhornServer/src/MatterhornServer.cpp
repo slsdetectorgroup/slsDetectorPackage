@@ -1,4 +1,4 @@
-#include "MatterhornServer.h"
+#include "MatterhornServer.hpp"
 
 namespace sls {
 

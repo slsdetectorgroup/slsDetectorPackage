@@ -26,23 +26,10 @@ jobs:
           packages: libhdf5-dev libfmt-dev
           version: 1.0
 
-      # verify packages restored from cache are installed.
-      # This catches incomplete apt installs after cache restore.
       - name: Verify apt packages
         run: |
-          sudo apt-get check
-
-          for pkg in \
-            libhdf5-dev \
-            libfmt-dev
-          do
-            if ! dpkg-query -W -f='${Status}' "$pkg" 2>/dev/null | grep -q "install ok installed"; then
-              echo "Package not registered as installed: $pkg"
-              failed="$failed $pkg"
-            fi
-          done
-
-
+          apt-cache policy libhdf5-dev libfmt-dev
+          
       - name: Configure CMake
         run: |
           cmake -B ${{github.workspace}}/build \

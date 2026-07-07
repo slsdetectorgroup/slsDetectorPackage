@@ -27,17 +27,6 @@ jobs:
           packages: libhdf5-dev qtbase5-dev qt5-qmake libqt5svg5-dev libpng-dev libtiff-dev libfmt-dev
           version: 1.0
 
-      # debug
-      - name: Debug HDF5
-        run: |
-          dpkg -s libhdf5-dev || true
-          ls /var/lib/dpkg/info | grep hdf5 || true
-          which h5cc || true
-          find /usr/include -name H5public.h || true
-          h5c++ -show
-          ls /usr/lib/x86_64-linux-gnu/hdf5/serial
-          pkg-config --modversion hdf5 || true
-
       # verify packages restored from cache are installed.
       # This catches incomplete apt installs after cache restore.
       - name: Verify apt packages
@@ -46,6 +35,7 @@ jobs:
           failed=""
 
           for pkg in \
+            libhdf5-dev \
             qtbase5-dev \
             qt5-qmake \
             libqt5svg5-dev \
@@ -53,17 +43,11 @@ jobs:
             libtiff-dev \
             libfmt-dev
           do
-            if ! dpkg -s "$pkg" >/dev/null 2>&1; then
+            if ! dpkg -L "$pkg" >/dev/null 2>&1; then
               echo "Missing: $pkg"
               failed="$failed $pkg"
             fi
           done
-
-          # HDF5 check: verify the actual development environment
-          if ! h5c++ -show >/dev/null 2>&1; then
-            echo "Missing HDF5 C++ development environment"
-            failed="$failed hdf5"
-          fi
 
           if [ -n "$failed" ]; then
             echo "Missing packages after cache restore: $failed. Try deleting the cache and rerunning the workflow."

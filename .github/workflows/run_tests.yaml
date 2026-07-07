@@ -23,7 +23,7 @@ jobs:
       # using a stable action version instead of latest to create/restore cache for now
       - uses: awalsh128/cache-apt-pkgs-action@v1.6.1
         with:
-          packages: libhdf5-dev libfmt-dev
+          packages: libfmt-dev
           version: 1.0
 
       - name: Verify apt packages

@@ -26,6 +26,7 @@ jobs:
           packages: libhdf5-dev libfmt-dev
           version: 1.0
 
+      # debug
       - name: Debug HDF5
         run: |
           dpkg -s libhdf5-dev || true

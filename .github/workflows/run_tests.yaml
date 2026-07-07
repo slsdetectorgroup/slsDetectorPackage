@@ -23,7 +23,7 @@ jobs:
       # using a stable action version instead of latest to create/restore cache for now
       - uses: awalsh128/cache-apt-pkgs-action@v1.6.1
         with:
-          packages: libfmt-dev
+          packages: libhdf5-dev libfmt-dev
           version: 1.0
 
       - name: Verify apt packages
@@ -46,7 +46,7 @@ jobs:
             echo "Missing packages after cache restore: $failed. Try deleting the cache and rerunning the workflow."
             exit 1
           fi
-          
+
           echo "All apt packages are installed"  
           
       - name: Configure CMake

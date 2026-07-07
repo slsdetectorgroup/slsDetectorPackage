@@ -46,7 +46,6 @@ jobs:
           failed=""
 
           for pkg in \
-            libhdf5-dev \
             qtbase5-dev \
             qt5-qmake \
             libqt5svg5-dev \
@@ -60,6 +59,11 @@ jobs:
             fi
           done
 
+          # HDF5 check: verify the actual development environment
+          if ! h5c++ -show >/dev/null 2>&1; then
+            echo "Missing HDF5 C++ development environment"
+            failed="$failed hdf5"
+          fi
 
           if [ -n "$failed" ]; then
             echo "Missing packages after cache restore: $failed. Try deleting the cache and rerunning the workflow."

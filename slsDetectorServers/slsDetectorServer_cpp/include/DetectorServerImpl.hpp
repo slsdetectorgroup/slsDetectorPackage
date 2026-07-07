@@ -16,6 +16,14 @@ struct UDPInfo {
     uint32_t dstip{};
 };
 
+/// @brief struct to store detector setup status
+struct detector_setup_status {
+    /// @brief true if setupDetector() was successful, false otherwise
+    bool successful_setup{false};
+    /// @brief error message if setupDetector() failed, empty otherwise
+    std::string error_message{};
+};
+
 /// @brief Shared memory structure for stop server to store run status
 struct acquisitionStatus {
 
@@ -61,6 +69,8 @@ class DetectorServerImpl {
 
     uint16_t get_destination_udp_port() const;
 
+    detector_setup_status initial_checks() const;
+
   protected:
     std::array<UDPInfo, 1>
         udpDetails{}; // TODO: for now only one receiver per module
@@ -77,6 +87,9 @@ class DetectorServerImpl {
     /// header
     /// @param srcmac
     void updateSrcMacAddress(const uint64_t srcmac);
+
+    /// @brief true if setupDetector() was successful, false otherwise
+    detector_setup_status detectorSetupStatus{};
 
   private:
     /// @brief creates and maps shared memory

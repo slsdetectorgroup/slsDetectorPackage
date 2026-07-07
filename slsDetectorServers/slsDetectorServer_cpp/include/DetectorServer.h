@@ -479,10 +479,17 @@ ProcessedResult DetectorServer<DerivedDetectorServer>::get_run_status(
 template <typename DerivedDetectorServer>
 ProcessedResult DetectorServer<DerivedDetectorServer>::initial_checks(
     ServerInterface &socket) const {
-    bool initial_checks_passed = getDerivedImpl()->initial_checks();
+    auto detectorsetupstatus = getDerivedImpl()->initial_checks();
 
-    return ProcessedResult{
-        static_cast<ReturnCode>(socket.sendResult(initial_checks_passed))};
+    const bool setup_successful = detectorsetupstatus.successful_setup;
+
+    if (!setup_successful) {
+        return return_fail("Initial checks failed: " +
+                           detectorsetupstatus.error_message);
+    } else {
+        return ProcessedResult{
+            static_cast<ReturnCode>(socket.sendResult(setup_successful))};
+    }
 }
 
 template <typename DerivedDetectorServer>

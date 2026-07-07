@@ -85,9 +85,16 @@ BaseMatterhornServerImpl<
 template <typename DerivedMatterhornServerImpl>
 void BaseMatterhornServerImpl<DerivedMatterhornServerImpl>::setupDetector() {
     // TODO: extend
-    set_num_frames(1); // maybe have a file with constexpr default values
+    try {
+        set_num_frames(1);
+        set_num_triggers(1);
+    } catch (const std::exception &e) {
+        LOG(logERROR) << "Failed to setup detector: " << e.what();
+        detectorSetupStatus.error_message = std::string(e.what());
+        detectorSetupStatus.successful_setup = false;
+    }
 
-    set_num_triggers(1);
+    detectorSetupStatus.successful_setup = true;
 }
 
 template <typename DerivedMatterhornServerImpl>

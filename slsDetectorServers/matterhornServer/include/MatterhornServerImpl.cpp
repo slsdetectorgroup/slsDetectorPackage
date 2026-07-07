@@ -7,13 +7,6 @@ slsDetectorDefs::runStatus MatterhornServerImpl::get_run_status() const {
     return slsDetectorDefs::runStatus::IDLE; // TODO: implement
 }
 
-bool MatterhornServerImpl::initial_checks() const {
-    // TODO: add more checks here, for now just return true to be able to test
-    // the should check firmware -client compatibility
-    bool initial_checks_passed = true;
-    return initial_checks_passed;
-}
-
 void MatterhornServerImpl::set_module_position_and_update_srcudpmac(
     const std::array<int, 2> &position_info) {
 

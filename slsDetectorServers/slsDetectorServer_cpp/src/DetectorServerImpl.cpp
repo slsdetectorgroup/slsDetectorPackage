@@ -77,4 +77,8 @@ uint16_t DetectorServerImpl::get_destination_udp_port() const {
     return udpDetails[0].dstport;
 }
 
+detector_setup_status DetectorServerImpl::initial_checks() const {
+    return detectorSetupStatus;
+}
+
 } // namespace sls

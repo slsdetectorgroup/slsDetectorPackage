@@ -26,7 +26,8 @@ jobs:
           packages: libhdf5-dev qtbase5-dev qt5-qmake libqt5svg5-dev libpng-dev libtiff-dev libfmt-dev
           version: 1.0
 
-      # verify the packages in cache are installed (can be missing if ubunti updates and mirror is not updated)
+      # verify packages restored from cache are installed.
+      # This catches incomplete apt installs after cache restore.
       - name: Verify apt packages
         id: verify_packages
         continue-on-error: true
@@ -62,21 +63,8 @@ jobs:
         if: steps.verify_packages.outputs.failed_packages != ''
         run: |
           sudo apt-get update
+          sudo apt-get install --fix-broken -y
           sudo apt-get install --reinstall -y ${{ steps.verify_packages.outputs.failed_packages }}
-
-      # hdf5: also needs to find C++ component, headers and libraries
-      - name: Verify HDF5
-        id: verify_hdf5
-        continue-on-error: true
-        run: |
-          h5cc -showconfig
-          h5c++ -show
-
-      - name: Repair HDF5
-        if: steps.verify_packages.outputs.failed_packages != ''
-        run: |
-          sudo apt-get update
-          sudo apt-get install --reinstall -y libhdf5-dev
 
 
       - name: Configure CMake

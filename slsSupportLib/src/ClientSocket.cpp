@@ -27,8 +27,8 @@ ClientSocket::ClientSocket(std::string stype, const std::string &host,
 
     if (getaddrinfo(host.c_str(), nullptr, &hints, &result) != 0) {
 
-
-        auto msg = fmt::format("Cannot resolve {} hostname: '{}'", to_lower(socketType), host);
+        auto msg = fmt::format("Cannot resolve {} hostname: '{}'",
+                               to_lower(socketType), host);
         throwError(msg);
     }
 
@@ -43,9 +43,8 @@ ClientSocket::ClientSocket(std::string stype, const std::string &host,
     if (::connect(getSocketId(), (struct sockaddr *)&serverAddr,
                   sizeof(serverAddr)) != 0) {
         freeaddrinfo(result);
-        auto msg = fmt::format(
-            "Cannot connect to {} on {}:{}\n",
-            to_lower(socketType), host, port);
+        auto msg = fmt::format("Cannot connect to {} on {}:{}\n",
+                               to_lower(socketType), host, port);
 
         throwError(msg);
     }
@@ -58,7 +57,8 @@ ClientSocket::ClientSocket(std::string sType, struct sockaddr_in addr)
     if (::connect(getSocketId(), (struct sockaddr *)&addr, sizeof(addr)) != 0) {
         char address[INET_ADDRSTRLEN];
         inet_ntop(AF_INET, &addr.sin_addr, address, INET_ADDRSTRLEN);
-        auto msg = fmt::format("Cannot connect to {} on {}:{}", to_lower(socketType), address, addr.sin_port);
+        auto msg = fmt::format("Cannot connect to {} on {}:{}",
+                               to_lower(socketType), address, addr.sin_port);
         throwError(msg);
     }
 }
@@ -99,7 +99,8 @@ void ClientSocket::readReply(int &ret, void *retval, size_t retval_size) {
     }
     // debugging
     catch (SocketError &e) {
-        auto msg = fmt::format("While reading reply from {} {}", to_lower(socketType), e.what());
+        auto msg = fmt::format("While reading reply from {} {}",
+                               to_lower(socketType), e.what());
         throwError(msg);
     }
 }

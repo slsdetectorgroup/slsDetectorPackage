@@ -26,6 +26,59 @@ jobs:
           packages: libhdf5-dev qtbase5-dev qt5-qmake libqt5svg5-dev libpng-dev libtiff-dev libfmt-dev
           version: 1.0
 
+      # verify the packages in cache are installed (can be missing if ubunti updates and mirror is not updated)
+      - name: Verify apt packages
+        id: verify_packages
+        #continue-on-error: true
+        run: |
+          failed=""
+
+          for pkg in \
+            libhdf5-dev \
+            qtbase5-dev \
+            qt5-qmake \
+            libqt5svg5-dev \
+            libpng-dev \
+            libtiff-dev \
+            libfmt-dev
+          # remember failed packages to repair in next step
+          do
+            if ! dpkg -s "$pkg" >/dev/null 2>&1; then
+              echo "Missing: $pkg"
+              failed="$failed $pkg"
+            fi
+          done
+
+          echo "failed_packages=$failed" >> "$GITHUB_OUTPUT"
+
+          if [ -n "$failed" ]; then
+            echo "Missing packages after cache restore: $failed"
+            exit 1
+          else
+            echo "All apt packages are installed"  
+          fi
+
+      - name: Repair missing apt packages
+        if: steps.verify_packages.outcome == 'failure'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --reinstall -y ${{ steps.verify_packages.outputs.failed_packages }}
+
+      # hdf5: also needs to find C++ component, headers and libraries
+      - name: Verify HDF5
+        id: verify_hdf5
+        continue-on-error: true
+        run: |
+          h5cc -showconfig
+          h5c++ -show
+
+      - name: Repair HDF5
+        if: steps.verify_hdf5.outcome == 'failure'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --reinstall -y libhdf5-dev
+
+
       - name: Configure CMake
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
         # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type

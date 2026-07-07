@@ -59,7 +59,7 @@ jobs:
           fi
 
       - name: Repair missing apt packages
-        if: steps.verify_packages.outcome == 'failure'
+        if: steps.verify_packages.outputs.failed_packages != ''
         run: |
           sudo apt-get update
           sudo apt-get install --reinstall -y ${{ steps.verify_packages.outputs.failed_packages }}
@@ -73,7 +73,7 @@ jobs:
           h5c++ -show
 
       - name: Repair HDF5
-        if: steps.verify_hdf5.outcome == 'failure'
+        if: steps.verify_packages.outputs.failed_packages != ''
         run: |
           sudo apt-get update
           sudo apt-get install --reinstall -y libhdf5-dev

@@ -148,8 +148,6 @@ TEST_CASE("to_lower does not modify the original string") {
     REQUIRE(original == "MixedCase");
 }
 
-
-
 // TEST_CASE("concat things not being strings")
 
 } // namespace sls

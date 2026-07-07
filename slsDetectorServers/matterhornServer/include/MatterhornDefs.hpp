@@ -15,7 +15,7 @@ constexpr uint8_t NUM_CHIPS_PER_MODULE = 8;
 /// @brief list of Matterhorn SPI registers
 struct MatterhornSPIRegisters {
 
-    constexpr static std::array<SPIRegister, 11> spiregisters{
+    constexpr static std::array<SPIRegister, 12> spiregisters{
         SPIRegisters::SPI_REG_ConfigUnit,
         SPIRegisters::SPI_REG_ConfigCML,
         SPIRegisters::SPI_REG_ManualSelector,
@@ -26,7 +26,8 @@ struct MatterhornSPIRegisters {
         SPIRegisters::SPI_REG_McGyver_par_load,
         SPIRegisters::SPI_REG_ActionReg,
         SPIRegisters::SPI_REG_InternalDACs,
-        SPIRegisters::SPI_REG_ChecksumReg};
+        SPIRegisters::SPI_REG_ChecksumReg,
+        SPIRegisters::SPI_REG_ExtraClocks};
 
     constexpr static uint8_t NUM_CHIPS_PER_MODULE =
         MatterhornDefs::NUM_CHIPS_PER_MODULE;

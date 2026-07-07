@@ -451,7 +451,7 @@ ProcessedResult DetectorServer<DerivedDetectorServer>::get_num_udp_interfaces(
 template <typename DerivedDetectorServer>
 ProcessedResult DetectorServer<DerivedDetectorServer>::get_detector_type(
     ServerInterface &socket) const {
-    uint8_t detectortype = getDerivedImpl()->get_detector_type();
+    uint32_t detectortype = getDerivedImpl()->get_detector_type();
     return ProcessedResult{
         static_cast<ReturnCode>(socket.sendResult(detectortype))};
 }

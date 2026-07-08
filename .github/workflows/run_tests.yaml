@@ -26,28 +26,16 @@ jobs:
           packages: libhdf5-dev libfmt-dev
           version: 1.0
 
-      - name: Verify apt packages
+      - name: Verify apt cache
         run: |
-          failed=""
+          count=$(find ~/cache-apt-pkgs -name '*.tar' | wc -l)
 
-          for pkg in \
-            libhdf5-dev \
-            libfmt-dev
-          do
-            installed=$(apt-cache policy "$pkg" | awk '/Installed:/ {print $2}')
-
-            if [ "$installed" = "(none)" ]; then
-              echo "Missing: $pkg"
-              failed="$failed $pkg"
-            fi
-          done
-
-          if [ -n "$failed" ]; then
-            echo "Missing packages after cache restore: $failed. Try deleting the cache and rerunning the workflow."
+          if [ "$count" -eq 0 ]; then
+            echo "APT cache is empty. Delete the cache and rerun the workflow."
             exit 1
           fi
 
-          echo "All apt packages are installed"  
+          echo "APT cache contains $count packages."
           
       - name: Configure CMake
         run: |

@@ -27,9 +27,16 @@ jobs:
           packages: libhdf5-dev qtbase5-dev qt5-qmake libqt5svg5-dev libpng-dev libtiff-dev libfmt-dev
           version: 1.0
 
-      - name: Verify apt packages
+      - name: Verify apt cache
         run: |
-          apt-cache policy libhdf5-dev qtbase5-dev qt5-qmake libqt5svg5-dev libpng-dev libtiff-dev libfmt-dev
+          count=$(find ~/cache-apt-pkgs -name '*.tar' | wc -l)
+
+          if [ "$count" -eq 0 ]; then
+            echo "APT cache is empty. Delete the cache and rerun the workflow."
+            exit 1
+          fi
+
+          echo "APT cache contains $count packages."
 
       - name: Configure CMake
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.

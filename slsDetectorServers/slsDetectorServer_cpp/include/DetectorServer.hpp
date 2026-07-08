@@ -481,14 +481,19 @@ ProcessedResult DetectorServer<DerivedDetectorServer>::initial_checks(
     ServerInterface &socket) const {
     auto detectorsetupstatus = getDerivedImpl()->initial_checks();
 
-    const bool setup_successful = detectorsetupstatus.successful_setup;
-
-    if (!setup_successful) {
+    // TODO: should there be a time limit?
+    while (detectorsetupstatus.setup_status ==
+           detector_setup_status::NOT_SETUP) {
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        detectorsetupstatus = getDerivedImpl()->initial_checks();
+    }
+    if (detectorsetupstatus.setup_status ==
+        detector_setup_status::FAILED_SETUP) {
         return return_fail("Initial checks failed: " +
                            detectorsetupstatus.error_message);
     } else {
         return ProcessedResult{
-            static_cast<ReturnCode>(socket.sendResult(setup_successful))};
+            static_cast<ReturnCode>(socket.sendResult(true))};
     }
 }
 

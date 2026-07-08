@@ -18,8 +18,15 @@ struct UDPInfo {
 
 /// @brief struct to store detector setup status
 struct detector_setup_status {
+
+    enum SETUP_STATUS : uint8_t {
+        FAILED_SETUP = 0,
+        SUCCESSFUL_SETUP = 1,
+        NOT_SETUP = 2
+    };
+
     /// @brief true if setupDetector() was successful, false otherwise
-    bool successful_setup{false};
+    SETUP_STATUS setup_status{NOT_SETUP};
     /// @brief error message if setupDetector() failed, empty otherwise
     std::string error_message{};
 };

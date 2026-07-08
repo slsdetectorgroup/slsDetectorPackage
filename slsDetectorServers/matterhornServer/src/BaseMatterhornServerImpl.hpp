@@ -91,10 +91,12 @@ void BaseMatterhornServerImpl<DerivedMatterhornServerImpl>::setupDetector() {
     } catch (const std::exception &e) {
         LOG(logERROR) << "Failed to setup detector: " << e.what();
         detectorSetupStatus.error_message = std::string(e.what());
-        detectorSetupStatus.successful_setup = false;
+        detectorSetupStatus.setup_status =
+            detector_setup_status::SETUP_STATUS::FAILED_SETUP;
     }
 
-    detectorSetupStatus.successful_setup = true;
+    detectorSetupStatus.setup_status =
+        detector_setup_status::SETUP_STATUS::SUCCESSFUL_SETUP;
 }
 
 template <typename DerivedMatterhornServerImpl>

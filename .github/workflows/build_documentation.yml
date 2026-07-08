@@ -52,7 +52,7 @@ jobs:
                 fi
 
             - name: Install System Packages
-              uses: awalsh128/cache-apt-pkgs-action@latest
+              uses: awalsh128/cache-apt-pkgs-action@v1.6.1
               with:
                 packages: libhdf5-dev doxygen
                 version: 1.0

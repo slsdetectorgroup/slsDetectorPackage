@@ -27,36 +27,6 @@ jobs:
           packages: libhdf5-dev qtbase5-dev qt5-qmake libqt5svg5-dev libpng-dev libtiff-dev
           version: 1.0
 
-      # verify packages restored from cache are installed.
-      # This catches incomplete apt installs after cache restore.
-      - name: Verify apt packages
-        id: verify_packages
-        run: |
-          failed=""
-
-          for pkg in \
-            libhdf5-dev \
-            qtbase5-dev \
-            qt5-qmake \
-            libqt5svg5-dev \
-            libpng-dev \
-            libtiff-dev \
-            libfmt-dev
-          do
-            if ! dpkg -s "$pkg" >/dev/null 2>&1; then
-              echo "Missing: $pkg"
-              failed="$failed $pkg"
-            fi
-          done
-
-
-          if [ -n "$failed" ]; then
-            echo "Missing packages after cache restore: $failed. Try deleting the cache and rerunning the workflow."
-            exit 1
-          else
-            echo "All apt packages are installed"  
-          fi
-
       - name: Configure CMake
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
         # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type

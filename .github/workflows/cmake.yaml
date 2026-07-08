@@ -27,10 +27,6 @@ jobs:
           packages: libhdf5-dev qtbase5-dev qt5-qmake libqt5svg5-dev libpng-dev libtiff-dev libfmt-dev
           version: 1.0
 
-      - name: Verify apt packages are available
-        run: |
-          apt list --installed 2>/dev/null | grep -E 'hdf5|fmt|qt|png|tiff'
-
       - name: Configure CMake
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
         # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type

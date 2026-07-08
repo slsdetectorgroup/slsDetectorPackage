@@ -27,10 +27,6 @@ jobs:
           #packages: libfmt-dev
           version: 1.0
 
-      - name: Verify apt packages are available
-        run: |
-          apt list --installed 2>/dev/null | grep -E 'hdf5|fmt'
-
       - name: Configure CMake
         run: |
           cmake -B ${{github.workspace}}/build \

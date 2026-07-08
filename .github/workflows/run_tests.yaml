@@ -28,12 +28,9 @@ jobs:
 
       - name: Verify apt cache
         run: |
-          if [ ! -f ~/cache-apt-pkgs/manifest_all.log ]; then
-            echo "APT cache is incomplete (manifest_all.log missing)."
-            echo "Delete the cache and rerun the workflow."
-            exit 1
-          fi
-          
+          echo "Cache hit: ${{ steps.apt-cache.outputs.cache-hit }}"
+          echo "Cache hit: ${{ steps.apt-cache.outputs.package-version-list }}"
+
       - name: Configure CMake
         run: |
           cmake -B ${{github.workspace}}/build \

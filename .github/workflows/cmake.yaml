@@ -29,14 +29,11 @@ jobs:
 
       - name: Verify apt cache
         run: |
-          count=$(find ~/cache-apt-pkgs -name '*.tar' | wc -l)
-
-          if [ "$count" -eq 0 ]; then
-            echo "APT cache is empty. Delete the cache and rerun the workflow."
+          if [ ! -f ~/cache-apt-pkgs/manifest_all.log ]; then
+            echo "APT cache is incomplete (manifest_all.log missing)."
+            echo "Delete the cache and rerun the workflow."
             exit 1
           fi
-
-          echo "APT cache contains $count packages."
 
       - name: Configure CMake
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.

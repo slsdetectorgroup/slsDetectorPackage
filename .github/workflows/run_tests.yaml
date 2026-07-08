@@ -29,7 +29,7 @@ jobs:
 
       - name: Verify apt packages are available
         run: |
-          apt list --installed 2>/dev/null | grep -E 'hdf5|fmt' || true
+          apt list --installed 2>/dev/null | grep -E 'hdf5|fmt'
 
       - name: Configure CMake
         run: |

@@ -27,10 +27,9 @@ jobs:
           packages: libhdf5-dev qtbase5-dev qt5-qmake libqt5svg5-dev libpng-dev libtiff-dev libfmt-dev
           version: 1.0
 
-      - name: Verify apt cache
+      - name: Verify apt packages
         run: |
-          echo "Cache hit: ${{ steps.apt-cache.outputs.cache-hit }}"
-          echo "Cache hit: ${{ steps.apt-cache.outputs.package-version-list }}"
+          sudo apt-get check
 
       - name: Configure CMake
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.

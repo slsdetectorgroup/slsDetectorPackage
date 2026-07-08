@@ -25,11 +25,10 @@ jobs:
         with:
           packages: libhdf5-dev libfmt-dev
           version: 1.0
-
-      - name: Verify apt cache
+          
+      - name: Verify apt packages
         run: |
-          echo "Cache hit: ${{ steps.apt-cache.outputs.cache-hit }}"
-          echo "Cache hit: ${{ steps.apt-cache.outputs.package-version-list }}"
+          sudo apt-get check
 
       - name: Configure CMake
         run: |

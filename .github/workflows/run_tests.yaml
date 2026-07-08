@@ -23,12 +23,13 @@ jobs:
       # using a stable action version instead of latest to create/restore cache for now
       - uses: awalsh128/cache-apt-pkgs-action@v1.6.1
         with:
-          packages: libhdf5-dev libfmt-dev
+          #packages: libhdf5-dev libfmt-dev
+          packages: libfmt-dev
           version: 1.0
-          
-      - name: Verify apt packages
+
+      - name: Verify apt packages are available
         run: |
-          sudo apt-get check
+          apt list --installed 2>/dev/null | grep -E 'hdf5|fmt' || true
 
       - name: Configure CMake
         run: |

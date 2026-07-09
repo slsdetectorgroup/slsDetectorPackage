@@ -93,11 +93,11 @@ void Pattern::validate() const {
     }
 }
 
-size_t Pattern::load(const std::string &fname) {
+size_t Pattern::load(const std::filesystem::path &fname) {
     size_t numPatWords = 0;
     std::ifstream input_file(fname);
     if (!input_file) {
-        throw RuntimeError("Could not open pattern file " + fname +
+        throw RuntimeError("Could not open pattern file " + fname.string() +
                            " for reading");
     }
     for (std::string line; std::getline(input_file, line);) {
@@ -276,10 +276,10 @@ std::ostream &Pattern::stream(std::ostream &os) const {
     return os;
 }
 
-void Pattern::save(const std::string &fname) {
+void Pattern::save(const std::filesystem::path &fname) {
     std::ofstream output_file(fname);
     if (!output_file) {
-        throw RuntimeError("Could not open pattern file " + fname +
+        throw RuntimeError("Could not open pattern file " + fname.string() +
                            " for writing");
     }
     stream(output_file);

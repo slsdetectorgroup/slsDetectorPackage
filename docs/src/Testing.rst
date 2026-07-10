@@ -49,7 +49,7 @@ If you want to disable testing that involves a data file that require pc tuning 
 
 .. note ::   
 
-    Ensure that there are no spaces betweent the tags and no '.', else hardly any test will be matched.
+    Ensure that there are no spaces between the tags and no '.', else hardly any test will be matched.
 
 .. _python simulator script:
 
@@ -104,7 +104,7 @@ To run only tests requiring virtual detectors use the following command:
     #in build
     python -m pytest -m detectorintegration ../python/tests/
 
-There is a helper test fixture in ``slsDetectorSoftware/python/tests/conftest.py`` called ``session_simulator`` that sets up virtual detectors and yields the test for all detectors. The set up is done for every test automatically. Note that the fixture persist over the entire session e.g. the fixture is setup one detector at a time and runs all tests using this fixture before cleaning up and moving on to the next detector. It saves time if the setup and cleanup is expensive.
+There is a helper test fixture in ``slsDetectorSoftware/python/tests/conftest.py`` called ``session_simulator`` that sets up virtual detectors and yields the test for all detectors. The set up is done for every test automatically. Note that the fixture persists over the entire session e.g. the fixture is setup one detector at a time and runs all tests using this fixture before cleaning up and moving on to the next detector. It saves time if the setup and cleanup is expensive.
 
 Example usage: 
 

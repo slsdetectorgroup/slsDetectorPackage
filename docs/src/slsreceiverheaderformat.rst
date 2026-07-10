@@ -37,4 +37,4 @@ It is 112 bytes and consists of:
     
 | The **packetNumber** from detector UDP header is modified in **sls_receiver_header** to number of packets caught by receiver for that frame and the bit mask for each packet caught is the **packetsMask**. The packetsMask is a total of 512 bits due to the largest number of packets per frame among our detectors.
 
-| For eg. Jungfrau has 128 packets per frame. If **packetNumeber** is 128, then this frame is complete. If it is 127 or less, it is a partial frame due to missing packets. If one would still like to use it, the **packetsMask** will specify which packet has been received or is missing.
+| For eg. Jungfrau has 128 packets per frame. If **packetNumber** is 128, then this frame is complete. If it is 127 or less, it is a partial frame due to missing packets. If one would still like to use it, the **packetsMask** will specify which packet has been received or is missing.

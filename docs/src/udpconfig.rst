@@ -23,7 +23,7 @@ udp_srcmac - Source MAC
     MAC address of detector UDP interface to send packets from. Do not use for Eiger (uses hardware mac). For others, it is not necessary, but can help for switch and debugging to put unique values for each module.
  
 
-udp_dstport - Desintation Port
+udp_dstport - Destination Port
 -------------------------------
     Port in receiver pc to listen to packets from the detector.
 

@@ -28,7 +28,7 @@ There are three main receiver types. How to start them is described :ref:`below<
 +======================+====================+=========================================+================================+
 | Modules Supported    | 1                  | Multiple                                | Multiple                       |
 +----------------------+--------------------+-----------------------------------------+--------------------------------+
-| Internal Architecture| Threads per porttt | Multiple child processes of slsReceiver | Multi-threading of slsReceiver |
+| Internal Architecture| Threads per port   | Multiple child processes of slsReceiver | Multi-threading of slsReceiver |
 +----------------------+--------------------+-----------------------------------------+--------------------------------+
 | ZMQ Streaming        | Disabled by default| Disabled by default                     | Enabled, not optional          |
 +----------------------+--------------------+-----------------------------------------+--------------------------------+

@@ -80,7 +80,7 @@ There are mainly three components to the soft upgrade:
 * Firmware upgrade: The VHDL code running on the FPGA.
 * slsDetectorPackage upgrade: The client code running on the host PC to control the module(s) and receiver(s) if any.
 
-Please use the `update command <commandline.html#term-update>`_ when updating both the server and firmware simulataneously and `programfpga command <commandline.html#term-programfpga-fname.pof-fname.rbf-full-path-opitonal-force-delete-normal-file>`_ when only updating the firmware. See :ref:`firmware upgrade <firmware upgrade>` for details.
+Please use the `update command <commandline.html#term-update>`_ when updating both the server and firmware simultaneously and `programfpga command <commandline.html#term-programfpga-fname.pof-fname.rbf-full-path-opitonal-force-delete-normal-file>`_ when only updating the firmware. See :ref:`firmware upgrade <firmware upgrade>` for details.
 
 When only updating the detector server, use the `updatedetectorserver command <commandline.html#term-updatedetectorserver-server_name-with-full-path>`_ command. See :ref:`detector server upgrade <Detector Server Upgrade>` for details.
 
@@ -115,7 +115,7 @@ Few characteristics of the receiver:
 
 * It can be run on the same host as the client or on a different host.
 * There is a receiver process for every module and a file for every UDP port. 
-* Each receiver process is independent and asynchronized for performance. So are the UDP ports.
+* Each receiver process is independent and asynchronous for performance. So are the UDP ports.
 
 
 Client

@@ -139,9 +139,9 @@ Unlike TCP, the module (hardware) requires explicit configuration for sending im
 
 Info on where to send the image from the module to.
 
-**UDP Desination IP** - The IP of the receiver PC's 10 GbE interface, usually found via ``ifconfig``. Command: `udp_dstip <commandline.html#term-udp_dstip-x.x.x.x-or-auto>`_. For 1GbE interface and for this command, one can use 'auto' as an argument, which will pick up the IP from the `rx_hostname command <commandline.html#term-rx_hostname-hostname-or-ip-address>`_.
+**UDP Destination IP** - The IP of the receiver PC's 10 GbE interface, usually found via ``ifconfig``. Command: `udp_dstip <commandline.html#term-udp_dstip-x.x.x.x-or-auto>`_. For 1GbE interface and for this command, one can use 'auto' as an argument, which will pick up the IP from the `rx_hostname command <commandline.html#term-rx_hostname-hostname-or-ip-address>`_.
 
-**UDP desintation MAC** - Also obtained from the interface using ``ifconfig``. For built-in receivers, the module configures this automatically from the ``UDP destination IP``. For custom receivers, it must be explicitly provided. Command: `udp_dstmac <commandline.html#term-udp_dstmac-x-x-x-x-x-x>`_
+**UDP destination MAC** - Also obtained from the interface using ``ifconfig``. For built-in receivers, the module configures this automatically from the ``UDP destination IP``. For custom receivers, it must be explicitly provided. Command: `udp_dstmac <commandline.html#term-udp_dstmac-x-x-x-x-x-x>`_
 
 **UDP destination port** - Ensure uniqueness if multiple users share the interface. Command: `udp_dstport <commandline.html#term-udp_dstport-n>`_
 

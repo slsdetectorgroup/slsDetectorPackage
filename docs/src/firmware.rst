@@ -18,7 +18,7 @@ Upgrade
 ^^^^^^^^
 #. Tftp must be already installed on your pc to use the bcp script.
 
-#. Copy new servers to the board. See :ref:`how to upgrade detector servers<Detector Server Upgrade>` for more detals. A reboot should have started the new linked servers automatically. For Eiger, do not reboot yet as we need to program the firmware via bit files.
+#. Copy new servers to the board. See :ref:`how to upgrade detector servers<Detector Server Upgrade>` for more details. A reboot should have started the new linked servers automatically. For Eiger, do not reboot yet as we need to program the firmware via bit files.
 
     * This step is crucial when registers between firmwares change. Failure to do so will result in linux on boards to crash and boards can't be pinged anymore.
 
@@ -119,7 +119,7 @@ Program from console
         # Always ensure that the client and server software are of the same release.
 
         # copies server, links new server to jungfrauDetectorServer, 
-        # removes old server from respawn, sets up new lnked server to respawn
+        # removes old server from respawn, sets up new linked server to respawn
         # programs fpga, reboots
 
         #  older versions: v5.0.0 - 6.0.0 using tftp from tftp folder of pc
@@ -153,7 +153,7 @@ Program from console
         # Always ensure that the client and server software are of the same release.
 
         # copies server, links new server to mythen3DetectorServer, 
-        # removes old server from respawn, sets up new lnked server to respawn
+        # removes old server from respawn, sets up new linked server to respawn
         # programs fpga, reboots
 
         #  older versions: v5.0.0 - 6.0.0 using tftp from tftp folder of pc
@@ -187,7 +187,7 @@ Program from console
         # Always ensure that the client and server software are of the same release.
         
         # copies server, links new server to gotthard2DetectorServer, 
-        # removes old server from respawn, sets up new lnked server to respawn
+        # removes old server from respawn, sets up new linked server to respawn
         # programs fpga, reboots
 
         #  older versions: v5.0.0 - 6.0.0 using tftp from tftp folder of pc
@@ -238,7 +238,7 @@ Program from console
         # Always ensure that the client and server software are of the same release.
 
         # copies server, links new server to moenchDetectorServer, 
-        # removes old server from respawn, sets up new lnked server to respawn
+        # removes old server from respawn, sets up new linked server to respawn
         # programs fpga, reboots
 
         #  older versions: v5.0.0 - 6.0.0 using tftp from tftp folder of pc
@@ -273,7 +273,7 @@ Program from console
         # Always ensure that the client and server software are of the same release.
         
         # copies server, links new server to ctbDetectorServer, 
-        # removes old server from respawn, sets up new lnked server to respawn
+        # removes old server from respawn, sets up new linked server to respawn
         # programs fpga, reboots
 
         #  older versions: v5.0.0 - 6.0.0 using tftp from tftp folder of pc
@@ -295,7 +295,7 @@ Firmware Troubleshooting with blackfin
 
 2. v5.x.x-rcx client after programming will not reboot the blackfin processor, if error occurred.
 
-3. If a reboot occured with an incomplete firmware in flash, the blackfin will most likely not find the mtd3 drive. To see if this drive exists:
+3. If a reboot occurred with an incomplete firmware in flash, the blackfin will most likely not find the mtd3 drive. To see if this drive exists:
 
   .. code-block:: bash
     

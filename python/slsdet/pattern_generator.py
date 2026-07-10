@@ -2,12 +2,14 @@ from . import Pattern
 from .bits import setbit, clearbit, flipbit
 import textwrap
 
+
 class PatternGenerator:
     """
-    Class to generate a pattern for the SLS detector. Intents to as closely as possible 
+    Class to generate a pattern for the SLS detector. Intents to as closely as possible
     mimic the old pattern generation in the C code.
     """
-    def __init__(self, verbose = False):
+
+    def __init__(self, verbose=False):
         self.pattern = Pattern()
         self.iaddr = 0
         self.verbose = verbose
@@ -26,7 +28,7 @@ class PatternGenerator:
         for bit in bits:
             self.pattern.word[self.iaddr] = setbit(bit, self.pattern.word[self.iaddr])
         return self.pattern.word[self.iaddr]
- 
+
     def CB(self, *bits):
         """
         Clear one or multiple bits. Change will take affect with the next PW.
@@ -34,7 +36,7 @@ class PatternGenerator:
         for bit in bits:
             self.pattern.word[self.iaddr] = clearbit(bit, self.pattern.word[self.iaddr])
         return self.pattern.word[self.iaddr]
-    
+
     def FB(self, *bits):
         """
         Flip one or multiple bits. Change will take affect with the next PW.
@@ -45,18 +47,18 @@ class PatternGenerator:
 
     def _pw(self):
         if self.verbose:
-            print(f'{self.iaddr:#06x} {self.pattern.word[self.iaddr]:#018x}') 
-        
+            print(f"{self.iaddr:#06x} {self.pattern.word[self.iaddr]:#018x}")
+
         # Increment the address before the next word since limits are inclusive
         self.pattern.limits[1] = self.iaddr
         self.iaddr += 1
         self.pattern.word[self.iaddr] = self.pattern.word[self.iaddr - 1]
 
-    def PW(self, x = 1):
-        for _ in range(x):
+    def PW(self, words=1):
+        for _ in range(words):
             self._pw()
 
-    def CLOCKS(self, bits, repeats = 1, clock_duration = 1):
+    def CLOCKS(self, bits, repeats=1, half_period=1):
         """
         Generate clock pulses on the specified bits.
 
@@ -71,13 +73,15 @@ class PatternGenerator:
         verbose : bool, optional
             If True, print timing/debug info during the wait (default False).
         """
+        if isinstance(bits, int):
+            bits = [bits]
         for _ in range(repeats):
             self.FB(*bits)
-            self.PW(clock_duration)
+            self.PW(half_period)
             self.FB(*bits)
-            self.PW(clock_duration)
+            self.PW(half_period)
 
-    def serializer(self, value, ser_in_bit, clk_bit, nbits, msb_first = True, length = 1):
+    def serializer(self, value, ser_in_bit, clk_bit, nbits, msb_first=True, length=1):
         """
         Serialize `value` into a shift register via ser_in_bit/clk_bit.
 
@@ -115,24 +119,25 @@ class PatternGenerator:
         self.CB(ser_in_bit, clk_bit)
         self.PW(length)  # final line with clk and serIn low
 
-
-    #NOT IMPLEMENTED YET
-    #TODO! What should setstop do? Or can we remove it? 
-    #def setstop():
-
     def setoutput(self, *bits):
-       for bit in bits:
-           self.pattern.ioctrl = setbit(bit, self.pattern.ioctrl)
-    
-    def setinput(self, *bits):
-       for bit in bits:
-           self.pattern.ioctrl = clearbit(bit, self.pattern.ioctrl)
+        """
+        Define one or multiple bits as output.
+        """
+        for bit in bits:
+            self.pattern.ioctrl = setbit(bit, self.pattern.ioctrl)
 
-    #TODO! What should setclk do? Or can we remove it?
+    def setinput(self, *bits):
+        """
+        Define one or multiple bits as input.
+        """
+        for bit in bits:
+            self.pattern.ioctrl = clearbit(bit, self.pattern.ioctrl)
+
+    # TODO! What should setclk do? Or can we remove it?
     # def setclk(bit):
     #    self.clkctrl=self.setbit(bit,self.clkctrl)
 
-    #def setclks(self, *args):
+    # def setclks(self, *args):
     #    for i in args:
     #        self.setclk(i)
 
@@ -162,7 +167,7 @@ class PatternGenerator:
         Set stop of pattern to the current address.
         """
         self.pattern.limits[1] = self.iaddr
-        
+
     def setwaitpoint(self, i):
         """
         Set wait[i] to the current address.
@@ -181,7 +186,7 @@ class PatternGenerator:
         """
         self.setwait(i)
         self.setwaittime(i, t)
-    
+
     def __repr__(self):
         return textwrap.dedent(f"""\
                             PatternGenerator:
@@ -194,7 +199,7 @@ class PatternGenerator:
 
     def __str__(self):
         return self.pattern.str()
-    
+
     def export_pattern(self):
         """
         Generate the pattern and return it as a Pattern object.

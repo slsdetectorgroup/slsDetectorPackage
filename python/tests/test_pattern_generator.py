@@ -1,4 +1,4 @@
-import pytest 
+import pytest
 from slsdet import PatternGenerator
 
 
@@ -24,21 +24,21 @@ def apply_detconf(p):
     en_pll_clk = 15
     cnt_en_2 = 16
     DACINT = 17
-    data_out_slow = 18 #IN
-    COMP2_MON = 19 #IN
+    data_out_slow = 18  # IN
+    COMP2_MON = 19  # IN
     start_read = 20
     dac_store = 21
-    CNT3_MON = 22 #IN
+    CNT3_MON = 22  # IN
     EN_PIX_DIG_MON = 23
     clk_sel = 24
-    BUSY = 25 #IN
-    COMP3_MON = 26 #IN
-    CNT2_MON = 27 #IN
+    BUSY = 25  # IN
+    COMP3_MON = 26  # IN
+    CNT2_MON = 27  # IN
 
-    dbit_ena=62 #FIFO LATCH
-    adc_ena=63  #ADC ENABLE
+    dbit_ena = 62  # FIFO LATCH
+    adc_ena = 63  # ADC ENABLE
 
-    #FPGA input/ouutputs
+    # FPGA input/ouutputs
     p.setoutput(DACMON)
     p.setoutput(cnt_en_3)
     p.setoutput(pulse_counter_en)
@@ -68,27 +68,24 @@ def apply_detconf(p):
     p.setinput(COMP3_MON)
     p.setinput(CNT2_MON)
 
-    #system signals
+    # system signals
     p.setoutput(adc_ena)
     # FIFO LATCH
     p.setoutput(dbit_ena)
-    return p    
-
-
-
+    return p
 
 
 def test_first_two_PW():
     p = PatternGenerator()
 
-    #The pattern is created with a single empty word
+    # The pattern is created with a single empty word
     assert p.pattern.limits[0] == 0
     assert p.pattern.limits[1] == 0
 
     p.SB(8)
     p.PW()
 
-    #When doing the first PW the empty word is overwritten
+    # When doing the first PW the empty word is overwritten
     assert p.pattern.limits[0] == 0
     assert p.pattern.limits[1] == 0
     assert p.pattern.word[0] == 256
@@ -96,11 +93,12 @@ def test_first_two_PW():
     p.SB(9)
     p.PW()
 
-    #When doing the second PW we add a new word
+    # When doing the second PW we add a new word
     assert p.pattern.limits[0] == 0
     assert p.pattern.limits[1] == 1
     assert p.pattern.word[0] == 256
     assert p.pattern.word[1] == 768
+
 
 def test_simple_pattern():
     """
@@ -111,7 +109,7 @@ def test_simple_pattern():
     p = apply_detconf(p)
     p.SB(en_pll_clk)
     p.PW()
-    p.PW() 
+    p.PW()
 
     lines = str(p).split("\n")
 

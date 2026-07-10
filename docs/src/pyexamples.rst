@@ -2,7 +2,7 @@ Examples
 ================
 
 Some short examples on how to use slsdet. If something is missing don't hesitate to
-open an issue in our our  `github repo
+open an issue in our  `github repo
 <https://github.com/slsdetectorgroup/slsDetectorPackage>`_. 
 
 
@@ -62,7 +62,7 @@ datetime.timedelta, DurationWrapper or by setting the time in seconds.
 Converting numbers to hex
 ------------------------------------
 
-Python support entering numbers in  format by using the 0x prefix. However, when reading 
+Python supports entering numbers in  format by using the 0x prefix. However, when reading 
 back you will get a normal integer. This can then be converted to a hex string representation
 using the built in hex() function. 
 
@@ -159,7 +159,7 @@ Non blocking acquire
 
 There are mainly two ways to achieve a non blocking acquire when calling from the Python API. One is to manually start
 the detector and the second one is to launch the normal acquire from a different process. Depending on your measurement
-it might also be better to run the other task in a seperate process and use acq in the main thread.
+it might also be better to run the other task in a separate process and use acq in the main thread.
 But lets start looking at the at the manual way:
 
 ::

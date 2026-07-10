@@ -204,7 +204,7 @@ The pixel width can be configured to 4, 8, 16 (default) or 32 bits using the com
 Flip rows
 ^^^^^^^^^^
 
-One can use the command `fliprows <commandline.html#term-fliprows-0-1>`_ to flip the rows vertically for the bottom or top half module. It is sent out to the reciever, but does not flip rows in the output file itself, but rather streams out this info via the json header and thus instructs the GUI to display them correctly.
+One can use the command `fliprows <commandline.html#term-fliprows-0-1>`_ to flip the rows vertically for the bottom or top half module. It is sent out to the receiver, but does not flip rows in the output file itself, but rather streams out this info via the json header and thus instructs the GUI to display them correctly.
 
 1GbE/ 10GbE Interfaces
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -279,7 +279,7 @@ Image size = 15,360 bytes
 Counters
 ^^^^^^^^^^^
 
-If all 3 counters are enabeld, the frame size for each channel is multiplied by 3. The counters are stored consecutively per channel. One can disable one or more of the counters using the `counters <commandline.html#term-counters-i0-i1-i2-...>`_ command. The frame size will then be reduced accordingly.
+If all 3 counters are enabled, the frame size for each channel is multiplied by 3. The counters are stored consecutively per channel. One can disable one or more of the counters using the `counters <commandline.html#term-counters-i0-i1-i2-...>`_ command. The frame size will then be reduced accordingly.
 
 Image size = 10,240 bytes 
    - 10 chips (1 x 10 grid)

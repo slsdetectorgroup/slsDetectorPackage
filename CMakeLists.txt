@@ -215,6 +215,8 @@ else()
 endif()
 
 option(SLS_USE_HDF5 "HDF5 File format" OFF)
+set(SLS_HDF5_FILTER_ID "0" CACHE STRING "HDF5 filter ID (0 disables)")
+set(SLS_HDF5_FILTER_PARAMS "" CACHE STRING "HDF5 filter params, comma-separated")
 option(SLS_BUILD_SHARED_LIBRARIES "Build shared libaries" OFF)
 option(SLS_USE_TEXTCLIENT "Text Client" ON)
 option(SLS_USE_DETECTOR "Detector libs" ON)

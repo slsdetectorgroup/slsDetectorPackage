@@ -7,8 +7,8 @@ Software Architecture
 Introduction
 ------------------------------------
 
-.. figure:: images/System_communication_architecture.png
-   :target: _images/System_communication_architecture.png
+.. figure:: images/System_communication_architecture.svg
+   :target: _images/System_communication_architecture.svg
    :width: 700px
    :align: center
    :alt: System communication architecture
@@ -46,8 +46,8 @@ Next, each component is examined in detail.
 Module
 -------
 
-.. figure:: images/Module_architecture.png
-   :target: _images/Module_architecture.png
+.. figure:: images/Module_architecture.svg
+   :target: _images/Module_architecture.svg
    :width: 700px
    :align: center
    :alt: Module architecture
@@ -66,8 +66,8 @@ The module also includes an FPGA with VHDL firmware (file format depends on the 
 Upgrade
 ^^^^^^^^
 
-.. figure:: images/Soft_upgrade_components.png
-   :target: _images/Soft_upgrade_components.png
+.. figure:: images/Soft_upgrade_components.svg
+   :target: _images/Soft_upgrade_components.svg
    :width: 700px
    :align: center
    :alt: Software Upgrade Components
@@ -97,8 +97,8 @@ When only updating the detector server, use the `updatedetectorserver command <c
 Receiver
 --------
 
-.. figure:: images/Receiver_architecture.png
-   :target: _images/Receiver_architecture.png
+.. figure:: images/Receiver_architecture.svg
+   :target: _images/Receiver_architecture.svg
    :align: center
    :alt: Receiver Architecture
 
@@ -121,8 +121,8 @@ Few characteristics of the receiver:
 Client
 --------
 
-.. figure:: images/Client_architecture.png
-   :target: _images/Client_architecture.png
+.. figure:: images/Client_architecture.svg
+   :target: _images/Client_architecture.svg
    :align: center
    :alt: Client Architecture
 

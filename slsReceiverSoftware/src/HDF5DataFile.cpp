@@ -212,7 +212,7 @@ void HDF5DataFile::CreateFile() {
             // HDF5 filters are dynamically registered --> check if the filter is available
             const auto filterId = static_cast<H5Z_filter_t>(SLS_HDF5_FILTER_ID);
             if (H5Zfilter_avail(filterId) <= 0) {
-                throw RuntimeError("HDF5 filter ID " + std::to_string(SLS_HDF5_FILTER_ID) + " is not available");
+                throw RuntimeError("HDF5 filter ID " + std::to_string(SLS_HDF5_FILTER_ID) + " is not available, check HDF5_PLUGIN_PATH");
             }
 
             // parse generic filter parameters

@@ -4,6 +4,9 @@ namespace sls {
 
 slsDetectorDefs::runStatus MatterhornServerImpl::get_run_status() const {
 
+    // TODO: will also have a scanStatus - scanStatus should be in base
+    // implementation and shared between virtual and actual detector - split
+    // this function into two.
     return slsDetectorDefs::runStatus::IDLE; // TODO: implement
 }
 
@@ -13,6 +16,9 @@ void MatterhornServerImpl::set_module_position_and_update_srcudpmac(
     // position_info = [num_modules_in_y, module_index]
 
     const size_t module_row = position_info[1] % position_info[0];
+    if (position_info[0] <= 0) {
+        throw RuntimeError("Number of modules in y direction cannot be 0.");
+    }
     const size_t module_col = position_info[1] / position_info[0];
 
     try {

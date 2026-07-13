@@ -7,7 +7,7 @@ class VirtualMatterhornServerImpl
     : public BaseMatterhornServerImpl<VirtualMatterhornServerImpl> {
 
   public:
-    VirtualMatterhornServerImpl() = default;
+    VirtualMatterhornServerImpl();
     ~VirtualMatterhornServerImpl() = default;
 
     slsDetectorDefs::runStatus get_run_status() const;

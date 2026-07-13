@@ -62,11 +62,11 @@ class DetectorServerImpl {
 
     void set_source_udp_ip(const uint32_t srcip);
 
+    uint32_t get_source_udp_ip() const;
+
     void set_destination_udp_ip(const uint32_t dstip);
 
     uint32_t get_destination_udp_ip() const;
-
-    uint32_t get_source_udp_ip() const;
 
     void set_destination_udp_mac(const uint64_t dstmac);
 
@@ -76,7 +76,7 @@ class DetectorServerImpl {
 
     uint16_t get_destination_udp_port() const;
 
-    detector_setup_status initial_checks() const;
+    detector_setup_status get_detector_setup_status() const;
 
   protected:
     std::array<UDPInfo, 1>

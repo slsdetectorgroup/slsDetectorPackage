@@ -30,6 +30,11 @@ inline ProcessedResult send_ok(ServerInterface &socket) {
         static_cast<ReturnCode>(socket.Send(ReturnCode::OK))};
 }
 
+template <typename T>
+inline ProcessedResult send_result(ServerInterface &socket, const T &value) {
+    return ProcessedResult{static_cast<ReturnCode>(socket.sendResult(value))};
+}
+
 /**
  * @brief TCPInterface class handles communication and processing of commands
  * from Client to Server.

@@ -11,8 +11,6 @@ namespace sls {
 class MatterhornServer : public BaseMatterhornServer<MatterhornServer> {
 
   public:
-    using ImplType = MatterhornServerImpl;
-
     /**
      * Constructor
      * Starts up a Matterhorn server.
@@ -23,11 +21,6 @@ class MatterhornServer : public BaseMatterhornServer<MatterhornServer> {
     explicit MatterhornServer(uint16_t port = DEFAULT_TCP_CNTRL_PORTNO);
 
     ~MatterhornServer() = default;
-
-  private:
-    ImplType *getImpl() { return this->getDerivedImpl(); }
-
-    const ImplType *getImpl() const { return this->getDerivedImpl(); }
 };
 
 } // namespace sls

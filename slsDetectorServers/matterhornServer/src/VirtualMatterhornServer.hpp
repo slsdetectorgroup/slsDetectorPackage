@@ -8,7 +8,6 @@ class VirtualMatterhornServer
     : public BaseMatterhornServer<VirtualMatterhornServer> {
 
   public:
-    using ImplType = VirtualMatterhornServerImpl;
     /**
      * Constructor
      * Starts up a virtual Matterhorn server.
@@ -19,11 +18,6 @@ class VirtualMatterhornServer
     explicit VirtualMatterhornServer(uint16_t port = DEFAULT_TCP_CNTRL_PORTNO);
 
     ~VirtualMatterhornServer() = default;
-
-  private:
-    ImplType *getImpl() { return this->getDerivedImpl(); }
-
-    const ImplType *getImpl() const { return this->getDerivedImpl(); }
 };
 
 } // namespace sls

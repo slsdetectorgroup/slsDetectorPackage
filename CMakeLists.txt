@@ -453,6 +453,7 @@ if (SLS_USE_GUI)
 endif (SLS_USE_GUI)
 
 if (SLS_USE_MATTERHORN)
+    # TODO cant use add_subdirectory twice - can only build matterhorn server or simulator 
     add_subdirectory(slsDetectorServers/matterhornServer)
 endif() 
 

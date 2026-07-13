@@ -9,13 +9,13 @@ class VirtualMatterhornServer;
 class MatterhornServerImpl;
 class VirtualMatterhornServerImpl;
 
-template <typename DetectorServer> struct implementation_typetrait;
+template <typename DetectorServer> struct implementation_type_trait;
 
-template <> struct implementation_typetrait<MatterhornServer> {
+template <> struct implementation_type_trait<MatterhornServer> {
     using ImplType = MatterhornServerImpl;
 };
 
-template <> struct implementation_typetrait<VirtualMatterhornServer> {
+template <> struct implementation_type_trait<VirtualMatterhornServer> {
     using ImplType = VirtualMatterhornServerImpl;
 };
 

@@ -1,5 +1,6 @@
 #include "DetectorServerImpl.hpp"
 #include "sls/logger.h"
+#include "sls/sls_detector_exceptions.h"
 #include <fmt/format.h>
 
 namespace sls {
@@ -20,7 +21,12 @@ void DetectorServerImpl::createSharedMemory() {
         shm.openSharedMemory(true); // stop server
     } else {
         LOG(logINFOBLUE) << "Creating shared memory for acquisition status";
-        shm.createSharedMemory();
+        try {
+            shm.createSharedMemory();
+        } catch (const SharedMemoryAlreadyExistsError &e) {
+            shm.openSharedMemory(true); // potential race conditions between
+                                        // stop and control server
+        }
     }
 }
 
@@ -77,7 +83,7 @@ uint16_t DetectorServerImpl::get_destination_udp_port() const {
     return udpDetails[0].dstport;
 }
 
-detector_setup_status DetectorServerImpl::initial_checks() const {
+detector_setup_status DetectorServerImpl::get_detector_setup_status() const {
     return detectorSetupStatus;
 }
 

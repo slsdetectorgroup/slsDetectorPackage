@@ -6,6 +6,10 @@
 
 namespace sls {
 
+VirtualMatterhornServerImpl::VirtualMatterhornServerImpl() {
+    this->set_source_udp_ip(LOCALHOSTIP_INT);
+}
+
 slsDetectorDefs::runStatus VirtualMatterhornServerImpl::get_run_status() const {
 
     slsDetectorDefs::runStatus scanstatus{};
@@ -42,7 +46,7 @@ void VirtualMatterhornServerImpl::set_module_position_and_update_srcudpmac(
     if (this->udpDetails[0].srcmac ==
         0) { // only configure if source mac address is not set already
         uint64_t newSrcMac =
-            generate_mac_address_from_module_position(module_row, module_col);
+            generateMacAddressfromModulePosition(module_row, module_col);
 
         this->updateSrcMacAddress(newSrcMac);
     }
@@ -51,8 +55,7 @@ void VirtualMatterhornServerImpl::set_module_position_and_update_srcudpmac(
 void VirtualMatterhornServerImpl::set_source_udp_mac(
     const uint64_t newsrcudpMac) {
 
-    if ((newsrcudpMac << INDIVIDUAL_GROUP_BIT_OFFSET) == 0 &&
-        (newsrcudpMac << UNIVERSAL_LOCAL_BIT_OFFSET) == 1) {
+    if (!isValidMac(newsrcudpMac)) {
         throw RuntimeError("Invalid source MAC address: unicast bit or local "
                            "administration bit is not set");
     }

@@ -17,9 +17,6 @@ VirtualMatterhornServer::VirtualMatterhornServer(uint16_t port)
     // TODO: no init_server function for now is it neccessary to set the init
     // flag
     getImpl()->setupDetector();
-
-    getImpl()->set_source_udp_ip(
-        LOCALHOSTIP_INT); // TODO: should this be done in setupDetector?
 }
 
 } // namespace sls

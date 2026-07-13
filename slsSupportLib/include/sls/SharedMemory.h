@@ -168,7 +168,11 @@ template <typename T> class SharedMemory {
         if (fd < 0) {
             std::string msg =
                 "Create shared memory " + name + " failed: " + strerror(errno);
-            throw SharedMemoryError(msg);
+            if (errno == EEXIST) {
+                throw SharedMemoryAlreadyExistsError(msg);
+            } else {
+                throw SharedMemoryError(msg);
+            }
         }
 
         if (ftruncate(fd, sizeof(T)) < 0) {

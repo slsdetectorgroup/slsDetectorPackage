@@ -270,8 +270,6 @@ void Implementation::setModulePositionId(const int id) {
     streamingPort = DEFAULT_ZMQ_RX_PORTNO + modulePos * portGeometry.x;
 
     if (numModules.y == 0) {
-        LOG(logERROR) << "Number of modules in y direction is 0. Cannot set "
-                         "module position.";
         throw RuntimeError("Number of modules in y direction is 0. Cannot set "
                            "module position.");
     }

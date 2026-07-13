@@ -86,8 +86,11 @@ template <typename DerivedMatterhornServerImpl>
 void BaseMatterhornServerImpl<DerivedMatterhornServerImpl>::setupDetector() {
     // TODO: extend
     try {
+        // TODO: for a stop server command it should not talk to the board ->
+        // add flag.
         set_num_frames(1);
         set_num_triggers(1);
+        set_counter_mask(0xF); // enable counter all counters by default
     } catch (const std::exception &e) {
         LOG(logERROR) << "Failed to setup detector: " << e.what();
         detectorSetupStatus.error_message = std::string(e.what());
@@ -141,12 +144,18 @@ void BaseMatterhornServerImpl<DerivedMatterhornServerImpl>::set_num_frames(
     try {
         busCommunication.writeRegister(Reg::MH_SM_Frames_Reg,
                                        static_cast<uint32_t>(num_frames));
+        auto written_num_frames = busCommunication.readRegister(
+            Reg::MH_SM_Frames_Reg); // check if write was successful
+
+        if (num_frames != static_cast<uint64_t>(written_num_frames)) {
+            throw std::runtime_error(
+                fmt::format("Requested {} frames, but set {}", num_frames,
+                            static_cast<uint64_t>(written_num_frames)));
+        }
     } catch (const std::exception &e) {
         LOG(logERROR) << "Failed to set number of frames: " << e.what();
         throw;
     }
-    // TODO: maybe always check that the value is correctly set by reading back
-    // the register and comparing
 }
 
 template <typename DerivedMatterhornServerImpl>
@@ -155,6 +164,13 @@ void BaseMatterhornServerImpl<DerivedMatterhornServerImpl>::set_num_triggers(
 
     try {
         busCommunication.writeRegister(Reg::MH_SM_Triggers_Reg, num_triggers);
+        auto written_num_triggers = busCommunication.readRegister(
+            Reg::MH_SM_Triggers_Reg); // check if write was successful
+        if (num_triggers != written_num_triggers) {
+            throw std::runtime_error(
+                fmt::format("Requested {} triggers, but set {}", num_triggers,
+                            written_num_triggers));
+        }
     } catch (const std::exception &e) {
         LOG(logERROR) << "Failed to set number of triggers: " << e.what();
         throw;
@@ -273,8 +289,24 @@ void BaseMatterhornServerImpl<DerivedMatterhornServerImpl>::set_module_position(
     try {
         busCommunication.writeRegister(Reg::Frame_HDR_ModCoord_LSB_Reg,
                                        register_value_LSB);
+
+        auto written_register_value_LSB = busCommunication.readRegister(
+            Reg::Frame_HDR_ModCoord_LSB_Reg); // check if write was successful
+
         busCommunication.writeRegister(Reg::Frame_HDR_ModCoord_MSB_Reg,
                                        register_value_MSB);
+
+        auto written_register_value_MSB = busCommunication.readRegister(
+            Reg::Frame_HDR_ModCoord_MSB_Reg); // check if write was successful
+
+        if (register_value_LSB != written_register_value_LSB ||
+            register_value_MSB != written_register_value_MSB) {
+            throw std::runtime_error(
+                fmt::format("LSB: requested {}, but set {}. "
+                            "MSB: requested {}, but set {}",
+                            register_value_LSB, written_register_value_LSB,
+                            register_value_MSB, written_register_value_MSB));
+        }
     } catch (const std::exception &e) {
         LOG(logERROR) << "Failed to write module position register: "
                       << e.what();

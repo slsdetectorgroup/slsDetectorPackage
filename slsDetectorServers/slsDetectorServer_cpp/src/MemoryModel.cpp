@@ -46,9 +46,9 @@ void HardwareMemoryModel::unmapMemory() {
         if (munmap(reinterpret_cast<void *>(
                        const_cast<uint32_t *>(mapped_memory_ptr)),
                    size_memory_space) < 0) {
-            throw RuntimeError(
-                fmt::format("Failed to unmap memory for IP core: {}",
-                            IPCore_base_address)); // TODO: needs ToString
+            LOG(logWARNING)
+                << fmt::format("Failed to unmap memory for IP core: {}",
+                               IPCore_base_address); // TODO: needs ToString
         }
         mapped_memory_ptr = nullptr;
     }

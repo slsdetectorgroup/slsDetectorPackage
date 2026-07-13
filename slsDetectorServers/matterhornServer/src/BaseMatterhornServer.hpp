@@ -49,12 +49,8 @@ class BaseMatterhornServer
     ProcessedResult processFunction(const detFuncs function_id,
                                     ServerInterface &socket);
 
-    using ImplType = typename implementation_typetrait<DerivedServer>::ImplType;
-
-  protected:
-    auto *getImpl() { return this->getDerivedImpl(); }
-
-    const auto *getImpl() const { return this->getDerivedImpl(); }
+    using ImplType =
+        typename implementation_type_trait<DerivedServer>::ImplType;
 
   private:
     DerivedServer *getDerived() { return static_cast<DerivedServer *>(this); }
@@ -94,7 +90,8 @@ BaseMatterhornServer<DerivedServer>::set_counter_mask(ServerInterface &socket) {
     }
 
     try {
-        getImpl()->set_counter_mask(counter_mask);
+        DetectorServer<BaseMatterhornServer<DerivedServer>>::getImpl()
+            ->set_counter_mask(counter_mask);
     } catch (const std::exception &e) {
         return_fail("Failed to set counter mask: " + std::string(e.what()));
     }
@@ -109,13 +106,14 @@ ProcessedResult BaseMatterhornServer<DerivedServer>::get_counter_mask(
     uint32_t counter_mask{};
 
     try {
-        counter_mask = getImpl()->get_counter_mask();
+        counter_mask =
+            DetectorServer<BaseMatterhornServer<DerivedServer>>::getImpl()
+                ->get_counter_mask();
     } catch (const std::exception &e) {
         return_fail("Failed to get counter mask: " + std::string(e.what()));
     }
 
-    return ProcessedResult{
-        static_cast<ReturnCode>(socket.sendResult(counter_mask))};
+    return send_result(socket, counter_mask);
 }
 
 } // namespace sls

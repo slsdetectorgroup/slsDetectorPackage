@@ -1,11 +1,13 @@
 #include "CommandLineOptions.hpp"
 #include MATTERHORN_SERVER_HEADER
+#include "helpers/Helpers.hpp"
 #include "sls/logger.h"
 #include "sls/sls_detector_exceptions.h"
 #include "sls/versionAPI.h"
 #include <semaphore.h>
 
 #include <csignal>
+#include <fmt/format.h>
 #include <signal.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -61,6 +63,9 @@ int main(int argc, char *argv[]) {
     }
 
     LOG(TLogLevel::logINFOMAGENTA) << cli.printOptions();
+
+    // free shared memory from previous run (not removed if detector crashed)
+    freeSharedMemory();
 
     // Register Ctrl+C handler
     std::signal(SIGINT, sigInterruptHandler);

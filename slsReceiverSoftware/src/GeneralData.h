@@ -483,7 +483,6 @@ class MatterhornData : public GeneralData {
         dynamicRange = 16;   // default
         SetCounterMask(0xf); // default all 4 counters enabled
         UpdateImageSize();
-        CalculatefifoDepth();
     };
 
     void SetDynamicRange(int dr) {
@@ -512,6 +511,8 @@ class MatterhornData : public GeneralData {
         imageSize = nPixelsX * nPixelsY * GetPixelDepth();
         LOG(logINFO) << "imageSize: " << imageSize;
         actualImageSize = imageSize;
+
+        CalculatefifoDepth();
 
         packetsPerFrame = imageSize / dataSize;
 

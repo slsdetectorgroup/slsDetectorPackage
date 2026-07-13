@@ -7,7 +7,7 @@ import numpy as np
 from PyQt5 import QtWidgets, QtGui, QtCore, uic
 
 from aare import transform, ReadoutMode 
-from aare._aare import Matterhorn10, Matterhorn02, Moench04
+from aare._aare import Matterhorn10, Matterhorn02, Moench04, Moench05
 
 import pyqtgraph as pg
 from pyctbgui.utils import recordOrApplyPedestal 
@@ -529,6 +529,10 @@ class PlotTab(QtWidgets.QWidget):
             self.mainWindow.nAnalogRows = Moench04.nRows
             self.mainWindow.nAnalogCols = Moench04.nCols
             self.mainWindow.decoder = transform.Moench04AnalogTransform() 
+        elif self.view.comboBoxPlot.currentText() == "Moench05":
+            self.mainWindow.nAnalogRows = Moench05.nRows
+            self.mainWindow.nAnalogCols = Moench05.nCols 
+            self.mainWindow.decoder = transform.Moench05Transform()
 
         try: 
             if hasattr(self.mainWindow.decoder, "compatibility") and callable(getattr(self.mainWindow.decoder, "compatibility")):

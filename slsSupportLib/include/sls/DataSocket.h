@@ -77,8 +77,6 @@ class DataSocket {
 
     std::string Receive(size_t length);
 
-    int read(void *buffer, size_t size);
-    int write(void *buffer, size_t size);
     int setTimeOut(int t_seconds);
     int setReceiveTimeout(int us);
     void close();
@@ -88,6 +86,8 @@ class DataSocket {
   private:
     int sockfd_ = -1;
     int fnum_{0};
+
+    std::string_view errno_name(int e);
 };
 
 }; // namespace sls

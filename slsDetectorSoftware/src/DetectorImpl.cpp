@@ -1101,10 +1101,17 @@ int DetectorImpl::acquire() {
 
         // start receiver
         if (receiver) {
-            Parallel(&Module::startReceiver, {});
-        }
 
-        startProcessingThread(receiver);
+            // to catch dummy zmq packets for disabled ports,
+            // start processing thread before startReceiver
+            if (dataReady != nullptr)
+                startRxZmqProcessingThread();
+
+            Parallel(&Module::startReceiver, {});
+
+            if (dataReady == nullptr)
+                startRxProgressThread();
+        }
 
         // start and read all
         try {
@@ -1289,53 +1296,46 @@ void DetectorImpl::printProgress(double progress) {
     std::cout << '\r' << std::flush;
 }
 
-void DetectorImpl::startProcessingThread(bool receiver) {
+void DetectorImpl::startRxZmqProcessingThread() {
     dataProcessingThread =
-        std::thread(&DetectorImpl::processData, this, receiver);
+        std::thread(&DetectorImpl::readFrameFromReceiver, this);
 }
 
-void DetectorImpl::processData(bool receiver) {
-    if (receiver) {
-        if (dataReady != nullptr) {
-            readFrameFromReceiver();
-        }
-        // only update progress
-        else {
-            LOG(logINFO) << "Type 'q' and hit enter to stop acquisition";
-            double progress = 0;
-            printProgress(progress);
+void DetectorImpl::startRxProgressThread() {
+    dataProcessingThread = std::thread(&DetectorImpl::printRxProgress, this);
+}
 
-            while (true) {
-                // to exit acquire by typing q
-                if (kbhit() != 0) {
-                    if (fgetc(stdin) == 'q') {
-                        LOG(logINFO)
-                            << "Caught the command to stop acquisition";
-                        stopDetector({});
-                    }
-                }
-                // get and print progress
-                double temp =
-                    (double)Parallel(&Module::getReceiverProgress, {0})
-                        .squash();
-                if (temp != progress) {
-                    printProgress(progress);
-                    progress = temp;
-                }
+void DetectorImpl::printRxProgress() {
+    LOG(logINFO) << "Type 'q' and hit enter to stop acquisition";
+    double progress = 0;
+    printProgress(progress);
 
-                // exiting loop
-                if (getJoinThreadFlag()) {
-                    // print progress one final time before exiting
-                    progress =
-                        (double)Parallel(&Module::getReceiverProgress, {0})
-                            .squash();
-                    printProgress(progress);
-                    break;
-                }
-                // otherwise error when connecting to the receiver too fast
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    while (true) {
+        // to exit acquire by typing q
+        if (kbhit() != 0) {
+            if (fgetc(stdin) == 'q') {
+                LOG(logINFO) << "Caught the command to stop acquisition";
+                stopDetector({});
             }
         }
+        // get and print progress
+        double temp =
+            (double)Parallel(&Module::getReceiverProgress, {0}).squash();
+        if (temp != progress) {
+            progress = temp;
+            printProgress(progress);
+        }
+
+        // exiting loop
+        if (getJoinThreadFlag()) {
+            // print progress one final time before exiting
+            progress =
+                (double)Parallel(&Module::getReceiverProgress, {0}).squash();
+            printProgress(progress);
+            break;
+        }
+        // otherwise error when connecting to the receiver too fast
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 }
 
@@ -1616,6 +1616,77 @@ void DetectorImpl::verifyUniqueHost(
 
     for (auto it : hosts) {
         LOG(logDEBUG) << it.first << " " << it.second << std::endl;
+    }
+}
+
+void DetectorImpl::assertTwoUDPDataInterfaces(const std::string &cmd) const {
+    // assert globally
+    auto numInterfaces =
+        Parallel(&Module::getNumberofUDPInterfacesFromShm, {})
+            .tsquash("Inconsistent number of UDP interfaces among modules");
+    if (numInterfaces != 2) {
+        throw RuntimeError(
+            "Cannot " + cmd +
+            ". Change number of udp interfaces to 2 (cmd = numinterfaces).");
+    }
+}
+
+Result<bool> DetectorImpl::getUDPDataStream(const defs::portPosition port,
+                                            Positions pos) const {
+    assertTwoUDPDataInterfaces("get enable/disable UDP ports");
+    return Parallel(&Module::getUDPDataStream, pos, port);
+}
+
+void DetectorImpl::setUDPDataStream(const defs::portPosition port,
+                                    const bool enable, Positions pos) {
+    assertTwoUDPDataInterfaces("set enable/disable UDP ports");
+    Parallel(&Module::setUDPDataStream, pos, port, enable);
+    updateRxUDPDatastreamMetadata();
+}
+
+void DetectorImpl::updateRxUDPDatastreamMetadata() {
+    assertTwoUDPDataInterfaces(
+        "update Disbaled UDP ports metadata in receiver");
+
+    std::vector<int> disable;
+    auto portList = getPortPositionList();
+    if (portList.size() != 2) {
+        throw RuntimeError("Invalid port size. Expected 2.");
+    }
+    // bottom and left is port 0
+    auto port0 = Parallel(&Module::getUDPDataStream, {}, portList[0]);
+    auto port1 = Parallel(&Module::getUDPDataStream, {}, portList[1]);
+
+    // if any of them are disabled
+    if (port0.any(false) || port1.any(false)) {
+        // for each module: if disabled, push port index
+        for (size_t i = 0; i != port0.size(); ++i) {
+            if (!port0[i]) {
+                disable.push_back(i * 2);
+            }
+            if (!port1[i]) {
+                disable.push_back(i * 2 + 1);
+            }
+        }
+    }
+
+    modules[0]->updateRxUDPPortDisableMetadata(disable);
+}
+
+std::vector<int> DetectorImpl::getRxDisabledUDPPortIndices() const {
+    assertTwoUDPDataInterfaces("get Disbaled UDP ports metadata from receiver");
+    return modules[0]->getRxUDPPortDisableMetadata();
+}
+
+std::vector<defs::portPosition> DetectorImpl::getPortPositionList() const {
+    switch (shm()->detType) {
+    case defs::JUNGFRAU:
+    case defs::MOENCH:
+        return std::vector<defs::portPosition>{defs::BOTTOM, defs::TOP};
+    case defs::EIGER:
+        return std::vector<defs::portPosition>{defs::LEFT, defs::RIGHT};
+    default:
+        throw RuntimeError("port Position does not exist for this detector");
     }
 }
 

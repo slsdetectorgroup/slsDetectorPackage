@@ -154,7 +154,9 @@ class ClientInterface : private virtual slsDetectorDefs {
     int get_streaming_hwm(ServerInterface &socket);
     int set_streaming_hwm(ServerInterface &socket);
     int set_all_threshold(ServerInterface &socket);
-    int set_detector_datastream(ServerInterface &socket);
+    void validate_port_position(const portPosition port);
+    int set_port_udp_datastream(ServerInterface &socket);
+    int get_port_udp_datastream(ServerInterface &socket);
     int get_arping(ServerInterface &socket);
     int set_arping(ServerInterface &socket);
     int get_receiver_roi(ServerInterface &socket);
@@ -168,6 +170,8 @@ class ClientInterface : private virtual slsDetectorDefs {
     int set_dbit_reorder(ServerInterface &socket);
     int get_roi_metadata(ServerInterface &socket);
     int set_readout_speed(ServerInterface &socket);
+    int set_udp_port_disable_meta(ServerInterface &socket);
+    int get_udp_port_disable_meta(ServerInterface &socket);
 
     Implementation *impl() {
         if (receiver != nullptr) {

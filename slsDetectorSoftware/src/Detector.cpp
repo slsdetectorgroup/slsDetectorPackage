@@ -1082,17 +1082,17 @@ Result<int> Detector::getNumberofUDPInterfaces(Positions pos) const {
     return pimpl->Parallel(&Module::getNumberofUDPInterfacesFromShm, pos);
 }
 
-void Detector::setNumberofUDPInterfaces(int n, Positions pos) {
+void Detector::setNumberofUDPInterfaces(int n) {
     auto detType = getDetectorType().squash();
     if (detType != defs::JUNGFRAU && detType != defs::MOENCH) {
         throw RuntimeError(
             "Cannot set number of udp interfaces for this detector.");
     }
     // also called by vetostream (for gotthard2)
-    setNumberofUDPInterfaces_(n, pos);
+    setNumberofUDPInterfaces_(n);
 }
 
-void Detector::setNumberofUDPInterfaces_(int n, Positions pos) {
+void Detector::setNumberofUDPInterfaces_(int n) {
     if (!size()) {
         throw RuntimeError("No modules added.");
     }
@@ -1322,6 +1322,24 @@ int Detector::getTransmissionDelay() const {
 
 void Detector::setTransmissionDelay(int step) {
     pimpl->setTransmissionDelay(step);
+}
+
+Result<bool> Detector::getUDPDataStream(const defs::portPosition port,
+                                        Positions pos) const {
+    return pimpl->getUDPDataStream(port, pos);
+}
+
+void Detector::setUDPDataStream(const defs::portPosition port,
+                                const bool enable, Positions pos) {
+    pimpl->setUDPDataStream(port, enable, pos);
+}
+
+std::vector<int> Detector::getRxDisabledUDPPortIndices() const {
+    return pimpl->getRxDisabledUDPPortIndices();
+}
+
+std::vector<defs::portPosition> Detector::getPortPositionList() const {
+    return pimpl->getPortPositionList();
 }
 
 // Receiver
@@ -1762,16 +1780,6 @@ void Detector::setQuad(const bool enable) {
     pimpl->Parallel(&Module::setQuad, {}, enable);
 }
 
-Result<bool> Detector::getDataStream(const defs::portPosition port,
-                                     Positions pos) const {
-    return pimpl->Parallel(&Module::getDataStream, pos, port);
-}
-
-void Detector::setDataStream(const defs::portPosition port, const bool enable,
-                             Positions pos) {
-    pimpl->Parallel(&Module::setDataStream, pos, port, enable);
-}
-
 Result<bool> Detector::getTop(Positions pos) const {
     return pimpl->Parallel(&Module::getTop, pos);
 }
@@ -2024,7 +2032,7 @@ void Detector::setVetoStream(defs::streamingInterface interface,
              ? 2
              : 1);
     if (numinterfaces != old_numinterfaces) {
-        setNumberofUDPInterfaces_(numinterfaces, pos);
+        setNumberofUDPInterfaces_(numinterfaces);
     }
 }
 

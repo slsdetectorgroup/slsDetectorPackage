@@ -188,7 +188,7 @@ void Implementation::SetupListener(int i) {
     listener[i]->SetEthernetInterface(eth[i]);
     listener[i]->SetActivate(activated);
     listener[i]->SetIsOutsideRoi(portRois[i].noRoi());
-    listener[i]->SetDetectorDatastream(detectorDataStream[i]);
+    listener[i]->SetUDPDatastream(udpDataStream[i]);
     listener[i]->SetSilentMode(silentMode);
 }
 
@@ -606,7 +606,7 @@ double Implementation::getProgress() const {
     double progress = 0;
     int index = 0;
     for (const auto &it : listener) {
-        if (detectorDataStream[index] && it->GetStartedFlag()) {
+        if (udpDataStream[index] && it->GetStartedFlag()) {
             progress += (it->GetListenedIndex() + 1) / totalFrames;
         }
         ++index;
@@ -746,9 +746,9 @@ void Implementation::stopReceiver() {
             std::string summary;
             if (!activated) {
                 summary = "\n\tDeactivated Receiver";
-            } else if (!detectorDataStream[i]) {
-                summary = (i == 0 ? "\n\tDeactivated Left Port"
-                                  : "\n\tDeactivated Right Port");
+            } else if (!udpDataStream[i]) {
+                summary = "\n\tDeactivated " +
+                          ToString(generalData->udpPortTypes[i]) + " Port";
             } else if (portRois[i].noRoi()) {
                 summary = "\n\tNo Roi on Port[" + std::to_string(i) + ']';
             } else {
@@ -900,9 +900,9 @@ void Implementation::SetupWriter() {
             std::string fileNamePrefix =
                 fileName + "_d" +
                 std::to_string(modulePos * generalData->numUDPInterfaces + i);
-            dataProcessor[i]->CreateFirstFiles(
-                filePath, fileNamePrefix, fileIndex, overwriteEnable,
-                silentMode, detectorDataStream[i]);
+            dataProcessor[i]->CreateFirstFiles(filePath, fileNamePrefix,
+                                               fileIndex, overwriteEnable,
+                                               silentMode, udpDataStream[i]);
         }
     } catch (const RuntimeError &e) {
         shutDownUDPSockets();
@@ -999,6 +999,10 @@ void Implementation::StartMasterWriter() {
             masterAttributes.gates = numberOfGates;
             masterAttributes.additionalJsonHeader = additionalJsonHeader;
             masterAttributes.readoutSpeed = readoutSpeed;
+            masterAttributes.udpPortTypes = {
+                ToString(generalData->udpPortTypes[0]),
+                ToString(generalData->udpPortTypes[1])};
+            masterAttributes.udpPortsDisabled = udpPortsDisabledMetadata;
 
             // create master file
             masterFileName = dataProcessor[0]->CreateMasterFile(
@@ -1099,6 +1103,11 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
 
         // number of portrois should be equal to number of interfaces
         ResetRois();
+
+        // reset udp data stream
+        udpDataStream[0] = true;
+        udpDataStream[1] = true;
+        udpPortsDisabledMetadata.clear();
 
         // create threads
         for (int i = 0; i < generalData->numUDPInterfaces; ++i) {
@@ -1636,15 +1645,15 @@ void Implementation::setTenGigaEnable(const bool b) {
         // datastream can be disabled/enabled only for Eiger 10GbE
         if (generalData->detType == EIGER) {
             if (!b) {
-                detectorDataStream[LEFT] = 1;
-                detectorDataStream[RIGHT] = 1;
+                udpDataStream[LEFT] = true;
+                udpDataStream[RIGHT] = true;
             } else {
-                detectorDataStream[LEFT] = detectorDataStream10GbE[LEFT];
-                detectorDataStream[RIGHT] = detectorDataStream10GbE[RIGHT];
+                udpDataStream[LEFT] = udpDataStream10GbE[LEFT];
+                udpDataStream[RIGHT] = udpDataStream10GbE[RIGHT];
             }
             LOG(logDEBUG) << "Detector datastream updated [Left: "
-                          << ToString(detectorDataStream[LEFT])
-                          << ", Right: " << ToString(detectorDataStream[RIGHT])
+                          << ToString(udpDataStream[LEFT])
+                          << ", Right: " << ToString(udpDataStream[RIGHT])
                           << "]";
         }
     }
@@ -1694,24 +1703,49 @@ void Implementation::setActivate(bool enable) {
     LOG(logINFO) << "Activation: " << (activated ? "enabled" : "disabled");
 }
 
-bool Implementation::getDetectorDataStream(const portPosition port) const {
-    int index = (port == LEFT ? 0 : 1);
-    return detectorDataStream[index];
+bool Implementation::getUDPDataStream(const portPosition port) const {
+    int index = 0;
+    // top goes to udp port 2 (jungfrau & moench)
+    if (port == TOP || port == RIGHT)
+        index = 1;
+    return udpDataStream[index];
 }
 
-void Implementation::setDetectorDataStream(const portPosition port,
-                                           const bool enable) {
-    int index = (port == LEFT ? 0 : 1);
-    detectorDataStream10GbE[index] = enable;
-    LOG(logINFO) << "Detector 10GbE datastream (" << ToString(port)
-                 << " Port): " << ToString(detectorDataStream10GbE[index]);
-    // update datastream for 10g
-    if (generalData->tengigaEnable) {
-        detectorDataStream[index] = detectorDataStream10GbE[index];
-        LOG(logDEBUG) << "Detector datastream updated ["
-                      << (index == 0 ? "Left" : "Right")
-                      << "] : " << ToString(detectorDataStream[index]);
+void Implementation::setUDPDataStream(const portPosition port,
+                                      const bool enable) {
+    int index = 0;
+    // top goes to udp port 2 (jungfrau & moench)
+    if (port == TOP || port == RIGHT)
+        index = 1;
+    // jungfrau and moench: straightforward
+    if (generalData->detType != EIGER) {
+        udpDataStream[index] = enable;
+        LOG(logINFO) << "Detector datastream (" << ToString(port)
+                     << " Port): " << ToString(udpDataStream[index]);
     }
+    // eiger: data stream can be disabled/enabled only for 10GbE
+    else {
+        udpDataStream10GbE[index] = enable;
+        LOG(logINFO) << "Detector 10GbE datastream (" << ToString(port)
+                     << " Port): " << ToString(udpDataStream10GbE[index]);
+        // update datastream for 10g
+        if (generalData->tengigaEnable) {
+            udpDataStream[index] = udpDataStream10GbE[index];
+            LOG(logDEBUG) << "Detector datastream updated (" << ToString(port)
+                          << " Port): " << ToString(udpDataStream[index]);
+        }
+    }
+    for (size_t i = 0; i != listener.size(); ++i)
+        listener[i]->SetUDPDatastream(udpDataStream[i]);
+}
+
+void Implementation::setUDPPortsDisabledMetadata(
+    const std::vector<int> &portsDisabled) {
+    udpPortsDisabledMetadata = portsDisabled;
+}
+
+std::vector<int> Implementation::getUDPPortsDisabledMetadata() const {
+    return udpPortsDisabledMetadata;
 }
 
 int Implementation::getReadNRows() const { return readNRows; }

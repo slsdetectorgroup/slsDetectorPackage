@@ -2433,39 +2433,45 @@ class Detector(CppDetectorApi):
         """
         Get or set UDP data streaming for detector/receiver ports.
 
-        [Eiger]: LEFT, RIGHT - 10GbE UDP ports of the detector
-        [Jungfrau][Moench]: TOP, BOTTOM - UDP ports of the receiver (only when numinterfaces is set to 2)
+        [Eiger]: LEFT, RIGHT - 10GbE UDP ports of the detector.
+        [Jungfrau][Moench]: TOP, BOTTOM - UDP ports of the receiver
+        (only when numinterfaces is set to 2).
 
-        :getter: Returns a dictionary of the UDP data stream enable for all available ports. As usual, list of booleans is returned when different states for multiple modules are found. 
-        
-        :setter: Takes a tuple of (portPosition, bool) to set the UDP data stream enable for a single port.
+        :getter: Returns a dictionary containing the UDP data stream enable state
+            for all available ports. When multiple detector modules are present,
+            identical values are returned as a single boolean. If different
+            values are found, a list of booleans is returned.
+
+        :setter: Takes a tuple of ``(portPosition, bool)`` to set the UDP data
+            stream state for a single port.
 
         Enum: portPosition
 
         Example
-        --------
-        Get UDP streaming for all ports:
+        -------
+        Get UDP streaming state for all ports:
 
-        >>> d.udp_datastream
-        {<portPosition.TOP: 2>: False, <portPosition.BOTTOM: 3>: True}
-    
-        multiple detectors with identical states:
-        >>> d.udp_datastream
-        {<portPosition.TOP: 2>: False, <portPosition.BOTTOM: 3>: True}
+            >>> d.udp_datastream
+            {<portPosition.TOP: 2>: False, <portPosition.BOTTOM: 3>: True}
 
-        multiple detectors with different states:
-        >>> d.udp_datastream
-        {
-            <portPosition.TOP: 2>: [False, True], 
-            <portPosition.BOTTOM: 3>: [True, True]
-        }
+        Multiple detectors with identical states:
 
-        Enable UDP streaming for specific port:
-        >>> from slsdet import portPosition
-        >>> d.udp_datastream = (portPosition.TOP, True)
+            >>> d.udp_datastream
+            {<portPosition.TOP: 2>: False, <portPosition.BOTTOM: 3>: True}
 
-        Disable UDP streaming for specific port:
-        >>> d.udp_datastream = (portPosition.BOTTOM, False)
+        Multiple detectors with different states:
+
+            >>> d.udp_datastream
+            {<portPosition.TOP: 2>: [False, True], <portPosition.BOTTOM: 3>: [True, True]}
+
+        Enable UDP streaming for a specific port:
+
+            >>> from slsdet import portPosition
+            >>> d.udp_datastream = (portPosition.TOP, True)
+
+        Disable UDP streaming for a specific port:
+
+            >>> d.udp_datastream = (portPosition.BOTTOM, False)
         """
         result = {}
         if self.type in [detectorType.JUNGFRAU, detectorType.MOENCH]:

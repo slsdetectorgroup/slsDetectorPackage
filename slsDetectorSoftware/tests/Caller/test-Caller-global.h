@@ -42,29 +42,25 @@ void test_run_with_master_file_checker(Detector &det, F f) {
     auto file_state = acq::default_file_state();
     std::array<defs::fileFormat, 2> formats = {defs::BINARY, defs::HDF5};
 
+    for (const auto &format : formats) {
+        file_state.file_format = format;
+        acq::run(det, acq_state, file_state);
+        std::string fname = acq::get_master_file_name(file_state);
+        if (format == defs::HDF5) {
 #ifdef HDF5C
-    try {
-#endif
-        for (const auto &format : formats) {
-            file_state.file_format = format;
-            acq::run(det, acq_state, file_state);
-            std::string fname = acq::get_master_file_name(file_state);
-            if (format == defs::HDF5) {
-#ifdef HDF5C
-                mf::Checker<mf::H5Context> checker(fname);
-                f(det, acq_state, file_state, checker);
-#endif
-            } else {
-                mf::Checker<mf::JsonContext> checker(fname);
-                f(det, acq_state, file_state, checker);
-            }
+        try {
+            mf::Checker<mf::H5Context> checker(fname);
+            f(det, acq_state, file_state, checker);
+        } catch (H5::Exception &e) {
+            LOG(logERROR) << "HDF5 error: " << e.getDetailMsg();
+            throw;
         }
-#ifdef HDF5C
-    } catch (H5::Exception &e) {
-        LOG(logERROR) << "HDF5 error: " << e.getDetailMsg();
-        throw;
-    }
 #endif
+        } else {
+            mf::Checker<mf::JsonContext> checker(fname);
+            f(det, acq_state, file_state, checker);
+        }
+    }
 }
 
 } // namespace sls

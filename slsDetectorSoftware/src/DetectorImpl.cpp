@@ -1347,8 +1347,8 @@ void DetectorImpl::printRxProgress() {
         double temp =
             (double)Parallel(&Module::getReceiverProgress, {0}).squash();
         if (temp != progress) {
-            printProgress(progress);
             progress = temp;
+            printProgress(progress);
         }
 
         // exiting loop

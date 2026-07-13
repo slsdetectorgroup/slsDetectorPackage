@@ -48,13 +48,13 @@ void test_run_with_master_file_checker(Detector &det, F f) {
         std::string fname = acq::get_master_file_name(file_state);
         if (format == defs::HDF5) {
 #ifdef HDF5C
-        try {
-            mf::Checker<mf::H5Context> checker(fname);
-            f(det, acq_state, file_state, checker);
-        } catch (H5::Exception &e) {
-            LOG(logERROR) << "HDF5 error: " << e.getDetailMsg();
-            throw;
-        }
+            try {
+                mf::Checker<mf::H5Context> checker(fname);
+                f(det, acq_state, file_state, checker);
+            } catch (H5::Exception &e) {
+                LOG(logERROR) << "HDF5 error: " << e.getDetailMsg();
+                throw;
+            }
 #endif
         } else {
             mf::Checker<mf::JsonContext> checker(fname);

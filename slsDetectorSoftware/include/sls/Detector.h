@@ -898,16 +898,19 @@ class Detector {
      */
     void setTransmissionDelay(int step);
 
-    /** [Eiger] Returns whether the 10GbE UDP data stream from detector is enabled. Options: LEFT, RIGHT
-     * [Jungfrau][Moench] Returns whether the UDP data stream from receiver is enabled. Options: TOP, BOTTOM
+    /** [Eiger] Returns whether the 10GbE UDP data stream from detector is
+     * enabled. Options: LEFT, RIGHT [Jungfrau][Moench] Returns whether the UDP
+     * data stream from receiver is enabled. Options: TOP, BOTTOM
      *
      */
     Result<bool> getUDPDataStream(const defs::portPosition port,
                                   Positions pos = {}) const;
 
     /** [Eiger] Enables or disables UDP data streaming from left or right of
-     * 10GbE UDP port of the detector. Default: enabled. Options: LEFT, RIGHT \n 
-     * [Jungfrau][Moench] Enables or disables UDP data streaming from the top or bottom of receiver. Default: enabled. Options: TOP, BOTTOM. This option is available only when numinterfaces is set to 2.
+     * 10GbE UDP port of the detector. Default: enabled. Options: LEFT, RIGHT \n
+     * [Jungfrau][Moench] Enables or disables UDP data streaming from the top or
+     * bottom of receiver. Default: enabled. Options: TOP, BOTTOM. This option
+     * is available only when numinterfaces is set to 2.
      */
     void setUDPDataStream(const defs::portPosition port, const bool enable,
                           Positions pos = {});

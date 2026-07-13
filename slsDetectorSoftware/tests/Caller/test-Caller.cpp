@@ -3157,7 +3157,6 @@ TEST_CASE("udp_datastream", "[.detectorintegration]") {
     }
 }
 
-
 /* ZMQ Streaming Parameters (Receiver<->Client) */
 
 TEST_CASE("zmqport", "[.detectorintegration]") {

@@ -14919,8 +14919,8 @@ std::string Caller::udp_datastream(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << R"V0G0N([left|right|top|bottom] [0, 1]
-	[Eiger] Enable or disable UDP data streaming from the left and/or right detector ports in 10 GbE mode. Options: left, right. Both ports are enabled (1) by default.
-	[Jungfrau][Moench] Enable or disable UDP data streaming from the top and/or bottom receiver interfaces. This option is available only when numinterfaces is set to 2. Options: top, bottom. Both interfaces are enabled (1) by default. )V0G0N"
+	Enables or disables UDP data streaming from left or right of 10GbE UDP port of the detector. Options: left, right. Both ports are enabled (1) by default.
+	Enables or disables UDP data streaming from the top or bottom of receiver. This option is available only when numinterfaces is set to 2. Options: top, bottom. Both interfaces are enabled (1) by default. )V0G0N"
            << std::endl;
         return os.str();
     }

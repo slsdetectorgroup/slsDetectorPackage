@@ -111,7 +111,6 @@
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.currentsource"><code class="docutils literal notranslate"><span class="pre">Detector.currentsource</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.daclist"><code class="docutils literal notranslate"><span class="pre">Detector.daclist</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.dacvalues"><code class="docutils literal notranslate"><span class="pre">Detector.dacvalues</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.datastream"><code class="docutils literal notranslate"><span class="pre">Detector.datastream</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.dbitclk"><code class="docutils literal notranslate"><span class="pre">Detector.dbitclk</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.dbitphase"><code class="docutils literal notranslate"><span class="pre">Detector.dbitphase</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.dbitpipeline"><code class="docutils literal notranslate"><span class="pre">Detector.dbitpipeline</span></code></a></li>
@@ -208,7 +207,6 @@
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.getDacList"><code class="docutils literal notranslate"><span class="pre">Detector.getDacList()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.getDacName"><code class="docutils literal notranslate"><span class="pre">Detector.getDacName()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.getDacNames"><code class="docutils literal notranslate"><span class="pre">Detector.getDacNames()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.getDataStream"><code class="docutils literal notranslate"><span class="pre">Detector.getDataStream()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.getDefaultDac"><code class="docutils literal notranslate"><span class="pre">Detector.getDefaultDac()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.getDelayAfterTrigger"><code class="docutils literal notranslate"><span class="pre">Detector.getDelayAfterTrigger()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.getDelayAfterTriggerLeft"><code class="docutils literal notranslate"><span class="pre">Detector.getDelayAfterTriggerLeft()</span></code></a></li>
@@ -312,6 +310,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.getPeriodLeft"><code class="docutils literal notranslate"><span class="pre">Detector.getPeriodLeft()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.getPolarity"><code class="docutils literal notranslate"><span class="pre">Detector.getPolarity()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.getPortPerModuleGeometry"><code class="docutils literal notranslate"><span class="pre">Detector.getPortPerModuleGeometry()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.getPortPositionList"><code class="docutils literal notranslate"><span class="pre">Detector.getPortPositionList()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.getPortSize"><code class="docutils literal notranslate"><span class="pre">Detector.getPortSize()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.getPowerChip"><code class="docutils literal notranslate"><span class="pre">Detector.getPowerChip()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.getPowerDAC"><code class="docutils literal notranslate"><span class="pre">Detector.getPowerDAC()</span></code></a></li>
@@ -339,6 +338,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.getRxDbitList"><code class="docutils literal notranslate"><span class="pre">Detector.getRxDbitList()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.getRxDbitOffset"><code class="docutils literal notranslate"><span class="pre">Detector.getRxDbitOffset()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.getRxDbitReorder"><code class="docutils literal notranslate"><span class="pre">Detector.getRxDbitReorder()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.getRxDisabledUDPPortIndices"><code class="docutils literal notranslate"><span class="pre">Detector.getRxDisabledUDPPortIndices()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.getRxFifoDepth"><code class="docutils literal notranslate"><span class="pre">Detector.getRxFifoDepth()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.getRxFrameDiscardPolicy"><code class="docutils literal notranslate"><span class="pre">Detector.getRxFrameDiscardPolicy()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.getRxHostname"><code class="docutils literal notranslate"><span class="pre">Detector.getRxHostname()</span></code></a></li>
@@ -403,6 +403,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.getTransmissionDelayLeft"><code class="docutils literal notranslate"><span class="pre">Detector.getTransmissionDelayLeft()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.getTransmissionDelayRight"><code class="docutils literal notranslate"><span class="pre">Detector.getTransmissionDelayRight()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.getTrimEnergies"><code class="docutils literal notranslate"><span class="pre">Detector.getTrimEnergies()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.getUDPDataStream"><code class="docutils literal notranslate"><span class="pre">Detector.getUDPDataStream()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.getUpdateMode"><code class="docutils literal notranslate"><span class="pre">Detector.getUpdateMode()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.getUseReceiverFlag"><code class="docutils literal notranslate"><span class="pre">Detector.getUseReceiverFlag()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.getVeto"><code class="docutils literal notranslate"><span class="pre">Detector.getVeto()</span></code></a></li>
@@ -590,7 +591,6 @@
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.setDBITPipeline"><code class="docutils literal notranslate"><span class="pre">Detector.setDBITPipeline()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.setDacName"><code class="docutils literal notranslate"><span class="pre">Detector.setDacName()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.setDacNames"><code class="docutils literal notranslate"><span class="pre">Detector.setDacNames()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.setDataStream"><code class="docutils literal notranslate"><span class="pre">Detector.setDataStream()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.setDefaultDac"><code class="docutils literal notranslate"><span class="pre">Detector.setDefaultDac()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.setDefaultRateCorrection"><code class="docutils literal notranslate"><span class="pre">Detector.setDefaultRateCorrection()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.setDelayAfterTrigger"><code class="docutils literal notranslate"><span class="pre">Detector.setDelayAfterTrigger()</span></code></a></li>
@@ -728,6 +728,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.setTransmissionDelayLeft"><code class="docutils literal notranslate"><span class="pre">Detector.setTransmissionDelayLeft()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.setTransmissionDelayRight"><code class="docutils literal notranslate"><span class="pre">Detector.setTransmissionDelayRight()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.setTrimEnergies"><code class="docutils literal notranslate"><span class="pre">Detector.setTrimEnergies()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.setUDPDataStream"><code class="docutils literal notranslate"><span class="pre">Detector.setUDPDataStream()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.setUpdateMode"><code class="docutils literal notranslate"><span class="pre">Detector.setUpdateMode()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.setVeto"><code class="docutils literal notranslate"><span class="pre">Detector.setVeto()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.setVetoAlgorithm"><code class="docutils literal notranslate"><span class="pre">Detector.setVetoAlgorithm()</span></code></a></li>
@@ -784,6 +785,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.txdelay_left"><code class="docutils literal notranslate"><span class="pre">Detector.txdelay_left</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.txdelay_right"><code class="docutils literal notranslate"><span class="pre">Detector.txdelay_right</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.type"><code class="docutils literal notranslate"><span class="pre">Detector.type</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.udp_datastream"><code class="docutils literal notranslate"><span class="pre">Detector.udp_datastream</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.udp_dstip"><code class="docutils literal notranslate"><span class="pre">Detector.udp_dstip</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.udp_dstip2"><code class="docutils literal notranslate"><span class="pre">Detector.udp_dstip2</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.udp_dstmac"><code class="docutils literal notranslate"><span class="pre">Detector.udp_dstmac</span></code></a></li>
@@ -1079,7 +1081,7 @@ Also changes clkdiv 2, 3, 4</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">burstperiod</span> <span class="o">=</span> <span class="mf">5e-07</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># using timedelta (up to microseconds precision)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datatime</span><span class="w"> </span><span class="kn">import</span> <span class="n">timedelta</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">timedelta</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">burstperiod</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">microseconds</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># using DurationWrapper to set in seconds</span>
@@ -1281,7 +1283,7 @@ Enum: collectionMode</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">compdisabletime</span> <span class="o">=</span> <span class="mf">5e-07</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># using timedelta (up to microseconds precision)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datatime</span><span class="w"> </span><span class="kn">import</span> <span class="n">timedelta</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">timedelta</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">compdisabletime</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">microseconds</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># using DurationWrapper to set in seconds</span>
@@ -1386,12 +1388,6 @@ see python/examples/use_currentsource.py</p>
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="slsdet.Detector.datastream">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">datastream</span></span><a class="headerlink" href="#slsdet.Detector.datastream" title="Link to this definition"></a></dt>
-<dd><p>[Eiger] Enables or disables data streaming from left or/and right side of detector for 10GbE mode. 1 (enabled) by default.</p>
-</dd></dl>
-
-<dl class="py property">
 <dt class="sig sig-object py" id="slsdet.Detector.dbitclk">
 <span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">dbitclk</span></span><a class="headerlink" href="#slsdet.Detector.dbitclk" title="Link to this definition"></a></dt>
 <dd><p>[Ctb][Xilinx Ctb] Sets clock for latching the digital bits.</p>
@@ -1464,7 +1460,7 @@ d.define_reg(‘myreg’,addr=RegisterAddress(0x6))’)</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">delay</span> <span class="o">=</span> <span class="mf">5e-07</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># using timedelta (up to microseconds precision)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datatime</span><span class="w"> </span><span class="kn">import</span> <span class="n">timedelta</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">timedelta</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">delay</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">microseconds</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># using DurationWrapper to set in seconds</span>
@@ -1611,7 +1607,7 @@ d.define_reg(‘myreg’,addr=RegisterAddress(0x6))’)</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">exptime</span> <span class="o">=</span> <span class="mf">5e-07</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># using timedelta (up to microseconds precision)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datatime</span><span class="w"> </span><span class="kn">import</span> <span class="n">timedelta</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">timedelta</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">exptime</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">microseconds</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># using DurationWrapper to set in seconds</span>
@@ -1885,7 +1881,7 @@ Enum: gainMode</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">gatedelay</span> <span class="o">=</span> <span class="mf">5e-07</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># using timedelta (up to microseconds precision)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datatime</span><span class="w"> </span><span class="kn">import</span> <span class="n">timedelta</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">timedelta</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">gatedelay</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">microseconds</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># using DurationWrapper to set in seconds</span>
@@ -2195,11 +2191,6 @@ d.getBit(mybit)</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="slsdet.Detector.getDacNames">
 <span class="sig-name descname"><span class="pre">getDacNames</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">slsdet._slsdet.CppDetectorApi</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#slsdet.Detector.getDacNames" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="slsdet.Detector.getDataStream">
-<span class="sig-name descname"><span class="pre">getDataStream</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">slsdet._slsdet.CppDetectorApi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pyenums.html#slsdet.portPosition" title="slsdet._slsdet.slsDetectorDefs.portPosition"><span class="pre">slsdet._slsdet.slsDetectorDefs.portPosition</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#slsdet.Detector.getDataStream" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -2728,6 +2719,11 @@ d.getBit(mybit)</p>
 <dd></dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="slsdet.Detector.getPortPositionList">
+<span class="sig-name descname"><span class="pre">getPortPositionList</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">slsdet._slsdet.CppDetectorApi</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="pyenums.html#slsdet.portPosition" title="slsdet._slsdet.slsDetectorDefs.portPosition"><span class="pre">slsdet._slsdet.slsDetectorDefs.portPosition</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#slsdet.Detector.getPortPositionList" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="slsdet.Detector.getPortSize">
 <span class="sig-name descname"><span class="pre">getPortSize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">slsdet._slsdet.CppDetectorApi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">slsdet._slsdet.xy</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#slsdet.Detector.getPortSize" title="Link to this definition"></a></dt>
 <dd></dd></dl>
@@ -2860,6 +2856,11 @@ d.getBit(mybit)</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="slsdet.Detector.getRxDbitReorder">
 <span class="sig-name descname"><span class="pre">getRxDbitReorder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">slsdet._slsdet.CppDetectorApi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#slsdet.Detector.getRxDbitReorder" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slsdet.Detector.getRxDisabledUDPPortIndices">
+<span class="sig-name descname"><span class="pre">getRxDisabledUDPPortIndices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">slsdet._slsdet.CppDetectorApi</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#slsdet.Detector.getRxDisabledUDPPortIndices" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -3180,6 +3181,11 @@ d.getBit(mybit)</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="slsdet.Detector.getTrimEnergies">
 <span class="sig-name descname"><span class="pre">getTrimEnergies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">slsdet._slsdet.CppDetectorApi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#slsdet.Detector.getTrimEnergies" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slsdet.Detector.getUDPDataStream">
+<span class="sig-name descname"><span class="pre">getUDPDataStream</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">slsdet._slsdet.CppDetectorApi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pyenums.html#slsdet.portPosition" title="slsdet._slsdet.slsDetectorDefs.portPosition"><span class="pre">slsdet._slsdet.slsDetectorDefs.portPosition</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#slsdet.Detector.getUDPDataStream" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -4041,7 +4047,7 @@ see python/examples/use_pedestalmode.py</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">period</span> <span class="o">=</span> <span class="mf">5e-07</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># using timedelta (up to microseconds precision)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datatime</span><span class="w"> </span><span class="kn">import</span> <span class="n">timedelta</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">timedelta</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">period</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">microseconds</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># using DurationWrapper to set in seconds</span>
@@ -4968,11 +4974,6 @@ d.setBit(mybit)</p>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="slsdet.Detector.setDataStream">
-<span class="sig-name descname"><span class="pre">setDataStream</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">slsdet._slsdet.CppDetectorApi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pyenums.html#slsdet.portPosition" title="slsdet._slsdet.slsDetectorDefs.portPosition"><span class="pre">slsdet._slsdet.slsDetectorDefs.portPosition</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#slsdet.Detector.setDataStream" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="slsdet.Detector.setDefaultDac">
 <span class="sig-name descname"><span class="pre">setDefaultDac</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#slsdet.Detector.setDefaultDac" title="Link to this definition"></a></dt>
 <dd><p>Overloaded function.</p>
@@ -5244,7 +5245,7 @@ d.setBit(mybit)</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slsdet.Detector.setNumberofUDPInterfaces">
-<span class="sig-name descname"><span class="pre">setNumberofUDPInterfaces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">slsdet._slsdet.CppDetectorApi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#slsdet.Detector.setNumberofUDPInterfaces" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">setNumberofUDPInterfaces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">slsdet._slsdet.CppDetectorApi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#slsdet.Detector.setNumberofUDPInterfaces" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -5683,6 +5684,11 @@ d.setBit(mybit)</p>
 <dd></dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="slsdet.Detector.setUDPDataStream">
+<span class="sig-name descname"><span class="pre">setUDPDataStream</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">slsdet._slsdet.CppDetectorApi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pyenums.html#slsdet.portPosition" title="slsdet._slsdet.slsDetectorDefs.portPosition"><span class="pre">slsdet._slsdet.slsDetectorDefs.portPosition</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#slsdet.Detector.setUDPDataStream" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="slsdet.Detector.setUpdateMode">
 <span class="sig-name descname"><span class="pre">setUpdateMode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">slsdet._slsdet.CppDetectorApi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#slsdet.Detector.setUpdateMode" title="Link to this definition"></a></dt>
 <dd></dd></dl>
@@ -5847,7 +5853,7 @@ runStatus.IDLE</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">storagecell_delay</span> <span class="o">=</span> <span class="mf">5e-07</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># using timedelta (up to microseconds precision)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datatime</span><span class="w"> </span><span class="kn">import</span> <span class="n">timedelta</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">timedelta</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">storagecell_delay</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">microseconds</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># using DurationWrapper to set in seconds</span>
@@ -5906,7 +5912,7 @@ Options 0-max. max is 15 (default) for chipv1.0 and 3 (default) for chipv1.1.</p
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">subdeadtime</span> <span class="o">=</span> <span class="mf">5e-07</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># using timedelta (up to microseconds precision)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datatime</span><span class="w"> </span><span class="kn">import</span> <span class="n">timedelta</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">timedelta</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">subdeadtime</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span> <span class="o">=</span> <span class="mf">1.23</span><span class="p">,</span> <span class="n">microseconds</span> <span class="o">=</span> <span class="mi">203</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># using DurationWrapper to set in seconds</span>
@@ -5949,7 +5955,7 @@ Options 0-max. max is 15 (default) for chipv1.0 and 3 (default) for chipv1.1.</p
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">subexptime</span> <span class="o">=</span> <span class="mf">5e-07</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># using timedelta (up to microseconds precision)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datatime</span><span class="w"> </span><span class="kn">import</span> <span class="n">timedelta</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">timedelta</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">subexptime</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span> <span class="o">=</span> <span class="mf">1.23</span><span class="p">,</span> <span class="n">microseconds</span> <span class="o">=</span> <span class="mi">203</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># using DurationWrapper to set in seconds</span>
@@ -6259,6 +6265,53 @@ Enum: detectorType
 <dd class="field-odd"><p>Not implemented</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="slsdet.Detector.udp_datastream">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">udp_datastream</span></span><a class="headerlink" href="#slsdet.Detector.udp_datastream" title="Link to this definition"></a></dt>
+<dd><p>Get or set UDP data streaming for detector/receiver ports.</p>
+<p>[Eiger]: LEFT, RIGHT - 10GbE UDP ports of the detector.
+[Jungfrau][Moench]: TOP, BOTTOM - UDP ports of the receiver
+(only when numinterfaces is set to 2).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Getter<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Returns a dictionary containing the UDP data stream enable state
+for all available ports. When multiple detector modules are present,
+identical values are returned as a single boolean. If different
+values are found, a list of booleans is returned.</p>
+</dd>
+<dt class="field-even">Setter<span class="colon">:</span></dt>
+<dd class="field-even"><p>Takes a tuple of <code class="docutils literal notranslate"><span class="pre">(portPosition,</span> <span class="pre">bool)</span></code> to set the UDP data
+stream state for a single port.</p>
+</dd>
+</dl>
+<p>Enum: portPosition</p>
+<p class="rubric">Example</p>
+<p>Get UDP streaming state for all ports:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">udp_datastream</span>
+<span class="go">{&lt;portPosition.TOP: 2&gt;: False, &lt;portPosition.BOTTOM: 3&gt;: True}</span>
+</pre></div>
+</div>
+<p>Multiple detectors with identical states:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">udp_datastream</span>
+<span class="go">{&lt;portPosition.TOP: 2&gt;: False, &lt;portPosition.BOTTOM: 3&gt;: True}</span>
+</pre></div>
+</div>
+<p>Multiple detectors with different states:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">udp_datastream</span>
+<span class="go">{&lt;portPosition.TOP: 2&gt;: [False, True], &lt;portPosition.BOTTOM: 3&gt;: [True, True]}</span>
+</pre></div>
+</div>
+<p>Enable UDP streaming for a specific port:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">slsdet</span><span class="w"> </span><span class="kn">import</span> <span class="n">portPosition</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">udp_datastream</span> <span class="o">=</span> <span class="p">(</span><span class="n">portPosition</span><span class="o">.</span><span class="n">TOP</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Disable UDP streaming for a specific port:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">udp_datastream</span> <span class="o">=</span> <span class="p">(</span><span class="n">portPosition</span><span class="o">.</span><span class="n">BOTTOM</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py property">

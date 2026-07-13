@@ -464,10 +464,6 @@
 <div class="line">Gets the values for every dac for this detector.</div>
 </div>
 </dd>
-<dt id="term-datastream-left-right-0-1">datastream [left|right] [0, 1]<a class="headerlink" href="#term-datastream-left-right-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
-<div class="line">[Eiger] Enables or disables data streaming from left or/and right side of detector for 10 GbE mode. 1 (enabled) by default.</div>
-</div>
-</dd>
 <dt id="term-dbitclk-n_clk-optional-unit-Hz-default-kHz-MHz">dbitclk [n_clk] [(optional unit) Hz(default)|kHz|MHz]<a class="headerlink" href="#term-dbitclk-n_clk-optional-unit-Hz-default-kHz-MHz" title="Link to this term"></a></dt><dd><div class="line-block">
 <div class="line">[Ctb][Xilinx Ctb]  Clock for latching the digital bits.</div>
 </div>
@@ -1674,6 +1670,11 @@
 <div class="line">Clears udp destination details on the detector.</div>
 </div>
 </dd>
+<dt id="term-udp_datastream-left-right-top-bottom-0-1">udp_datastream [left|right|top|bottom] [0, 1]<a class="headerlink" href="#term-udp_datastream-left-right-top-bottom-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">Enables or disables UDP data streaming from left or right of 10GbE UDP port of the detector. Options: left, right. Both ports are enabled (1) by default.</div>
+<div class="line">Enables or disables UDP data streaming from the top or bottom of receiver. This option is available only when numinterfaces is set to 2. Options: top, bottom. Both interfaces are enabled (1) by default.</div>
+</div>
+</dd>
 <dt id="term-udp_dstip-x.x.x.x-or-auto">udp_dstip [x.x.x.x] or auto<a class="headerlink" href="#term-udp_dstip-x.x.x.x-or-auto" title="Link to this term"></a></dt><dd><div class="line-block">
 <div class="line">Ip address of the receiver (destination) udp interface. If ‘auto’ used, then ip is set to ip of rx_hostname.</div>
 </div>
@@ -1936,391 +1937,394 @@
 <tr class="row-odd"><td><p>cyclesl</p></td>
 <td><p>triggersl</p></td>
 </tr>
-<tr class="row-even"><td><p>defaultdacs</p></td>
+<tr class="row-even"><td><p>datastream</p></td>
+<td><p>udp_datastream</p></td>
+</tr>
+<tr class="row-odd"><td><p>defaultdacs</p></td>
 <td><p>resetdacs</p></td>
 </tr>
-<tr class="row-odd"><td><p>detectorip</p></td>
+<tr class="row-even"><td><p>detectorip</p></td>
 <td><p>udp_srcip</p></td>
 </tr>
-<tr class="row-even"><td><p>detectorip2</p></td>
+<tr class="row-odd"><td><p>detectorip2</p></td>
 <td><p>udp_srcip2</p></td>
 </tr>
-<tr class="row-odd"><td><p>detectormac</p></td>
+<tr class="row-even"><td><p>detectormac</p></td>
 <td><p>udp_srcmac</p></td>
 </tr>
-<tr class="row-even"><td><p>detectormac2</p></td>
+<tr class="row-odd"><td><p>detectormac2</p></td>
 <td><p>udp_srcmac2</p></td>
 </tr>
-<tr class="row-odd"><td><p>detectornumber</p></td>
+<tr class="row-even"><td><p>detectornumber</p></td>
 <td><p>serialnumber</p></td>
 </tr>
-<tr class="row-even"><td><p>detectorversion</p></td>
+<tr class="row-odd"><td><p>detectorversion</p></td>
 <td><p>firmwareversion</p></td>
 </tr>
-<tr class="row-odd"><td><p>detsizechan</p></td>
+<tr class="row-even"><td><p>detsizechan</p></td>
 <td><p>detsize</p></td>
 </tr>
-<tr class="row-even"><td><p>digitest</p></td>
+<tr class="row-odd"><td><p>digitest</p></td>
 <td><p>imagetest</p></td>
 </tr>
-<tr class="row-odd"><td><p>enablefwrite</p></td>
+<tr class="row-even"><td><p>enablefwrite</p></td>
 <td><p>fwrite</p></td>
 </tr>
-<tr class="row-even"><td><p>fileformat</p></td>
+<tr class="row-odd"><td><p>fileformat</p></td>
 <td><p>fformat</p></td>
 </tr>
-<tr class="row-odd"><td><p>filter</p></td>
+<tr class="row-even"><td><p>filter</p></td>
 <td><p>filterresistor</p></td>
 </tr>
-<tr class="row-even"><td><p>flags</p></td>
+<tr class="row-odd"><td><p>flags</p></td>
 <td><p>romode</p></td>
 </tr>
-<tr class="row-odd"><td><p>flippeddatax</p></td>
+<tr class="row-even"><td><p>flippeddatax</p></td>
 <td><p>fliprows</p></td>
 </tr>
-<tr class="row-even"><td><p>flowcontrol_10g</p></td>
+<tr class="row-odd"><td><p>flowcontrol_10g</p></td>
 <td><p>flowcontrol10g</p></td>
 </tr>
-<tr class="row-odd"><td><p>frameindex</p></td>
+<tr class="row-even"><td><p>frameindex</p></td>
 <td><p>rx_frameindex</p></td>
 </tr>
-<tr class="row-even"><td><p>framescaught</p></td>
+<tr class="row-odd"><td><p>framescaught</p></td>
 <td><p>rx_framescaught</p></td>
 </tr>
-<tr class="row-odd"><td><p>i_a</p></td>
+<tr class="row-even"><td><p>i_a</p></td>
 <td><p>im_a</p></td>
 </tr>
-<tr class="row-even"><td><p>i_b</p></td>
+<tr class="row-odd"><td><p>i_b</p></td>
 <td><p>im_b</p></td>
 </tr>
-<tr class="row-odd"><td><p>i_c</p></td>
+<tr class="row-even"><td><p>i_c</p></td>
 <td><p>im_c</p></td>
 </tr>
-<tr class="row-even"><td><p>i_d</p></td>
+<tr class="row-odd"><td><p>i_d</p></td>
 <td><p>im_d</p></td>
 </tr>
-<tr class="row-odd"><td><p>i_io</p></td>
+<tr class="row-even"><td><p>i_io</p></td>
 <td><p>im_io</p></td>
 </tr>
-<tr class="row-even"><td><p>ibias_sfp</p></td>
+<tr class="row-odd"><td><p>ibias_sfp</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>index</p></td>
+<tr class="row-even"><td><p>index</p></td>
 <td><p>findex</p></td>
 </tr>
-<tr class="row-even"><td><p>iodelay</p></td>
+<tr class="row-odd"><td><p>iodelay</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>masterfile</p></td>
+<tr class="row-even"><td><p>masterfile</p></td>
 <td><p>fmaster</p></td>
 </tr>
-<tr class="row-even"><td><p>nframes</p></td>
+<tr class="row-odd"><td><p>nframes</p></td>
 <td><p>framecounter</p></td>
 </tr>
-<tr class="row-odd"><td><p>now</p></td>
+<tr class="row-even"><td><p>now</p></td>
 <td><p>runtime</p></td>
 </tr>
-<tr class="row-even"><td><p>outdir</p></td>
+<tr class="row-odd"><td><p>outdir</p></td>
 <td><p>fpath</p></td>
 </tr>
-<tr class="row-odd"><td><p>overwrite</p></td>
+<tr class="row-even"><td><p>overwrite</p></td>
 <td><p>foverwrite</p></td>
 </tr>
-<tr class="row-even"><td><p>patternX</p></td>
+<tr class="row-odd"><td><p>patternX</p></td>
 <td><p>pattern</p></td>
 </tr>
-<tr class="row-odd"><td><p>r_discardpolicy</p></td>
+<tr class="row-even"><td><p>r_discardpolicy</p></td>
 <td><p>rx_discardpolicy</p></td>
 </tr>
-<tr class="row-even"><td><p>r_framesperfile</p></td>
+<tr class="row-odd"><td><p>r_framesperfile</p></td>
 <td><p>rx_framesperfile</p></td>
 </tr>
-<tr class="row-odd"><td><p>r_lastclient</p></td>
+<tr class="row-even"><td><p>r_lastclient</p></td>
 <td><p>rx_lastclient</p></td>
 </tr>
-<tr class="row-even"><td><p>r_lock</p></td>
+<tr class="row-odd"><td><p>r_lock</p></td>
 <td><p>rx_lock</p></td>
 </tr>
-<tr class="row-odd"><td><p>r_padding</p></td>
+<tr class="row-even"><td><p>r_padding</p></td>
 <td><p>rx_padding</p></td>
 </tr>
-<tr class="row-even"><td><p>r_readfreq</p></td>
+<tr class="row-odd"><td><p>r_readfreq</p></td>
 <td><p>rx_zmqfreq</p></td>
 </tr>
-<tr class="row-odd"><td><p>r_silent</p></td>
+<tr class="row-even"><td><p>r_silent</p></td>
 <td><p>rx_silent</p></td>
 </tr>
-<tr class="row-even"><td><p>readnlines</p></td>
+<tr class="row-odd"><td><p>readnlines</p></td>
 <td><p>readnrows</p></td>
 </tr>
-<tr class="row-odd"><td><p>receiver</p></td>
+<tr class="row-even"><td><p>receiver</p></td>
 <td><p>rx_status</p></td>
 </tr>
-<tr class="row-even"><td><p>receiverversion</p></td>
+<tr class="row-odd"><td><p>receiverversion</p></td>
 <td><p>rx_version</p></td>
 </tr>
-<tr class="row-odd"><td><p>resmat</p></td>
+<tr class="row-even"><td><p>resmat</p></td>
 <td><p>partialreset</p></td>
 </tr>
-<tr class="row-even"><td><p>rx_datastream</p></td>
+<tr class="row-odd"><td><p>rx_datastream</p></td>
 <td><p>rx_zmqstream</p></td>
 </tr>
-<tr class="row-odd"><td><p>rx_readfreq</p></td>
+<tr class="row-even"><td><p>rx_readfreq</p></td>
 <td><p>rx_zmqfreq</p></td>
 </tr>
-<tr class="row-even"><td><p>rx_udpip</p></td>
+<tr class="row-odd"><td><p>rx_udpip</p></td>
 <td><p>udp_dstip</p></td>
 </tr>
-<tr class="row-odd"><td><p>rx_udpip2</p></td>
+<tr class="row-even"><td><p>rx_udpip2</p></td>
 <td><p>udp_dstip2</p></td>
 </tr>
-<tr class="row-even"><td><p>rx_udpmac</p></td>
+<tr class="row-odd"><td><p>rx_udpmac</p></td>
 <td><p>udp_dstmac</p></td>
 </tr>
-<tr class="row-odd"><td><p>rx_udpmac2</p></td>
+<tr class="row-even"><td><p>rx_udpmac2</p></td>
 <td><p>udp_dstmac2</p></td>
 </tr>
-<tr class="row-even"><td><p>rx_udpport</p></td>
+<tr class="row-odd"><td><p>rx_udpport</p></td>
 <td><p>udp_dstport</p></td>
 </tr>
-<tr class="row-odd"><td><p>rx_udpport2</p></td>
+<tr class="row-even"><td><p>rx_udpport2</p></td>
 <td><p>udp_dstport2</p></td>
 </tr>
-<tr class="row-even"><td><p>rxb_lb</p></td>
+<tr class="row-odd"><td><p>rxb_lb</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>rxb_rb</p></td>
+<tr class="row-even"><td><p>rxb_rb</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>settingsdir</p></td>
+<tr class="row-odd"><td><p>settingsdir</p></td>
 <td><p>settingspath</p></td>
 </tr>
-<tr class="row-odd"><td><p>softwareversion</p></td>
+<tr class="row-even"><td><p>softwareversion</p></td>
 <td><p>detectorserverversion</p></td>
 </tr>
-<tr class="row-even"><td><p>speed</p></td>
+<tr class="row-odd"><td><p>speed</p></td>
 <td><p>readoutspeed</p></td>
 </tr>
-<tr class="row-odd"><td><p>startingfnum</p></td>
+<tr class="row-even"><td><p>startingfnum</p></td>
 <td><p>nextframenumber</p></td>
 </tr>
-<tr class="row-even"><td><p>storagecells</p></td>
+<tr class="row-odd"><td><p>storagecells</p></td>
 <td><p>extrastoragecells</p></td>
 </tr>
-<tr class="row-odd"><td><p>thisversion</p></td>
+<tr class="row-even"><td><p>thisversion</p></td>
 <td><p>clientversion</p></td>
 </tr>
-<tr class="row-even"><td><p>timestamp</p></td>
+<tr class="row-odd"><td><p>timestamp</p></td>
 <td><p>frametime</p></td>
 </tr>
-<tr class="row-odd"><td><p>trimdir</p></td>
+<tr class="row-even"><td><p>trimdir</p></td>
 <td><p>settingspath</p></td>
 </tr>
-<tr class="row-even"><td><p>txndelay_frame</p></td>
+<tr class="row-odd"><td><p>txndelay_frame</p></td>
 <td><p>txdelay_frame</p></td>
 </tr>
-<tr class="row-odd"><td><p>txndelay_left</p></td>
+<tr class="row-even"><td><p>txndelay_left</p></td>
 <td><p>txdelay_left</p></td>
 </tr>
-<tr class="row-even"><td><p>txndelay_right</p></td>
+<tr class="row-odd"><td><p>txndelay_right</p></td>
 <td><p>txdelay_right</p></td>
 </tr>
-<tr class="row-odd"><td><p>vb_comp</p></td>
+<tr class="row-even"><td><p>vb_comp</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vb_comp_adc</p></td>
+<tr class="row-odd"><td><p>vb_comp_adc</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vb_comp_fe</p></td>
+<tr class="row-even"><td><p>vb_comp_fe</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vb_cs</p></td>
+<tr class="row-odd"><td><p>vb_cs</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vb_ds</p></td>
+<tr class="row-even"><td><p>vb_ds</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vb_opa_1st</p></td>
+<tr class="row-odd"><td><p>vb_opa_1st</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vb_opa_fd</p></td>
+<tr class="row-even"><td><p>vb_opa_fd</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vb_pixbuf</p></td>
+<tr class="row-odd"><td><p>vb_pixbuf</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vb_sda</p></td>
+<tr class="row-even"><td><p>vb_sda</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vbp_colbuf</p></td>
+<tr class="row-odd"><td><p>vbp_colbuf</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vcal</p></td>
+<tr class="row-even"><td><p>vcal</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vcal_n</p></td>
+<tr class="row-odd"><td><p>vcal_n</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vcal_p</p></td>
+<tr class="row-even"><td><p>vcal_p</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vcall</p></td>
+<tr class="row-odd"><td><p>vcall</p></td>
 <td><p>vcal</p></td>
 </tr>
-<tr class="row-odd"><td><p>vcas</p></td>
+<tr class="row-even"><td><p>vcas</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vcasc_sfp</p></td>
+<tr class="row-odd"><td><p>vcasc_sfp</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vcassh</p></td>
+<tr class="row-even"><td><p>vcassh</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vcmp_ll</p></td>
+<tr class="row-odd"><td><p>vcmp_ll</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vcmp_lr</p></td>
+<tr class="row-even"><td><p>vcmp_lr</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vcmp_rl</p></td>
+<tr class="row-odd"><td><p>vcmp_rl</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vcmp_rr</p></td>
+<tr class="row-even"><td><p>vcmp_rr</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vcn</p></td>
+<tr class="row-odd"><td><p>vcn</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vcom_adc1</p></td>
+<tr class="row-even"><td><p>vcom_adc1</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vcom_adc2</p></td>
+<tr class="row-odd"><td><p>vcom_adc2</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vcom_cds</p></td>
+<tr class="row-even"><td><p>vcom_cds</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vcp</p></td>
+<tr class="row-odd"><td><p>vcp</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vdcsh</p></td>
+<tr class="row-even"><td><p>vdcsh</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vdd_prot</p></td>
+<tr class="row-odd"><td><p>vdd_prot</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vhighvoltage</p></td>
+<tr class="row-even"><td><p>vhighvoltage</p></td>
 <td><p>highvoltage</p></td>
 </tr>
-<tr class="row-even"><td><p>vicin</p></td>
+<tr class="row-odd"><td><p>vicin</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>viinsh</p></td>
+<tr class="row-even"><td><p>viinsh</p></td>
 <td><p>vishaper</p></td>
 </tr>
-<tr class="row-even"><td><p>vin_cm</p></td>
+<tr class="row-odd"><td><p>vin_cm</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vin_com</p></td>
+<tr class="row-even"><td><p>vin_com</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vipre</p></td>
+<tr class="row-odd"><td><p>vipre</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vipre_cds</p></td>
+<tr class="row-even"><td><p>vipre_cds</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vipre_out</p></td>
+<tr class="row-odd"><td><p>vipre_out</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vis</p></td>
+<tr class="row-even"><td><p>vis</p></td>
 <td><p>vishaper</p></td>
 </tr>
-<tr class="row-even"><td><p>vishaper</p></td>
+<tr class="row-odd"><td><p>vishaper</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vout_cm</p></td>
+<tr class="row-even"><td><p>vout_cm</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vph</p></td>
+<tr class="row-odd"><td><p>vph</p></td>
 <td><p>vcal_p</p></td>
 </tr>
-<tr class="row-odd"><td><p>vpl</p></td>
+<tr class="row-even"><td><p>vpl</p></td>
 <td><p>vcal_n</p></td>
 </tr>
-<tr class="row-even"><td><p>vpreamp</p></td>
+<tr class="row-odd"><td><p>vpreamp</p></td>
 <td><p>vrpreamp</p></td>
 </tr>
-<tr class="row-odd"><td><p>vref_cds</p></td>
+<tr class="row-even"><td><p>vref_cds</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vref_comp</p></td>
+<tr class="row-odd"><td><p>vref_comp</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vref_comp_fe</p></td>
+<tr class="row-even"><td><p>vref_comp_fe</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vref_ds</p></td>
+<tr class="row-odd"><td><p>vref_ds</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vref_h_adc</p></td>
+<tr class="row-even"><td><p>vref_h_adc</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vref_l_adc</p></td>
+<tr class="row-odd"><td><p>vref_l_adc</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vref_prech</p></td>
+<tr class="row-even"><td><p>vref_prech</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vref_rstore</p></td>
+<tr class="row-odd"><td><p>vref_rstore</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vrf</p></td>
+<tr class="row-even"><td><p>vrf</p></td>
 <td><p>vrpreamp</p></td>
 </tr>
-<tr class="row-even"><td><p>vrpreamp</p></td>
+<tr class="row-odd"><td><p>vrpreamp</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vrs</p></td>
+<tr class="row-even"><td><p>vrs</p></td>
 <td><p>vrshaper</p></td>
 </tr>
-<tr class="row-even"><td><p>vrshaper</p></td>
+<tr class="row-odd"><td><p>vrshaper</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vrshaper_n</p></td>
+<tr class="row-even"><td><p>vrshaper_n</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vshaper</p></td>
+<tr class="row-odd"><td><p>vshaper</p></td>
 <td><p>vrshaper</p></td>
 </tr>
-<tr class="row-odd"><td><p>vshaperneg</p></td>
+<tr class="row-even"><td><p>vshaperneg</p></td>
 <td><p>vrshaper_n</p></td>
 </tr>
-<tr class="row-even"><td><p>vsvn</p></td>
+<tr class="row-odd"><td><p>vsvn</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vsvp</p></td>
+<tr class="row-even"><td><p>vsvp</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vtgstv</p></td>
+<tr class="row-odd"><td><p>vtgstv</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vth1</p></td>
+<tr class="row-even"><td><p>vth1</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vth2</p></td>
+<tr class="row-odd"><td><p>vth2</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vth3</p></td>
+<tr class="row-even"><td><p>vth3</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vthreshold</p></td>
+<tr class="row-odd"><td><p>vthreshold</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vtr</p></td>
+<tr class="row-even"><td><p>vtr</p></td>
 <td><p>vtrim</p></td>
 </tr>
-<tr class="row-even"><td><p>vtrim</p></td>
+<tr class="row-odd"><td><p>vtrim</p></td>
 <td><p>dac</p></td>
 </tr>
 </tbody>

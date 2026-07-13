@@ -2431,9 +2431,9 @@ class Detector(CppDetectorApi):
     @property
     def udp_datastream(self):
         """
-        [Eiger] Enable or disable UDP data streaming from the left and/or right detector ports in 10 GbE mode. Both ports are enabled by default. Options: LEFT, RIGHT.
-
-        [Jungfrau][Moench] Enable or disable UDP data streaming from the top and/or bottom receiver interfaces. This option is available only when numinterfaces is set to 2. Both ports are enabled by default. Options: TOP, BOTTOM.
+        [Eiger]Enables or disables UDP data streaming from left or right of 10GbE UDP port of the detector. 
+        Default: enabled. Options: LEFT, RIGHT
+        [Jungfrau][Moench] Enables or disables UDP data streaming from the top or bottom of receiver. Default: enabled. Options: TOP, BOTTOM. This option is available only when numinterfaces is set to 2.
 
         Enum: portPosition
 

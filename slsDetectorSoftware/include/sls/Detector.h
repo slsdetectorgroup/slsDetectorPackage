@@ -898,31 +898,32 @@ class Detector {
      */
     void setTransmissionDelay(int step);
 
-    /** [Eiger] Module Level disable. Options: LEFT, RIGHT
-     * [Jungfrau][Moench] Only Receiver level disable. Options: TOP, BOTTOM
+    /** [Eiger] Returns whether the 10GbE UDP data stream from detector is enabled. Options: LEFT, RIGHT
+     * [Jungfrau][Moench] Returns whether the UDP data stream from receiver is enabled. Options: TOP, BOTTOM
      *
      */
     Result<bool> getUDPDataStream(const defs::portPosition port,
                                   Positions pos = {}) const;
 
-    /** [Eiger] enable or disable UDP data streaming from left or right of
-     * detector for 10GbE. Default: enabled \n [Jungfrau][Moench] Enable/Disable
-     * UDP data streaming from the top or bottom of receiver. Default: enabled.
-     * Disabling of any port works only if number of interfaces is 2.
+    /** [Eiger] Enables or disables UDP data streaming from left or right of
+     * 10GbE UDP port of the detector. Default: enabled. Options: LEFT, RIGHT \n 
+     * [Jungfrau][Moench] Enables or disables UDP data streaming from the top or bottom of receiver. Default: enabled. Options: TOP, BOTTOM. This option is available only when numinterfaces is set to 2.
      */
     void setUDPDataStream(const defs::portPosition port, const bool enable,
                           Positions pos = {});
 
     /** List of disabled UDP ports with index (moduleIndex * 2 + portIndex),
-     * where portIndex is 0 for BOTTOM/LEFT port, and 1 for TOP/RIGHT port
+     * where portIndex is 0 for BOTTOM/LEFT port, and 1 for TOP/RIGHT port.
+     * It is the index with 'd' in the file name when writing data. \n
      * [Eiger] LEFT, RIGHT
-     * [Jungfrau][Moench] TOP, BOTTOM, but throws for a single UDP interface
+     * [Jungfrau][Moench] TOP, BOTTOM
+     * This feature is available only when numinterfaces is set to 2.
      */
     std::vector<int> getRxDisabledUDPPortIndices() const;
 
     /** list of possible port positions.
-     * [Eiger] TOP, BOTTOM
-     * [Jungfrau][Moench] LEFT, RIGHT
+     * [Eiger] LEFT, RIGHT
+     * [Jungfrau][Moench] TOP, BOTTOM
      */
     std::vector<defs::portPosition> getPortPositionList() const;
     ///@}

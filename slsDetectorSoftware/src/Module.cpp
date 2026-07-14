@@ -1646,6 +1646,10 @@ std::vector<defs::ROI> Module::getRxROI() const {
     auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
     client.Send(F_RECEIVER_GET_RECEIVER_ROI);
     client.setFnum(F_RECEIVER_GET_RECEIVER_ROI);
+    if (client.Receive<int>() == FAIL) {
+        throw ReceiverError("Receiver " + std::to_string(moduleIndex) +
+                            " returned error: " + client.readErrorMessage());
+    }
     auto nPorts = client.Receive<int>();
     std::vector<ROI> retval(nPorts);
     if (nPorts > 0)
@@ -1695,6 +1699,10 @@ std::vector<slsDetectorDefs::ROI> Module::getRxROIMetadata() const {
     auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
     client.Send(F_RECEIVER_GET_ROI_METADATA);
     client.setFnum(F_RECEIVER_GET_ROI_METADATA);
+    if (client.Receive<int>() == FAIL) {
+        throw ReceiverError("Receiver " + std::to_string(moduleIndex) +
+                            " returned error: " + client.readErrorMessage());
+    }
     auto size = client.Receive<int>();
     std::vector<slsDetectorDefs::ROI> retval(size);
     if (size > 0)

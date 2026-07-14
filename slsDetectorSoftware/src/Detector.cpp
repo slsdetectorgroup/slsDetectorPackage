@@ -1103,8 +1103,8 @@ void Detector::setNumberofUDPInterfaces_(int n) {
     bool previouslyReceiverStreaming = false;
     uint16_t rxStartingPort = 0;
     if (useReceiver) {
-        previouslyReceiverStreaming = getRxZmqDataStream(pos).squash(true);
-        setRxZmqDataStream(false, pos);
+        previouslyReceiverStreaming = getRxZmqDataStream().squash(true);
+        setRxZmqDataStream(false);
         rxStartingPort = getRxZmqPort({0}).squash(0);
     }
     // client
@@ -1112,7 +1112,7 @@ void Detector::setNumberofUDPInterfaces_(int n) {
     uint16_t clientStartingPort = getClientZmqPort({0}).squash(0);
     pimpl->setDataStreamingToClient(false);
 
-    pimpl->Parallel(&Module::setNumberofUDPInterfaces, pos, n);
+    pimpl->Parallel(&Module::setNumberofUDPInterfaces, {}, n);
 
     // ensure receiver zmq socket ports are multiplied by 2 (2 interfaces)
     setClientZmqPort(clientStartingPort, -1);
@@ -1125,7 +1125,7 @@ void Detector::setNumberofUDPInterfaces_(int n) {
         pimpl->setDataStreamingToClient(true);
     }
     if (useReceiver && previouslyReceiverStreaming) {
-        setRxZmqDataStream(true, pos);
+        setRxZmqDataStream(true);
     }
 }
 

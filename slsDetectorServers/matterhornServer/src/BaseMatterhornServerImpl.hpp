@@ -7,11 +7,13 @@
 #include "defs/RegisterDefs.hpp"
 #include "sls/versionAPI.h"
 #include "utils/HelperFunctions.hpp"
+#include "utils/type_traits.hpp"
 #include <cstdint>
 #include <string>
 
 namespace sls {
 
+template <bool isStopServer>
 class VirtualMatterhornServerImpl; // forward declare
 
 template <typename DerivedMatterhornServerImpl>
@@ -47,11 +49,12 @@ class BaseMatterhornServerImpl : public DetectorServerImpl {
     slsDetectorDefs::rxParameters get_receiver_parameters() const;
 
   protected:
-    using MemoryModel =
-        std::conditional_t<std::is_same_v<DerivedMatterhornServerImpl,
-                                          VirtualMatterhornServerImpl>,
-                           VirtualMemoryModel<uint32_t>,
-                           HardwareMemoryModel>; // 32 bit registers
+    using MemoryModel = std::conditional_t<
+        std::is_same_v<DerivedMatterhornServerImpl,
+                       VirtualMatterhornServerImpl<
+                           is_stop_server<DerivedMatterhornServerImpl>::value>>,
+        VirtualMemoryModel<uint32_t>,
+        HardwareMemoryModel>; // 32 bit registers
 
     // TODO: for now in MatterhornServer and not generic Server but can be
     // templated on different IPCore types for each detector
@@ -60,7 +63,8 @@ class BaseMatterhornServerImpl : public DetectorServerImpl {
 
     using SPICommunicationClass = std::conditional_t<
         std::is_same_v<DerivedMatterhornServerImpl,
-                       VirtualMatterhornServerImpl>,
+                       VirtualMatterhornServerImpl<
+                           is_stop_server<DerivedMatterhornServerImpl>::value>>,
         VirtualSPICommunication<MatterhornDefs::MatterhornSPIRegisters>,
         HardwareSPICommunication>;
 
@@ -69,6 +73,10 @@ class BaseMatterhornServerImpl : public DetectorServerImpl {
   private:
     static constexpr uint8_t numUDPInterfaces =
         1; // only one udp per module for now
+
+    /// @brief true if the derived server is a stop server, false otherwise
+    static constexpr bool isStopServer =
+        is_stop_server<DerivedMatterhornServerImpl>::value;
 };
 
 template <typename DerivedMatterhornServerImpl>
@@ -86,11 +94,12 @@ template <typename DerivedMatterhornServerImpl>
 void BaseMatterhornServerImpl<DerivedMatterhornServerImpl>::setupDetector() {
     // TODO: extend
     try {
-        // TODO: for a stop server command it should not talk to the board ->
-        // add flag.
-        set_num_frames(1);
-        set_num_triggers(1);
-        set_counter_mask(0xF); // enable counter all counters by default
+        // stop server does not talk to the board
+        if constexpr (!isStopServer) {
+            set_num_frames(1);
+            set_num_triggers(1);
+            set_counter_mask(0xF); // enable counter all counters by default
+        }
     } catch (const std::exception &e) {
         LOG(logERROR) << "Failed to setup detector: " << e.what();
         detectorSetupStatus.error_message = std::string(e.what());

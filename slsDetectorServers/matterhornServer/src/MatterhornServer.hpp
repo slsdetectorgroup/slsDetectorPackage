@@ -8,7 +8,9 @@
 
 namespace sls {
 
-class MatterhornServer : public BaseMatterhornServer<MatterhornServer> {
+template <bool isStopServer = false>
+class MatterhornServer
+    : public BaseMatterhornServer<MatterhornServer<isStopServer>> {
 
   public:
     /**
@@ -22,5 +24,18 @@ class MatterhornServer : public BaseMatterhornServer<MatterhornServer> {
 
     ~MatterhornServer() = default;
 };
+
+template <bool isStopServer>
+MatterhornServer<isStopServer>::MatterhornServer(uint16_t port)
+    : BaseMatterhornServer<MatterhornServer<isStopServer>>(
+          std::make_unique<MatterhornServerImpl<isStopServer>>(), port) {
+
+    // should maybe be part of the constructor?
+    this->tcpInterface->startTCPServer();
+
+    // TODO: no init_server function for now is it neccessary to set the init
+    // flag
+    this->getImpl()->setupDetector();
+}
 
 } // namespace sls

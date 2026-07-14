@@ -80,7 +80,7 @@ int main(int argc, char *argv[]) {
 
         LOG(TLogLevel::logINFOBLUE) << "Stop Server [" << opts.port + 1 << "]";
         try {
-            MATTERHORN_SERVER_CLASS stopServer(opts.port + 1);
+            MATTERHORN_SERVER_CLASS<true> stopServer(opts.port + 1);
             while (!interruption) {
                 pause(); // wait for signal to exit
             }

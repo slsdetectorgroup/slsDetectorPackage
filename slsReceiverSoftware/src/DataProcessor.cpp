@@ -153,14 +153,14 @@ void DataProcessor::CreateFirstFiles(const std::filesystem::path &filePath,
                                      const uint64_t fileIndex,
                                      const bool overWriteEnable,
                                      const bool silentMode,
-                                     const bool detectorDataStream) {
+                                     const bool udpDataStream) {
     if (dataFile == nullptr) {
         throw RuntimeError("file object not contstructed");
     }
     CloseFiles();
 
     // deactivated (half module/ single port or no roi), dont write file
-    if (!activated || !detectorDataStream || isOutsideRoi) {
+    if (!activated || !udpDataStream || isOutsideRoi) {
         return;
     }
 

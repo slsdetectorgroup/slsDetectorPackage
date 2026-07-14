@@ -279,6 +279,10 @@ class Module : public virtual slsDetectorDefs {
     void setTransmissionDelayLeft(int value);
     int getTransmissionDelayRight() const;
     void setTransmissionDelayRight(int value);
+    bool getUDPDataStream(const portPosition port) const;
+    void setUDPDataStream(const portPosition port, const bool enable);
+    void updateRxUDPPortDisableMetadata(const std::vector<int> &disable);
+    std::vector<int> getRxUDPPortDisableMetadata() const;
 
     /**************************************************
      *                                                *
@@ -388,8 +392,6 @@ class Module : public virtual slsDetectorDefs {
     void pulseChip(int n_pulses = 0);
     bool getQuad() const;
     void setQuad(const bool enable);
-    bool getDataStream(const portPosition port) const;
-    void setDataStream(const portPosition port, const bool enable);
     bool getTop() const;
     void setTop(bool value);
 

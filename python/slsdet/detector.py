@@ -622,7 +622,7 @@ class Detector(CppDetectorApi):
         >>> d.exptime = 5e-07
         >>> 
         >>> # using timedelta (up to microseconds precision)
-        >>> from datatime import timedelta
+        >>> from datetime import timedelta
         >>> d.exptime = timedelta(seconds = 1, microseconds = 3)
         >>> 
         >>> # using DurationWrapper to set in seconds
@@ -674,7 +674,7 @@ class Detector(CppDetectorApi):
         >>> d.period = 5e-07
         >>> 
         >>> # using timedelta (up to microseconds precision)
-        >>> from datatime import timedelta
+        >>> from datetime import timedelta
         >>> d.period = timedelta(seconds = 1, microseconds = 3)
         >>> 
         >>> # using DurationWrapper to set in seconds
@@ -740,7 +740,7 @@ class Detector(CppDetectorApi):
         >>> d.delay = 5e-07
         >>> 
         >>> # using timedelta (up to microseconds precision)
-        >>> from datatime import timedelta
+        >>> from datetime import timedelta
         >>> d.delay = timedelta(seconds = 1, microseconds = 3)
         >>> 
         >>> # using DurationWrapper to set in seconds
@@ -2429,19 +2429,63 @@ class Detector(CppDetectorApi):
     """
 
     @property
-    def datastream(self):
+    def udp_datastream(self):
         """
-        datastream [left|right] [0, 1]
-	    [Eiger] Enables or disables data streaming from left or/and right side of detector for 10GbE mode. 1 (enabled) by default.
+        Get or set UDP data streaming for detector/receiver ports.
+
+        [Eiger]: LEFT, RIGHT - 10GbE UDP ports of the detector.
+        [Jungfrau][Moench]: TOP, BOTTOM - UDP ports of the receiver
+        (only when numinterfaces is set to 2).
+
+        :getter: Returns a dictionary containing the UDP data stream enable state
+            for all available ports. When multiple detector modules are present,
+            identical values are returned as a single boolean. If different
+            values are found, a list of booleans is returned.
+
+        :setter: Takes a tuple of ``(portPosition, bool)`` to set the UDP data
+            stream state for a single port.
+
+        Enum: portPosition
+
+        Example
+        -------
+        Get UDP streaming state for all ports:
+
+            >>> d.udp_datastream
+            {<portPosition.TOP: 2>: False, <portPosition.BOTTOM: 3>: True}
+
+        Multiple detectors with identical states:
+
+            >>> d.udp_datastream
+            {<portPosition.TOP: 2>: False, <portPosition.BOTTOM: 3>: True}
+
+        Multiple detectors with different states:
+
+            >>> d.udp_datastream
+            {<portPosition.TOP: 2>: [False, True], <portPosition.BOTTOM: 3>: [True, True]}
+
+        Enable UDP streaming for a specific port:
+
+            >>> from slsdet import portPosition
+            >>> d.udp_datastream = (portPosition.TOP, True)
+
+        Disable UDP streaming for a specific port:
+
+            >>> d.udp_datastream = (portPosition.BOTTOM, False)
         """
         result = {}
-        for port in [defs.LEFT, defs.RIGHT]:
-            result[port] = element_if_equal(self.getDataStream(port))
+        if self.type in [detectorType.JUNGFRAU, detectorType.MOENCH]:
+            ports = [defs.TOP, defs.BOTTOM]
+        else:
+            ports = [defs.LEFT, defs.RIGHT]     
+
+        for port in ports:
+            result[port] = element_if_equal(self.getUDPDataStream(port))
         return result
 
-    @datastream.setter
-    def datastream(self, value):
-        ut.set_using_dict(self.setDataStream, *value)
+    @udp_datastream.setter
+    def udp_datastream(self, value):
+        self.setUDPDataStream(*value)
 
     @property
     @element
@@ -2473,7 +2517,7 @@ class Detector(CppDetectorApi):
         >>> d.subexptime = 5e-07
         >>> 
         >>> # using timedelta (up to microseconds precision)
-        >>> from datatime import timedelta
+        >>> from datetime import timedelta
         >>> d.subexptime = timedelta(seconds = 1.23, microseconds = 203)
         >>> 
         >>> # using DurationWrapper to set in seconds
@@ -2539,7 +2583,7 @@ class Detector(CppDetectorApi):
         >>> d.subdeadtime = 5e-07
         >>> 
         >>> # using timedelta (up to microseconds precision)
-        >>> from datatime import timedelta
+        >>> from datetime import timedelta
         >>> d.subdeadtime = timedelta(seconds = 1.23, microseconds = 203)
         >>> 
         >>> # using DurationWrapper to set in seconds
@@ -2736,7 +2780,7 @@ class Detector(CppDetectorApi):
         >>> d.compdisabletime = 5e-07
         >>> 
         >>> # using timedelta (up to microseconds precision)
-        >>> from datatime import timedelta
+        >>> from datetime import timedelta
         >>> d.compdisabletime = timedelta(seconds = 1, microseconds = 3)
         >>> 
         >>> # using DurationWrapper to set in seconds
@@ -2829,7 +2873,7 @@ class Detector(CppDetectorApi):
         >>> d.storagecell_delay = 5e-07
         >>> 
         >>> # using timedelta (up to microseconds precision)
-        >>> from datatime import timedelta
+        >>> from datetime import timedelta
         >>> d.storagecell_delay = timedelta(seconds = 1, microseconds = 3)
         >>> 
         >>> # using DurationWrapper to set in seconds
@@ -3175,7 +3219,7 @@ class Detector(CppDetectorApi):
         >>> d.burstperiod = 5e-07
         >>> 
         >>> # using timedelta (up to microseconds precision)
-        >>> from datatime import timedelta
+        >>> from datetime import timedelta
         >>> d.burstperiod = timedelta(seconds = 1, microseconds = 3)
         >>> 
         >>> # using DurationWrapper to set in seconds
@@ -3335,7 +3379,7 @@ class Detector(CppDetectorApi):
         >>> d.gatedelay = 5e-07
         >>> 
         >>> # using timedelta (up to microseconds precision)
-        >>> from datatime import timedelta
+        >>> from datetime import timedelta
         >>> d.gatedelay = timedelta(seconds = 1, microseconds = 3)
         >>> 
         >>> # using DurationWrapper to set in seconds

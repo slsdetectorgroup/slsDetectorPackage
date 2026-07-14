@@ -193,6 +193,8 @@ class GeneralData {
         slsDetectorDefs::NO_DISCARD};
     /* actual image size after ctboffset and ctbreorder */
     uint32_t actualImageSize{0};
+    /* bottom & top  or left & right  for 2 interfaces */
+    std::array<defs::portPosition, 2> udpPortTypes{defs::LEFT, defs::RIGHT};
     GeneralData(){};
     virtual ~GeneralData(){};
 
@@ -344,6 +346,7 @@ class JungfrauData : public GeneralData {
         fifoDepth = 2500;
         standardheader = true;
         maxRowsPerReadout = 512;
+        udpPortTypes = {defs::BOTTOM, defs::TOP};
         UpdateImageSize();
     };
 
@@ -376,6 +379,7 @@ class MoenchData : public GeneralData {
         standardheader = true;
         maxRowsPerReadout = 400;
         frameDiscardMode = slsDetectorDefs::DISCARD_PARTIAL_FRAMES;
+        udpPortTypes = {defs::BOTTOM, defs::TOP};
         UpdateImageSize();
     };
 

@@ -1,29 +1,15 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
-#include "acquire/ExpectedState.h"
-#include "checks/MasterFileChecks.h"
-
 #include "sls/Detector.h"
 #include "sls/ToString.h"
-#include "sls/logger.h"
+#include "test-Caller-global.h"
 
 #include "catch.hpp"
-#include <filesystem>
-#include <fstream>
-#include <rapidjson/document.h>
-#include <rapidjson/error/en.h>
-#include <sstream>
 #include <string>
-
-#ifdef HDF5C
-#include "H5Cpp.h"
-#endif
 
 namespace sls {
 
-namespace mf = sls::test::master_file;
 namespace acq = sls::test::acquire;
-namespace checks = sls::test::checks;
 
 TEST_CASE("check_master_file_attributes",
           "[.detectorintegration][.disable_check_data_file]") {
@@ -31,10 +17,6 @@ TEST_CASE("check_master_file_attributes",
     Detector det;
     auto detType = det.getDetectorType().squash(defs::GENERIC);
     INFO("Testing master file attributes with " << ToString(detType));
-
-    // currently num frame = 1 (default)
-    auto acq_state = acq::default_acquisition_state();
-    auto file_state = acq::default_file_state();
 
     // if ctb, set to default and restore after test
     std::optional<acq::CTBState> ctb_state = std::nullopt;
@@ -44,36 +26,75 @@ TEST_CASE("check_master_file_attributes",
     }
     acq::CTBStateGuard ctb_guard(det, ctb_state);
 
-    // binary => /tmp/sls_test_master_0.json
-    file_state.file_format = defs::BINARY;
-    acq::run(det, acq_state, file_state);
+    test_run_with_master_file_checker(
+        det, [&](auto &det, auto &acq_state, auto &file_state, auto &checker) {
+            // get expected state of parameters and check against master file
+            auto expected_state = acq::build_expected_state(
+                det, acq_state, file_state, ctb_state);
+            checks::check_metadata(checker, expected_state);
+        });
+}
 
-    std::string fname = acq::get_master_file_name(file_state);
-    mf::Checker<mf::JsonContext> checker(fname);
+TEST_CASE("udp_datastream with master file",
+          "[.detectorintegration][.disable_check_data_file]") {
+    Detector det;
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER) {
+        auto prev_val_left = det.getUDPDataStream(defs::LEFT);
+        auto prev_val_right = det.getUDPDataStream(defs::RIGHT);
 
-    // get expected state of parameters and check against master file
-    acq::ExpectedState expected_state =
-        acq::build_expected_state(det, acq_state, file_state, ctb_state);
-    checks::check_metadata(checker, expected_state);
+        det.setUDPDataStream(defs::LEFT, false);
+        // check master file
+        {
+            // expected
+            std::vector<defs::portPosition> expected_ports =
+                det.getPortPositionList();
+            std::vector<int> expected_disabled_ports =
+                det.getRxDisabledUDPPortIndices();
+            REQUIRE(expected_disabled_ports.size() > 0);
 
-#ifdef HDF5C
-    try {
-        // hdf5 => /tmp/sls_test_master_0.h5
-        file_state.file_format = defs::HDF5;
-        acq::run(det, acq_state, file_state);
+            test_run_with_master_file_checker(
+                det, [&](auto &det, auto &acq_state, auto &file_state,
+                         auto &checker) {
+                    checks::check_udp_ports_type(checker, expected_ports);
+                    checks::check_udp_ports_disabled(checker,
+                                                     expected_disabled_ports);
+                });
+        }
 
-        std::string fname = acq::get_master_file_name(file_state);
-        mf::Checker<mf::H5Context> checker(fname);
+        for (int i = 0; i != det.size(); ++i) {
+            det.setUDPDataStream(defs::LEFT, prev_val_left[i], {i});
+            det.setUDPDataStream(defs::RIGHT, prev_val_right[i], {i});
+        }
+    } else if ((det_type == defs::JUNGFRAU || det_type == defs::MOENCH) &&
+               (det.getNumberofUDPInterfaces().squash(0) == 2)) {
+        auto prev_val_top = det.getUDPDataStream(defs::TOP);
+        auto prev_val_bottom = det.getUDPDataStream(defs::BOTTOM);
 
-        // get expected state of parameters and check against master file
-        acq::ExpectedState expected_state =
-            acq::build_expected_state(det, acq_state, file_state, ctb_state);
-        checks::check_metadata(checker, expected_state);
-    } catch (H5::Exception &e) {
-        LOG(logERROR) << "HDF5 error: " << e.getDetailMsg();
-        throw;
+        det.setUDPDataStream(defs::TOP, false);
+        // check master file
+        {
+            // expected
+            std::vector<defs::portPosition> expected_ports =
+                det.getPortPositionList();
+            std::vector<int> expected_disabled_ports =
+                det.getRxDisabledUDPPortIndices();
+            REQUIRE(expected_disabled_ports.size() > 0);
+
+            test_run_with_master_file_checker(
+                det, [&](auto &det, auto &acq_state, auto &file_state,
+                         auto &checker) {
+                    checks::check_udp_ports_type(checker, expected_ports);
+                    checks::check_udp_ports_disabled(checker,
+                                                     expected_disabled_ports);
+                });
+        }
+
+        for (int i = 0; i != det.size(); ++i) {
+            det.setUDPDataStream(defs::TOP, prev_val_top[i], {i});
+            det.setUDPDataStream(defs::BOTTOM, prev_val_bottom[i], {i});
+        }
     }
-#endif
 }
 
 } // namespace sls

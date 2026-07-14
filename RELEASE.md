@@ -62,8 +62,14 @@ support for building rpms
 
 removed unused function readDataFile/writeDataFile from file_utils.h
 
+changed api: datastream=>udp_datastream, set/getDatastream=>set/getUDPDatastream
+also implemetned for jungfrau, moench at receiver side (top/bottom)
+
 added rx_streamdummyheader to send the zmq dummy header any time. Allows pre-configuring zmq processing before acq begins.
 
+allow disabling one UDP interface in the receiver.
+
+setting number of UDP interfaces can only be set at detector level and not at module level. (individual modules)
 
 2  On-board Detector Server Compatibility
 ==========================================

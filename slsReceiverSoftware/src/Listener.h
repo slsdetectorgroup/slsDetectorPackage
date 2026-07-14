@@ -42,7 +42,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
     void SetUdpPortNumber(const uint16_t portNumber);
     void SetEthernetInterface(const std::string e);
     void SetActivate(bool enable);
-    void SetDetectorDatastream(bool enable);
+    void SetUDPDatastream(bool enable);
     void SetIsOutsideRoi(bool enable);
     void SetSilentMode(bool enable);
 
@@ -115,7 +115,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
     uint16_t udpPortNumber{0};
     std::string eth;
     bool activated{false};
-    bool detectorDataStream{true};
+    bool udpDataStream{true};
     bool isOutsideRoi{false};
     bool silentMode;
     bool disabledPort{false};

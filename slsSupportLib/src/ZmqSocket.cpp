@@ -19,6 +19,7 @@ ZmqSocket::ZmqSocket(const char *const hostname_or_ip,
     : portno(portnumber), sockfd(false) {
     // Extra check that throws if conversion fails, could be removed
     auto ipstr = HostnameToIp(hostname_or_ip).str();
+
     std::ostringstream oss;
     oss << "tcp://" << ipstr << ":" << portno;
     sockfd.serverAddress = oss.str();
@@ -27,20 +28,23 @@ ZmqSocket::ZmqSocket(const char *const hostname_or_ip,
     // create context
     sockfd.contextDescriptor = zmq_ctx_new();
     if (sockfd.contextDescriptor == nullptr)
-        throw ZmqSocketError("Could not create contextDescriptor");
+        throw ZmqSocketError("Could not create contextDescriptor for " +
+                             sockfd.serverAddress);
 
     // create subscriber
     sockfd.socketDescriptor = zmq_socket(sockfd.contextDescriptor, ZMQ_SUB);
     if (sockfd.socketDescriptor == nullptr) {
         PrintError();
-        throw ZmqSocketError("Could not create socket");
+        throw ZmqSocketError("Could not create socket for " +
+                             sockfd.serverAddress);
     }
 
     // Socket Options provided above
     // an empty string implies receiving any messages
     if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_SUBSCRIBE, "", 0)) {
         PrintError();
-        throw ZmqSocketError("Could set socket opt");
+        throw ZmqSocketError("Could set socket opt for " +
+                             sockfd.serverAddress);
     }
     // ZMQ_LINGER default is already -1 means no messages discarded. use this
     // options if optimizing required ZMQ_SNDHWM default is 0 means no limit.
@@ -49,7 +53,8 @@ ZmqSocket::ZmqSocket(const char *const hostname_or_ip,
     if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_LINGER, &value,
                        sizeof(value))) {
         PrintError();
-        throw ZmqSocketError("Could not set ZMQ_LINGER");
+        throw ZmqSocketError("Could not set ZMQ_LINGER for " +
+                             sockfd.serverAddress);
     }
     LOG(logDEBUG) << "Default receive high water mark:"
                   << GetReceiveHighWaterMark();
@@ -59,7 +64,8 @@ ZmqSocket::ZmqSocket(const char *const hostname_or_ip,
     if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_IPV6, &ipv6,
                        sizeof(ipv6))) {
         PrintError();
-        throw ZmqSocketError("Could not set ZMQ_IPV6");
+        throw ZmqSocketError("Could not set ZMQ_IPV6 for " +
+                             sockfd.serverAddress);
     }
 
     // set hwm if not default
@@ -71,31 +77,34 @@ ZmqSocket::ZmqSocket(const char *const hostname_or_ip,
 ZmqSocket::ZmqSocket(const uint16_t portnumber, int hwm)
     : portno(portnumber), sockfd(true) {
 
-    // create context
-    sockfd.contextDescriptor = zmq_ctx_new();
-    if (sockfd.contextDescriptor == nullptr)
-        throw ZmqSocketError("Could not create contextDescriptor");
-
-    // create publisher
-    sockfd.socketDescriptor = zmq_socket(sockfd.contextDescriptor, ZMQ_PUB);
-    if (sockfd.socketDescriptor == nullptr) {
-        PrintError();
-        throw ZmqSocketError("Could not create socket");
-    }
-    LOG(logDEBUG) << "Default send high water mark:" << GetSendHighWaterMark();
-
     // construct address, can be refactored with libfmt
     std::ostringstream oss;
     oss << "tcp://" << ZMQ_PUBLISHER_IP << ":" << portno;
     sockfd.serverAddress = oss.str();
     LOG(logDEBUG) << "zmq address: " << sockfd.serverAddress;
 
+    // create context
+    sockfd.contextDescriptor = zmq_ctx_new();
+    if (sockfd.contextDescriptor == nullptr)
+        throw ZmqSocketError("Could not create contextDescriptor for " +
+                             sockfd.serverAddress);
+
+    // create publisher
+    sockfd.socketDescriptor = zmq_socket(sockfd.contextDescriptor, ZMQ_PUB);
+    if (sockfd.socketDescriptor == nullptr) {
+        PrintError();
+        throw ZmqSocketError("Could not create socket for " +
+                             sockfd.serverAddress);
+    }
+    LOG(logDEBUG) << "Default send high water mark:" << GetSendHighWaterMark();
+
     // enable IPv6 addresses
     int ipv6 = 1;
     if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_IPV6, &ipv6,
                        sizeof(ipv6))) {
         PrintError();
-        throw ZmqSocketError("Could not set ZMQ_IPV6");
+        throw ZmqSocketError("Could not set ZMQ_IPV6 for " +
+                             sockfd.serverAddress);
     }
 
     // Socket Options for keepalive
@@ -104,28 +113,34 @@ ZmqSocket::ZmqSocket(const uint16_t portnumber, int hwm)
     if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_TCP_KEEPALIVE, &keepalive,
                        sizeof(keepalive))) {
         PrintError();
-        throw ZmqSocketError("Could set socket opt ZMQ_TCP_KEEPALIVE");
+        throw ZmqSocketError("Could set socket opt ZMQ_TCP_KEEPALIVE for " +
+                             sockfd.serverAddress);
     }
     // set the number of keepalives before death
     keepalive = 10;
     if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_TCP_KEEPALIVE_CNT,
                        &keepalive, sizeof(keepalive))) {
         PrintError();
-        throw ZmqSocketError("Could set socket opt ZMQ_TCP_KEEPALIVE_CNT");
+        throw ZmqSocketError("Could set socket opt ZMQ_TCP_KEEPALIVE_CNT for " +
+                             sockfd.serverAddress);
     }
     // set the time before the first keepalive
     keepalive = 60;
     if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_TCP_KEEPALIVE_IDLE,
                        &keepalive, sizeof(keepalive))) {
         PrintError();
-        throw ZmqSocketError("Could set socket opt ZMQ_TCP_KEEPALIVE_IDLE");
+        throw ZmqSocketError(
+            "Could set socket opt ZMQ_TCP_KEEPALIVE_IDLE for " +
+            sockfd.serverAddress);
     }
     // set the interval between keepalives
     keepalive = 1;
     if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_TCP_KEEPALIVE_INTVL,
                        &keepalive, sizeof(keepalive))) {
         PrintError();
-        throw ZmqSocketError("Could set socket opt ZMQ_TCP_KEEPALIVE_INTVL");
+        throw ZmqSocketError(
+            "Could set socket opt ZMQ_TCP_KEEPALIVE_INTVL for " +
+            sockfd.serverAddress);
     }
     // set hwm if not default
     if (hwm >= 0) {
@@ -135,7 +150,8 @@ ZmqSocket::ZmqSocket(const uint16_t portnumber, int hwm)
     // bind address
     if (zmq_bind(sockfd.socketDescriptor, sockfd.serverAddress.c_str())) {
         PrintError();
-        throw ZmqSocketError("Could not bind socket");
+        throw ZmqSocketError("Could not bind socket for " +
+                             sockfd.serverAddress);
     }
     // sleep to allow a slow-joiner
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
@@ -147,7 +163,8 @@ int ZmqSocket::GetSendHighWaterMark() {
     if (zmq_getsockopt(sockfd.socketDescriptor, ZMQ_SNDHWM, &value,
                        &value_size)) {
         PrintError();
-        throw ZmqSocketError("Could not get ZMQ_SNDHWM");
+        throw ZmqSocketError("Could not get ZMQ_SNDHWM for " +
+                             sockfd.serverAddress);
     }
     return value;
 }
@@ -156,10 +173,13 @@ void ZmqSocket::SetSendHighWaterMark(int limit) {
     if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_SNDHWM, &limit,
                        sizeof(limit))) {
         PrintError();
-        throw ZmqSocketError("Could not set ZMQ_SNDHWM");
+        throw ZmqSocketError("Could not set ZMQ_SNDHWM for " +
+                             sockfd.serverAddress + " to " +
+                             std::to_string(limit));
     }
     if (GetSendHighWaterMark() != limit) {
-        throw ZmqSocketError("Could not set ZMQ_SNDHWM to " +
+        throw ZmqSocketError("Could not set ZMQ_SNDHWM for " +
+                             sockfd.serverAddress + " to " +
                              std::to_string(limit));
     }
 
@@ -176,7 +196,8 @@ int ZmqSocket::GetReceiveHighWaterMark() {
     if (zmq_getsockopt(sockfd.socketDescriptor, ZMQ_RCVHWM, &value,
                        &value_size)) {
         PrintError();
-        throw ZmqSocketError("Could not get ZMQ_RCVHWM");
+        throw ZmqSocketError("Could not get ZMQ_RCVHWM for " +
+                             sockfd.serverAddress);
     }
     return value;
 }
@@ -185,10 +206,13 @@ void ZmqSocket::SetReceiveHighWaterMark(int limit) {
     if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_RCVHWM, &limit,
                        sizeof(limit))) {
         PrintError();
-        throw ZmqSocketError("Could not set ZMQ_RCVHWM");
+        throw ZmqSocketError("Could not set ZMQ_RCVHWM for " +
+                             sockfd.serverAddress + " to " +
+                             std::to_string(limit));
     }
     if (GetReceiveHighWaterMark() != limit) {
-        throw ZmqSocketError("Could not set ZMQ_RCVHWM to " +
+        throw ZmqSocketError("Could not set ZMQ_RCVHWM for " +
+                             sockfd.serverAddress + " to " +
                              std::to_string(limit));
     }
     int bufsize = DEFAULT_ZMQ_BUFFERSIZE;
@@ -204,7 +228,8 @@ int ZmqSocket::GetSendBuffer() {
     if (zmq_getsockopt(sockfd.socketDescriptor, ZMQ_SNDBUF, &value,
                        &value_size)) {
         PrintError();
-        throw ZmqSocketError("Could not get ZMQ_SNDBUF");
+        throw ZmqSocketError("Could not get ZMQ_SNDBUF for " +
+                             sockfd.serverAddress);
     }
     return value;
 }
@@ -213,10 +238,13 @@ void ZmqSocket::SetSendBuffer(int limit) {
     if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_SNDBUF, &limit,
                        sizeof(limit))) {
         PrintError();
-        throw ZmqSocketError("Could not set ZMQ_SNDBUF");
+        throw ZmqSocketError("Could not set ZMQ_SNDBUF for " +
+                             sockfd.serverAddress + " to " +
+                             std::to_string(limit));
     }
     if (GetSendBuffer() != limit) {
-        throw ZmqSocketError("Could not set ZMQ_SNDBUF to " +
+        throw ZmqSocketError("Could not set ZMQ_SNDBUF for " +
+                             sockfd.serverAddress + " to " +
                              std::to_string(limit));
     }
 }
@@ -227,7 +255,8 @@ int ZmqSocket::GetReceiveBuffer() {
     if (zmq_getsockopt(sockfd.socketDescriptor, ZMQ_RCVBUF, &value,
                        &value_size)) {
         PrintError();
-        throw ZmqSocketError("Could not get ZMQ_RCVBUF");
+        throw ZmqSocketError("Could not get ZMQ_RCVBUF for " +
+                             sockfd.serverAddress);
     }
     return value;
 }
@@ -236,10 +265,13 @@ void ZmqSocket::SetReceiveBuffer(int limit) {
     if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_RCVBUF, &limit,
                        sizeof(limit))) {
         PrintError();
-        throw ZmqSocketError("Could not set ZMQ_RCVBUF");
+        throw ZmqSocketError("Could not set ZMQ_RCVBUF for " +
+                             sockfd.serverAddress + " to " +
+                             std::to_string(limit));
     }
     if (GetReceiveBuffer() != limit) {
-        throw ZmqSocketError("Could not set ZMQ_RCVBUF to " +
+        throw ZmqSocketError("Could not set ZMQ_RCVBUF for " +
+                             sockfd.serverAddress + " to " +
                              std::to_string(limit));
     }
 }
@@ -251,12 +283,14 @@ void ZmqSocket::Rebind() {
     //    unbbind
     if (zmq_unbind(sockfd.socketDescriptor, sockfd.serverAddress.c_str())) {
         PrintError();
-        throw ZmqSocketError("Could not unbind socket");
+        throw ZmqSocketError("Could not unbind socket for " +
+                             sockfd.serverAddress);
     }
     // bind address
     if (zmq_bind(sockfd.socketDescriptor, sockfd.serverAddress.c_str())) {
         PrintError();
-        throw ZmqSocketError("Could not bind socket");
+        throw ZmqSocketError("Could not bind socket for " +
+                             sockfd.serverAddress);
     }
 }
 

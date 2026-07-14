@@ -21,7 +21,7 @@ from slsdet import Detector, Ctb, freeSharedMemory
 from utils_for_test import (
     Log,
     LogLevel,
-    SERVER_START_PORTNO
+    DET_START_TCP_PORTNO
 )
 
 from conftest import session_simulator
@@ -33,7 +33,7 @@ def test_exptime_after_free_should_raise(session_simulator):
 
 
     d = Ctb() # creates multi shm (assuming no shm exists)
-    d.hostname = f"localhost:{SERVER_START_PORTNO}" # hostname command creates mod shm, d maps to it
+    d.hostname = f"localhost:{DET_START_TCP_PORTNO}" # hostname command creates mod shm, d maps to it
 
     d.free() # frees the shm, d should not map to it anymore
 
@@ -47,7 +47,7 @@ def test_exptime_after_free_should_raise(session_simulator):
 
 def free_and_create_shm():
     k = Ctb() # opens existing shm if it exists
-    k.hostname = f"localhost:{SERVER_START_PORTNO}" # free and recreate shm, maps to local shm struct
+    k.hostname = f"localhost:{DET_START_TCP_PORTNO}" # free and recreate shm, maps to local shm struct
 
 @pytest.mark.detectorintegration
 @pytest.mark.parametrize("session_simulator",[("ctb", 1, 1)],indirect=True)
@@ -56,7 +56,7 @@ def test_exptime_after_not_passing_var_should_raise(session_simulator):
 
 
     d = Ctb() # creates multi shm (assuming no shm exists)
-    d.hostname = f"localhost:{SERVER_START_PORTNO}" # hostname command creates mod shm, d maps to it
+    d.hostname = f"localhost:{DET_START_TCP_PORTNO}" # hostname command creates mod shm, d maps to it
 
     free_and_create_shm() # ctb() opens multi shm, hostname command frees and recreates mod shm but shm struct is local. d still maps to old shm struct
 
@@ -72,7 +72,7 @@ def test_exptime_after_not_passing_var_should_raise(session_simulator):
 
 def free_and_create_shm_passing_ctb_var(k):
     k = Ctb() # opens existing shm if it exists (disregards k as its new Ctb only local to this function)
-    k.hostname = f"localhost:{SERVER_START_PORTNO}" # free and recreate shm, maps to local shm struct
+    k.hostname = f"localhost:{DET_START_TCP_PORTNO}" # free and recreate shm, maps to local shm struct
 
 @pytest.mark.detectorintegration
 @pytest.mark.parametrize("session_simulator",[("ctb", 1, 1)],indirect=True)
@@ -80,7 +80,7 @@ def test_exptime_after_passing_ctb_var_should_raise(session_simulator):
     Log(LogLevel.INFOBLUE, f'\nRunning test_exptime_after_passing_ctb_var_should_raise')
 
     d = Ctb() # creates multi shm (assuming no shm exists)
-    d.hostname = f"localhost:{SERVER_START_PORTNO}" # hostname command creates mod shm, d maps to it
+    d.hostname = f"localhost:{DET_START_TCP_PORTNO}" # hostname command creates mod shm, d maps to it
 
     free_and_create_shm_passing_ctb_var(d) # ctb() opens multi shm, hostname command frees and recreates mod shm but shm struct is local. d still maps to old shm struct
 
@@ -95,7 +95,7 @@ def test_exptime_after_passing_ctb_var_should_raise(session_simulator):
 
 def free_and_create_shm_returning_ctb():
     k = Ctb() # opens existing shm if it exists (disregards k as its new Ctb only local to this function)
-    k.hostname = f"localhost:{SERVER_START_PORTNO}" # free and recreate shm, maps to local shm struct
+    k.hostname = f"localhost:{DET_START_TCP_PORTNO}" # free and recreate shm, maps to local shm struct
     return k
 
 @pytest.mark.detectorintegration
@@ -128,8 +128,8 @@ def test_hostname_twice_acess_old_should_raise(session_simulator):
     Log(LogLevel.INFOBLUE, f'\nRunning test_hostname_twice_acess_old_should_raise')
 
     d = Ctb() # creates multi shm (assuming no shm exists)
-    d.hostname = f"localhost:{SERVER_START_PORTNO}" # hostname command creates mod shm, d maps to it
-    d.hostname = f"localhost:{SERVER_START_PORTNO}"  # Freeing and recreating shm while mapping d to it (old shm is out of scope)
+    d.hostname = f"localhost:{DET_START_TCP_PORTNO}" # hostname command creates mod shm, d maps to it
+    d.hostname = f"localhost:{DET_START_TCP_PORTNO}"  # Freeing and recreating shm while mapping d to it (old shm is out of scope)
     
     # this should not throw 
     exptime_val = d.exptime

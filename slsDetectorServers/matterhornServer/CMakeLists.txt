@@ -48,11 +48,8 @@ endif() # maybe better to have a else if build with simulators on one always use
 
 if(SLS_USE_MATTERHORN) 
 
-    if(CMAKE_TOOLCHAIN_FILE AND NOT CMAKE_TOOLCHAIN_FILE STREQUAL "") 
-        set(CROSS_COMPILE TRUE)
-    endif()
 
-    if(${CROSS_COMPILE}) # only update version if cross compiling binaries 
+    if(CMAKE_CROSSCOMPILING) # only update version if cross compiling binaries 
         find_package(Python3 REQUIRED COMPONENTS Interpreter REQUIRED)
         add_custom_target(update_server_version ALL
             COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/etc/updateAPIVersion.py APIMATTERHORN ${CMAKE_SOURCE_DIR}/slsDetectorServers/matterhornServer ${CMAKE_SOURCE_DIR}/slsDetectorServers/slsDetectorServer_cpp   
@@ -63,7 +60,7 @@ if(SLS_USE_MATTERHORN)
 
     add_executable(matterhornDetectorServer ${MATTERHORN_SOURCES})
 
-    if(${CROSS_COMPILE}) # only update version if cross compiling binaries 
+    if(CMAKE_CROSSCOMPILING) # only update version if cross compiling binaries 
         add_dependencies(matterhornDetectorServer update_server_version)
     endif()
 
@@ -84,7 +81,7 @@ if(SLS_USE_MATTERHORN)
         slsProjectWarnings
     )
 
-    if(${CROSS_COMPILE}) # change output directory to stay consitent with c server binaries when cross compiling
+    if(CMAKE_CROSSCOMPILING) # change output directory to stay consitent with c server binaries when cross compiling
         set(RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
     else()
         set(RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)

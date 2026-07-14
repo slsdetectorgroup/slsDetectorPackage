@@ -50,7 +50,7 @@ struct acquisitionStatus {
     std::atomic<bool> stop{false};
 };
 
-class DetectorServerImpl {
+template <bool isStopServer> class DetectorServerImpl {
 
   public:
     DetectorServerImpl();
@@ -97,6 +97,9 @@ class DetectorServerImpl {
 
     /// @brief true if setupDetector() was successful, false otherwise
     detector_setup_status detectorSetupStatus{};
+
+    /// @brief true if the derived server is a stop server, false otherwise
+    static constexpr bool stop_server = isStopServer;
 
   private:
     /// @brief creates and maps shared memory

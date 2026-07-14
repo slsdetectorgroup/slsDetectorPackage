@@ -2,6 +2,7 @@
 #include "DetectorServerImpl.hpp"
 #include "TCPInterface.hpp"
 #include "helpers/Helpers.hpp"
+#include "helpers/type_traits.hpp"
 #include "sls/logger.h"
 #include "sls/network_utils.h"
 #include "sls/sls_detector_defs.h"
@@ -27,8 +28,11 @@ template <typename DerivedDetectorServer> class DetectorServer {
      * throws an exception in case of failure
      * @param port TCP/IP port number
      */
-    explicit DetectorServer(std::unique_ptr<DetectorServerImpl> impl_,
-                            uint16_t port = DEFAULT_TCP_CNTRL_PORTNO);
+    explicit DetectorServer(
+        std::unique_ptr<
+            DetectorServerImpl<is_stop_server<DerivedDetectorServer>::value>>
+            impl_,
+        uint16_t port = DEFAULT_TCP_CNTRL_PORTNO);
 
     ~DetectorServer() = default;
 
@@ -36,16 +40,18 @@ template <typename DerivedDetectorServer> class DetectorServer {
     /// @brief TCP/IP interface for communication with the client
     std::unique_ptr<TCPInterface> tcpInterface;
 
-    std::unique_ptr<DetectorServerImpl> impl;
+    std::unique_ptr<
+        DetectorServerImpl<is_stop_server<DerivedDetectorServer>::value>>
+        impl;
 
     auto *getImpl() {
-        return static_cast<typename DerivedDetectorServer::ImplType *>(
-            impl.get());
+        return static_cast<typename implementation_type_trait<
+            DerivedDetectorServer>::ImplType *>(impl.get());
     }
 
     const auto *getImpl() const {
-        return static_cast<const typename DerivedDetectorServer::ImplType *>(
-            impl.get());
+        return static_cast<const typename implementation_type_trait<
+            DerivedDetectorServer>::ImplType *>(impl.get());
     }
 
   private:
@@ -112,7 +118,10 @@ template <typename DerivedDetectorServer> class DetectorServer {
 
 template <typename DerivedDetectorServer>
 DetectorServer<DerivedDetectorServer>::DetectorServer(
-    std::unique_ptr<DetectorServerImpl> impl_, uint16_t port)
+    std::unique_ptr<
+        DetectorServerImpl<is_stop_server<DerivedDetectorServer>::value>>
+        impl_,
+    uint16_t port)
     : impl(std::move(impl_)) {
     validatePortNumber(port);
 

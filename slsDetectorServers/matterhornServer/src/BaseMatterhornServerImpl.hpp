@@ -5,9 +5,9 @@
 #include "communication/SPICommunication.hpp"
 #include "defs/MatterhornDefs.hpp"
 #include "defs/RegisterDefs.hpp"
+#include "helpers/type_traits.hpp"
 #include "sls/versionAPI.h"
 #include "utils/HelperFunctions.hpp"
-#include "utils/type_traits.hpp"
 #include <cstdint>
 #include <string>
 
@@ -17,7 +17,9 @@ template <bool isStopServer>
 class VirtualMatterhornServerImpl; // forward declare
 
 template <typename DerivedMatterhornServerImpl>
-class BaseMatterhornServerImpl : public DetectorServerImpl {
+class BaseMatterhornServerImpl
+    : public DetectorServerImpl<
+          is_stop_server<DerivedMatterhornServerImpl>::value> {
   public:
     BaseMatterhornServerImpl();
     ~BaseMatterhornServerImpl() = default;
@@ -73,10 +75,6 @@ class BaseMatterhornServerImpl : public DetectorServerImpl {
   private:
     static constexpr uint8_t numUDPInterfaces =
         1; // only one udp per module for now
-
-    /// @brief true if the derived server is a stop server, false otherwise
-    static constexpr bool isStopServer =
-        is_stop_server<DerivedMatterhornServerImpl>::value;
 };
 
 template <typename DerivedMatterhornServerImpl>
@@ -95,19 +93,19 @@ void BaseMatterhornServerImpl<DerivedMatterhornServerImpl>::setupDetector() {
     // TODO: extend
     try {
         // stop server does not talk to the board
-        if constexpr (!isStopServer) {
+        if constexpr (!this->stop_server) {
             set_num_frames(1);
             set_num_triggers(1);
             set_counter_mask(0xF); // enable counter all counters by default
         }
     } catch (const std::exception &e) {
         LOG(logERROR) << "Failed to setup detector: " << e.what();
-        detectorSetupStatus.error_message = std::string(e.what());
-        detectorSetupStatus.setup_status =
+        this->detectorSetupStatus.error_message = std::string(e.what());
+        this->detectorSetupStatus.setup_status =
             detector_setup_status::SETUP_STATUS::FAILED_SETUP;
     }
 
-    detectorSetupStatus.setup_status =
+    this->detectorSetupStatus.setup_status =
         detector_setup_status::SETUP_STATUS::SUCCESSFUL_SETUP;
 }
 

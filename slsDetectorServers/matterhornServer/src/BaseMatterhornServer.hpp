@@ -2,10 +2,10 @@
 #include "DetectorServer.hpp"
 #include "TCPInterface.hpp"
 #include "fmt/format.h"
+#include "helpers/type_traits.hpp"
 #include "sls/logger.h"
 #include "sls/network_utils.h"
 #include "sls/sls_detector_defs.h"
-#include "utils/type_traits.hpp"
 #include <array>
 #include <cstring>
 #include <functional>
@@ -29,8 +29,11 @@ class BaseMatterhornServer
      * throws an exception in case of failure
      * @param port TCP/IP port number
      */
-    explicit BaseMatterhornServer(std::unique_ptr<DetectorServerImpl> impl,
-                                  uint16_t port = DEFAULT_TCP_CNTRL_PORTNO)
+    explicit BaseMatterhornServer(
+        std::unique_ptr<
+            DetectorServerImpl<is_stop_server<DerivedServer>::value>>
+            impl,
+        uint16_t port = DEFAULT_TCP_CNTRL_PORTNO)
         : DetectorServer<BaseMatterhornServer<DerivedServer>>(std::move(impl),
                                                               port) {}
 
@@ -48,9 +51,6 @@ class BaseMatterhornServer
      */
     ProcessedResult processFunction(const detFuncs function_id,
                                     ServerInterface &socket);
-
-    using ImplType =
-        typename implementation_type_trait<DerivedServer>::ImplType;
 
   private:
     DerivedServer *getDerived() { return static_cast<DerivedServer *>(this); }

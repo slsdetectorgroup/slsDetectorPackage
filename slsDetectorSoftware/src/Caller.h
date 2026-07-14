@@ -105,7 +105,6 @@ class Caller {
     std::string daclist(int action);
     std::string dacname(int action);
     std::string dacvalues(int action);
-    std::string datastream(int action);
     std::string dbitclk(int action);
     std::string dbitphase(int action);
     std::string dbitpipeline(int action);
@@ -345,6 +344,7 @@ class Caller {
     std::string txdelay_right(int action);
     std::string type(int action);
     std::string udp_cleardst(int action);
+    std::string udp_datastream(int action);
     std::string udp_dstip(int action);
     std::string udp_dstip2(int action);
     std::string udp_dstlist(int action);
@@ -474,7 +474,6 @@ class Caller {
         {"daclist", &Caller::daclist},
         {"dacname", &Caller::dacname},
         {"dacvalues", &Caller::dacvalues},
-        {"datastream", &Caller::datastream},
         {"dbitclk", &Caller::dbitclk},
         {"dbitphase", &Caller::dbitphase},
         {"dbitpipeline", &Caller::dbitpipeline},
@@ -718,6 +717,7 @@ class Caller {
         {"txdelay_right", &Caller::txdelay_right},
         {"type", &Caller::type},
         {"udp_cleardst", &Caller::udp_cleardst},
+        {"udp_datastream", &Caller::udp_datastream},
         {"udp_dstip", &Caller::udp_dstip},
         {"udp_dstip2", &Caller::udp_dstip2},
         {"udp_dstlist", &Caller::udp_dstlist},
@@ -903,6 +903,7 @@ class Caller {
         {"now", "runtime"},
         {"timestamp", "frametime"},
         {"frameindex", "rx_frameindex"},
+        {"datastream", "udp_datastream"},
 
     };
 

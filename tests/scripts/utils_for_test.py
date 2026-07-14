@@ -274,7 +274,7 @@ def connectToVirtualServers(name, num_mods, ctb_object=False):
 
 def startReceiver(num_mods, fp, no_log_file = False, quiet_mode=False):
     if num_mods == 1:
-        cmd = [str(build_dir / 'slsReceiver')]
+        cmd = [str(build_dir / 'slsReceiver'), '-p', str(RX_START_TCP_PORTNO)]
         fname = LOG_PREFIX_FNAME + "slsReceiver.txt"
     else:
         cmd = [str(build_dir / 'slsMultiReceiver'), '-p', str(RX_START_TCP_PORTNO), '-n', str(num_mods)]

@@ -44,9 +44,7 @@ def startFrameSynchronizerPullSocket(name, fp, no_log_file = False, quiet_mode=F
 
 
 def startFrameSynchronizer(num_mods, fp, no_log_file = False, quiet_mode=False):
-    cmd = [str(build_dir / 'slsFrameSynchronizer'), str(RX_START_TCP_PORTNO), str(num_mods)]
-    # in 10.0.0
-    #cmd = ['slsFrameSynchronizer', '-p', str(RX_START_TCP_PORTNO), '-n', str(num_mods)]
+    cmd = [str(build_dir / 'slsFrameSynchronizer'), '-p', str(RX_START_TCP_PORTNO), '-n', str(num_mods)]
     fname = SYNCHRONIZER_SUFFIX_FNAME
     if no_log_file:
         fname = None

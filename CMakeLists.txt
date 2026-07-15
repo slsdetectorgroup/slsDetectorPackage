@@ -452,14 +452,14 @@ if (SLS_USE_GUI)
     add_subdirectory(slsDetectorGui)
 endif (SLS_USE_GUI)
 
-if (SLS_USE_MATTERHORN)
-    # TODO cant use add_subdirectory twice - can only build matterhorn server or simulator 
-    add_subdirectory(slsDetectorServers/matterhornServer)
-endif() 
-
 if (SLS_USE_SIMULATOR)
     add_subdirectory(slsDetectorServers)
 endif (SLS_USE_SIMULATOR)
+
+# cant add_subdirectory twice 
+if (SLS_USE_MATTERHORN AND !SLS_USE_SIMULATOR) 
+    add_subdirectory(slsDetectorServers/matterhornServer)
+endif() 
 
 if (SLS_USE_PYTHON)
     find_package (Python 3.8 COMPONENTS Interpreter Development.Module REQUIRED)

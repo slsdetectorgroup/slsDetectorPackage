@@ -90,8 +90,7 @@ BaseMatterhornServer<DerivedServer>::set_counter_mask(ServerInterface &socket) {
     }
 
     try {
-        DetectorServer<BaseMatterhornServer<DerivedServer>>::getImpl()
-            ->set_counter_mask(counter_mask);
+        this->getImpl()->set_counter_mask(counter_mask);
     } catch (const std::exception &e) {
         return_fail("Failed to set counter mask: " + std::string(e.what()));
     }
@@ -106,9 +105,7 @@ ProcessedResult BaseMatterhornServer<DerivedServer>::get_counter_mask(
     uint32_t counter_mask{};
 
     try {
-        counter_mask =
-            DetectorServer<BaseMatterhornServer<DerivedServer>>::getImpl()
-                ->get_counter_mask();
+        counter_mask = this->getImpl()->get_counter_mask();
     } catch (const std::exception &e) {
         return_fail("Failed to get counter mask: " + std::string(e.what()));
     }

@@ -403,7 +403,7 @@ ProcessedResult DetectorServer<DerivedDetectorServer>::get_num_triggers(
 template <typename DerivedDetectorServer>
 ProcessedResult DetectorServer<DerivedDetectorServer>::set_num_triggers(
     ServerInterface &socket) {
-    uint32_t num_triggers{};
+    int64_t num_triggers{};
     try {
         (void)socket.Receive(num_triggers);
     } catch (const SocketError &e) {

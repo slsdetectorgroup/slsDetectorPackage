@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CtbConfig.h"
-#include "SharedMemory.h"
 #include "sls/Result.h"
+#include "sls/SharedMemory.h"
 #include "sls/ZmqSocket.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_defs.h"

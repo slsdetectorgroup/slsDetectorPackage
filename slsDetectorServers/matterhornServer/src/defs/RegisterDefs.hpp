@@ -1,18 +1,26 @@
 
 // clang-format off
+#pragma once
 #include "RegisterHelperStructs.hpp"
 
 namespace sls {
 
 /// @brief Enum for IP cores, value are adresses
-constexpr enum class IPCore : uint32_t {
-    MH_RO_SM_AXI = 0, // dummy adresses for now
-    FHDR_AXI = 1,
-    AURORA_STATUS = 2,
-    AURORA_STATUS2 = 3,
-    PACKETIZERREG = 4,
-    UNKNOWN = 5
+enum class IPCore : uint32_t {
+    MH_RO_SM_AXI = 0xB0010000,
+    FHDR_AXI = 0xB0011000,
+    AURORA_STATUS = 0xB0014000,
+    AURORA_STATUS2 = 0xB0015000,
+    PACKETIZERREG = 0x00000000, // TODO: need to update with actual address
+    UNKNOWN = 0x00000000 // dont know yet
 };
+
+constexpr size_t IPCORE_REGISTER_BLOCK_SIZE =
+    0x1000; // size of each IP core address space in bytes // TODO: maybe add in
+            // other file definitions
+
+// clang-format off
+namespace Reg {
 
 
 // Register definitions
@@ -22,7 +30,7 @@ constexpr Register Status_Reg{IPCore::UNKNOWN, 0x4};
 
 constexpr Register FPGAVersionReg{IPCore::UNKNOWN, 0x8};
 
-constexpr Register FPGA_GIT_HEAD{IPCore::UNKNOWN, 0xc};
+constexpr Register FPGA_GIT_HEADReg{IPCore::UNKNOWN, 0xc};
 
 constexpr Register FixedPatternReg{IPCore::UNKNOWN, 0x10};
 
@@ -41,6 +49,8 @@ constexpr Register MH_SM_Frames_Reg{IPCore::MH_RO_SM_AXI, 0xc};
 constexpr Register MH_SM_StoreLength_Reg{IPCore::MH_RO_SM_AXI, 0x10};
 
 constexpr Register MH_SM_ResetMHLength_Reg{IPCore::MH_RO_SM_AXI, 0x14};
+
+constexpr Register MH_SM_Triggers_Reg{IPCore::MH_RO_SM_AXI, 0x18};
 
 constexpr Register Frame_HDR_Set_Reg{IPCore::FHDR_AXI, 0x0};
 
@@ -116,7 +126,7 @@ constexpr RegisterField FPGADetType{
      FPGAVersionReg, 24, 0xff};
 
 constexpr RegisterField FPGA_GIT_HEAD{
-     FPGA_GIT_HEAD, 0, 0xffffffff};
+     FPGA_GIT_HEADReg, 0, 0xffffffff};
 
 constexpr RegisterField FixedPattern{
      FixedPatternReg, 0, 0xffffffff};
@@ -136,6 +146,24 @@ constexpr RegisterField Start_Acquistion{
 constexpr RegisterField Stop_Acquistion{
      MH_SM_Ctrl_Reg, 1, 0x1};
 
+constexpr RegisterField External_Counter_Enable{
+     MH_SM_Ctrl_Reg, 2, 0x1};
+
+constexpr RegisterField Parallel_RO{
+     MH_SM_Ctrl_Reg, 3, 0x1};
+
+constexpr RegisterField Trigger_Mode{
+     MH_SM_Ctrl_Reg, 4, 0x3};
+
+constexpr RegisterField HW_Trigger_Polarity{
+     MH_SM_Ctrl_Reg, 6, 0x1};
+
+constexpr RegisterField SW_Trigger{
+     MH_SM_Ctrl_Reg, 7, 0x1};
+
+constexpr RegisterField Reset_Readout_SM{
+     MH_SM_Ctrl_Reg, 8, 0x1};
+
 constexpr RegisterField MH_Readout_Exposure_Time{
      MH_SM_Exposure_Reg, 0, 0xffffffff};
 
@@ -150,6 +178,9 @@ constexpr RegisterField MH_SM_StoreLength{
 
 constexpr RegisterField MH_SM_ResetMHLength{
      MH_SM_ResetMHLength_Reg, 0, 0xffffffff};
+
+constexpr RegisterField MH_SM_Triggers{
+     MH_SM_Triggers_Reg, 0, 0xffffffff};
 
 constexpr RegisterField Frame_Hdr_Set_Framenumber{
      Frame_HDR_Set_Reg, 0, 0x1};
@@ -236,5 +267,17 @@ constexpr RegisterField Coordz{
      PktCoordReg2, 0, 0xffff};
 
  
+constexpr RegisterField ModuleRow{
+     Frame_HDR_ModCoord_LSB_Reg, 0, 0xffff}; 
+
+constexpr RegisterField ModuleCol{
+     Frame_HDR_ModCoord_LSB_Reg, 16, 0xffff};
+
+constexpr RegisterField ModuleCoordz{
+     Frame_HDR_ModCoord_MSB_Reg, 0, 0xffff};
+
+constexpr RegisterField ModuleIndex{
+     Frame_HDR_ModCoord_MSB_Reg, 16, 0xffff};
+} // namespace Reg
 } // namespace sls
 // clang-format on

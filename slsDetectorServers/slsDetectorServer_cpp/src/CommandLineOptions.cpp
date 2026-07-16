@@ -1,4 +1,4 @@
-#include "CommandLineOptions.h"
+#include "CommandLineOptions.hpp"
 #include "sls/ToString.h"
 #include "sls/sls_detector_exceptions.h"
 

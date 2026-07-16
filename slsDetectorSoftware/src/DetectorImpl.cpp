@@ -2,7 +2,7 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "DetectorImpl.h"
 #include "Module.h"
-#include "SharedMemory.h"
+#include "sls/SharedMemory.h"
 #include "sls/ZmqSocket.h"
 #include "sls/detectorData.h"
 #include "sls/file_utils.h"

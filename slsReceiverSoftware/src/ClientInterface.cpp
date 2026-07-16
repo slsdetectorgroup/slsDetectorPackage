@@ -1740,8 +1740,7 @@ int ClientInterface::get_receiver_roi(Interface &socket) {
                            std::to_string(size) + ". Expected: " +
                            std::to_string(impl()->getNumberofUDPInterfaces()));
     }
-    socket.Send(OK);
-    socket.Send(size);
+    socket.sendResult(size);
     if (size > 0)
         socket.Send(retvals);
     return OK;
@@ -1885,8 +1884,7 @@ int ClientInterface::get_roi_metadata(Interface &socket) {
     auto retvals = impl()->getMultiROIMetadata();
     LOG(logDEBUG1) << "Receiver ROI metadata retval:" << ToString(retvals);
     auto size = static_cast<int>(retvals.size());
-    socket.Send(OK);
-    socket.Send(size);
+    socket.sendResult(size);
     if (size > 0)
         socket.Send(retvals);
     return OK;

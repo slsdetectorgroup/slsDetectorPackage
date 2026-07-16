@@ -85,17 +85,17 @@ void Listener::SetEthernetInterface(const std::string e) {
 
 void Listener::SetActivate(bool enable) {
     activated = enable;
-    disabledPort = (!activated || !detectorDataStream || isOutsideRoi);
+    disabledPort = (!activated || !udpDataStream || isOutsideRoi);
 }
 
-void Listener::SetDetectorDatastream(bool enable) {
-    detectorDataStream = enable;
-    disabledPort = (!activated || !detectorDataStream || isOutsideRoi);
+void Listener::SetUDPDatastream(bool enable) {
+    udpDataStream = enable;
+    disabledPort = (!activated || !udpDataStream || isOutsideRoi);
 }
 
 void Listener::SetIsOutsideRoi(bool enable) {
     isOutsideRoi = enable;
-    disabledPort = (!activated || !detectorDataStream || isOutsideRoi);
+    disabledPort = (!activated || !udpDataStream || isOutsideRoi);
 }
 
 void Listener::SetSilentMode(bool enable) { silentMode = enable; }

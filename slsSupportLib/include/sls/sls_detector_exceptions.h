@@ -17,6 +17,11 @@ class SharedMemoryError : public RuntimeError {
     explicit SharedMemoryError(const std::string &msg);
 };
 
+class SharedMemoryAlreadyExistsError : public SharedMemoryError {
+  public:
+    explicit SharedMemoryAlreadyExistsError(const std::string &msg);
+};
+
 class SocketError : public RuntimeError {
   public:
     explicit SocketError(const std::string &msg);

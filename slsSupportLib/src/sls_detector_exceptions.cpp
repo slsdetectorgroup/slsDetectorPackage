@@ -14,6 +14,11 @@ RuntimeError::RuntimeError(const char *msg) : runtime_error(msg) {
 }
 SharedMemoryError::SharedMemoryError(const std::string &msg)
     : RuntimeError(msg) {}
+
+SharedMemoryAlreadyExistsError::SharedMemoryAlreadyExistsError(
+    const std::string &msg)
+    : SharedMemoryError(msg) {}
+
 SocketError::SocketError(const std::string &msg) : RuntimeError(msg) {}
 ZmqSocketError::ZmqSocketError(const std::string &msg) : RuntimeError(msg) {}
 NotImplementedError::NotImplementedError(const std::string &msg)

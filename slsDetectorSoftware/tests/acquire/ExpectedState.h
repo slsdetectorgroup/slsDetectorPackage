@@ -31,6 +31,8 @@ struct JungfrauExpectedState {
     ns exptime{};
     ns period{};
     int num_udp_interfaces{};
+    std::vector<defs::portPosition> udp_port_types;
+    std::vector<int> udp_ports_disabled;
     int read_n_rows{};
     defs::speedLevel readout_speed{};
 };
@@ -40,6 +42,8 @@ struct MoenchExpectedState {
     ns exptime{};
     ns period{};
     int num_udp_interfaces{};
+    std::vector<defs::portPosition> udp_port_types;
+    std::vector<int> udp_ports_disabled;
     int read_n_rows{};
     defs::speedLevel readout_speed{};
 };
@@ -54,6 +58,8 @@ struct EigerExpectedState {
     ns sub_exptime{};
     ns sub_period{};
     bool quad{};
+    std::vector<defs::portPosition> udp_port_types;
+    std::vector<int> udp_ports_disabled;
     int read_n_rows{};
     std::vector<int64_t> rate_corrections{};
     defs::speedLevel readout_speed{};

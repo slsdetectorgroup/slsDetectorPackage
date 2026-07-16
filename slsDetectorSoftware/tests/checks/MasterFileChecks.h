@@ -129,6 +129,22 @@ void check_num_udp_interfaces(CheckerT &checker, const int &value) {
 }
 
 template <typename CheckerT>
+void check_udp_ports_type(CheckerT &checker,
+                          const std::vector<defs::portPosition> &value) {
+    REQUIRE(value.size() == 2);
+    std::vector<std::string> ports = {ToString(value[0]), ToString(value[1])};
+    checker.template check<std::vector<std::string>>(
+        MasterAttributes::N_UDP_PORTS_TYPE.data(), ports);
+}
+
+template <typename CheckerT>
+void check_udp_ports_disabled(CheckerT &checker,
+                              const std::vector<int> &value) {
+    checker.template check<std::vector<int>>(
+        MasterAttributes::N_UDP_PORTS_DISABLED.data(), value);
+}
+
+template <typename CheckerT>
 void check_read_n_rows(CheckerT &checker, const int &value) {
     checker.template check<int>(MasterAttributes::N_NUMBER_OF_ROWS.data(),
                                 value);
@@ -318,6 +334,10 @@ void check_jungfrau_metadata(CheckerT &checker,
     check_exptime(checker, st.exptime);
     check_period(checker, st.period);
     check_num_udp_interfaces(checker, st.num_udp_interfaces);
+    if (st.num_udp_interfaces == 2) {
+        check_udp_ports_type(checker, st.udp_port_types);
+        check_udp_ports_disabled(checker, st.udp_ports_disabled);
+    }
     check_read_n_rows(checker, st.read_n_rows);
     check_readout_speed(checker, st.readout_speed);
 }
@@ -331,6 +351,10 @@ void check_moench_metadata(CheckerT &checker,
     check_exptime(checker, st.exptime);
     check_period(checker, st.period);
     check_num_udp_interfaces(checker, st.num_udp_interfaces);
+    if (st.num_udp_interfaces == 2) {
+        check_udp_ports_type(checker, st.udp_port_types);
+        check_udp_ports_disabled(checker, st.udp_ports_disabled);
+    }
     check_read_n_rows(checker, st.read_n_rows);
     check_readout_speed(checker, st.readout_speed);
 }
@@ -349,6 +373,8 @@ void check_eiger_metadata(CheckerT &checker,
     check_sub_exptime(checker, st.sub_exptime);
     check_sub_period(checker, st.sub_period);
     check_quad(checker, st.quad);
+    check_udp_ports_type(checker, st.udp_port_types);
+    check_udp_ports_disabled(checker, st.udp_ports_disabled);
     check_read_n_rows(checker, st.read_n_rows);
     check_rate_corrections(checker, st.rate_corrections);
     check_readout_speed(checker, st.readout_speed);

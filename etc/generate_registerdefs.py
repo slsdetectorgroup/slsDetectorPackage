@@ -32,23 +32,47 @@ def argument_parser():
 
 # TODO: should be configurable 
 header = r"""
+#pragma once
 // clang-format off
 #include "RegisterHelperStructs.hpp"
 
 namespace sls {
 
+
+
+namespace Reg {
+
 /// @brief Enum for IP cores, value are adresses
 enum class IPCore : uint32_t {
-    MH_RO_SM_AXI = 0, // dummy adresses for now
-    FHDR_AXI = 1,
-    AURORA_STATUS = 2,
-    AURORA_STATUS2 = 3,
-    PACKETIZERREG = 4,
-    UNKNOWN = 5
+    MH_RO_SM_AXI = 0xB0010000,
+    FHDR_AXI = 0xB0011000,
+    AURORA_STATUS = 0xB0014000,
+    AURORA_STATUS2 = 0xB0015000,
+    PACKETIZERREG = 0x00000000, // TODO: fill in correct address
+    UNKNOWN = 0x00000000 // dont know yet
 };
+
+constexpr size_t IPCORE_REGISTER_BLOCK_SIZE =
+    0x1000; // size of each IP core address space in bytes // TODO: maybe add in
+            // other file definitions
+
+// clang-format off
+
 """
 
 postpend = r""" 
+constexpr RegisterField ModuleRow{
+     Frame_HDR_ModCoord_LSB_Reg, 0, 0xffff}; 
+
+constexpr RegisterField ModuleCol{
+     Frame_HDR_ModCoord_LSB_Reg, 16, 0xffff};
+
+constexpr RegisterField ModuleCoordz{
+     Frame_HDR_ModCoord_MSB_Reg, 0, 0xffff};
+
+constexpr RegisterField ModuleIndex{
+     Frame_HDR_ModCoord_MSB_Reg, 16, 0xffff};
+} // namespace Reg
 } // namespace sls
 // clang-format on
 """

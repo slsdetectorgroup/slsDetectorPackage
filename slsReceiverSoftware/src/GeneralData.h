@@ -472,6 +472,66 @@ class Mythen3Data : public GeneralData {
     };
 };
 
+class MatterhornData : public GeneralData {
+
+  public:
+    MatterhornData() {
+        detType = slsDetectorDefs::MATTERHORN;
+        headerSizeinPacket = sizeof(slsDetectorDefs::sls_detector_header);
+        framesPerFile = MATTERHORN_MAX_FRAMES_PER_FILE; // TODO: dummy value
+        fifoDepth = 50000;                              // TODO: dummy value
+        standardheader = true;
+        dataSize = 8192;
+        packetSize = headerSizeinPacket + dataSize;
+        // udpSocketBufferSize = 0; // TODO: dummy value
+        dynamicRange = 16;   // default
+        SetCounterMask(0xf); // default all 4 counters enabled
+        UpdateImageSize();
+    };
+
+    void SetDynamicRange(int dr) {
+        dynamicRange = dr;
+        UpdateImageSize();
+    };
+
+    void SetCounterMask(const int mask) {
+        int n = __builtin_popcount(mask);
+        if (n < 1 || n > 4) {
+            throw RuntimeError("Invalid number of counters " +
+                               std::to_string(n) + ". Expected 1-4.");
+        }
+        counterMask = mask;
+        ncounters = n;
+        UpdateImageSize();
+    };
+
+    void CalculatefifoDepth() { fifoDepth = max_memory_allocated / imageSize; }
+
+  private:
+    void UpdateImageSize() {
+        nPixelsX = nChannelsX;
+        nPixelsY = nChannelsY * ncounters;
+
+        imageSize = nPixelsX * nPixelsY * GetPixelDepth();
+        LOG(logINFO) << "imageSize: " << imageSize;
+        actualImageSize = imageSize;
+
+        CalculatefifoDepth();
+
+        packetsPerFrame = imageSize / dataSize;
+
+        LOG(logINFO) << "Packets Per Frame: " << packetsPerFrame;
+    };
+
+  private:
+    int ncounters{0};
+    static constexpr int nChannelsX{1024};
+    static constexpr int nChannelsY{512};
+
+    constexpr static int max_memory_allocated =
+        100000; // TODO: dummy value for now
+};
+
 class Gotthard2Data : public GeneralData {
   public:
     Gotthard2Data() {

@@ -6,14 +6,6 @@
 #include <iomanip>
 #include <sstream>
 
-#ifndef SLS_HDF5_FILTER_ID
-#define SLS_HDF5_FILTER_ID 0
-#endif
-
-#ifndef SLS_HDF5_FILTER_PARAMS
-#define SLS_HDF5_FILTER_PARAMS ""
-#endif
-
 namespace sls {
 
 HDF5DataFile::HDF5DataFile(int index, std::mutex *hdf5Lib)

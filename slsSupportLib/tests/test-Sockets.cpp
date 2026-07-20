@@ -231,14 +231,13 @@ TEST_CASE("Using DetectorSocket to talk to a Server Socket", "[support]") {
 
     auto client = DetectorSocket("localhost", port);
     int retval = 0;
-    int ret = client.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval,
-                                         sizeof(retval));
+    CHECK_NOTHROW(client.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval,
+                                             sizeof(retval)));
     client.close();
 
     auto server_received = s.get();
 
     // Client got OK and the expected return value back from the server
-    CHECK(ret == slsDetectorDefs::OK);
     CHECK(retval == arg * 2);
     // Server received the function number and argument we sent
     CHECK(server_received.first == fnum);

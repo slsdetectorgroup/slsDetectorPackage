@@ -1638,51 +1638,24 @@ void Module::setRxArping(bool enable) {
 }
 
 std::vector<defs::ROI> Module::getRxROI() const {
-    LOG(logDEBUG1) << "Getting receiver ROI for Module " << moduleIndex;
-    // check number of ports
-    if (!shm()->useReceiverFlag) {
-        throw RuntimeError("No receiver to get ROI.");
-    }
-    auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
-    client.Send(F_RECEIVER_GET_RECEIVER_ROI);
-    client.setFnum(F_RECEIVER_GET_RECEIVER_ROI);
-    auto nPorts = client.Receive<int>();
-    std::vector<ROI> retval(nPorts);
-    if (nPorts > 0)
-        client.Receive(retval);
-    if (nPorts != shm()->numUDPInterfaces) {
+    std::vector<ROI> retval;
+    retval = sendToReceiverVarVector<ROI>(F_RECEIVER_GET_RECEIVER_ROI);
+    auto nPorts = retval.size();
+    if (static_cast<int>(nPorts) != shm()->numUDPInterfaces) {
         throw RuntimeError(
             "Invalid number of rois: " + std::to_string(nPorts) +
             ". Expected: " + std::to_string(shm()->numUDPInterfaces));
     }
-    LOG(logDEBUG1) << "ROI of Receiver" << moduleIndex << ": "
-                   << ToString(retval);
     return retval;
 }
 
 void Module::setRxROI(const std::vector<defs::ROI> &portRois) {
-    LOG(logDEBUG) << "Sending to receiver " << moduleIndex
-                  << " [roi: " << ToString(portRois) << ']';
-    if (!shm()->useReceiverFlag) {
-        throw RuntimeError("No receiver to set ROI.");
-    }
     if ((int)portRois.size() != shm()->numUDPInterfaces) {
         throw RuntimeError(
             "Invalid number of ROIs: " + std::to_string(portRois.size()) +
             ". Expected: " + std::to_string(shm()->numUDPInterfaces));
     }
-    // check number of ports
-    auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
-    client.Send(F_RECEIVER_SET_RECEIVER_ROI);
-    client.setFnum(F_RECEIVER_SET_RECEIVER_ROI);
-    int size = static_cast<int>(portRois.size());
-    client.Send(size);
-    if (size > 0)
-        client.Send(portRois);
-    if (client.Receive<int>() == FAIL) {
-        throw ReceiverError("Receiver " + std::to_string(moduleIndex) +
-                            " returned error: " + client.readErrorMessage());
-    }
+    sendToReceiverVarVector(F_RECEIVER_SET_RECEIVER_ROI, portRois);
 }
 
 std::vector<slsDetectorDefs::ROI> Module::getRxROIMetadata() const {
@@ -3126,14 +3099,18 @@ int64_t Module::getMeasurementTime() const {
 
 // private
 
-void Module::checkArgs(const void *args, size_t args_size, void *retval,
-                       size_t retval_size) const {
+void Module::checkArgs(const void *args, size_t args_size) const {
     if (args == nullptr && args_size != 0)
         throw RuntimeError(
             "Passed nullptr as args to Send function but size is not 0");
     if (args != nullptr && args_size == 0)
         throw RuntimeError(
             "Passed size 0 to Send function but args is not nullptr");
+}
+
+void Module::checkArgs(const void *args, size_t args_size, void *retval,
+                       size_t retval_size) const {
+    checkArgs(args, args_size);
     if (retval == nullptr && retval_size != 0)
         throw RuntimeError(
             "Passed nullptr as retval to Send function but size is not 0");
@@ -3378,6 +3355,44 @@ Ret Module::sendToDetectorStop(int fnum, const Arg &args) {
 }
 
 //-------------------------------------------------------------- sendToReceiver
+
+template <typename Arg>
+void Module::sendToReceiverVarVector(int fnum,
+                                     const std::vector<Arg> &args) const {
+    LOG(logDEBUG1) << "Sending to Receiver: ["
+                   << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
+                   << ", std::vector<" << typeid(Arg).name() << ">, nullptr, 0,"
+                   << "]";
+    if (!shm()->useReceiverFlag) {
+        std::ostringstream oss;
+        oss << "Set rx_hostname first to use receiver parameters, ";
+        oss << getFunctionNameFromEnum(static_cast<detFuncs>(fnum));
+        throw RuntimeError(oss.str());
+    }
+    auto receiver = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
+    receiver.sendCommandVariableSize(fnum, args, nullptr, 0);
+    receiver.close();
+}
+
+template <typename Ret>
+std::vector<Ret> Module::sendToReceiverVarVector(int fnum) const {
+    LOG(logDEBUG1) << "Sending to Receiver: ["
+                   << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
+                   << ", nullptr, 0, std::vector<" << typeid(Ret).name()
+                   << ">, "
+                   << "]";
+    if (!shm()->useReceiverFlag) {
+        std::ostringstream oss;
+        oss << "Set rx_hostname first to use receiver parameters, ";
+        oss << getFunctionNameFromEnum(static_cast<detFuncs>(fnum));
+        throw RuntimeError(oss.str());
+    }
+    std::vector<Ret> retval;
+    auto receiver = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
+    receiver.sendCommandVariableSize(fnum, nullptr, 0, retval);
+    receiver.close();
+    return retval;
+}
 
 void Module::sendToReceiver(int fnum, const void *args, size_t args_size,
                             void *retval, size_t retval_size) const {

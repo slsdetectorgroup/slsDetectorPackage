@@ -30,6 +30,24 @@ class ServerInterface : public DataSocket {
         Send(retval);
         return defs::OK;
     }
+
+    template <typename T> int sendVariableResult(T &&retval) {
+        Send(defs::OK);
+        int count = static_cast<int>(retval.size());
+        Send(count);
+        if (count > 0)
+            Send(retval);
+        return defs::OK;
+    }
+
+    template <typename T> T receiveVariableArgs() {
+        size_t count = 0;
+        Receive(&count, sizeof(count));
+        T retval{count};
+        if (count > 0)
+            Receive(retval);
+        return retval;
+    }
 };
 
 } // namespace sls

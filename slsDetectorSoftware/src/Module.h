@@ -626,6 +626,7 @@ class Module : public virtual slsDetectorDefs {
   private:
     std::string getReceiverLongVersion() const;
 
+    void checkArgs(const void *args, size_t args_size) const;
     void checkArgs(const void *args, size_t args_size, void *retval,
                    size_t retval_size) const;
 
@@ -713,6 +714,12 @@ class Module : public virtual slsDetectorDefs {
     Ret sendToDetectorStop(int fnum, const Arg &args) const;
 
     /** Send function parameters to receiver */
+    template <typename Arg>
+    void sendToReceiverVarVector(int fnum, const std::vector<Arg> &args) const;
+
+    template <typename Ret>
+    std::vector<Ret> sendToReceiverVarVector(int fnum) const;
+
     void sendToReceiver(int fnum, const void *args, size_t args_size,
                         void *retval, size_t retval_size);
 

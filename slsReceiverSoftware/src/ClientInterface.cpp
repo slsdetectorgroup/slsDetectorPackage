@@ -1098,37 +1098,39 @@ int ClientInterface::stream_rx_dummy_header(Interface &socket) {
 }
 
 int ClientInterface::set_additional_json_header(Interface &socket) {
-    std::map<std::string, std::string> json;
-    auto size = socket.Receive<int>();
-    if (size > 0) {
-        std::string buff(size, '\0');
-        socket.Receive(&buff[0], buff.size());
-        std::istringstream iss(buff);
-        std::string key, value;
-        while (iss >> key) {
-            iss >> value;
-            json[key] = value;
-        }
-    }
     // verifyIdle(socket); allowing it to be set on the fly
-    LOG(logDEBUG1) << "Setting additional json header: " << ToString(json);
-    impl()->setAdditionalJsonHeader(json);
+
+    auto vec = socket.receiveVariableArgs<std::vector<char>>();
+    // convert vector<char> to string (space separated)
+    std::string longString(vec.begin(), vec.end());
+    // convert string to map of key-value pairs
+    std::map<std::string, std::string> args;
+    std::istringstream iss(longString);
+    std::string key, value;
+    while (iss >> key) {
+        iss >> value;
+        args[key] = value;
+    }
+    LOG(logDEBUG1) << "Setting additional json header: " << ToString(args);
+
+    impl()->setAdditionalJsonHeader(args);
     return socket.Send(OK);
 }
 
 int ClientInterface::get_additional_json_header(Interface &socket) {
     std::map<std::string, std::string> json = impl()->getAdditionalJsonHeader();
     LOG(logDEBUG1) << "additional json header:" << ToString(json);
+
+    // convert map to string (space separated) to send over socket
     std::ostringstream oss;
     for (auto &it : json) {
         oss << it.first << ' ' << it.second << ' ';
     }
-    auto buff = oss.str();
-    auto size = static_cast<int>(buff.size());
-    socket.sendResult(size);
-    if (size > 0)
-        socket.Send(buff);
-    return OK;
+    auto longString = oss.str();
+
+    // conver to vector<char> to send over socket (variable vector length impl)
+    std::vector<char> retval(longString.begin(), longString.end());
+    return socket.sendVariableResult(retval);
 }
 
 int ClientInterface::set_udp_socket_buffer_size(Interface &socket) {

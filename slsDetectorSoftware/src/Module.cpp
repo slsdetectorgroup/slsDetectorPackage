@@ -2005,50 +2005,41 @@ void Module::sendVetoPhoton(const int chipIndex,
                             const std::vector<int> &gainIndices,
                             const std::vector<int> &values) {
     const int nch = gainIndices.size();
-    if (gainIndices.size() != values.size()) {
-        throw RuntimeError("Number of Gain Indices and values do not match! "
-                           "Gain Indices size: " +
-                           std::to_string(gainIndices.size()) +
-                           ", values size: " + std::to_string(values.size()));
+    if (nch != static_cast<int>(values.size())) {
+        std::ostringstream oss;
+        oss << "Number of Gain Indices and values do not match! Gain Indices "
+               "size: "
+            << nch << ", values size: " << values.size();
+        throw RuntimeError(oss.str());
     }
     LOG(logDEBUG1) << "Sending veto photon/file to detector [chip:" << chipIndex
                    << ", nch:" << nch << "]";
-
     const int args[]{chipIndex, nch};
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(F_SET_VETO_PHOTON);
-    client.setFnum(F_SET_VETO_PHOTON);
-    client.Send(args);
+    client.sendCommand(F_SET_VETO_PHOTON, args, sizeof(args));
     client.Send(gainIndices);
     client.Send(values);
-    if (client.Receive<int>() == FAIL) {
-        throw DetectorError("Detector " + std::to_string(moduleIndex) +
-                            " returned error: " + client.readErrorMessage());
-    }
+    client.readReply(nullptr, 0);
 }
 
 void Module::getVetoPhoton(const int chipIndex,
                            const std::string &fname) const {
     LOG(logDEBUG1) << "Getting veto photon [" << chipIndex << "]\n";
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(F_GET_VETO_PHOTON);
-    client.setFnum(F_GET_VETO_PHOTON);
-    client.Send(chipIndex);
-    if (client.Receive<int>() == FAIL) {
-        throw DetectorError("Detector " + std::to_string(moduleIndex) +
-                            " returned error: " + client.readErrorMessage());
-    }
-
-    auto nch = client.Receive<int>();
-    if (nch != shm()->nChan.x) {
-        throw DetectorError("Could not get veto photon. Expected " +
-                            std::to_string(shm()->nChan.x) + " channels, got " +
-                            std::to_string(nch));
-    }
+    client.sendCommand(F_GET_VETO_PHOTON, &chipIndex, sizeof(chipIndex));
+    int nch = 0;
+    client.readReply(&nch, sizeof(nch));
     std::vector<int> gainIndices(nch);
     std::vector<int> values(nch);
     client.Receive(gainIndices);
     client.Receive(values);
+
+    if (nch != shm()->nChan.x) {
+        std::ostringstream oss;
+        oss << "Could not get veto photon. Expected " << shm()->nChan.x
+            << " channels, got " << nch;
+        throw DetectorError(oss.str());
+    }
 
     // save to file
     std::ofstream outfile(fname);
@@ -2129,10 +2120,10 @@ void Module::setVetoPhoton(const int chipIndex, const int numPhotons,
     }
     // check size
     if ((int)gainIndices.size() != shm()->nChan.x) {
-        throw RuntimeError("Could not set veto photon. Invalid number of "
-                           "entries in file. Expected " +
-                           std::to_string(shm()->nChan.x) + ", read " +
-                           std::to_string(gainIndices.size()));
+        std::ostringstream oss;
+        oss << "Could not set veto photon. Invalid number of entries in file. "
+            << "Expected " << shm()->nChan.x << ", read " << gainIndices.size();
+        throw RuntimeError(oss.str());
     }
 
     sendVetoPhoton(chipIndex, gainIndices, values);
@@ -2549,17 +2540,13 @@ std::string Module::getPatternFileName() const {
 }
 
 void Module::setPattern(const Pattern &pat, const std::string &fname) {
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(F_SET_PATTERN);
-    client.setFnum(F_SET_PATTERN);
-    client.Send(pat.data(), pat.size());
     char args[MAX_STR_LENGTH]{};
     strcpy_safe(args, fname.c_str());
+
+    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    client.sendCommand(F_SET_PATTERN, pat.data(), pat.size());
     client.Send(args);
-    if (client.Receive<int>() == FAIL) {
-        throw DetectorError("Detector " + std::to_string(moduleIndex) +
-                            " returned error: " + client.readErrorMessage());
-    }
+    client.readReply(nullptr, 0);
 }
 
 Pattern Module::getPattern() {
@@ -2662,69 +2649,44 @@ void Module::startPattern() { sendToDetector(F_START_PATTERN); }
 // Json Header specific
 
 std::map<std::string, std::string> Module::getAdditionalJsonHeader() const {
-    // TODO, refactor this function with a more robust sending.
-    // Now assuming whitespace separated key value
-    if (!shm()->useReceiverFlag) {
-        throw RuntimeError("Set rx_hostname first to use receiver parameters "
-                           "(zmq json header)");
+    auto vec = sendToReceiverVarVector<char>(F_GET_ADDITIONAL_JSON_HEADER);
+
+    // convert vector to string
+    std::string longString(vec.begin(), vec.end());
+    // convert string (space separated) to map of key-value pairs
+    std::map<std::string, std::string> retval;
+    std::istringstream iss(longString);
+    std::string key, value;
+    while (iss >> key) {
+        iss >> value;
+        retval[key] = value;
     }
-    auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
-    client.Send(F_GET_ADDITIONAL_JSON_HEADER);
-    client.setFnum(F_GET_ADDITIONAL_JSON_HEADER);
-    if (client.Receive<int>() == FAIL) {
-        throw ReceiverError("Receiver " + std::to_string(moduleIndex) +
-                            " returned error: " + client.readErrorMessage());
-    } else {
-        auto size = client.Receive<int>();
-        std::string buff(size, '\0');
-        std::map<std::string, std::string> retval;
-        if (size > 0) {
-            client.Receive(&buff[0], buff.size());
-            std::istringstream iss(buff);
-            std::string key, value;
-            while (iss >> key) {
-                iss >> value;
-                retval[key] = value;
-            }
-        }
-        LOG(logDEBUG) << "Getting additional json header " << ToString(retval);
-        return retval;
-    }
+    LOG(logDEBUG) << "Getting additional json header " << ToString(retval);
+    return retval;
 }
 
 void Module::setAdditionalJsonHeader(
     const std::map<std::string, std::string> &jsonHeader) {
-    if (!shm()->useReceiverFlag) {
-        throw RuntimeError("Set rx_hostname first to use receiver parameters "
-                           "(zmq json header)");
-    }
+    // validate
     for (auto &it : jsonHeader) {
-        if (it.first.empty() || it.first.length() > SHORT_STR_LENGTH ||
-            it.second.length() > SHORT_STR_LENGTH) {
-            throw RuntimeError(
-                it.first + " or " + it.second +
-                " pair has invalid size. "
-                "Key cannot be empty. Both can have max 20 characters");
+        auto key = it.first;
+        auto value = it.second;
+        if (key.empty() || key.length() > SHORT_STR_LENGTH ||
+            value.length() > SHORT_STR_LENGTH) {
+            throw RuntimeError(key + " or " + value +
+                               " pair has invalid size. Key cannot be empty. "
+                               "Both can have max 20 characters");
         }
     }
+    // convert map to string (space separated)
     std::ostringstream oss;
     for (auto &it : jsonHeader)
         oss << it.first << ' ' << it.second << ' ';
-    auto buff = oss.str();
-    const auto size = static_cast<int>(buff.size());
-    LOG(logDEBUG) << "Sending to receiver additional json header "
-                  << ToString(jsonHeader);
-    auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
-    client.Send(F_SET_ADDITIONAL_JSON_HEADER);
-    client.setFnum(F_SET_ADDITIONAL_JSON_HEADER);
-    client.Send(size);
-    if (size > 0)
-        client.Send(&buff[0], buff.size());
+    auto longString = oss.str();
+    // convert string to vector<char> to send over socket (variable vector impl)
+    std::vector<char> args(longString.begin(), longString.end());
 
-    if (client.Receive<int>() == FAIL) {
-        throw ReceiverError("Receiver " + std::to_string(moduleIndex) +
-                            " returned error: " + client.readErrorMessage());
-    }
+    sendToReceiverVarVector(F_SET_ADDITIONAL_JSON_HEADER, args);
 }
 
 std::string Module::getAdditionalJsonParameter(const std::string &key) const {

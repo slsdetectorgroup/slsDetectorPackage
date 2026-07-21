@@ -994,72 +994,15 @@ double Module::getReceiverProgress() const {
 }
 
 std::vector<int64_t> Module::getFramesCaughtByReceiver() const {
-    // TODO!(Erik) Refactor
-    LOG(logDEBUG1) << "Getting frames caught";
-    if (shm()->useReceiverFlag) {
-        auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
-        client.Send(F_GET_RECEIVER_FRAMES_CAUGHT);
-        client.setFnum(F_GET_RECEIVER_FRAMES_CAUGHT);
-        if (client.Receive<int>() == FAIL) {
-            throw ReceiverError(
-                "Receiver " + std::to_string(moduleIndex) +
-                " returned error: " + client.readErrorMessage());
-        } else {
-            auto nports = client.Receive<int>();
-            std::vector<int64_t> retval(nports);
-            client.Receive(retval);
-            LOG(logDEBUG1) << "Frames caught of Receiver" << moduleIndex << ": "
-                           << ToString(retval);
-            return retval;
-        }
-    }
-    throw RuntimeError("No receiver to get frames caught.");
+    return sendToReceiverVarVector<int64_t>(F_GET_RECEIVER_FRAMES_CAUGHT);
 }
 
 std::vector<int64_t> Module::getNumMissingPackets() const {
-    // TODO!(Erik) Refactor
-    LOG(logDEBUG1) << "Getting num missing packets";
-    if (shm()->useReceiverFlag) {
-        auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
-        client.Send(F_GET_NUM_MISSING_PACKETS);
-        client.setFnum(F_GET_NUM_MISSING_PACKETS);
-        if (client.Receive<int>() == FAIL) {
-            throw ReceiverError(
-                "Receiver " + std::to_string(moduleIndex) +
-                " returned error: " + client.readErrorMessage());
-        } else {
-            auto nports = client.Receive<int>();
-            std::vector<int64_t> retval(nports);
-            client.Receive(retval);
-            LOG(logDEBUG1) << "Missing packets of Receiver" << moduleIndex
-                           << ": " << ToString(retval);
-            return retval;
-        }
-    }
-    throw RuntimeError("No receiver to get missing packets.");
+    return sendToReceiverVarVector<int64_t>(F_GET_NUM_MISSING_PACKETS);
 }
 
 std::vector<int64_t> Module::getReceiverCurrentFrameIndex() const {
-    // TODO!(Erik) Refactor
-    LOG(logDEBUG1) << "Getting frame index";
-    if (shm()->useReceiverFlag) {
-        auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
-        client.Send(F_GET_RECEIVER_FRAME_INDEX);
-        client.setFnum(F_GET_RECEIVER_FRAME_INDEX);
-        if (client.Receive<int>() == FAIL) {
-            throw ReceiverError(
-                "Receiver " + std::to_string(moduleIndex) +
-                " returned error: " + client.readErrorMessage());
-        } else {
-            auto nports = client.Receive<int>();
-            std::vector<int64_t> retval(nports);
-            client.Receive(retval);
-            LOG(logDEBUG1) << "Frame index of Receiver" << moduleIndex << ": "
-                           << ToString(retval);
-            return retval;
-        }
-    }
-    throw RuntimeError("No receiver to get frame index.");
+    return sendToReceiverVarVector<int64_t>(F_GET_RECEIVER_FRAME_INDEX);
 }
 
 uint64_t Module::getNextFrameNumber() const {
@@ -1407,46 +1350,11 @@ void Module::setUDPDataStream(const portPosition port, const bool enable) {
 }
 
 void Module::updateRxUDPPortDisableMetadata(const std::vector<int> &disable) {
-    if (!shm()->useReceiverFlag) {
-        return;
-    }
-    LOG(logDEBUG) << "Updating UDP port disable metadata in Receiver 0";
-    auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
-
-    client.Send(F_RECEIVER_SET_UDP_PORT_DISABLE_META);
-    client.setFnum(F_RECEIVER_SET_UDP_PORT_DISABLE_META);
-
-    auto nports = static_cast<int>(disable.size());
-    client.Send(nports);
-    if (nports > 0) {
-        client.Send(disable);
-    }
-    if (client.Receive<int>() == FAIL) {
-        throw ReceiverError("Receiver " + std::to_string(moduleIndex) +
-                            " returned error: " + client.readErrorMessage());
-    }
+    sendToReceiverVarVector(F_RECEIVER_SET_UDP_PORT_DISABLE_META, disable);
 }
 
 std::vector<int> Module::getRxUDPPortDisableMetadata() const {
-    if (!shm()->useReceiverFlag) {
-        throw RuntimeError("No receiver to get disabled udp port indices.");
-    }
-
-    LOG(logDEBUG) << "Getting UDP port disable metadata in Receiver 0";
-    auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
-
-    client.Send(F_RECEIVER_GET_UDP_PORT_DISABLE_META);
-    client.setFnum(F_RECEIVER_GET_UDP_PORT_DISABLE_META);
-    if (client.Receive<int>() == FAIL) {
-        throw ReceiverError("Receiver " + std::to_string(moduleIndex) +
-                            " returned error: " + client.readErrorMessage());
-    }
-    auto nports = client.Receive<int>();
-    std::vector<int> retval(nports);
-    if (nports > 0) {
-        client.Receive(retval);
-    }
-    return retval;
+    return sendToReceiverVarVector<int>(F_RECEIVER_GET_UDP_PORT_DISABLE_META);
 }
 
 // Receiver Config
@@ -1630,45 +1538,19 @@ void Module::setRxROI(const std::vector<defs::ROI> &portRois) {
 }
 
 std::vector<slsDetectorDefs::ROI> Module::getRxROIMetadata() const {
-    LOG(logDEBUG1) << "Getting receiver ROI metadata for Module "
-                   << moduleIndex;
-    // check number of ports
-    if (!shm()->useReceiverFlag) {
-        throw RuntimeError("No receiver to get ROI metadata.");
-    }
-    auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
-    client.Send(F_RECEIVER_GET_ROI_METADATA);
-    client.setFnum(F_RECEIVER_GET_ROI_METADATA);
-    auto size = client.Receive<int>();
-    std::vector<slsDetectorDefs::ROI> retval(size);
-    if (size > 0)
-        client.Receive(retval);
-    if (size == 0) {
-        throw RuntimeError("Invalid number of ROI metadata: " +
-                           std::to_string(size) + ". Min: 1.");
-    }
+    auto retval = sendToReceiverVarVector<ROI>(F_RECEIVER_GET_ROI_METADATA);
+    if (retval.size() == 0)
+        throw RuntimeError("Invalid number of ROI metadata: 0. Min: 1.");
     LOG(logDEBUG1) << "ROI metadata of Receiver: " << ToString(retval);
     return retval;
 }
 
 void Module::setRxROIMetadata(const std::vector<slsDetectorDefs::ROI> &args) {
-    LOG(logDEBUG) << "Sending to receiver " << moduleIndex
-                  << " [roi metadata: " << ToString(args) << ']';
-    auto receiver = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
-    receiver.Send(F_RECEIVER_SET_RECEIVER_ROI_METADATA);
-    receiver.setFnum(F_RECEIVER_SET_RECEIVER_ROI_METADATA);
-    int size = static_cast<int>(args.size());
-    receiver.Send(size);
-    if (size > 0)
-        receiver.Send(args);
-    if (size < 1) {
+    if (args.size() < 1) {
         throw RuntimeError("Invalid number of ROI metadata: " +
-                           std::to_string(size) + ". Min: 1.");
+                           std::to_string(args.size()) + ". Min: 1.");
     }
-    if (receiver.Receive<int>() == FAIL) {
-        throw ReceiverError("Receiver " + std::to_string(moduleIndex) +
-                            " returned error: " + receiver.readErrorMessage());
-    }
+    sendToReceiverVarVector(F_RECEIVER_SET_RECEIVER_ROI_METADATA, args);
 }
 
 // File
@@ -1879,17 +1761,7 @@ void Module::setRateCorrection(int64_t t) {
 }
 
 void Module::sendReceiverRateCorrections(const std::vector<int64_t> &t) {
-    LOG(logDEBUG) << "Sending to receiver 0 [rate corrections: " << ToString(t)
-                  << ']';
-    auto receiver = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
-    receiver.Send(F_SET_RECEIVER_RATE_CORRECT);
-    receiver.setFnum(F_SET_RECEIVER_RATE_CORRECT);
-    receiver.Send(static_cast<int>(t.size()));
-    receiver.Send(t);
-    if (receiver.Receive<int>() == FAIL) {
-        throw ReceiverError("Receiver " + std::to_string(moduleIndex) +
-                            " returned error: " + receiver.readErrorMessage());
-    }
+    sendToReceiverVarVector(F_SET_RECEIVER_RATE_CORRECT, t);
 }
 
 bool Module::getInterruptSubframe() const {

@@ -831,32 +831,17 @@ int ClientInterface::get_file_index(Interface &socket) {
 
 int ClientInterface::get_frame_index(Interface &socket) {
     auto retval = impl()->getCurrentFrameIndex();
-    LOG(logDEBUG1) << "frames index:" << ToString(retval);
-    auto size = static_cast<int>(retval.size());
-    socket.Send(OK);
-    socket.Send(size);
-    socket.Send(retval);
-    return OK;
+    return socket.sendVariableResult(retval);
 }
 
 int ClientInterface::get_missing_packets(Interface &socket) {
     auto missing_packets = impl()->getNumMissingPackets();
-    LOG(logDEBUG1) << "missing packets:" << ToString(missing_packets);
-    auto size = static_cast<int>(missing_packets.size());
-    socket.Send(OK);
-    socket.Send(size);
-    socket.Send(missing_packets);
-    return OK;
+    return socket.sendVariableResult(missing_packets);
 }
 
 int ClientInterface::get_frames_caught(Interface &socket) {
     auto retval = impl()->getFramesCaught();
-    LOG(logDEBUG1) << "frames caught:" << ToString(retval);
-    auto size = static_cast<int>(retval.size());
-    socket.Send(OK);
-    socket.Send(size);
-    socket.Send(retval);
-    return OK;
+    return socket.sendVariableResult(retval);
 }
 
 int ClientInterface::set_file_write(Interface &socket) {
@@ -1612,16 +1597,13 @@ int ClientInterface::set_streaming_start_fnum(Interface &socket) {
 }
 
 int ClientInterface::set_rate_correct(Interface &socket) {
-    auto index = socket.Receive<int>();
-    if (index <= 0) {
-        throw RuntimeError("Invalid number of rate correction values: " +
-                           std::to_string(index));
-    }
-    LOG(logDEBUG) << "Number of detectors for rate correction: " << index;
-    std::vector<int64_t> t(index);
-    socket.Receive(t);
     verifyIdle(socket);
-    LOG(logINFO) << "Setting rate corrections[" << index << ']';
+
+    auto t = socket.receiveVariableArgs<std::vector<int64_t>>();
+    if (t.size() <= 0)
+        throw RuntimeError("Invalid number of rate correction values: " +
+                           std::to_string(t.size()));
+    LOG(logINFO) << "Setting rate corrections[" << t.size() << ']';
     impl()->setRateCorrections(t);
     return socket.Send(OK);
 }
@@ -1764,7 +1746,6 @@ int ClientInterface::set_receiver_roi(Interface &socket) {
             << ". Expected: " << numInterfaces;
         throw RuntimeError(oss.str());
     }
-
     LOG(logDEBUG1) << "Set Receiver ROI: " << ToString(args);
     try {
         impl()->setPortROIs(args);
@@ -1776,20 +1757,14 @@ int ClientInterface::set_receiver_roi(Interface &socket) {
 }
 
 int ClientInterface::set_receiver_roi_metadata(Interface &socket) {
-    auto roiSize = socket.Receive<int>();
-    LOG(logDEBUG1) << "Number of ReceiverROI metadata: " << roiSize;
-    if (roiSize < 1) {
-        throw RuntimeError("Invalid number of ROIs received: " +
-                           std::to_string(roiSize) + ". Min: 1.");
-    }
-    std::vector<ROI> rois(roiSize);
-    if (roiSize > 0) {
-        socket.Receive(rois);
-    }
     if (detType == CHIPTESTBOARD || detType == XILINX_CHIPTESTBOARD)
         functionNotImplemented();
     verifyIdle(socket);
-    LOG(logINFO) << "Setting ReceiverROI metadata[" << roiSize << ']';
+
+    auto rois = socket.receiveVariableArgs<std::vector<ROI>>();
+    if (rois.size() < 1)
+        throw RuntimeError("Invalid number of ROI metadata: " +
+                           std::to_string(rois.size()) + ". Min: 1.");
     try {
         impl()->setMultiROIMetadata(rois);
     } catch (const std::exception &e) {
@@ -1886,12 +1861,7 @@ int ClientInterface::get_roi_metadata(Interface &socket) {
     if (detType == CHIPTESTBOARD || detType == XILINX_CHIPTESTBOARD)
         functionNotImplemented();
     auto retvals = impl()->getMultiROIMetadata();
-    LOG(logDEBUG1) << "Receiver ROI metadata retval:" << ToString(retvals);
-    auto size = static_cast<int>(retvals.size());
-    socket.Send(size);
-    if (size > 0)
-        socket.Send(retvals);
-    return OK;
+    return socket.sendVariableResult(retvals);
 }
 
 int ClientInterface::set_readout_speed(Interface &socket) {
@@ -1924,16 +1894,9 @@ int ClientInterface::set_readout_speed(Interface &socket) {
 }
 
 int ClientInterface::set_udp_port_disable_meta(Interface &socket) {
-    auto nports = socket.Receive<int>();
-    std::vector<int> portsDisabled;
-    if (nports > 0) {
-        portsDisabled.resize(nports);
-        socket.Receive(portsDisabled);
-        LOG(logDEBUG1) << "Disabled Ports Metadata:" << ToString(portsDisabled);
-    }
     verifyIdle(socket);
+    auto portsDisabled = socket.receiveVariableArgs<std::vector<int>>();
     try {
-
         impl()->setUDPPortsDisabledMetadata(portsDisabled);
     } catch (const std::exception &e) {
         throw RuntimeError("Could not update UDP ports disabled metadata [" +
@@ -1944,14 +1907,7 @@ int ClientInterface::set_udp_port_disable_meta(Interface &socket) {
 
 int ClientInterface::get_udp_port_disable_meta(Interface &socket) {
     auto retvals = impl()->getUDPPortsDisabledMetadata();
-    LOG(logDEBUG1) << "Receiver disabled udp ports retval:"
-                   << ToString(retvals);
-    socket.Send(OK);
-    auto size = static_cast<int>(retvals.size());
-    socket.Send(size);
-    if (size > 0)
-        socket.Send(retvals);
-    return OK;
+    return socket.sendVariableResult(retvals);
 }
 
 } // namespace sls

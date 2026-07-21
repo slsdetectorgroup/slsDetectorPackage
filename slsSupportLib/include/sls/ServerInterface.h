@@ -43,7 +43,7 @@ class ServerInterface : public DataSocket {
     template <typename T> T receiveVariableArgs() {
         int count = 0;
         Receive(count);
-        T retval{static_cast<typename T::size_type>(count)};
+        T retval(static_cast<typename T::size_type>(count));
         if (count > 0) {
             Receive(retval);
         }

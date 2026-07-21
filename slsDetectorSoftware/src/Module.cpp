@@ -815,7 +815,7 @@ void Module::setPowerEnabled(const std::vector<defs::powerIndex> &indices,
         indices_int[i] = static_cast<int>(indices[i]);
     }
     // sends a variable vector and an enable
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    auto client = createDetectorSocket();
     client.sendCommand(F_SET_POWER, &count, sizeof(count));
     client.Send(indices_int);
     client.Send(static_cast<int>(enable));
@@ -2015,7 +2015,7 @@ void Module::sendVetoPhoton(const int chipIndex,
     LOG(logDEBUG1) << "Sending veto photon/file to detector [chip:" << chipIndex
                    << ", nch:" << nch << "]";
     const int args[]{chipIndex, nch};
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    auto client = createDetectorSocket();
     client.sendCommand(F_SET_VETO_PHOTON, args, sizeof(args));
     client.Send(gainIndices);
     client.Send(values);
@@ -2025,7 +2025,7 @@ void Module::sendVetoPhoton(const int chipIndex,
 void Module::getVetoPhoton(const int chipIndex,
                            const std::string &fname) const {
     LOG(logDEBUG1) << "Getting veto photon [" << chipIndex << "]\n";
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    auto client = createDetectorSocket();
     client.sendCommand(F_GET_VETO_PHOTON, &chipIndex, sizeof(chipIndex));
     int nch = 0;
     client.readReply(&nch, sizeof(nch));
@@ -2543,7 +2543,7 @@ void Module::setPattern(const Pattern &pat, const std::string &fname) {
     char args[MAX_STR_LENGTH]{};
     strcpy_safe(args, fname.c_str());
 
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    auto client = createDetectorSocket();
     client.sendCommand(F_SET_PATTERN, pat.data(), pat.size());
     client.Send(args);
     client.readReply(nullptr, 0);
@@ -2923,6 +2923,10 @@ void Module::checkArgs(const void *args, size_t args_size, void *retval,
     static_assert(!std::is_same<ARG, std::nullptr_t>::value,                   \
                   "nullptr_t type is incompatible with templated " DST);
 
+DetectorSocket Module::createDetectorSocket() const {
+    return DetectorSocket(shm()->hostname, shm()->controlPort);
+}
+
 template <typename Arg>
 void Module::sendToDetectorVarVector(int fnum,
                                      const std::vector<Arg> &args) const {
@@ -2930,7 +2934,7 @@ void Module::sendToDetectorVarVector(int fnum,
                    << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
                    << ", std::vector<" << typeid(Arg).name() << ">, nullptr, 0,"
                    << "]";
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    auto client = createDetectorSocket();
     client.sendCommandVariableSize(fnum, args, nullptr, 0);
     client.close();
 }
@@ -2942,7 +2946,7 @@ std::vector<Ret> Module::sendToDetectorVarVector(int fnum) const {
                    << ", nullptr, 0, std::vector<" << typeid(Ret).name()
                    << ">]";
     std::vector<Ret> retval;
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    auto client = createDetectorSocket();
     client.sendCommandVariableSize(fnum, nullptr, 0, retval);
     client.close();
     return retval;
@@ -2954,7 +2958,7 @@ void Module::sendToDetector(int fnum, const void *args, size_t args_size,
     // the other versions use templates to deduce sizes and create
     // the return type
     checkArgs(args, args_size, retval, retval_size);
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    auto client = createDetectorSocket();
     client.sendCommandThenRead(fnum, args, args_size, retval, retval_size);
     client.close();
 }
@@ -3177,6 +3181,10 @@ Ret Module::sendToDetectorStop(int fnum, const Arg &args) {
 
 //-------------------------------------------------------------- sendToReceiver
 
+ReceiverSocket Module::createReceiverSocket() const {
+    return ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
+}
+
 template <typename Arg>
 void Module::sendToReceiverVarVector(int fnum,
                                      const std::vector<Arg> &args) const {
@@ -3190,7 +3198,7 @@ void Module::sendToReceiverVarVector(int fnum,
         oss << getFunctionNameFromEnum(static_cast<detFuncs>(fnum));
         throw RuntimeError(oss.str());
     }
-    auto receiver = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
+    auto receiver = createReceiverSocket();
     receiver.sendCommandVariableSize(fnum, args, nullptr, 0);
     receiver.close();
 }
@@ -3208,7 +3216,7 @@ std::vector<Ret> Module::sendToReceiverVarVector(int fnum) const {
         throw RuntimeError(oss.str());
     }
     std::vector<Ret> retval;
-    auto receiver = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
+    auto receiver = createReceiverSocket();
     receiver.sendCommandVariableSize(fnum, nullptr, 0, retval);
     receiver.close();
     return retval;
@@ -3226,7 +3234,7 @@ void Module::sendToReceiver(int fnum, const void *args, size_t args_size,
         throw RuntimeError(oss.str());
     }
     checkArgs(args, args_size, retval, retval_size);
-    auto receiver = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
+    auto receiver = createReceiverSocket();
     receiver.sendCommandThenRead(fnum, args, args_size, retval, retval_size);
     receiver.close();
 }
@@ -3542,7 +3550,7 @@ void Module::setModule(sls_detector_module &module, bool trimbits) {
                    "these have been replaced with 0/200 or 2800/2400.";
         }
     }
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    auto client = createDetectorSocket();
     client.sendCommand(F_SET_MODULE, nullptr, 0);
     sendModule(&module, client);
     client.readReply(nullptr, 0);
@@ -3551,7 +3559,7 @@ void Module::setModule(sls_detector_module &module, bool trimbits) {
 sls_detector_module Module::getModule() {
     LOG(logDEBUG1) << "Getting module";
     sls_detector_module module(shm()->detType);
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    auto client = createDetectorSocket();
     client.sendCommand(F_GET_MODULE, nullptr, 0);
     client.readReply(nullptr, 0);
     receiveModule(&module, client);
@@ -3890,7 +3898,7 @@ void Module::sendProgram(bool blackfin, std::vector<char> buffer,
                  << "): Sending " << functionType;
 
     // send fnum and filesize
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    auto client = createDetectorSocket();
     client.Send(functionEnum);
     uint64_t filesize = buffer.size();
     client.Send(filesize);
@@ -4022,7 +4030,7 @@ std::vector<uint8_t> Module::writeSpi(int chip_id, int register_id,
                                       const std::vector<uint8_t> &data) {
     int count = static_cast<int>(data.size());
     int args[] = {chip_id, register_id, count};
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    auto client = createDetectorSocket();
     client.sendCommand(F_SPI_WRITE, args, sizeof(args));
     client.Send(data);
     // Read the output from the SPI write. This contains the data before the

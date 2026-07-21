@@ -2868,23 +2868,14 @@ IpAddr Module::getLastClientIP() const {
 }
 
 std::string Module::executeCommand(const std::string &cmd) {
-    char arg[MAX_STR_LENGTH]{};
-    char retval[MAX_STR_LENGTH]{};
-    strcpy_safe(arg, cmd.c_str());
     LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
                  << "): Sending command " << cmd;
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(F_EXEC_COMMAND);
-    client.setFnum(F_EXEC_COMMAND);
-    client.Send(arg);
-    if (client.Receive<int>() == FAIL) {
-        std::cout << '\n';
-        std::ostringstream os;
-        os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
-           << " returned error: " << client.readErrorMessage();
-        throw DetectorError(os.str());
-    }
-    client.Receive(retval);
+
+    std::string args(1000, '\0');
+    std::string retval(1000, '\0');
+    std::copy(cmd.begin(), cmd.end(), args.begin());
+    sendToDetector(F_EXEC_COMMAND, args, retval);
+
     LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
                  << "): command executed";
     return retval;
@@ -3552,25 +3543,17 @@ void Module::setModule(sls_detector_module &module, bool trimbits) {
         }
     }
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(F_SET_MODULE);
-    client.setFnum(F_SET_MODULE);
+    client.sendCommand(F_SET_MODULE, nullptr, 0);
     sendModule(&module, client);
-    if (client.Receive<int>() == FAIL) {
-        throw DetectorError("Module " + std::to_string(moduleIndex) +
-                            " returned error: " + client.readErrorMessage());
-    }
+    client.readReply(nullptr, 0);
 }
 
 sls_detector_module Module::getModule() {
     LOG(logDEBUG1) << "Getting module";
     sls_detector_module module(shm()->detType);
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(F_GET_MODULE);
-    client.setFnum(F_GET_MODULE);
-    if (client.Receive<int>() == FAIL) {
-        throw DetectorError("Module " + std::to_string(moduleIndex) +
-                            " returned error: " + client.readErrorMessage());
-    }
+    client.sendCommand(F_GET_MODULE, nullptr, 0);
+    client.readReply(nullptr, 0);
     receiveModule(&module, client);
     return module;
 }
@@ -4031,47 +4014,22 @@ void Module::simulatingActivityinDetector(const std::string &functionType,
 
 std::vector<uint8_t> Module::readSpi(int chip_id, int register_id,
                                      int n_bytes) const {
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(F_SPI_READ);
-    client.setFnum(F_SPI_READ);
-    client.Send(chip_id);
-    client.Send(register_id);
-    client.Send(n_bytes);
-
-    if (client.Receive<int>() == FAIL) {
-        std::ostringstream os;
-        os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
-           << " returned error: " << client.readErrorMessage();
-        throw DetectorError(os.str());
-    }
-
-    std::vector<uint8_t> data(n_bytes);
-    client.Receive(data);
-    return data;
+    int args[] = {chip_id, register_id, n_bytes};
+    return sendToDetector<std::vector<uint8_t>>(F_SPI_READ, args);
 }
 
 std::vector<uint8_t> Module::writeSpi(int chip_id, int register_id,
                                       const std::vector<uint8_t> &data) {
+    int count = static_cast<int>(data.size());
+    int args[] = {chip_id, register_id, count};
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(F_SPI_WRITE);
-    client.setFnum(F_SPI_WRITE);
-    client.Send(chip_id);
-    client.Send(register_id);
-    client.Send(static_cast<int>(data.size()));
+    client.sendCommand(F_SPI_WRITE, args, sizeof(args));
     client.Send(data);
-
-    if (client.Receive<int>() == FAIL) {
-        std::ostringstream os;
-        os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
-           << " returned error: " << client.readErrorMessage();
-        throw DetectorError(os.str());
-    }
-
     // Read the output from the SPI write. This contains the data before the
-    // write.
-    std::vector<uint8_t> ret(data.size());
-    client.Receive(ret);
-    return ret;
+    // write
+    std::vector<uint8_t> retval(data.size());
+    client.readReply(retval.data(), retval.size());
+    return retval;
 }
 
 } // namespace sls

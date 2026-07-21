@@ -32,8 +32,8 @@ class ServerInterface : public DataSocket {
     }
 
     template <typename T> int sendVariableResult(T &&retval) {
-        Send(defs::OK);
         int count = static_cast<int>(retval.size());
+        Send(defs::OK);
         Send(count);
         if (count > 0)
             Send(retval);
@@ -41,11 +41,12 @@ class ServerInterface : public DataSocket {
     }
 
     template <typename T> T receiveVariableArgs() {
-        size_t count = 0;
-        Receive(&count, sizeof(count));
-        T retval{count};
-        if (count > 0)
+        int count = 0;
+        Receive(count);
+        T retval{static_cast<typename T::size_type>(count)};
+        if (count > 0) {
             Receive(retval);
+        }
         return retval;
     }
 };

@@ -1757,10 +1757,12 @@ int ClientInterface::set_receiver_roi(Interface &socket) {
     verifyIdle(socket);
 
     auto args = socket.receiveVariableArgs<std::vector<ROI>>();
-    if (static_cast<int>(args.size()) != impl()->getNumberofUDPInterfaces()) {
-        throw RuntimeError("Invalid number of ROIs received: " +
-                           std::to_string(args.size()) + ". Expected: " +
-                           std::to_string(impl()->getNumberofUDPInterfaces()));
+    auto numInterfaces = impl()->getNumberofUDPInterfaces();
+    if (static_cast<int>(args.size()) != numInterfaces) {
+        std::ostringstream oss;
+        oss << "Invalid number of ROIs received: " << args.size()
+            << ". Expected: " << numInterfaces;
+        throw RuntimeError(oss.str());
     }
 
     LOG(logDEBUG1) << "Set Receiver ROI: " << ToString(args);
@@ -1770,7 +1772,6 @@ int ClientInterface::set_receiver_roi(Interface &socket) {
         throw RuntimeError("Could not set Receiver ROI [" +
                            std::string(e.what()) + ']');
     }
-
     return socket.Send(OK);
 }
 

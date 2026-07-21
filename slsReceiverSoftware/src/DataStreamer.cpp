@@ -78,16 +78,20 @@ void DataStreamer::RecordFirstIndex(uint64_t fnum, size_t firstImageIndex) {
                    << ", First Streamer Index:" << fnum;
 }
 
+int DataStreamer::GetZmqHwm() const {
+    if (zmqSocket) {
+        return zmqSocket->GetSendHighWaterMark();
+    }
+    return -1;
+}
+
 void DataStreamer::CreateZmqSockets(uint16_t port, int hwm) {
     uint16_t portnum = port + index;
     try {
-        zmqSocket = new ZmqSocket(portnum);
-
-        // set if custom
         if (hwm >= 0) {
-            zmqSocket->SetSendHighWaterMark(hwm);
-            // needed, or HWL is not taken
-            zmqSocket->Rebind();
+            zmqSocket = new ZmqSocket(portnum, hwm);
+        } else {
+            zmqSocket = new ZmqSocket(portnum);
         }
     } catch (std::exception &e) {
         std::ostringstream oss;

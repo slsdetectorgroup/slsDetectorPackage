@@ -12,8 +12,10 @@ from datetime import timedelta
 from contextlib import contextmanager
 
 from slsdet import Detector, Ctb, detectorSettings, burstMode
-from slsdet.defines import DEFAULT_TCP_RX_PORTNO, DEFAULT_UDP_DST_PORTNO
-SERVER_START_PORTNO=1900
+from slsdet.defines import DEFAULT_UDP_DST_PORTNO
+DET_START_TCP_PORTNO=1900
+RX_START_TCP_PORTNO=2000
+START_ZMQ_PORTNO=8000
 
 LOG_PREFIX_FNAME = "/tmp/slsDetectorPackage_"
 
@@ -230,9 +232,9 @@ def runProcess(name, cmd, fp, log_file_name = None, quiet_mode=False):
 
 def startDetectorVirtualServer(name :str, num_mods, fp, no_log_file = False, quiet_mode=False):
     for i in range(num_mods):
-        port_no = SERVER_START_PORTNO + (i * 2)
+        port_no = DET_START_TCP_PORTNO + (i * 2)
         cmd = [str(build_dir / (name + 'DetectorServer_virtual')), '-p', str(port_no)]
-        fname = LOG_PREFIX_FNAME + "virtual_det_" + name + "_" + str(SERVER_START_PORTNO) + ".txt"
+        fname = LOG_PREFIX_FNAME + "virtual_det_" + name + "_" + str(DET_START_TCP_PORTNO) + ".txt"
         if no_log_file: 
             fname = None
         startProcessInBackground(cmd, fp, fname, quiet_mode)
@@ -257,7 +259,7 @@ def connectToVirtualServers(name, num_mods, ctb_object=False):
     counts_sec = 5
     while (counts_sec != 0):
         try:
-            d.virtual = [num_mods, SERVER_START_PORTNO] # sets the hostnames 
+            d.virtual = [num_mods, DET_START_TCP_PORTNO] # sets the hostnames 
             break
         except Exception as e:
             # stop server still not up, wait a bit longer
@@ -272,13 +274,11 @@ def connectToVirtualServers(name, num_mods, ctb_object=False):
 
 def startReceiver(num_mods, fp, no_log_file = False, quiet_mode=False):
     if num_mods == 1:
-        cmd = [str(build_dir / 'slsReceiver')]
+        cmd = [str(build_dir / 'slsReceiver'), '-p', str(RX_START_TCP_PORTNO)]
         fname = LOG_PREFIX_FNAME + "slsReceiver.txt"
     else:
-        cmd = [str(build_dir / 'slsMultiReceiver'), str(DEFAULT_TCP_RX_PORTNO), str(num_mods)]
+        cmd = [str(build_dir / 'slsMultiReceiver'), '-p', str(RX_START_TCP_PORTNO), '-n', str(num_mods)]
         fname = LOG_PREFIX_FNAME + "slsMultiReceiver.txt"
-        # in 10.0.0
-        #cmd = ['slsMultiReceiver', '-p', str(DEFAULT_TCP_RX_PORTNO), '-n', str(num_mods)]
 
     if no_log_file: 
         fname = None
@@ -300,6 +300,7 @@ def loadConfig(name, rx_hostname = 'localhost', settingsdir = None, log_file_fp 
         if d.numinterfaces == 2: 
             d.udp_dstport2 = DEFAULT_UDP_DST_PORTNO + 1
 
+        d.rx_tcpport = RX_START_TCP_PORTNO
         d.rx_hostname = rx_hostname
         d.udp_dstip = 'auto'
         if name != "eiger":
@@ -308,7 +309,10 @@ def loadConfig(name, rx_hostname = 'localhost', settingsdir = None, log_file_fp 
         if num_interfaces == 2: 
             d.udp_dstip2 = 'auto'
 
-        if name == "jungfrau" or name == "moench" or name == "xilinx_ctb":
+        d.zmqport = START_ZMQ_PORTNO
+        d.rx_zmqport = START_ZMQ_PORTNO
+
+        if name == "jungfrau" or name == "moench":
             d.powerchip = 1
 
         if name == "xilinx_ctb":

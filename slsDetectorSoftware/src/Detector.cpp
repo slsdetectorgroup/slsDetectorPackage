@@ -1096,29 +1096,36 @@ void Detector::setNumberofUDPInterfaces_(int n, Positions pos) {
     if (!size()) {
         throw RuntimeError("No modules added.");
     }
-    bool previouslyClientStreaming = pimpl->getDataStreamingToClient();
-    uint16_t clientStartingPort = getClientZmqPort({0}).squash(0);
+
+    // get starting ports and disable zmq streaming
+    // rx
     bool useReceiver = getUseReceiverFlag().squash(false);
     bool previouslyReceiverStreaming = false;
     uint16_t rxStartingPort = 0;
     if (useReceiver) {
-        previouslyReceiverStreaming = getRxZmqDataStream(pos).squash(true);
+        previouslyReceiverStreaming = getRxZmqDataStream().squash(true);
+        setRxZmqDataStream(false);
         rxStartingPort = getRxZmqPort({0}).squash(0);
     }
-    pimpl->Parallel(&Module::setNumberofUDPInterfaces, pos, n);
+    // client
+    bool previouslyClientStreaming = pimpl->getDataStreamingToClient();
+    uint16_t clientStartingPort = getClientZmqPort({0}).squash(0);
+    pimpl->setDataStreamingToClient(false);
+
+    pimpl->Parallel(&Module::setNumberofUDPInterfaces, {}, n);
+
     // ensure receiver zmq socket ports are multiplied by 2 (2 interfaces)
     setClientZmqPort(clientStartingPort, -1);
-    if (getUseReceiverFlag().squash(false)) {
+    if (useReceiver) {
         setRxZmqPort(rxStartingPort, -1);
     }
+
     // redo the zmq sockets if enabled
     if (previouslyClientStreaming) {
-        pimpl->setDataStreamingToClient(false);
         pimpl->setDataStreamingToClient(true);
     }
-    if (previouslyReceiverStreaming) {
-        setRxZmqDataStream(false, pos);
-        setRxZmqDataStream(true, pos);
+    if (useReceiver && previouslyReceiverStreaming) {
+        setRxZmqDataStream(true);
     }
 }
 
@@ -1620,7 +1627,12 @@ void Detector::setClientZmqIp(const IpAddr ip, Positions pos) {
 int Detector::getClientZmqHwm() const { return pimpl->getClientStreamingHwm(); }
 
 void Detector::setClientZmqHwm(const int limit) {
+    bool previouslyClientStreaming = pimpl->getDataStreamingToClient();
     pimpl->setClientStreamingHwm(limit);
+    if (previouslyClientStreaming) {
+        pimpl->setDataStreamingToClient(false);
+        pimpl->setDataStreamingToClient(true);
+    }
 }
 
 Result<int> Detector::getRxZmqHwm(Positions pos) const {

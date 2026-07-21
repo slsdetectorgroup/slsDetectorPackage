@@ -14,7 +14,6 @@ import sys, subprocess, time, traceback
 from contextlib import contextmanager
 
 from slsdet import Detector
-from slsdet.defines import DEFAULT_TCP_RX_PORTNO
 
 
 from utils_for_test import (

@@ -653,9 +653,9 @@ void init_det(py::module &m) {
                            Detector::getNumberofUDPInterfaces,
                        py::arg() = Positions{});
     CppDetectorApi.def("setNumberofUDPInterfaces",
-                       (void (Detector::*)(int, sls::Positions)) &
+                       (void (Detector::*)(int)) &
                            Detector::setNumberofUDPInterfaces,
-                       py::arg(), py::arg() = Positions{});
+                       py::arg());
     CppDetectorApi.def("getSelectedUDPInterface",
                        (Result<int>(Detector::*)(sls::Positions) const) &
                            Detector::getSelectedUDPInterface,
@@ -841,6 +841,22 @@ void init_det(py::module &m) {
     CppDetectorApi.def(
         "setTransmissionDelay",
         (void (Detector::*)(int)) & Detector::setTransmissionDelay, py::arg());
+    CppDetectorApi.def("getUDPDataStream",
+                       (Result<bool>(Detector::*)(const defs::portPosition,
+                                                  sls::Positions) const) &
+                           Detector::getUDPDataStream,
+                       py::arg(), py::arg() = Positions{});
+    CppDetectorApi.def("setUDPDataStream",
+                       (void (Detector::*)(const defs::portPosition, const bool,
+                                           sls::Positions)) &
+                           Detector::setUDPDataStream,
+                       py::arg(), py::arg(), py::arg() = Positions{});
+    CppDetectorApi.def("getRxDisabledUDPPortIndices",
+                       (std::vector<int>(Detector::*)() const) &
+                           Detector::getRxDisabledUDPPortIndices);
+    CppDetectorApi.def("getPortPositionList",
+                       (std::vector<defs::portPosition>(Detector::*)() const) &
+                           Detector::getPortPositionList);
     CppDetectorApi.def("getUseReceiverFlag",
                        (Result<bool>(Detector::*)(sls::Positions) const) &
                            Detector::getUseReceiverFlag,
@@ -1174,16 +1190,6 @@ void init_det(py::module &m) {
     CppDetectorApi.def("setQuad",
                        (void (Detector::*)(const bool)) & Detector::setQuad,
                        py::arg());
-    CppDetectorApi.def("getDataStream",
-                       (Result<bool>(Detector::*)(const defs::portPosition,
-                                                  sls::Positions) const) &
-                           Detector::getDataStream,
-                       py::arg(), py::arg() = Positions{});
-    CppDetectorApi.def("setDataStream",
-                       (void (Detector::*)(const defs::portPosition, const bool,
-                                           sls::Positions)) &
-                           Detector::setDataStream,
-                       py::arg(), py::arg(), py::arg() = Positions{});
     CppDetectorApi.def("getTop",
                        (Result<bool>(Detector::*)(sls::Positions) const) &
                            Detector::getTop,

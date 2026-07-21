@@ -694,22 +694,6 @@ int InferAction::dacvalues() {
     }
 }
 
-int InferAction::datastream() {
-
-    if (args.size() == 1) {
-        return slsDetectorDefs::GET_ACTION;
-    }
-
-    if (args.size() == 2) {
-        return slsDetectorDefs::PUT_ACTION;
-    }
-
-    else {
-
-        throw RuntimeError("Could not infer action: Wrong number of arguments");
-    }
-}
-
 int InferAction::dbitclk() {
 
     if (args.size() == 0) {
@@ -4016,6 +4000,22 @@ int InferAction::type() {
 int InferAction::udp_cleardst() {
 
     if (args.size() == 0) {
+        return slsDetectorDefs::PUT_ACTION;
+    }
+
+    else {
+
+        throw RuntimeError("Could not infer action: Wrong number of arguments");
+    }
+}
+
+int InferAction::udp_datastream() {
+
+    if (args.size() == 1) {
+        return slsDetectorDefs::GET_ACTION;
+    }
+
+    if (args.size() == 2) {
         return slsDetectorDefs::PUT_ACTION;
     }
 

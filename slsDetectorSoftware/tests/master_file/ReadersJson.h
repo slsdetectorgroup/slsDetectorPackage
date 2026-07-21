@@ -120,12 +120,34 @@ template <> struct Reader<JsonContext, std::array<ns, 3UL>> {
     }
 };
 
+template <> struct Reader<JsonContext, std::vector<int>> {
+    static std::vector<int> read(const JsonContext &ctx,
+                                 const std::string &name, AccessType access) {
+        std::vector<int> out{};
+        for (const auto &item : ctx.doc[name.c_str()].GetArray()) {
+            out.push_back(item.GetInt());
+        }
+        return out;
+    }
+};
+
 template <> struct Reader<JsonContext, std::vector<int64_t>> {
     static std::vector<int64_t>
     read(const JsonContext &ctx, const std::string &name, AccessType access) {
         std::vector<int64_t> out{};
         for (const auto &item : ctx.doc[name.c_str()].GetArray()) {
             out.push_back(item.GetInt64());
+        }
+        return out;
+    }
+};
+
+template <> struct Reader<JsonContext, std::vector<std::string>> {
+    static std::vector<std::string>
+    read(const JsonContext &ctx, const std::string &name, AccessType access) {
+        std::vector<std::string> out{};
+        for (const auto &item : ctx.doc[name.c_str()].GetArray()) {
+            out.push_back(item.GetString());
         }
         return out;
     }

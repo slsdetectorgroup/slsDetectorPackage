@@ -11,9 +11,8 @@ from utils_for_test import (
     LogLevel,
 )
 from slsdet import Detector
-
 from slsdet._slsdet import slsDetectorDefs
-
+from slsdet.utils import all_equal, element_if_equal
 detectorType = slsDetectorDefs.detectorType
 
 
@@ -920,3 +919,88 @@ def test_numinterfaces(session_simulator):
 
     d = Detector()
     assert d.numinterfaces == 1
+
+
+@pytest.mark.detectorintegration
+def test_udp_datastream(session_simulator, request):
+    """ Test using udp_datastream for eiger, jungfrau and moench."""
+    det_type, num_interfaces, num_mods, d = session_simulator
+    assert d is not None
+
+    from slsdet import portPosition
+
+    if det_type in ['eiger']:
+        ports = [portPosition.LEFT, portPosition.RIGHT]
+        prev = [d.getUDPDataStream(i) for i in ports]
+        # ensure all equal for each value in prev
+        assert all_equal(prev)
+        prev_val = [element_if_equal(v) for v in prev]
+        
+        #list
+        with pytest.raises(Exception) as exc_info:
+            d.udp_datastream = (ports[0], [True, False]) 
+            
+        # invalid port position
+        with pytest.raises(Exception) as exc_info:
+            d.udp_datastream = (portPosition.TOP, True) 
+
+        with pytest.raises(Exception) as exc_info:
+            d.udp_datastream = (portPosition.BOTTOM, True)
+
+        # without port position
+        with pytest.raises(Exception) as exc_info:
+            d.udp_datastream = True
+
+        d.udp_datastream = (ports[0], False)
+        assert d.udp_datastream[ports[0]] is False
+        d.udp_datastream = (ports[1], False)
+        assert d.udp_datastream[ports[1]] is False
+        d.udp_datastream = (ports[0], True)
+        assert d.udp_datastream[ports[0]] is True
+        d.udp_datastream = (ports[1], True)
+        assert d.udp_datastream[ports[1]] is True
+
+        d.setUDPDataStream(ports[0], element_if_equal(prev[0]))
+        d.setUDPDataStream(ports[1], element_if_equal(prev[1]))
+
+    elif det_type in ['jungfrau', 'moench'] and num_interfaces == 2:
+        ports = [portPosition.TOP, portPosition.BOTTOM]
+        prev = [d.getUDPDataStream(i) for i in ports]
+        # ensure all equal for each value in prev
+        assert all_equal(prev)
+        prev_val = [element_if_equal(v) for v in prev]
+
+        #list
+        with pytest.raises(Exception) as exc_info:
+            d.udp_datastream = (ports[0], [True, False]) 
+            
+        # invalid port position
+        with pytest.raises(Exception) as exc_info:
+            d.udp_datastream = (portPosition.LEFT, True) 
+
+        with pytest.raises(Exception) as exc_info:
+            d.udp_datastream = (portPosition.RIGHT, True)
+
+        # without port position
+        with pytest.raises(Exception) as exc_info:
+            d.udp_datastream = True
+
+        d.udp_datastream = (ports[0], False)
+        assert d.udp_datastream[ports[0]] is False
+        d.udp_datastream = (ports[1], False)
+        assert d.udp_datastream[ports[1]] is False
+        d.udp_datastream = (ports[0], True)
+        assert d.udp_datastream[ports[0]] is True
+        d.udp_datastream = (ports[1], True)
+        assert d.udp_datastream[ports[1]] is True
+
+        d.setUDPDataStream(ports[0], element_if_equal(prev[0]))
+        d.setUDPDataStream(ports[1], element_if_equal(prev[1]))
+
+    else:
+        with pytest.raises(Exception) as exc_info:
+            d.udp_datastream
+
+    
+
+    Log(LogLevel.INFOGREEN, f"✅ {request.node.name} passed")

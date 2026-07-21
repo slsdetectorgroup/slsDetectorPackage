@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "Module.h"
-#include "SharedMemory.h"
 #include "sls/ClientSocket.h"
+#include "sls/SharedMemory.h"
 #include "sls/ToString.h"
 #include "sls/Version.h"
 #include "sls/bit_utils.h"
@@ -1407,6 +1407,76 @@ void Module::setTransmissionDelayRight(int value) {
     sendToDetector(F_SET_TRANSMISSION_DELAY_RIGHT, value, nullptr);
 }
 
+bool Module::getUDPDataStream(const portPosition port) const {
+    // receiver only
+    if (shm()->detType == JUNGFRAU || shm()->detType == MOENCH) {
+        if (!shm()->useReceiverFlag) {
+            throw RuntimeError("No receiver to get udp datastream.");
+        }
+        return sendToReceiver<int>(F_RECEIVER_GET_UDP_DATASTREAM,
+                                   static_cast<int>(port));
+    } else
+        return sendToDetector<int>(F_GET_DATASTREAM, static_cast<int>(port));
+}
+
+void Module::setUDPDataStream(const portPosition port, const bool enable) {
+    int args[]{static_cast<int>(port), static_cast<int>(enable)};
+    if (shm()->detType == JUNGFRAU || shm()->detType == MOENCH) {
+        if (!shm()->useReceiverFlag) {
+            throw RuntimeError("No receiver to set udp datastream.");
+        }
+        sendToReceiver(F_RECEIVER_SET_UDP_DATASTREAM, args, nullptr);
+    } else {
+        sendToDetector(F_SET_DATASTREAM, args, nullptr);
+        if (shm()->useReceiverFlag) {
+            sendToReceiver(F_RECEIVER_SET_UDP_DATASTREAM, args, nullptr);
+        }
+    }
+}
+
+void Module::updateRxUDPPortDisableMetadata(const std::vector<int> &disable) {
+    if (!shm()->useReceiverFlag) {
+        return;
+    }
+    LOG(logDEBUG) << "Updating UDP port disable metadata in Receiver 0";
+    auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
+
+    client.Send(F_RECEIVER_SET_UDP_PORT_DISABLE_META);
+    client.setFnum(F_RECEIVER_SET_UDP_PORT_DISABLE_META);
+
+    auto nports = static_cast<int>(disable.size());
+    client.Send(nports);
+    if (nports > 0) {
+        client.Send(disable);
+    }
+    if (client.Receive<int>() == FAIL) {
+        throw ReceiverError("Receiver " + std::to_string(moduleIndex) +
+                            " returned error: " + client.readErrorMessage());
+    }
+}
+
+std::vector<int> Module::getRxUDPPortDisableMetadata() const {
+    if (!shm()->useReceiverFlag) {
+        throw RuntimeError("No receiver to get disabled udp port indices.");
+    }
+
+    LOG(logDEBUG) << "Getting UDP port disable metadata in Receiver 0";
+    auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
+
+    client.Send(F_RECEIVER_GET_UDP_PORT_DISABLE_META);
+    client.setFnum(F_RECEIVER_GET_UDP_PORT_DISABLE_META);
+    if (client.Receive<int>() == FAIL) {
+        throw ReceiverError("Receiver " + std::to_string(moduleIndex) +
+                            " returned error: " + client.readErrorMessage());
+    }
+    auto nports = client.Receive<int>();
+    std::vector<int> retval(nports);
+    if (nports > 0) {
+        client.Receive(retval);
+    }
+    return retval;
+}
+
 // Receiver Config
 
 bool Module::getUseReceiverFlag() const { return shm()->useReceiverFlag; }
@@ -1945,18 +2015,6 @@ void Module::setQuad(const bool enable) {
     sendToDetector(F_SET_QUAD, value, nullptr);
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_SET_RECEIVER_QUAD, value, nullptr);
-    }
-}
-
-bool Module::getDataStream(const portPosition port) const {
-    return sendToDetector<int>(F_GET_DATASTREAM, static_cast<int>(port));
-}
-
-void Module::setDataStream(const portPosition port, const bool enable) {
-    int args[]{static_cast<int>(port), static_cast<int>(enable)};
-    sendToDetector(F_SET_DATASTREAM, args, nullptr);
-    if (shm()->useReceiverFlag) {
-        sendToReceiver(F_RECEIVER_SET_DATASTREAM, args, nullptr);
     }
 }
 

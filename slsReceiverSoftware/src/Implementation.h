@@ -225,12 +225,13 @@ class Implementation : private virtual slsDetectorDefs {
     /** [Eiger] If deactivated, receiver will create dummy data if deactivated
      * padding is enabled (as it will receive nothing from detector) */
     void setActivate(const bool enable);
-    bool getDetectorDataStream(const portPosition port) const;
-    /** [Eiger] If datastream is disabled, receiver will create dummy data if
-     * deactivated
-     * padding for that port is enabled (as it will receive nothing from
-     * detector) */
-    void setDetectorDataStream(const portPosition port, const bool enable);
+    bool getUDPDataStream(const portPosition port) const;
+    /** [Jungfrau][Moench] deactivated at receiver level only
+     *  [Eiger] deactivated at module level
+     */
+    void setUDPDataStream(const portPosition port, const bool enable);
+    void setUDPPortsDisabledMetadata(const std::vector<int> &portsDisabled);
+    std::vector<int> getUDPPortsDisabledMetadata() const;
     int getReadNRows() const;
     /* [Eiger][Jungfrau][Moench] */
     void setReadNRows(const int value);
@@ -366,8 +367,10 @@ class Implementation : private virtual slsDetectorDefs {
     bool flipRows{false};
     bool quadEnable{false};
     bool activated{true};
-    std::array<bool, 2> detectorDataStream = {{true, true}};
-    std::array<bool, 2> detectorDataStream10GbE = {{true, true}};
+    std::array<bool, 2> udpDataStream = {{true, true}};
+    std::vector<int> udpPortsDisabledMetadata;
+    // only for Eiger to remember (10Gbe selectable)
+    std::array<bool, 2> udpDataStream10GbE = {{true, true}};
     int readNRows{0};
     int thresholdEnergyeV{-1};
     std::array<int, 3> thresholdAllEnergyeV = {{-1, -1, -1}};

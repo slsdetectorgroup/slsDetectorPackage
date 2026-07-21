@@ -2,8 +2,8 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "Detector.h"
 #include "Module.h"
-#include "SharedMemory.h"
 #include "catch.hpp"
+#include "sls/SharedMemory.h"
 
 namespace sls {
 

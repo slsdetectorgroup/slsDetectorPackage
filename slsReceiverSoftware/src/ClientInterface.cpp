@@ -207,7 +207,7 @@ int ClientInterface::functionTable(){
     flist[F_GET_RECEIVER_STREAMING_HWM]     =   &ClientInterface::get_streaming_hwm;
     flist[F_SET_RECEIVER_STREAMING_HWM]     =   &ClientInterface::set_streaming_hwm;
     flist[F_RECEIVER_SET_ALL_THRESHOLD]     =   &ClientInterface::set_all_threshold;
-    flist[F_RECEIVER_SET_DATASTREAM]        =   &ClientInterface::set_detector_datastream;
+    flist[F_RECEIVER_SET_UDP_DATASTREAM]    =   &ClientInterface::set_port_udp_datastream;
     flist[F_GET_RECEIVER_ARPING]            =   &ClientInterface::get_arping;
     flist[F_SET_RECEIVER_ARPING]            =   &ClientInterface::set_arping;
     flist[F_RECEIVER_GET_RECEIVER_ROI]      =   &ClientInterface::get_receiver_roi;
@@ -221,6 +221,10 @@ int ClientInterface::functionTable(){
     flist[F_SET_RECEIVER_DBIT_REORDER]      =   &ClientInterface::set_dbit_reorder;
     flist[F_RECEIVER_GET_ROI_METADATA]      =   &ClientInterface::get_roi_metadata;
     flist[F_SET_RECEIVER_READOUT_SPEED]     =   &ClientInterface::set_readout_speed;
+    flist[F_RECEIVER_GET_UDP_DATASTREAM]    =   &ClientInterface::get_port_udp_datastream;
+    flist[F_RECEIVER_SET_UDP_PORT_DISABLE_META] =   &ClientInterface::set_udp_port_disable_meta;
+    flist[F_RECEIVER_GET_UDP_PORT_DISABLE_META] =   &ClientInterface::get_udp_port_disable_meta;
+
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
 		LOG(logDEBUG1) << "function fnum: " << i << " (" <<
@@ -383,8 +387,8 @@ int ClientInterface::setup_receiver(Interface &socket) {
             impl()->setSubPeriod(std::chrono::nanoseconds(arg.subExpTimeNs) +
                                  std::chrono::nanoseconds(arg.subDeadTimeNs));
             impl()->setActivate(static_cast<bool>(arg.activate));
-            impl()->setDetectorDataStream(LEFT, arg.dataStreamLeft);
-            impl()->setDetectorDataStream(RIGHT, arg.dataStreamRight);
+            impl()->setUDPDataStream(LEFT, arg.dataStreamLeft);
+            impl()->setUDPDataStream(RIGHT, arg.dataStreamRight);
             impl()->setQuad(arg.quad == 0 ? false : true);
             impl()->setThresholdEnergy(arg.thresholdEnergyeV[0]);
         }
@@ -398,7 +402,7 @@ int ClientInterface::setup_receiver(Interface &socket) {
             }
             impl()->setThresholdEnergy(val);
         }
-        if (detType == EIGER || detType == MYTHEN3) {
+        if (detType == EIGER || detType == MYTHEN3 || detType == MATTERHORN) {
             impl()->setDynamicRange(arg.dynamicRange);
         }
         impl()->setTimingMode(arg.timMode);
@@ -429,6 +433,10 @@ int ClientInterface::setup_receiver(Interface &socket) {
             impl()->setGateDelay3(std::chrono::nanoseconds(arg.gateDelay3Ns));
             impl()->setNumberOfGates(arg.gates);
         }
+        if (detType == MATTERHORN) {
+            impl()->setCounterMask(arg.countermask);
+        }
+        LOG(logDEBUG) << "set counter mask to " << arg.countermask;
         if (detType == GOTTHARD2) {
             impl()->setBurstMode(arg.burstType);
         }
@@ -450,6 +458,7 @@ void ClientInterface::setDetectorType(detectorType arg) {
     case MOENCH:
     case MYTHEN3:
     case GOTTHARD2:
+    case MATTERHORN:
         break;
     default:
         throw RuntimeError("Unknown detector type: " + std::to_string(arg));
@@ -666,12 +675,21 @@ int ClientInterface::set_dynamic_range(Interface &socket) {
             break;
         */
         case 4:
+            if (detType == MATTERHORN || detType == EIGER) {
+                exists = true;
+            }
+            break;
         case 12:
             if (detType == EIGER) {
                 exists = true;
             }
             break;
         case 8:
+            if (detType == MATTERHORN || detType == EIGER ||
+                detType == MYTHEN3) {
+                exists = true;
+            }
+            break;
         case 32:
             if (detType == EIGER || detType == MYTHEN3) {
                 exists = true;
@@ -1653,25 +1671,56 @@ int ClientInterface::set_all_threshold(Interface &socket) {
     return socket.Send(OK);
 }
 
-int ClientInterface::set_detector_datastream(Interface &socket) {
-    int args[2]{-1, -1};
-    socket.Receive(args);
-    portPosition port = static_cast<portPosition>(args[0]);
+void ClientInterface::validate_port_position(const portPosition port) {
+    bool exists = false;
     switch (port) {
     case LEFT:
     case RIGHT:
+        if (detType == EIGER) {
+            exists = true;
+        }
+        break;
+    case TOP:
+    case BOTTOM:
+        if (detType == JUNGFRAU || detType == MOENCH) {
+            exists = true;
+        }
         break;
     default:
         throw RuntimeError("Invalid port type");
     }
-    bool enable = static_cast<int>(args[1]);
-    LOG(logDEBUG1) << "Setting datastream (" << ToString(port) << ") to "
-                   << ToString(enable);
-    if (detType != EIGER)
+    if (!exists) {
+        modeNotImplemented("Port type", port);
+    }
+}
+
+int ClientInterface::set_port_udp_datastream(Interface &socket) {
+    if (detType != EIGER && detType != JUNGFRAU && detType != MOENCH)
         functionNotImplemented();
+    int args[2]{-1, -1};
+    socket.Receive(args);
+    portPosition port = static_cast<portPosition>(args[0]);
+    validate_port_position(port);
+    bool enable = static_cast<bool>(args[1]);
+    if (impl()->getNumberofUDPInterfaces() == 1)
+        throw RuntimeError("Cannot change UDP port datastream with only 1 "
+                           "interface enabled. Hint: set 'numinterfaces' to 2");
+    LOG(logDEBUG1) << "Setting udp datastream (" << ToString(port) << ") to "
+                   << ToString(enable);
     verifyIdle(socket);
-    impl()->setDetectorDataStream(port, enable);
+    impl()->setUDPDataStream(port, enable);
     return socket.Send(OK);
+}
+
+int ClientInterface::get_port_udp_datastream(Interface &socket) {
+    auto arg = socket.Receive<int>();
+    portPosition port = static_cast<portPosition>(arg);
+    validate_port_position(port);
+    LOG(logDEBUG1) << "Getting udp datastream (" << ToString(port) << ")";
+    if (detType != EIGER && detType != JUNGFRAU && detType != MOENCH)
+        functionNotImplemented();
+    auto retval = static_cast<int>(impl()->getUDPDataStream(port));
+    return socket.sendResult(retval);
 }
 
 int ClientInterface::get_arping(Interface &socket) {
@@ -1882,6 +1931,37 @@ int ClientInterface::set_readout_speed(Interface &socket) {
     LOG(logDEBUG1) << "Setting readout speed to " << value;
     impl()->setReadoutSpeed(static_cast<speedLevel>(value));
     return socket.Send(OK);
+}
+
+int ClientInterface::set_udp_port_disable_meta(Interface &socket) {
+    auto nports = socket.Receive<int>();
+    std::vector<int> portsDisabled;
+    if (nports > 0) {
+        portsDisabled.resize(nports);
+        socket.Receive(portsDisabled);
+        LOG(logDEBUG1) << "Disabled Ports Metadata:" << ToString(portsDisabled);
+    }
+    verifyIdle(socket);
+    try {
+
+        impl()->setUDPPortsDisabledMetadata(portsDisabled);
+    } catch (const std::exception &e) {
+        throw RuntimeError("Could not update UDP ports disabled metadata [" +
+                           std::string(e.what()) + ']');
+    }
+    return socket.Send(OK);
+}
+
+int ClientInterface::get_udp_port_disable_meta(Interface &socket) {
+    auto retvals = impl()->getUDPPortsDisabledMetadata();
+    LOG(logDEBUG1) << "Receiver disabled udp ports retval:"
+                   << ToString(retvals);
+    socket.Send(OK);
+    auto size = static_cast<int>(retvals.size());
+    socket.Send(size);
+    if (size > 0)
+        socket.Send(retvals);
+    return OK;
 }
 
 } // namespace sls

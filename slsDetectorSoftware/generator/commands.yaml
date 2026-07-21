@@ -826,15 +826,6 @@ nextframenumber:
       function: setNextFrameNumber
       input_types: [ uint64_t ]
 
-numinterfaces:
-  help: "[1, 2]\n\t[Jungfrau][Moench] Number of udp interfaces to stream data from detector. Default: 1.\n\tAlso enables second interface in receiver for listening (Writes a file per interface if writing enabled).\n\tAlso restarts client and receiver zmq sockets if zmq streaming enabled.\n\t[Eiger] Only gets with result 2."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getNumberofUDPInterfaces
-    PUT:
-      function: setNumberofUDPInterfaces
-
 selinterface:
   help: "[0, 1]\n\t[Jungfrau][Moench] The udp interface to stream data from detector. Effective only when number of interfaces is 1. Default: 0 (outer)"
   inherit_actions: INTEGER_COMMAND_VEC_ID
@@ -1521,6 +1512,15 @@ zmqport:
       function: setClientZmqPort
 
 ################# INTEGER_COMMAND_SET_NOID_GET_ID ############
+numinterfaces:
+  help: "[1, 2]\n\t[Jungfrau][Moench] Number of udp interfaces to stream data from detector. Default: 1.\n\tAlso enables second interface in receiver for listening (Writes a file per interface if writing enabled).\n\tAlso restarts client and receiver zmq sockets if zmq streaming enabled.\n\t[Eiger] Only gets with result 2."
+  inherit_actions: INTEGER_COMMAND_SET_NOID_GET_ID
+  actions:
+    GET:
+      function: getNumberofUDPInterfaces
+    PUT:
+      function: setNumberofUDPInterfaces
+
 sync:
   inherit_actions: INTEGER_COMMAND_SET_NOID_GET_ID
   help: "[0, 1]\n\t[Jungfrau][Moench] Enables or disables synchronization between modules. Sync mode requires at least one master configured. Also requires flatband cabling between master and slave with termination board."
@@ -3617,13 +3617,13 @@ quad:
       cast_input: [ true ]
       output: [ args.front() ]
 
-datastream:
-  help: "[left|right] [0, 1]\n\t[Eiger] Enables or disables data streaming from left or/and right side of detector for 10 GbE mode. 1 (enabled) by default."
+udp_datastream:
+  help: "[left|right|top|bottom] [0, 1]\n\tEnables or disables UDP data streaming from left or right of 10GbE UDP port of the detector. Options: left, right. Both ports are enabled (1) by default.\n\tEnables or disables UDP data streaming from the top or bottom of receiver. This option is available only when numinterfaces is set to 2. Options: top, bottom. Both interfaces are enabled (1) by default."
   actions:
     GET:
       argc: 1
       require_det_id: true
-      function: getDataStream
+      function: getUDPDataStream
       input: [ 'args[0]' ]
       input_types: [ defs::portPosition ]
       cast_input: [ true ]
@@ -3631,7 +3631,7 @@ datastream:
     PUT:
       argc: 2
       require_det_id: true
-      function: setDataStream
+      function: setUDPDataStream
       input: [ 'args[0]', 'args[1]' ]
       input_types: [ defs::portPosition, bool ]
       cast_input: [ true, true ]

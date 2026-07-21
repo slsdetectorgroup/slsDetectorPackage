@@ -2426,82 +2426,6 @@ std::string Caller::dacname(int action) {
     return os.str();
 }
 
-std::string Caller::datastream(int action) {
-
-    std::ostringstream os;
-    // print help
-    if (action == slsDetectorDefs::HELP_ACTION) {
-        os << R"V0G0N([left|right] [0, 1]
-	[Eiger] Enables or disables data streaming from left or/and right side of detector for 10 GbE mode. 1 (enabled) by default. )V0G0N"
-           << std::endl;
-        return os.str();
-    }
-
-    // check if action and arguments are valid
-    if (action == slsDetectorDefs::GET_ACTION) {
-        if (1 && args.size() != 1) {
-            throw RuntimeError("Wrong number of arguments for action GET");
-        }
-
-        if (args.size() == 1) {
-            try {
-                StringTo<defs::portPosition>(args[0]);
-            } catch (...) {
-                throw RuntimeError(
-                    "Could not convert argument 0 to defs::portPosition");
-            }
-        }
-
-    }
-
-    else if (action == slsDetectorDefs::PUT_ACTION) {
-        if (1 && args.size() != 2) {
-            throw RuntimeError("Wrong number of arguments for action PUT");
-        }
-
-        if (args.size() == 2) {
-            try {
-                StringTo<defs::portPosition>(args[0]);
-            } catch (...) {
-                throw RuntimeError(
-                    "Could not convert argument 0 to defs::portPosition");
-            }
-            try {
-                StringTo<bool>(args[1]);
-            } catch (...) {
-                throw RuntimeError("Could not convert argument 1 to bool");
-            }
-        }
-
-    }
-
-    else {
-
-        throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
-                           "are ['GET', 'PUT']");
-    }
-
-    // generate code for each action
-    if (action == slsDetectorDefs::GET_ACTION) {
-        if (args.size() == 1) {
-            auto arg0 = StringTo<defs::portPosition>(args[0]);
-            auto t = det->getDataStream(arg0, std::vector<int>{det_id});
-            os << OutString(t) << '\n';
-        }
-    }
-
-    if (action == slsDetectorDefs::PUT_ACTION) {
-        if (args.size() == 2) {
-            auto arg0 = StringTo<defs::portPosition>(args[0]);
-            auto arg1 = StringTo<bool>(args[1]);
-            det->setDataStream(arg0, arg1, std::vector<int>{det_id});
-            os << ToString(args) << '\n';
-        }
-    }
-
-    return os.str();
-}
-
 std::string Caller::dbitclk(int action) {
 
     std::ostringstream os;
@@ -7052,8 +6976,12 @@ std::string Caller::numinterfaces(int action) {
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 1) {
+            if (det_id != -1) {
+                throw RuntimeError(
+                    "Cannot execute numinterfaces at module level");
+            }
             auto arg0 = StringTo<int>(args[0]);
-            det->setNumberofUDPInterfaces(arg0, std::vector<int>{det_id});
+            det->setNumberofUDPInterfaces(arg0);
             os << args.front() << '\n';
         }
     }
@@ -14979,6 +14907,83 @@ std::string Caller::udp_cleardst(int action) {
         if (args.size() == 0) {
             det->clearUDPDestinations(std::vector<int>{det_id});
             os << "successful" << '\n';
+        }
+    }
+
+    return os.str();
+}
+
+std::string Caller::udp_datastream(int action) {
+
+    std::ostringstream os;
+    // print help
+    if (action == slsDetectorDefs::HELP_ACTION) {
+        os << R"V0G0N([left|right|top|bottom] [0, 1]
+	Enables or disables UDP data streaming from left or right of 10GbE UDP port of the detector. Options: left, right. Both ports are enabled (1) by default.
+	Enables or disables UDP data streaming from the top or bottom of receiver. This option is available only when numinterfaces is set to 2. Options: top, bottom. Both interfaces are enabled (1) by default. )V0G0N"
+           << std::endl;
+        return os.str();
+    }
+
+    // check if action and arguments are valid
+    if (action == slsDetectorDefs::GET_ACTION) {
+        if (1 && args.size() != 1) {
+            throw RuntimeError("Wrong number of arguments for action GET");
+        }
+
+        if (args.size() == 1) {
+            try {
+                StringTo<defs::portPosition>(args[0]);
+            } catch (...) {
+                throw RuntimeError(
+                    "Could not convert argument 0 to defs::portPosition");
+            }
+        }
+
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
+        if (1 && args.size() != 2) {
+            throw RuntimeError("Wrong number of arguments for action PUT");
+        }
+
+        if (args.size() == 2) {
+            try {
+                StringTo<defs::portPosition>(args[0]);
+            } catch (...) {
+                throw RuntimeError(
+                    "Could not convert argument 0 to defs::portPosition");
+            }
+            try {
+                StringTo<bool>(args[1]);
+            } catch (...) {
+                throw RuntimeError("Could not convert argument 1 to bool");
+            }
+        }
+
+    }
+
+    else {
+
+        throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
+                           "are ['GET', 'PUT']");
+    }
+
+    // generate code for each action
+    if (action == slsDetectorDefs::GET_ACTION) {
+        if (args.size() == 1) {
+            auto arg0 = StringTo<defs::portPosition>(args[0]);
+            auto t = det->getUDPDataStream(arg0, std::vector<int>{det_id});
+            os << OutString(t) << '\n';
+        }
+    }
+
+    if (action == slsDetectorDefs::PUT_ACTION) {
+        if (args.size() == 2) {
+            auto arg0 = StringTo<defs::portPosition>(args[0]);
+            auto arg1 = StringTo<bool>(args[1]);
+            det->setUDPDataStream(arg0, arg1, std::vector<int>{det_id});
+            os << ToString(args) << '\n';
         }
     }
 

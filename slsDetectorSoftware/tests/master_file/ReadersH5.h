@@ -238,6 +238,23 @@ template <> struct Reader<H5Context, std::array<ns, 3UL>> {
     }
 };
 
+template <> struct Reader<H5Context, std::vector<int>> {
+    static std::vector<int> read(const H5Context &ctx, const std::string &name,
+                                 AccessType access) {
+        if (access == AccessType::Attribute) {
+            throw RuntimeError("'std::vector<int>' attribute access not "
+                               "supported for HDF5");
+        }
+        require_dataset(ctx, name);
+        auto ds = ctx.file.openDataSet(HDF5_GROUP + name);
+        auto len = get_1d_size(ds);
+        std::vector<int> out{};
+        out.resize(len);
+        ds.read(out.data(), H5::PredType::NATIVE_INT);
+        return out;
+    }
+};
+
 template <> struct Reader<H5Context, std::vector<int64_t>> {
     static std::vector<int64_t>
     read(const H5Context &ctx, const std::string &name, AccessType access) {
@@ -251,6 +268,29 @@ template <> struct Reader<H5Context, std::vector<int64_t>> {
         std::vector<int64_t> out{};
         out.resize(len);
         ds.read(out.data(), H5::PredType::STD_I64LE);
+        return out;
+    }
+};
+
+template <> struct Reader<H5Context, std::vector<std::string>> {
+    static std::vector<std::string>
+    read(const H5Context &ctx, const std::string &name, AccessType access) {
+        if (access == AccessType::Attribute) {
+            throw RuntimeError(
+                "'std::vector<std::string>' attribute access not "
+                "supported for HDF5");
+        }
+        require_dataset(ctx, name);
+        auto ds = ctx.file.openDataSet(HDF5_GROUP + name);
+        H5::StrType strType(H5::PredType::C_S1, H5T_VARIABLE);
+        std::vector<const char *> raw;
+        raw.resize(get_1d_size(ds));
+        ds.read(raw.data(), strType);
+        std::vector<std::string> out;
+        out.reserve(raw.size());
+        for (auto c : raw) {
+            out.emplace_back(c);
+        }
         return out;
     }
 };

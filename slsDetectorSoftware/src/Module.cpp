@@ -541,6 +541,12 @@ void Module::setSynchronization(const bool value) {
 }
 
 std::vector<int> Module::getBadChannels() const {
+    auto retval = sendToDetectorVarVector<int>(F_GET_BAD_CHANNELS);
+    for (size_t i = 0; i < retval.size(); ++i) {
+        LOG(logDEBUG1) << i << ":" << retval[i];
+    }
+    return retval;
+
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(F_GET_BAD_CHANNELS);
     client.setFnum(F_GET_BAD_CHANNELS);
@@ -1638,8 +1644,7 @@ void Module::setRxArping(bool enable) {
 }
 
 std::vector<defs::ROI> Module::getRxROI() const {
-    std::vector<ROI> retval;
-    retval = sendToReceiverVarVector<ROI>(F_RECEIVER_GET_RECEIVER_ROI);
+    auto retval = sendToReceiverVarVector<ROI>(F_RECEIVER_GET_RECEIVER_ROI);
     auto nPorts = retval.size();
     if (static_cast<int>(nPorts) != shm()->numUDPInterfaces) {
         throw RuntimeError(
@@ -3127,6 +3132,19 @@ void Module::checkArgs(const void *args, size_t args_size, void *retval,
     static_assert(!std::is_same<ARG, std::nullptr_t>::value,                   \
                   "nullptr_t type is incompatible with templated " DST);
 
+template <typename Ret>
+std::vector<Ret> Module::sendToDetectorVarVector(int fnum) const {
+    LOG(logDEBUG1) << "Sending to Detector: ["
+                   << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
+                   << ", nullptr, 0, std::vector<" << typeid(Ret).name()
+                   << ">]";
+    std::vector<Ret> retval;
+    auto receiver = DetectorSocket(shm()->hostname, shm()->controlPort);
+    receiver.sendCommandVariableSize(fnum, nullptr, 0, retval);
+    receiver.close();
+    return retval;
+}
+
 void Module::sendToDetector(int fnum, const void *args, size_t args_size,
                             void *retval, size_t retval_size) const {
     // This is the only function that actually sends data to the detector
@@ -3379,8 +3397,7 @@ std::vector<Ret> Module::sendToReceiverVarVector(int fnum) const {
     LOG(logDEBUG1) << "Sending to Receiver: ["
                    << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
                    << ", nullptr, 0, std::vector<" << typeid(Ret).name()
-                   << ">, "
-                   << "]";
+                   << ">]";
     if (!shm()->useReceiverFlag) {
         std::ostringstream oss;
         oss << "Set rx_hostname first to use receiver parameters, ";

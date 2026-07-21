@@ -81,7 +81,7 @@ void ClientSocket::sendCommandThenRead(int fnum, const void *args,
 }
 
 void ClientSocket::sendCommand(int fnum, const void *args, size_t args_size) {
-    Send(&fnum, sizeof(fnum));
+    Send(fnum);
     setFnum(fnum);
     Send(args, args_size);
 }

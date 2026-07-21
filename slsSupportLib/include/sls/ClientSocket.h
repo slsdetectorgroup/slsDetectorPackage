@@ -21,10 +21,10 @@ class ClientSocket : public DataSocket {
     template <typename Arg>
     void sendCommandVariableSize(int fnum, const std::vector<Arg> &args,
                                  void *retval, size_t retval_size) {
-        Send(&fnum, sizeof(fnum));
+        Send(fnum);
         setFnum(fnum);
-        size_t count = args.size();
-        Send(&count, sizeof(count));
+        int count = args.size();
+        Send(count);
         if (count > 0) {
             Send(args);
         }
@@ -35,7 +35,7 @@ class ClientSocket : public DataSocket {
     void sendCommandVariableSize(int fnum, const void *args, size_t args_size,
                                  std::vector<Ret> &retval) {
         sendCommand(fnum, args, args_size);
-        size_t count = 0;
+        int count = 0;
         readReply(&count, sizeof(count));
         retval.resize(count);
         if (count > 0) {

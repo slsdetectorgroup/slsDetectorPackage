@@ -21,10 +21,8 @@ class ClientSocket : public DataSocket {
     template <typename Arg>
     void sendCommandVariableSize(int fnum, const std::vector<Arg> &args,
                                  void *retval, size_t retval_size) {
-        Send(fnum);
-        setFnum(fnum);
         int count = args.size();
-        Send(count);
+        sendCommand(fnum, &count, sizeof(count));
         if (count > 0) {
             Send(args);
         }
@@ -42,10 +40,10 @@ class ClientSocket : public DataSocket {
             Receive(retval);
         }
     }
-
-  private:
     void sendCommand(int fnum, const void *args, size_t args_size);
     void readReply(void *retval, size_t retval_size);
+
+  private:
     [[noreturn]] void throwError(const std::string &msg) const;
     struct sockaddr_in serverAddr {};
     std::string socketType;

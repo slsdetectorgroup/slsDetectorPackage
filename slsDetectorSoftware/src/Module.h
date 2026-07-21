@@ -630,6 +630,9 @@ class Module : public virtual slsDetectorDefs {
     void checkArgs(const void *args, size_t args_size, void *retval,
                    size_t retval_size) const;
 
+    template <typename Arg>
+    void sendToDetectorVarVector(int fnum, const std::vector<Arg> &args) const;
+
     template <typename Ret>
     std::vector<Ret> sendToDetectorVarVector(int fnum) const;
 

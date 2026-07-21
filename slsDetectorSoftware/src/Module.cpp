@@ -546,40 +546,10 @@ std::vector<int> Module::getBadChannels() const {
         LOG(logDEBUG1) << i << ":" << retval[i];
     }
     return retval;
-
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(F_GET_BAD_CHANNELS);
-    client.setFnum(F_GET_BAD_CHANNELS);
-    if (client.Receive<int>() == FAIL) {
-        throw DetectorError("Detector " + std::to_string(moduleIndex) +
-                            " returned error: " + client.readErrorMessage());
-    }
-    // receive badchannels
-    auto nch = client.Receive<int>();
-    std::vector<int> badchannels(nch);
-    if (nch > 0) {
-        client.Receive(badchannels);
-        for (size_t i = 0; i < badchannels.size(); ++i) {
-            LOG(logDEBUG1) << i << ":" << badchannels[i];
-        }
-    }
-    return badchannels;
 }
 
 void Module::setBadChannels(std::vector<int> list) {
-    auto nch = static_cast<int>(list.size());
-    LOG(logDEBUG1) << "Sending bad channels to detector, nch:" << nch;
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(F_SET_BAD_CHANNELS);
-    client.setFnum(F_SET_BAD_CHANNELS);
-    client.Send(nch);
-    if (nch > 0) {
-        client.Send(list);
-    }
-    if (client.Receive<int>() == FAIL) {
-        throw DetectorError("Detector " + std::to_string(moduleIndex) +
-                            " returned error: " + client.readErrorMessage());
-    }
+    sendToDetectorVarVector(F_SET_BAD_CHANNELS, list);
 }
 
 int Module::getRow() const { return sendToDetector<int>(F_GET_ROW); }
@@ -839,21 +809,17 @@ bool Module::isPowerEnabled(defs::powerIndex index) const {
 
 void Module::setPowerEnabled(const std::vector<defs::powerIndex> &indices,
                              bool enable) {
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(F_SET_POWER);
-    client.setFnum(F_SET_POWER);
-    int count = indices.size();
-    client.Send(count);
+    int count = static_cast<int>(indices.size());
     std::vector<int> indices_int(count);
-    for (size_t i = 0; i < indices.size(); ++i) {
+    for (int i = 0; i < count; ++i) {
         indices_int[i] = static_cast<int>(indices[i]);
     }
+    // sends a variable vector and an enable
+    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    client.sendCommand(F_SET_POWER, &count, sizeof(count));
     client.Send(indices_int);
     client.Send(static_cast<int>(enable));
-    if (client.Receive<int>() == FAIL) {
-        throw DetectorError("Detector " + std::to_string(moduleIndex) +
-                            " returned error: " + client.readErrorMessage());
-    }
+    client.readReply(nullptr, 0);
 }
 
 int Module::getPowerADC(defs::powerIndex index) const {
@@ -3132,6 +3098,18 @@ void Module::checkArgs(const void *args, size_t args_size, void *retval,
     static_assert(!std::is_same<ARG, std::nullptr_t>::value,                   \
                   "nullptr_t type is incompatible with templated " DST);
 
+template <typename Arg>
+void Module::sendToDetectorVarVector(int fnum,
+                                     const std::vector<Arg> &args) const {
+    LOG(logDEBUG1) << "Sending to Detector: ["
+                   << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
+                   << ", std::vector<" << typeid(Arg).name() << ">, nullptr, 0,"
+                   << "]";
+    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    client.sendCommandVariableSize(fnum, args, nullptr, 0);
+    client.close();
+}
+
 template <typename Ret>
 std::vector<Ret> Module::sendToDetectorVarVector(int fnum) const {
     LOG(logDEBUG1) << "Sending to Detector: ["
@@ -3139,9 +3117,9 @@ std::vector<Ret> Module::sendToDetectorVarVector(int fnum) const {
                    << ", nullptr, 0, std::vector<" << typeid(Ret).name()
                    << ">]";
     std::vector<Ret> retval;
-    auto receiver = DetectorSocket(shm()->hostname, shm()->controlPort);
-    receiver.sendCommandVariableSize(fnum, nullptr, 0, retval);
-    receiver.close();
+    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    client.sendCommandVariableSize(fnum, nullptr, 0, retval);
+    client.close();
     return retval;
 }
 

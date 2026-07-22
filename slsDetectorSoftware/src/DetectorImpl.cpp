@@ -1670,7 +1670,9 @@ void DetectorImpl::updateRxUDPDatastreamMetadata() {
         }
     }
 
-    modules[0]->updateRxUDPPortDisableMetadata(disable);
+    if (modules[0]->getUseReceiverFlag()) {
+        modules[0]->updateRxUDPPortDisableMetadata(disable);
+    }
 }
 
 std::vector<int> DetectorImpl::getRxDisabledUDPPortIndices() const {

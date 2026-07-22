@@ -73,20 +73,23 @@ void ClientSocket::throwError(const std::string &msg) const {
     }
 }
 
-int ClientSocket::sendCommandThenRead(int fnum, const void *args,
-                                      size_t args_size, void *retval,
-                                      size_t retval_size) {
-    int ret = slsDetectorDefs::FAIL;
-    Send(&fnum, sizeof(fnum));
-    setFnum(fnum);
-    Send(args, args_size);
-    readReply(ret, retval, retval_size);
-    return ret;
+void ClientSocket::sendCommandThenRead(int fnum, const void *args,
+                                       size_t args_size, void *retval,
+                                       size_t retval_size) {
+    sendCommand(fnum, args, args_size);
+    readReply(retval, retval_size);
 }
 
-void ClientSocket::readReply(int &ret, void *retval, size_t retval_size) {
+void ClientSocket::sendCommand(int fnum, const void *args, size_t args_size) {
+    Send(fnum);
+    setFnum(fnum);
+    Send(args, args_size);
+}
+
+void ClientSocket::readReply(void *retval, size_t retval_size) {
 
     try {
+        int ret = slsDetectorDefs::FAIL;
         Receive(&ret, sizeof(ret));
         if (ret == slsDetectorDefs::FAIL) {
             std::string mess = readErrorMessage();

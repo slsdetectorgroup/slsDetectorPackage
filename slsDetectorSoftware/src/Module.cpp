@@ -2870,14 +2870,12 @@ IpAddr Module::getLastClientIP() const {
 std::string Module::executeCommand(const std::string &cmd) {
     LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
                  << "): Sending command " << cmd;
-
-    std::string args(1000, '\0');
-    std::string retval(1000, '\0');
-    std::copy(cmd.begin(), cmd.end(), args.begin());
+    char args[MAX_STR_LENGTH]{};
+    char retval[MAX_STR_LENGTH]{};
+    strcpy_safe(args, cmd.c_str());
     sendToDetector(F_EXEC_COMMAND, args, retval);
-
-    LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
-                 << "): command executed";
+    s LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
+                   << "): command executed";
     return retval;
 }
 

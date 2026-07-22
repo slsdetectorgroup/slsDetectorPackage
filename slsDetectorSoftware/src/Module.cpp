@@ -2874,8 +2874,8 @@ std::string Module::executeCommand(const std::string &cmd) {
     char retval[MAX_STR_LENGTH]{};
     strcpy_safe(args, cmd.c_str());
     sendToDetector(F_EXEC_COMMAND, args, retval);
-    s LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
-                   << "): command executed";
+    LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
+                 << "): command executed";
     return retval;
 }
 

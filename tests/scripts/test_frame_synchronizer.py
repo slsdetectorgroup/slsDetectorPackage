@@ -8,7 +8,6 @@ import sys, time
 import traceback, json
 
 from slsdet import Detector
-from slsdet.defines import DEFAULT_TCP_RX_PORTNO
 
 from utils_for_test import (
     Log,
@@ -22,7 +21,8 @@ from utils_for_test import (
     loadBasicSettings,
     ParseArguments, 
     build_dir,
-    optional_file
+    optional_file,
+    RX_START_TCP_PORTNO
 )
 
 LOG_PREFIX_FNAME = '/tmp/slsFrameSynchronizer_test'
@@ -44,9 +44,7 @@ def startFrameSynchronizerPullSocket(name, fp, no_log_file = False, quiet_mode=F
 
 
 def startFrameSynchronizer(num_mods, fp, no_log_file = False, quiet_mode=False):
-    cmd = [str(build_dir / 'slsFrameSynchronizer'), str(DEFAULT_TCP_RX_PORTNO), str(num_mods)]
-    # in 10.0.0
-    #cmd = ['slsFrameSynchronizer', '-p', str(DEFAULT_TCP_RX_PORTNO), '-n', str(num_mods)]
+    cmd = [str(build_dir / 'slsFrameSynchronizer'), '-p', str(RX_START_TCP_PORTNO), '-n', str(num_mods)]
     fname = SYNCHRONIZER_SUFFIX_FNAME
     if no_log_file:
         fname = None

@@ -46,6 +46,8 @@ int virtual_moduleid = 0;
 #endif
 
 enum detectorSettings thisSettings = UNINITIALIZED;
+static enum CHIPINDEX chipIndex = v1_0;
+static char chipType[SHORT_STR_LENGTH] = {0};
 int highvoltage = 0;
 int dacValues[NDAC] = {};
 int defaultDacValues[] = DEFAULT_DAC_VALS;
@@ -319,23 +321,56 @@ int isHardwareVersion_1_0() {
     return ((getHardwareVersionNumber() == hwNumberList[0]) ? 1 : 0);
 }
 
-int getChipVersion() {
-    // chip v1.1
-    if (bus_r(DAQ_REG) & DAQ_CHIP11_VRSN_MSK) {
-        return 11;
+int getChipVersionInFPGA() {
+    const int vals[] = CHIP_VALS;
+    int val = ((bus_r(DAQ_REG) & DAQ_CHIP_VRSN_MSK) >> DAQ_CHIP_VRSN_OFST);
+    switch (val) {
+        case 0:
+            return vals[(int)v1_0];
+        case 1:
+            return vals[(int)v1_1];
+        case 2:
+            return vals[(int)v1_2_NORMAL];
+        default:
+            LOG(logERROR, ("Read undefined value as chip version from FPGA: %d\n", val));
+            return -1;
     }
-    // chip v1.0
-    return 10;
 }
 
-void setChipVersion(int version) {
-    LOG(logINFO,
-        ("Setting chip version to %0.1f in FPGA\n", (double)version / 10.0));
-    if (version == 11) {
-        bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_CHIP11_VRSN_MSK);
-    } else {
-        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_CHIP11_VRSN_MSK);
+void setChipIndex(enum CHIPINDEX ind) {
+    chipIndex = ind;
+
+    char* chip_names[] = {CHIP_NAMES};
+    memset(chipType, 0, sizeof(chipType));
+    strncpy(chipType, chip_names[(int)ind], sizeof(chipType) - 1);
+
+    setChipVersionInFPGA();
+}
+
+void setChipVersionInFPGA() {
+    int val = 0;
+    switch (chipIndex) {
+        case v1_0:
+            LOG(logINFO, ("Setting Chip Version 1.0 in FPGA\n"));
+            val = 0;
+            break;
+        case v1_1:
+            LOG(logINFO, ("Setting Chip Version 1.1 in FPGA\n"));
+            val = 1;
+            break;
+        case v1_2_NORMAL:
+        case v1_2_LOW_NOISE:
+        case v1_2_HDR:
+            LOG(logINFO, ("Setting Chip Version 1.1 in FPGA\n"));
+            val = 2;
+            break;
+        default:
+            LOG(logERROR, ("Unknown chip version %d\n", (int)chipIndex));
+            break;
     }
+    
+    bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_CHIP_VRSN_MSK);
+    bus_w(DAQ_REG, bus_r(DAQ_REG) | ((val << DAQ_CHIP_VRSN_OFST) & DAQ_CHIP_VRSN_MSK));
 }
 
 u_int32_t getDetectorNumber() {
@@ -543,13 +578,19 @@ void setupDetector() {
     setExpTime(DEFAULT_EXPTIME);
     setPeriod(DEFAULT_PERIOD);
     setDelayAfterTrigger(DEFAULT_DELAY);
-    if (getChipVersion() == 11) {
-        selectStoragecellStart(DEFAULT_STRG_CLL_STRT_CHIP11);
-    } else {
-        setNumAdditionalStorageCells(DEFAULT_NUM_STRG_CLLS);
-        selectStoragecellStart(DEFAULT_STRG_CLL_STRT);
-        // not applicable for chipv1.1
-        setStorageCellDelay(DEFAULT_STRG_CLL_DLY);
+    switch (chipIndex) {
+        case v1_0:
+            setNumAdditionalStorageCells(DEFAULT_NUM_STRG_CLLS);
+            selectStoragecellStart(DEFAULT_STRG_CLL_STRT);
+            // not applicable for chipv1.1
+            setStorageCellDelay(DEFAULT_STRG_CLL_DLY);
+            break;
+        case v1_1:
+            selectStoragecellStart(DEFAULT_STRG_CLL_STRT_CHIP11);
+            break;
+        default:
+            // TODO
+            break;
     }
     setTiming(DEFAULT_TIMING_MODE);
     setNextFrameNumber(DEFAULT_STARTING_FRAME_NUMBER);
@@ -558,7 +599,7 @@ void setupDetector() {
     setTemperatureControl(DEFAULT_TMP_CNTRL);
     setThresholdTemperature(DEFAULT_TMP_THRSHLD);
     setTemperatureEvent(0);
-    if (getChipVersion() == 11) {
+    if (chipIndex == v1_1) {
         setFilterResistor(DEFAULT_FILTER_RESISTOR);
         setNumberOfFilterCells(DEFAULT_FILTER_CELL);
     }
@@ -791,10 +832,10 @@ int readConfigFile() {
 
         // chipversion command
         if (!strncmp(line, "chipversion", strlen("chipversion"))) {
-            int version = 0;
+            int val = 0;
 
             // cannot scan values
-            if (sscanf(line, "%s %d", command, &version) != 2) {
+            if (sscanf(line, "%s %d", command, &val) != 2) {
                 sprintf(
                     initErrorMessage,
                     "Could not scan chipversion commands from on-board server "
@@ -803,23 +844,33 @@ int readConfigFile() {
                 break;
             }
             // validations
-            if (version != 10 && version != 11) {
+            const int vals[] = CHIP_VALS;
+            enum CHIPINDEX ichip = v1_0;
+            while (ichip != NUM_CHIP_INDICES) {
+                if (val == vals[(int)ichip]) {
+                    break;
+                }
+                ++ichip;
+            }
+            if (ichip == NUM_CHIP_INDICES) {
                 sprintf(initErrorMessage,
                         "Could not set chip version from on-board server "
-                        "config file. Invalid chip version %d. Line:[%s].\n",
-                        version, line);
-                break;
-            }
-            // chipversion 1.1 and HW 1.0 is incompatible
-            if (version == 11 && isHardwareVersion_1_0()) {
-                strcpy(initErrorMessage,
-                       "Chip version 1.1 (from on-board config file) is "
-                       "incompatible with hardware version v1.0. Please update "
-                       "board or correct on-board config file.\n");
+                        "config file. Invalid chip version %d. Options: %s. Line:[%s].\n",
+                        val, CHIP_VALS_HELP, line);
                 break;
             }
 
-            setChipVersion(version);
+            // chipversion > 1.0 and HW 1.0 is incompatible
+            if (ichip > v1_0 && isHardwareVersion_1_0()) {
+            char* chip_names[] = {CHIP_NAMES};
+                sprintf(initErrorMessage,
+                       "Chip version %s (from on-board config file) is "
+                       "incompatible with hardware version v1.0. Please update "
+                       "board or correct on-board config file.\n", chip_names[(int)ichip]);
+                break;
+            }
+
+            setChipIndex(ichip);
         }
 
         // other commands
@@ -913,7 +964,7 @@ int selectStoragecellStart(int pos) {
     uint32_t addr = DAQ_REG;
     uint32_t mask = DAQ_STRG_CELL_SLCT_MSK;
     int offset = DAQ_STRG_CELL_SLCT_OFST;
-    if (getChipVersion() == 11) {
+    if (chipIndex== v1_1) {
         // set the bit
         value = 1 << pos;
         addr = CONFIG_V11_REG;
@@ -926,7 +977,7 @@ int selectStoragecellStart(int pos) {
         bus_w(addr, bus_r(addr) | ((value << offset) & mask));
         // should not do a get to verify (status register does not update
         // immediately during acquisition)
-        if (getChipVersion() == 11) {
+        if (chipIndex == v1_1) {
             return pos;
         }
     }
@@ -934,7 +985,7 @@ int selectStoragecellStart(int pos) {
     // read value back
     // chipv1.1, writing and reading registers are different
 #ifndef VIRTUAL
-    if (getChipVersion() == 11) {
+    if (chipIndex == v1_1) {
         addr = CONFIG_V11_STATUS_REG;
         mask = CONFIG_V11_STATUS_STRG_CLL_MSK;
         offset = CONFIG_V11_STATUS_STRG_CLL_OFST;
@@ -943,12 +994,12 @@ int selectStoragecellStart(int pos) {
     uint32_t regval = bus_r(addr);
 #ifndef VIRTUAL
     // flip all contents of register //TODO FIRMWARE FIX
-    if (getChipVersion() == 11) {
+    if (chipIndex == v1_1) {
         regval ^= BIT32_MASK;
     }
 #endif
     uint32_t retval = ((regval & mask) >> offset);
-    if (getChipVersion() == 11) {
+    if (chipIndex == v1_1) {
         // get which bit
         int max = getMaxStoragecellStart();
         for (int i = 0; i != max + 1; ++i) {
@@ -962,7 +1013,7 @@ int selectStoragecellStart(int pos) {
 }
 
 int getMaxStoragecellStart() {
-    if (getChipVersion() == 11) {
+    if (chipIndex == v1_1) {
         return MAX_STORAGE_CELL_CHIP11_VAL;
     } else {
         return MAX_STORAGE_CELL_VAL;
@@ -1933,7 +1984,7 @@ int isChipConfigured() { return chipConfigured; }
 
 void configureChip() {
     // only for chipv1.1 and chip is powered on
-    if (getChipVersion() == 11 && powerChip(-1)) {
+    if (chipIndex == v1_1 && powerChip(-1)) {
         LOG(logINFOBLUE, ("\tConfiguring chip\n"));
 
         // waiting 500 ms before configuring selection
@@ -2001,7 +2052,7 @@ void configureASICTimer() {
                              ASIC_CTRL_PRCHRG_TMR_VAL);
 
     uint32_t val = ASIC_CTRL_DS_TMR_VAL;
-    if (getChipVersion() == 11) {
+    if (chipIndex == v1_1) {
         val = ASIC_CTRL_DS_TMR_CHIP1_1_VAL;
     }
     bus_w(ASIC_CTRL_REG, (bus_r(ASIC_CTRL_REG) & ~ASIC_CTRL_DS_TMR_MSK) | val);
@@ -2028,7 +2079,7 @@ int setReadoutSpeed(int val) {
             return FAIL;
         }
         LOG(logINFO, ("Setting Full Speed (40 MHz):\n"));
-        if (getChipVersion() == 10) {
+        if (chipIndex == v1_0) {
             sampleAdcSpeed = SAMPLE_ADC_FULL_SPEED_CHIP10;
             adcPhase = ADC_PHASE_FULL_SPEED_CHIP10;
             dbitPhase = DBIT_PHASE_FULL_SPEED_CHIP10;
@@ -2049,7 +2100,7 @@ int setReadoutSpeed(int val) {
             sampleAdcSpeed = SAMPLE_ADC_HALF_SPEED_BOARD2;
             adcPhase = ADC_PHASE_HALF_SPEED_BOARD2;
             dbitPhase = DBIT_PHASE_HALF_SPEED_BOARD2;
-        } else if (getChipVersion() == 10) {
+        } else if (chipIndex == v1_0) {
             adcOfst = ADC_OFST_HALF_SPEED_VAL_CHIP10;
             sampleAdcSpeed = SAMPLE_ADC_HALF_SPEED_CHIP10;
             adcPhase = ADC_PHASE_HALF_SPEED_CHIP10;
@@ -2070,7 +2121,7 @@ int setReadoutSpeed(int val) {
             sampleAdcSpeed = SAMPLE_ADC_QUARTER_SPEED_BOARD2;
             adcPhase = ADC_PHASE_QUARTER_SPEED_BOARD2;
             dbitPhase = DBIT_PHASE_QUARTER_SPEED_BOARD2;
-        } else if (getChipVersion() == 10) {
+        } else if (chipIndex == v1_0) {
             adcOfst = ADC_OFST_QUARTER_SPEED_VAL_CHIP10;
             sampleAdcSpeed = SAMPLE_ADC_QUARTER_SPEED_CHIP10;
             adcPhase = ADC_PHASE_QUARTER_SPEED_CHIP10;
@@ -2416,7 +2467,7 @@ void disableCurrentSource() {
     LOG(logINFO, ("Disabling Current Source\n"));
 
     // set default values for current source first
-    if (getChipVersion() == 11) {
+    if (chipIndex == v1_1) {
         LOG(logINFO, ("\tSetting default values for selection\n"))
         bus_w(CRRNT_SRC_COL_LSB_REG, BIT32_MASK);
         bus_w(CRRNT_SRC_COL_MSB_REG, BIT32_MASK);
@@ -2431,7 +2482,7 @@ void disableCurrentSource() {
 void enableCurrentSource(int fix, uint64_t select, int normal) {
     disableCurrentSource();
 
-    if (getChipVersion() == 11) {
+    if (chipIndex == v1_1) {
         LOG(logINFO, ("Enabling current source [fix:%d, select:0x%lx]\n", fix,
                       (long unsigned int)select));
     } else {
@@ -2447,7 +2498,7 @@ void enableCurrentSource(int fix, uint64_t select, int normal) {
         LOG(logINFO, ("\tDisabling fix\n"));
         bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_CRRNT_SRC_CLMN_FIX_MSK);
     }
-    if (getChipVersion() == 10) {
+    if (chipIndex == v1_0) {
         // select
         LOG(logINFO, ("\tSetting selection to %ld\n", (long int)select));
         bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_CRRNT_SRC_CLMN_SLCT_MSK);
@@ -2508,7 +2559,7 @@ int getFixCurrentSource() {
 }
 
 int getNormalCurrentSource() {
-    if (getChipVersion() == 11) {
+    if (chipIndex == v1_1) {
         int low = ((bus_r(CONFIG_V11_STATUS_REG) &
                     CONFIG_V11_STATUS_CRRNT_SRC_LOW_MSK) >>
                    CONFIG_V11_STATUS_CRRNT_SRC_LOW_OFST);
@@ -2518,7 +2569,7 @@ int getNormalCurrentSource() {
 }
 
 uint64_t getSelectCurrentSource() {
-    if (getChipVersion() == 10) {
+    if (chipIndex == v1_0) {
         return ((bus_r(DAQ_REG) & DAQ_CRRNT_SRC_CLMN_SLCT_MSK) >>
                 DAQ_CRRNT_SRC_CLMN_SLCT_OFST);
     } else {

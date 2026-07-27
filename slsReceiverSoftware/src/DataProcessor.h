@@ -43,6 +43,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     void SetPortROI(const ROI arg);
     void setMultiROIMetadata(const std::vector<slsDetectorDefs::ROI> &args);
     void SetDataStreamEnable(bool enable);
+    bool GetDataStreamEnable() const;
     void SetStreamingFrequency(uint32_t value);
     void SetStreamingTimerInMs(uint32_t value);
     void SetStreamingStartFnum(uint32_t value);

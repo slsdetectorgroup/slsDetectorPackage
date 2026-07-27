@@ -203,7 +203,9 @@ void Implementation::SetupDataProcessor(int i) {
     dataProcessor[i]->SetActivate(activated);
     dataProcessor[i]->SetPortROI(portRois[i]);
     if (i == 0)
-        dataProcessor[0]->setMultiROIMetadata(multiRoiMetadata);
+        dataProcessor[0]->setMultiROIMetadata(
+            multiRoiMetadata); // TODO: Info should also be in all but doesnt
+                               // make sense to disable one port and have ROI
     dataProcessor[i]->SetDataStreamEnable(dataStreamEnable);
     dataProcessor[i]->SetStreamingFrequency(streamingFrequency);
     dataProcessor[i]->SetStreamingTimerInMs(streamingTimerInMs);
@@ -1013,9 +1015,13 @@ void Implementation::StartMasterWriter() {
             masterAttributes.udpPortsDisabled = udpPortsDisabledMetadata;
 
             // create master file
-            masterFileName = dataProcessor[0]->CreateMasterFile(
-                filePath, fileName, fileIndex, overwriteEnable, silentMode,
-                fileFormatType, &masterAttributes, &hdf5LibMutex);
+            size_t dataprocessor_index =
+                dataProcessor[0]->GetDataStreamEnable() ? 0 : 1;
+
+            masterFileName =
+                dataProcessor[dataprocessor_index]->CreateMasterFile(
+                    filePath, fileName, fileIndex, overwriteEnable, silentMode,
+                    fileFormatType, &masterAttributes, &hdf5LibMutex);
         }
 #ifdef HDF5C
         // create virtual and master file

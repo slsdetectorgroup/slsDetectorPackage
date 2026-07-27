@@ -211,11 +211,21 @@ enum DACINDEX {
         420   /* J_VREF_COMP */                                                \
     };
 
-enum CHIPINDEX {v1_0, v1_1, v1_2_NORMAL, v1_2_LOW_NOISE, v1_2_HDR, v1_3_BURST_MODE, NUM_CHIP_INDICES};
+enum CHIPINDEX {
+    v1_0,
+    v1_1,
+    v1_2_NORMAL,
+    v1_2_LOW_NOISE,
+    v1_2_HDR,
+    v1_3_BURST_MODE,
+    NUM_CHIP_INDICES
+};
 
-#define CHIP_VALS { 10, 11, 120, 121, 122, 13};
+#define CHIP_VALS      {10, 11, 120, 121, 122, 13};
 #define CHIP_VALS_HELP "10, 11, 120, 121, 122, 13"
-#define CHIP_NAMES "v1.0", "v1.1", "v1.2 Normal", "v1.2 Low Noise", "v1.2 HDR", "v1.3 Burst Mode"
+#define CHIP_NAMES                                                             \
+    "v1.0", "v1.1", "v1.2 Normal", "v1.2 Low Noise", "v1.2 HDR",               \
+        "v1.3 Burst Mode"
 
 enum MASTERINDEX { MASTER_HARDWARE, OW_MASTER, OW_SLAVE };
 #define MASTER_NAMES "hardware", "master", "slave"

@@ -6,4 +6,4 @@
 #"v1.2 HDR"
 #"v1.3 Burst Mode"
 
-chipindex         "v1.2 Normal"
+chipversion         "v1.2 Normal"

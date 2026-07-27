@@ -96,9 +96,11 @@ int isHardwareVersion_1_0();
 #endif
 #if defined(JUNGFRAUD)
 int getChipVersionInFPGA();
-int findChipIndex(enum CHIPINDEX *ind, int val, char *mess);
-int setChipVersionFromConfigFile(int val, char *mess);
-int setChipIndexFromConfigFile(int val, char *mess);
+int findChipIndex(enum CHIPINDEX *ind, char *cval, char *mess);
+int setChipVersionIntFromConfigFile(int val,
+                                    char *mess); // for backward compatibility
+int setChipVersionStringFromConfigFile(char *cval, char *mess);
+int setChipIndex(enum CHIPINDEX ind, char *mess);
 int validateChipIndex(enum CHIPINDEX ind, char *mess);
 int setChipVersionInFPGA(char *mess);
 #endif

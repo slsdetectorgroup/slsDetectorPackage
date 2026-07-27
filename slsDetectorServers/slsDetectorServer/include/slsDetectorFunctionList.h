@@ -95,8 +95,12 @@ u_int16_t getHardwareSerialNumber();
 int isHardwareVersion_1_0();
 #endif
 #if defined(JUNGFRAUD)
-int getChipVersion();
-void setChipVersion(int version);
+int getChipVersionInFPGA();
+int findChipIndex(enum CHIPINDEX *ind, int val, char *mess);
+int setChipVersionFromConfigFile(int val, char *mess);
+int setChipIndexFromConfigFile(int val, char *mess);
+int validateChipIndex(enum CHIPINDEX ind, char *mess);
+int setChipVersionInFPGA(char *mess);
 #endif
 #ifndef EIGERD
 u_int32_t getDetectorNumber();

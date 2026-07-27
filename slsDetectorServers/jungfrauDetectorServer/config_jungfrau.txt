@@ -1,6 +1,6 @@
 
 
-#chip version       version
+#chipindex       corresponding to chip version
 #10 -> v1.0
 #11 -> v1.1
 #120 -> v1.2 Normal
@@ -8,4 +8,4 @@
 #121 ->v1.2 HDR
 #130 ->v1.3 Burst Mode
 
-chipversion         120
+chipindex         120

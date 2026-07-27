@@ -343,7 +343,6 @@ int findChipIndex(enum CHIPINDEX *ind, char *cval, char *mess) {
         LOG(logERROR, (mess));
         return FAIL;
     }
-    const int vals[] = CHIP_VALS;
     char *chip_names[] = {CHIP_NAMES};
     for (enum CHIPINDEX ichip = v1_0; ichip != NUM_CHIP_INDICES; ++ichip) {
         if (strcmp(chip_names[ichip], cval) == 0) {
@@ -359,18 +358,14 @@ int findChipIndex(enum CHIPINDEX *ind, char *cval, char *mess) {
 
 /** For backwards compatibility */
 int setChipVersionIntFromConfigFile(int val, char *mess) {
-    // validations
     const int vals[] = CHIP_VALS;
-    int v1_0_val = vals[(int)v1_0];
-    int v1_1_val = vals[(int)v1_1];
-    switch (val) {
-    case v1_0_val:
+    if (val == vals[(int)v1_0]) 
         return setChipIndex(v1_0, mess);
-    case v1_1_val:
+    else if (val == vals[(int)v1_1])
         return setChipIndex(v1_1, mess);
-    default:
+    else {
         sprintf(mess, "Invalid chip version %d. Options: %d and %d.\n", val,
-                v1_0_val, v1_1_val);
+                vals[(int)v1_0], vals[(int)v1_1]);
         LOG(logERROR, (mess));
         return FAIL;
     }

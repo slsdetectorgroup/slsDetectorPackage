@@ -47,7 +47,6 @@ int virtual_moduleid = 0;
 
 enum detectorSettings thisSettings = UNINITIALIZED;
 static enum CHIPINDEX chipIndex = v1_0;
-static char chipType[SHORT_STR_LENGTH] = {0};
 int highvoltage = 0;
 int dacValues[NDAC] = {};
 int defaultDacValues[] = DEFAULT_DAC_VALS;
@@ -337,17 +336,67 @@ int getChipVersionInFPGA() {
     }
 }
 
-void setChipIndex(enum CHIPINDEX ind) {
-    chipIndex = ind;
-
-    char* chip_names[] = {CHIP_NAMES};
-    memset(chipType, 0, sizeof(chipType));
-    strncpy(chipType, chip_names[(int)ind], sizeof(chipType) - 1);
-
-    setChipVersionInFPGA();
+int findChipIndex(enum CHIPINDEX *ind, int val, char *mess) {
+    const int vals[] = CHIP_VALS;
+    for (enum CHIPINDEX ichip = v1_0; ichip != NUM_CHIP_INDICES; ++ichip) {
+        if (vals[ichip] == val) {
+            *ind = ichip;
+            return OK;
+        }
+    }
+    sprintf(mess, "Unknown chip index value %d. Options: %s\n", val, CHIP_VALS_HELP);
+    LOG(logERROR, (mess));
+    return FAIL;
 }
 
-void setChipVersionInFPGA() {
+/** For backwards compatibility */
+int setChipVersionFromConfigFile(int val, char* mess) {
+    // validations
+    const int vals[] = CHIP_VALS;
+    int v1_0_val = vals[(int)v1_0];
+    int v1_1_val = vals[(int)v1_1];
+    if (val != v1_0_val && val != v1_1_val) {
+        sprintf(mess,
+                "Invalid chip version %d. Options: %d and %d.\n", val, v1_0_val, v1_1_val);
+        return FAIL;
+    }
+
+    if (setChipIndexFromConfigFile(val, mess) == FAIL) {
+        return FAIL;
+    }
+    return OK;
+}
+
+int setChipIndexFromConfigFile(int val, char* mess) {
+    enum CHIPINDEX ind = NUM_CHIP_INDICES; 
+    if (findChipIndex(&ind, val, mess) == FAIL) {
+        return FAIL;
+    }    
+    if (validateChipIndex(ind, mess) == FAIL) {
+        return FAIL;
+    }
+    chipIndex = ind;
+    return setChipVersionInFPGA(mess);
+}
+
+int validateChipIndex(enum CHIPINDEX ind, char* mess) {
+    if (ind < 0 || ind >= NUM_CHIP_INDICES) {
+        sprintf(mess, "Invalid chip index %d. Options: %s\n", (int)ind, CHIP_VALS_HELP);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+
+    // chipversion > 1.0 and HW 1.0 is incompatible
+    if (ind > v1_0 && isHardwareVersion_1_0()) {
+        char *chip_names[] = {CHIP_NAMES};
+        sprintf(mess,
+                "Chip index %d (%s) is incompatible with hardware version v1.0. Please update board or correct chip index.\n", (int)ind, chip_names[ind]);
+        return FAIL;
+    }
+    return OK;
+}
+
+int setChipVersionInFPGA(char* mess) {
     int val = 0;
     switch (chipIndex) {
         case v1_0:
@@ -361,16 +410,18 @@ void setChipVersionInFPGA() {
         case v1_2_NORMAL:
         case v1_2_LOW_NOISE:
         case v1_2_HDR:
-            LOG(logINFO, ("Setting Chip Version 1.1 in FPGA\n"));
+            LOG(logINFO, ("Setting Chip Version 1.2 in FPGA\n"));
             val = 2;
             break;
         default:
-            LOG(logERROR, ("Unknown chip version %d\n", (int)chipIndex));
-            break;
+            sprintf(mess, "Unknown chip index %d\n", (int)chipIndex);
+            LOG(logERROR, (mess));
+            return FAIL;
     }
     
     bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_CHIP_VRSN_MSK);
     bus_w(DAQ_REG, bus_r(DAQ_REG) | ((val << DAQ_CHIP_VRSN_OFST) & DAQ_CHIP_VRSN_MSK));
+    return OK;
 }
 
 u_int32_t getDetectorNumber() {
@@ -830,47 +881,38 @@ int readConfigFile() {
                         strlen(line) - 1, line));
         memset(command, 0, LZ);
 
-        // chipversion command
+        // chipversion command (backward compatibility)
         if (!strncmp(line, "chipversion", strlen("chipversion"))) {
             int val = 0;
-
             // cannot scan values
             if (sscanf(line, "%s %d", command, &val) != 2) {
                 sprintf(
                     initErrorMessage,
-                    "Could not scan chipversion commands from on-board server "
+                    "Could not scan chipversion command from on-board server "
                     "config file. Line:[%s].\n",
                     line);
                 break;
             }
-            // validations
-            const int vals[] = CHIP_VALS;
-            enum CHIPINDEX ichip = v1_0;
-            while (ichip != NUM_CHIP_INDICES) {
-                if (val == vals[(int)ichip]) {
-                    break;
-                }
-                ++ichip;
-            }
-            if (ichip == NUM_CHIP_INDICES) {
-                sprintf(initErrorMessage,
-                        "Could not set chip version from on-board server "
-                        "config file. Invalid chip version %d. Options: %s. Line:[%s].\n",
-                        val, CHIP_VALS_HELP, line);
+            if (setChipVersionFromConfigFile(val, initErrorMessage) == FAIL) {
+                strcat(initErrorMessage, "Could not set chip version from on-board server config file. For higher chip versions, use 'chipindex' command from example server config file. Line:[%s].\n");
                 break;
             }
-
-            // chipversion > 1.0 and HW 1.0 is incompatible
-            if (ichip > v1_0 && isHardwareVersion_1_0()) {
-            char* chip_names[] = {CHIP_NAMES};
-                sprintf(initErrorMessage,
-                       "Chip version %s (from on-board config file) is "
-                       "incompatible with hardware version v1.0. Please update "
-                       "board or correct on-board config file.\n", chip_names[(int)ichip]);
+        } 
+        else if (!strncmp(line, "chipindex", strlen("chipindex"))) {
+            int val = 0;
+            // cannot scan values
+            if (sscanf(line, "%s %d", command, &val) != 2) {
+                sprintf(
+                    initErrorMessage,
+                    "Could not scan chipindex command from on-board server "
+                    "config file. Line:[%s].\n",
+                    line);
                 break;
             }
-
-            setChipIndex(ichip);
+            if (setChipIndexFromConfigFile(val, initErrorMessage) == FAIL) {
+                strcat(initErrorMessage, "Could not set chip index from on-board server config file. Line:[%s].\n");
+                break;
+            }
         }
 
         // other commands

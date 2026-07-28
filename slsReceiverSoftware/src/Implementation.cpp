@@ -1017,13 +1017,6 @@ void Implementation::StartMasterWriter() {
             // create master file
             size_t dataprocessor_index = udpDataStream[0] ? 0 : 1;
 
-            LOG(logDEBUG) << "dataprocessor_index: " << dataprocessor_index
-                          << " dataProcessor.size(): " << dataProcessor.size()
-                          << " dataProcessor[0]->GetDataStreamEnable(): "
-                          << dataProcessor[0]->GetDataStreamEnable()
-                          << " dataProcessor[1]->GetDataStreamEnable(): "
-                          << dataProcessor[1]->GetDataStreamEnable();
-
             masterFileName =
                 dataProcessor[dataprocessor_index]->CreateMasterFile(
                     filePath, fileName, fileIndex, overwriteEnable, silentMode,

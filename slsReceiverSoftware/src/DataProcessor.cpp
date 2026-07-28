@@ -63,8 +63,6 @@ void DataProcessor::SetDataStreamEnable(bool enable) {
     dataStreamEnable = enable;
 }
 
-bool DataProcessor::GetDataStreamEnable() const { return dataStreamEnable; }
-
 void DataProcessor::SetStreamingFrequency(uint32_t value) {
     streamingFrequency = value;
 }
@@ -331,7 +329,6 @@ void DataProcessor::ProcessAnImage(sls_receiver_header &header, size_t &size,
     uint64_t fnum = header.detHeader.frameNumber;
     LOG(logDEBUG1) << "DataProcessing " << index << ": fnum:" << fnum;
     currentFrameIndex = fnum;
-    LOG(logDEBUG) << "numFramesCaught:" << numFramesCaught;
     numFramesCaught++;
     uint32_t nump = header.detHeader.packetNumber;
 

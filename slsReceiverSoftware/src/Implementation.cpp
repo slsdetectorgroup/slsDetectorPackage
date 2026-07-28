@@ -1015,8 +1015,14 @@ void Implementation::StartMasterWriter() {
             masterAttributes.udpPortsDisabled = udpPortsDisabledMetadata;
 
             // create master file
-            size_t dataprocessor_index =
-                dataProcessor[0]->GetDataStreamEnable() ? 0 : 1;
+            size_t dataprocessor_index = udpDataStream[0] ? 0 : 1;
+
+            LOG(logDEBUG) << "dataprocessor_index: " << dataprocessor_index
+                          << " dataProcessor.size(): " << dataProcessor.size()
+                          << " dataProcessor[0]->GetDataStreamEnable(): "
+                          << dataProcessor[0]->GetDataStreamEnable()
+                          << " dataProcessor[1]->GetDataStreamEnable(): "
+                          << dataProcessor[1]->GetDataStreamEnable();
 
             masterFileName =
                 dataProcessor[dataprocessor_index]->CreateMasterFile(

@@ -329,7 +329,7 @@ int getChipVersionInFPGA() {
     case 1:
         return vals[(int)v1_1];
     case 2:
-        return vals[(int)v1_2_NORMAL];
+        return vals[(int)v1_2_NORMAL]/10;
     default:
         LOG(logERROR,
             ("Read undefined value as chip version from FPGA: %d\n", val));

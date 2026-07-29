@@ -4020,16 +4020,23 @@ void Module::simulatingActivityinDetector(const std::string &functionType,
 
 std::vector<uint8_t> Module::readSpi(int chip_id, int register_id,
                                      int n_bytes) const {
-    int args[] = {chip_id, register_id, n_bytes};
-    return sendToDetector<std::vector<uint8_t>>(F_SPI_READ, args);
+    auto client = createDetectorSocket();
+    client.sendCommand(F_SPI_READ, &chip_id, sizeof(chip_id));
+    client.Send(&register_id, sizeof(register_id));
+    client.Send(&n_bytes, sizeof(n_bytes));
+
+    std::vector<uint8_t> retval(n_bytes);
+    client.readReply(retval.data(), retval.size());
+    return retval;
 }
 
 std::vector<uint8_t> Module::writeSpi(int chip_id, int register_id,
                                       const std::vector<uint8_t> &data) {
     int count = static_cast<int>(data.size());
-    int args[] = {chip_id, register_id, count};
     auto client = createDetectorSocket();
-    client.sendCommand(F_SPI_WRITE, args, sizeof(args));
+    client.sendCommand(F_SPI_WRITE, &chip_id, sizeof(chip_id));
+    client.Send(&register_id, sizeof(register_id));
+    client.Send(&count, sizeof(count));
     client.Send(data);
     // Read the output from the SPI write. This contains the data before the
     // write

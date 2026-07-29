@@ -372,7 +372,6 @@ int setChipVersionIntFromConfigFile(int val, char *mess) {
 }
 
 int setChipVersionStringFromConfigFile(char *cval, char *mess) {
-
     enum CHIPINDEX ind = NUM_CHIP_INDICES;
     if (findChipIndex(&ind, cval, mess) == FAIL) {
         return FAIL;
@@ -409,21 +408,21 @@ int validateChipIndex(enum CHIPINDEX ind, char *mess) {
 }
 
 int setChipVersionInFPGA(char *mess) {
-    int val = 0;
+    uint32_t val = 0;
     switch (chipIndex) {
     case v1_0:
         LOG(logINFO, ("Setting Chip Version 1.0 in FPGA\n"));
-        val = 0;
+        val = DAQ_CHIP_VRSN_v1_0_VAL;
         break;
     case v1_1:
         LOG(logINFO, ("Setting Chip Version 1.1 in FPGA\n"));
-        val = 1;
+        val = DAQ_CHIP_VRSN_v1_1_VAL;
         break;
     case v1_2_NORMAL:
     case v1_2_LOW_NOISE:
     case v1_2_HDR:
         LOG(logINFO, ("Setting Chip Version 1.2 in FPGA\n"));
-        val = 2;
+        val = DAQ_CHIP_VRSN_v1_2_VAL;
         break;
     default:
         sprintf(mess, "Unknown chip index %d\n", (int)chipIndex);

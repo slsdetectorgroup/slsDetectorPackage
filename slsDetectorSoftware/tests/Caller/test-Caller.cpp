@@ -46,9 +46,10 @@ TEST_CASE("config", "[.detectorintegration]") {
 
 // free: not testing
 
-TEST_CASE("parameters", "[.cmdcall]") {
+void test_include_file(const std::string &cmd) {
     Detector det;
     Caller caller(&det);
+
     // put only
     REQUIRE_THROWS(caller.call(cmd, {}, -1, GET));
 

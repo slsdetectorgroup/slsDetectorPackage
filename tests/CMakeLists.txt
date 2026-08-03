@@ -60,8 +60,3 @@ catch_discover_tests(tests)
 configure_file(scripts/test_simulators.py ${CMAKE_BINARY_DIR}/bin/test_simulators.py COPYONLY)
 configure_file(scripts/test_frame_synchronizer.py ${CMAKE_BINARY_DIR}/bin/test_frame_synchronizer.py COPYONLY)
 configure_file(scripts/utils_for_test.py ${CMAKE_BINARY_DIR}/bin/utils_for_test.py COPYONLY)
-<<<<<<< HEAD
-configure_file(scripts/test_roi.py ${CMAKE_BINARY_DIR}/bin/test_roi.py COPYONLY)
-configure_file(scripts/test_free.py ${CMAKE_BINARY_DIR}/bin/test_free.py COPYONLY)
-=======
->>>>>>> 28b2aa967 (Dev/add simulator tests in GitHub workflows (#1337))

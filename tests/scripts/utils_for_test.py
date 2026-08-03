@@ -213,6 +213,8 @@ def runProcess(name, cmd, fp, log_file_name = None, quiet_mode=False):
 
     except subprocess.CalledProcessError as e:
         print("error: ", str(e))
+        if not log_file_name and e.stdout:
+            captured_log = e.stdout.splitlines()
         pass
     except Exception as e:
         print("something else failed")
@@ -223,7 +225,6 @@ def runProcess(name, cmd, fp, log_file_name = None, quiet_mode=False):
         with optional_file(log_file_name, 'r') as log_fp:
             checkLogForErrorsOrSummary(fp, log_fp, log_file_name)
     else:
-        captured_log = e.stdout.splitlines()
         checkLogForErrorsOrSummary(fp, captured_log)
 
     Log(LogLevel.INFOGREEN, name + ' successful!\n', fp, True)

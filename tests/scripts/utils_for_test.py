@@ -91,18 +91,17 @@ def checkIfProcessRunning(processName):
 
 
 def killProcess(name, fp):
-    pids = checkIfProcessRunning(name)
-    if pids:
-        Log(LogLevel.INFO, f"Killing '{name}' processes with PIDs: {', '.join(pids)}", fp)
-        for pid in pids:
-            try:
-                p = subprocess.run(['kill', pid])
-                if p.returncode != 0 and bool(checkIfProcessRunning(name)):
-                    raise RuntimeException(f"Could not kill {name} with pid {pid}")
-            except Exception as e:
-                raise RuntimeException(f"Failed to kill process {name} pid:{pid}. Error: {str(e)}") from e
-    #else:
-    #    Log(LogLevel.INFO, 'process not running : ' + name)
+    '''
+    Kill all processes matching name.
+    Does not fail if process is already gone.
+    '''
+    Log(LogLevel.INFO, f"Attempting to kill '{name}' (if running)", fp)
+    # pkill returns:
+    # 0 -> process killed
+    # 1 -> no process found OK
+    subprocess.run(['pkill', '-f', name],
+                   stdout=subprocess.DEVNULL,
+                   stderr=subprocess.DEVNULL)
 
 
 def cleanSharedmemory(fp):

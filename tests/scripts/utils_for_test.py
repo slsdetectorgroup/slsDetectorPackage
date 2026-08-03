@@ -312,7 +312,7 @@ def loadConfig(name, rx_hostname = 'localhost', settingsdir = None, log_file_fp 
         d.zmqport = START_ZMQ_PORTNO
         d.rx_zmqport = START_ZMQ_PORTNO
 
-        if name == "jungfrau" or name == "moench":
+        if name == "jungfrau" or name == "moench" or name == "xilinx_ctb":
             d.powerchip = 1
 
         if name == "xilinx_ctb":

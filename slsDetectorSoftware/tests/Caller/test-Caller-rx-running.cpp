@@ -215,6 +215,7 @@ TEST_CASE("general - cant put if receiver is not idle",
         auto prev_findex = det.getAcquisitionIndex();
         auto prev_fwrite = det.getFileWrite();
         auto prev_fifodepth = det.getRxFifoDepth();
+        auto rx_hostname = det.getRxHostname();
 
         // start receiver
         REQUIRE_NOTHROW(caller.call("rx_start", {}, -1, PUT));
@@ -224,6 +225,7 @@ TEST_CASE("general - cant put if receiver is not idle",
         REQUIRE_THROWS(caller.call("findex", {"2"}, -1, PUT));
         REQUIRE_THROWS(caller.call("fwrite", {"0"}, -1, PUT));
         REQUIRE_THROWS(caller.call("rx_fifodepth", {"1000"}, -1, PUT));
+        REQUIRE_THROWS(caller.call("rx_hostname", {rx_hostname[0]}, 0, PUT));
 
         // stop receiver
         REQUIRE_NOTHROW(caller.call("rx_stop", {}, -1, PUT));

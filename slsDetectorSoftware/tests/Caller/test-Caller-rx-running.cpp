@@ -139,7 +139,8 @@ TEST_CASE("numinterfaces - cant put if receiver is not idle",
     auto det_type = det.getDetectorType().squash();
 
     if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
-        auto prev_numinterfaces = det.getNumberofUDPInterfaces();
+        auto prev_numinterfaces = det.getNumberofUDPInterfaces().tsquash(
+            "Number of UDP Interfaces is not consistent among modules");
 
         // start receiver
         REQUIRE_NOTHROW(caller.call("rx_start", {}, -1, PUT));
@@ -149,9 +150,7 @@ TEST_CASE("numinterfaces - cant put if receiver is not idle",
         // stop receiver
         REQUIRE_NOTHROW(caller.call("rx_stop", {}, -1, PUT));
 
-        for (int i = 0; i != det.size(); ++i) {
-            det.setNumberofUDPInterfaces(prev_numinterfaces[i], {i});
-        }
+        det.setNumberofUDPInterfaces(prev_numinterfaces);
     }
 }
 

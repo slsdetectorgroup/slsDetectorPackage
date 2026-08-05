@@ -12,7 +12,7 @@ namespace sls {
 using test::PUT;
 
 TEST_CASE("Ctb and xilinx - cant put if receiver is not idle",
-          "[.cmdcall][.rx]") {
+          "[.detectorintegration][.rx]") {
 
     Detector det;
     Caller caller(&det);
@@ -60,7 +60,8 @@ TEST_CASE("Ctb and xilinx - cant put if receiver is not idle",
     }
 }
 
-TEST_CASE("adcenable - cant put if receiver is not idle", "[.cmdcall][.rx]") {
+TEST_CASE("adcenable - cant put if receiver is not idle",
+          "[.detectorintegration][.rx]") {
 
     Detector det;
     Caller caller(&det);
@@ -83,7 +84,8 @@ TEST_CASE("adcenable - cant put if receiver is not idle", "[.cmdcall][.rx]") {
     }
 }
 
-TEST_CASE("bursts - cant put if receiver is not idle", "[.cmdcall][.rx]") {
+TEST_CASE("bursts - cant put if receiver is not idle",
+          "[.detectorintegration][.rx]") {
 
     Detector det;
     Caller caller(&det);
@@ -105,7 +107,8 @@ TEST_CASE("bursts - cant put if receiver is not idle", "[.cmdcall][.rx]") {
     }
 }
 
-TEST_CASE("counters - cant put if receiver is not idle", "[.cmdcall][.rx]") {
+TEST_CASE("counters - cant put if receiver is not idle",
+          "[.detectorintegration][.rx]") {
 
     Detector det;
     Caller caller(&det);
@@ -129,7 +132,7 @@ TEST_CASE("counters - cant put if receiver is not idle", "[.cmdcall][.rx]") {
 }
 
 TEST_CASE("numinterfaces - cant put if receiver is not idle",
-          "[.cmdcall][.rx]") {
+          "[.detectorintegration][.rx]") {
 
     Detector det;
     Caller caller(&det);
@@ -152,7 +155,8 @@ TEST_CASE("numinterfaces - cant put if receiver is not idle",
     }
 }
 
-TEST_CASE("dr - cant put if receiver is not idle", "[.cmdcall][.rx]") {
+TEST_CASE("dr - cant put if receiver is not idle",
+          "[.detectorintegration][.rx]") {
 
     Detector det;
     Caller caller(&det);
@@ -174,7 +178,8 @@ TEST_CASE("dr - cant put if receiver is not idle", "[.cmdcall][.rx]") {
     }
 }
 
-TEST_CASE("tengiga - cant put if receiver is not idle", "[.cmdcall][.rx]") {
+TEST_CASE("tengiga - cant put if receiver is not idle",
+          "[.detectorintegration][.rx]") {
 
     Detector det;
     Caller caller(&det);
@@ -198,7 +203,8 @@ TEST_CASE("tengiga - cant put if receiver is not idle", "[.cmdcall][.rx]") {
     }
 }
 
-TEST_CASE("general - cant put if receiver is not idle", "[.cmdcall][.rx]") {
+TEST_CASE("general - cant put if receiver is not idle",
+          "[.detectorintegration][.rx]") {
 
     Detector det;
     Caller caller(&det);

@@ -144,7 +144,7 @@ TEST_CASE("numinterfaces - cant put if receiver is not idle",
         // start receiver
         REQUIRE_NOTHROW(caller.call("rx_start", {}, -1, PUT));
 
-        REQUIRE_THROWS(caller.call("numinterafaces", {"2"}, -1, PUT));
+        REQUIRE_THROWS(caller.call("numinterfaces", {"2"}, -1, PUT));
 
         // stop receiver
         REQUIRE_NOTHROW(caller.call("rx_stop", {}, -1, PUT));

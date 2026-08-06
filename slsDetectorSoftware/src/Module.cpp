@@ -197,6 +197,9 @@ void Module::setSettings(detectorSettings isettings) {
             "Cannot set settings for Eiger. Use threshold energy.");
     }
     sendToDetector<int>(F_SET_SETTINGS, isettings);
+    if (shm()->detType == MYTHEN3) {
+        updateRxAllThresholdMetadata(getAllThresholdEnergy());
+    }
 }
 
 int Module::getThresholdEnergy() const {
@@ -266,6 +269,8 @@ void Module::setThresholdEnergy(int e_eV, detectorSettings isettings,
         sendToReceiver(F_RECEIVER_SET_THRESHOLD, e_eV, nullptr);
     }
 }
+
+
 
 void Module::setAllThresholdEnergy(std::array<int, 3> e_eV,
                                    detectorSettings isettings, bool trimbits) {
@@ -415,7 +420,9 @@ void Module::setAllThresholdEnergy(std::array<int, 3> e_eV,
         throw RuntimeError("setThresholdEnergyAndSettings: Could not set "
                            "settings in Module");
     }
+}
 
+void Module::updateRxAllThresholdMetadata(std::array<int, 3> e_eV) {
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_RECEIVER_SET_ALL_THRESHOLD, e_eV, nullptr);
     }
@@ -478,6 +485,9 @@ int Module::getAllTrimbits() const {
 
 void Module::setAllTrimbits(int val) {
     sendToDetector<int>(F_SET_ALL_TRIMBITS, val);
+    if (shm()->detType == MYTHEN3) {
+        updateRxAllThresholdMetadata(getAllThresholdEnergy());
+    }
 }
 
 std::vector<int> Module::getTrimEn() const {
@@ -805,6 +815,9 @@ void Module::resetToDefaultDacs(const bool hardReset) {
 void Module::setDAC(int val, dacIndex index, bool mV) {
     int args[]{static_cast<int>(index), static_cast<int>(mV), val};
     sendToDetector<int>(F_SET_DAC, args);
+    if (shm()->detType == MYTHEN3) {
+        updateRxAllThresholdMetadata(getAllThresholdEnergy());
+    }
 }
 
 bool Module::getPowerChip() const {
@@ -3604,6 +3617,9 @@ void Module::setModule(sls_detector_module &module, bool trimbits) {
     if (client.Receive<int>() == FAIL) {
         throw DetectorError("Module " + std::to_string(moduleIndex) +
                             " returned error: " + client.readErrorMessage());
+    }
+    if (shm()->detType == MYTHEN3) {
+        updateRxAllThresholdMetadata(getAllThresholdEnergy());
     }
 }
 

@@ -109,7 +109,8 @@ class Module : public virtual slsDetectorDefs {
                             bool trimbits);
     void setAllThresholdEnergy(std::array<int, 3> e_eV,
                                detectorSettings isettings, bool trimbits);
-    std::string getSettingsDir() const;
+                               std::string getSettingsDir() const;
+    void updateRxAllThresholdMetadata(std::array<int, 3> e_eV);
     std::string setSettingsDir(const std::string &dir);
     void loadTrimbits(const std::string &fname);
     void saveTrimbits(const std::string &fname);

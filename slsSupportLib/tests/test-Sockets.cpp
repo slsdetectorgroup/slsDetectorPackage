@@ -30,11 +30,8 @@ std::vector<char> echo_server(uint16_t port, size_t bytes_to_send,
     std::vector<char> buffer(100, '\0');
     s.Receive(buffer.data(), buffer.size());
 
-    if (port==1960){
-        struct linger ling = {
-            .l_onoff = 1,
-            .l_linger = 0
-        };
+    if (port == 1960) {
+        struct linger ling = {.l_onoff = 1, .l_linger = 0};
 
         auto fd = s.getSocketId();
         setsockopt(fd, SOL_SOCKET, SO_LINGER, &ling, sizeof ling);
@@ -199,7 +196,6 @@ TEST_CASE("Receiving with a socket error throws and reports the error",
     CHECK_THAT(error_message, Catch::Matchers::Contains("read error:"));
 }
 
-
 TEST_CASE("Socket crash?", "[support]") {
     std::vector<char> received_message(100, '\0');
     std::vector<char> sent_message(100, '\0');
@@ -211,24 +207,19 @@ TEST_CASE("Socket crash?", "[support]") {
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
     auto client = DetectorSocket("localhost", 1960);
     client.Send(sent_message.data(), sent_message.size());
-    
 
-    REQUIRE_THROWS(client.Receive(received_message.data(), received_message.size()));
-    
-    //Now try to send more
-    // client.Send(sent_message.data(), sent_message.size());
+    REQUIRE_THROWS(
+        client.Receive(received_message.data(), received_message.size()));
 
-
-
+    // Now try to send more
+    //  client.Send(sent_message.data(), sent_message.size());
 }
-
 
 TEST_CASE("ClientSocket throws on invalid hostname", "[support]") {
     CHECK_THROWS(ReceiverSocket("invalidhostname", 1950));
     CHECK_THROWS(DetectorSocket("invalidhostname", 1950));
     CHECK_THROWS(GuiSocket("invalidhostname", 1950));
 }
-
 
 TEST_CASE("Using DetectorSocket to talk to a Server Socket", "[support]") {
     constexpr uint16_t port = 1961;
@@ -240,9 +231,8 @@ TEST_CASE("Using DetectorSocket to talk to a Server Socket", "[support]") {
 
     auto client = DetectorSocket("localhost", port);
     int retval = 0;
-    int ret =
-        client.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval,
-                                   sizeof(retval));
+    int ret = client.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval,
+                                         sizeof(retval));
     client.close();
 
     auto server_received = s.get();
@@ -294,8 +284,8 @@ TEST_CASE("Client cannot send the expected number of bytes", "[support]") {
     // Server accepts but never reads; it stays open until we tell it the
     // client is done, so it cannot close mid-transfer.
     std::atomic<bool> client_done{false};
-    auto s = std::async(std::launch::async, non_reading_server, port,
-                        &client_done);
+    auto s =
+        std::async(std::launch::async, non_reading_server, port, &client_done);
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     auto client = DetectorSocket("localhost", port);

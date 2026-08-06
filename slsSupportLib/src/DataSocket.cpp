@@ -113,10 +113,9 @@ int DataSocket::Send(const void *buffer, size_t size) {
 #endif
     Timer timer;
     while (bytes_sent < bytes_expected) {
-        this_send = ::send(
-            getSocketId(),
-            reinterpret_cast<const char *>(buffer) + bytes_sent,
-            bytes_expected - bytes_sent, send_flags);
+        this_send = ::send(getSocketId(),
+                           reinterpret_cast<const char *>(buffer) + bytes_sent,
+                           bytes_expected - bytes_sent, send_flags);
         if (this_send < 0 && errno == EINTR)
             continue; // interrupted by a signal, retry
         if (this_send <= 0)

@@ -196,9 +196,7 @@ void Module::setSettings(detectorSettings isettings) {
             "Cannot set settings for Eiger. Use threshold energy.");
     }
     sendToDetector<int>(F_SET_SETTINGS, isettings);
-    if (shm()->detType == MYTHEN3) {
-        updateRxAllThresholdMetadata(getAllThresholdEnergy());
-    }
+    updateRxAllThresholdMetadata();
 }
 
 int Module::getThresholdEnergy() const {
@@ -419,9 +417,12 @@ void Module::setAllThresholdEnergy(std::array<int, 3> e_eV,
     }
 }
 
-void Module::updateRxAllThresholdMetadata(std::array<int, 3> e_eV) {
+void Module::updateRxAllThresholdMetadata() {
     if (shm()->useReceiverFlag) {
-        sendToReceiver(F_RECEIVER_SET_ALL_THRESHOLD, e_eV, nullptr);
+        if (shm()->detType == MYTHEN3) {
+            auto e_eV = getAllThresholdEnergy();
+            sendToReceiver(F_RECEIVER_SET_ALL_THRESHOLD, e_eV, nullptr);
+        }
     }
 }
 
@@ -482,9 +483,7 @@ int Module::getAllTrimbits() const {
 
 void Module::setAllTrimbits(int val) {
     sendToDetector<int>(F_SET_ALL_TRIMBITS, val);
-    if (shm()->detType == MYTHEN3) {
-        updateRxAllThresholdMetadata(getAllThresholdEnergy());
-    }
+    updateRxAllThresholdMetadata();
 }
 
 std::vector<int> Module::getTrimEn() const {
@@ -792,9 +791,7 @@ void Module::setDAC(int val, dacIndex index, bool mV) {
     }
     int args[]{static_cast<int>(index), static_cast<int>(mV), val};
     sendToDetector<int>(F_SET_DAC, args);
-    if (shm()->detType == MYTHEN3) {
-        updateRxAllThresholdMetadata(getAllThresholdEnergy());
-    }
+    updateRxAllThresholdMetadata();
 }
 
 bool Module::getPowerChip() const {
@@ -3563,9 +3560,7 @@ void Module::setModule(sls_detector_module &module, bool trimbits) {
     client.sendCommand(F_SET_MODULE, nullptr, 0);
     sendModule(&module, client);
     client.readReply(nullptr, 0);
-    if (shm()->detType == MYTHEN3) {
-        updateRxAllThresholdMetadata(getAllThresholdEnergy());
-    }
+    updateRxAllThresholdMetadata();
 }
 
 sls_detector_module Module::getModule() {

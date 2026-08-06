@@ -6,6 +6,7 @@ main_src = ../slsDetectorServer/src/
 support_lib = ../../slsSupportLib/include/
 det_lib = ../../slsDetectorSoftware/include/sls/
 md5_dir = ../../slsSupportLib/src/
+script_dir = ../../etc/
 
 CROSS  		= bfin-uclinux-
 CC    		= $(CROSS)gcc
@@ -28,7 +29,7 @@ boot: $(OBJS)
 version_name=APICTB
 version_path=slsDetectorServers/ctbDetectorServer
 versioning: 
-	cd ../../ && echo $(PWD) && echo `tput setaf 6; python updateAPIVersion.py $(version_name) $(version_path);  tput sgr0;`
+	echo `tput setaf 6; python $(script_dir)updateAPIVersion.py $(version_name) $(version_path);  tput sgr0;`
 
 
 $(PROGS): $(OBJS)

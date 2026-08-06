@@ -5,6 +5,7 @@ main_inc = ../slsDetectorServer/include/
 main_src = ../slsDetectorServer/src/
 support_lib = ../../slsSupportLib/include/
 md5_dir = ../../slsSupportLib/src/
+script_dir = ../../etc/
 
 BLACKFIN_CC = bfin-uclinux-gcc
 CROSS		= powerpc-4xx-softfloat-
@@ -28,7 +29,7 @@ boot: $(OBJS)
 version_name=APIEIGER
 version_path=slsDetectorServers/eigerDetectorServer
 versioning: 
-	cd ../../ && echo $(PWD) && echo `tput setaf 6; python updateAPIVersion.py $(version_name) $(version_path);  tput sgr0;`
+	echo `tput setaf 6; python $(script_dir)updateAPIVersion.py $(version_name) $(version_path);  tput sgr0;`
 
 
 $(PROGS):  $(OBJS)

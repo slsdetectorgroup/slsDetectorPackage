@@ -270,8 +270,6 @@ void Module::setThresholdEnergy(int e_eV, detectorSettings isettings,
     }
 }
 
-
-
 void Module::setAllThresholdEnergy(std::array<int, 3> e_eV,
                                    detectorSettings isettings, bool trimbits) {
     if (shm()->detType != MYTHEN3) {

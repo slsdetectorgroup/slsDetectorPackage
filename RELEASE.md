@@ -1,7 +1,7 @@
-SLS Detector Package {{RELEASE_TYPE}} Release {{VERSION}} released on {{DATE}}
+SLS Detector Package Minor Release 10.1.0 released on 2026-08-06
 ===============================================================
 
-This document describes the differences between v{{VERSION}} and v{{PREVIOUS_VERSION}} 
+This document describes the differences between v10.1.0 and v10.0.0 
 
 
 
@@ -81,7 +81,7 @@ zmqsocket - allowing hwm to be set already at the constructor level. As before, 
             Using command 'update'
 
     Instructions available at
-        https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/serverupgrade.html
+        https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/serverupgrade.html
 
 
 
@@ -121,7 +121,7 @@ zmqsocket - allowing hwm to be set already at the constructor level. As before, 
 
 
     Instructions available at
-        https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/firmware.html
+        https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/firmware.html
 
 
 
@@ -150,9 +150,9 @@ zmqsocket - allowing hwm to be set already at the constructor level. As before, 
 
     Commands: udpatekernel, kernelversion
     Instructions available at
-        https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/commandline.html
-        https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/detector.html
-        https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/pydetector.html
+        https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/commandline.html
+        https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/detector.html
+        https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/pydetector.html
 
 
 
@@ -170,72 +170,72 @@ zmqsocket - allowing hwm to be set already at the constructor level. As before, 
     -------------
     
     Installation:
-        https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/installation.html
+        https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/installation.html
 
     Quick Start Guide:
-        https://slsdetectorgroup.github.io//{{VERSION}}/quick_start_guide.html
+        https://slsdetectorgroup.github.io//10.1.0/quick_start_guide.html
 
     Firmware Upgrade:
-        https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/firmware.html
+        https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/firmware.html
 
     Detector Server upgrade:
-        https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/serverupgrade.html
+        https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/serverupgrade.html
 
     Detector Simulators:
-        https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/virtualserver.html
+        https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/virtualserver.html
 
     Consuming slsDetectorPackage:
-        https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/consuming.html
+        https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/consuming.html
         
     Software Architecture
-        https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/softwarearchitecture.html
+        https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/softwarearchitecture.html
 
     Set up commands in config file
-        https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/configcommands.html
+        https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/configcommands.html
         
     Image Size and Output Characteristics
-        https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/dataformat.html
+        https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/dataformat.html
 
     API Examples:
         https://github.com/slsdetectorgroup/api-examples
 
     Command Line Documentation:
-        https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/commandline.html
+        https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/commandline.html
 
     C++ API Documentation:
-        https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/detector.html
+        https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/detector.html
        
     C++ API Example:
-        https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/examples.html#
+        https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/examples.html#
         
     Python API Documentation:
-        https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/pygettingstarted.html
+        https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/pygettingstarted.html
 
     Python API Example:
-        https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/pyexamples.html
+        https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/pyexamples.html
 
     Receivers (including custom receiver):
-        https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/receivers.html
-        https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/slsreceiver.html
+        https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/receivers.html
+        https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/slsreceiver.html
 
     Detector UDP Header:
-        https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/udpheader.html
-        https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/udpdetspec.html
+        https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/udpheader.html
+        https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/udpdetspec.html
 
     Output Data:
-        https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/dataformat.html
-        https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/fileformat.html
-        https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/slsreceiverheaderformat.html
-        https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/masterfileattributes.html
-        https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/binaryfileformat.html
-        https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/hdf5fileformat.html
+        https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/dataformat.html
+        https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/fileformat.html
+        https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/slsreceiverheaderformat.html
+        https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/masterfileattributes.html
+        https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/binaryfileformat.html
+        https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/hdf5fileformat.html
 
     slsReceiver Zmq Format:
-        https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/slsreceiver.html#zmq-json-header-format
+        https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/slsreceiver.html#zmq-json-header-format
 
     TroubleShooting:
-        https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/troubleshooting.html
-        https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/troubleshooting.html#receiver-pc-tuning-options
+        https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/troubleshooting.html
+        https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/troubleshooting.html#receiver-pc-tuning-options
         
     Further Documentation:
         https://www.psi.ch/en/detectors/documentation

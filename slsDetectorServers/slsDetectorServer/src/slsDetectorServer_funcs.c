@@ -1180,19 +1180,19 @@ int processDACEnums(enum dacIndex ind, int val, bool mV) {
             ret = setDAC(serverDacIndex, val, mV, mess);
             // handle if set by user individually
             switch (serverDacIndex) {
-                case E_VCMP_LL:
-                case E_VCMP_LR:
-                case E_VCMP_RL:
-                case E_VCMP_RR:
-                case E_VTHRESHOLD:
-                case E_VRPREAMP:
-                case E_VCP:
-                    setSettings(UNDEFINED, mess);
-                    LOG(logERROR, ("Settings has been changed "
-                                   "to undefined (changed specific dacs)\n"));
-                    break;
-                default:
-                    break;
+            case E_VCMP_LL:
+            case E_VCMP_LR:
+            case E_VCMP_RL:
+            case E_VCMP_RR:
+            case E_VTHRESHOLD:
+            case E_VRPREAMP:
+            case E_VCP:
+                setSettings(UNDEFINED, mess);
+                LOG(logERROR, ("Settings has been changed "
+                               "to undefined (changed specific dacs)\n"));
+                break;
+            default:
+                break;
             }
         }
         // get

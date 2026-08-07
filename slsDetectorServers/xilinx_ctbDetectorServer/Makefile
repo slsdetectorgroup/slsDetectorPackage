@@ -6,6 +6,7 @@ main_src = ../slsDetectorServer/src/
 support_lib = ../../slsSupportLib/include/
 det_lib = ../../slsDetectorSoftware/include/sls/
 md5_dir = ../../slsSupportLib/src/
+script_dir = ../../etc/
 
 ifeq ($(shell uname -m),aarch64)
     # no cross compilation needed when on aarch64
@@ -39,7 +40,7 @@ boot: $(OBJS)
 version_name=APIXILINXCTB
 version_path=slsDetectorServers/xilinx_ctbDetectorServer
 versioning: 
-	cd ../../ && echo $(PWD) && echo `tput setaf 6; python updateAPIVersion.py $(version_name) $(version_path);  tput sgr0;`
+	echo `tput setaf 6; python $(script_dir)updateAPIVersion.py $(version_name) $(version_path);  tput sgr0;`
 
 
 $(PROGS): $(OBJS)

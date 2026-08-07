@@ -1406,6 +1406,7 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
             case E_VCMP_LR:
             case E_VCMP_RL:
             case E_VCMP_RR:
+            case E_VTHRESHOLD:
             case E_VRPREAMP:
             case E_VCP:
                 setSettings(UNDEFINED);

@@ -60,6 +60,8 @@ zmqsocket - allowing hwm to be set already at the constructor level. As before, 
 
 M3: threshold energy updated to -1 in receiver master file whenever it is set in the detector server (setting dacs directly, custom trimbit file, set all trimbits etc.)
 
+eiger seting vthreshold dac directly should change settings to undefined. done.
+
 2  On-board Detector Server Compatibility
 ==========================================
 

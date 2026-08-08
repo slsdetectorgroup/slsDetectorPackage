@@ -111,6 +111,7 @@ class Module : public virtual slsDetectorDefs {
     void setAllThresholdEnergy(std::array<int, 3> e_eV,
                                detectorSettings isettings, bool trimbits);
     std::string getSettingsDir() const;
+    void updateRxThresholdEnergyMetadata();
     std::string setSettingsDir(const std::string &dir);
     void loadTrimbits(const std::string &fname);
     void saveTrimbits(const std::string &fname);
@@ -626,8 +627,17 @@ class Module : public virtual slsDetectorDefs {
   private:
     std::string getReceiverLongVersion() const;
 
+    void checkArgs(const void *args, size_t args_size) const;
     void checkArgs(const void *args, size_t args_size, void *retval,
                    size_t retval_size) const;
+
+    DetectorSocket createDetectorSocket() const;
+
+    template <typename Arg>
+    void sendToDetectorVarVector(int fnum, const std::vector<Arg> &args) const;
+
+    template <typename Ret>
+    std::vector<Ret> sendToDetectorVarVector(int fnum) const;
 
     /**
      * Send function parameters to detector (control server)
@@ -674,6 +684,9 @@ class Module : public virtual slsDetectorDefs {
     Ret sendToDetector(int fnum, const Arg &args) const;
 
     /** Send function parameters to detector (stop server) */
+
+    DetectorSocket createDetectorStopSocket() const;
+
     void sendToDetectorStop(int fnum, const void *args, size_t args_size,
                             void *retval, size_t retval_size);
 
@@ -713,6 +726,15 @@ class Module : public virtual slsDetectorDefs {
     Ret sendToDetectorStop(int fnum, const Arg &args) const;
 
     /** Send function parameters to receiver */
+
+    ReceiverSocket createReceiverSocket() const;
+
+    template <typename Arg>
+    void sendToReceiverVarVector(int fnum, const std::vector<Arg> &args) const;
+
+    template <typename Ret>
+    std::vector<Ret> sendToReceiverVarVector(int fnum) const;
+
     void sendToReceiver(int fnum, const void *args, size_t args_size,
                         void *retval, size_t retval_size);
 

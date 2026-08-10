@@ -11347,7 +11347,7 @@ timing:
   command_name: timing
   function_alias: timing
   help: "[auto|trigger|gating|burst_trigger|trigger_gating]\n\tTiming Mode of detector.\n\
-    \t[Jungfrau][Moench][Ctb][Gotthard2][Xilinx Ctb] [auto|trigger]\n\t[Mythen3] [auto|trigger|gating|trigger_gating]\n\
+    \t[Jungfrau][Moench][Ctb][Gotthard2] [auto|trigger]\n\t[Mythen3][Xilinx Ctb] [auto|trigger|gating|trigger_gating]\n\
     \t[Eiger] [auto|trigger|gating|burst_trigger]"
   infer_action: true
   template: true

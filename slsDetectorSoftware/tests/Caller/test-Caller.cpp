@@ -1079,7 +1079,7 @@ TEST_CASE("timing", "[.detectorintegration]") {
             REQUIRE(oss2.str() == "timing burst_trigger\n");
         }
         REQUIRE_THROWS(caller.call("timing", {"trigger_gating"}, -1, PUT));
-    } else if (det_type == defs::MYTHEN3) {
+    } else if (det_type == defs::MYTHEN3 || det_type == defs::XILINX_CHIPTESTBOARD) {
         {
             std::ostringstream oss1, oss2;
             caller.call("timing", {"gating"}, -1, PUT, oss1);

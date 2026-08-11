@@ -1860,7 +1860,7 @@ int acquire(int blocking, int file_des) {
 #endif
 #if defined(JUNGFRAUD)
             // chipv1.1 has to be configured before acquisition
-            if (getChipVersionInFPGA() == 11 && !isChipConfigured()) {
+            if (requireChipConfiguration() && !isChipConfigured()) {
                 ret = FAIL;
                 strcpy(mess,
                        "Could not start acquisition. Chip is not configured. "
@@ -2282,7 +2282,7 @@ int set_num_additional_storage_cells(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        if (getChipVersionInFPGA() == 11) {
+        if (hasStorageCellsFeature()) {
             ret = FAIL;
             sprintf(mess,
                     "Cannot set addl. number of storage cells for chip v1.1\n");
@@ -2750,7 +2750,7 @@ int get_storage_cell_delay(int file_des) {
     functionNotImplemented();
 #else
     // get only
-    if (getChipVersionInFPGA() == 11) {
+    if (hasStorageCellsFeature()) {
         ret = FAIL;
         strcpy(mess, "Storage cell delay is not applicable for chipv 1.1\n");
         LOG(logERROR, (mess));
@@ -2778,7 +2778,7 @@ int set_storage_cell_delay(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        if (getChipVersionInFPGA() == 11) {
+        if (hasStorageCellsFeature()) {
             ret = FAIL;
             strcpy(mess,
                    "Storage cell delay is not applicable for chipv 1.1\n");
@@ -6734,17 +6734,20 @@ int set_current_source(int file_des) {
             strcpy(mess, "Could not enable/disable current source. Enable can "
                          "be 0 or 1 only.\n");
             LOG(logERROR, (mess));
+            return Server_SendResult(file_des, INT32, NULL, 0);
         }
         // disable
-        else if (enable == 0 && (fix != -1 || normal != -1)) {
-            ret = FAIL;
-            strcpy(
-                mess,
-                "Could not disable current source. Requires no parameters.\n");
-            LOG(logERROR, (mess));
+        if (enable == 0) {
+            if (fix != -1 || normal != -1) {
+                ret = FAIL;
+                strcpy(mess, "Could not disable current source. Requires no "
+                             "parameters.\n");
+                LOG(logERROR, (mess));
+                return Server_SendResult(file_des, INT32, NULL, 0);
+            }
         }
         // enable
-        else if (enable == 1) {
+        else {
 #ifdef GOTTHARD2D
             // no parameters allowed
             if (fix != -1 || normal != -1) {
@@ -6752,65 +6755,60 @@ int set_current_source(int file_des) {
                 strcpy(mess, "Could not enable current source. Fix and normal "
                              "are invalid parameters for this detector.\n");
                 LOG(logERROR, (mess));
+                return Server_SendResult(file_des, INT32, NULL, 0);
             }
 #else
-            int chipVersion = getChipVersionInFPGA();
-            if (ret == OK) {
-                if (chipVersion == 11) {
-                    // require both
-                    if ((fix != 0 && fix != 1) ||
-                        (normal != 0 && normal != 1)) {
-                        ret = FAIL;
-                        strcpy(mess, "Could not enable current source. Invalid "
-                                     "or insufficient parameters (fix or "
-                                     "normal). or Options: 0 or 1.\n");
-                        LOG(logERROR, (mess));
-                    }
+            // fix
+            if (fix != 0 && fix != 1) {
+                ret = FAIL;
+                strcpy(mess, "Could not enable current source. Invalid value "
+                             "for parameter (fix). Options: 0 or 1.\n");
+                LOG(logERROR, (mess));
+                return Server_SendResult(file_des, INT32, NULL, 0);
+            }
+
+            // normal
+            if (hasCurrentSourceNormalFeature()) {
+                if (normal != 0 && normal != 1) {
+                    ret = FAIL;
+                    strcpy(mess,
+                           "Could not enable current source. Invalid value for "
+                           "parameter (normal). Options: 0 or 1.\n");
+                    LOG(logERROR, (mess));
+                    return Server_SendResult(file_des, INT32, NULL, 0);
                 }
-                // chipv1.0
-                else {
-                    // require only fix
-                    if (fix != 0 && fix != 1) {
-                        ret = FAIL;
-                        strcpy(mess,
-                               "Could not enable current source. Invalid value "
-                               "for parameter (fix). Options: 0 or 1.\n");
-                        LOG(logERROR, (mess));
-                    } else if (normal != -1) {
-                        ret = FAIL;
-                        strcpy(mess, "Could not enable current source. Invalid "
-                                     "parmaeter (normal). Require only fix and "
-                                     "select for chipv1.0.\n");
-                        LOG(logERROR, (mess));
-                    }
-                    // select can only be 0-63
-                    else if (select > MAX_SELECT_CHIP10_VAL) {
-                        ret = FAIL;
-                        strcpy(mess,
-                               "Could not enable current source. Invalid value "
-                               "for parameter (select). Options: 0-63.\n");
-                        LOG(logERROR, (mess));
-                    }
-                }
+            } else if (normal != -1) {
+                ret = FAIL;
+                strcpy(mess,
+                       "Could not enable current source. Invalid parameter "
+                       "(normal). Not supported for this chip version.\n");
+                LOG(logERROR, (mess));
+                return Server_SendResult(file_des, INT32, NULL, 0);
+            }
+
+            // select (only 0-63)
+            if (!hasCurrentSource64BitSelectionFeature() &&
+                select > MAX_SELECT_CHIP10_VAL) {
+                ret = FAIL;
+                strcpy(mess, "Could not enable current source. Invalid value "
+                             "for parameter (select). Options: 0-63.\n");
+                LOG(logERROR, (mess));
+                return Server_SendResult(file_des, INT32, NULL, 0);
             }
 #endif
         }
 
-        if (ret == OK) {
 #if defined(JUNGFRAUD)
-            if (enable == 0) {
-                disableCurrentSource();
-            } else {
-                enableCurrentSource(fix, select, normal);
-            }
+        if (enable == 0)
+            disableCurrentSource();
+        else
+            enableCurrentSource(fix, select, normal);
 #else
-            setCurrentSource(enable);
+        setCurrentSource(enable);
 #endif
-            int retval = getCurrentSource();
-            LOG(logDEBUG1, ("current source enable retval: %u\n", retval));
-            validate(&ret, mess, enable, retval, "set current source enable",
-                     DEC);
-        }
+        int retval = getCurrentSource();
+        LOG(logDEBUG1, ("current source enable retval: %u\n", retval));
+        validate(&ret, mess, enable, retval, "set current source enable", DEC);
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
@@ -7923,10 +7921,10 @@ int get_filter_resistor(int file_des) {
 #else
     // get only
 #if defined(JUNGFRAUD)
-    if (getChipVersionInFPGA() == 10) {
+    if (!hasFilterResistorFeature()) {
         ret = FAIL;
-        strcpy(mess, "Could not get filter cell. Not available for this chip "
-                     "version 1.0.\n");
+        strcpy(mess, "Could not get filter resistor. Not available for this "
+                     "chip version.\n");
         LOG(logERROR, (mess));
     }
 #endif
@@ -7962,10 +7960,11 @@ int set_filter_resistor(int file_des) {
             LOG(logERROR, (mess));
         }
 #if defined(JUNGFRAUD)
-        else if (getChipVersionInFPGA() == 10) {
+        else if (!hasFilterResistorFeature()) {
             ret = FAIL;
-            strcpy(mess, "Could not set filter cell. Not available for this "
-                         "chip version 1.0.\n");
+            strcpy(mess,
+                   "Could not set filter resistor. Not available for this "
+                   "chip version.\n");
             LOG(logERROR, (mess));
         }
 #endif
@@ -8982,10 +8981,10 @@ int get_num_filter_cells(int file_des) {
 #else
     // get only
     // only for chipv1.1
-    if (getChipVersionInFPGA() == 10) {
+    if (!hasFilterCellsFeature()) {
         ret = FAIL;
-        strcpy(mess, "Could not get number of filter cells. Only available for "
-                     "chip version 1.1\n");
+        strcpy(mess, "Could not get number of filter cells. Not available for "
+                     "this chip version.\n");
         LOG(logERROR, (mess));
     } else {
         retval = getNumberOfFilterCells();
@@ -9020,11 +9019,10 @@ int set_num_filter_cells(int file_des) {
             LOG(logERROR, (mess));
         }
         // only for chipv1.1
-        else if (getChipVersionInFPGA() == 10) {
+        else if (!hasFilterCellsFeature()) {
             ret = FAIL;
-            strcpy(mess,
-                   "Could not set number of filter cells. Only available for "
-                   "chip version 1.1\n");
+            strcpy(mess, "Could not set number of filter cells. Not available "
+                         "for this chip version.\n");
             LOG(logERROR, (mess));
         } else {
             setNumberOfFilterCells(arg);

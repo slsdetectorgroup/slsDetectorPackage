@@ -14,10 +14,10 @@
 #endif
 
 #include <netinet/in.h>
+#include <stdbool.h>
 #include <string.h>
 #include <sys/select.h>
 #include <unistd.h> // usleep
-#include <stdbool.h>
 #ifdef VIRTUAL
 #include <pthread.h>
 #include <time.h>
@@ -60,14 +60,13 @@ int chipConfigured = 0;
 uint64_t normal_mode_frames = -1;
 uint64_t normal_mode_triggers = -1;
 
-    static bool has_configure_chip = false;
-    static bool has_storage_cells = false;
-    static bool has_filter_resistor = false;
-    static bool has_num_filter_cells = false;
-    static bool has_normal_current_src = false;
-    static bool has_select_64_bit = false;
-    static bool has_select_invert_bits = false;
-
+static bool has_configure_chip = false;
+static bool has_storage_cells = false;
+static bool has_filter_resistor = false;
+static bool has_filter_cells = false;
+static bool has_current_src_normal = false;
+static bool has_current_src_64bit_selection = false;
+static bool has_current_src_invert_bits_selection = false;
 
 int isInitCheckDone() { return initCheckDone; }
 
@@ -419,38 +418,38 @@ int validateChipIndex(enum CHIPINDEX ind, char *mess) {
 }
 
 void setChipIndexAllowedFeatures() {
-    switch(chipIndex) {
-        case v1_0:
-            has_configure_chip = false;
-            has_storage_cells = true;
-            has_filter_resistor = false;
-            has_num_filter_cells = false;
-            has_normal_current_src = false;
-            has_select_64_bit = false;
-            has_select_invert_bits = false;
-            break;
-        case v1_1:
-            has_configure_chip = true;
-            has_storage_cells = false;
-            has_filter_resistor = true;
-            has_num_filter_cells = true;
-            has_normal_current_src = true;
-            has_select_64_bit = true;
-            has_select_invert_bits = true;
-            break;
-        case v1_2_NORMAL:
-        case v1_2_LOW_NOISE:
-        case v1_2_HDR:
-            has_configure_chip = true;
-            has_storage_cells = true;
-            has_filter_resistor = true;
-            has_num_filter_cells = true;
-            has_normal_current_src = true;
-            has_select_64_bit = true;
-            has_select_invert_bits = false;
-            break;
-        default:
-            LOG(logERROR, ("Unknown chip index %d\n", (int)chipIndex));
+    switch (chipIndex) {
+    case v1_0:
+        has_configure_chip = false;
+        has_storage_cells = true;
+        has_filter_resistor = false;
+        has_filter_cells = false;
+        has_current_src_normal = false;
+        has_current_src_64bit_selection = false;
+        has_current_src_invert_bits_selection = false;
+        break;
+    case v1_1:
+        has_configure_chip = true;
+        has_storage_cells = false;
+        has_filter_resistor = true;
+        has_filter_cells = true;
+        has_current_src_normal = true;
+        has_current_src_64bit_selection = true;
+        has_current_src_invert_bits_selection = true;
+        break;
+    case v1_2_NORMAL:
+    case v1_2_LOW_NOISE:
+    case v1_2_HDR:
+        has_configure_chip = true;
+        has_storage_cells = true;
+        has_filter_resistor = true;
+        has_filter_cells = false;
+        has_current_src_normal = true;
+        has_current_src_64bit_selection = true;
+        has_current_src_invert_bits_selection = false;
+        break;
+    default:
+        LOG(logERROR, ("Unknown chip index %d\n", (int)chipIndex));
     }
 }
 
@@ -688,16 +687,6 @@ void setupDetector() {
     setExpTime(DEFAULT_EXPTIME);
     setPeriod(DEFAULT_PERIOD);
     setDelayAfterTrigger(DEFAULT_DELAY);
-
-    if (chipIndex == v1_1)
-        selectStoragecellStart(DEFAULT_STRG_CLL_STRT_CHIP11);
-    else 
-        selectStoragecellStart(DEFAULT_STRG_CLL_STRT);
-        
-    if (has_storage_cells) {
-        setNumAdditionalStorageCells(DEFAULT_NUM_STRG_CLLS);
-        setStorageCellDelay(DEFAULT_STRG_CLL_DLY);
-    }
     setTiming(DEFAULT_TIMING_MODE);
     setNextFrameNumber(DEFAULT_STARTING_FRAME_NUMBER);
 
@@ -706,11 +695,19 @@ void setupDetector() {
     setThresholdTemperature(DEFAULT_TMP_THRSHLD);
     setTemperatureEvent(0);
 
-    if (has_filter_resistor)
+    // chip specific features
+    if (hasStorageCellsFeature()) {
+        setNumAdditionalStorageCells(DEFAULT_NUM_STRG_CLLS);
+        setStorageCellDelay(DEFAULT_STRG_CLL_DLY);
+        selectStoragecellStart(DEFAULT_STRG_CLL_STRT);
+    } else {
+        selectStoragecellStart(DEFAULT_STRG_CLL_STRT_CHIP11);
+    }
+    if (hasFilterResistorFeature())
         setFilterResistor(DEFAULT_FILTER_RESISTOR);
-    if (has_num_filter_cells)
+    if (hasFilterCellsFeature())
         setNumberOfFilterCells(DEFAULT_FILTER_CELL);
-        
+
     if (!isHardwareVersion_1_0()) {
         setFlipRows(DEFAULT_FLIP_ROWS);
         setReadNRows(MAX_ROWS_PER_READOUT);
@@ -2084,11 +2081,29 @@ int powerChip(int on) {
             CHIP_POWER_STATUS_OFST);
 }
 
+int requireChipConfiguration() { return has_configure_chip; }
+
+int hasStorageCellsFeature() { return has_storage_cells; }
+
+int hasFilterResistorFeature() { return has_filter_resistor; }
+
+int hasFilterCellsFeature() { return has_filter_cells; }
+
+int hasCurrentSourceNormalFeature() { return has_current_src_normal; }
+
+int hasCurrentSource64BitSelectionFeature() {
+    return has_current_src_64bit_selection;
+}
+
+int hasCurrentSourceInvertedSelectionFeature() {
+    return has_current_src_invert_bits_selection;
+}
+
 int isChipConfigured() { return chipConfigured; }
 
 void configureChip() {
     // only for chipv1.1 and chip is powered on
-    if (chipIndex == v1_1 && powerChip(-1)) {
+    if (requireChipConfiguration() && powerChip(-1)) {
         LOG(logINFOBLUE, ("\tConfiguring chip\n"));
 
         // waiting 500 ms before configuring selection
@@ -2156,7 +2171,7 @@ void configureASICTimer() {
                              ASIC_CTRL_PRCHRG_TMR_VAL);
 
     uint32_t val = ASIC_CTRL_DS_TMR_VAL;
-    // TODO: if chipindex >=v1_2, value to be decided?
+    // TODO: value of chipindex v1_2 value to be decided.
     if (chipIndex == v1_1) {
         val = ASIC_CTRL_DS_TMR_CHIP1_1_VAL;
     }

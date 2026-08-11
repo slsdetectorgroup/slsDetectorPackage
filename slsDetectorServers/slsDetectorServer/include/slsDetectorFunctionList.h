@@ -548,6 +548,13 @@ int getReadNRows();
 void initReadoutConfiguration();
 int powerChip(int on);
 #ifndef MOENCHD
+int requireChipConfiguration();
+int hasStorageCellsFeature();
+int hasFilterResistorFeature();
+int hasFilterCellsFeature();
+int hasCurrentSourceNormalFeature();
+int hasCurrentSource64BitSelectionFeature();
+int hasCurrentSourceInvertedSelectionFeature();
 int isChipConfigured();
 void configureChip();
 int autoCompDisable(int on);

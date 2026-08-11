@@ -1402,8 +1402,19 @@ void setTiming(enum timingMode arg) {
 }
 
 enum timingMode getTiming() {
-    if (bus_r(FLOW_CONTROL_REG) == TRIGGER_ENABLE_MSK)
+    uint32_t extTrigger = (bus_r(FLOW_CONTROL_REG) & TRIGGER_ENABLE_MSK);
+    uint32_t extGate = (bus_r(GATE_CTRL) & GATE_ENABLE_MSK);
+
+    if (extTrigger) {
+        if (extGate) {
+            return TRIGGER_GATED;
+        }
         return TRIGGER_EXPOSURE;
+    }
+
+    if (extGate) {
+        return GATED;
+    }
     return AUTO_TIMING;
 }
 

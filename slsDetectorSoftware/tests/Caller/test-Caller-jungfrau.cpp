@@ -374,8 +374,9 @@ TEST_CASE("storagecell_delay", "[.detectorintegration]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::JUNGFRAU) {
-        // chip version 1.0
-        if (det.getChipVersion().squash() * 10 == 10) {
+        // chip version 1.0 and 1.2
+        auto chipVersion = det.getChipVersion().squash() * 10;
+        if (chipVersion == 10 || chipVersion == 12) {
             auto prev_val = det.getStorageCellDelay();
             {
                 std::ostringstream oss;

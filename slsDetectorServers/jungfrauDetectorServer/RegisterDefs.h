@@ -431,9 +431,7 @@
 #define TEMP_CTRL_OVR_TMP_EVNT_OFST         (31)
 #define TEMP_CTRL_OVR_TMP_EVNT_MSK          (0x00000001 << TEMP_CTRL_OVR_TMP_EVNT_OFST)
 
-/* Set Delay 64 bit register */
-#define SET_DELAY_LSB_REG                   (0x60 << MEM_MAP_SHIFT) // different kind of delay
-#define SET_DELAY_MSB_REG                   (0x61 << MEM_MAP_SHIFT) // different kind of delay
+
 
 /* Set Triggers 64 bit register */
 #define SET_CYCLES_LSB_REG                  (0x62 << MEM_MAP_SHIFT)

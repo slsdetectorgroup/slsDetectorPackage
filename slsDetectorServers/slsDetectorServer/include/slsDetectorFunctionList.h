@@ -24,6 +24,7 @@
 #include "mythen3.h"
 #endif
 
+#include <stdbool.h>
 #include <stdio.h> // FILE
 #include <stdlib.h>
 #include <sys/types.h>
@@ -248,8 +249,13 @@ int getReadoutMode();
 
 // parameters - timer
 #if defined(JUNGFRAUD)
-int selectStoragecellStart(int pos);
-int getMaxStoragecellStart();
+int getStorageCellStartFromStorageCellReg();
+void setStorageCellStartFromStorageCellReg(int pos);
+int getStorageCellStartFromChipConfig();
+void setStorageCellStartFromChipConfig(int pos);
+int getStorageCellStart();
+int setStorageCellStart(int pos);
+int getMaxStorageCellStart();
 #endif
 #if defined(JUNGFRAUD) || defined(MOENCHD) || defined(EIGERD) ||               \
     defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD) ||               \
@@ -548,14 +554,15 @@ int getReadNRows();
 void initReadoutConfiguration();
 int powerChip(int on);
 #ifndef MOENCHD
-int requireChipConfiguration();
-int hasStorageCellsFeature();
-int hasFilterResistorFeature();
-int hasFilterCellsFeature();
-int hasCurrentSourceNormalFeature();
-int hasCurrentSource64BitSelectionFeature();
-int hasCurrentSourceInvertedSelectionFeature();
-int isChipConfigured();
+bool requireChipConfiguration();
+bool hasStorageCellsFeature();
+bool hasFilterResistorFeature();
+bool hasFilterCellsFeature();
+bool hasCurrentSourceNormalFeature();
+bool hasCurrentSource64BitSelectionFeature();
+bool hasCurrentSourceReverseBitsSelectionFeature();
+bool hasStorageCellStartInChipConfig();
+bool isChipConfigured();
 void configureChip();
 int autoCompDisable(int on);
 int setComparatorDisableTime(int64_t val);

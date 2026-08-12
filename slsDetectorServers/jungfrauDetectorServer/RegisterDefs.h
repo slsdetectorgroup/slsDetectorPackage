@@ -108,6 +108,12 @@
 #define CONFIG_V11_STATUS_FLTR_CLL_MSK          (0x00000FFF << CONFIG_V11_STATUS_FLTR_CLL_OFST)
 #define CONFIG_V11_STATUS_STRG_CLL_OFST         (12) 
 #define CONFIG_V11_STATUS_STRG_CLL_MSK          (0x0000000F << CONFIG_V11_STATUS_STRG_CLL_OFST)
+
+// replacing for v1.2
+#define CONFIG_V12_STATUS_STRG_CLL_OFST            (0) 
+#define CONFIG_V12_STATUS_STRG_CLL_MSK             (0x0000FFFF << CONFIG_V12_STATUS_STRG_CLL_OFST)
+
+
 // CSM mode = high current (100%), low current (16%)
 #define CONFIG_V11_STATUS_CRRNT_SRC_LOW_OFST    (19) 
 #define CONFIG_V11_STATUS_CRRNT_SRC_LOW_MSK     (0x00000001 << CONFIG_V11_STATUS_CRRNT_SRC_LOW_OFST)
@@ -261,6 +267,16 @@
 #define PLL_CNTRL_ADDR_MSK                  (0x0000003F << PLL_CNTRL_ADDR_OFST)
 
 
+/** Storage cell Register */
+#define STORAGE_CELL_REG                    (0x56 << MEM_MAP_SHIFT)
+
+#define STORAGE_CELL_START_OFST             (0)
+#define STORAGE_CELL_START_MSK              (0x000000FF << STORAGE_CELL_START_OFST)
+#define STORAGE_CELL_NUM_ADDTNL_OFST        (8)
+#define STORAGE_CELL_NUM_ADDTNL_MSK         (0x000000FF << STORAGE_CELL_NUM_ADDTNL_OFST)
+
+
+
 /* Pedestal Mode Regiser */
 #define PEDESTAL_MODE_REG                   (0x57 << MEM_MAP_SHIFT)
 
@@ -271,13 +287,18 @@
 #define PEDESTAL_MODE_ENBLE_OFST            (31)
 #define PEDESTAL_MODE_ENBLE_MSK             (0x00000001 << PEDESTAL_MODE_ENBLE_OFST) 
 
-/* Config Register for chip 1.1 */
+/* Config Register for chip 1.1  and chip 1.2 */
 #define CONFIG_V11_REG                      (0x58 << MEM_MAP_SHIFT)
 
 #define CONFIG_V11_FLTR_CLL_OFST            (0) 
 #define CONFIG_V11_FLTR_CLL_MSK             (0x00000FFF << CONFIG_V11_FLTR_CLL_OFST)
 #define CONFIG_V11_STRG_CLL_OFST            (12) 
 #define CONFIG_V11_STRG_CLL_MSK             (0x0000000F << CONFIG_V11_STRG_CLL_OFST)
+// replacing for v1.2
+#define CONFIG_V12_STRG_CLL_OFST            (0) 
+#define CONFIG_V12_STRG_CLL_MSK             (0x0000FFFF << CONFIG_V12_STRG_CLL_OFST)
+
+
 // CSM mode = high current (100%), low current (16%)
 #define CONFIG_V11_CRRNT_SRC_LOW_OFST       (19) 
 #define CONFIG_V11_CRRNT_SRC_LOW_MSK        (0x00000001 << CONFIG_V11_CRRNT_SRC_LOW_OFST)
@@ -335,6 +356,7 @@
 #define SAMPLE_DECMT_FACTOR_FULL_VAL        ((0x0 << SAMPLE_DGTL_DECMT_FACTOR_OFST) & SAMPLE_DGTL_DECMT_FACTOR_MSK)
 #define SAMPLE_DECMT_FACTOR_HALF_VAL        ((0x1 << SAMPLE_DGTL_DECMT_FACTOR_OFST) & SAMPLE_DGTL_DECMT_FACTOR_MSK)
 #define SAMPLE_DECMT_FACTOR_QUARTER_VAL     ((0x2 << SAMPLE_DGTL_DECMT_FACTOR_OFST) & SAMPLE_DGTL_DECMT_FACTOR_MSK)
+
 
 /** Current Source Column 0 (0 - 31)) */
 #define CRRNT_SRC_COL_LSB_REG               (0x5A << MEM_MAP_SHIFT)

@@ -2378,10 +2378,10 @@ int set_num_additional_storage_cells(int file_des) {
             sprintf(mess,
                     "Cannot set addl. number of storage cells for chip v1.1\n");
             LOG(logERROR, (mess));
-        } else if (arg > getMaxStoragecellStart()) {
+        } else if (arg > getMaxStorageCellStart()) {
             ret = FAIL;
             sprintf(mess, "Max Storage cell number should not exceed %d\n",
-                    getMaxStoragecellStart());
+                    getMaxStorageCellStart());
             LOG(logERROR, (mess));
         } else {
             setNumAdditionalStorageCells(arg);
@@ -4195,15 +4195,22 @@ int storage_cell_start(int file_des) {
 #else
     // set & get
     if ((arg == GET_FLAG) || (Server_VerifyLock() == OK)) {
-        if (arg > getMaxStoragecellStart()) {
+        if (arg > getMaxStorageCellStart()) {
             ret = FAIL;
             sprintf(mess, "Max Storage cell number should not exceed %d\n",
-                    getMaxStoragecellStart());
+                    getMaxStorageCellStart());
             LOG(logERROR, (mess));
         } else {
-            retval = selectStoragecellStart(arg);
-            LOG(logDEBUG1, ("Storage cell start: %d\n", retval));
-            validate(&ret, mess, arg, retval, "set storage cell start", DEC);
+            if (arg >= 0) {
+                ret = setStorageCellStart(arg);
+                if (ret == FAIL) {
+                    strcpy(mess, "Could not set storage cell start\n");
+                    LOG(logERROR, (mess));
+                }
+            } else {
+                retval = getStorageCellStart();
+                LOG(logDEBUG1, ("Storage cell start: %d\n", retval));
+            }
         }
     }
 #endif

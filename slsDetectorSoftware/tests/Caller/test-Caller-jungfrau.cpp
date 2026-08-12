@@ -285,8 +285,9 @@ TEST_CASE("extrastoragecells", "[.detectorintegration]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::JUNGFRAU) {
-        // chip version 1.0
-        if (det.getChipVersion().squash() * 10 == 10) {
+        auto chipVersion = det.getChipVersion().squash() * 10;
+        // chip version 1.0 and 1.2
+        if (chipVersion == 10 || chipVersion == 12) {
             auto prev_val = det.getNumberOfAdditionalStorageCells().tsquash(
                 "inconsistent #additional storage cells to test");
             {
@@ -491,7 +492,7 @@ TEST_CASE("filtercells", "[.detectorintegration]") {
                 det.setNumberOfFilterCells(prev_val[i], {i});
             }
         }
-        // chip version 1.0
+        // chip version 1.0 and 1.2
         else {
             // cannot set/get filter cell
             REQUIRE_THROWS(caller.call("filtercells", {"1"}, -1, PUT));

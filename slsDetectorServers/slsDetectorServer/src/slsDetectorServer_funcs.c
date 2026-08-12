@@ -2282,7 +2282,7 @@ int set_num_additional_storage_cells(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        if (hasStorageCellsFeature()) {
+        if (!hasStorageCellsFeature()) {
             ret = FAIL;
             sprintf(mess,
                     "Cannot set addl. number of storage cells for chip v1.1\n");
@@ -2750,7 +2750,7 @@ int get_storage_cell_delay(int file_des) {
     functionNotImplemented();
 #else
     // get only
-    if (hasStorageCellsFeature()) {
+    if (!hasStorageCellsFeature()) {
         ret = FAIL;
         strcpy(mess, "Storage cell delay is not applicable for chipv 1.1\n");
         LOG(logERROR, (mess));

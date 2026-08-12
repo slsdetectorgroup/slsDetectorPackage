@@ -2845,7 +2845,7 @@ int set_storage_cell_delay(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        if (hasStorageCellsFeature()) {
+        if (!hasStorageCellsFeature()) {
             ret = FAIL;
             strcpy(mess,
                    "Storage cell delay is not applicable for chipv 1.1\n");

@@ -786,7 +786,7 @@ int set_timing_mode(int file_des) {
 #ifdef EIGERD
         case GATED:
         case BURST_TRIGGER:
-#elif MYTHEN3D
+#elif defined(MYTHEN3D) || defined(XILINX_CHIPTESTBOARDD)
         case GATED:
         case TRIGGER_GATED:
 #endif

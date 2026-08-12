@@ -14,7 +14,6 @@
 #endif
 
 #include <netinet/in.h>
-#include <stdbool.h>
 #include <string.h>
 #include <sys/select.h>
 #include <unistd.h> // usleep
@@ -55,18 +54,19 @@ int defaultDacValue_G0[] = SPECIAL_DEFAULT_DYNAMIC_GAIN_VALS;
 int defaultDacValue_HG0[] = SPECIAL_DEFAULT_DYNAMICHG0_GAIN_VALS;
 int32_t clkPhase[NUM_CLOCKS] = {};
 int detPos[4] = {};
-int chipConfigured = 0;
+bool chipConfigured = false;
 
 uint64_t normal_mode_frames = -1;
 uint64_t normal_mode_triggers = -1;
 
-static bool has_configure_chip = false;
-static bool has_storage_cells = false;
-static bool has_filter_resistor = false;
-static bool has_filter_cells = false;
-static bool has_current_src_normal = false;
-static bool has_current_src_64bit_selection = false;
-static bool has_current_src_invert_bits_selection = false;
+bool has_configure_chip = false;
+bool has_storage_cells = false;
+bool has_filter_resistor = false;
+bool has_filter_cells = false;
+bool has_current_src_normal = false;
+bool has_current_src_64bit_selection = false;
+bool has_current_src_reverse_bits_selection = false;
+bool has_storage_start_in_chip_config = false;
 
 int isInitCheckDone() { return initCheckDone; }
 
@@ -426,7 +426,8 @@ void setChipIndexAllowedFeatures() {
         has_filter_cells = false;
         has_current_src_normal = false;
         has_current_src_64bit_selection = false;
-        has_current_src_invert_bits_selection = false;
+        has_current_src_reverse_bits_selection = false;
+        has_storage_start_in_chip_config = false;
         break;
     case v1_1:
         has_configure_chip = true;
@@ -435,7 +436,8 @@ void setChipIndexAllowedFeatures() {
         has_filter_cells = true;
         has_current_src_normal = true;
         has_current_src_64bit_selection = true;
-        has_current_src_invert_bits_selection = true;
+        has_current_src_reverse_bits_selection = true;
+        has_storage_start_in_chip_config = true;
         break;
     case v1_2_NORMAL:
     case v1_2_LOW_NOISE:
@@ -446,7 +448,8 @@ void setChipIndexAllowedFeatures() {
         has_filter_cells = false;
         has_current_src_normal = true;
         has_current_src_64bit_selection = true;
-        has_current_src_invert_bits_selection = false;
+        has_current_src_reverse_bits_selection = false;
+        has_storage_start_in_chip_config = true;
         break;
     default:
         LOG(logERROR, ("Unknown chip index %d\n", (int)chipIndex));
@@ -604,7 +607,7 @@ void setupDetector() {
     for (int i = 0; i < NUM_CLOCKS; ++i) {
         clkPhase[i] = 0;
     }
-    chipConfigured = 0;
+    chipConfigured = false;
 #ifdef VIRTUAL
     if (isControlServer) {
         sharedMemory_setStatus(IDLE);
@@ -705,9 +708,9 @@ void setupDetector() {
     if (hasStorageCellsFeature()) {
         setNumAdditionalStorageCells(DEFAULT_NUM_STRG_CLLS);
         setStorageCellDelay(DEFAULT_STRG_CLL_DLY);
-        selectStoragecellStart(DEFAULT_STRG_CLL_STRT);
+        setStorageCellStart(DEFAULT_STRG_CLL_STRT);
     } else {
-        selectStoragecellStart(DEFAULT_STRG_CLL_STRT_CHIP11);
+        setStorageCellStart(DEFAULT_STRG_CLL_STRT_CHIP11);
     }
     if (hasFilterResistorFeature())
         setFilterResistor(DEFAULT_FILTER_RESISTOR);
@@ -1062,65 +1065,97 @@ uint32_t getADCInvertRegister() {
 }
 
 /* parameters - timer */
-int selectStoragecellStart(int pos) {
-    int value = pos;
-    uint32_t addr = DAQ_REG;
-    uint32_t mask = DAQ_STRG_CELL_SLCT_MSK;
-    int offset = DAQ_STRG_CELL_SLCT_OFST;
-    if (chipIndex == v1_1) {
-        // set the bit
-        value = 1 << pos;
-        addr = CONFIG_V11_REG;
-        mask = CONFIG_V11_STRG_CLL_MSK;
-        offset = CONFIG_V11_STRG_CLL_OFST;
-    }
-    if (pos >= 0) {
-        LOG(logINFO, ("Setting storage cell start: %d\n", pos));
-        bus_w(addr, bus_r(addr) & ~mask);
-        bus_w(addr, bus_r(addr) | ((value << offset) & mask));
-        // should not do a get to verify (status register does not update
-        // immediately during acquisition)
-        if (chipIndex == v1_1) {
-            return pos;
-        }
-    }
-
-    // read value back
-    // chipv1.1, writing and reading registers are different
-#ifndef VIRTUAL
-    if (chipIndex == v1_1) {
-        addr = CONFIG_V11_STATUS_REG;
-        mask = CONFIG_V11_STATUS_STRG_CLL_MSK;
-        offset = CONFIG_V11_STATUS_STRG_CLL_OFST;
-    }
-#endif
-    uint32_t regval = bus_r(addr);
-#ifndef VIRTUAL
-    // flip all contents of register //TODO FIRMWARE FIX
-    if (chipIndex == v1_1) {
-        regval ^= BIT32_MASK;
-    }
-#endif
-    uint32_t retval = ((regval & mask) >> offset);
-    if (chipIndex == v1_1) {
-        // get which bit
-        int max = getMaxStoragecellStart();
-        for (int i = 0; i != max + 1; ++i) {
-            if (retval & (1 << i)) {
-                return i;
-            }
-        }
-    }
-    // chip v1.0
-    return retval;
+int getStorageCellStartFromStorageCellReg() {
+    return ((bus_r(STORAGE_CELL_REG) & STORAGE_CELL_START_MSK) >>
+            STORAGE_CELL_START_OFST);
 }
 
-int getMaxStoragecellStart() {
-    if (chipIndex == v1_1) {
-        return MAX_STORAGE_CELL_CHIP11_VAL;
-    } else {
-        return MAX_STORAGE_CELL_VAL;
+void setStorageCellStartFromStorageCellReg(int pos) {
+    bus_w(STORAGE_CELL_REG, bus_r(STORAGE_CELL_REG) & ~STORAGE_CELL_START_MSK);
+    bus_w(STORAGE_CELL_REG,
+          bus_r(STORAGE_CELL_REG) |
+              ((pos << STORAGE_CELL_START_OFST) & STORAGE_CELL_START_MSK));
+}
+
+int getStorageCellStartFromChipConfig() {
+    // read from config status reg
+    uint32_t addr = CONFIG_V11_STATUS_REG;
+    uint32_t mask = CONFIG_V11_STATUS_STRG_CLL_MSK;
+    int offset = CONFIG_V11_STATUS_STRG_CLL_OFST;
+    if (chipIndex > v1_1) {
+        offset = CONFIG_V12_STATUS_STRG_CLL_OFST;
+        mask = CONFIG_V12_STATUS_STRG_CLL_MSK;
     }
+
+    // get which bit
+    uint32_t regval = bus_r(addr);
+    // firmware fix: flip all contents of reg
+    regval ^= BIT32_MASK; // TODO for chipv1.2??
+    uint32_t retval = ((regval & mask) >> offset);
+    int max = getMaxStorageCellStart();
+    for (int i = 0; i != max + 1; ++i) {
+        if (retval & (1 << i)) {
+            return i;
+        }
+    }
+    LOG(logERROR, ("Could not read storage cell start from config status reg. "
+                   "Read 0x%x, returning -1\n",
+                   regval));
+    return -1;
+}
+
+void setStorageCellStartFromChipConfig(int pos) {
+    // write to chip config reg, which will later update status reg
+    uint32_t addr = CONFIG_V11_REG;
+    uint32_t mask = CONFIG_V11_STRG_CLL_MSK;
+    int offset = CONFIG_V11_STRG_CLL_OFST;
+    int value = 1 << pos;
+
+    if (chipIndex > v1_1) {
+        offset = CONFIG_V12_STRG_CLL_OFST;
+        mask = CONFIG_V12_STRG_CLL_MSK;
+    }
+
+    uint32_t regval = bus_r(addr);
+    bus_w(addr, regval & ~mask);
+    bus_w(addr, bus_r(addr) | ((value << offset) & mask));
+}
+
+int getStorageCellStart() {
+    bool using_chip_config = hasStorageCellStartInChipConfig();
+#ifdef VIRTUAL
+    using_chip_config = false;
+#endif
+    if (using_chip_config) {
+        return getStorageCellStartFromChipConfig();
+    }
+    return getStorageCellStartFromStorageCellReg();
+}
+
+int setStorageCellStart(int pos) {
+    LOG(logINFO, ("Setting storage cell start: %d\n", pos));
+    setStorageCellStartFromStorageCellReg(pos);
+
+    int retval = getStorageCellStartFromStorageCellReg();
+    if (retval != pos) {
+        LOG(logERROR, ("Could not set storage cell start! Wrote %d, read %d\n",
+                       pos, retval));
+        return FAIL;
+    }
+
+    if (!hasStorageCellStartInChipConfig())
+        return OK;
+
+    setStorageCellStartFromChipConfig(pos);
+    // not validating because the status register might not update during
+    return OK;
+}
+
+int getMaxStorageCellStart() {
+    if (hasStorageCellsFeature())
+        return MAX_STORAGE_CELL_VAL;
+    else
+        return MAX_STORAGE_CELL_CHIP11_VAL;
 }
 
 int setNextFrameNumber(uint64_t value) {
@@ -1253,18 +1288,22 @@ int64_t getDelayAfterTrigger() {
 }
 
 void setNumAdditionalStorageCells(int val) {
-    if (val >= 0) {
-        LOG(logINFO, ("Setting number of addl. storage cells %d\n", val));
-        bus_w(CONTROL_REG,
-              (bus_r(CONTROL_REG) & ~CONTROL_STORAGE_CELL_NUM_MSK) |
-                  ((val << CONTROL_STORAGE_CELL_NUM_OFST) &
-                   CONTROL_STORAGE_CELL_NUM_MSK));
+    if (val < 0) {
+        LOG(logERROR, ("Invalid number of addl. storage cells %d\n", val));
+        return;
     }
+
+    // TODO: write to control reg instead if chip index v1.0??
+    LOG(logINFO, ("Setting number of addl. storage cells %d\n", val));
+    bus_w(STORAGE_CELL_REG,
+          (bus_r(STORAGE_CELL_REG) & ~STORAGE_CELL_NUM_ADDTNL_MSK) |
+              ((val << STORAGE_CELL_NUM_ADDTNL_OFST) &
+               STORAGE_CELL_NUM_ADDTNL_MSK));
 }
 
 int getNumAdditionalStorageCells() {
-    return ((bus_r(CONTROL_REG) & CONTROL_STORAGE_CELL_NUM_MSK) >>
-            CONTROL_STORAGE_CELL_NUM_OFST);
+    return ((bus_r(STORAGE_CELL_REG) & STORAGE_CELL_NUM_ADDTNL_MSK) >>
+            STORAGE_CELL_NUM_ADDTNL_OFST);
 }
 
 int setStorageCellDelay(int64_t val) {
@@ -2144,7 +2183,7 @@ int powerChip(int on) {
             bus_w(CHIP_POWER_REG,
                   bus_r(CHIP_POWER_REG) & ~CHIP_POWER_ENABLE_MSK);
 
-            chipConfigured = 0;
+            chipConfigured = false;
         }
     }
 #ifdef VIRTUAL
@@ -2155,25 +2194,29 @@ int powerChip(int on) {
             CHIP_POWER_STATUS_OFST);
 }
 
-int requireChipConfiguration() { return has_configure_chip; }
+bool requireChipConfiguration() { return has_configure_chip; }
 
-int hasStorageCellsFeature() { return has_storage_cells; }
+bool hasStorageCellsFeature() { return has_storage_cells; }
 
-int hasFilterResistorFeature() { return has_filter_resistor; }
+bool hasFilterResistorFeature() { return has_filter_resistor; }
 
-int hasFilterCellsFeature() { return has_filter_cells; }
+bool hasFilterCellsFeature() { return has_filter_cells; }
 
-int hasCurrentSourceNormalFeature() { return has_current_src_normal; }
+bool hasCurrentSourceNormalFeature() { return has_current_src_normal; }
 
-int hasCurrentSource64BitSelectionFeature() {
+bool hasCurrentSource64BitSelectionFeature() {
     return has_current_src_64bit_selection;
 }
 
-int hasCurrentSourceInvertedSelectionFeature() {
-    return has_current_src_invert_bits_selection;
+bool hasCurrentSourceReverseBitsSelectionFeature() {
+    return has_current_src_reverse_bits_selection;
 }
 
-int isChipConfigured() { return chipConfigured; }
+bool hasStorageCellStartInChipConfig() {
+    return has_storage_start_in_chip_config;
+}
+
+bool isChipConfigured() { return chipConfigured; }
 
 void configureChip() {
     // only for chipv1.1 and chip is powered on
@@ -2196,7 +2239,7 @@ void configureChip() {
         bus_w(CONFIG_V11_REG, bus_r(CONFIG_V11_REG));
 
         LOG(logINFOBLUE, ("\tChip configured\n"));
-        chipConfigured = 1;
+        chipConfigured = true;
     }
 }
 
@@ -2266,7 +2309,7 @@ int setReadoutSpeed(int val) {
     uint32_t config = CONFIG_FULL_SPEED_40MHZ_VAL;
 
     switch (val) {
-
+        // tODO: calculate values for chip v1.2
     case FULL_SPEED:
         if (isHardwareVersion_1_0()) {
             LOG(logERROR, ("Cannot set full speed. Should not be here\n"));
@@ -2661,7 +2704,7 @@ void disableCurrentSource() {
     LOG(logINFO, ("Disabling Current Source\n"));
 
     // set default values for current source first
-    if (chipIndex == v1_1) {
+    if (hasCurrentSource64BitSelectionFeature()) {
         LOG(logINFO, ("\tSetting default values for selection\n"))
         bus_w(CRRNT_SRC_COL_LSB_REG, BIT32_MASK);
         bus_w(CRRNT_SRC_COL_MSB_REG, BIT32_MASK);
@@ -2675,15 +2718,8 @@ void disableCurrentSource() {
 
 void enableCurrentSource(int fix, uint64_t select, int normal) {
     disableCurrentSource();
-
-    if (chipIndex == v1_1) {
-        LOG(logINFO, ("Enabling current source [fix:%d, select:0x%lx]\n", fix,
-                      (long unsigned int)select));
-    } else {
-        LOG(logINFO,
-            ("Enabling current source [fix:%d, select:%ld, normal:%d]\n", fix,
-             (long int)select, normal));
-    }
+    LOG(logINFO, ("Enabling current source [fix:%d, select:0x%lx]\n", fix,
+                  (long unsigned int)select));
     // fix
     if (fix) {
         LOG(logINFO, ("\tEnabling fix\n"));
@@ -2692,29 +2728,39 @@ void enableCurrentSource(int fix, uint64_t select, int normal) {
         LOG(logINFO, ("\tDisabling fix\n"));
         bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_CRRNT_SRC_CLMN_FIX_MSK);
     }
-    if (chipIndex == v1_0) {
-        // select
+
+    // select (not 64 bits)
+    if (!hasCurrentSource64BitSelectionFeature()) {
         LOG(logINFO, ("\tSetting selection to %ld\n", (long int)select));
         bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_CRRNT_SRC_CLMN_SLCT_MSK);
         bus_w(DAQ_REG,
               bus_r(DAQ_REG) | ((select << DAQ_CRRNT_SRC_CLMN_SLCT_OFST) &
                                 DAQ_CRRNT_SRC_CLMN_SLCT_MSK));
 
-    } else {
-        // select
-        // invert select first
-        uint64_t tmp = select;
-        uint64_t inverted = 0;
-        for (int i = 0; i != 64; ++i) {
-            // get each bit from LSB side
-            uint64_t bit = (tmp >> i) & 0x1;
-            // push the bit into MSB side
-            inverted |= (bit << (63 - i));
-        }
-        LOG(logINFO, ("\tSetting selection to 0x%lx (inverted from 0x%lx)\n",
-                      (long unsigned int)inverted, (long unsigned int)select));
-        set64BitReg(inverted, CRRNT_SRC_COL_LSB_REG, CRRNT_SRC_COL_MSB_REG);
+    }
 
+    // select (64 bits)
+    else {
+        uint64_t retval = 0;
+        // reverse bits select first
+        if (hasCurrentSourceReverseBitsSelectionFeature()) {
+            uint64_t tmp = select;
+            for (int i = 0; i != 64; ++i) {
+                // get each bit from LSB side
+                uint64_t bit = (tmp >> i) & 0x1;
+                // push the bit into MSB side
+                retval |= (bit << (63 - i));
+            }
+        } else {
+            retval = select;
+        }
+
+        LOG(logINFO, ("\tSetting selection to 0x%lx (inverted from 0x%lx)\n",
+                      (long unsigned int)retval, (long unsigned int)select));
+        set64BitReg(retval, CRRNT_SRC_COL_LSB_REG, CRRNT_SRC_COL_MSB_REG);
+    }
+
+    if (hasCurrentSourceNormalFeature()) {
         // normal
         if (normal) {
             LOG(logINFO, ("\tEnabling normal\n"))
@@ -2726,6 +2772,7 @@ void enableCurrentSource(int fix, uint64_t select, int normal) {
                   bus_r(CONFIG_V11_REG) | CONFIG_V11_CRRNT_SRC_LOW_MSK);
         }
     }
+
     // validating before enabling current source
     if (getFixCurrentSource() != fix || getSelectCurrentSource() != select) {
         LOG(logERROR,

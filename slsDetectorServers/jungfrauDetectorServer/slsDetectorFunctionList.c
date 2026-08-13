@@ -1293,7 +1293,6 @@ void setNumAdditionalStorageCells(int val) {
         return;
     }
 
-    // TODO: write to control reg instead if chip index v1.0??
     LOG(logINFO, ("Setting number of addl. storage cells %d\n", val));
     bus_w(STORAGE_CELL_REG,
           (bus_r(STORAGE_CELL_REG) & ~STORAGE_CELL_NUM_ADDTNL_MSK) |

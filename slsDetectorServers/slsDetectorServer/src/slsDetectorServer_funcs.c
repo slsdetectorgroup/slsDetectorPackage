@@ -2370,8 +2370,8 @@ int set_num_additional_storage_cells(int file_des) {
     if (Server_VerifyLock() == OK) {
         if (!hasStorageCellsFeature()) {
             ret = FAIL;
-            sprintf(mess,
-                    "Cannot set addl. number of storage cells for chip v1.1\n");
+            sprintf(mess, "Cannot set addl. number of storage cells for this "
+                          "chip version\n");
             LOG(logERROR, (mess));
         } else if (arg > getMaxStorageCellStart()) {
             ret = FAIL;
@@ -2814,7 +2814,8 @@ int get_storage_cell_delay(int file_des) {
     // get only
     if (!hasStorageCellsFeature()) {
         ret = FAIL;
-        strcpy(mess, "Storage cell delay is not applicable for chipv 1.1\n");
+        strcpy(mess,
+               "Storage cell delay is not applicable for this chip version\n");
         LOG(logERROR, (mess));
     } else {
         retval = getStorageCellDelay();
@@ -2842,8 +2843,9 @@ int set_storage_cell_delay(int file_des) {
     if (Server_VerifyLock() == OK) {
         if (!hasStorageCellsFeature()) {
             ret = FAIL;
-            strcpy(mess,
-                   "Storage cell delay is not applicable for chipv 1.1\n");
+            strcpy(
+                mess,
+                "Storage cell delay is not applicable for this chip version\n");
             LOG(logERROR, (mess));
         } else if (arg > MAX_STORAGE_CELL_DLY_NS_VAL) {
             ret = FAIL;
@@ -9039,7 +9041,6 @@ int get_num_filter_cells(int file_des) {
     functionNotImplemented();
 #else
     // get only
-    // only for chipv1.1
     if (!hasFilterCellsFeature()) {
         ret = FAIL;
         strcpy(mess, "Could not get number of filter cells. Not available for "
@@ -9076,9 +9077,7 @@ int set_num_filter_cells(int file_des) {
                     "0 - %d\n",
                     arg, MAX_FILTER_CELL_VAL);
             LOG(logERROR, (mess));
-        }
-        // only for chipv1.1
-        else if (!hasFilterCellsFeature()) {
+        } else if (!hasFilterCellsFeature()) {
             ret = FAIL;
             strcpy(mess, "Could not set number of filter cells. Not available "
                          "for this chip version.\n");

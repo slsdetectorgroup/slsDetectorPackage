@@ -1410,7 +1410,6 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
         setDAC(specialDacs[i], dacVals[i], 0);
     }
 
-    // if chipv1.1 and powered on
     configureChip();
 
     return getSettings();
@@ -2145,7 +2144,6 @@ bool hasStorageCellStartInChipConfig() {
 bool isChipConfigured() { return chipConfigured; }
 
 void configureChip() {
-    // only for chipv1.1 and chip is powered on
     if (requireChipConfiguration() && powerChip(-1)) {
         LOG(logINFOBLUE, ("\tConfiguring chip\n"));
 

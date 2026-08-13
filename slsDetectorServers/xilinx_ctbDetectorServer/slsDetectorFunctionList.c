@@ -1381,17 +1381,21 @@ void setTiming(enum timingMode arg) {
         bus_w(GATE_CTRL, bus_r(GATE_CTRL) & ~GATE_ENABLE_MSK);
         break;
     case GATED:
-        //   chip-specific config needed, see example reg definitions in matterhorn chiptesting repo
-        // - a gate mask setting to specify which bits of the pattern are gated (GATE_MASK_LSB & GATE_MASK_MSB)
-        // - value of the pattern bit when gating is enabled but gate is closed (GATE_VALUE_WHEN_CLOSED)
+        //   chip-specific config needed, see example reg definitions in
+        //   matterhorn chiptesting repo
+        // - a gate mask setting to specify which bits of the pattern are gated
+        // (GATE_MASK_LSB & GATE_MASK_MSB)
+        // - value of the pattern bit when gating is enabled but gate is closed
+        // (GATE_VALUE_WHEN_CLOSED)
         // - a gate inversion setting (GATE_INVERT_MSK)
         LOG(logINFO, ("Set Timing: Gated\n"));
         bus_w(FLOW_CONTROL_REG, bus_r(FLOW_CONTROL_REG) & ~TRIGGER_ENABLE_MSK);
         bus_w(GATE_CTRL, bus_r(GATE_CTRL) | GATE_ENABLE_MSK);
         break;
     case TRIGGER_GATED:
-        // trigger + gate --> trigger will start a pattern and the output of the pattern is gated.
-        // NOT A GATED TRIGGER !! (this is not: "trigger starts a pattern only if the gate is open")
+        // trigger + gate --> trigger will start a pattern and the output of the
+        // pattern is gated. NOT A GATED TRIGGER !! (this is not: "trigger
+        // starts a pattern only if the gate is open")
         LOG(logINFO, ("Set Timing: Trigger Gated\n"));
         bus_w(FLOW_CONTROL_REG, bus_r(FLOW_CONTROL_REG) | TRIGGER_ENABLE_MSK);
         bus_w(GATE_CTRL, bus_r(GATE_CTRL) | GATE_ENABLE_MSK);

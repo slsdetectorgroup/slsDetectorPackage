@@ -2641,8 +2641,8 @@ void disableCurrentSource() {
 
 void enableCurrentSource(int fix, uint64_t select, int normal) {
     disableCurrentSource();
-    LOG(logINFO, ("Enabling current source [fix:%d, select:0x%lx]\n", fix,
-                  (long unsigned int)select));
+    LOG(logINFO, ("Enabling current source [fix:%d, select:0x%lx, normal:%d]\n",
+                  fix, (long unsigned int)select, normal));
     // fix
     if (fix) {
         LOG(logINFO, ("\tEnabling fix\n"));
@@ -2723,7 +2723,7 @@ int getFixCurrentSource() {
 }
 
 int getNormalCurrentSource() {
-    if (chipIndex == v1_1) {
+    if (hasCurrentSourceNormalFeature()) {
         int low = ((bus_r(CONFIG_V11_STATUS_REG) &
                     CONFIG_V11_STATUS_CRRNT_SRC_LOW_MSK) >>
                    CONFIG_V11_STATUS_CRRNT_SRC_LOW_OFST);
@@ -2733,23 +2733,27 @@ int getNormalCurrentSource() {
 }
 
 uint64_t getSelectCurrentSource() {
-    if (chipIndex == v1_0) {
+    if (!hasCurrentSourceNormalFeature()) {
         return ((bus_r(DAQ_REG) & DAQ_CRRNT_SRC_CLMN_SLCT_MSK) >>
                 DAQ_CRRNT_SRC_CLMN_SLCT_OFST);
     } else {
         // invert the select
-        uint64_t retval =
+        uint64_t regval =
             get64BitReg(CRRNT_SRC_COL_LSB_REG, CRRNT_SRC_COL_MSB_REG);
 
-        uint64_t tmp = retval;
-        uint64_t inverted = 0;
-        for (int i = 0; i != 64; ++i) {
-            // get each bit from LSB side
-            uint64_t bit = (tmp >> i) & 0x1;
-            // push the bit into MSB side
-            inverted |= (bit << (63 - i));
+        uint64_t retval = regval;
+        if (hasCurrentSourceReverseBitsSelectionFeature()) {
+            uint64_t tmp = regval;
+            uint64_t inverted = 0;
+            for (int i = 0; i != 64; ++i) {
+                // get each bit from LSB side
+                uint64_t bit = (tmp >> i) & 0x1;
+                // push the bit into MSB side
+                inverted |= (bit << (63 - i));
+            }
+            retval = inverted;
         }
-        return inverted;
+        return retval;
     }
 }
 

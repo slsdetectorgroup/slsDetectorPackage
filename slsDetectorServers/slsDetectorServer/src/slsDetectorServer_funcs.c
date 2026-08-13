@@ -1860,7 +1860,7 @@ int acquire(int blocking, int file_des) {
 #endif
 #if defined(JUNGFRAUD)
             // chipv1.1 has to be configured before acquisition
-            if (getChipVersion() == 11 && !isChipConfigured()) {
+            if (getChipVersionInFPGA() == 11 && !isChipConfigured()) {
                 ret = FAIL;
                 strcpy(mess,
                        "Could not start acquisition. Chip is not configured. "
@@ -2282,7 +2282,7 @@ int set_num_additional_storage_cells(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        if (getChipVersion() == 11) {
+        if (getChipVersionInFPGA() == 11) {
             ret = FAIL;
             sprintf(mess,
                     "Cannot set addl. number of storage cells for chip v1.1\n");
@@ -2750,7 +2750,7 @@ int get_storage_cell_delay(int file_des) {
     functionNotImplemented();
 #else
     // get only
-    if (getChipVersion() == 11) {
+    if (getChipVersionInFPGA() == 11) {
         ret = FAIL;
         strcpy(mess, "Storage cell delay is not applicable for chipv 1.1\n");
         LOG(logERROR, (mess));
@@ -2778,7 +2778,7 @@ int set_storage_cell_delay(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        if (getChipVersion() == 11) {
+        if (getChipVersionInFPGA() == 11) {
             ret = FAIL;
             strcpy(mess,
                    "Storage cell delay is not applicable for chipv 1.1\n");
@@ -6754,7 +6754,7 @@ int set_current_source(int file_des) {
                 LOG(logERROR, (mess));
             }
 #else
-            int chipVersion = getChipVersion();
+            int chipVersion = getChipVersionInFPGA();
             if (ret == OK) {
                 if (chipVersion == 11) {
                     // require both
@@ -7923,7 +7923,7 @@ int get_filter_resistor(int file_des) {
 #else
     // get only
 #if defined(JUNGFRAUD)
-    if (getChipVersion() == 10) {
+    if (getChipVersionInFPGA() == 10) {
         ret = FAIL;
         strcpy(mess, "Could not get filter cell. Not available for this chip "
                      "version 1.0.\n");
@@ -7962,7 +7962,7 @@ int set_filter_resistor(int file_des) {
             LOG(logERROR, (mess));
         }
 #if defined(JUNGFRAUD)
-        else if (getChipVersion() == 10) {
+        else if (getChipVersionInFPGA() == 10) {
             ret = FAIL;
             strcpy(mess, "Could not set filter cell. Not available for this "
                          "chip version 1.0.\n");
@@ -8701,7 +8701,7 @@ int get_chip_version(int file_des) {
 #if !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
-    retval = getChipVersion();
+    retval = getChipVersionInFPGA();
 #endif
     LOG(logDEBUG1, ("chip version retval: %d\n", retval));
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
@@ -8982,7 +8982,7 @@ int get_num_filter_cells(int file_des) {
 #else
     // get only
     // only for chipv1.1
-    if (getChipVersion() == 10) {
+    if (getChipVersionInFPGA() == 10) {
         ret = FAIL;
         strcpy(mess, "Could not get number of filter cells. Only available for "
                      "chip version 1.1\n");
@@ -9020,7 +9020,7 @@ int set_num_filter_cells(int file_des) {
             LOG(logERROR, (mess));
         }
         // only for chipv1.1
-        else if (getChipVersion() == 10) {
+        else if (getChipVersionInFPGA() == 10) {
             ret = FAIL;
             strcpy(mess,
                    "Could not set number of filter cells. Only available for "

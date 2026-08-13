@@ -2622,7 +2622,7 @@ class Detector(CppDetectorApi):
     @element
     def chipversion(self):
         """
-        [Jungfrau] Chip version of module. Can be 1.0 or 1.1.
+        [Jungfrau] Chip version of module. Can be 1.0, 1.1 or 1.2.
 
         Example
         -------

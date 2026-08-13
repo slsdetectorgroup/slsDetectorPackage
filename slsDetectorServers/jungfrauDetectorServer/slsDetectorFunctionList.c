@@ -329,7 +329,7 @@ int getChipVersionInFPGA() {
     case 1:
         return vals[(int)v1_1];
     case 2:
-        return vals[(int)v1_2_NORMAL]/10;
+        return vals[(int)v1_2_NORMAL] / 10;
     default:
         LOG(logERROR,
             ("Read undefined value as chip version from FPGA: %d\n", val));
@@ -359,7 +359,7 @@ int findChipIndex(enum CHIPINDEX *ind, char *cval, char *mess) {
 /** For backwards compatibility */
 int setChipVersionIntFromConfigFile(int val, char *mess) {
     const int vals[] = CHIP_VALS;
-    if (val == vals[(int)v1_0]) 
+    if (val == vals[(int)v1_0])
         return setChipIndex(v1_0, mess);
     else if (val == vals[(int)v1_1])
         return setChipIndex(v1_1, mess);

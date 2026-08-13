@@ -1950,7 +1950,6 @@ int acquire(int blocking, int file_des) {
         else
 #endif
 #if defined(JUNGFRAUD)
-            // chipv1.1 has to be configured before acquisition
             if (requireChipConfiguration() && !isChipConfigured()) {
                 ret = FAIL;
                 strcpy(mess,

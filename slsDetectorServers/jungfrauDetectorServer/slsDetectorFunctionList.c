@@ -1420,7 +1420,6 @@ int setSettings(enum detectorSettings sett, char *mess) {
             return FAIL;
     }
 
-    // if chipv1.1 and powered on
     configureChip();
 
     return OK;
@@ -2219,7 +2218,6 @@ bool hasStorageCellStartInChipConfig() {
 bool isChipConfigured() { return chipConfigured; }
 
 void configureChip() {
-    // only for chipv1.1 and chip is powered on
     if (requireChipConfiguration() && powerChip(-1)) {
         LOG(logINFOBLUE, ("\tConfiguring chip\n"));
 

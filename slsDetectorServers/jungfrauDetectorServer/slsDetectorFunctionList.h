@@ -96,8 +96,13 @@ void setADCInvertRegister(uint32_t val);
 uint32_t getADCInvertRegister();
 
 // parameters - timer
-int selectStoragecellStart(int pos);
-int getMaxStoragecellStart();
+int getStorageCellStartFromStorageCellReg();
+void setStorageCellStartFromStorageCellReg(int pos);
+int getStorageCellStartFromChipConfig();
+void setStorageCellStartFromChipConfig(int pos);
+int getStorageCellStart();
+int setStorageCellStart(int pos);
+int getMaxStorageCellStart();
 int setNextFrameNumber(uint64_t value);
 int getNextFrameNumber(uint64_t *value);
 void setNumFrames(int64_t val);

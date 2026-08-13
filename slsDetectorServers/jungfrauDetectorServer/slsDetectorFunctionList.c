@@ -324,15 +324,16 @@ int getChipVersionInFPGA() {
     const int vals[] = CHIP_VALS;
     int val = ((bus_r(DAQ_REG) & DAQ_CHIP_VRSN_MSK) >> DAQ_CHIP_VRSN_OFST);
     switch (val) {
-        case 0:
-            return vals[(int)v1_0];
-        case 1:
-            return vals[(int)v1_1];
-        case 2:
-            return vals[(int)v1_2_NORMAL];
-        default:
-            LOG(logERROR, ("Read undefined value as chip version from FPGA: %d\n", val));
-            return -1;
+    case 0:
+        return vals[(int)v1_0];
+    case 1:
+        return vals[(int)v1_1];
+    case 2:
+        return vals[(int)v1_2_NORMAL];
+    default:
+        LOG(logERROR,
+            ("Read undefined value as chip version from FPGA: %d\n", val));
+        return -1;
     }
 }
 
@@ -344,20 +345,21 @@ int findChipIndex(enum CHIPINDEX *ind, int val, char *mess) {
             return OK;
         }
     }
-    sprintf(mess, "Unknown chip index value %d. Options: %s\n", val, CHIP_VALS_HELP);
+    sprintf(mess, "Unknown chip index value %d. Options: %s\n", val,
+            CHIP_VALS_HELP);
     LOG(logERROR, (mess));
     return FAIL;
 }
 
 /** For backwards compatibility */
-int setChipVersionFromConfigFile(int val, char* mess) {
+int setChipVersionFromConfigFile(int val, char *mess) {
     // validations
     const int vals[] = CHIP_VALS;
     int v1_0_val = vals[(int)v1_0];
     int v1_1_val = vals[(int)v1_1];
     if (val != v1_0_val && val != v1_1_val) {
-        sprintf(mess,
-                "Invalid chip version %d. Options: %d and %d.\n", val, v1_0_val, v1_1_val);
+        sprintf(mess, "Invalid chip version %d. Options: %d and %d.\n", val,
+                v1_0_val, v1_1_val);
         return FAIL;
     }
 
@@ -367,11 +369,11 @@ int setChipVersionFromConfigFile(int val, char* mess) {
     return OK;
 }
 
-int setChipIndexFromConfigFile(int val, char* mess) {
-    enum CHIPINDEX ind = NUM_CHIP_INDICES; 
+int setChipIndexFromConfigFile(int val, char *mess) {
+    enum CHIPINDEX ind = NUM_CHIP_INDICES;
     if (findChipIndex(&ind, val, mess) == FAIL) {
         return FAIL;
-    }    
+    }
     if (validateChipIndex(ind, mess) == FAIL) {
         return FAIL;
     }
@@ -379,9 +381,10 @@ int setChipIndexFromConfigFile(int val, char* mess) {
     return setChipVersionInFPGA(mess);
 }
 
-int validateChipIndex(enum CHIPINDEX ind, char* mess) {
+int validateChipIndex(enum CHIPINDEX ind, char *mess) {
     if (ind < 0 || ind >= NUM_CHIP_INDICES) {
-        sprintf(mess, "Invalid chip index %d. Options: %s\n", (int)ind, CHIP_VALS_HELP);
+        sprintf(mess, "Invalid chip index %d. Options: %s\n", (int)ind,
+                CHIP_VALS_HELP);
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -390,37 +393,40 @@ int validateChipIndex(enum CHIPINDEX ind, char* mess) {
     if (ind > v1_0 && isHardwareVersion_1_0()) {
         char *chip_names[] = {CHIP_NAMES};
         sprintf(mess,
-                "Chip index %d (%s) is incompatible with hardware version v1.0. Please update board or correct chip index.\n", (int)ind, chip_names[ind]);
+                "Chip index %d (%s) is incompatible with hardware version "
+                "v1.0. Please update board or correct chip index.\n",
+                (int)ind, chip_names[ind]);
         return FAIL;
     }
     return OK;
 }
 
-int setChipVersionInFPGA(char* mess) {
+int setChipVersionInFPGA(char *mess) {
     int val = 0;
     switch (chipIndex) {
-        case v1_0:
-            LOG(logINFO, ("Setting Chip Version 1.0 in FPGA\n"));
-            val = 0;
-            break;
-        case v1_1:
-            LOG(logINFO, ("Setting Chip Version 1.1 in FPGA\n"));
-            val = 1;
-            break;
-        case v1_2_NORMAL:
-        case v1_2_LOW_NOISE:
-        case v1_2_HDR:
-            LOG(logINFO, ("Setting Chip Version 1.2 in FPGA\n"));
-            val = 2;
-            break;
-        default:
-            sprintf(mess, "Unknown chip index %d\n", (int)chipIndex);
-            LOG(logERROR, (mess));
-            return FAIL;
+    case v1_0:
+        LOG(logINFO, ("Setting Chip Version 1.0 in FPGA\n"));
+        val = 0;
+        break;
+    case v1_1:
+        LOG(logINFO, ("Setting Chip Version 1.1 in FPGA\n"));
+        val = 1;
+        break;
+    case v1_2_NORMAL:
+    case v1_2_LOW_NOISE:
+    case v1_2_HDR:
+        LOG(logINFO, ("Setting Chip Version 1.2 in FPGA\n"));
+        val = 2;
+        break;
+    default:
+        sprintf(mess, "Unknown chip index %d\n", (int)chipIndex);
+        LOG(logERROR, (mess));
+        return FAIL;
     }
-    
+
     bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_CHIP_VRSN_MSK);
-    bus_w(DAQ_REG, bus_r(DAQ_REG) | ((val << DAQ_CHIP_VRSN_OFST) & DAQ_CHIP_VRSN_MSK));
+    bus_w(DAQ_REG,
+          bus_r(DAQ_REG) | ((val << DAQ_CHIP_VRSN_OFST) & DAQ_CHIP_VRSN_MSK));
     return OK;
 }
 
@@ -636,18 +642,18 @@ void setupDetector() {
     setPeriod(DEFAULT_PERIOD);
     setDelayAfterTrigger(DEFAULT_DELAY);
     switch (chipIndex) {
-        case v1_0:
-            setNumAdditionalStorageCells(DEFAULT_NUM_STRG_CLLS);
-            selectStoragecellStart(DEFAULT_STRG_CLL_STRT);
-            // not applicable for chipv1.1
-            setStorageCellDelay(DEFAULT_STRG_CLL_DLY);
-            break;
-        case v1_1:
-            selectStoragecellStart(DEFAULT_STRG_CLL_STRT_CHIP11);
-            break;
-        default:
-            // TODO
-            break;
+    case v1_0:
+        setNumAdditionalStorageCells(DEFAULT_NUM_STRG_CLLS);
+        selectStoragecellStart(DEFAULT_STRG_CLL_STRT);
+        // not applicable for chipv1.1
+        setStorageCellDelay(DEFAULT_STRG_CLL_DLY);
+        break;
+    case v1_1:
+        selectStoragecellStart(DEFAULT_STRG_CLL_STRT_CHIP11);
+        break;
+    default:
+        // TODO
+        break;
     }
     setTiming(DEFAULT_TIMING_MODE);
     setNextFrameNumber(DEFAULT_STARTING_FRAME_NUMBER);
@@ -896,23 +902,26 @@ int readConfigFile() {
                 break;
             }
             if (setChipVersionFromConfigFile(val, initErrorMessage) == FAIL) {
-                strcat(initErrorMessage, "Could not set chip version from on-board server config file. For higher chip versions, use 'chipindex' command from example server config file. Line:[%s].\n");
+                strcat(initErrorMessage,
+                       "Could not set chip version from on-board server config "
+                       "file. For higher chip versions, use 'chipindex' "
+                       "command from example server config file. Line:[%s].\n");
                 break;
             }
-        } 
-        else if (!strncmp(line, "chipindex", strlen("chipindex"))) {
+        } else if (!strncmp(line, "chipindex", strlen("chipindex"))) {
             int val = 0;
             // cannot scan values
             if (sscanf(line, "%s %d", command, &val) != 2) {
-                sprintf(
-                    initErrorMessage,
-                    "Could not scan chipindex command from on-board server "
-                    "config file. Line:[%s].\n",
-                    line);
+                sprintf(initErrorMessage,
+                        "Could not scan chipindex command from on-board server "
+                        "config file. Line:[%s].\n",
+                        line);
                 break;
             }
             if (setChipIndexFromConfigFile(val, initErrorMessage) == FAIL) {
-                strcat(initErrorMessage, "Could not set chip index from on-board server config file. Line:[%s].\n");
+                strcat(initErrorMessage,
+                       "Could not set chip index from on-board server config "
+                       "file. Line:[%s].\n");
                 break;
             }
         }
@@ -1008,7 +1017,7 @@ int selectStoragecellStart(int pos) {
     uint32_t addr = DAQ_REG;
     uint32_t mask = DAQ_STRG_CELL_SLCT_MSK;
     int offset = DAQ_STRG_CELL_SLCT_OFST;
-    if (chipIndex== v1_1) {
+    if (chipIndex == v1_1) {
         // set the bit
         value = 1 << pos;
         addr = CONFIG_V11_REG;

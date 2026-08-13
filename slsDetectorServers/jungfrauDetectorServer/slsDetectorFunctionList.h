@@ -64,6 +64,7 @@ int setChipVersionIntFromConfigFile(int val,
 int setChipVersionStringFromConfigFile(char *cval, char *mess);
 int setChipIndex(enum CHIPINDEX ind, char *mess);
 int validateChipIndex(enum CHIPINDEX ind, char *mess);
+void setChipIndexAllowedFeatures();
 int setChipVersionInFPGA(char *mess);
 u_int32_t getDetectorNumber();
 int getModuleId(int *ret, char *mess);

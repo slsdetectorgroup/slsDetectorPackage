@@ -337,43 +337,55 @@ int getChipVersionInFPGA() {
     }
 }
 
-int findChipIndex(enum CHIPINDEX *ind, int val, char *mess) {
+int findChipIndex(enum CHIPINDEX *ind, char *cval, char *mess) {
+    if (cval == NULL) {
+        sprintf(mess, "String value is NULL. Cannot find chip version.\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
     const int vals[] = CHIP_VALS;
+    char *chip_names[] = {CHIP_NAMES};
     for (enum CHIPINDEX ichip = v1_0; ichip != NUM_CHIP_INDICES; ++ichip) {
-        if (vals[ichip] == val) {
+        if (strcmp(chip_names[ichip], cval) == 0) {
             *ind = ichip;
             return OK;
         }
     }
-    sprintf(mess, "Unknown chip index value %d. Options: %s\n", val,
+    sprintf(mess, "Unknown chip version '%s'. Options: %s\n", cval,
             CHIP_VALS_HELP);
     LOG(logERROR, (mess));
     return FAIL;
 }
 
 /** For backwards compatibility */
-int setChipVersionFromConfigFile(int val, char *mess) {
+int setChipVersionIntFromConfigFile(int val, char *mess) {
     // validations
     const int vals[] = CHIP_VALS;
     int v1_0_val = vals[(int)v1_0];
     int v1_1_val = vals[(int)v1_1];
-    if (val != v1_0_val && val != v1_1_val) {
+    switch (val) {
+    case v1_0_val:
+        return setChipIndex(v1_0, mess);
+    case v1_1_val:
+        return setChipIndex(v1_1, mess);
+    default:
         sprintf(mess, "Invalid chip version %d. Options: %d and %d.\n", val,
                 v1_0_val, v1_1_val);
+        LOG(logERROR, (mess));
         return FAIL;
     }
-
-    if (setChipIndexFromConfigFile(val, mess) == FAIL) {
-        return FAIL;
-    }
-    return OK;
 }
 
-int setChipIndexFromConfigFile(int val, char *mess) {
+int setChipVersionStringFromConfigFile(char *cval, char *mess) {
+
     enum CHIPINDEX ind = NUM_CHIP_INDICES;
-    if (findChipIndex(&ind, val, mess) == FAIL) {
+    if (findChipIndex(&ind, cval, mess) == FAIL) {
         return FAIL;
     }
+    return setChipIndex(ind, mess);
+}
+
+int setChipIndex(enum CHIPINDEX ind, char *mess) {
     if (validateChipIndex(ind, mess) == FAIL) {
         return FAIL;
     }
@@ -889,39 +901,41 @@ int readConfigFile() {
                         strlen(line) - 1, line));
         memset(command, 0, LZ);
 
-        // chipversion command (backward compatibility)
+        // chipversion command
         if (!strncmp(line, "chipversion", strlen("chipversion"))) {
             int val = 0;
-            // cannot scan values
-            if (sscanf(line, "%s %d", command, &val) != 2) {
-                sprintf(
-                    initErrorMessage,
-                    "Could not scan chipversion command from on-board server "
-                    "config file. Line:[%s].\n",
-                    line);
-                break;
+            char chipversion[SHORT_STR_LENGTH] = {0};
+
+            // backward compatibility: takes an int
+            if (sscanf(line, "%s %d", command, &val) == 2) {
+                if (setChipVersionIntFromConfigFile(val, initErrorMessage) ==
+                    FAIL) {
+                    strcat(initErrorMessage,
+                           "Could not set chip version from on-board server "
+                           "config "
+                           "file. For higher chip versions, use 'chipindex' "
+                           "command from example server config file. "
+                           "Line:[%s].\n");
+                    break;
+                }
             }
-            if (setChipVersionFromConfigFile(val, initErrorMessage) == FAIL) {
-                strcat(initErrorMessage,
-                       "Could not set chip version from on-board server config "
-                       "file. For higher chip versions, use 'chipindex' "
-                       "command from example server config file. Line:[%s].\n");
-                break;
+
+            // updated argument takes a string
+            else if (sscanf(line, "%s \"%[^\"]\"", command, chipversion) == 2) {
+                if (setChipVersionStringFromConfigFile(
+                        chipversion, initErrorMessage) == FAIL) {
+                    strcat(initErrorMessage,
+                           "Could not set chip version from on-board server "
+                           "config file. Line:[%s].\n");
+                    break;
+                }
             }
-        } else if (!strncmp(line, "chipindex", strlen("chipindex"))) {
-            int val = 0;
-            // cannot scan values
-            if (sscanf(line, "%s %d", command, &val) != 2) {
+
+            else {
                 sprintf(initErrorMessage,
-                        "Could not scan chipindex command from on-board server "
-                        "config file. Line:[%s].\n",
+                        "Could not scan chipversion command from on-board "
+                        "server config file. Line:[%s].\n",
                         line);
-                break;
-            }
-            if (setChipIndexFromConfigFile(val, initErrorMessage) == FAIL) {
-                strcat(initErrorMessage,
-                       "Could not set chip index from on-board server config "
-                       "file. Line:[%s].\n");
                 break;
             }
         }

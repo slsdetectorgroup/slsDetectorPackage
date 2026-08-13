@@ -73,8 +73,9 @@
 #define LOCALHOST_IP "127.0.0.1"
 
 /** default maximum string length */
-#define MAX_STR_LENGTH   1000
-#define SHORT_STR_LENGTH 20
+#define MAX_STR_LENGTH       1000
+#define SHORT_STR_LENGTH     20
+#define SHORT_STR_SCAN_WIDTH 19
 
 #define MAX_PATTERN_LENGTH    0x2000
 #define MAX_PATTERN_LEVELS    6

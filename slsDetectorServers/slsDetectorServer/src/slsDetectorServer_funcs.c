@@ -1859,47 +1859,44 @@ int acquire(int blocking, int file_des) {
         else
 #endif
 #if defined(JUNGFRAUD)
-            // chipv1.1 has to be configured before acquisition
             if (requireChipConfiguration() && !isChipConfigured()) {
-                ret = FAIL;
-                strcpy(mess,
-                       "Could not start acquisition. Chip is not configured. "
-                       "Power it on to configure it.\n");
-                LOG(logERROR, (mess));
-            } else
+            ret = FAIL;
+            strcpy(mess, "Could not start acquisition. Chip is not configured. "
+                         "Power it on to configure it.\n");
+            LOG(logERROR, (mess));
+        } else
 #endif
 #if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
-                if ((getReadoutMode() == ANALOG_AND_DIGITAL ||
-                     getReadoutMode() == ANALOG_ONLY) &&
-                    (getNumAnalogSamples() <= 0)) {
+            if ((getReadoutMode() == ANALOG_AND_DIGITAL ||
+                 getReadoutMode() == ANALOG_ONLY) &&
+                (getNumAnalogSamples() <= 0)) {
                 ret = FAIL;
                 sprintf(mess,
                         "Could not start acquisition. Invalid number of analog "
                         "samples: %d.\n",
                         getNumAnalogSamples());
                 LOG(logERROR, (mess));
-            } else if ((getReadoutMode() == ANALOG_AND_DIGITAL ||
-                        getReadoutMode() == DIGITAL_ONLY ||
-                        getReadoutMode() == DIGITAL_AND_TRANSCEIVER) &&
-                       (getNumDigitalSamples() <= 0)) {
-                ret = FAIL;
-                sprintf(
-                    mess,
+        } else if ((getReadoutMode() == ANALOG_AND_DIGITAL ||
+                    getReadoutMode() == DIGITAL_ONLY ||
+                    getReadoutMode() == DIGITAL_AND_TRANSCEIVER) &&
+                   (getNumDigitalSamples() <= 0)) {
+            ret = FAIL;
+            sprintf(mess,
                     "Could not start acquisition. Invalid number of digital "
                     "samples: %d.\n",
                     getNumDigitalSamples());
-                LOG(logERROR, (mess));
-            } else if ((getReadoutMode() == TRANSCEIVER_ONLY ||
-                        getReadoutMode() == DIGITAL_AND_TRANSCEIVER) &&
-                       (getNumTransceiverSamples() <= 0)) {
-                ret = FAIL;
-                sprintf(mess,
-                        "Could not start acquisition. Invalid number of "
-                        "transceiver "
-                        "samples: %d.\n",
-                        getNumTransceiverSamples());
-                LOG(logERROR, (mess));
-            } else
+            LOG(logERROR, (mess));
+        } else if ((getReadoutMode() == TRANSCEIVER_ONLY ||
+                    getReadoutMode() == DIGITAL_AND_TRANSCEIVER) &&
+                   (getNumTransceiverSamples() <= 0)) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not start acquisition. Invalid number of "
+                    "transceiver "
+                    "samples: %d.\n",
+                    getNumTransceiverSamples());
+            LOG(logERROR, (mess));
+        } else
 #endif
 #ifdef EIGERD
                 // check for hardware mac and hardware ip

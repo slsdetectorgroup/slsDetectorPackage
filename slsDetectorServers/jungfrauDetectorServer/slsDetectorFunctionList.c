@@ -952,14 +952,14 @@ int readConfigFile() {
                     strcat(initErrorMessage,
                            "Could not set chip version from on-board server "
                            "config "
-                           "file. For higher chip versions, use 'chipindex' "
-                           "command from example server config file. "
+                           "file. For higher chip versions, use string "
+                           "arguments from example server config file. "
                            "Line:[%s].\n");
                     break;
                 }
             }
 
-            // updated argument takes a string
+            // updated argument takes a string without quotes
             else if (sscanf(line, "%s \"%[^\"]\"", command, chipversion) == 2) {
                 if (setChipVersionStringFromConfigFile(
                         chipversion, initErrorMessage) == FAIL) {

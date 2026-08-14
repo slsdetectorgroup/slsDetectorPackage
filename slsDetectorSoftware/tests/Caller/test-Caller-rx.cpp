@@ -127,7 +127,8 @@ TEST_CASE("rx_framescaught", "[.detectorintegration]") {
     }
 }
 
-TEST_CASE("rx_missingpackets", "[.detectorintegration]") {
+TEST_CASE("rx_missingpackets",
+          "[.detectorintegration][.disable_check_data_file]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getFileWrite();

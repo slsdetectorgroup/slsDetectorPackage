@@ -24,6 +24,7 @@
 #include "mythen3.h"
 #endif
 
+#include <stdbool.h>
 #include <stdio.h> // FILE
 #include <stdlib.h>
 #include <sys/types.h>
@@ -95,8 +96,15 @@ u_int16_t getHardwareSerialNumber();
 int isHardwareVersion_1_0();
 #endif
 #if defined(JUNGFRAUD)
-int getChipVersion();
-void setChipVersion(int version);
+int getChipVersionInFPGA();
+int findChipIndex(enum CHIPINDEX *ind, char *cval, char *mess);
+int setChipVersionIntFromConfigFile(int val,
+                                    char *mess); // for backward compatibility
+int setChipVersionStringFromConfigFile(char *cval, char *mess);
+int setChipIndex(enum CHIPINDEX ind, char *mess);
+int validateChipIndex(enum CHIPINDEX ind, char *mess);
+void setChipIndexAllowedFeatures();
+int setChipVersionInFPGA(char *mess);
 #endif
 #ifndef EIGERD
 u_int32_t getDetectorNumber();
@@ -241,8 +249,13 @@ int getReadoutMode();
 
 // parameters - timer
 #if defined(JUNGFRAUD)
-int selectStoragecellStart(int pos);
-int getMaxStoragecellStart();
+int getStorageCellStartFromStorageCellReg();
+void setStorageCellStartFromStorageCellReg(int pos);
+int getStorageCellStartFromChipConfig();
+void setStorageCellStartFromChipConfig(int pos);
+int getStorageCellStart();
+int setStorageCellStart(int pos);
+int getMaxStorageCellStart();
 #endif
 #if defined(JUNGFRAUD) || defined(MOENCHD) || defined(EIGERD) ||               \
     defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD) ||               \
@@ -541,7 +554,15 @@ int getReadNRows();
 void initReadoutConfiguration();
 int powerChip(int on);
 #ifndef MOENCHD
-int isChipConfigured();
+bool requireChipConfiguration();
+bool hasStorageCellsFeature();
+bool hasFilterResistorFeature();
+bool hasFilterCellsFeature();
+bool hasCurrentSourceNormalFeature();
+bool hasCurrentSource64BitSelectionFeature();
+bool hasCurrentSourceReverseBitsSelectionFeature();
+bool hasStorageCellStartInChipConfig();
+bool isChipConfigured();
 void configureChip();
 int autoCompDisable(int on);
 int setComparatorDisableTime(int64_t val);

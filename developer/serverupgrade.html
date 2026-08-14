@@ -72,7 +72,7 @@
 <li class="toctree-l1"><a class="reference internal" href="pyenums.html">Enums</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pypower.html">Power Supply</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pyexamples.html">Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pyPatternGenerator.html">PatternGenerator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pypatterngenerator.html">PatternGenerator</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pattern.html">Pattern</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Command line</span></p>
@@ -178,7 +178,7 @@
 <li><p>Program from console</p>
 <blockquote>
 <div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># the following command copies new server, creates a soft link to xxxDetectorServerxxx</span>
-<span class="c1"># [Jungfrau][CTB][Moench] also deletes the old server binary and edits initttab to respawn server on reboot</span>
+<span class="c1"># [Jungfrau][CTB][Moench] also deletes the old server binary and edits inittab to respawn server on reboot</span>
 <span class="c1"># Then, the detector controller will reboot (except Eiger)</span>
 sls_detector_put<span class="w"> </span>updatedetectorserver<span class="w"> </span>/complete-path-to-binary/xxxDetectorServerxxx
 </pre></div>
@@ -199,7 +199,7 @@ sls_detector_put<span class="w"> </span>updatedetectorserver<span class="w"> </s
 <li><p>Program from console</p>
 <blockquote>
 <div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># the following command copies new server from pc tftp folder, creates a soft link to xxxDetectorServerxxx</span>
-<span class="c1"># [Jungfrau][CTB][Moench] also edits initttab to respawn server on reboot</span>
+<span class="c1"># [Jungfrau][CTB][Moench] also edits inittab to respawn server on reboot</span>
 <span class="c1"># Then, the detector controller will reboot (except Eiger)</span>
 sls_detector_put<span class="w"> </span>copydetectorserver<span class="w"> </span>xxxDetectorServerxxx<span class="w"> </span>pcxxx
 </pre></div>

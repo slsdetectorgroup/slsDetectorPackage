@@ -21,7 +21,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Command line interface" href="commandline.html" />
-    <link rel="prev" title="PatternGenerator" href="pyPatternGenerator.html" /> 
+    <link rel="prev" title="PatternGenerator" href="pypatterngenerator.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -72,7 +72,7 @@
 <li class="toctree-l1"><a class="reference internal" href="pyenums.html">Enums</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pypower.html">Power Supply</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pyexamples.html">Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pyPatternGenerator.html">PatternGenerator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pypatterngenerator.html">PatternGenerator</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Pattern</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Command line</span></p>
@@ -285,7 +285,7 @@ Example:</p>
 <p>For Mythen3 the pattern word only connects to output pins of the FPGA when the pattern is running. Afterwards the signals will switch back to other logic in the FPGA. Both CTB’s hold the last executed pattern word until a new pattern is started.</p>
 <p><strong>Relation of received data to pattern execution</strong></p>
 <p>In the default configuration the Ctb will send out udp packets to the sls_receiver for every end of a pattern execution. This behavior can be changed using STREAMING_CTRL_REG, where one can configure a bit position in the 64-bit pattern word to trigger udp packets. This allows to send more than one packet per pattern or also no packets at all.</p>
-<p>The “patternstart” command on the ctb exectues the pattern. As long as streaming_ctrl_reg is disabeld, every pattern execution using this command will not send UDP packets.</p>
+<p>The “patternstart” command on the ctb executes the pattern. As long as streaming_ctrl_reg is disabled, every pattern execution using this command will not send UDP packets.</p>
 <p>For Mythen3 the sending of udp packets is not connected to pattern execution.</p>
 </section>
 
@@ -293,7 +293,7 @@ Example:</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="pyPatternGenerator.html" class="btn btn-neutral float-left" title="PatternGenerator" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pypatterngenerator.html" class="btn btn-neutral float-left" title="PatternGenerator" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="commandline.html" class="btn btn-neutral float-right" title="Command line interface" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

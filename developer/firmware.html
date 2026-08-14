@@ -72,7 +72,7 @@
 <li class="toctree-l1"><a class="reference internal" href="pyenums.html">Enums</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pypower.html">Power Supply</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pyexamples.html">Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pyPatternGenerator.html">PatternGenerator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pypatterngenerator.html">PatternGenerator</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pattern.html">Pattern</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Command line</span></p>
@@ -203,7 +203,7 @@
 <h3>Upgrade<a class="headerlink" href="#upgrade" title="Link to this heading"></a></h3>
 <ol class="arabic">
 <li><p>Tftp must be already installed on your pc to use the bcp script.</p></li>
-<li><p>Copy new servers to the board. See <a class="reference internal" href="serverupgrade.html#detector-server-upgrade"><span class="std std-ref">how to upgrade detector servers</span></a> for more detals. A reboot should have started the new linked servers automatically. For Eiger, do not reboot yet as we need to program the firmware via bit files.</p>
+<li><p>Copy new servers to the board. See <a class="reference internal" href="serverupgrade.html#detector-server-upgrade"><span class="std std-ref">how to upgrade detector servers</span></a> for more details. A reboot should have started the new linked servers automatically. For Eiger, do not reboot yet as we need to program the firmware via bit files.</p>
 <blockquote>
 <div><ul class="simple">
 <li><p>This step is crucial when registers between firmwares change. Failure to do so will result in linux on boards to crash and boards can’t be pinged anymore.</p></li>
@@ -307,7 +307,7 @@ reconfig<span class="w"> </span>fw0
 <span class="c1"># Always ensure that the client and server software are of the same release.</span>
 
 <span class="c1"># copies server, links new server to jungfrauDetectorServer,</span>
-<span class="c1"># removes old server from respawn, sets up new lnked server to respawn</span>
+<span class="c1"># removes old server from respawn, sets up new linked server to respawn</span>
 <span class="c1"># programs fpga, reboots</span>
 
 <span class="c1">#  older versions: v5.0.0 - 6.0.0 using tftp from tftp folder of pc</span>
@@ -339,7 +339,7 @@ sls_detector_put<span class="w"> </span>programfpga<span class="w"> </span>xxx.p
 <dt>Program from console</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Always ensure that the client and server software are of the same release.</span>
 
 <span class="c1"># copies server, links new server to mythen3DetectorServer,</span>
-<span class="c1"># removes old server from respawn, sets up new lnked server to respawn</span>
+<span class="c1"># removes old server from respawn, sets up new linked server to respawn</span>
 <span class="c1"># programs fpga, reboots</span>
 
 <span class="c1">#  older versions: v5.0.0 - 6.0.0 using tftp from tftp folder of pc</span>
@@ -375,7 +375,7 @@ sls_detector_put<span class="w"> </span>programfpga<span class="w"> </span>xxx.r
 <dt>Program from console</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Always ensure that the client and server software are of the same release.</span>
 
 <span class="c1"># copies server, links new server to gotthard2DetectorServer,</span>
-<span class="c1"># removes old server from respawn, sets up new lnked server to respawn</span>
+<span class="c1"># removes old server from respawn, sets up new linked server to respawn</span>
 <span class="c1"># programs fpga, reboots</span>
 
 <span class="c1">#  older versions: v5.0.0 - 6.0.0 using tftp from tftp folder of pc</span>
@@ -421,7 +421,7 @@ sls_detector_put<span class="w"> </span>programfpga<span class="w"> </span>xxx.r
 <dt>Program from console</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Always ensure that the client and server software are of the same release.</span>
 
 <span class="c1"># copies server, links new server to moenchDetectorServer,</span>
-<span class="c1"># removes old server from respawn, sets up new lnked server to respawn</span>
+<span class="c1"># removes old server from respawn, sets up new linked server to respawn</span>
 <span class="c1"># programs fpga, reboots</span>
 
 <span class="c1">#  older versions: v5.0.0 - 6.0.0 using tftp from tftp folder of pc</span>
@@ -454,7 +454,7 @@ sls_detector_put<span class="w"> </span>programfpga<span class="w"> </span>xxx.p
 <dt>Program from console</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Always ensure that the client and server software are of the same release.</span>
 
 <span class="c1"># copies server, links new server to ctbDetectorServer,</span>
-<span class="c1"># removes old server from respawn, sets up new lnked server to respawn</span>
+<span class="c1"># removes old server from respawn, sets up new linked server to respawn</span>
 <span class="c1"># programs fpga, reboots</span>
 
 <span class="c1">#  older versions: v5.0.0 - 6.0.0 using tftp from tftp folder of pc</span>
@@ -476,7 +476,7 @@ sls_detector_put<span class="w"> </span>programfpga<span class="w"> </span>xxx.p
 <ol class="arabic simple">
 <li><p>v4.x.x client after programming will most likely reboot the blackfin processor, regardless of error.</p></li>
 <li><p>v5.x.x-rcx client after programming will not reboot the blackfin processor, if error occurred.</p></li>
-<li><p>If a reboot occured with an incomplete firmware in flash, the blackfin will most likely not find the mtd3 drive. To see if this drive exists:</p></li>
+<li><p>If a reboot occurred with an incomplete firmware in flash, the blackfin will most likely not find the mtd3 drive. To see if this drive exists:</p></li>
 </ol>
 <blockquote>
 <div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># connect to the board</span>

@@ -72,7 +72,7 @@
 <li class="toctree-l1"><a class="reference internal" href="pyenums.html">Enums</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pypower.html">Power Supply</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pyexamples.html">Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pyPatternGenerator.html">PatternGenerator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pypatterngenerator.html">PatternGenerator</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pattern.html">Pattern</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Command line</span></p>
@@ -193,7 +193,7 @@
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Ensure that there are no spaces betweent the tags and no ‘.’, else hardly any test will be matched.</p>
+<p>Ensure that there are no spaces between the tags and no ‘.’, else hardly any test will be matched.</p>
 </div>
 </section>
 <section id="simulator-script">
@@ -232,7 +232,7 @@ If you want to run them for a specific virtual detector or a specific test use t
 <span class="go">python -m pytest -m detectorintegration ../python/tests/</span>
 </pre></div>
 </div>
-<p>There is a helper test fixture in <code class="docutils literal notranslate"><span class="pre">slsDetectorSoftware/python/tests/conftest.py</span></code> called <code class="docutils literal notranslate"><span class="pre">session_simulator</span></code> that sets up virtual detectors and yields the test for all detectors. The set up is done for every test automatically. Note that the fixture persist over the entire session e.g. the fixture is setup one detector at a time and runs all tests using this fixture before cleaning up and moving on to the next detector. It saves time if the setup and cleanup is expensive.</p>
+<p>There is a helper test fixture in <code class="docutils literal notranslate"><span class="pre">slsDetectorSoftware/python/tests/conftest.py</span></code> called <code class="docutils literal notranslate"><span class="pre">session_simulator</span></code> that sets up virtual detectors and yields the test for all detectors. The set up is done for every test automatically. Note that the fixture persists over the entire session e.g. the fixture is setup one detector at a time and runs all tests using this fixture before cleaning up and moving on to the next detector. It saves time if the setup and cleanup is expensive.</p>
 <p>Example usage:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
 

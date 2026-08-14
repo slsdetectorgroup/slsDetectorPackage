@@ -20,7 +20,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="PatternGenerator" href="pyPatternGenerator.html" />
+    <link rel="next" title="PatternGenerator" href="pypatterngenerator.html" />
     <link rel="prev" title="Power Supply" href="pypower.html" /> 
 </head>
 
@@ -81,7 +81,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#reading-dacs">Reading dacs</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="pyPatternGenerator.html">PatternGenerator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pypatterngenerator.html">PatternGenerator</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pattern.html">Pattern</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Command line</span></p>
@@ -163,7 +163,7 @@
   <section id="examples">
 <h1>Examples<a class="headerlink" href="#examples" title="Link to this heading"></a></h1>
 <p>Some short examples on how to use slsdet. If something is missing don’t hesitate to
-open an issue in our our  <a class="reference external" href="https://github.com/slsdetectorgroup/slsDetectorPackage">github repo</a>.</p>
+open an issue in our  <a class="reference external" href="https://github.com/slsdetectorgroup/slsDetectorPackage">github repo</a>.</p>
 <section id="setting-exposure-time">
 <h2>Setting exposure time<a class="headerlink" href="#setting-exposure-time" title="Link to this heading"></a></h2>
 <p>Setting and reading back exposure time can be done either using a Python
@@ -213,7 +213,7 @@ datetime.timedelta, DurationWrapper or by setting the time in seconds.</p>
 </section>
 <section id="converting-numbers-to-hex">
 <h2>Converting numbers to hex<a class="headerlink" href="#converting-numbers-to-hex" title="Link to this heading"></a></h2>
-<p>Python support entering numbers in  format by using the 0x prefix. However, when reading
+<p>Python supports entering numbers in  format by using the 0x prefix. However, when reading
 back you will get a normal integer. This can then be converted to a hex string representation
 using the built in hex() function.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">slsdet</span><span class="w"> </span><span class="kn">import</span> <span class="n">Detector</span>
@@ -291,7 +291,7 @@ t
 <h2>Non blocking acquire<a class="headerlink" href="#non-blocking-acquire" title="Link to this heading"></a></h2>
 <p>There are mainly two ways to achieve a non blocking acquire when calling from the Python API. One is to manually start
 the detector and the second one is to launch the normal acquire from a different process. Depending on your measurement
-it might also be better to run the other task in a seperate process and use acq in the main thread.
+it might also be better to run the other task in a separate process and use acq in the main thread.
 But lets start looking at the at the manual way:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">slsdet</span><span class="w"> </span><span class="kn">import</span> <span class="n">Detector</span><span class="p">,</span> <span class="n">runStatus</span>
@@ -446,7 +446,7 @@ hang around until the main process exits.</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="pypower.html" class="btn btn-neutral float-left" title="Power Supply" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="pyPatternGenerator.html" class="btn btn-neutral float-right" title="PatternGenerator" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="pypatterngenerator.html" class="btn btn-neutral float-right" title="PatternGenerator" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

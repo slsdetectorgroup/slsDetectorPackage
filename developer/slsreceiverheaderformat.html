@@ -72,7 +72,7 @@
 <li class="toctree-l1"><a class="reference internal" href="pyenums.html">Enums</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pypower.html">Power Supply</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pyexamples.html">Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pyPatternGenerator.html">PatternGenerator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pypatterngenerator.html">PatternGenerator</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pattern.html">Pattern</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Command line</span></p>
@@ -189,7 +189,7 @@
 <div class="line">The <strong>packetNumber</strong> from detector UDP header is modified in <strong>sls_receiver_header</strong> to number of packets caught by receiver for that frame and the bit mask for each packet caught is the <strong>packetsMask</strong>. The packetsMask is a total of 512 bits due to the largest number of packets per frame among our detectors.</div>
 </div>
 <div class="line-block">
-<div class="line">For eg. Jungfrau has 128 packets per frame. If <strong>packetNumeber</strong> is 128, then this frame is complete. If it is 127 or less, it is a partial frame due to missing packets. If one would still like to use it, the <strong>packetsMask</strong> will specify which packet has been received or is missing.</div>
+<div class="line">For eg. Jungfrau has 128 packets per frame. If <strong>packetNumber</strong> is 128, then this frame is complete. If it is 127 or less, it is a partial frame due to missing packets. If one would still like to use it, the <strong>packetsMask</strong> will specify which packet has been received or is missing.</div>
 </div>
 </section>
 

@@ -80,7 +80,7 @@
 <li class="toctree-l1"><a class="reference internal" href="pyenums.html">Enums</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pypower.html">Power Supply</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pyexamples.html">Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pyPatternGenerator.html">PatternGenerator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pypatterngenerator.html">PatternGenerator</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pattern.html">Pattern</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Command line</span></p>
@@ -173,7 +173,7 @@
 <section id="client-to-module">
 <h2>Client to Module<a class="headerlink" href="#client-to-module" title="Link to this heading"></a></h2>
 <figure class="align-center" id="id8">
-<a class="reference external image-reference" href="_images/Client_module_commands.png"><img alt="Client Module Commands" src="_images/Client_module_commands.png" style="width: 700px;" />
+<a class="reference external image-reference" href="_images/Client_module_commands.svg"><img alt="Client Module Commands" src="_images/Client_module_commands.svg" style="width: 700px;" />
 </a>
 <figcaption>
 <p><span class="caption-text">Client Module TCP Commands</span><a class="headerlink" href="#id8" title="Link to this image"></a></p>
@@ -207,7 +207,7 @@ hostname<span class="w"> </span>localhost:1952+localhost:1954+
 <section id="client-to-receiver">
 <h2>Client to Receiver<a class="headerlink" href="#client-to-receiver" title="Link to this heading"></a></h2>
 <figure class="align-center" id="id9">
-<a class="reference external image-reference" href="_images/Client_receiver_commands.png"><img alt="Client Receiver Commands" src="_images/Client_receiver_commands.png" />
+<a class="reference external image-reference" href="_images/Client_receiver_commands.svg"><img alt="Client Receiver Commands" src="_images/Client_receiver_commands.svg" />
 </a>
 <figcaption>
 <p><span class="caption-text">Client Receiver TCP Commands</span><a class="headerlink" href="#id9" title="Link to this image"></a></p>
@@ -247,7 +247,7 @@ rx_hostname<span class="w"> </span>localhost:1984+localhost:1985+
 <section id="module-to-receiver">
 <h2>Module to Receiver<a class="headerlink" href="#module-to-receiver" title="Link to this heading"></a></h2>
 <figure class="align-center" id="id10">
-<a class="reference external image-reference" href="_images/Module_receiver_commands.png"><img alt="Module Receiver Commands" src="_images/Module_receiver_commands.png" />
+<a class="reference external image-reference" href="_images/Module_receiver_commands.svg"><img alt="Module Receiver Commands" src="_images/Module_receiver_commands.svg" />
 </a>
 <figcaption>
 <p><span class="caption-text">Module Receiver UDP Commands</span><a class="headerlink" href="#id10" title="Link to this image"></a></p>
@@ -266,8 +266,8 @@ rx_hostname<span class="w"> </span>localhost:1984+localhost:1985+
 </ul>
 <p><strong>UDP Destination</strong></p>
 <p>Info on where to send the image from the module to.</p>
-<p><strong>UDP Desination IP</strong> - The IP of the receiver PC’s 10 GbE interface, usually found via <code class="docutils literal notranslate"><span class="pre">ifconfig</span></code>. Command: <a class="reference external" href="commandline.html#term-udp_dstip-x.x.x.x-or-auto">udp_dstip</a>. For 1GbE interface and for this command, one can use ‘auto’ as an argument, which will pick up the IP from the <a class="reference external" href="commandline.html#term-rx_hostname-hostname-or-ip-address">rx_hostname command</a>.</p>
-<p><strong>UDP desintation MAC</strong> - Also obtained from the interface using <code class="docutils literal notranslate"><span class="pre">ifconfig</span></code>. For built-in receivers, the module configures this automatically from the <code class="docutils literal notranslate"><span class="pre">UDP</span> <span class="pre">destination</span> <span class="pre">IP</span></code>. For custom receivers, it must be explicitly provided. Command: <a class="reference external" href="commandline.html#term-udp_dstmac-x-x-x-x-x-x">udp_dstmac</a></p>
+<p><strong>UDP Destination IP</strong> - The IP of the receiver PC’s 10 GbE interface, usually found via <code class="docutils literal notranslate"><span class="pre">ifconfig</span></code>. Command: <a class="reference external" href="commandline.html#term-udp_dstip-x.x.x.x-or-auto">udp_dstip</a>. For 1GbE interface and for this command, one can use ‘auto’ as an argument, which will pick up the IP from the <a class="reference external" href="commandline.html#term-rx_hostname-hostname-or-ip-address">rx_hostname command</a>.</p>
+<p><strong>UDP destination MAC</strong> - Also obtained from the interface using <code class="docutils literal notranslate"><span class="pre">ifconfig</span></code>. For built-in receivers, the module configures this automatically from the <code class="docutils literal notranslate"><span class="pre">UDP</span> <span class="pre">destination</span> <span class="pre">IP</span></code>. For custom receivers, it must be explicitly provided. Command: <a class="reference external" href="commandline.html#term-udp_dstmac-x-x-x-x-x-x">udp_dstmac</a></p>
 <p><strong>UDP destination port</strong> - Ensure uniqueness if multiple users share the interface. Command: <a class="reference external" href="commandline.html#term-udp_dstport-n">udp_dstport</a></p>
 <ul class="simple">
 <li><p>50001 - Default Receiver UDP port</p></li>
@@ -290,12 +290,12 @@ udp_srcip<span class="w"> </span>auto<span class="w"> </span><span class="c1"># 
 </div>
 <p><strong>UDP source MAC</strong> - By default, it is set to <code class="docutils literal notranslate"><span class="pre">aa:bb:cc:dd:xx:yy</span></code> where <code class="docutils literal notranslate"><span class="pre">xx</span></code> and <code class="docutils literal notranslate"><span class="pre">yy</span></code> are module row and column indices to differentiate the modules while debugging. Command: <a class="reference external" href="commandline.html#term-udp_srcmac-x-x-x-x-x-x">udp_srcmac</a></p>
 <p><strong>UDP source port</strong> - This is hardcoded in every module to the same value in the detector server and cannot be changed.</p>
-<p>Note: If there is a second UDP port on the module, use ‘udp_dstport2’ or ‘udp_dstip2’etc. See <a class="reference external" href="https://slsdetectorgroup.github.io/devdoc/dataformat.html">here</a> for more detector specific info.</p>
+<p>Note: If there is a second UDP port on the module, use ‘udp_dstport2’ or ‘udp_dstip2’ etc. See <a class="reference external" href="https://slsdetectorgroup.github.io/devdoc/dataformat.html">here</a> for more detector specific info.</p>
 </section>
 <section id="receiver-to-gui">
 <h2>Receiver to GUI<a class="headerlink" href="#receiver-to-gui" title="Link to this heading"></a></h2>
 <figure class="align-center" id="id11">
-<a class="reference external image-reference" href="_images/Receiver_gui_commands.png"><img alt="Receiver GUI Commands" src="_images/Receiver_gui_commands.png" />
+<a class="reference external image-reference" href="_images/Receiver_gui_commands.svg"><img alt="Receiver GUI Commands" src="_images/Receiver_gui_commands.svg" />
 </a>
 <figcaption>
 <p><span class="caption-text">Receiver GUI Commands</span><a class="headerlink" href="#id11" title="Link to this image"></a></p>
@@ -324,7 +324,7 @@ udp_srcip<span class="w"> </span>auto<span class="w"> </span><span class="c1"># 
 <section id="receiver-to-external-processing">
 <h2>Receiver to External Processing<a class="headerlink" href="#receiver-to-external-processing" title="Link to this heading"></a></h2>
 <figure class="align-center" id="id12">
-<a class="reference external image-reference" href="_images/Receiver_external_process_commands.png"><img alt="Click to zoom" src="_images/Receiver_external_process_commands.png" />
+<a class="reference external image-reference" href="_images/Receiver_external_process_commands.svg"><img alt="Click to zoom" src="_images/Receiver_external_process_commands.svg" />
 </a>
 <figcaption>
 <p><span class="caption-text">Receiver External Process Commands</span><a class="headerlink" href="#id12" title="Link to this image"></a></p>

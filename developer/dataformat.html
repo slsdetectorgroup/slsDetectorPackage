@@ -108,7 +108,7 @@
 <li class="toctree-l1"><a class="reference internal" href="pyenums.html">Enums</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pypower.html">Power Supply</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pyexamples.html">Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pyPatternGenerator.html">PatternGenerator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pypatterngenerator.html">PatternGenerator</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pattern.html">Pattern</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Command line</span></p>
@@ -230,7 +230,7 @@
 <h2>Jungfrau<a class="headerlink" href="#jungfrau" title="Link to this heading"></a></h2>
 <section id="single-port-configuration">
 <h3>Single Port Configuration<a class="headerlink" href="#single-port-configuration" title="Link to this heading"></a></h3>
-<a class="reference external image-reference" href="_images/Jungfrau_module.png"><img alt="Jungfrau Module Single Port Configuration" class="align-center" src="_images/Jungfrau_module.png" style="width: 650px;" />
+<a class="reference external image-reference" href="_images/Jungfrau_module.svg"><img alt="Jungfrau Module Single Port Configuration" class="align-center" src="_images/Jungfrau_module.svg" style="width: 650px;" />
 </a>
 <p>By default, only the outer 10GbE interface is enabled, transmitting the full image over a single UDP port. This results in one file per module containing the complete image.</p>
 <dl class="simple">
@@ -244,7 +244,7 @@
 </section>
 <section id="double-port-configuration">
 <h3>Double Port Configuration<a class="headerlink" href="#double-port-configuration" title="Link to this heading"></a></h3>
-<a class="reference external image-reference" href="_images/Jungfrau_two_port.png"><img alt="Jungfrau Module Two Port Configuration" class="align-center" src="_images/Jungfrau_two_port.png" style="width: 500px;" />
+<a class="reference external image-reference" href="_images/Jungfrau_two_port.svg"><img alt="Jungfrau Module Two Port Configuration" class="align-center" src="_images/Jungfrau_two_port.svg" style="width: 500px;" />
 </a>
 <p>If both interfaces are enabled using the <a class="reference external" href="commandline.html#term-numinterfaces-1-2">numinterfaces</a> command on compatible hardware and firmware, the image splits into top and bottom halves sent over two UDP ports:</p>
 <blockquote>
@@ -263,7 +263,7 @@
 </section>
 <section id="read-partial-rows">
 <h3>Read Partial Rows<a class="headerlink" href="#read-partial-rows" title="Link to this heading"></a></h3>
-<a class="reference external image-reference" href="_images/Jungfrau_read_rows.png"><img alt="Jungfrau Module Read Partial Rows Configuration" class="align-center" src="_images/Jungfrau_read_rows.png" style="width: 550px;" />
+<a class="reference external image-reference" href="_images/Jungfrau_read_rows.svg"><img alt="Jungfrau Module Read Partial Rows Configuration" class="align-center" src="_images/Jungfrau_read_rows.svg" style="width: 550px;" />
 </a>
 <p>The number of image rows per port can be adjusted using the <a class="reference external" href="commandline.html#term-readnrows">readnrows</a> command. By default, 512 rows are read, but a smaller value centers the readout vertically (e.g., 8 rows reads 4 above and 4 below the center). Increasing the value symmetrically expands the region toward the top and bottom. Permissible values are multiples of 8.</p>
 <dl class="simple">
@@ -281,7 +281,7 @@
 <h2>Moench<a class="headerlink" href="#moench" title="Link to this heading"></a></h2>
 <section id="id2">
 <h3>Single Port Configuration<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
-<a class="reference external image-reference" href="_images/Moench_module.png"><img alt="Moench Module Single Port Configuration" class="align-center" src="_images/Moench_module.png" style="width: 550px;" />
+<a class="reference external image-reference" href="_images/Moench_module.svg"><img alt="Moench Module Single Port Configuration" class="align-center" src="_images/Moench_module.svg" style="width: 550px;" />
 </a>
 <p>By default, only the outer 10GbE interface is enabled, transmitting the full image over a single UDP port. This results in one file per module containing the complete image.</p>
 <dl class="simple">
@@ -294,7 +294,7 @@
 </section>
 <section id="id3">
 <h3>Double Port Configuration<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
-<a class="reference external image-reference" href="_images/Moench_two_port.png"><img alt="Moench Module Two Port Configuration" class="align-center" src="_images/Moench_two_port.png" style="width: 400px;" />
+<a class="reference external image-reference" href="_images/Moench_two_port.svg"><img alt="Moench Module Two Port Configuration" class="align-center" src="_images/Moench_two_port.svg" style="width: 400px;" />
 </a>
 <p>If both interfaces are enabled using the <a class="reference external" href="commandline.html#term-numinterfaces-1-2">numinterfaces</a> command on compatible hardware and firmware, the image splits into top and bottom halves sent over two UDP ports:</p>
 <blockquote>
@@ -313,7 +313,7 @@
 </section>
 <section id="id9">
 <h3>Read Partial Rows<a class="headerlink" href="#id9" title="Link to this heading"></a></h3>
-<a class="reference external image-reference" href="_images/Moench_read_rows.png"><img alt="Moench Module Read Partial Rows Configuration" class="align-center" src="_images/Moench_read_rows.png" style="width: 400px;" />
+<a class="reference external image-reference" href="_images/Moench_read_rows.svg"><img alt="Moench Module Read Partial Rows Configuration" class="align-center" src="_images/Moench_read_rows.svg" style="width: 400px;" />
 </a>
 <p>The number of image rows per port can be adjusted using the <a class="reference external" href="commandline.html#term-readnrows">readnrows</a> command. By default, 400 rows are read, but a smaller value centers the readout vertically (e.g., 16 rows reads 8 above and 8 below the center). Increasing the value symmetrically expands the region toward the top and bottom. Permissible values are multiples of 16.</p>
 <dl class="simple">
@@ -330,7 +330,7 @@
 <h2>Eiger<a class="headerlink" href="#eiger" title="Link to this heading"></a></h2>
 <section id="default-configuration">
 <h3>Default Configuration<a class="headerlink" href="#default-configuration" title="Link to this heading"></a></h3>
-<a class="reference external image-reference" href="_images/Eiger_module.png"><img alt="Eiger Module Default Configuration" class="align-center" src="_images/Eiger_module.png" style="width: 350px;" />
+<a class="reference external image-reference" href="_images/Eiger_module.svg"><img alt="Eiger Module Default Configuration" class="align-center" src="_images/Eiger_module.svg" style="width: 350px;" />
 </a>
 <p>Each Eiger module has two independent identical readout systems (other than firmware), each with its own control port and <a class="reference external" href="commandline.html#term-hostname">hostname</a> to be configured with. They are referred to as the ‘top’ and ‘bottom’ half modules. The bottom half module is flipped vertically.</p>
 <p>Each half module has 2 parallel UDP ports for 2 chips each. The left UDP port is configured with <a class="reference external" href="commandline.html#term-udp_dstport-n">udp_dstport</a>, while the right UDP port is configured with <a class="reference external" href="commandline.html#term-udp_dstport2-n">udp_dstport2</a>. This is vice versa for the bottom half module.</p>
@@ -346,28 +346,28 @@
 <section id="the-myth-the-legend-the-bottom-ports-demystifying-them">
 <h3>The myth, the legend, the bottom ports: Demystifying them<a class="headerlink" href="#the-myth-the-legend-the-bottom-ports-demystifying-them" title="Link to this heading"></a></h3>
 <figure class="align-center" id="id37">
-<a class="reference external image-reference" href="_images/Eiger_bottom_1.png"><img alt="Eiger Bottom as Firmware gets it" src="_images/Eiger_bottom_1.png" style="width: 350px;" />
+<a class="reference external image-reference" href="_images/Eiger_bottom_1.svg"><img alt="Eiger Bottom as Firmware gets it" src="_images/Eiger_bottom_1.svg" style="width: 350px;" />
 </a>
 <figcaption>
 <p><span class="caption-text">How the firmware gets the images</span><a class="headerlink" href="#id37" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <figure class="align-center" id="id38">
-<a class="reference external image-reference" href="_images/Eiger_bottom_2.png"><img alt="Eiger Bottom after the firmware flips it horizontally" src="_images/Eiger_bottom_2.png" style="width: 350px;" />
+<a class="reference external image-reference" href="_images/Eiger_bottom_2.svg"><img alt="Eiger Bottom after the firmware flips it horizontally" src="_images/Eiger_bottom_2.svg" style="width: 350px;" />
 </a>
 <figcaption>
 <p><span class="caption-text">After the firmware flips it horizontally</span><a class="headerlink" href="#id38" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <figure class="align-center" id="id39">
-<a class="reference external image-reference" href="_images/Eiger_bottom_3.png"><img alt="After the software swaps the udp ports" src="_images/Eiger_bottom_3.png" style="width: 350px;" />
+<a class="reference external image-reference" href="_images/Eiger_bottom_3.svg"><img alt="After the software swaps the udp ports" src="_images/Eiger_bottom_3.svg" style="width: 350px;" />
 </a>
 <figcaption>
 <p><span class="caption-text">After the software swaps the udp ports</span><a class="headerlink" href="#id39" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <figure class="align-center" id="id40">
-<a class="reference external image-reference" href="_images/Eiger_bottom_4.png"><img alt="After the gui has flipped the bottom vertically" src="_images/Eiger_bottom_4.png" style="width: 400px;" />
+<a class="reference external image-reference" href="_images/Eiger_bottom_4.svg"><img alt="After the gui has flipped the bottom vertically" src="_images/Eiger_bottom_4.svg" style="width: 400px;" />
 </a>
 <figcaption>
 <p><span class="caption-text">After the gui has flipped the bottom vertically</span><a class="headerlink" href="#id40" title="Link to this image"></a></p>
@@ -381,7 +381,7 @@
 </section>
 <section id="flip-rows">
 <h3>Flip rows<a class="headerlink" href="#flip-rows" title="Link to this heading"></a></h3>
-<p>One can use the command <a class="reference external" href="commandline.html#term-fliprows-0-1">fliprows</a> to flip the rows vertically for the bottom or top half module. It is sent out to the reciever, but does not flip rows in the output file itself, but rather streams out this info via the json header and thus instructs the GUI to display them correctly.</p>
+<p>One can use the command <a class="reference external" href="commandline.html#term-fliprows-0-1">fliprows</a> to flip the rows vertically for the bottom or top half module. It is sent out to the receiver, but does not flip rows in the output file itself, but rather streams out this info via the json header and thus instructs the GUI to display them correctly.</p>
 </section>
 <section id="gbe-10gbe-interfaces">
 <h3>1GbE/ 10GbE Interfaces<a class="headerlink" href="#gbe-10gbe-interfaces" title="Link to this heading"></a></h3>
@@ -393,7 +393,7 @@
 <p><strong>Datastream</strong>: The <a class="reference external" href="commandline.html#term-datastream-left-right-0-1">datastream</a> command with arguments to specify which port can be used to disable the data streaming from one or both the two UDP ports in a half module. This allows for more flexible configurations, such as reading only two chips or one UDP port of a half module. To specify which half module to activate or deactivate, use the module index (for Eiger, each half module has its own module index).</p>
 <p>Note: Only the activated ports will write data as it does not make sense to write an empty file.</p>
 <p><strong>Read Partial Rows</strong>: The number of image rows per port can be adjusted using the <a class="reference external" href="commandline.html#term-readnrows">readnrows</a> command. By default, 256 rows are read, but a smaller value centers the readout vertically (e.g., 8 rows reads 4 above and 4 below the center). Increasing the value symmetrically expands the region toward the top and bottom. Permissible values depend on dynamic range and 10GbE enable.</p>
-<a class="reference external image-reference" href="_images/Eiger_read_rows.png"><img alt="Eiger Module Read Partial Rows Configuration" class="align-center" src="_images/Eiger_read_rows.png" style="width: 400px;" />
+<a class="reference external image-reference" href="_images/Eiger_read_rows.svg"><img alt="Eiger Module Read Partial Rows Configuration" class="align-center" src="_images/Eiger_read_rows.svg" style="width: 400px;" />
 </a>
 <dl class="simple">
 <dt>Total image size per UDP Port = 8,192 bytes</dt><dd><ul class="simple">
@@ -410,7 +410,7 @@
 <p>The Eiger quad is a special hardware configuration that uses only the top half-module to create a quad layout. In this setup, the second half of the top module—normally associated with the right-side UDP port—is used to represent the inverted bottom half of the quad.</p>
 <p>As with any standard half-module, it includes one control TCP port (with a hostname) and two UDP data ports (top and bottom). When the quad option is enabled, the firmware automatically flips the second UDP port vertically.</p>
 <p>In this configuration, the fliprows command cannot be used to flip the entire half-module. Instead, the receiver automatically includes row-flipping information only for the second UDP port in the JSON header, so the GUI can apply the correct orientation during display</p>
-<a class="reference external image-reference" href="_images/Eiger_quad.png"><img alt="Eiger Quad Configuration" class="align-center" src="_images/Eiger_quad.png" style="width: 300px;" />
+<a class="reference external image-reference" href="_images/Eiger_quad.svg"><img alt="Eiger Quad Configuration" class="align-center" src="_images/Eiger_quad.svg" style="width: 300px;" />
 </a>
 <p>Image size per UDP port = same as a normal Eiger UDP port</p>
 </section>
@@ -419,7 +419,7 @@
 <h2>Mythen3<a class="headerlink" href="#mythen3" title="Link to this heading"></a></h2>
 <section id="id25">
 <h3>Default Configuration<a class="headerlink" href="#id25" title="Link to this heading"></a></h3>
-<a class="reference external image-reference" href="_images/Mythen3_module.png"><img alt="Mythen3 Module Default Configuration" class="align-center" src="_images/Mythen3_module.png" />
+<a class="reference external image-reference" href="_images/Mythen3_module.svg"><img alt="Mythen3 Module Default Configuration" class="align-center" src="_images/Mythen3_module.svg" />
 </a>
 <p>Each Mythen3 module is a 1D detector with 10 chips, each with 128 channels. Each channel has 3 counters that are enabled by default.</p>
 <dl class="simple">
@@ -434,7 +434,7 @@
 </section>
 <section id="counters">
 <h3>Counters<a class="headerlink" href="#counters" title="Link to this heading"></a></h3>
-<p>If all 3 counters are enabeld, the frame size for each channel is multiplied by 3. The counters are stored consecutively per channel. One can disable one or more of the counters using the <a class="reference external" href="commandline.html#term-counters-i0-i1-i2-...">counters</a> command. The frame size will then be reduced accordingly.</p>
+<p>If all 3 counters are enabled, the frame size for each channel is multiplied by 3. The counters are stored consecutively per channel. One can disable one or more of the counters using the <a class="reference external" href="commandline.html#term-counters-i0-i1-i2-...">counters</a> command. The frame size will then be reduced accordingly.</p>
 <dl class="simple">
 <dt>Image size = 10,240 bytes</dt><dd><ul class="simple">
 <li><p>10 chips (1 x 10 grid)</p></li>
@@ -458,7 +458,7 @@
 <h2>Gotthard2<a class="headerlink" href="#gotthard2" title="Link to this heading"></a></h2>
 <section id="id33">
 <h3>Default Configuration<a class="headerlink" href="#id33" title="Link to this heading"></a></h3>
-<a class="reference external image-reference" href="_images/Gotthard2_module.png"><img alt="Gotthard2 Module Default Configuration" class="align-center" src="_images/Gotthard2_module.png" />
+<a class="reference external image-reference" href="_images/Gotthard2_module.svg"><img alt="Gotthard2 Module Default Configuration" class="align-center" src="_images/Gotthard2_module.svg" />
 </a>
 <p>Each Gotthard2 module is a 1D detector with 10 chips, each with 128 channels.</p>
 <dl class="simple">

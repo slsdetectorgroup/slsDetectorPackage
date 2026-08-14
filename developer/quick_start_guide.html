@@ -83,7 +83,7 @@
 <li class="toctree-l1"><a class="reference internal" href="pyenums.html">Enums</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pypower.html">Power Supply</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pyexamples.html">Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pyPatternGenerator.html">PatternGenerator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pypatterngenerator.html">PatternGenerator</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pattern.html">Pattern</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Command line</span></p>
@@ -219,7 +219,7 @@ rx_hostname<span class="w"> </span>mpc1922
 udp_dstport<span class="w"> </span><span class="m">50012</span>
 
 <span class="c1"># 1g data out</span>
-<span class="c1"># source udp ips must be same subnet at destintaion udp ips</span>
+<span class="c1"># source udp ips must be same subnet at destination udp ips</span>
 <span class="c1"># udp_srcip 192.168.1.112</span>
 <span class="c1"># destination udp ip picked up from rx_hostname (if auto)</span>
 <span class="c1"># udp_dstip auto</span>
@@ -239,7 +239,7 @@ hostname<span class="w"> </span>bchipxxx
 <span class="c1"># sets destination udp ports (not needed, default is 50001)</span>
 udp_dstport<span class="w"> </span><span class="m">50012</span>
 
-<span class="c1"># source udp ips must be same subnet at destintaion udp ips</span>
+<span class="c1"># source udp ips must be same subnet at destination udp ips</span>
 udp_srcip<span class="w"> </span><span class="m">192</span>.168.1.112
 
 <span class="c1"># destination udp ip</span>
@@ -268,7 +268,7 @@ rx_hostname<span class="w"> </span>mpc1922
 <span class="c1"># increasing udp ports (multi detector command)</span>
 udp_dstport<span class="w"> </span><span class="m">50012</span>
 
-<span class="c1"># source udp ips must be same subnet at destintaion udp ips</span>
+<span class="c1"># source udp ips must be same subnet at destination udp ips</span>
 <span class="m">0</span>:udp_srcip<span class="w"> </span><span class="m">192</span>.168.1.112
 <span class="m">1</span>:udp_srcip<span class="w"> </span><span class="m">192</span>.168.1.114
 
@@ -312,7 +312,7 @@ fpath<span class="w"> </span>/tmp
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <div class="line-block">
-<div class="line">The streaming high water mark (commmand: rx_zmqhwm) and the receiving high water mark (command: zmqhwm) is by default the lib zmq’s default (currently 1000).</div>
+<div class="line">The streaming high water mark (command: rx_zmqhwm) and the receiving high water mark (command: zmqhwm) is by default the lib zmq’s default (currently 1000).</div>
 <div class="line">At Gui startup, these values are set to 2. Hence, for very fast detectors, many frames will be dropped to be able to view the latest in the gui.</div>
 <div class="line">One can still change this setting in the gui in the Plot tab (ZMQ Streaming), from the command line or API.</div>
 <div class="line">Both hwm’s can be set to a -1 to use the lib’s default.</div>

@@ -786,7 +786,7 @@ int set_timing_mode(int file_des) {
 #ifdef EIGERD
         case GATED:
         case BURST_TRIGGER:
-#elif MYTHEN3D
+#elif defined(MYTHEN3D) || defined(XILINX_CHIPTESTBOARDD)
         case GATED:
         case TRIGGER_GATED:
 #endif
@@ -1179,12 +1179,20 @@ int processDACEnums(enum dacIndex ind, int val, bool mV) {
         if (val != GET_FLAG) {
             ret = setDAC(serverDacIndex, val, mV, mess);
             // handle if set by user individually
-            if (serverDacIndex == E_VCMP_LL || serverDacIndex == E_VCMP_LR ||
-                serverDacIndex == E_VCMP_RL || serverDacIndex == E_VCMP_RR ||
-                serverDacIndex == E_VRPREAMP || serverDacIndex == E_VCP) {
+            switch (serverDacIndex) {
+            case E_VCMP_LL:
+            case E_VCMP_LR:
+            case E_VCMP_RL:
+            case E_VCMP_RR:
+            case E_VTHRESHOLD:
+            case E_VRPREAMP:
+            case E_VCP:
                 setSettings(UNDEFINED, mess);
                 LOG(logERROR, ("Settings has been changed "
                                "to undefined (changed specific dacs)\n"));
+                break;
+            default:
+                break;
             }
         }
         // get

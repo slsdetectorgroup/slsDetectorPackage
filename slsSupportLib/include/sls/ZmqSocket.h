@@ -95,22 +95,23 @@ class ZmqSocket {
 
   public:
     // Socket Options for optimization
-    // ZMQ_LINGER default is already -1 means no messages discarded. use this
-    // options if optimizing required ZMQ_SNDHWM default is 0 means no limit.
-    // use this to optimize if optimizing required eg. int value = -1; if
-    // (zmq_setsockopt(socketDescriptor, ZMQ_LINGER, &value,sizeof(value))) {
-    //	Close();
+    // ZMQ_LINGER default is already -1 means no messages discarded.
+    // ZMQ_RCVHWM default is from zmqlib (1000). If not -1, calls
+    // SetReceiveHighWaterMark, also setting receive buffer size accordingly
     /** Constructor for a subscriber socket */
-    ZmqSocket(const char *const hostname_or_ip, const uint16_t portnumber);
+    ZmqSocket(const char *const hostname_or_ip, const uint16_t portnumber,
+              int hwm = -1);
 
-    /** Constructor for a publisher socket */
-    ZmqSocket(const uint16_t portnumber);
+    /** Constructor for a publisher socket with high water mark as -1 to mean
+     * default from zmqlib (1000). If hwm is not -1, it calls
+     * SetSendHighWaterMark, also setting send buffer size accordingly*/
+    ZmqSocket(const uint16_t portnumber, int hwm = -1);
 
     /** Returns high water mark for outbound messages */
     int GetSendHighWaterMark();
 
     /** Sets high water mark for outbound messages. Default 1000 (zmqlib). Also
-     * changes send buffer size depending on hwm. Must rebind.  */
+     * changes send buffer size depending on hwm. Must rebind or reconnect.  */
     void SetSendHighWaterMark(int limit);
 
     /** Returns high water mark for inbound messages */

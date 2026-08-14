@@ -236,7 +236,6 @@ TEST_CASE("general - cant put if receiver is not idle",
             det.setAcquisitionIndex(prev_findex[i], {i});
             det.setFileWrite(prev_fwrite[i], {i});
             det.setRxFifoDepth(prev_fifodepth[i], {i});
-            det.setRxHostname(rx_hostname[i], {i});
         }
     }
 }

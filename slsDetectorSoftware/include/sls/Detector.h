@@ -371,10 +371,10 @@ class Detector {
     Result<defs::timingMode> getTimingMode(Positions pos = {}) const;
 
     /**
-     * [Jungfrau][Moench][CTB][Gotthard2][Xilinx CTB]
-     * Options: AUTO_TIMING, TRIGGER_EXPOSURE \n [Mythen3] Options: AUTO_TIMING,
-     * TRIGGER_EXPOSURE, GATED, TRIGGER_GATED \n [Eiger] Options: AUTO_TIMING,
-     * TRIGGER_EXPOSURE, GATED, BURST_TRIGGER
+     * [Jungfrau][Moench][CTB][Gotthard2]
+     * Options: AUTO_TIMING, TRIGGER_EXPOSURE \n [Mythen3][Xilinx CTB] Options:
+     * AUTO_TIMING, TRIGGER_EXPOSURE, GATED, TRIGGER_GATED \n [Eiger] Options:
+     * AUTO_TIMING, TRIGGER_EXPOSURE, GATED, BURST_TRIGGER
      */
     void setTimingMode(defs::timingMode value, Positions pos = {});
 

@@ -196,6 +196,7 @@ void Module::setSettings(detectorSettings isettings) {
             "Cannot set settings for Eiger. Use threshold energy.");
     }
     sendToDetector<int>(F_SET_SETTINGS, isettings);
+    updateRxThresholdEnergyMetadata();
 }
 
 int Module::getThresholdEnergy() const {
@@ -414,9 +415,14 @@ void Module::setAllThresholdEnergy(std::array<int, 3> e_eV,
         throw RuntimeError("setThresholdEnergyAndSettings: Could not set "
                            "settings in Module");
     }
+}
 
+void Module::updateRxThresholdEnergyMetadata() {
     if (shm()->useReceiverFlag) {
-        sendToReceiver(F_RECEIVER_SET_ALL_THRESHOLD, e_eV, nullptr);
+        if (shm()->detType == MYTHEN3) {
+            auto e_eV = getAllThresholdEnergy();
+            sendToReceiver(F_RECEIVER_SET_ALL_THRESHOLD, e_eV, nullptr);
+        }
     }
 }
 
@@ -477,6 +483,7 @@ int Module::getAllTrimbits() const {
 
 void Module::setAllTrimbits(int val) {
     sendToDetector<int>(F_SET_ALL_TRIMBITS, val);
+    updateRxThresholdEnergyMetadata();
 }
 
 std::vector<int> Module::getTrimEn() const {
@@ -541,39 +548,15 @@ void Module::setSynchronization(const bool value) {
 }
 
 std::vector<int> Module::getBadChannels() const {
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(F_GET_BAD_CHANNELS);
-    client.setFnum(F_GET_BAD_CHANNELS);
-    if (client.Receive<int>() == FAIL) {
-        throw DetectorError("Detector " + std::to_string(moduleIndex) +
-                            " returned error: " + client.readErrorMessage());
+    auto retval = sendToDetectorVarVector<int>(F_GET_BAD_CHANNELS);
+    for (size_t i = 0; i < retval.size(); ++i) {
+        LOG(logDEBUG1) << i << ":" << retval[i];
     }
-    // receive badchannels
-    auto nch = client.Receive<int>();
-    std::vector<int> badchannels(nch);
-    if (nch > 0) {
-        client.Receive(badchannels);
-        for (size_t i = 0; i < badchannels.size(); ++i) {
-            LOG(logDEBUG1) << i << ":" << badchannels[i];
-        }
-    }
-    return badchannels;
+    return retval;
 }
 
 void Module::setBadChannels(std::vector<int> list) {
-    auto nch = static_cast<int>(list.size());
-    LOG(logDEBUG1) << "Sending bad channels to detector, nch:" << nch;
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(F_SET_BAD_CHANNELS);
-    client.setFnum(F_SET_BAD_CHANNELS);
-    client.Send(nch);
-    if (nch > 0) {
-        client.Send(list);
-    }
-    if (client.Receive<int>() == FAIL) {
-        throw DetectorError("Detector " + std::to_string(moduleIndex) +
-                            " returned error: " + client.readErrorMessage());
-    }
+    sendToDetectorVarVector(F_SET_BAD_CHANNELS, list);
 }
 
 int Module::getRow() const { return sendToDetector<int>(F_GET_ROW); }
@@ -808,6 +791,7 @@ void Module::setDAC(int val, dacIndex index, bool mV) {
     }
     int args[]{static_cast<int>(index), static_cast<int>(mV), val};
     sendToDetector<int>(F_SET_DAC, args);
+    updateRxThresholdEnergyMetadata();
 }
 
 bool Module::getPowerChip() const {
@@ -833,21 +817,17 @@ bool Module::isPowerEnabled(defs::powerIndex index) const {
 
 void Module::setPowerEnabled(const std::vector<defs::powerIndex> &indices,
                              bool enable) {
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(F_SET_POWER);
-    client.setFnum(F_SET_POWER);
-    int count = indices.size();
-    client.Send(count);
+    int count = static_cast<int>(indices.size());
     std::vector<int> indices_int(count);
-    for (size_t i = 0; i < indices.size(); ++i) {
+    for (int i = 0; i < count; ++i) {
         indices_int[i] = static_cast<int>(indices[i]);
     }
+    // sends a variable vector and an enable
+    auto client = createDetectorSocket();
+    client.sendCommand(F_SET_POWER, &count, sizeof(count));
     client.Send(indices_int);
     client.Send(static_cast<int>(enable));
-    if (client.Receive<int>() == FAIL) {
-        throw DetectorError("Detector " + std::to_string(moduleIndex) +
-                            " returned error: " + client.readErrorMessage());
-    }
+    client.readReply(nullptr, 0);
 }
 
 int Module::getPowerADC(defs::powerIndex index) const {
@@ -1022,72 +1002,15 @@ double Module::getReceiverProgress() const {
 }
 
 std::vector<int64_t> Module::getFramesCaughtByReceiver() const {
-    // TODO!(Erik) Refactor
-    LOG(logDEBUG1) << "Getting frames caught";
-    if (shm()->useReceiverFlag) {
-        auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
-        client.Send(F_GET_RECEIVER_FRAMES_CAUGHT);
-        client.setFnum(F_GET_RECEIVER_FRAMES_CAUGHT);
-        if (client.Receive<int>() == FAIL) {
-            throw ReceiverError(
-                "Receiver " + std::to_string(moduleIndex) +
-                " returned error: " + client.readErrorMessage());
-        } else {
-            auto nports = client.Receive<int>();
-            std::vector<int64_t> retval(nports);
-            client.Receive(retval);
-            LOG(logDEBUG1) << "Frames caught of Receiver" << moduleIndex << ": "
-                           << ToString(retval);
-            return retval;
-        }
-    }
-    throw RuntimeError("No receiver to get frames caught.");
+    return sendToReceiverVarVector<int64_t>(F_GET_RECEIVER_FRAMES_CAUGHT);
 }
 
 std::vector<int64_t> Module::getNumMissingPackets() const {
-    // TODO!(Erik) Refactor
-    LOG(logDEBUG1) << "Getting num missing packets";
-    if (shm()->useReceiverFlag) {
-        auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
-        client.Send(F_GET_NUM_MISSING_PACKETS);
-        client.setFnum(F_GET_NUM_MISSING_PACKETS);
-        if (client.Receive<int>() == FAIL) {
-            throw ReceiverError(
-                "Receiver " + std::to_string(moduleIndex) +
-                " returned error: " + client.readErrorMessage());
-        } else {
-            auto nports = client.Receive<int>();
-            std::vector<int64_t> retval(nports);
-            client.Receive(retval);
-            LOG(logDEBUG1) << "Missing packets of Receiver" << moduleIndex
-                           << ": " << ToString(retval);
-            return retval;
-        }
-    }
-    throw RuntimeError("No receiver to get missing packets.");
+    return sendToReceiverVarVector<int64_t>(F_GET_NUM_MISSING_PACKETS);
 }
 
 std::vector<int64_t> Module::getReceiverCurrentFrameIndex() const {
-    // TODO!(Erik) Refactor
-    LOG(logDEBUG1) << "Getting frame index";
-    if (shm()->useReceiverFlag) {
-        auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
-        client.Send(F_GET_RECEIVER_FRAME_INDEX);
-        client.setFnum(F_GET_RECEIVER_FRAME_INDEX);
-        if (client.Receive<int>() == FAIL) {
-            throw ReceiverError(
-                "Receiver " + std::to_string(moduleIndex) +
-                " returned error: " + client.readErrorMessage());
-        } else {
-            auto nports = client.Receive<int>();
-            std::vector<int64_t> retval(nports);
-            client.Receive(retval);
-            LOG(logDEBUG1) << "Frame index of Receiver" << moduleIndex << ": "
-                           << ToString(retval);
-            return retval;
-        }
-    }
-    throw RuntimeError("No receiver to get frame index.");
+    return sendToReceiverVarVector<int64_t>(F_GET_RECEIVER_FRAME_INDEX);
 }
 
 uint64_t Module::getNextFrameNumber() const {
@@ -1435,46 +1358,11 @@ void Module::setUDPDataStream(const portPosition port, const bool enable) {
 }
 
 void Module::updateRxUDPPortDisableMetadata(const std::vector<int> &disable) {
-    if (!shm()->useReceiverFlag) {
-        return;
-    }
-    LOG(logDEBUG) << "Updating UDP port disable metadata in Receiver 0";
-    auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
-
-    client.Send(F_RECEIVER_SET_UDP_PORT_DISABLE_META);
-    client.setFnum(F_RECEIVER_SET_UDP_PORT_DISABLE_META);
-
-    auto nports = static_cast<int>(disable.size());
-    client.Send(nports);
-    if (nports > 0) {
-        client.Send(disable);
-    }
-    if (client.Receive<int>() == FAIL) {
-        throw ReceiverError("Receiver " + std::to_string(moduleIndex) +
-                            " returned error: " + client.readErrorMessage());
-    }
+    sendToReceiverVarVector(F_RECEIVER_SET_UDP_PORT_DISABLE_META, disable);
 }
 
 std::vector<int> Module::getRxUDPPortDisableMetadata() const {
-    if (!shm()->useReceiverFlag) {
-        throw RuntimeError("No receiver to get disabled udp port indices.");
-    }
-
-    LOG(logDEBUG) << "Getting UDP port disable metadata in Receiver 0";
-    auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
-
-    client.Send(F_RECEIVER_GET_UDP_PORT_DISABLE_META);
-    client.setFnum(F_RECEIVER_GET_UDP_PORT_DISABLE_META);
-    if (client.Receive<int>() == FAIL) {
-        throw ReceiverError("Receiver " + std::to_string(moduleIndex) +
-                            " returned error: " + client.readErrorMessage());
-    }
-    auto nports = client.Receive<int>();
-    std::vector<int> retval(nports);
-    if (nports > 0) {
-        client.Receive(retval);
-    }
-    return retval;
+    return sendToReceiverVarVector<int>(F_RECEIVER_GET_UDP_PORT_DISABLE_META);
 }
 
 // Receiver Config
@@ -1638,93 +1526,39 @@ void Module::setRxArping(bool enable) {
 }
 
 std::vector<defs::ROI> Module::getRxROI() const {
-    LOG(logDEBUG1) << "Getting receiver ROI for Module " << moduleIndex;
-    // check number of ports
-    if (!shm()->useReceiverFlag) {
-        throw RuntimeError("No receiver to get ROI.");
-    }
-    auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
-    client.Send(F_RECEIVER_GET_RECEIVER_ROI);
-    client.setFnum(F_RECEIVER_GET_RECEIVER_ROI);
-    auto nPorts = client.Receive<int>();
-    std::vector<ROI> retval(nPorts);
-    if (nPorts > 0)
-        client.Receive(retval);
-    if (nPorts != shm()->numUDPInterfaces) {
+    auto retval = sendToReceiverVarVector<ROI>(F_RECEIVER_GET_RECEIVER_ROI);
+    auto nPorts = retval.size();
+    if (static_cast<int>(nPorts) != shm()->numUDPInterfaces) {
         throw RuntimeError(
             "Invalid number of rois: " + std::to_string(nPorts) +
             ". Expected: " + std::to_string(shm()->numUDPInterfaces));
     }
-    LOG(logDEBUG1) << "ROI of Receiver" << moduleIndex << ": "
-                   << ToString(retval);
     return retval;
 }
 
 void Module::setRxROI(const std::vector<defs::ROI> &portRois) {
-    LOG(logDEBUG) << "Sending to receiver " << moduleIndex
-                  << " [roi: " << ToString(portRois) << ']';
-    if (!shm()->useReceiverFlag) {
-        throw RuntimeError("No receiver to set ROI.");
-    }
     if ((int)portRois.size() != shm()->numUDPInterfaces) {
         throw RuntimeError(
             "Invalid number of ROIs: " + std::to_string(portRois.size()) +
             ". Expected: " + std::to_string(shm()->numUDPInterfaces));
     }
-    // check number of ports
-    auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
-    client.Send(F_RECEIVER_SET_RECEIVER_ROI);
-    client.setFnum(F_RECEIVER_SET_RECEIVER_ROI);
-    int size = static_cast<int>(portRois.size());
-    client.Send(size);
-    if (size > 0)
-        client.Send(portRois);
-    if (client.Receive<int>() == FAIL) {
-        throw ReceiverError("Receiver " + std::to_string(moduleIndex) +
-                            " returned error: " + client.readErrorMessage());
-    }
+    sendToReceiverVarVector(F_RECEIVER_SET_RECEIVER_ROI, portRois);
 }
 
 std::vector<slsDetectorDefs::ROI> Module::getRxROIMetadata() const {
-    LOG(logDEBUG1) << "Getting receiver ROI metadata for Module "
-                   << moduleIndex;
-    // check number of ports
-    if (!shm()->useReceiverFlag) {
-        throw RuntimeError("No receiver to get ROI metadata.");
-    }
-    auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
-    client.Send(F_RECEIVER_GET_ROI_METADATA);
-    client.setFnum(F_RECEIVER_GET_ROI_METADATA);
-    auto size = client.Receive<int>();
-    std::vector<slsDetectorDefs::ROI> retval(size);
-    if (size > 0)
-        client.Receive(retval);
-    if (size == 0) {
-        throw RuntimeError("Invalid number of ROI metadata: " +
-                           std::to_string(size) + ". Min: 1.");
-    }
+    auto retval = sendToReceiverVarVector<ROI>(F_RECEIVER_GET_ROI_METADATA);
+    if (retval.size() == 0)
+        throw RuntimeError("Invalid number of ROI metadata: 0. Min: 1.");
     LOG(logDEBUG1) << "ROI metadata of Receiver: " << ToString(retval);
     return retval;
 }
 
 void Module::setRxROIMetadata(const std::vector<slsDetectorDefs::ROI> &args) {
-    LOG(logDEBUG) << "Sending to receiver " << moduleIndex
-                  << " [roi metadata: " << ToString(args) << ']';
-    auto receiver = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
-    receiver.Send(F_RECEIVER_SET_RECEIVER_ROI_METADATA);
-    receiver.setFnum(F_RECEIVER_SET_RECEIVER_ROI_METADATA);
-    int size = static_cast<int>(args.size());
-    receiver.Send(size);
-    if (size > 0)
-        receiver.Send(args);
-    if (size < 1) {
+    if (args.size() < 1) {
         throw RuntimeError("Invalid number of ROI metadata: " +
-                           std::to_string(size) + ". Min: 1.");
+                           std::to_string(args.size()) + ". Min: 1.");
     }
-    if (receiver.Receive<int>() == FAIL) {
-        throw ReceiverError("Receiver " + std::to_string(moduleIndex) +
-                            " returned error: " + receiver.readErrorMessage());
-    }
+    sendToReceiverVarVector(F_RECEIVER_SET_RECEIVER_ROI_METADATA, args);
 }
 
 // File
@@ -1935,17 +1769,7 @@ void Module::setRateCorrection(int64_t t) {
 }
 
 void Module::sendReceiverRateCorrections(const std::vector<int64_t> &t) {
-    LOG(logDEBUG) << "Sending to receiver 0 [rate corrections: " << ToString(t)
-                  << ']';
-    auto receiver = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
-    receiver.Send(F_SET_RECEIVER_RATE_CORRECT);
-    receiver.setFnum(F_SET_RECEIVER_RATE_CORRECT);
-    receiver.Send(static_cast<int>(t.size()));
-    receiver.Send(t);
-    if (receiver.Receive<int>() == FAIL) {
-        throw ReceiverError("Receiver " + std::to_string(moduleIndex) +
-                            " returned error: " + receiver.readErrorMessage());
-    }
+    sendToReceiverVarVector(F_SET_RECEIVER_RATE_CORRECT, t);
 }
 
 bool Module::getInterruptSubframe() const {
@@ -2189,50 +2013,41 @@ void Module::sendVetoPhoton(const int chipIndex,
                             const std::vector<int> &gainIndices,
                             const std::vector<int> &values) {
     const int nch = gainIndices.size();
-    if (gainIndices.size() != values.size()) {
-        throw RuntimeError("Number of Gain Indices and values do not match! "
-                           "Gain Indices size: " +
-                           std::to_string(gainIndices.size()) +
-                           ", values size: " + std::to_string(values.size()));
+    if (nch != static_cast<int>(values.size())) {
+        std::ostringstream oss;
+        oss << "Number of Gain Indices and values do not match! Gain Indices "
+               "size: "
+            << nch << ", values size: " << values.size();
+        throw RuntimeError(oss.str());
     }
     LOG(logDEBUG1) << "Sending veto photon/file to detector [chip:" << chipIndex
                    << ", nch:" << nch << "]";
-
     const int args[]{chipIndex, nch};
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(F_SET_VETO_PHOTON);
-    client.setFnum(F_SET_VETO_PHOTON);
-    client.Send(args);
+    auto client = createDetectorSocket();
+    client.sendCommand(F_SET_VETO_PHOTON, args, sizeof(args));
     client.Send(gainIndices);
     client.Send(values);
-    if (client.Receive<int>() == FAIL) {
-        throw DetectorError("Detector " + std::to_string(moduleIndex) +
-                            " returned error: " + client.readErrorMessage());
-    }
+    client.readReply(nullptr, 0);
 }
 
 void Module::getVetoPhoton(const int chipIndex,
                            const std::string &fname) const {
     LOG(logDEBUG1) << "Getting veto photon [" << chipIndex << "]\n";
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(F_GET_VETO_PHOTON);
-    client.setFnum(F_GET_VETO_PHOTON);
-    client.Send(chipIndex);
-    if (client.Receive<int>() == FAIL) {
-        throw DetectorError("Detector " + std::to_string(moduleIndex) +
-                            " returned error: " + client.readErrorMessage());
-    }
-
-    auto nch = client.Receive<int>();
-    if (nch != shm()->nChan.x) {
-        throw DetectorError("Could not get veto photon. Expected " +
-                            std::to_string(shm()->nChan.x) + " channels, got " +
-                            std::to_string(nch));
-    }
+    auto client = createDetectorSocket();
+    client.sendCommand(F_GET_VETO_PHOTON, &chipIndex, sizeof(chipIndex));
+    int nch = 0;
+    client.readReply(&nch, sizeof(nch));
     std::vector<int> gainIndices(nch);
     std::vector<int> values(nch);
     client.Receive(gainIndices);
     client.Receive(values);
+
+    if (nch != shm()->nChan.x) {
+        std::ostringstream oss;
+        oss << "Could not get veto photon. Expected " << shm()->nChan.x
+            << " channels, got " << nch;
+        throw DetectorError(oss.str());
+    }
 
     // save to file
     std::ofstream outfile(fname);
@@ -2313,10 +2128,10 @@ void Module::setVetoPhoton(const int chipIndex, const int numPhotons,
     }
     // check size
     if ((int)gainIndices.size() != shm()->nChan.x) {
-        throw RuntimeError("Could not set veto photon. Invalid number of "
-                           "entries in file. Expected " +
-                           std::to_string(shm()->nChan.x) + ", read " +
-                           std::to_string(gainIndices.size()));
+        std::ostringstream oss;
+        oss << "Could not set veto photon. Invalid number of entries in file. "
+            << "Expected " << shm()->nChan.x << ", read " << gainIndices.size();
+        throw RuntimeError(oss.str());
     }
 
     sendVetoPhoton(chipIndex, gainIndices, values);
@@ -2733,17 +2548,13 @@ std::string Module::getPatternFileName() const {
 }
 
 void Module::setPattern(const Pattern &pat, const std::string &fname) {
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(F_SET_PATTERN);
-    client.setFnum(F_SET_PATTERN);
-    client.Send(pat.data(), pat.size());
     char args[MAX_STR_LENGTH]{};
     strcpy_safe(args, fname.c_str());
+
+    auto client = createDetectorSocket();
+    client.sendCommand(F_SET_PATTERN, pat.data(), pat.size());
     client.Send(args);
-    if (client.Receive<int>() == FAIL) {
-        throw DetectorError("Detector " + std::to_string(moduleIndex) +
-                            " returned error: " + client.readErrorMessage());
-    }
+    client.readReply(nullptr, 0);
 }
 
 Pattern Module::getPattern() {
@@ -2846,69 +2657,44 @@ void Module::startPattern() { sendToDetector(F_START_PATTERN); }
 // Json Header specific
 
 std::map<std::string, std::string> Module::getAdditionalJsonHeader() const {
-    // TODO, refactor this function with a more robust sending.
-    // Now assuming whitespace separated key value
-    if (!shm()->useReceiverFlag) {
-        throw RuntimeError("Set rx_hostname first to use receiver parameters "
-                           "(zmq json header)");
+    auto vec = sendToReceiverVarVector<char>(F_GET_ADDITIONAL_JSON_HEADER);
+
+    // convert vector to string
+    std::string longString(vec.begin(), vec.end());
+    // convert string (space separated) to map of key-value pairs
+    std::map<std::string, std::string> retval;
+    std::istringstream iss(longString);
+    std::string key, value;
+    while (iss >> key) {
+        iss >> value;
+        retval[key] = value;
     }
-    auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
-    client.Send(F_GET_ADDITIONAL_JSON_HEADER);
-    client.setFnum(F_GET_ADDITIONAL_JSON_HEADER);
-    if (client.Receive<int>() == FAIL) {
-        throw ReceiverError("Receiver " + std::to_string(moduleIndex) +
-                            " returned error: " + client.readErrorMessage());
-    } else {
-        auto size = client.Receive<int>();
-        std::string buff(size, '\0');
-        std::map<std::string, std::string> retval;
-        if (size > 0) {
-            client.Receive(&buff[0], buff.size());
-            std::istringstream iss(buff);
-            std::string key, value;
-            while (iss >> key) {
-                iss >> value;
-                retval[key] = value;
-            }
-        }
-        LOG(logDEBUG) << "Getting additional json header " << ToString(retval);
-        return retval;
-    }
+    LOG(logDEBUG) << "Getting additional json header " << ToString(retval);
+    return retval;
 }
 
 void Module::setAdditionalJsonHeader(
     const std::map<std::string, std::string> &jsonHeader) {
-    if (!shm()->useReceiverFlag) {
-        throw RuntimeError("Set rx_hostname first to use receiver parameters "
-                           "(zmq json header)");
-    }
+    // validate
     for (auto &it : jsonHeader) {
-        if (it.first.empty() || it.first.length() > SHORT_STR_LENGTH ||
-            it.second.length() > SHORT_STR_LENGTH) {
-            throw RuntimeError(
-                it.first + " or " + it.second +
-                " pair has invalid size. "
-                "Key cannot be empty. Both can have max 20 characters");
+        auto key = it.first;
+        auto value = it.second;
+        if (key.empty() || key.length() > SHORT_STR_LENGTH ||
+            value.length() > SHORT_STR_LENGTH) {
+            throw RuntimeError(key + " or " + value +
+                               " pair has invalid size. Key cannot be empty. "
+                               "Both can have max 20 characters");
         }
     }
+    // convert map to string (space separated)
     std::ostringstream oss;
     for (auto &it : jsonHeader)
         oss << it.first << ' ' << it.second << ' ';
-    auto buff = oss.str();
-    const auto size = static_cast<int>(buff.size());
-    LOG(logDEBUG) << "Sending to receiver additional json header "
-                  << ToString(jsonHeader);
-    auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
-    client.Send(F_SET_ADDITIONAL_JSON_HEADER);
-    client.setFnum(F_SET_ADDITIONAL_JSON_HEADER);
-    client.Send(size);
-    if (size > 0)
-        client.Send(&buff[0], buff.size());
+    auto longString = oss.str();
+    // convert string to vector<char> to send over socket (variable vector impl)
+    std::vector<char> args(longString.begin(), longString.end());
 
-    if (client.Receive<int>() == FAIL) {
-        throw ReceiverError("Receiver " + std::to_string(moduleIndex) +
-                            " returned error: " + client.readErrorMessage());
-    }
+    sendToReceiverVarVector(F_SET_ADDITIONAL_JSON_HEADER, args);
 }
 
 std::string Module::getAdditionalJsonParameter(const std::string &key) const {
@@ -3090,23 +2876,12 @@ IpAddr Module::getLastClientIP() const {
 }
 
 std::string Module::executeCommand(const std::string &cmd) {
-    char arg[MAX_STR_LENGTH]{};
-    char retval[MAX_STR_LENGTH]{};
-    strcpy_safe(arg, cmd.c_str());
     LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
                  << "): Sending command " << cmd;
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(F_EXEC_COMMAND);
-    client.setFnum(F_EXEC_COMMAND);
-    client.Send(arg);
-    if (client.Receive<int>() == FAIL) {
-        std::cout << '\n';
-        std::ostringstream os;
-        os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
-           << " returned error: " << client.readErrorMessage();
-        throw DetectorError(os.str());
-    }
-    client.Receive(retval);
+    char args[MAX_STR_LENGTH]{};
+    char retval[MAX_STR_LENGTH]{};
+    strcpy_safe(args, cmd.c_str());
+    sendToDetector(F_EXEC_COMMAND, args, retval);
     LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
                  << "): command executed";
     return retval;
@@ -3126,14 +2901,18 @@ int64_t Module::getMeasurementTime() const {
 
 // private
 
-void Module::checkArgs(const void *args, size_t args_size, void *retval,
-                       size_t retval_size) const {
+void Module::checkArgs(const void *args, size_t args_size) const {
     if (args == nullptr && args_size != 0)
         throw RuntimeError(
             "Passed nullptr as args to Send function but size is not 0");
     if (args != nullptr && args_size == 0)
         throw RuntimeError(
             "Passed size 0 to Send function but args is not nullptr");
+}
+
+void Module::checkArgs(const void *args, size_t args_size, void *retval,
+                       size_t retval_size) const {
+    checkArgs(args, args_size);
     if (retval == nullptr && retval_size != 0)
         throw RuntimeError(
             "Passed nullptr as retval to Send function but size is not 0");
@@ -3150,13 +2929,42 @@ void Module::checkArgs(const void *args, size_t args_size, void *retval,
     static_assert(!std::is_same<ARG, std::nullptr_t>::value,                   \
                   "nullptr_t type is incompatible with templated " DST);
 
+DetectorSocket Module::createDetectorSocket() const {
+    return DetectorSocket(shm()->hostname, shm()->controlPort);
+}
+
+template <typename Arg>
+void Module::sendToDetectorVarVector(int fnum,
+                                     const std::vector<Arg> &args) const {
+    LOG(logDEBUG1) << "Sending to Detector: ["
+                   << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
+                   << ", std::vector<" << typeid(Arg).name() << ">, nullptr, 0,"
+                   << "]";
+    auto client = createDetectorSocket();
+    client.sendCommandVariableSize(fnum, args, nullptr, 0);
+    client.close();
+}
+
+template <typename Ret>
+std::vector<Ret> Module::sendToDetectorVarVector(int fnum) const {
+    LOG(logDEBUG1) << "Sending to Detector: ["
+                   << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
+                   << ", nullptr, 0, std::vector<" << typeid(Ret).name()
+                   << ">]";
+    std::vector<Ret> retval;
+    auto client = createDetectorSocket();
+    client.sendCommandVariableSize(fnum, nullptr, 0, retval);
+    client.close();
+    return retval;
+}
+
 void Module::sendToDetector(int fnum, const void *args, size_t args_size,
                             void *retval, size_t retval_size) const {
     // This is the only function that actually sends data to the detector
     // the other versions use templates to deduce sizes and create
     // the return type
     checkArgs(args, args_size, retval, retval_size);
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    auto client = createDetectorSocket();
     client.sendCommandThenRead(fnum, args, args_size, retval, retval_size);
     client.close();
 }
@@ -3379,6 +3187,47 @@ Ret Module::sendToDetectorStop(int fnum, const Arg &args) {
 
 //-------------------------------------------------------------- sendToReceiver
 
+ReceiverSocket Module::createReceiverSocket() const {
+    return ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
+}
+
+template <typename Arg>
+void Module::sendToReceiverVarVector(int fnum,
+                                     const std::vector<Arg> &args) const {
+    LOG(logDEBUG1) << "Sending to Receiver: ["
+                   << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
+                   << ", std::vector<" << typeid(Arg).name() << ">, nullptr, 0,"
+                   << "]";
+    if (!shm()->useReceiverFlag) {
+        std::ostringstream oss;
+        oss << "Set rx_hostname first to use receiver parameters, ";
+        oss << getFunctionNameFromEnum(static_cast<detFuncs>(fnum));
+        throw RuntimeError(oss.str());
+    }
+    auto receiver = createReceiverSocket();
+    receiver.sendCommandVariableSize(fnum, args, nullptr, 0);
+    receiver.close();
+}
+
+template <typename Ret>
+std::vector<Ret> Module::sendToReceiverVarVector(int fnum) const {
+    LOG(logDEBUG1) << "Sending to Receiver: ["
+                   << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
+                   << ", nullptr, 0, std::vector<" << typeid(Ret).name()
+                   << ">]";
+    if (!shm()->useReceiverFlag) {
+        std::ostringstream oss;
+        oss << "Set rx_hostname first to use receiver parameters, ";
+        oss << getFunctionNameFromEnum(static_cast<detFuncs>(fnum));
+        throw RuntimeError(oss.str());
+    }
+    std::vector<Ret> retval;
+    auto receiver = createReceiverSocket();
+    receiver.sendCommandVariableSize(fnum, nullptr, 0, retval);
+    receiver.close();
+    return retval;
+}
+
 void Module::sendToReceiver(int fnum, const void *args, size_t args_size,
                             void *retval, size_t retval_size) const {
     // This is the only function that actually sends data to the receiver
@@ -3391,7 +3240,7 @@ void Module::sendToReceiver(int fnum, const void *args, size_t args_size,
         throw RuntimeError(oss.str());
     }
     checkArgs(args, args_size, retval, retval_size);
-    auto receiver = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
+    auto receiver = createReceiverSocket();
     receiver.sendCommandThenRead(fnum, args, args_size, retval, retval_size);
     receiver.close();
 }
@@ -3707,26 +3556,19 @@ void Module::setModule(sls_detector_module &module, bool trimbits) {
                    "these have been replaced with 0/200 or 2800/2400.";
         }
     }
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(F_SET_MODULE);
-    client.setFnum(F_SET_MODULE);
+    auto client = createDetectorSocket();
+    client.sendCommand(F_SET_MODULE, nullptr, 0);
     sendModule(&module, client);
-    if (client.Receive<int>() == FAIL) {
-        throw DetectorError("Module " + std::to_string(moduleIndex) +
-                            " returned error: " + client.readErrorMessage());
-    }
+    client.readReply(nullptr, 0);
+    updateRxThresholdEnergyMetadata();
 }
 
 sls_detector_module Module::getModule() {
     LOG(logDEBUG1) << "Getting module";
     sls_detector_module module(shm()->detType);
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(F_GET_MODULE);
-    client.setFnum(F_GET_MODULE);
-    if (client.Receive<int>() == FAIL) {
-        throw DetectorError("Module " + std::to_string(moduleIndex) +
-                            " returned error: " + client.readErrorMessage());
-    }
+    auto client = createDetectorSocket();
+    client.sendCommand(F_GET_MODULE, nullptr, 0);
+    client.readReply(nullptr, 0);
     receiveModule(&module, client);
     return module;
 }
@@ -4063,7 +3905,7 @@ void Module::sendProgram(bool blackfin, std::vector<char> buffer,
                  << "): Sending " << functionType;
 
     // send fnum and filesize
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    auto client = createDetectorSocket();
     client.Send(functionEnum);
     uint64_t filesize = buffer.size();
     client.Send(filesize);
@@ -4187,47 +4029,27 @@ void Module::simulatingActivityinDetector(const std::string &functionType,
 
 std::vector<uint8_t> Module::readSpi(int chip_id, int register_id,
                                      int n_bytes) const {
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(F_SPI_READ);
-    client.setFnum(F_SPI_READ);
-    client.Send(chip_id);
-    client.Send(register_id);
-    client.Send(n_bytes);
+    auto client = createDetectorSocket();
+    int args[] = {chip_id, register_id, n_bytes};
+    client.sendCommand(F_SPI_READ, &args, sizeof(args));
 
-    if (client.Receive<int>() == FAIL) {
-        std::ostringstream os;
-        os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
-           << " returned error: " << client.readErrorMessage();
-        throw DetectorError(os.str());
-    }
-
-    std::vector<uint8_t> data(n_bytes);
-    client.Receive(data);
-    return data;
+    std::vector<uint8_t> retval(n_bytes);
+    client.readReply(retval.data(), retval.size());
+    return retval;
 }
 
 std::vector<uint8_t> Module::writeSpi(int chip_id, int register_id,
                                       const std::vector<uint8_t> &data) {
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(F_SPI_WRITE);
-    client.setFnum(F_SPI_WRITE);
-    client.Send(chip_id);
-    client.Send(register_id);
-    client.Send(static_cast<int>(data.size()));
+    int count = static_cast<int>(data.size());
+    auto client = createDetectorSocket();
+    int args[] = {chip_id, register_id, count};
+    client.sendCommand(F_SPI_WRITE, &args, sizeof(args));
     client.Send(data);
-
-    if (client.Receive<int>() == FAIL) {
-        std::ostringstream os;
-        os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
-           << " returned error: " << client.readErrorMessage();
-        throw DetectorError(os.str());
-    }
-
     // Read the output from the SPI write. This contains the data before the
-    // write.
-    std::vector<uint8_t> ret(data.size());
-    client.Receive(ret);
-    return ret;
+    // write
+    std::vector<uint8_t> retval(data.size());
+    client.readReply(retval.data(), retval.size());
+    return retval;
 }
 
 } // namespace sls

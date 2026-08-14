@@ -126,7 +126,7 @@ One can either build using cmake or use the in-built cmk.sh script.
 
 .. code-block:: bash
 
-    # outside slsDetecorPackage folder
+    # outside slsDetectorPackage folder
     mkdir build && cd build
 
     # configure & generate Makefiles using cmake by listing all your options 
@@ -148,7 +148,7 @@ libraries and headers in your project, specify the install directory
 
 .. code-block:: bash
 
-    # outside slsDetecorPackage folder
+    # outside slsDetectorPackage folder
     mkdir build && cd build
     # configure & generate Makefiles
     cmake ../slsDetectorPackage -DCMAKE_INSTALL_PREFIX=/your/install/path
@@ -253,7 +253,7 @@ using this compiler
     conda create -n myenv gxx_linux-64 cmake
     conda activate myenv
 
-    # outside slsDetecorPackage folder
+    # outside slsDetectorPackage folder
     mkdir build && cd build
     cmake ../slsDetectorPackage -DCMAKE_PREFIX_PATH=$CONDA_PREFIX
     make -j12
@@ -311,7 +311,7 @@ using this compiler
         # activate environment
         conda activate slsgui
 
-        # compile with cmake outside slsDetecorPackage folder
+        # compile with cmake outside slsDetectorPackage folder
         mkdir build && cd build
         cmake ../slsDetectorPackage -DSLS_USE_GUI=ON
         make -j12
@@ -341,7 +341,7 @@ is to use conda
 .. code-block:: bash
 
     # using cmake or ccmake to enable DSLS_BUILD_DOCS
-    # outside slsDetecorPackage folder
+    # outside slsDetectorPackage folder
     mkdir build && cd build
     cmake ../slsDetectorPackage -DSLS_BUILD_DOCS=ON
 

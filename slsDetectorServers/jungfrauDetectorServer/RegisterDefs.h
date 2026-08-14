@@ -108,6 +108,12 @@
 #define CONFIG_V11_STATUS_FLTR_CLL_MSK          (0x00000FFF << CONFIG_V11_STATUS_FLTR_CLL_OFST)
 #define CONFIG_V11_STATUS_STRG_CLL_OFST         (12) 
 #define CONFIG_V11_STATUS_STRG_CLL_MSK          (0x0000000F << CONFIG_V11_STATUS_STRG_CLL_OFST)
+
+// replacing for v1.2
+#define CONFIG_V12_STATUS_STRG_CLL_OFST            (0) 
+#define CONFIG_V12_STATUS_STRG_CLL_MSK             (0x0000FFFF << CONFIG_V12_STATUS_STRG_CLL_OFST)
+
+
 // CSM mode = high current (100%), low current (16%)
 #define CONFIG_V11_STATUS_CRRNT_SRC_LOW_OFST    (19) 
 #define CONFIG_V11_STATUS_CRRNT_SRC_LOW_MSK     (0x00000001 << CONFIG_V11_STATUS_CRRNT_SRC_LOW_OFST)
@@ -236,8 +242,6 @@
 #define CONTROL_ACQ_FIFO_CLR_MSK            (0x00000001 << CONTROL_ACQ_FIFO_CLR_OFST)
 #define CONTROL_MASTER_OFST                 (15)
 #define CONTROL_MASTER_MSK                  (0x00000001 << CONTROL_MASTER_OFST)
-#define CONTROL_STORAGE_CELL_NUM_OFST       (16)
-#define CONTROL_STORAGE_CELL_NUM_MSK        (0x0000000F << CONTROL_STORAGE_CELL_NUM_OFST)
 #define CONTROL_RX_ADDTNL_ENDPTS_NUM_OFST   (20)
 #define CONTROL_RX_ADDTNL_ENDPTS_NUM_MSK    (0x0000003F << CONTROL_RX_ADDTNL_ENDPTS_NUM_OFST)
 #define CONTROL_RX_ENDPTS_START_OFST        (26)
@@ -261,6 +265,21 @@
 #define PLL_CNTRL_ADDR_MSK                  (0x0000003F << PLL_CNTRL_ADDR_OFST)
 
 
+/** Storage cell Register */
+#define STORAGE_CELL_REG                    (0x56 << MEM_MAP_SHIFT)
+
+#define STORAGE_CELL_START_OFST             (0)
+#define STORAGE_CELL_START_MSK              (0x000000FF << STORAGE_CELL_START_OFST)
+#define STORAGE_CELL_NUM_ADDTNL_OFST        (8)
+#define STORAGE_CELL_NUM_ADDTNL_MSK         (0x000000FF << STORAGE_CELL_NUM_ADDTNL_OFST)
+// tET = (ET + 1) * 25ns (increase timeout range between 2 consecutive storage
+// cells)
+#define STORAGE_CELL_EXPSRE_TMR_OFST        (16)
+#define STORAGE_CELL_EXPSRE_TMR_MSK         (0x0000FFFF << STORAGE_CELL_EXPSRE_TMR_OFST)
+#define STORAGE_CELL_EXPSRE_TMR_MAX_VAL     (0x0000FFFF / (CLK_RUN * 1E-3))
+
+
+
 /* Pedestal Mode Regiser */
 #define PEDESTAL_MODE_REG                   (0x57 << MEM_MAP_SHIFT)
 
@@ -271,13 +290,18 @@
 #define PEDESTAL_MODE_ENBLE_OFST            (31)
 #define PEDESTAL_MODE_ENBLE_MSK             (0x00000001 << PEDESTAL_MODE_ENBLE_OFST) 
 
-/* Config Register for chip 1.1 */
+/* Config Register for chip 1.1  and chip 1.2 */
 #define CONFIG_V11_REG                      (0x58 << MEM_MAP_SHIFT)
 
 #define CONFIG_V11_FLTR_CLL_OFST            (0) 
 #define CONFIG_V11_FLTR_CLL_MSK             (0x00000FFF << CONFIG_V11_FLTR_CLL_OFST)
 #define CONFIG_V11_STRG_CLL_OFST            (12) 
 #define CONFIG_V11_STRG_CLL_MSK             (0x0000000F << CONFIG_V11_STRG_CLL_OFST)
+// replacing for v1.2
+#define CONFIG_V12_STRG_CLL_OFST            (0) 
+#define CONFIG_V12_STRG_CLL_MSK             (0x0000FFFF << CONFIG_V12_STRG_CLL_OFST)
+
+
 // CSM mode = high current (100%), low current (16%)
 #define CONFIG_V11_CRRNT_SRC_LOW_OFST       (19) 
 #define CONFIG_V11_CRRNT_SRC_LOW_MSK        (0x00000001 << CONFIG_V11_CRRNT_SRC_LOW_OFST)
@@ -336,6 +360,7 @@
 #define SAMPLE_DECMT_FACTOR_HALF_VAL        ((0x1 << SAMPLE_DGTL_DECMT_FACTOR_OFST) & SAMPLE_DGTL_DECMT_FACTOR_MSK)
 #define SAMPLE_DECMT_FACTOR_QUARTER_VAL     ((0x2 << SAMPLE_DGTL_DECMT_FACTOR_OFST) & SAMPLE_DGTL_DECMT_FACTOR_MSK)
 
+
 /** Current Source Column 0 (0 - 31)) */
 #define CRRNT_SRC_COL_LSB_REG               (0x5A << MEM_MAP_SHIFT)
 
@@ -366,10 +391,11 @@
 #define DAQ_FIX_GAIN_STG_2_VAL              ((0x3 << DAQ_FIX_GAIN_OFST) & DAQ_FIX_GAIN_MSK)
 #define DAQ_CMP_RST_OFST                    (4)
 #define DAQ_CMP_RST_MSK                     (0x00000001 << DAQ_CMP_RST_OFST)
-#define DAQ_CHIP11_VRSN_OFST                (7)
-#define DAQ_CHIP11_VRSN_MSK                 (0x00000001 << DAQ_CHIP11_VRSN_OFST)
-#define DAQ_STRG_CELL_SLCT_OFST             (8)
-#define DAQ_STRG_CELL_SLCT_MSK              (0x0000000F << DAQ_STRG_CELL_SLCT_OFST)
+#define DAQ_CHIP_VRSN_OFST                  (5)
+#define DAQ_CHIP_VRSN_MSK                   (0x00000007 << DAQ_CHIP_VRSN_OFST)
+#define DAQ_CHIP_VRSN_v1_0_VAL              (0x0)
+#define DAQ_CHIP_VRSN_v1_1_VAL              (0x1)
+#define DAQ_CHIP_VRSN_v1_2_VAL              (0x2)
 #define DAQ_FRCE_SWTCH_GAIN_OFST            (12)
 #define DAQ_FRCE_SWTCH_GAIN_MSK             (0x00000003 << DAQ_FRCE_SWTCH_GAIN_OFST)
 #define DAQ_FRCE_GAIN_STG_0_VAL             ((0x0 << DAQ_FRCE_SWTCH_GAIN_OFST) & DAQ_FRCE_SWTCH_GAIN_MSK)
@@ -406,9 +432,7 @@
 #define TEMP_CTRL_OVR_TMP_EVNT_OFST         (31)
 #define TEMP_CTRL_OVR_TMP_EVNT_MSK          (0x00000001 << TEMP_CTRL_OVR_TMP_EVNT_OFST)
 
-/* Set Delay 64 bit register */
-#define SET_DELAY_LSB_REG                   (0x60 << MEM_MAP_SHIFT) // different kind of delay
-#define SET_DELAY_MSB_REG                   (0x61 << MEM_MAP_SHIFT) // different kind of delay
+
 
 /* Set Triggers 64 bit register */
 #define SET_CYCLES_LSB_REG                  (0x62 << MEM_MAP_SHIFT)
@@ -472,11 +496,6 @@ Time before end of exposure when comparator is disabled */
 #define ASIC_CTRL_DS_TMR_MSK                (0x000000FF << ASIC_CTRL_DS_TMR_OFST)
 #define ASIC_CTRL_DS_TMR_VAL                ((0x1F << ASIC_CTRL_DS_TMR_OFST) & ASIC_CTRL_DS_TMR_MSK)
 #define ASIC_CTRL_DS_TMR_CHIP1_1_VAL        ((0xFF << ASIC_CTRL_DS_TMR_OFST) & ASIC_CTRL_DS_TMR_MSK)
-// tET = (ET + 1) * 25ns (increase timeout range between 2 consecutive storage
-// cells)
-#define ASIC_CTRL_EXPSRE_TMR_OFST           (16)
-#define ASIC_CTRL_EXPSRE_TMR_MSK            (0x0000FFFF << ASIC_CTRL_EXPSRE_TMR_OFST)
-#define ASIC_CTRL_EXPSRE_TMR_MAX_VAL        (0x0000FFFF / (CLK_RUN * 1E-3))
 
 /* ADC 0 Deserializer Control */
 #define ADC_DSRLZR_0_REG                    (0xF0 << MEM_MAP_SHIFT)

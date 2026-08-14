@@ -46,6 +46,7 @@ int virtual_moduleid = 0;
 #endif
 
 enum detectorSettings thisSettings = UNINITIALIZED;
+static enum CHIPINDEX chipIndex = v1_0;
 int highvoltage = 0;
 int dacValues[NDAC] = {};
 int defaultDacValues[] = DEFAULT_DAC_VALS;
@@ -53,10 +54,19 @@ int defaultDacValue_G0[] = SPECIAL_DEFAULT_DYNAMIC_GAIN_VALS;
 int defaultDacValue_HG0[] = SPECIAL_DEFAULT_DYNAMICHG0_GAIN_VALS;
 int32_t clkPhase[NUM_CLOCKS] = {};
 int detPos[4] = {};
-int chipConfigured = 0;
+bool chipConfigured = false;
 
 uint64_t normal_mode_frames = -1;
 uint64_t normal_mode_triggers = -1;
+
+bool has_configure_chip = false;
+bool has_storage_cells = false;
+bool has_filter_resistor = false;
+bool has_filter_cells = false;
+bool has_current_src_normal = false;
+bool has_current_src_64bit_selection = false;
+bool has_current_src_reverse_bits_selection = false;
+bool has_storage_start_in_chip_config = false;
 
 int isInitCheckDone() { return initCheckDone; }
 
@@ -319,23 +329,160 @@ int isHardwareVersion_1_0() {
     return ((getHardwareVersionNumber() == hwNumberList[0]) ? 1 : 0);
 }
 
-int getChipVersion() {
-    // chip v1.1
-    if (bus_r(DAQ_REG) & DAQ_CHIP11_VRSN_MSK) {
-        return 11;
+int getChipVersionInFPGA() {
+    const int vals[] = CHIP_VALS;
+    int val = ((bus_r(DAQ_REG) & DAQ_CHIP_VRSN_MSK) >> DAQ_CHIP_VRSN_OFST);
+    switch (val) {
+    case 0:
+        return vals[(int)v1_0];
+    case 1:
+        return vals[(int)v1_1];
+    case 2:
+        return vals[(int)v1_2_NORMAL] / 10;
+    default:
+        LOG(logERROR,
+            ("Read undefined value as chip version from FPGA: %d\n", val));
+        return -1;
     }
-    // chip v1.0
-    return 10;
 }
 
-void setChipVersion(int version) {
-    LOG(logINFO,
-        ("Setting chip version to %0.1f in FPGA\n", (double)version / 10.0));
-    if (version == 11) {
-        bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_CHIP11_VRSN_MSK);
-    } else {
-        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_CHIP11_VRSN_MSK);
+int findChipIndex(enum CHIPINDEX *ind, char *cval, char *mess) {
+    if (cval == NULL) {
+        sprintf(mess, "String value is NULL. Cannot find chip version.\n");
+        LOG(logERROR, (mess));
+        return FAIL;
     }
+    char *chip_names[] = {CHIP_NAMES};
+    for (enum CHIPINDEX ichip = v1_0; ichip != NUM_CHIP_INDICES; ++ichip) {
+        if (strcmp(chip_names[ichip], cval) == 0) {
+            *ind = ichip;
+            return OK;
+        }
+    }
+    sprintf(mess, "Unknown chip version '%s'. Options: %s\n", cval,
+            CHIP_VALS_HELP);
+    LOG(logERROR, (mess));
+    return FAIL;
+}
+
+/** For backwards compatibility */
+int setChipVersionIntFromConfigFile(int val, char *mess) {
+    const int vals[] = CHIP_VALS;
+    if (val == vals[(int)v1_0])
+        return setChipIndex(v1_0, mess);
+    else if (val == vals[(int)v1_1])
+        return setChipIndex(v1_1, mess);
+    else {
+        sprintf(mess, "Invalid chip version %d. Options: %d and %d.\n", val,
+                vals[(int)v1_0], vals[(int)v1_1]);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+}
+
+int setChipVersionStringFromConfigFile(char *cval, char *mess) {
+    enum CHIPINDEX ind = NUM_CHIP_INDICES;
+    if (findChipIndex(&ind, cval, mess) == FAIL) {
+        return FAIL;
+    }
+    return setChipIndex(ind, mess);
+}
+
+int setChipIndex(enum CHIPINDEX ind, char *mess) {
+    if (validateChipIndex(ind, mess) == FAIL) {
+        return FAIL;
+    }
+    chipIndex = ind;
+    setChipIndexAllowedFeatures();
+    return setChipVersionInFPGA(mess);
+}
+
+int validateChipIndex(enum CHIPINDEX ind, char *mess) {
+    if (ind < 0 || ind >= NUM_CHIP_INDICES) {
+        sprintf(mess, "Invalid chip index %d. Options: %s\n", (int)ind,
+                CHIP_VALS_HELP);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+
+    // chipversion > 1.0 and HW 1.0 is incompatible
+    if (ind > v1_0 && isHardwareVersion_1_0()) {
+        char *chip_names[] = {CHIP_NAMES};
+        sprintf(mess,
+                "Chip index %d (%s) is incompatible with hardware version "
+                "v1.0. Please update board or correct chip index.\n",
+                (int)ind, chip_names[ind]);
+        return FAIL;
+    }
+    return OK;
+}
+
+void setChipIndexAllowedFeatures() {
+    switch (chipIndex) {
+    case v1_0:
+        has_configure_chip = false;
+        has_storage_cells = true;
+        has_filter_resistor = false;
+        has_filter_cells = false;
+        has_current_src_normal = false;
+        has_current_src_64bit_selection = false;
+        has_current_src_reverse_bits_selection = false;
+        has_storage_start_in_chip_config = false;
+        break;
+    case v1_1:
+        has_configure_chip = true;
+        has_storage_cells = false;
+        has_filter_resistor = true;
+        has_filter_cells = true;
+        has_current_src_normal = true;
+        has_current_src_64bit_selection = true;
+        has_current_src_reverse_bits_selection = true;
+        has_storage_start_in_chip_config = true;
+        break;
+    case v1_2_NORMAL:
+    case v1_2_LOW_NOISE:
+    case v1_2_HDR:
+        has_configure_chip = true;
+        has_storage_cells = true;
+        has_filter_resistor = true;
+        has_filter_cells = false;
+        has_current_src_normal = true;
+        has_current_src_64bit_selection = true;
+        has_current_src_reverse_bits_selection = false;
+        has_storage_start_in_chip_config = true;
+        break;
+    default:
+        LOG(logERROR, ("Unknown chip index %d\n", (int)chipIndex));
+    }
+}
+
+int setChipVersionInFPGA(char *mess) {
+    uint32_t val = 0;
+    switch (chipIndex) {
+    case v1_0:
+        LOG(logINFO, ("Setting Chip Version 1.0 in FPGA\n"));
+        val = DAQ_CHIP_VRSN_v1_0_VAL;
+        break;
+    case v1_1:
+        LOG(logINFO, ("Setting Chip Version 1.1 in FPGA\n"));
+        val = DAQ_CHIP_VRSN_v1_1_VAL;
+        break;
+    case v1_2_NORMAL:
+    case v1_2_LOW_NOISE:
+    case v1_2_HDR:
+        LOG(logINFO, ("Setting Chip Version 1.2 in FPGA\n"));
+        val = DAQ_CHIP_VRSN_v1_2_VAL;
+        break;
+    default:
+        sprintf(mess, "Unknown chip index %d\n", (int)chipIndex);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+
+    bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_CHIP_VRSN_MSK);
+    bus_w(DAQ_REG,
+          bus_r(DAQ_REG) | ((val << DAQ_CHIP_VRSN_OFST) & DAQ_CHIP_VRSN_MSK));
+    return OK;
 }
 
 u_int32_t getDetectorNumber() {
@@ -460,7 +607,7 @@ void setupDetector() {
     for (int i = 0; i < NUM_CLOCKS; ++i) {
         clkPhase[i] = 0;
     }
-    chipConfigured = 0;
+    chipConfigured = false;
 #ifdef VIRTUAL
     if (isControlServer) {
         sharedMemory_setStatus(IDLE);
@@ -549,14 +696,6 @@ void setupDetector() {
     setExpTime(DEFAULT_EXPTIME);
     setPeriod(DEFAULT_PERIOD);
     setDelayAfterTrigger(DEFAULT_DELAY);
-    if (getChipVersion() == 11) {
-        selectStoragecellStart(DEFAULT_STRG_CLL_STRT_CHIP11);
-    } else {
-        setNumAdditionalStorageCells(DEFAULT_NUM_STRG_CLLS);
-        selectStoragecellStart(DEFAULT_STRG_CLL_STRT);
-        // not applicable for chipv1.1
-        setStorageCellDelay(DEFAULT_STRG_CLL_DLY);
-    }
     setTiming(DEFAULT_TIMING_MODE);
     setNextFrameNumber(DEFAULT_STARTING_FRAME_NUMBER);
 
@@ -564,10 +703,20 @@ void setupDetector() {
     setTemperatureControl(DEFAULT_TMP_CNTRL);
     setThresholdTemperature(DEFAULT_TMP_THRSHLD);
     setTemperatureEvent(0);
-    if (getChipVersion() == 11) {
-        setFilterResistor(DEFAULT_FILTER_RESISTOR);
-        setNumberOfFilterCells(DEFAULT_FILTER_CELL);
+
+    // chip specific features
+    if (hasStorageCellsFeature()) {
+        setNumAdditionalStorageCells(DEFAULT_NUM_STRG_CLLS);
+        setStorageCellDelay(DEFAULT_STRG_CLL_DLY);
+        setStorageCellStart(DEFAULT_STRG_CLL_STRT);
+    } else {
+        setStorageCellStart(DEFAULT_STRG_CLL_STRT_CHIP11);
     }
+    if (hasFilterResistorFeature())
+        setFilterResistor(DEFAULT_FILTER_RESISTOR);
+    if (hasFilterCellsFeature())
+        setNumberOfFilterCells(DEFAULT_FILTER_CELL);
+
     if (!isHardwareVersion_1_0()) {
         setFlipRows(DEFAULT_FLIP_ROWS);
         setReadNRows(MAX_ROWS_PER_READOUT);
@@ -793,35 +942,41 @@ int readConfigFile() {
 
         // chipversion command
         if (!strncmp(line, "chipversion", strlen("chipversion"))) {
-            int version = 0;
+            int val = 0;
+            char chipversion[SHORT_STR_LENGTH] = {0};
 
-            // cannot scan values
-            if (sscanf(line, "%s %d", command, &version) != 2) {
-                sprintf(
-                    initErrorMessage,
-                    "Could not scan chipversion commands from on-board server "
-                    "config file. Line:[%s].\n",
-                    line);
-                break;
+            // backward compatibility: takes an int
+            if (sscanf(line, "%s %d", command, &val) == 2) {
+                if (setChipVersionIntFromConfigFile(val, initErrorMessage) ==
+                    FAIL) {
+                    strcat(initErrorMessage,
+                           "Could not set chip version from on-board server "
+                           "config "
+                           "file. For higher chip versions, use string "
+                           "arguments from example server config file. "
+                           "Line:[%s].\n");
+                    break;
+                }
             }
-            // validations
-            if (version != 10 && version != 11) {
+
+            // updated argument takes a string without quotes
+            else if (sscanf(line, "%s \"%[^\"]\"", command, chipversion) == 2) {
+                if (setChipVersionStringFromConfigFile(
+                        chipversion, initErrorMessage) == FAIL) {
+                    strcat(initErrorMessage,
+                           "Could not set chip version from on-board server "
+                           "config file. Line:[%s].\n");
+                    break;
+                }
+            }
+
+            else {
                 sprintf(initErrorMessage,
-                        "Could not set chip version from on-board server "
-                        "config file. Invalid chip version %d. Line:[%s].\n",
-                        version, line);
+                        "Could not scan chipversion command from on-board "
+                        "server config file. Line:[%s].\n",
+                        line);
                 break;
             }
-            // chipversion 1.1 and HW 1.0 is incompatible
-            if (version == 11 && isHardwareVersion_1_0()) {
-                strcpy(initErrorMessage,
-                       "Chip version 1.1 (from on-board config file) is "
-                       "incompatible with hardware version v1.0. Please update "
-                       "board or correct on-board config file.\n");
-                break;
-            }
-
-            setChipVersion(version);
         }
 
         // other commands
@@ -910,65 +1065,97 @@ uint32_t getADCInvertRegister() {
 }
 
 /* parameters - timer */
-int selectStoragecellStart(int pos) {
-    int value = pos;
-    uint32_t addr = DAQ_REG;
-    uint32_t mask = DAQ_STRG_CELL_SLCT_MSK;
-    int offset = DAQ_STRG_CELL_SLCT_OFST;
-    if (getChipVersion() == 11) {
-        // set the bit
-        value = 1 << pos;
-        addr = CONFIG_V11_REG;
-        mask = CONFIG_V11_STRG_CLL_MSK;
-        offset = CONFIG_V11_STRG_CLL_OFST;
-    }
-    if (pos >= 0) {
-        LOG(logINFO, ("Setting storage cell start: %d\n", pos));
-        bus_w(addr, bus_r(addr) & ~mask);
-        bus_w(addr, bus_r(addr) | ((value << offset) & mask));
-        // should not do a get to verify (status register does not update
-        // immediately during acquisition)
-        if (getChipVersion() == 11) {
-            return pos;
-        }
-    }
-
-    // read value back
-    // chipv1.1, writing and reading registers are different
-#ifndef VIRTUAL
-    if (getChipVersion() == 11) {
-        addr = CONFIG_V11_STATUS_REG;
-        mask = CONFIG_V11_STATUS_STRG_CLL_MSK;
-        offset = CONFIG_V11_STATUS_STRG_CLL_OFST;
-    }
-#endif
-    uint32_t regval = bus_r(addr);
-#ifndef VIRTUAL
-    // flip all contents of register //TODO FIRMWARE FIX
-    if (getChipVersion() == 11) {
-        regval ^= BIT32_MASK;
-    }
-#endif
-    uint32_t retval = ((regval & mask) >> offset);
-    if (getChipVersion() == 11) {
-        // get which bit
-        int max = getMaxStoragecellStart();
-        for (int i = 0; i != max + 1; ++i) {
-            if (retval & (1 << i)) {
-                return i;
-            }
-        }
-    }
-    // chip v1.0
-    return retval;
+int getStorageCellStartFromStorageCellReg() {
+    return ((bus_r(STORAGE_CELL_REG) & STORAGE_CELL_START_MSK) >>
+            STORAGE_CELL_START_OFST);
 }
 
-int getMaxStoragecellStart() {
-    if (getChipVersion() == 11) {
-        return MAX_STORAGE_CELL_CHIP11_VAL;
-    } else {
-        return MAX_STORAGE_CELL_VAL;
+void setStorageCellStartFromStorageCellReg(int pos) {
+    bus_w(STORAGE_CELL_REG, bus_r(STORAGE_CELL_REG) & ~STORAGE_CELL_START_MSK);
+    bus_w(STORAGE_CELL_REG,
+          bus_r(STORAGE_CELL_REG) |
+              ((pos << STORAGE_CELL_START_OFST) & STORAGE_CELL_START_MSK));
+}
+
+int getStorageCellStartFromChipConfig() {
+    // read from config status reg
+    uint32_t addr = CONFIG_V11_STATUS_REG;
+    uint32_t mask = CONFIG_V11_STATUS_STRG_CLL_MSK;
+    int offset = CONFIG_V11_STATUS_STRG_CLL_OFST;
+    if (chipIndex > v1_1) {
+        offset = CONFIG_V12_STATUS_STRG_CLL_OFST;
+        mask = CONFIG_V12_STATUS_STRG_CLL_MSK;
     }
+
+    // get which bit
+    uint32_t regval = bus_r(addr);
+    // firmware fix: flip all contents of reg
+    regval ^= BIT32_MASK; // TODO for chipv1.2??
+    uint32_t retval = ((regval & mask) >> offset);
+    int max = getMaxStorageCellStart();
+    for (int i = 0; i != max + 1; ++i) {
+        if (retval & (1 << i)) {
+            return i;
+        }
+    }
+    LOG(logERROR, ("Could not read storage cell start from config status reg. "
+                   "Read 0x%x, returning -1\n",
+                   regval));
+    return -1;
+}
+
+void setStorageCellStartFromChipConfig(int pos) {
+    // write to chip config reg, which will later update status reg
+    uint32_t addr = CONFIG_V11_REG;
+    uint32_t mask = CONFIG_V11_STRG_CLL_MSK;
+    int offset = CONFIG_V11_STRG_CLL_OFST;
+    int value = 1 << pos;
+
+    if (chipIndex > v1_1) {
+        offset = CONFIG_V12_STRG_CLL_OFST;
+        mask = CONFIG_V12_STRG_CLL_MSK;
+    }
+
+    uint32_t regval = bus_r(addr);
+    bus_w(addr, regval & ~mask);
+    bus_w(addr, bus_r(addr) | ((value << offset) & mask));
+}
+
+int getStorageCellStart() {
+    bool using_chip_config = hasStorageCellStartInChipConfig();
+#ifdef VIRTUAL
+    using_chip_config = false;
+#endif
+    if (using_chip_config) {
+        return getStorageCellStartFromChipConfig();
+    }
+    return getStorageCellStartFromStorageCellReg();
+}
+
+int setStorageCellStart(int pos) {
+    LOG(logINFO, ("Setting storage cell start: %d\n", pos));
+    setStorageCellStartFromStorageCellReg(pos);
+
+    int retval = getStorageCellStartFromStorageCellReg();
+    if (retval != pos) {
+        LOG(logERROR, ("Could not set storage cell start! Wrote %d, read %d\n",
+                       pos, retval));
+        return FAIL;
+    }
+
+    if (!hasStorageCellStartInChipConfig())
+        return OK;
+
+    setStorageCellStartFromChipConfig(pos);
+    // not validating because the status register might not update during
+    return OK;
+}
+
+int getMaxStorageCellStart() {
+    if (hasStorageCellsFeature())
+        return MAX_STORAGE_CELL_VAL;
+    else
+        return MAX_STORAGE_CELL_CHIP11_VAL;
 }
 
 int setNextFrameNumber(uint64_t value) {
@@ -1101,18 +1288,21 @@ int64_t getDelayAfterTrigger() {
 }
 
 void setNumAdditionalStorageCells(int val) {
-    if (val >= 0) {
-        LOG(logINFO, ("Setting number of addl. storage cells %d\n", val));
-        bus_w(CONTROL_REG,
-              (bus_r(CONTROL_REG) & ~CONTROL_STORAGE_CELL_NUM_MSK) |
-                  ((val << CONTROL_STORAGE_CELL_NUM_OFST) &
-                   CONTROL_STORAGE_CELL_NUM_MSK));
+    if (val < 0) {
+        LOG(logERROR, ("Invalid number of addl. storage cells %d\n", val));
+        return;
     }
+
+    LOG(logINFO, ("Setting number of addl. storage cells %d\n", val));
+    bus_w(STORAGE_CELL_REG,
+          (bus_r(STORAGE_CELL_REG) & ~STORAGE_CELL_NUM_ADDTNL_MSK) |
+              ((val << STORAGE_CELL_NUM_ADDTNL_OFST) &
+               STORAGE_CELL_NUM_ADDTNL_MSK));
 }
 
 int getNumAdditionalStorageCells() {
-    return ((bus_r(CONTROL_REG) & CONTROL_STORAGE_CELL_NUM_MSK) >>
-            CONTROL_STORAGE_CELL_NUM_OFST);
+    return ((bus_r(STORAGE_CELL_REG) & STORAGE_CELL_NUM_ADDTNL_MSK) >>
+            STORAGE_CELL_NUM_ADDTNL_OFST);
 }
 
 int setStorageCellDelay(int64_t val) {
@@ -1123,9 +1313,10 @@ int setStorageCellDelay(int64_t val) {
     }
     LOG(logINFO, ("Setting storage cell delay %lld ns\n", (long long int)val));
     val *= (1E-3 * CLK_RUN);
-    bus_w(ASIC_CTRL_REG,
-          (bus_r(ASIC_CTRL_REG) & ~ASIC_CTRL_EXPSRE_TMR_MSK) |
-              ((val << ASIC_CTRL_EXPSRE_TMR_OFST) & ASIC_CTRL_EXPSRE_TMR_MSK));
+    bus_w(STORAGE_CELL_REG,
+          (bus_r(STORAGE_CELL_REG) & ~STORAGE_CELL_EXPSRE_TMR_MSK) |
+              ((val << STORAGE_CELL_EXPSRE_TMR_OFST) &
+               STORAGE_CELL_EXPSRE_TMR_MSK));
 
     // validate for tolerance
     int64_t retval = getStorageCellDelay();
@@ -1137,9 +1328,10 @@ int setStorageCellDelay(int64_t val) {
 }
 
 int64_t getStorageCellDelay() {
-    return (((int64_t)((bus_r(ASIC_CTRL_REG) & ASIC_CTRL_EXPSRE_TMR_MSK) >>
-                       ASIC_CTRL_EXPSRE_TMR_OFST)) /
-            (1E-3 * CLK_RUN));
+    return (
+        ((int64_t)((bus_r(STORAGE_CELL_REG) & STORAGE_CELL_EXPSRE_TMR_MSK) >>
+                   STORAGE_CELL_EXPSRE_TMR_OFST)) /
+        (1E-3 * CLK_RUN));
 }
 
 int64_t getNumFramesLeft() {
@@ -1229,7 +1421,6 @@ int setSettings(enum detectorSettings sett, char *mess) {
             return FAIL;
     }
 
-    // if chipv1.1 and powered on
     configureChip();
 
     return OK;
@@ -1992,7 +2183,7 @@ int powerChip(int on) {
             bus_w(CHIP_POWER_REG,
                   bus_r(CHIP_POWER_REG) & ~CHIP_POWER_ENABLE_MSK);
 
-            chipConfigured = 0;
+            chipConfigured = false;
         }
     }
 #ifdef VIRTUAL
@@ -2003,11 +2194,32 @@ int powerChip(int on) {
             CHIP_POWER_STATUS_OFST);
 }
 
-int isChipConfigured() { return chipConfigured; }
+bool requireChipConfiguration() { return has_configure_chip; }
+
+bool hasStorageCellsFeature() { return has_storage_cells; }
+
+bool hasFilterResistorFeature() { return has_filter_resistor; }
+
+bool hasFilterCellsFeature() { return has_filter_cells; }
+
+bool hasCurrentSourceNormalFeature() { return has_current_src_normal; }
+
+bool hasCurrentSource64BitSelectionFeature() {
+    return has_current_src_64bit_selection;
+}
+
+bool hasCurrentSourceReverseBitsSelectionFeature() {
+    return has_current_src_reverse_bits_selection;
+}
+
+bool hasStorageCellStartInChipConfig() {
+    return has_storage_start_in_chip_config;
+}
+
+bool isChipConfigured() { return chipConfigured; }
 
 void configureChip() {
-    // only for chipv1.1 and chip is powered on
-    if (getChipVersion() == 11 && powerChip(-1)) {
+    if (requireChipConfiguration() && powerChip(-1)) {
         LOG(logINFOBLUE, ("\tConfiguring chip\n"));
 
         // waiting 500 ms before configuring selection
@@ -2026,7 +2238,7 @@ void configureChip() {
         bus_w(CONFIG_V11_REG, bus_r(CONFIG_V11_REG));
 
         LOG(logINFOBLUE, ("\tChip configured\n"));
-        chipConfigured = 1;
+        chipConfigured = true;
     }
 }
 
@@ -2074,9 +2286,10 @@ void configureASICTimer() {
     bus_w(ASIC_CTRL_REG, (bus_r(ASIC_CTRL_REG) & ~ASIC_CTRL_PRCHRG_TMR_MSK) |
                              ASIC_CTRL_PRCHRG_TMR_VAL);
 
-    uint32_t val = ASIC_CTRL_DS_TMR_VAL;
-    if (getChipVersion() == 11) {
-        val = ASIC_CTRL_DS_TMR_CHIP1_1_VAL;
+    uint32_t val = ASIC_CTRL_DS_TMR_CHIP1_1_VAL;
+    // TODO: value of chipindex v1_2 value to be decided.
+    if (chipIndex == v1_0) {
+        val = ASIC_CTRL_DS_TMR_VAL;
     }
     bus_w(ASIC_CTRL_REG, (bus_r(ASIC_CTRL_REG) & ~ASIC_CTRL_DS_TMR_MSK) | val);
     LOG(logINFO, ("Configured ASIC Timer [0x%x]\n", bus_r(ASIC_CTRL_REG)));
@@ -2095,14 +2308,14 @@ int setReadoutSpeed(int val) {
     uint32_t config = CONFIG_FULL_SPEED_40MHZ_VAL;
 
     switch (val) {
-
+        // tODO: calculate values for chip v1.2
     case FULL_SPEED:
         if (isHardwareVersion_1_0()) {
             LOG(logERROR, ("Cannot set full speed. Should not be here\n"));
             return FAIL;
         }
         LOG(logINFO, ("Setting Full Speed (40 MHz):\n"));
-        if (getChipVersion() == 10) {
+        if (chipIndex == v1_0) {
             sampleAdcSpeed = SAMPLE_ADC_FULL_SPEED_CHIP10;
             adcPhase = ADC_PHASE_FULL_SPEED_CHIP10;
             dbitPhase = DBIT_PHASE_FULL_SPEED_CHIP10;
@@ -2123,7 +2336,7 @@ int setReadoutSpeed(int val) {
             sampleAdcSpeed = SAMPLE_ADC_HALF_SPEED_BOARD2;
             adcPhase = ADC_PHASE_HALF_SPEED_BOARD2;
             dbitPhase = DBIT_PHASE_HALF_SPEED_BOARD2;
-        } else if (getChipVersion() == 10) {
+        } else if (chipIndex == v1_0) {
             adcOfst = ADC_OFST_HALF_SPEED_VAL_CHIP10;
             sampleAdcSpeed = SAMPLE_ADC_HALF_SPEED_CHIP10;
             adcPhase = ADC_PHASE_HALF_SPEED_CHIP10;
@@ -2144,7 +2357,7 @@ int setReadoutSpeed(int val) {
             sampleAdcSpeed = SAMPLE_ADC_QUARTER_SPEED_BOARD2;
             adcPhase = ADC_PHASE_QUARTER_SPEED_BOARD2;
             dbitPhase = DBIT_PHASE_QUARTER_SPEED_BOARD2;
-        } else if (getChipVersion() == 10) {
+        } else if (chipIndex == v1_0) {
             adcOfst = ADC_OFST_QUARTER_SPEED_VAL_CHIP10;
             sampleAdcSpeed = SAMPLE_ADC_QUARTER_SPEED_CHIP10;
             adcPhase = ADC_PHASE_QUARTER_SPEED_CHIP10;
@@ -2490,7 +2703,7 @@ void disableCurrentSource() {
     LOG(logINFO, ("Disabling Current Source\n"));
 
     // set default values for current source first
-    if (getChipVersion() == 11) {
+    if (hasCurrentSource64BitSelectionFeature()) {
         LOG(logINFO, ("\tSetting default values for selection\n"))
         bus_w(CRRNT_SRC_COL_LSB_REG, BIT32_MASK);
         bus_w(CRRNT_SRC_COL_MSB_REG, BIT32_MASK);
@@ -2504,15 +2717,8 @@ void disableCurrentSource() {
 
 void enableCurrentSource(int fix, uint64_t select, int normal) {
     disableCurrentSource();
-
-    if (getChipVersion() == 11) {
-        LOG(logINFO, ("Enabling current source [fix:%d, select:0x%lx]\n", fix,
-                      (long unsigned int)select));
-    } else {
-        LOG(logINFO,
-            ("Enabling current source [fix:%d, select:%ld, normal:%d]\n", fix,
-             (long int)select, normal));
-    }
+    LOG(logINFO, ("Enabling current source [fix:%d, select:0x%lx, normal:%d]\n",
+                  fix, (long unsigned int)select, normal));
     // fix
     if (fix) {
         LOG(logINFO, ("\tEnabling fix\n"));
@@ -2521,29 +2727,39 @@ void enableCurrentSource(int fix, uint64_t select, int normal) {
         LOG(logINFO, ("\tDisabling fix\n"));
         bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_CRRNT_SRC_CLMN_FIX_MSK);
     }
-    if (getChipVersion() == 10) {
-        // select
+
+    // select (not 64 bits)
+    if (!hasCurrentSource64BitSelectionFeature()) {
         LOG(logINFO, ("\tSetting selection to %ld\n", (long int)select));
         bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_CRRNT_SRC_CLMN_SLCT_MSK);
         bus_w(DAQ_REG,
               bus_r(DAQ_REG) | ((select << DAQ_CRRNT_SRC_CLMN_SLCT_OFST) &
                                 DAQ_CRRNT_SRC_CLMN_SLCT_MSK));
 
-    } else {
-        // select
-        // invert select first
-        uint64_t tmp = select;
-        uint64_t inverted = 0;
-        for (int i = 0; i != 64; ++i) {
-            // get each bit from LSB side
-            uint64_t bit = (tmp >> i) & 0x1;
-            // push the bit into MSB side
-            inverted |= (bit << (63 - i));
-        }
-        LOG(logINFO, ("\tSetting selection to 0x%lx (inverted from 0x%lx)\n",
-                      (long unsigned int)inverted, (long unsigned int)select));
-        set64BitReg(inverted, CRRNT_SRC_COL_LSB_REG, CRRNT_SRC_COL_MSB_REG);
+    }
 
+    // select (64 bits)
+    else {
+        uint64_t retval = 0;
+        // reverse bits select first
+        if (hasCurrentSourceReverseBitsSelectionFeature()) {
+            uint64_t tmp = select;
+            for (int i = 0; i != 64; ++i) {
+                // get each bit from LSB side
+                uint64_t bit = (tmp >> i) & 0x1;
+                // push the bit into MSB side
+                retval |= (bit << (63 - i));
+            }
+        } else {
+            retval = select;
+        }
+
+        LOG(logINFO, ("\tSetting selection to 0x%lx (inverted from 0x%lx)\n",
+                      (long unsigned int)retval, (long unsigned int)select));
+        set64BitReg(retval, CRRNT_SRC_COL_LSB_REG, CRRNT_SRC_COL_MSB_REG);
+    }
+
+    if (hasCurrentSourceNormalFeature()) {
         // normal
         if (normal) {
             LOG(logINFO, ("\tEnabling normal\n"))
@@ -2555,6 +2771,7 @@ void enableCurrentSource(int fix, uint64_t select, int normal) {
                   bus_r(CONFIG_V11_REG) | CONFIG_V11_CRRNT_SRC_LOW_MSK);
         }
     }
+
     // validating before enabling current source
     if (getFixCurrentSource() != fix || getSelectCurrentSource() != select) {
         LOG(logERROR,
@@ -2582,7 +2799,7 @@ int getFixCurrentSource() {
 }
 
 int getNormalCurrentSource() {
-    if (getChipVersion() == 11) {
+    if (hasCurrentSourceNormalFeature()) {
         int low = ((bus_r(CONFIG_V11_STATUS_REG) &
                     CONFIG_V11_STATUS_CRRNT_SRC_LOW_MSK) >>
                    CONFIG_V11_STATUS_CRRNT_SRC_LOW_OFST);
@@ -2592,23 +2809,27 @@ int getNormalCurrentSource() {
 }
 
 uint64_t getSelectCurrentSource() {
-    if (getChipVersion() == 10) {
+    if (!hasCurrentSourceNormalFeature()) {
         return ((bus_r(DAQ_REG) & DAQ_CRRNT_SRC_CLMN_SLCT_MSK) >>
                 DAQ_CRRNT_SRC_CLMN_SLCT_OFST);
     } else {
         // invert the select
-        uint64_t retval =
+        uint64_t regval =
             get64BitReg(CRRNT_SRC_COL_LSB_REG, CRRNT_SRC_COL_MSB_REG);
 
-        uint64_t tmp = retval;
-        uint64_t inverted = 0;
-        for (int i = 0; i != 64; ++i) {
-            // get each bit from LSB side
-            uint64_t bit = (tmp >> i) & 0x1;
-            // push the bit into MSB side
-            inverted |= (bit << (63 - i));
+        uint64_t retval = regval;
+        if (hasCurrentSourceReverseBitsSelectionFeature()) {
+            uint64_t tmp = regval;
+            uint64_t inverted = 0;
+            for (int i = 0; i != 64; ++i) {
+                // get each bit from LSB side
+                uint64_t bit = (tmp >> i) & 0x1;
+                // push the bit into MSB side
+                inverted |= (bit << (63 - i));
+            }
+            retval = inverted;
         }
-        return inverted;
+        return retval;
     }
 }
 

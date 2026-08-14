@@ -1311,9 +1311,10 @@ int setStorageCellDelay(int64_t val) {
     }
     LOG(logINFO, ("Setting storage cell delay %lld ns\n", (long long int)val));
     val *= (1E-3 * CLK_RUN);
-    bus_w(ASIC_CTRL_REG,
-          (bus_r(ASIC_CTRL_REG) & ~ASIC_CTRL_EXPSRE_TMR_MSK) |
-              ((val << ASIC_CTRL_EXPSRE_TMR_OFST) & ASIC_CTRL_EXPSRE_TMR_MSK));
+    bus_w(STORAGE_CELL_REG,
+          (bus_r(STORAGE_CELL_REG) & ~STORAGE_CELL_EXPSRE_TMR_MSK) |
+              ((val << STORAGE_CELL_EXPSRE_TMR_OFST) &
+               STORAGE_CELL_EXPSRE_TMR_MSK));
 
     // validate for tolerance
     int64_t retval = getStorageCellDelay();
@@ -1325,9 +1326,10 @@ int setStorageCellDelay(int64_t val) {
 }
 
 int64_t getStorageCellDelay() {
-    return (((int64_t)((bus_r(ASIC_CTRL_REG) & ASIC_CTRL_EXPSRE_TMR_MSK) >>
-                       ASIC_CTRL_EXPSRE_TMR_OFST)) /
-            (1E-3 * CLK_RUN));
+    return (
+        ((int64_t)((bus_r(STORAGE_CELL_REG) & STORAGE_CELL_EXPSRE_TMR_MSK) >>
+                   STORAGE_CELL_EXPSRE_TMR_OFST)) /
+        (1E-3 * CLK_RUN));
 }
 
 int64_t getNumFramesLeft() {
@@ -2210,10 +2212,10 @@ void configureASICTimer() {
     bus_w(ASIC_CTRL_REG, (bus_r(ASIC_CTRL_REG) & ~ASIC_CTRL_PRCHRG_TMR_MSK) |
                              ASIC_CTRL_PRCHRG_TMR_VAL);
 
-    uint32_t val = ASIC_CTRL_DS_TMR_VAL;
+    uint32_t val = ASIC_CTRL_DS_TMR_CHIP1_1_VAL;
     // TODO: value of chipindex v1_2 value to be decided.
-    if (chipIndex == v1_1) {
-        val = ASIC_CTRL_DS_TMR_CHIP1_1_VAL;
+    if (chipIndex == v1_0) {
+        val = ASIC_CTRL_DS_TMR_VAL;
     }
     bus_w(ASIC_CTRL_REG, (bus_r(ASIC_CTRL_REG) & ~ASIC_CTRL_DS_TMR_MSK) | val);
     LOG(logINFO, ("Configured ASIC Timer [0x%x]\n", bus_r(ASIC_CTRL_REG)));

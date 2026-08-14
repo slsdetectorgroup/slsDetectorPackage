@@ -242,8 +242,6 @@
 #define CONTROL_ACQ_FIFO_CLR_MSK            (0x00000001 << CONTROL_ACQ_FIFO_CLR_OFST)
 #define CONTROL_MASTER_OFST                 (15)
 #define CONTROL_MASTER_MSK                  (0x00000001 << CONTROL_MASTER_OFST)
-#define CONTROL_STORAGE_CELL_NUM_OFST       (16)
-#define CONTROL_STORAGE_CELL_NUM_MSK        (0x0000000F << CONTROL_STORAGE_CELL_NUM_OFST)
 #define CONTROL_RX_ADDTNL_ENDPTS_NUM_OFST   (20)
 #define CONTROL_RX_ADDTNL_ENDPTS_NUM_MSK    (0x0000003F << CONTROL_RX_ADDTNL_ENDPTS_NUM_OFST)
 #define CONTROL_RX_ENDPTS_START_OFST        (26)
@@ -274,6 +272,11 @@
 #define STORAGE_CELL_START_MSK              (0x000000FF << STORAGE_CELL_START_OFST)
 #define STORAGE_CELL_NUM_ADDTNL_OFST        (8)
 #define STORAGE_CELL_NUM_ADDTNL_MSK         (0x000000FF << STORAGE_CELL_NUM_ADDTNL_OFST)
+// tET = (ET + 1) * 25ns (increase timeout range between 2 consecutive storage
+// cells)
+#define STORAGE_CELL_EXPSRE_TMR_OFST        (16)
+#define STORAGE_CELL_EXPSRE_TMR_MSK         (0x0000FFFF << STORAGE_CELL_EXPSRE_TMR_OFST)
+#define STORAGE_CELL_EXPSRE_TMR_MAX_VAL     (0x0000FFFF / (CLK_RUN * 1E-3))
 
 
 
@@ -393,8 +396,6 @@
 #define DAQ_CHIP_VRSN_v1_0_VAL              (0x0)
 #define DAQ_CHIP_VRSN_v1_1_VAL              (0x1)
 #define DAQ_CHIP_VRSN_v1_2_VAL              (0x2)
-#define DAQ_STRG_CELL_SLCT_OFST             (8)
-#define DAQ_STRG_CELL_SLCT_MSK              (0x0000000F << DAQ_STRG_CELL_SLCT_OFST)
 #define DAQ_FRCE_SWTCH_GAIN_OFST            (12)
 #define DAQ_FRCE_SWTCH_GAIN_MSK             (0x00000003 << DAQ_FRCE_SWTCH_GAIN_OFST)
 #define DAQ_FRCE_GAIN_STG_0_VAL             ((0x0 << DAQ_FRCE_SWTCH_GAIN_OFST) & DAQ_FRCE_SWTCH_GAIN_MSK)
@@ -495,11 +496,6 @@ Time before end of exposure when comparator is disabled */
 #define ASIC_CTRL_DS_TMR_MSK                (0x000000FF << ASIC_CTRL_DS_TMR_OFST)
 #define ASIC_CTRL_DS_TMR_VAL                ((0x1F << ASIC_CTRL_DS_TMR_OFST) & ASIC_CTRL_DS_TMR_MSK)
 #define ASIC_CTRL_DS_TMR_CHIP1_1_VAL        ((0xFF << ASIC_CTRL_DS_TMR_OFST) & ASIC_CTRL_DS_TMR_MSK)
-// tET = (ET + 1) * 25ns (increase timeout range between 2 consecutive storage
-// cells)
-#define ASIC_CTRL_EXPSRE_TMR_OFST           (16)
-#define ASIC_CTRL_EXPSRE_TMR_MSK            (0x0000FFFF << ASIC_CTRL_EXPSRE_TMR_OFST)
-#define ASIC_CTRL_EXPSRE_TMR_MAX_VAL        (0x0000FFFF / (CLK_RUN * 1E-3))
 
 /* ADC 0 Deserializer Control */
 #define ADC_DSRLZR_0_REG                    (0xF0 << MEM_MAP_SHIFT)

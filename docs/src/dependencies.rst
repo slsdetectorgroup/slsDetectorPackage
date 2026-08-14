@@ -52,9 +52,9 @@ To build the python module the following dependencies are needed:
 
     Refer :ref:`pybind11 notes. <pybind for different slsDetectorPackage versions>`  
 
--------------------------------
+------------------------------------
 Dependencies to build documentation
--------------------------------
+------------------------------------
 
 To build this documentation that you are reading now the following dependencies are needed: 
 

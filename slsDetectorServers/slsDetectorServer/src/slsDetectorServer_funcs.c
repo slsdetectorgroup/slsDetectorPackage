@@ -8707,7 +8707,7 @@ int get_chip_version(int file_des) {
 #else
     ret = getChipVersionInFPGA(retvals, mess);
 #endif
-    LOG(logDEBUG1, ("chip version retval: %ds\n", retvals));
+    LOG(logDEBUG1, ("chip version retval: %s\n", retvals));
     return Server_SendResult(file_des, OTHER, retvals, sizeof(retvals));
 }
 

@@ -1117,7 +1117,7 @@ chipversion:
         store_result_in_t: true
   command_name: chipversion
   function_alias: chipversion
-  help: "\n\t[Jungfrau] Returns chip version. Can be 1.0 or 1.1"
+  help: "\n\t[Jungfrau] Returns chip version."
   infer_action: true
   template: true
 clearbit:

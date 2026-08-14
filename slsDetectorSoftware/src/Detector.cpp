@@ -1793,7 +1793,7 @@ void Detector::setTop(bool value, Positions pos) {
 }
 
 // Jungfrau/moench Specific
-Result<double> Detector::getChipVersion(Positions pos) const {
+Result<std::string> Detector::getChipVersion(Positions pos) const {
     return pimpl->Parallel(&Module::getChipVersion, pos);
 }
 

@@ -2140,6 +2140,8 @@ class Detector(CppDetectorApi):
         firmware_febl = "Unknown"
         firmware_febr = "Unknown"
         firmware_beb = "Unknown"
+        jungfrau = False
+        chip = "Unknown"
         receiver_in_shm = False
 
         release = self.packageversion
@@ -2149,6 +2151,7 @@ class Detector(CppDetectorApi):
             # shared memory has detectors
             type = self.type
             eiger = (self.type == detectorType.EIGER)
+            jungfrau = (self.type == detectorType.JUNGFRAU)
             receiver_in_shm = self.use_receiver
             if receiver_in_shm:
                 # cannot connect to receiver
@@ -2166,6 +2169,8 @@ class Detector(CppDetectorApi):
                     firmware_beb = self.firmwareversion
                     firmware_febl = self.getFrontEndFirmwareVersion(slsDetectorDefs.fpgaPosition.FRONT_LEFT)
                     firmware_febr = self.getFrontEndFirmwareVersion(slsDetectorDefs.fpgaPosition.FRONT_RIGHT)
+                if jungfrau:
+                    chip = self.chipversion
             except Exception as e:
                 pass
 
@@ -2178,6 +2183,8 @@ class Detector(CppDetectorApi):
             version_list ['firmware (Febr)'] = {firmware_febr}
         else:
             version_list ['firmware'] = {firmware}
+        if jungfrau:
+            version_list ['chip'] = {chip}
         version_list ['detectorserver'] = {detectorserver}
         version_list ['kernel'] = kernel
         version_list ['hardware'] = hardware
@@ -2738,12 +2745,12 @@ class Detector(CppDetectorApi):
     @element
     def chipversion(self):
         """
-        [Jungfrau] Chip version of module. Can be 1.0, 1.1 or 1.2.
+        [Jungfrau] Chip version of module.
 
         Example
         -------
         >>> d.chipversion
-        '1.0'
+        '1.2 Normal'
         """
         return self.getChipVersion()
 

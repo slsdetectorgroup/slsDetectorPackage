@@ -1197,10 +1197,11 @@ void init_det(py::module &m) {
     CppDetectorApi.def(
         "setTop", (void (Detector::*)(bool, sls::Positions)) & Detector::setTop,
         py::arg(), py::arg() = Positions{});
-    CppDetectorApi.def("getChipVersion",
-                       (Result<double>(Detector::*)(sls::Positions) const) &
-                           Detector::getChipVersion,
-                       py::arg() = Positions{});
+    CppDetectorApi.def(
+        "getChipVersion",
+        (Result<std::string>(Detector::*)(sls::Positions) const) &
+            Detector::getChipVersion,
+        py::arg() = Positions{});
     CppDetectorApi.def("getThresholdTemperature",
                        (Result<int>(Detector::*)(sls::Positions) const) &
                            Detector::getThresholdTemperature,

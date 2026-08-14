@@ -8,8 +8,18 @@
 #include "tests/globals.h"
 
 #include "catch.hpp"
+#include <regex>
 
 namespace sls {
+int chipVersionToX10(const std::string &chipVersion) {
+    static const std::regex versionRegex(R"(v?\s*([0-9]+)\.([0-9]+))",
+                                         std::regex::icase);
+    std::smatch match;
+    if (!std::regex_search(chipVersion, match, versionRegex)) {
+        throw sls::RuntimeError("Could not parse chip version: " + chipVersion);
+    }
+    return std::stoi(match[1].str()) * 10 + std::stoi(match[2].str());
+}
 
 namespace acq = sls::test::acquire;
 

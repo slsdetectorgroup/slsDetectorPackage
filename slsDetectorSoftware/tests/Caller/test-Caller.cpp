@@ -1125,7 +1125,7 @@ TEST_CASE("readoutspeed", "[.detectorintegration]") {
         // full speed for jungfrau/moench only works for new boards (chipv1.1 is
         // with new board [hw1.0 and chipv1.0 not tested here])
         if (((det_type == defs::JUNGFRAU) &&
-             det.getChipVersion().squash() * 10 == 11) ||
+             chipVersionToX10(det.getChipVersion().squash()) == 11) ||
             det_type == defs::EIGER || det_type == defs::MOENCH ||
             det_type == defs::MYTHEN3) {
             std::ostringstream oss1, oss2, oss3, oss4;
@@ -1696,7 +1696,7 @@ TEST_CASE("filterresistor", "[.detectorintegration]") {
     // only for chipv1.1
     bool hasFeature = false;
     if (det_type == defs::JUNGFRAU) {
-        auto chipVersion = det.getChipVersion().squash() * 10;
+        auto chipVersion = chipVersionToX10(det.getChipVersion().squash());
         hasFeature = (chipVersion == 11 || chipVersion == 12);
     }
 
@@ -1867,9 +1867,8 @@ TEST_CASE("currentsource", "[.detectorintegration]") {
         else {
             int chipVersion = 10;
             if (det_type == defs::JUNGFRAU) {
-                chipVersion = det.getChipVersion().tsquash(
-                                  "inconsistent chip versions to test") *
-                              10;
+                chipVersion = chipVersionToX10(det.getChipVersion().tsquash(
+                    "inconsistent chip versions to test"));
             }
             if (chipVersion == 10) {
                 REQUIRE_THROWS(caller.call("currentsource", {"1"}, -1, PUT));

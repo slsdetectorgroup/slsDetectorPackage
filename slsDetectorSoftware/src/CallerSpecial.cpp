@@ -313,6 +313,8 @@ std::string Caller::versions(int action) {
         std::string vBebFirmware = "Unknown";
         std::string vFeblFirmware = "Unknown";
         std::string vFebrFirmware = "Unknown";
+        bool jungfrau = false;
+        std::string vChipVersion = "Unknown";
         bool receiver = false;
         std::string vReceiver = "Unknown";
 
@@ -323,6 +325,7 @@ std::string Caller::versions(int action) {
             // shared memory has detectors
             vType = OutString(det->getDetectorType());
             eiger = (det->getDetectorType().squash() == defs::EIGER);
+            jungfrau = (det->getDetectorType().squash() == defs::JUNGFRAU);
             receiver = det->getUseReceiverFlag().squash(false);
             if (receiver) {
                 // cannot connect to receiver
@@ -350,6 +353,10 @@ std::string Caller::versions(int action) {
                     vFebrFirmware = OutString(det->getFrontEndFirmwareVersion(
                         defs::FRONT_RIGHT, std::vector<int>{det_id}));
                 }
+                if (jungfrau) {
+                    vChipVersion = OutString(
+                        det->getChipVersion(std::vector<int>{det_id}));
+                }
             } catch (const std::exception &e) {
             }
         }
@@ -363,6 +370,9 @@ std::string Caller::versions(int action) {
                << "\nFirmware (Febr) : " << vFebrFirmware;
         } else {
             os << "\nFirmware        : " << vFirmware;
+        }
+        if (jungfrau) {
+            os << "\nChip            : " << vChipVersion;
         }
         os << "\nServer          : " << vServer
            << "\nKernel          : " << vKernel

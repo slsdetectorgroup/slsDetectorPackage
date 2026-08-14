@@ -131,11 +131,16 @@ void basictests() {
 
     if (fwversion >= MIN_REQRD_VRSN_T_RD_API)
         sw_fw_apiversion = getFirmwareAPIVersion();
+    char chipVersion[MAX_STR_LENGTH] = {0};
+    memset(chipVersion, 0, MAX_STR_LENGTH);
+    getChipVersionInFPGA(chipVersion, initErrorMessage);
 
     LOG(logINFOBLUE,
         ("************ Jungfrau Server *********************\n"
          "Hardware Version:\t\t %s\n"
          "Hardware Serial Nr:\t\t 0x%x\n"
+
+         "Chip Version:\t\t\t %s\n"
 
          "Detector IP Addr:\t\t 0x%x\n"
          "Detector MAC Addr:\t\t 0x%llx\n\n"
@@ -145,7 +150,7 @@ void basictests() {
          "F/w-S/w API Version:\t\t 0x%llx\n"
          "Required Firmware Version:\t 0x%x\n"
          "********************************************************\n",
-         hversion, hsnumber, ipadd, (long long unsigned int)macadd,
+         hversion, hsnumber, chipVersion, ipadd, (long long unsigned int)macadd,
          (long long int)fwversion, swversion, (long long int)sw_fw_apiversion,
          requiredFirmwareVersion));
 
@@ -329,20 +334,24 @@ int isHardwareVersion_1_0() {
     return ((getHardwareVersionNumber() == hwNumberList[0]) ? 1 : 0);
 }
 
-int getChipVersionInFPGA() {
-    const int vals[] = CHIP_VALS;
+int getChipVersionInFPGA(char *version, char *mess) {
+    char *chip_names[] = {CHIP_NAMES};
     int val = ((bus_r(DAQ_REG) & DAQ_CHIP_VRSN_MSK) >> DAQ_CHIP_VRSN_OFST);
     switch (val) {
     case 0:
-        return vals[(int)v1_0];
+        strcpy(version, chip_names[(int)v1_0]);
+        return OK;
     case 1:
-        return vals[(int)v1_1];
+        strcpy(version, chip_names[(int)v1_1]);
+        return OK;
     case 2:
-        return vals[(int)v1_2_NORMAL] / 10;
+        strcpy(version, chip_names[(int)v1_2_NORMAL]);
+        return OK;
     default:
-        LOG(logERROR,
-            ("Read undefined value as chip version from FPGA: %d\n", val));
-        return -1;
+        sprintf(mess, "Read undefined value as chip version from FPGA: %d\n",
+                val);
+        LOG(logERROR, (mess));
+        return FAIL;
     }
 }
 

@@ -1859,108 +1859,103 @@ int acquire(int blocking, int file_des) {
         else
 #endif
 #if defined(JUNGFRAUD)
-            // chipv1.1 has to be configured before acquisition
-            if (getChipVersion() == 11 && !isChipConfigured()) {
-                ret = FAIL;
-                strcpy(mess,
-                       "Could not start acquisition. Chip is not configured. "
-                       "Power it on to configure it.\n");
-                LOG(logERROR, (mess));
-            } else
+            if (requireChipConfiguration() && !isChipConfigured()) {
+            ret = FAIL;
+            strcpy(mess, "Could not start acquisition. Chip is not configured. "
+                         "Power it on to configure it.\n");
+            LOG(logERROR, (mess));
+        } else
 #endif
 #if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
-                if ((getReadoutMode() == ANALOG_AND_DIGITAL ||
-                     getReadoutMode() == ANALOG_ONLY) &&
-                    (getNumAnalogSamples() <= 0)) {
-                ret = FAIL;
-                sprintf(mess,
-                        "Could not start acquisition. Invalid number of analog "
-                        "samples: %d.\n",
-                        getNumAnalogSamples());
-                LOG(logERROR, (mess));
-            } else if ((getReadoutMode() == ANALOG_AND_DIGITAL ||
-                        getReadoutMode() == DIGITAL_ONLY ||
-                        getReadoutMode() == DIGITAL_AND_TRANSCEIVER) &&
-                       (getNumDigitalSamples() <= 0)) {
-                ret = FAIL;
-                sprintf(
-                    mess,
+            if ((getReadoutMode() == ANALOG_AND_DIGITAL ||
+                 getReadoutMode() == ANALOG_ONLY) &&
+                (getNumAnalogSamples() <= 0)) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not start acquisition. Invalid number of analog "
+                    "samples: %d.\n",
+                    getNumAnalogSamples());
+            LOG(logERROR, (mess));
+        } else if ((getReadoutMode() == ANALOG_AND_DIGITAL ||
+                    getReadoutMode() == DIGITAL_ONLY ||
+                    getReadoutMode() == DIGITAL_AND_TRANSCEIVER) &&
+                   (getNumDigitalSamples() <= 0)) {
+            ret = FAIL;
+            sprintf(mess,
                     "Could not start acquisition. Invalid number of digital "
                     "samples: %d.\n",
                     getNumDigitalSamples());
-                LOG(logERROR, (mess));
-            } else if ((getReadoutMode() == TRANSCEIVER_ONLY ||
-                        getReadoutMode() == DIGITAL_AND_TRANSCEIVER) &&
-                       (getNumTransceiverSamples() <= 0)) {
-                ret = FAIL;
-                sprintf(mess,
-                        "Could not start acquisition. Invalid number of "
-                        "transceiver "
-                        "samples: %d.\n",
-                        getNumTransceiverSamples());
-                LOG(logERROR, (mess));
-            } else
+            LOG(logERROR, (mess));
+        } else if ((getReadoutMode() == TRANSCEIVER_ONLY ||
+                    getReadoutMode() == DIGITAL_AND_TRANSCEIVER) &&
+                   (getNumTransceiverSamples() <= 0)) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not start acquisition. Invalid number of "
+                    "transceiver "
+                    "samples: %d.\n",
+                    getNumTransceiverSamples());
+            LOG(logERROR, (mess));
+        } else
 #endif
 #ifdef EIGERD
-                // check for hardware mac and hardware ip
-                if (udpDetails[0].srcmac != getDetectorMAC()) {
-                    ret = FAIL;
-                    uint64_t sourcemac = getDetectorMAC();
-                    char src_mac[MAC_ADDRESS_SIZE];
-                    getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, sourcemac);
-                    sprintf(mess,
-                            "Invalid udp source mac address for this detector. "
-                            "Must be "
-                            "same as hardware detector mac address %s\n",
-                            src_mac);
-                    LOG(logERROR, (mess));
-                } else if (!enableTenGigabitEthernet(GET_FLAG) &&
-                           (udpDetails[0].srcip != getDetectorIP())) {
-                    ret = FAIL;
-                    uint32_t sourceip = getDetectorIP();
-                    char src_ip[INET_ADDRSTRLEN];
-                    getIpAddressinString(src_ip, sourceip);
-                    sprintf(
-                        mess,
+            // check for hardware mac and hardware ip
+            if (udpDetails[0].srcmac != getDetectorMAC()) {
+                ret = FAIL;
+                uint64_t sourcemac = getDetectorMAC();
+                char src_mac[MAC_ADDRESS_SIZE];
+                getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, sourcemac);
+                sprintf(mess,
+                        "Invalid udp source mac address for this detector. "
+                        "Must be "
+                        "same as hardware detector mac address %s\n",
+                        src_mac);
+                LOG(logERROR, (mess));
+            } else if (!enableTenGigabitEthernet(GET_FLAG) &&
+                       (udpDetails[0].srcip != getDetectorIP())) {
+                ret = FAIL;
+                uint32_t sourceip = getDetectorIP();
+                char src_ip[INET_ADDRSTRLEN];
+                getIpAddressinString(src_ip, sourceip);
+                sprintf(mess,
                         "Invalid udp source ip address for this detector. Must "
                         "be "
                         "same as hardware detector ip address %s in 1G readout "
                         "mode \n",
                         src_ip);
-                    LOG(logERROR, (mess));
-                } else
+                LOG(logERROR, (mess));
+            } else
 #endif
-                    if (configured == FAIL) {
+                if (configured == FAIL) {
+                ret = FAIL;
+                strcpy(mess, "Could not start acquisition because ");
+                strcat(mess, configureMessage);
+                LOG(logERROR, (mess));
+            } else if (sharedMemory_getScanStatus() == RUNNING) {
+                ret = FAIL;
+                strcpy(mess, "Could not start acquisition because a scan is "
+                             "already running!\n");
+                LOG(logERROR, (mess));
+            } else {
+                memset(scanErrMessage, 0, MAX_STR_LENGTH);
+                sharedMemory_setScanStop(0);
+                sharedMemory_setScanStatus(IDLE); // if it was error
+                if (pthread_create(&pthread_tid, NULL, &start_state_machine,
+                                   &blocking)) {
                     ret = FAIL;
-                    strcpy(mess, "Could not start acquisition because ");
-                    strcat(mess, configureMessage);
-                    LOG(logERROR, (mess));
-                } else if (sharedMemory_getScanStatus() == RUNNING) {
-                    ret = FAIL;
-                    strcpy(mess,
-                           "Could not start acquisition because a scan is "
-                           "already running!\n");
+                    strcpy(mess, "Could not start acquisition thread!\n");
                     LOG(logERROR, (mess));
                 } else {
-                    memset(scanErrMessage, 0, MAX_STR_LENGTH);
-                    sharedMemory_setScanStop(0);
-                    sharedMemory_setScanStatus(IDLE); // if it was error
-                    if (pthread_create(&pthread_tid, NULL, &start_state_machine,
-                                       &blocking)) {
-                        ret = FAIL;
-                        strcpy(mess, "Could not start acquisition thread!\n");
-                        LOG(logERROR, (mess));
-                    } else {
-                        // wait for blocking always (scan or not)
-                        // non blocking-no scan also wait (for error message)
-                        // non blcoking-scan dont wait (there is
-                        // scanErrorMessage)
-                        if (blocking || !scan) {
-                            pthread_join(pthread_tid, NULL);
-                        } else
-                            pthread_detach(pthread_tid);
-                    }
+                    // wait for blocking always (scan or not)
+                    // non blocking-no scan also wait (for error message)
+                    // non blcoking-scan dont wait (there is
+                    // scanErrorMessage)
+                    if (blocking || !scan) {
+                        pthread_join(pthread_tid, NULL);
+                    } else
+                        pthread_detach(pthread_tid);
                 }
+            }
     }
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
@@ -2282,15 +2277,15 @@ int set_num_additional_storage_cells(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        if (getChipVersion() == 11) {
+        if (!hasStorageCellsFeature()) {
             ret = FAIL;
-            sprintf(mess,
-                    "Cannot set addl. number of storage cells for chip v1.1\n");
+            sprintf(mess, "Cannot set addl. number of storage cells for this "
+                          "chip version\n");
             LOG(logERROR, (mess));
-        } else if (arg > getMaxStoragecellStart()) {
+        } else if (arg > getMaxStorageCellStart()) {
             ret = FAIL;
             sprintf(mess, "Max Storage cell number should not exceed %d\n",
-                    getMaxStoragecellStart());
+                    getMaxStorageCellStart());
             LOG(logERROR, (mess));
         } else {
             setNumAdditionalStorageCells(arg);
@@ -2750,9 +2745,10 @@ int get_storage_cell_delay(int file_des) {
     functionNotImplemented();
 #else
     // get only
-    if (getChipVersion() == 11) {
+    if (!hasStorageCellsFeature()) {
         ret = FAIL;
-        strcpy(mess, "Storage cell delay is not applicable for chipv 1.1\n");
+        strcpy(mess,
+               "Storage cell delay is not applicable for this chip version\n");
         LOG(logERROR, (mess));
     } else {
         retval = getStorageCellDelay();
@@ -2778,10 +2774,11 @@ int set_storage_cell_delay(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        if (getChipVersion() == 11) {
+        if (!hasStorageCellsFeature()) {
             ret = FAIL;
-            strcpy(mess,
-                   "Storage cell delay is not applicable for chipv 1.1\n");
+            strcpy(
+                mess,
+                "Storage cell delay is not applicable for this chip version\n");
             LOG(logERROR, (mess));
         } else if (arg > MAX_STORAGE_CELL_DLY_NS_VAL) {
             ret = FAIL;
@@ -4131,15 +4128,22 @@ int storage_cell_start(int file_des) {
 #else
     // set & get
     if ((arg == GET_FLAG) || (Server_VerifyLock() == OK)) {
-        if (arg > getMaxStoragecellStart()) {
+        if (arg > getMaxStorageCellStart()) {
             ret = FAIL;
             sprintf(mess, "Max Storage cell number should not exceed %d\n",
-                    getMaxStoragecellStart());
+                    getMaxStorageCellStart());
             LOG(logERROR, (mess));
         } else {
-            retval = selectStoragecellStart(arg);
-            LOG(logDEBUG1, ("Storage cell start: %d\n", retval));
-            validate(&ret, mess, arg, retval, "set storage cell start", DEC);
+            if (arg >= 0) {
+                ret = setStorageCellStart(arg);
+                if (ret == FAIL) {
+                    strcpy(mess, "Could not set storage cell start\n");
+                    LOG(logERROR, (mess));
+                }
+            } else {
+                retval = getStorageCellStart();
+                LOG(logDEBUG1, ("Storage cell start: %d\n", retval));
+            }
         }
     }
 #endif
@@ -6734,17 +6738,20 @@ int set_current_source(int file_des) {
             strcpy(mess, "Could not enable/disable current source. Enable can "
                          "be 0 or 1 only.\n");
             LOG(logERROR, (mess));
+            return Server_SendResult(file_des, INT32, NULL, 0);
         }
         // disable
-        else if (enable == 0 && (fix != -1 || normal != -1)) {
-            ret = FAIL;
-            strcpy(
-                mess,
-                "Could not disable current source. Requires no parameters.\n");
-            LOG(logERROR, (mess));
+        if (enable == 0) {
+            if (fix != -1 || normal != -1) {
+                ret = FAIL;
+                strcpy(mess, "Could not disable current source. Requires no "
+                             "parameters.\n");
+                LOG(logERROR, (mess));
+                return Server_SendResult(file_des, INT32, NULL, 0);
+            }
         }
         // enable
-        else if (enable == 1) {
+        else {
 #ifdef GOTTHARD2D
             // no parameters allowed
             if (fix != -1 || normal != -1) {
@@ -6752,65 +6759,60 @@ int set_current_source(int file_des) {
                 strcpy(mess, "Could not enable current source. Fix and normal "
                              "are invalid parameters for this detector.\n");
                 LOG(logERROR, (mess));
+                return Server_SendResult(file_des, INT32, NULL, 0);
             }
 #else
-            int chipVersion = getChipVersion();
-            if (ret == OK) {
-                if (chipVersion == 11) {
-                    // require both
-                    if ((fix != 0 && fix != 1) ||
-                        (normal != 0 && normal != 1)) {
-                        ret = FAIL;
-                        strcpy(mess, "Could not enable current source. Invalid "
-                                     "or insufficient parameters (fix or "
-                                     "normal). or Options: 0 or 1.\n");
-                        LOG(logERROR, (mess));
-                    }
+            // fix
+            if (fix != 0 && fix != 1) {
+                ret = FAIL;
+                strcpy(mess, "Could not enable current source. Invalid value "
+                             "for parameter (fix). Options: 0 or 1.\n");
+                LOG(logERROR, (mess));
+                return Server_SendResult(file_des, INT32, NULL, 0);
+            }
+
+            // normal
+            if (hasCurrentSourceNormalFeature()) {
+                if (normal != 0 && normal != 1) {
+                    ret = FAIL;
+                    strcpy(mess,
+                           "Could not enable current source. Invalid value for "
+                           "parameter (normal). Options: 0 or 1.\n");
+                    LOG(logERROR, (mess));
+                    return Server_SendResult(file_des, INT32, NULL, 0);
                 }
-                // chipv1.0
-                else {
-                    // require only fix
-                    if (fix != 0 && fix != 1) {
-                        ret = FAIL;
-                        strcpy(mess,
-                               "Could not enable current source. Invalid value "
-                               "for parameter (fix). Options: 0 or 1.\n");
-                        LOG(logERROR, (mess));
-                    } else if (normal != -1) {
-                        ret = FAIL;
-                        strcpy(mess, "Could not enable current source. Invalid "
-                                     "parmaeter (normal). Require only fix and "
-                                     "select for chipv1.0.\n");
-                        LOG(logERROR, (mess));
-                    }
-                    // select can only be 0-63
-                    else if (select > MAX_SELECT_CHIP10_VAL) {
-                        ret = FAIL;
-                        strcpy(mess,
-                               "Could not enable current source. Invalid value "
-                               "for parameter (select). Options: 0-63.\n");
-                        LOG(logERROR, (mess));
-                    }
-                }
+            } else if (normal != -1) {
+                ret = FAIL;
+                strcpy(mess,
+                       "Could not enable current source. Invalid parameter "
+                       "(normal). Not supported for this chip version.\n");
+                LOG(logERROR, (mess));
+                return Server_SendResult(file_des, INT32, NULL, 0);
+            }
+
+            // select (only 0-63)
+            if (!hasCurrentSource64BitSelectionFeature() &&
+                select > MAX_SELECT_CHIP10_VAL) {
+                ret = FAIL;
+                strcpy(mess, "Could not enable current source. Invalid value "
+                             "for parameter (select). Options: 0-63.\n");
+                LOG(logERROR, (mess));
+                return Server_SendResult(file_des, INT32, NULL, 0);
             }
 #endif
         }
 
-        if (ret == OK) {
 #if defined(JUNGFRAUD)
-            if (enable == 0) {
-                disableCurrentSource();
-            } else {
-                enableCurrentSource(fix, select, normal);
-            }
+        if (enable == 0)
+            disableCurrentSource();
+        else
+            enableCurrentSource(fix, select, normal);
 #else
-            setCurrentSource(enable);
+        setCurrentSource(enable);
 #endif
-            int retval = getCurrentSource();
-            LOG(logDEBUG1, ("current source enable retval: %u\n", retval));
-            validate(&ret, mess, enable, retval, "set current source enable",
-                     DEC);
-        }
+        int retval = getCurrentSource();
+        LOG(logDEBUG1, ("current source enable retval: %u\n", retval));
+        validate(&ret, mess, enable, retval, "set current source enable", DEC);
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
@@ -7923,10 +7925,10 @@ int get_filter_resistor(int file_des) {
 #else
     // get only
 #if defined(JUNGFRAUD)
-    if (getChipVersion() == 10) {
+    if (!hasFilterResistorFeature()) {
         ret = FAIL;
-        strcpy(mess, "Could not get filter cell. Not available for this chip "
-                     "version 1.0.\n");
+        strcpy(mess, "Could not get filter resistor. Not available for this "
+                     "chip version.\n");
         LOG(logERROR, (mess));
     }
 #endif
@@ -7962,10 +7964,11 @@ int set_filter_resistor(int file_des) {
             LOG(logERROR, (mess));
         }
 #if defined(JUNGFRAUD)
-        else if (getChipVersion() == 10) {
+        else if (!hasFilterResistorFeature()) {
             ret = FAIL;
-            strcpy(mess, "Could not set filter cell. Not available for this "
-                         "chip version 1.0.\n");
+            strcpy(mess,
+                   "Could not set filter resistor. Not available for this "
+                   "chip version.\n");
             LOG(logERROR, (mess));
         }
 #endif
@@ -8701,7 +8704,7 @@ int get_chip_version(int file_des) {
 #if !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
-    retval = getChipVersion();
+    retval = getChipVersionInFPGA();
 #endif
     LOG(logDEBUG1, ("chip version retval: %d\n", retval));
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
@@ -8981,11 +8984,10 @@ int get_num_filter_cells(int file_des) {
     functionNotImplemented();
 #else
     // get only
-    // only for chipv1.1
-    if (getChipVersion() == 10) {
+    if (!hasFilterCellsFeature()) {
         ret = FAIL;
-        strcpy(mess, "Could not get number of filter cells. Only available for "
-                     "chip version 1.1\n");
+        strcpy(mess, "Could not get number of filter cells. Not available for "
+                     "this chip version.\n");
         LOG(logERROR, (mess));
     } else {
         retval = getNumberOfFilterCells();
@@ -9018,13 +9020,10 @@ int set_num_filter_cells(int file_des) {
                     "0 - %d\n",
                     arg, MAX_FILTER_CELL_VAL);
             LOG(logERROR, (mess));
-        }
-        // only for chipv1.1
-        else if (getChipVersion() == 10) {
+        } else if (!hasFilterCellsFeature()) {
             ret = FAIL;
-            strcpy(mess,
-                   "Could not set number of filter cells. Only available for "
-                   "chip version 1.1\n");
+            strcpy(mess, "Could not set number of filter cells. Not available "
+                         "for this chip version.\n");
             LOG(logERROR, (mess));
         } else {
             setNumberOfFilterCells(arg);

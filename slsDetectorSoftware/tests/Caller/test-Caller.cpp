@@ -1694,13 +1694,13 @@ TEST_CASE("filterresistor", "[.detectorintegration]") {
     auto det_type = det.getDetectorType().squash();
 
     // only for chipv1.1
-    bool chip11 = false;
-    if (det_type == defs::JUNGFRAU &&
-        det.getChipVersion().squash() * 10 == 11) {
-        chip11 = true;
+    bool hasFeature = false;
+    if (det_type == defs::JUNGFRAU) {
+        auto chipVersion = det.getChipVersion().squash() * 10;
+        hasFeature = (chipVersion == 11 || chipVersion == 12);
     }
 
-    if (det_type == defs::GOTTHARD2 || chip11) {
+    if (det_type == defs::GOTTHARD2 || hasFeature) {
         auto prev_val = det.getFilterResistor();
         {
             std::ostringstream oss;
@@ -1910,7 +1910,7 @@ TEST_CASE("currentsource", "[.detectorintegration]") {
                             "currentsource [enabled, nofix, 63]\n");
                 }
             }
-            // chipv1.1
+            // chipv1.1 abd chip v1.2
             else {
                 REQUIRE_THROWS(caller.call("currentsource", {"1"}, -1, PUT));
                 REQUIRE_THROWS(

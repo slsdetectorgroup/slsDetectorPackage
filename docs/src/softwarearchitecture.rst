@@ -7,8 +7,8 @@ Software Architecture
 Introduction
 ------------------------------------
 
-.. figure:: images/System_communication_architecture.png
-   :target: _images/System_communication_architecture.png
+.. figure:: images/System_communication_architecture.svg
+   :target: _images/System_communication_architecture.svg
    :width: 700px
    :align: center
    :alt: System communication architecture
@@ -46,8 +46,8 @@ Next, each component is examined in detail.
 Module
 -------
 
-.. figure:: images/Module_architecture.png
-   :target: _images/Module_architecture.png
+.. figure:: images/Module_architecture.svg
+   :target: _images/Module_architecture.svg
    :width: 700px
    :align: center
    :alt: Module architecture
@@ -66,8 +66,8 @@ The module also includes an FPGA with VHDL firmware (file format depends on the 
 Upgrade
 ^^^^^^^^
 
-.. figure:: images/Soft_upgrade_components.png
-   :target: _images/Soft_upgrade_components.png
+.. figure:: images/Soft_upgrade_components.svg
+   :target: _images/Soft_upgrade_components.svg
    :width: 700px
    :align: center
    :alt: Software Upgrade Components
@@ -80,7 +80,7 @@ There are mainly three components to the soft upgrade:
 * Firmware upgrade: The VHDL code running on the FPGA.
 * slsDetectorPackage upgrade: The client code running on the host PC to control the module(s) and receiver(s) if any.
 
-Please use the `update command <commandline.html#term-update>`_ when updating both the server and firmware simulataneously and `programfpga command <commandline.html#term-programfpga-fname.pof-fname.rbf-full-path-opitonal-force-delete-normal-file>`_ when only updating the firmware. See :ref:`firmware upgrade <firmware upgrade>` for details.
+Please use the `update command <commandline.html#term-update>`_ when updating both the server and firmware simultaneously and `programfpga command <commandline.html#term-programfpga-fname.pof-fname.rbf-full-path-opitonal-force-delete-normal-file>`_ when only updating the firmware. See :ref:`firmware upgrade <firmware upgrade>` for details.
 
 When only updating the detector server, use the `updatedetectorserver command <commandline.html#term-updatedetectorserver-server_name-with-full-path>`_ command. See :ref:`detector server upgrade <Detector Server Upgrade>` for details.
 
@@ -97,8 +97,8 @@ When only updating the detector server, use the `updatedetectorserver command <c
 Receiver
 --------
 
-.. figure:: images/Receiver_architecture.png
-   :target: _images/Receiver_architecture.png
+.. figure:: images/Receiver_architecture.svg
+   :target: _images/Receiver_architecture.svg
    :align: center
    :alt: Receiver Architecture
 
@@ -115,14 +115,14 @@ Few characteristics of the receiver:
 
 * It can be run on the same host as the client or on a different host.
 * There is a receiver process for every module and a file for every UDP port. 
-* Each receiver process is independent and asynchronized for performance. So are the UDP ports.
+* Each receiver process is independent and asynchronous for performance. So are the UDP ports.
 
 
 Client
 --------
 
-.. figure:: images/Client_architecture.png
-   :target: _images/Client_architecture.png
+.. figure:: images/Client_architecture.svg
+   :target: _images/Client_architecture.svg
    :align: center
    :alt: Client Architecture
 

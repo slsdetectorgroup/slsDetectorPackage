@@ -119,4 +119,13 @@ DIO: Driving the 32 FPGA pins corresponding to the lowest 32 bits of the patioct
    | SR_MODE | clk | EN    | PULSE | RD | CHSIN | ANAMode | TBLOAD |
    +---------+-----+-------+-------+----+-------+---------+--------+
 
+
 For Mythen3 the pattern word only connects to output pins of the FPGA when the pattern is running. Afterwards the signals will switch back to other logic in the FPGA. Both CTB's hold the last executed pattern word until a new pattern is started.
+
+**Relation of received data to pattern execution**
+
+In the default configuration the Ctb will send out udp packets to the sls_receiver for every end of a pattern execution. This behavior can be changed using STREAMING_CTRL_REG, where one can configure a bit position in the 64-bit pattern word to trigger udp packets. This allows to send more than one packet per pattern or also no packets at all.
+
+The "patternstart" command on the ctb executes the pattern. As long as streaming_ctrl_reg is disabled, every pattern execution using this command will not send UDP packets.
+
+For Mythen3 the sending of udp packets is not connected to pattern execution.

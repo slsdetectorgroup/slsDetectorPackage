@@ -81,7 +81,7 @@ The only difference is that you point CMake to $CONDA_PREFIX
     cmake ../path/to/your/source -DCMAKE_PREFIX_PATH=$CONDA_PREFIX
     make
 
-Depending on your system compiler you might also have to install gxx_linux-64 to compiled.
+Depending on your system compiler you might also have to install gxx_linux-64 to compile.
 
 No tools minimal approach
 -----------------------------

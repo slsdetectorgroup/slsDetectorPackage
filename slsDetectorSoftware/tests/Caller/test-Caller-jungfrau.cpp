@@ -335,8 +335,9 @@ TEST_CASE("storagecell_start", "[.detectorintegration]") {
             caller.call("storagecell_start", {"1"}, -1, PUT, oss);
             REQUIRE(oss.str() == "storagecell_start 1\n");
         }
-        // chip version 1.0
-        if (chipVersionToX10(det.getChipVersion().squash()) == 10) {
+        auto chipVersion = chipVersionToX10(det.getChipVersion().squash());
+        // chip version 1.0 and chip version 1.2
+        if (chipVersion == 10 || chipVersion == 12) {
             std::ostringstream oss;
             caller.call("storagecell_start", {"15"}, -1, PUT, oss);
             REQUIRE(oss.str() == "storagecell_start 15\n");

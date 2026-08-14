@@ -11,7 +11,7 @@ add_executable(gendoc src/gendoc.cpp)
 # This is a bit hacky, but better than exposing stuff? 
 target_include_directories(gendoc PRIVATE ${PROJECT_SOURCE_DIR}/slsDetectorSoftware/src)
 target_link_libraries(gendoc PRIVATE
-  slsDetectorShared
+  slsDetectorStatic
 )
 set_target_properties(gendoc PROPERTIES 
   RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin

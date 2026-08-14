@@ -16,35 +16,57 @@ the shared libraries these are needed:
  * CMake >= 3.14 
  * C++17 compatible compiler. (We test with gcc and clang)
 
-.. note ::  
+.. note::  
     
     For v9.x.x of slsDetectorPackage and older, C++11 compatible compiler.
 
 
------------------------
-Python bindings
------------------------
+Additionally the core requires the following dependencies: 
 
- * Python >= 3.8
- * pybind11 2.13.6 (packaged in libs)
+ * ZeroMQ 4.3.4 (packaged in libs)
+ * rapidjson 1.1.0 (packaged in libs)
 
-.. note ::  
+.. note:: 
 
-    Refer :ref:`pybind11 notes. <pybind for different slsDetectorPackage versions>`  
+    Both ZeroMQ and rapidjson are bundled in libs. One does not need to pre-install them on the system. Alternatively, one can fetch ZeroMQ from GitHub by passing the cmake options ``-DSLS_FETCH_ZEROMQ_FROM_GITHUB=ON``.
 
------------------------
-ZeroMQ
------------------------
-
- * Zeromq 4.3.4 (packaged in libs)
-
-.. note ::   
+.. note:: 
 
     Refer :ref:`zeromq notes. <zeromq for different slsDetectorPackage versions>` 
 
------------------------
-GUI
------------------------
+
+------------------------------------
+Dependencies to build Python module
+------------------------------------
+
+To build the python module the following dependencies are needed: 
+
+ * Python >= 3.8
+ * pybind11 2.13.8 (packaged in libs)
+  
+.. note:: 
+
+    pybind11 is bundled in libs. One does not need to pre-install it on the system. Alternatively, one can fetch pybind11 from GitHub by passing the cmake option ``-DSLS_FETCH_PYBIND11_FROM_GITHUB=ON``. 
+
+.. note::  
+
+    Refer :ref:`pybind11 notes. <pybind for different slsDetectorPackage versions>`  
+
+-------------------------------
+Dependencies to build documentation
+-------------------------------
+
+To build this documentation that you are reading now the following dependencies are needed: 
+
+ * Doxygen (to extract C++ classes etc.)
+ * Breathe (Sphinx plugin to handle doxygen xml)
+ * Sphinx with sphinx_rtd_theme
+
+-------------------------
+Dependencies to build GUI
+-------------------------
+
+To build the GUI the following dependencies are needed:
 
  * Qt 5.9
  * Qwt 6.1.5 (packaged in libs)
@@ -53,30 +75,22 @@ GUI
 
     Qwt is bundled in libs. One does not need to pre-install it on the system.
 
------------------------------------------------------
+------------------------------------------------------
 Dependencies to build Moench and Jungfrau executables
------------------------------------------------------
+------------------------------------------------------
 
 To build the Moench and Jungfrau executables for preprocessing and calibration the following dependencies are needed:
 
  * libtiff
 
------------------------
-Documentation
------------------------
+--------------------------------------------------
+Dependencies to build Tests
+--------------------------------------------------
 
-The documentation that you are reading now is built with 
+To build the tests the following dependencies are needed:
 
- * Doxygen (to extract C++ classes etc.)
- * Breathe (Sphinx plugin to handle doxygen xml)
- * Sphinx with sphinx_rtd_theme 
+ * Catch2 2.13.8 (packaged in libs)
 
------------------------
-Packaged in libs/
------------------------
-
- * catch2 (unit testing)
- * rapidjson (streaming from receiver)
- * pybind11 (python bindings)  
- * qwt (gui plotting)
- * libzmq (streaming to/from receiver)
+.. note:: 
+    
+    Catch2 is bundled in libs. One does not need to pre-install it on the system. 

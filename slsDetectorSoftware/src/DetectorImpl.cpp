@@ -1806,6 +1806,13 @@ void DetectorImpl::setRxROI(const std::vector<defs::ROI> &args) {
         auto moduleGlobalRoi = getModuleROI(iModule);
         // at most 2 rois per module (for each port)
         std::vector<defs::ROI> portRois(nPortsPerModule);
+        for (auto &roi : portRois) {
+            roi.setNoRoi();
+            if (shm()->numberOfChannels.y == 1) {
+                roi.ymin = -1;
+                roi.ymax = -1;
+            }
+        }
 
         // check overlap with module
         for (const auto &arg : args) {

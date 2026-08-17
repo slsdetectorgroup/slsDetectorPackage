@@ -1121,13 +1121,16 @@ TEST_CASE("readoutspeed", "[.detectorintegration]") {
         det_type == defs::MOENCH || det_type == defs::GOTTHARD2 ||
         det_type == defs::MYTHEN3) {
         auto prev_val = det.getReadoutSpeed();
+        bool fullSpeedSupportedJungfrauBoards = false;
+        if (det_type == defs::JUNGFRAU) {
+            auto chipVersion = chipVersionToX10(det.getChipVersion().squash());
+            fullSpeedSupportedJungfrauBoards = (chipVersion >= 11);
+        }
 
-        // full speed for jungfrau/moench only works for new boards (chipv1.1 is
-        // with new board [hw1.0 and chipv1.0 not tested here])
-        if (((det_type == defs::JUNGFRAU) &&
-             det.getChipVersion().squash() * 10 == 11) ||
-            det_type == defs::EIGER || det_type == defs::MOENCH ||
-            det_type == defs::MYTHEN3) {
+        // full speed for jungfrau/moench only works for new boards [hw1.0 and
+        // chipv1.0 not tested here]
+        if (fullSpeedSupportedJungfrauBoards || det_type == defs::EIGER ||
+            det_type == defs::MOENCH || det_type == defs::MYTHEN3) {
             std::ostringstream oss1, oss2, oss3, oss4;
             caller.call("readoutspeed", {"0"}, -1, PUT, oss1);
             REQUIRE(oss1.str() == "readoutspeed full_speed\n");
@@ -1693,10 +1696,9 @@ TEST_CASE("filterresistor", "[.detectorintegration]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    // only for chipv1.1
     bool hasFeature = false;
     if (det_type == defs::JUNGFRAU) {
-        auto chipVersion = det.getChipVersion().squash() * 10;
+        auto chipVersion = chipVersionToX10(det.getChipVersion().squash());
         hasFeature = (chipVersion == 11 || chipVersion == 12);
     }
 
@@ -1867,9 +1869,8 @@ TEST_CASE("currentsource", "[.detectorintegration]") {
         else {
             int chipVersion = 10;
             if (det_type == defs::JUNGFRAU) {
-                chipVersion = det.getChipVersion().tsquash(
-                                  "inconsistent chip versions to test") *
-                              10;
+                chipVersion = chipVersionToX10(det.getChipVersion().tsquash(
+                    "inconsistent chip versions to test"));
             }
             if (chipVersion == 10) {
                 REQUIRE_THROWS(caller.call("currentsource", {"1"}, -1, PUT));
@@ -1910,7 +1911,7 @@ TEST_CASE("currentsource", "[.detectorintegration]") {
                             "currentsource [enabled, nofix, 63]\n");
                 }
             }
-            // chipv1.1 abd chip v1.2
+            // chipv1.1 and chip v1.2
             else {
                 REQUIRE_THROWS(caller.call("currentsource", {"1"}, -1, PUT));
                 REQUIRE_THROWS(

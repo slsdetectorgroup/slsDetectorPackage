@@ -1969,7 +1969,7 @@ rx_threads:
 
 chipversion:
   inherit_actions: GET_COMMAND
-  help: "\n\t[Jungfrau] Returns chip version. Can be 1.0, 1.1 or 1.2"
+  help: "\n\t[Jungfrau] Returns chip version as string. For example, 'v1.1' or 'v1.2 Low Noise'"
   actions:
     GET:
       function: getChipVersion

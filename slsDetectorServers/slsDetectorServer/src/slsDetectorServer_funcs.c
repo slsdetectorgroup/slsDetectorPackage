@@ -8700,14 +8700,15 @@ int set_veto_algorithm(int file_des) {
 int get_chip_version(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    int retval = -1;
+    char retvals[MAX_STR_LENGTH];
+    memset(retvals, 0, MAX_STR_LENGTH);
 #if !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
-    retval = getChipVersionInFPGA();
+    ret = getChipVersionInFPGA(retvals, mess);
 #endif
-    LOG(logDEBUG1, ("chip version retval: %d\n", retval));
-    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+    LOG(logDEBUG1, ("chip version retval: %s\n", retvals));
+    return Server_SendResult(file_des, OTHER, retvals, sizeof(retvals));
 }
 
 int get_default_dac(int file_des) {

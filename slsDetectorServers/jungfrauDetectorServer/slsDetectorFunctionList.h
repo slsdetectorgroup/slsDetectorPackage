@@ -57,7 +57,7 @@ void getHardwareVersion(char *version);
 u_int16_t getHardwareVersionNumber();
 u_int16_t getHardwareSerialNumber();
 int isHardwareVersion_1_0();
-int getChipVersionInFPGA();
+int getChipVersionInFPGA(char *retvals, char *mess);
 int findChipIndex(enum CHIPINDEX *ind, char *cval, char *mess);
 int setChipVersionIntFromConfigFile(int val,
                                     char *mess); // for backward compatibility

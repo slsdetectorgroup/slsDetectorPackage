@@ -401,7 +401,7 @@ class Module : public virtual slsDetectorDefs {
      *    Jungfrau/Moench Specific                    *
      *                                                *
      * ************************************************/
-    double getChipVersion() const;
+    std::string getChipVersion() const;
     int getThresholdTemperature() const;
     void setThresholdTemperature(int val);
     bool getTemperatureControl() const;

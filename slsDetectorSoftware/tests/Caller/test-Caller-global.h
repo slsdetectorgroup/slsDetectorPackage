@@ -8,9 +8,12 @@
 #include <chrono>
 #include <filesystem>
 #include <optional>
+#include <string>
 #include <thread>
 
 namespace sls {
+
+int chipVersionToX10(const std::string &chipVersion);
 
 namespace acq = sls::test::acquire;
 namespace mf = sls::test::master_file;

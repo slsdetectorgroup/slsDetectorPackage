@@ -1427,7 +1427,7 @@ std::string Caller::chipversion(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << R"V0G0N(
-	[Jungfrau] Returns chip version. )V0G0N"
+	[Jungfrau] Returns chip version as string. For example, 'v1.1' or 'v1.2 Low Noise' )V0G0N"
            << std::endl;
         return os.str();
     }

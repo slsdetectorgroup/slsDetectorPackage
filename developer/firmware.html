@@ -221,7 +221,7 @@
 <li><p>Software:</p>
 <blockquote>
 <div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Option 1: if the old server is still running:</span>
-sls_detector_put<span class="w"> </span>execcommand<span class="w"> </span><span class="s2">&quot;./boot_recovery&quot;</span>
+sls_detector_put<span class="w"> </span>execcommand<span class="w"> </span><span class="s2">"./boot_recovery"</span>
 
 <span class="c1"># Option 2:</span>
 ssh<span class="w"> </span>root@bebxxx
@@ -239,7 +239,7 @@ ssh<span class="w"> </span>root@bebxxx
 <div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nc<span class="w"> </span>-p<span class="w"> </span><span class="m">3000</span><span class="w"> </span>-u<span class="w"> </span>bebxxx<span class="w"> </span><span class="m">3000</span>
 <span class="c1"># Press enter twice to see prompt with board name.</span>
 &gt;<span class="w"> </span>bebxxx
-<span class="c1"># After each bcp command, wait for this terminal to print &quot;Success&quot;.</span>
+<span class="c1"># After each bcp command, wait for this terminal to print "Success".</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -263,7 +263,7 @@ bcp<span class="w"> </span>download.bit<span class="w"> </span>bebxxx:/kernel
 </li>
 <li><p>Reboot the detector.</p>
 <blockquote>
-<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># In the first terminal where we saw &quot;Succeess&quot;</span>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># In the first terminal where we saw "Succeess"</span>
 <span class="c1"># reconfig febX is necessary only if you have flashed a new feb firmware</span>
 reconfig<span class="w"> </span>febl
 reconfig<span class="w"> </span>febr
@@ -485,10 +485,10 @@ telnet<span class="w"> </span>bchipxxx
 <span class="c1"># view of mtd3 existing</span>
 root:/&gt;<span class="w"> </span>more<span class="w"> </span>/proc/mtd
 dev:<span class="w">    </span>size<span class="w">   </span>erasesize<span class="w">  </span>name
-mtd0:<span class="w"> </span><span class="m">00040000</span><span class="w"> </span><span class="m">00020000</span><span class="w"> </span><span class="s2">&quot;bootloader(nor)&quot;</span>
-mtd1:<span class="w"> </span><span class="m">00100000</span><span class="w"> </span><span class="m">00020000</span><span class="w"> </span><span class="s2">&quot;linux kernel(nor)&quot;</span>
-mtd2:<span class="w"> </span>002c0000<span class="w"> </span><span class="m">00020000</span><span class="w"> </span><span class="s2">&quot;file system(nor)&quot;</span>
-mtd3:<span class="w"> </span><span class="m">01000000</span><span class="w"> </span><span class="m">00010000</span><span class="w"> </span><span class="s2">&quot;bitfile(spi)&quot;</span>
+mtd0:<span class="w"> </span><span class="m">00040000</span><span class="w"> </span><span class="m">00020000</span><span class="w"> </span><span class="s2">"bootloader(nor)"</span>
+mtd1:<span class="w"> </span><span class="m">00100000</span><span class="w"> </span><span class="m">00020000</span><span class="w"> </span><span class="s2">"linux kernel(nor)"</span>
+mtd2:<span class="w"> </span>002c0000<span class="w"> </span><span class="m">00020000</span><span class="w"> </span><span class="s2">"file system(nor)"</span>
+mtd3:<span class="w"> </span><span class="m">01000000</span><span class="w"> </span><span class="m">00010000</span><span class="w"> </span><span class="s2">"bitfile(spi)"</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -511,7 +511,7 @@ mtd3:<span class="w"> </span><span class="m">01000000</span><span class="w"> </s
 <li><p>or command line</p>
 <blockquote>
 <div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># step 1: get the kernel image (uImage.lzma) from slsdetectorgroup</span>
-<span class="c1"># and copy it to pc&#39;s tftp folder</span>
+<span class="c1"># and copy it to pc's tftp folder</span>
 
 <span class="c1"># step 2: connect to the board</span>
 telnet<span class="w"> </span>bchipxxx

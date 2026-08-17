@@ -174,13 +174,13 @@
 <h2>Naming Policy:<a class="headerlink" href="#naming-policy" title="Link to this heading"></a></h2>
 <p>Per default all tests should be visible to catch2.</p>
 <p>If a test fails in the github or gitea actions hide the test by adding the tag <code class="docutils literal notranslate"><span class="pre">[.]</span></code> to the test name.</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">TEST_CASE</span><span class="p">(</span><span class="s">&quot;This test is hidden from default runs&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;[.]&quot;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">TEST_CASE</span><span class="p">(</span><span class="s">"This test is hidden from default runs"</span><span class="p">,</span><span class="w"> </span><span class="s">"[.]"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="n">REQUIRE</span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">2</span><span class="p">);</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>You can run all tests requiring a detector by running the following command:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">tests &quot;[.detectorintegration]&quot;</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">tests "[.detectorintegration]"</span>
 </pre></div>
 </div>
 <div class="admonition note">
@@ -188,7 +188,7 @@
 <p>This only works if a configured simulator (or an actual configured detector) and receiver are already set up to run the tests. There is a script that automatically sets up virtual detectors and runs all integration tests. See Section <a class="reference internal" href="#python-simulator-script"><span class="std std-ref">Simulator Script.</span></a>  below.</p>
 </div>
 <p>If you want to disable testing that involves a data file that require pc tuning optimizations, add the hidden tag <code class="docutils literal notranslate"><span class="pre">[.disable_check_data_file]</span></code> to the test case. Please note that only some specific disable tests have been implemented so far.</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">tests &quot;[detectorintegration]~[disable_check_data_file]&quot;</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">tests "[detectorintegration]~[disable_check_data_file]"</span>
 </pre></div>
 </div>
 <div class="admonition note">
@@ -206,12 +206,12 @@
 <p>This runs all tests marked with the tag <code class="docutils literal notranslate"><span class="pre">[.detectorintegration]</span></code> for all detector simulators.
 If you want to run them for a specific virtual detector or a specific test use the following command:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">cd build</span>
-<span class="go">python bin/test_simulators.py --servers jungfrau --test &quot;[dacs]&quot;</span>
+<span class="go">python bin/test_simulators.py --servers jungfrau --test "[dacs]"</span>
 </pre></div>
 </div>
 <p>You can exclude specific tests by adding the option <code class="docutils literal notranslate"><span class="pre">~[&lt;disable_test_name&gt;]</span></code>. Again, we assume that this marker is added to the tests that you want to exclude.</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">cd build</span>
-<span class="go">python bin/test_simulators.py --servers eiger jungfrau moench --test &quot;[detectorintegration]~[disable_check_data_file]&quot;</span>
+<span class="go">python bin/test_simulators.py --servers eiger jungfrau moench --test "[detectorintegration]~[disable_check_data_file]"</span>
 </pre></div>
 </div>
 <p>You can additionally run all the tests not requiring detectors using the script <code class="docutils literal notranslate"><span class="pre">bin/test_simulators.py</span></code> by passing the option <code class="docutils literal notranslate"><span class="pre">--general-tests</span></code>.</p>
@@ -250,7 +250,7 @@ If you want to run them for a specific virtual detector or a specific test use t
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
 
 <span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">detectorintegration</span>
-<span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span><span class="s2">&quot;session_simulator&quot;</span><span class="p">,</span> <span class="p">[(</span><span class="s2">&quot;&lt;my_detector&gt;&quot;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">num_interfaces</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">num_modules</span><span class="o">&gt;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;&lt;another_detector&gt;&quot;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">num_interfaces</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">num_modules</span><span class="o">&gt;</span><span class="p">)],</span> <span class="n">indirect</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span><span class="s2">"session_simulator"</span><span class="p">,</span> <span class="p">[(</span><span class="s2">"&lt;my_detector&gt;"</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">num_interfaces</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">num_modules</span><span class="o">&gt;</span><span class="p">),</span> <span class="p">(</span><span class="s2">"&lt;another_detector&gt;"</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">num_interfaces</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">num_modules</span><span class="o">&gt;</span><span class="p">)],</span> <span class="n">indirect</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">test_example_with_specific_simulators</span><span class="p">(</span><span class="n">session_simulator</span><span class="p">):</span>
     <span class="c1"># your test code here</span>
 </pre></div>

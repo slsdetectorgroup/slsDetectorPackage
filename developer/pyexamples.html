@@ -224,17 +224,17 @@ using the built in hex() function.</p>
 
 <span class="c1"># Convert to  string</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="nb">hex</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">patwait0</span><span class="p">)</span>
-<span class="s1">&#39;0xaa&#39;</span>
+<span class="s1">'0xaa'</span>
 </pre></div>
 </div>
 <p>For multiple values one can use a list comprehension to loop over the values.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">values</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="p">[(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="p">]</span>
-<span class="go">[&#39;0x1&#39;, &#39;0x2&#39;, &#39;0x3&#39;, &#39;0x4&#39;, &#39;0x5&#39;]</span>
+<span class="go">['0x1', '0x2', '0x3', '0x4', '0x5']</span>
 
 <span class="go"># or to a single string by passing the list to .join</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">hex</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="p">])</span>
-<span class="go">&#39;0x1, 0x2, 0x3, 0x4, 0x5&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">hex</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="p">])</span>
+<span class="go">'0x1, 0x2, 0x3, 0x4, 0x5'</span>
 </pre></div>
 </div>
 </section>
@@ -254,7 +254,7 @@ file writing etc.</p>
 <p>If we want to control the shutter of for example, the big X-ray box we can add
 this line in our code. It then opens the shutter just before the measurement
 and closes is afterwards.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">xrf_shutter_open</span><span class="p">(</span><span class="n">box</span><span class="p">,</span> <span class="s1">&#39;Fe&#39;</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">xrf_shutter_open</span><span class="p">(</span><span class="n">box</span><span class="p">,</span> <span class="s1">'Fe'</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">th</span> <span class="ow">in</span> <span class="n">threshold</span><span class="p">:</span>
         <span class="n">d</span><span class="o">.</span><span class="n">vthreshold</span> <span class="o">=</span> <span class="n">th</span>
         <span class="n">d</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
@@ -318,12 +318,12 @@ But lets start looking at the at the manual way:</p>
     <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
 
 <span class="c1"># Stop the receiver after we got the frames</span>
-<span class="c1"># Detector is already idle so we don&#39;t need to stop it</span>
+<span class="c1"># Detector is already idle so we don't need to stop it</span>
 <span class="n">d</span><span class="o">.</span><span class="n">stopReceiver</span><span class="p">()</span>
 
 <span class="n">lost</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">rx_framescaught</span> <span class="o">-</span> <span class="n">n_frames</span>
 <span class="nb">print</span><span class="p">(</span>
-    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">n_frames</span><span class="si">}</span><span class="s2"> frames of </span><span class="si">{</span><span class="n">t_exp</span><span class="si">}</span><span class="s2">s took </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">t0</span><span class="si">:{</span><span class="mf">.3</span><span class="si">}}</span><span class="s2">s with </span><span class="si">{</span><span class="n">lost</span><span class="si">}</span><span class="s2"> frames lost &quot;</span>
+    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">n_frames</span><span class="si">}</span><span class="s2"> frames of </span><span class="si">{</span><span class="n">t_exp</span><span class="si">}</span><span class="s2">s took </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">t0</span><span class="si">:{</span><span class="mf">.3</span><span class="si">}}</span><span class="s2">s with </span><span class="si">{</span><span class="n">lost</span><span class="si">}</span><span class="s2"> frames lost "</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -346,7 +346,7 @@ hang around until the main process exits.</p>
 
 <span class="c1">#Do some other work</span>
 <span class="k">while</span> <span class="n">d</span><span class="o">.</span><span class="n">status</span> <span class="o">!=</span> <span class="n">runStatus</span><span class="o">.</span><span class="n">IDLE</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Working&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Working"</span><span class="p">)</span>
     <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
 
 <span class="c1">#Join the process</span>
@@ -389,13 +389,13 @@ hang around until the main process exits.</p>
 <span class="mf">181.23</span>
 
 <span class="c1"># To get back the exposure time for each module</span>
-<span class="c1"># it&#39;s possible to use getExptime, this also returns</span>
+<span class="c1"># it's possible to use getExptime, this also returns</span>
 <span class="c1"># the values as  DurationWrapper</span>
 
 <span class="o">&gt;&gt;&gt;</span> <span class="n">d</span><span class="o">.</span><span class="n">getExptime</span><span class="p">()</span>
 <span class="p">[</span><span class="n">sls</span><span class="p">::</span><span class="n">DurationWrapper</span><span class="p">(</span><span class="n">total_seconds</span><span class="p">:</span> <span class="mf">181.23</span> <span class="n">count</span><span class="p">:</span> <span class="mi">181230000000</span><span class="p">)]</span>
 
-<span class="c1"># In case the values are the same it&#39;s possible to use the</span>
+<span class="c1"># In case the values are the same it's possible to use the</span>
 <span class="c1"># element_if_equal function to reduce the values to a single</span>
 <span class="c1"># value</span>
 
@@ -435,7 +435,7 @@ hang around until the main process exits.</p>
 <span class="n">d</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">()</span>
 <span class="k">for</span> <span class="n">dac</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">daclist</span><span class="p">:</span>
     <span class="n">r</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">getDAC</span><span class="p">(</span><span class="n">dac</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">dac</span><span class="o">.</span><span class="n">name</span><span class="si">:</span><span class="s1">10s</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">r</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">dac</span><span class="o">.</span><span class="n">name</span><span class="si">:</span><span class="s1">10s</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">r</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>

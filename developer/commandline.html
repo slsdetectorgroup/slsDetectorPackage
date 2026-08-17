@@ -188,7 +188,7 @@
 <div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># For detector with index 2 in shared memory</span>
 <span class="n">sls_detector_put</span> <span class="mi">2</span><span class="o">-</span><span class="n">hostname</span> <span class="n">bchip133</span><span class="o">+</span><span class="n">bchip123</span><span class="o">+</span><span class="n">bchip456</span>
 
-<span class="c1"># Without &#39;-&#39;, the detector index defaults to 0</span>
+<span class="c1"># Without '-', the detector index defaults to 0</span>
 <span class="n">sls_detector_put</span> <span class="n">hostname</span> <span class="n">bchip133</span><span class="o">+</span><span class="n">bchip123</span><span class="o">+</span><span class="n">bchip456</span>
 
 <span class="c1"># Accessing all modules with detector index 2</span>
@@ -357,7 +357,7 @@
 </div>
 </dd>
 <dt id="term-chipversion">chipversion<a class="headerlink" href="#term-chipversion" title="Link to this term"></a></dt><dd><div class="line-block">
-<div class="line">[Jungfrau] Returns chip version. Can be 1.0 or 1.1</div>
+<div class="line">[Jungfrau] Returns chip version as string. For example, ‘v1.1’ or ‘v1.2 Low Noise’</div>
 </div>
 </dd>
 <dt id="term-clearbit-reg-address-in-hex-bit-index">clearbit [reg address in hex] [bit index]<a class="headerlink" href="#term-clearbit-reg-address-in-hex-bit-index" title="Link to this term"></a></dt><dd><div class="line-block">

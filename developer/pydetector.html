@@ -1133,10 +1133,10 @@ Also changes clkdiv 2, 3, 4</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="slsdet.Detector.chipversion">
 <span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">chipversion</span></span><a class="headerlink" href="#slsdet.Detector.chipversion" title="Link to this definition"></a></dt>
-<dd><p>[Jungfrau] Chip version of module. Can be 1.0, 1.1 or 1.2.</p>
+<dd><p>[Jungfrau] Chip version of module.</p>
 <p class="rubric">Example</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">chipversion</span>
-<span class="go">&#39;1.0&#39;</span>
+<span class="go">'1.2 Normal'</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -1192,7 +1192,7 @@ d.clearBit(mybit)</p>
 <dd><p>Client software version in format [YYMMDD]</p>
 <p class="rubric">Example</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">clientversion</span>
-<span class="go">&#39;7.0.1&#39;</span>
+<span class="go">'7.0.1'</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -1323,7 +1323,7 @@ Set up once.</p>
 </dl>
 </div>
 <p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="s2">&quot;/path/to/config/file.config&quot;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="s2">"/path/to/config/file.config"</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -1513,7 +1513,7 @@ d.define_reg(‘myreg’,addr=RegisterAddress(0x6))’)</p>
 <dd><p>On-board detector server software version in format [0xYYMMDD]</p>
 <p class="rubric">Example</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">detectorserverversion</span>
-<span class="go">&#39;7.0.0&#39;</span>
+<span class="go">'7.0.0'</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -1695,7 +1695,7 @@ For HDF5, package must be compiled with HDF5 flags. Default is binary.</p>
 <dd><p>Fimware version of detector in format [0xYYMMDD] or an increasing 2 digit number for Eiger.</p>
 <p class="rubric">Example</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">firmwareversion</span>
-<span class="go">&#39;0x200910&#39;</span>
+<span class="go">'0x200910'</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -2075,7 +2075,7 @@ d.getBit(mybit)</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slsdet.Detector.getChipVersion">
-<span class="sig-name descname"><span class="pre">getChipVersion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">slsdet._slsdet.CppDetectorApi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#slsdet.Detector.getChipVersion" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">getChipVersion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">slsdet._slsdet.CppDetectorApi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#slsdet.Detector.getChipVersion" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -3271,10 +3271,10 @@ Virtual servers can already use the port in hostname separated by ‘:’ and po
 <p>The row and column values in the udp/zmq header are affected by the order in this command and the detsize command. The modules are stacked row by row until they reach the y-axis limit set by detsize (if specified). Then, stacking continues in the next column and so on. This only affects row and column in udp/zmq header.</p>
 </div>
 <p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">hostname</span> <span class="o">=</span> <span class="s1">&#39;beb031+beb032+&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">hostname</span> <span class="o">=</span> <span class="s1">&#39;localhost:1912+localhost:1914+&#39;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">hostname</span> <span class="o">=</span> <span class="s1">'beb031+beb032+'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">hostname</span> <span class="o">=</span> <span class="s1">'localhost:1912+localhost:1914+'</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">hostname</span>
-<span class="go">[&#39;localhost&#39;]</span>
+<span class="go">['localhost']</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -3352,7 +3352,7 @@ Set up per measurement.</p>
 </dl>
 </div>
 <p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">include</span> <span class="o">=</span> <span class="s1">&#39;path/to/file.par&#39;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">include</span> <span class="o">=</span> <span class="s1">'path/to/file.par'</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -3397,7 +3397,7 @@ Set up per measurement.</p>
 <dd><p>Kernel version on the detector including time and date</p>
 <p class="rubric">Example</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">kernelversion</span>
-<span class="go">&#39;#37 PREEMPT Thu Oct 13 14:51:04 CEST 2016&#39;</span>
+<span class="go">'#37 PREEMPT Thu Oct 13 14:51:04 CEST 2016'</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -3598,7 +3598,7 @@ Set up per measurement.</p>
 </dl>
 </div>
 <p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="s1">&#39;path/to/file.par&#39;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="s1">'path/to/file.par'</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -3627,7 +3627,7 @@ file</p>
 <p class="rubric">Example</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">patioctrl</span> <span class="o">=</span> <span class="mh">0x8f0effff6dbffdbf</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">hex</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">patioctrl</span><span class="p">)</span>
-<span class="go">&#39;0x8f0effff6dbffdbf&#39;</span>
+<span class="go">'0x8f0effff6dbffdbf'</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -3641,7 +3641,7 @@ file</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">patlimits</span>
 <span class="go">[0, 396]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="nb">hex</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">patlimits</span><span class="p">]</span>
-<span class="go">[&#39;0x0&#39;, &#39;0x18c&#39;]</span>
+<span class="go">['0x0', '0x18c']</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -3671,7 +3671,7 @@ file</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">patloop0</span>
 <span class="go">[0, 396]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="nb">hex</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">patloop0</span><span class="p">]</span>
-<span class="go">[&#39;0x0&#39;, &#39;0x18c&#39;]</span>
+<span class="go">['0x0', '0x18c']</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -3685,7 +3685,7 @@ file</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">patloop1</span>
 <span class="go">[0, 396]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="nb">hex</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">patloop1</span><span class="p">]</span>
-<span class="go">[&#39;0x0&#39;, &#39;0x18c&#39;]</span>
+<span class="go">['0x0', '0x18c']</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -3699,7 +3699,7 @@ file</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">patloop2</span>
 <span class="go">[0, 396]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="nb">hex</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">patloop2</span><span class="p">]</span>
-<span class="go">[&#39;0x0&#39;, &#39;0x18c&#39;]</span>
+<span class="go">['0x0', '0x18c']</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -3711,7 +3711,7 @@ file</p>
 <p class="rubric">Example</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">patmask</span> <span class="o">=</span> <span class="mh">0x8f0effff6dbffdbf</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">hex</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">patmask</span><span class="p">)</span>
-<span class="go">&#39;0x8f0effff6dbffdbf&#39;</span>
+<span class="go">'0x8f0effff6dbffdbf'</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -3757,7 +3757,7 @@ file</p>
 <p class="rubric">Example</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">patsetbit</span> <span class="o">=</span> <span class="mh">0x8f0effff6dbffdbf</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">hex</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">patsetbit</span><span class="p">)</span>
-<span class="go">&#39;0x8f0effff6dbffdbf&#39;</span>
+<span class="go">'0x8f0effff6dbffdbf'</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -3772,7 +3772,7 @@ file</p>
 </dd>
 </dl>
 <p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">pattern</span> <span class="o">=</span> <span class="s1">&#39;/tmp/pat.txt&#39;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">pattern</span> <span class="o">=</span> <span class="s1">'/tmp/pat.txt'</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -3808,7 +3808,7 @@ file</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">patwait0</span>
 <span class="go">170</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">hex</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">patwait0</span><span class="p">)</span>
-<span class="go">&#39;0xaa&#39;</span>
+<span class="go">'0xaa'</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -3822,7 +3822,7 @@ file</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">patwait1</span>
 <span class="go">170</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">hex</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">patwait1</span><span class="p">)</span>
-<span class="go">&#39;0xaa&#39;</span>
+<span class="go">'0xaa'</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -3836,7 +3836,7 @@ file</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">patwait2</span>
 <span class="go">170</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">hex</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">patwait2</span><span class="p">)</span>
-<span class="go">&#39;0xaa&#39;</span>
+<span class="go">'0xaa'</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -4448,12 +4448,12 @@ Enum: frameDiscardPolicy</p>
 </div>
 <p class="rubric">Example</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">rx_hostname</span>
-<span class="go">&#39;mpc1922&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">rx_hostname</span> <span class="o">=</span> <span class="s1">&#39;mpc1922&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">rx_hostname</span> <span class="o">=</span> <span class="s1">&#39;mpc1922:2000&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">rx_hostname</span> <span class="o">=</span> <span class="s1">&#39;mpc1922:2000+mpc1922:2002&#39;</span>
+<span class="go">'mpc1922'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">rx_hostname</span> <span class="o">=</span> <span class="s1">'mpc1922'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">rx_hostname</span> <span class="o">=</span> <span class="s1">'mpc1922:2000'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">rx_hostname</span> <span class="o">=</span> <span class="s1">'mpc1922:2000+mpc1922:2002'</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">rx_hostname</span>
-<span class="go">&#39;mpc1922&#39;</span>
+<span class="go">'mpc1922'</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">rx_tcpport</span>
 <span class="go">[2000, 2002]</span>
 </pre></div>
@@ -4473,9 +4473,9 @@ Enum: frameDiscardPolicy</p>
 <p class="rubric">Example</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">rx_jsonaddheader</span>
 <span class="go">{}</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">rx_jsonaddheader</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;key1&quot;</span><span class="p">:</span> <span class="s2">&quot;value1&quot;</span><span class="p">,</span> <span class="s2">&quot;key2&quot;</span><span class="p">:</span><span class="s2">&quot;value2&quot;</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">rx_jsonaddheader</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"key1"</span><span class="p">:</span> <span class="s2">"value1"</span><span class="p">,</span> <span class="s2">"key2"</span><span class="p">:</span><span class="s2">"value2"</span><span class="p">}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">rx_jsonaddheader</span>
-<span class="go">{&#39;emax&#39;: &#39;30&#39;, &#39;emin&#39;: &#39;50&#39;}</span>
+<span class="go">{'emax': '30', 'emin': '50'}</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -4491,9 +4491,9 @@ Enum: frameDiscardPolicy</p>
 <p>On setting the value is automatically, it is converted to a string.</p>
 </div>
 <p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">rx_jsonpara</span><span class="p">[</span><span class="s1">&#39;emin&#39;</span><span class="p">]</span>
-<span class="go">&#39;4500&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">rx_jsonpara</span><span class="p">[</span><span class="s1">&#39;emin&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5000</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">rx_jsonpara</span><span class="p">[</span><span class="s1">'emin'</span><span class="p">]</span>
+<span class="go">'4500'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">rx_jsonpara</span><span class="p">[</span><span class="s1">'emin'</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5000</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">rx_jsonpara</span>
 <span class="go">emax: 30</span>
 <span class="go">emin: 5000</span>
@@ -6175,7 +6175,7 @@ Enum: timingSourceType</p>
 </dl>
 </div>
 <p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">trimbits</span> <span class="o">=</span> <span class="s1">&#39;/path_to_file/noise&#39;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">trimbits</span> <span class="o">=</span> <span class="s1">'/path_to_file/noise'</span>
 <span class="go">- 14:53:27.931 INFO: Settings file loaded: /path_to_file/noise.sn000</span>
 </pre></div>
 </div>
@@ -6324,7 +6324,7 @@ stream state for a single port.</p>
 <p>To set IPs for individual modules, use setDestinationUDPIP.</p>
 </div>
 <p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">udp_dstip</span> <span class="o">=</span> <span class="s1">&#39;192.168.1.110&#39;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">udp_dstip</span> <span class="o">=</span> <span class="s1">'192.168.1.110'</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">udp_dstip</span>
 <span class="go">192.168.1.110</span>
 </pre></div>
@@ -6343,7 +6343,7 @@ stream state for a single port.</p>
 <p>To set IPs for individual modules, use setDestinationUDPIP2.</p>
 </div>
 <p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">udp_dstip2</span> <span class="o">=</span> <span class="s1">&#39;10.1.1.185&#39;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">udp_dstip2</span> <span class="o">=</span> <span class="s1">'10.1.1.185'</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">udp_dstip2</span>
 <span class="go">10.1.1.185</span>
 </pre></div>
@@ -6361,7 +6361,7 @@ stream state for a single port.</p>
 Use router mac if router between detector and receiver.</p>
 </div>
 <p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">udp_dstmac</span> <span class="o">=</span> <span class="s1">&#39;00:1b:31:01:8a:de&#39;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">udp_dstmac</span> <span class="o">=</span> <span class="s1">'00:1b:31:01:8a:de'</span>
 <span class="go">d.udp_dstmac</span>
 <span class="go">00:1b:31:01:8a:de</span>
 </pre></div>
@@ -6381,7 +6381,7 @@ Use router mac if router between detector and receiver.</p>
 <p>Use router mac if router between detector and receiver.</p>
 </div>
 <p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">udp_dstmac2</span> <span class="o">=</span> <span class="s1">&#39;00:1b:31:01:8a:de&#39;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">udp_dstmac2</span> <span class="o">=</span> <span class="s1">'00:1b:31:01:8a:de'</span>
 <span class="go">d.udp_dstmac2</span>
 <span class="go">00:1b:31:01:8a:de</span>
 </pre></div>
@@ -6426,7 +6426,7 @@ Use router mac if router between detector and receiver.</p>
 <p>To set IPs for individual modules, use setSourceUDPIP.</p>
 </div>
 <p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">udp_srcip</span> <span class="o">=</span> <span class="s1">&#39;192.168.1.127&#39;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">udp_srcip</span> <span class="o">=</span> <span class="s1">'192.168.1.127'</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">udp_srcip</span>
 <span class="go">192.168.1.127</span>
 </pre></div>
@@ -6445,7 +6445,7 @@ Use router mac if router between detector and receiver.</p>
 <p>To set IPs for individual modules, use setSourceUDPIP2.</p>
 </div>
 <p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">udp_srcip2</span> <span class="o">=</span> <span class="s1">&#39;192.168.1.127&#39;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">udp_srcip2</span> <span class="o">=</span> <span class="s1">'192.168.1.127'</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">udp_srcip2</span>
 <span class="go">192.168.1.127</span>
 </pre></div>
@@ -6462,7 +6462,7 @@ Use router mac if router between detector and receiver.</p>
 <p>To set MACs for individual modules, use setSourceUDPMAC.</p>
 </div>
 <p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">udp_srcmac</span> <span class="o">=</span> <span class="s1">&#39;00:1b:31:01:8a:de&#39;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">udp_srcmac</span> <span class="o">=</span> <span class="s1">'00:1b:31:01:8a:de'</span>
 <span class="go">d.udp_srcmac</span>
 <span class="go">00:1b:31:01:8a:de</span>
 </pre></div>
@@ -6480,7 +6480,7 @@ Use router mac if router between detector and receiver.</p>
 <p>To set MACs for individual modules, use setSourceUDPMAC2.</p>
 </div>
 <p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">udp_srcmac2</span> <span class="o">=</span> <span class="s1">&#39;00:1b:31:01:8a:de&#39;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">udp_srcmac2</span> <span class="o">=</span> <span class="s1">'00:1b:31:01:8a:de'</span>
 <span class="go">d.udp_srcmac2</span>
 <span class="go">00:1b:31:01:8a:de</span>
 </pre></div>
@@ -6581,7 +6581,7 @@ and #photons and energy in keV.</p>
 </dl>
 </div>
 <p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">vetophoton</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">24</span><span class="p">,</span> <span class="mi">2560</span><span class="p">,</span> <span class="s1">&#39;/tmp/bla.txt&#39;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">vetophoton</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">24</span><span class="p">,</span> <span class="mi">2560</span><span class="p">,</span> <span class="s1">'/tmp/bla.txt'</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -6676,7 +6676,7 @@ Setting it via command line is useful only before zmq enabled (before opening gu
 <p class="rubric">Example</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">zmqip</span>
 <span class="go">192.168.0.101</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">zmqip</span> <span class="o">=</span> <span class="s1">&#39;192.168.0.101&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">zmqip</span> <span class="o">=</span> <span class="s1">'192.168.0.101'</span>
 </pre></div>
 </div>
 </dd></dl>

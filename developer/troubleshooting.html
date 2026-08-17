@@ -504,7 +504,7 @@ ethtool<span class="w"> </span>-K<span class="w"> </span>xth1<span class="w"> </
 <span class="c1"># file: /etc/sysconfig/network-scripts/ifcfg-eth0</span>
 
 <span class="c1"># add or modify the following line:</span>
-<span class="nv">ETHTOOL_OPTS</span><span class="o">=</span><span class="s2">&quot;-K  gro on; -G  rx 4096; -L  combined 4; -C  rx-usecs 100; -C  adaptive-rx on&quot;</span>
+<span class="nv">ETHTOOL_OPTS</span><span class="o">=</span><span class="s2">"-K  gro on; -G  rx 4096; -L  combined 4; -C  rx-usecs 100; -C  adaptive-rx on"</span>
 
 <span class="c1"># restart the interface</span>
 ifdown<span class="w"> </span>eth0<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>ifup<span class="w"> </span>eth0

@@ -289,7 +289,7 @@ and then use list slicing to get the values for the modules you are interested i
 <span class="go">50001</span>
 
 <span class="go">#For some but not all properties you can also pass in a dictionary with module index as key</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ip</span> <span class="o">=</span> <span class="n">IpAddr</span><span class="p">(</span><span class="s1">&#39;127.0.0.1&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ip</span> <span class="o">=</span> <span class="n">IpAddr</span><span class="p">(</span><span class="s1">'127.0.0.1'</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">udp_dstip</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span><span class="n">ip</span><span class="p">}</span>
 </pre></div>
 </div>
@@ -301,26 +301,26 @@ can use dir()</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">slsdet</span><span class="w"> </span><span class="kn">import</span> <span class="n">Detector</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">dir</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
-<span class="go">[&#39;__class__&#39;, &#39;__delattr__&#39;, &#39;__dict__&#39;, &#39;__dir__&#39;, &#39;__doc__&#39;,</span>
-<span class="go">&#39;__eq__&#39;, &#39;__format__&#39;, &#39;__ge__&#39;, &#39;__getattribute__&#39;, &#39;__gt__&#39;,</span>
-<span class="go">&#39;__hash__&#39;, &#39;__init__&#39;, &#39;__init_subclass__&#39;, &#39;__le__&#39;, &#39;__len__&#39;,</span>
-<span class="go">&#39;__lt__&#39;, &#39;__module__&#39;, &#39;__ne__&#39;, &#39;__new__&#39;, &#39;__reduce__&#39;,</span>
-<span class="go">&#39;__reduce_ex__&#39;, &#39;__repr__&#39;, &#39;__setattr__&#39;, &#39;__sizeof__&#39;,</span>
-<span class="go">&#39;__str__&#39;, &#39;__subclasshook__&#39;, &#39;_adc_register&#39;, &#39;_frozen&#39;,</span>
-<span class="go">&#39;_register&#39;, &#39;acquire&#39;, &#39;adcclk&#39;, &#39;adcphase&#39;, &#39;adcpipeline&#39;,</span>
-<span class="go">&#39;adcreg&#39;, &#39;asamples&#39;, &#39;auto_comp_disable&#39;, &#39;clearAcquiringFlag&#39;,</span>
-<span class="go">&#39;clearBit&#39;, &#39;clearROI&#39;, &#39;client_version&#39;, &#39;config&#39;,</span>
-<span class="go">&#39;counters&#39;, &#39;daclist&#39;, &#39;dacvalues&#39;, &#39;dbitclk&#39;, &#39;dbitphase&#39; ...</span>
+<span class="go">['__class__', '__delattr__', '__dict__', '__dir__', '__doc__',</span>
+<span class="go">'__eq__', '__format__', '__ge__', '__getattribute__', '__gt__',</span>
+<span class="go">'__hash__', '__init__', '__init_subclass__', '__le__', '__len__',</span>
+<span class="go">'__lt__', '__module__', '__ne__', '__new__', '__reduce__',</span>
+<span class="go">'__reduce_ex__', '__repr__', '__setattr__', '__sizeof__',</span>
+<span class="go">'__str__', '__subclasshook__', '_adc_register', '_frozen',</span>
+<span class="go">'_register', 'acquire', 'adcclk', 'adcphase', 'adcpipeline',</span>
+<span class="go">'adcreg', 'asamples', 'auto_comp_disable', 'clearAcquiringFlag',</span>
+<span class="go">'clearBit', 'clearROI', 'client_version', 'config',</span>
+<span class="go">'counters', 'daclist', 'dacvalues', 'dbitclk', 'dbitphase' ...</span>
 </pre></div>
 </div>
 <p>Since the list for Detector is rather long it’s an good idea to filter it.
 The following example gives you properties and methods containing time in
 their name.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">item</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">if</span> <span class="s1">&#39;time&#39;</span> <span class="ow">in</span> <span class="n">item</span><span class="p">]</span>
-<span class="go">[&#39;compdisabletime&#39;, &#39;exptime&#39;, &#39;exptimel&#39;, &#39;frametime&#39;, &#39;getExptime&#39;,</span>
-<span class="go">&#39;getExptimeForAllGates&#39;, &#39;getExptimeLeft&#39;, &#39;getSubExptime&#39;, &#39;patwaittime&#39;,</span>
-<span class="go">&#39;patwaittime0&#39;, &#39;patwaittime1&#39;, &#39;patwaittime2&#39;, &#39;runtime&#39;, &#39;setExptime&#39;,</span>
-<span class="go">&#39;setSubExptime&#39;, &#39;subdeadtime&#39;, &#39;subexptime&#39;]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">item</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">if</span> <span class="s1">'time'</span> <span class="ow">in</span> <span class="n">item</span><span class="p">]</span>
+<span class="go">['compdisabletime', 'exptime', 'exptimel', 'frametime', 'getExptime',</span>
+<span class="go">'getExptimeForAllGates', 'getExptimeLeft', 'getSubExptime', 'patwaittime',</span>
+<span class="go">'patwaittime0', 'patwaittime1', 'patwaittime2', 'runtime', 'setExptime',</span>
+<span class="go">'setSubExptime', 'subdeadtime', 'subexptime']</span>
 </pre></div>
 </div>
 <p>The above method works on any Python object but for convenience we also
@@ -328,7 +328,7 @@ included two functions to find names. View prints the names one per line
 while find returns a list of names.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">slsdet.lookup</span><span class="w"> </span><span class="kn">import</span> <span class="n">view</span><span class="p">,</span> <span class="n">find</span>
 
-<span class="o">&gt;&gt;&gt;</span> <span class="n">view</span><span class="p">(</span><span class="s1">&#39;exptime&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">view</span><span class="p">(</span><span class="s1">'exptime'</span><span class="p">)</span>
 <span class="n">exptime</span>
 <span class="n">exptimel</span>
 <span class="n">getExptime</span>
@@ -340,9 +340,9 @@ while find returns a list of names.</p>
 <span class="n">subexptime</span>
 
 
-<span class="o">&gt;&gt;&gt;</span> <span class="n">find</span><span class="p">(</span><span class="s1">&#39;exptime&#39;</span><span class="p">)</span>
-<span class="p">[</span><span class="s1">&#39;exptime&#39;</span><span class="p">,</span> <span class="s1">&#39;getExptime&#39;</span><span class="p">,</span> <span class="s1">&#39;getExptimeForAllGates&#39;</span><span class="p">,</span> <span class="s1">&#39;getExptimeLeft&#39;</span><span class="p">,</span>
-<span class="s1">&#39;getSubExptime&#39;</span><span class="p">,</span> <span class="s1">&#39;setExptime&#39;</span><span class="p">,</span> <span class="s1">&#39;setSubExptime&#39;</span><span class="p">,</span> <span class="s1">&#39;subexptime&#39;</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">find</span><span class="p">(</span><span class="s1">'exptime'</span><span class="p">)</span>
+<span class="p">[</span><span class="s1">'exptime'</span><span class="p">,</span> <span class="s1">'getExptime'</span><span class="p">,</span> <span class="s1">'getExptimeForAllGates'</span><span class="p">,</span> <span class="s1">'getExptimeLeft'</span><span class="p">,</span>
+<span class="s1">'getSubExptime'</span><span class="p">,</span> <span class="s1">'setExptime'</span><span class="p">,</span> <span class="s1">'setSubExptime'</span><span class="p">,</span> <span class="s1">'subexptime'</span><span class="p">]</span>
 </pre></div>
 </div>
 </section>
@@ -397,12 +397,12 @@ to pass in an enum.</p>
 </div>
 <p>The enums can be found in slsdet.enums</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">slsdet</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">slsdet</span><span class="o">.</span><span class="n">enums</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">e</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)]</span>
-<span class="p">[</span><span class="s1">&#39;M3_GainCaps&#39;</span><span class="p">,</span> <span class="s1">&#39;burstMode&#39;</span><span class="p">,</span> <span class="s1">&#39;clockIndex&#39;</span><span class="p">,</span> <span class="s1">&#39;cls&#39;</span><span class="p">,</span> <span class="s1">&#39;dacIndex&#39;</span><span class="p">,</span> <span class="s1">&#39;detectorSettings&#39;</span><span class="p">,</span>
-<span class="s1">&#39;detectorType&#39;</span><span class="p">,</span> <span class="s1">&#39;dimension&#39;</span><span class="p">,</span> <span class="s1">&#39;externalSignalFlag&#39;</span><span class="p">,</span> <span class="s1">&#39;fileFormat&#39;</span><span class="p">,</span>
-<span class="s1">&#39;frameDiscardPolicy&#39;</span><span class="p">,</span> <span class="s1">&#39;gainMode&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;polarity&#39;</span><span class="p">,</span> <span class="s1">&#39;portPosition&#39;</span><span class="p">,</span>
-<span class="s1">&#39;readoutMode&#39;</span><span class="p">,</span> <span class="s1">&#39;runStatus&#39;</span><span class="p">,</span> <span class="s1">&#39;speedLevel&#39;</span><span class="p">,</span> <span class="s1">&#39;streamingInterface&#39;</span><span class="p">,</span> <span class="s1">&#39;timingMode&#39;</span><span class="p">,</span>
-<span class="s1">&#39;timingSourceType&#39;</span><span class="p">,</span> <span class="s1">&#39;vetoAlgorithm&#39;</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">slsdet</span><span class="o">.</span><span class="n">enums</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">e</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">'_'</span><span class="p">)]</span>
+<span class="p">[</span><span class="s1">'M3_GainCaps'</span><span class="p">,</span> <span class="s1">'burstMode'</span><span class="p">,</span> <span class="s1">'clockIndex'</span><span class="p">,</span> <span class="s1">'cls'</span><span class="p">,</span> <span class="s1">'dacIndex'</span><span class="p">,</span> <span class="s1">'detectorSettings'</span><span class="p">,</span>
+<span class="s1">'detectorType'</span><span class="p">,</span> <span class="s1">'dimension'</span><span class="p">,</span> <span class="s1">'externalSignalFlag'</span><span class="p">,</span> <span class="s1">'fileFormat'</span><span class="p">,</span>
+<span class="s1">'frameDiscardPolicy'</span><span class="p">,</span> <span class="s1">'gainMode'</span><span class="p">,</span> <span class="s1">'name'</span><span class="p">,</span> <span class="s1">'polarity'</span><span class="p">,</span> <span class="s1">'portPosition'</span><span class="p">,</span>
+<span class="s1">'readoutMode'</span><span class="p">,</span> <span class="s1">'runStatus'</span><span class="p">,</span> <span class="s1">'speedLevel'</span><span class="p">,</span> <span class="s1">'streamingInterface'</span><span class="p">,</span> <span class="s1">'timingMode'</span><span class="p">,</span>
+<span class="s1">'timingSourceType'</span><span class="p">,</span> <span class="s1">'vetoAlgorithm'</span><span class="p">]</span>
 
 
 <span class="c1"># Even though importing using * is not recommended one could</span>

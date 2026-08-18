@@ -482,7 +482,7 @@ void test_rx_roi_2d_multi_horizontal_ports(Detector &det, Caller &caller) {
         std::string max = std::to_string(portSize.x + 1);
         std::string arg_port1 = "[5, 10, 20, 30]";
         std::string arg_port2 = "[" + min + ", " + max + ", 20, 30]";
-        std::string res = "rx_roi [[" + arg_port1 + "], [" + arg_port2 + "]]\n";
+        std::string res = "rx_roi [" + arg_port1 + ", " + arg_port2 + "]\n";
 
         // separated by space is allowed
         REQUIRE_NOTHROW(caller.call("rx_roi", {arg_port1, arg_port2}, -1, PUT));
@@ -527,9 +527,9 @@ void test_rx_roi_2d_multi_horizontal_ports(Detector &det, Caller &caller) {
         std::string arg_port2 = "[0, " + max_port2 + ", 20, 30]";
 
         std::string res_all = "rx_roi [" + arg + "]\n";
-        std::string res_mod0 = "rx_roi [[" + arg_port1 + "]]\n";
+        std::string res_mod0 = "rx_roi [" + arg_port1 + "]\n";
         if (two_ports) {
-            res_mod0 = "rx_roi [[" + arg_port1 + "], [" + arg_port2 + "]]\n";
+            res_mod0 = "rx_roi [" + arg_port1 + ", " + arg_port2 + "]\n";
         }
 
         REQUIRE_NOTHROW(caller.call("rx_roi", {arg}, -1, PUT));
@@ -561,7 +561,7 @@ void test_rx_roi_2d_multi_vertical_ports(Detector &det, Caller &caller) {
         std::string max = std::to_string(portSize.y + 1);
         std::string arg_port1 = "[5, 10, 20, 30]";
         std::string arg_port2 = "[25, 28, " + min + ", " + max + "]";
-        std::string res = "rx_roi [[" + arg_port1 + "], [" + arg_port2 + "]]\n";
+        std::string res = "rx_roi [" + arg_port1 + ", " + arg_port2 + "]\n";
 
         // separated by space is allowed
         REQUIRE_NOTHROW(caller.call("rx_roi", {arg_port1, arg_port2}, -1, PUT));
@@ -597,19 +597,19 @@ void test_rx_roi_2d_multi_vertical_ports(Detector &det, Caller &caller) {
     }
     // setting multiple ports and verify individual roi
     {
-        std::string min = std::to_string(portSize.x - delta);
-        std::string max = std::to_string(portSize.x + delta);
+        std::string min = std::to_string(portSize.y - delta);
+        std::string max = std::to_string(portSize.y + delta);
         std::string arg = "[20, 30, " + min + ", " + max + "]";
         // for each port
-        std::string max_port1 = std::to_string(portSize.x - 1);
+        std::string max_port1 = std::to_string(portSize.y - 1);
         std::string arg_port1 = "[20, 30, " + min + ", " + max_port1 + "]";
         std::string max_port2 = std::to_string(delta);
         std::string arg_port2 = "[20, 30, 0, " + max_port2 + "]";
 
         std::string res_all = "rx_roi [" + arg + "]\n";
-        std::string res_mod0 = "rx_roi [[" + arg_port1 + "]]\n";
+        std::string res_mod0 = "rx_roi [" + arg_port1 + "]\n";
         if (two_ports) {
-            res_mod0 = "rx_roi [[" + arg_port1 + "], [" + arg_port2 + "]]\n";
+            res_mod0 = "rx_roi [" + arg_port1 + ", " + arg_port2 + "]\n";
         }
 
         REQUIRE_NOTHROW(caller.call("rx_roi", {arg}, -1, PUT));
@@ -669,8 +669,8 @@ void test_rx_roi_1d(Detector &det, Caller &caller) {
         std::string min = std::to_string(moduleSize.x);
         std::string max = std::to_string(moduleSize.x + 1);
         std::string arg_mod1 = "[5, 10]";
-        std::string arg_mod2 = "[" + min + ", " + max + ", -1, -1]";
-        std::string res = "rx_roi [[" + arg_mod1 + "], [" + arg_mod2 + "]]\n";
+        std::string arg_mod2 = "[" + min + ", " + max + "]";
+        std::string res = "rx_roi [" + arg_mod1 + ", " + arg_mod2 + "]\n";
 
         // separated by space is allowed
         REQUIRE_NOTHROW(caller.call("rx_roi", {arg_mod1, arg_mod2}, -1, PUT));
@@ -710,9 +710,9 @@ void test_rx_roi_1d(Detector &det, Caller &caller) {
         std::string max_mod1 = std::to_string(delta);
         std::string arg_mod1 = "[0, " + max_mod1 + "]";
 
-        std::string res_all = "rx_roi [" + arg + "]";
-        std::string res_mod0 = "rx_roi [" + arg_mod0 + "]";
-        std::string res_mod1 = "rx_roi [" + arg_mod1 + "]";
+        std::string res_all = "rx_roi [" + arg + "]\n";
+        std::string res_mod0 = "rx_roi [" + arg_mod0 + "]\n";
+        std::string res_mod1 = "rx_roi [" + arg_mod1 + "]\n";
 
         REQUIRE_NOTHROW(caller.call("rx_roi", {arg}, -1, PUT));
         // verify multi roi
@@ -751,7 +751,7 @@ void test_rx_roi_2d(Detector &det, Caller &caller) {
     {
         std::ostringstream oss;
         caller.call("rx_roi", {"1", maxx, "1", maxy}, -1, PUT, oss);
-        auto res = "rx_roi [[1, " + maxx + ", 1, " + maxy + "]]";
+        auto res = "rx_roi [[1, " + maxx + ", 1, " + maxy + "]]\n";
         REQUIRE(oss.str() == res);
     }
     REQUIRE_THROWS(caller.call("rx_roi", {"0", "0", "0", "0"}, -1, PUT));

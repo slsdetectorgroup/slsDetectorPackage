@@ -814,6 +814,7 @@ void test_rx_roi_2d(Detector &det, Caller &caller) {
     if (((det_type == defs::JUNGFRAU || det_type == defs::MOENCH) &&
          (numinterfaces == 2)) ||
         (det.size() == 2 && det.getModuleGeometry().y > 1)) {
+        test_rx_roi_2d_multi_vertical_ports(det, caller);
     }
 }
 

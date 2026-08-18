@@ -542,6 +542,16 @@ TEST_CASE("rx_roi", "[.detectorintegration][.disable_check_data_file]") {
                 REQUIRE(oss.str() == "rx_roi [[5, 10], [" + stringMin + ", " +
                                          stringMax + "]]\n");
 
+                // setting to only one port and verify individual roi
+                {
+                    REQUIRE_NOTHROW(
+                        caller.call("rx_roi", {"[5, 10, -1, -1]"}, -1, PUT));
+                    std::ostringstream oss, oss1;
+                    REQUIRE_NOTHROW(caller.call("rx_roi", {}, 0, GET, oss));
+                    REQUIRE_NOTHROW(caller.call("rx_roi", {}, 1, GET, oss1));
+                    REQUIRE(oss.str() == "rx_roi [[5, 10]]\n");
+                    REQUIRE(oss1.str() == "rx_roi [[0, 0]]\n");
+                }
                 // verify individual roi
                 {
                     stringMin = std::to_string(moduleSize.x - 50);
@@ -645,6 +655,38 @@ TEST_CASE("rx_roi", "[.detectorintegration][.disable_check_data_file]") {
                 REQUIRE(oss.str() == "rx_roi [[5, 10, 20, 30], [" + stringMin +
                                          ", " + stringMax + ", 20, 30]]\n");
 
+                // setting to only one port and verify individual roi
+                {
+                    REQUIRE_NOTHROW(
+                        caller.call("rx_roi", {"[5, 10, 20, 30]"}, -1, PUT));
+                    std::ostringstream oss, oss1;
+                    REQUIRE_NOTHROW(caller.call("rx_roi", {}, 0, GET, oss));
+                    // eiger returns 2 values for 2 ports per module
+                    if (det_type == defs::EIGER) {
+                        REQUIRE(oss.str() ==
+                                "rx_roi [[5, 10, 20, 30], [0, 0, 0, 0]]\n");
+
+                    }
+                    // others return only 1 roi per module (1 port per module)
+                    else {
+                        REQUIRE(oss.str() == "rx_roi [[5, 10, 20, 30]]\n");
+                    }
+                    if (det.size() > 1) {
+                        REQUIRE_NOTHROW(
+                            caller.call("rx_roi", {}, 1, GET, oss1));
+                        // eiger returns 2 values for 2 ports per module
+                        if (det_type == defs::EIGER) {
+                            REQUIRE(oss1.str() ==
+                                    "rx_roi [[0, 0, 0, 0], [0, 0, 0, 0]]\n");
+
+                        }
+                        // others return only 1 roi per module (1 port per
+                        // module)
+                        else {
+                            REQUIRE(oss1.str() == "rx_roi [[0, 0, 0, 0]]\n");
+                        }
+                    }
+                }
                 // verify individual roi
                 {
                     stringMin = std::to_string(portSize.x - delta);
@@ -712,6 +754,43 @@ TEST_CASE("rx_roi", "[.detectorintegration][.disable_check_data_file]") {
                 REQUIRE(oss.str() == "rx_roi [[5, 10, 20, 30], [25, 28, " +
                                          stringMin + ", " + stringMax + "]]\n");
 
+                // setting to only one port and verify individual roi
+                {
+                    REQUIRE_NOTHROW(
+                        caller.call("rx_roi", {"[ 5, 10, 20, 30]"}, -1, PUT));
+                    std::ostringstream oss, oss1;
+                    REQUIRE_NOTHROW(caller.call("rx_roi", {}, 0, GET, oss));
+
+                    // 2 ports
+                    if (((det_type == defs::JUNGFRAU ||
+                          det_type == defs::MOENCH) &&
+                         (numinterfaces == 2)) ||
+                        (det_type == defs::EIGER)) {
+                        REQUIRE(oss.str() ==
+                                "rx_roi [[5, 10, 20, 30], [0, 0, 0, 0]]\n");
+                    }
+                    // others return only 1 roi per module (1 port per module)
+                    else {
+                        REQUIRE(oss.str() == "rx_roi [[5, 10, 20, 30]]\n");
+                    }
+                    if (det.size() > 2) {
+                        REQUIRE_NOTHROW(
+                            caller.call("rx_roi", {}, 1, GET, oss1));
+                        // 2 ports
+                        if (((det_type == defs::JUNGFRAU ||
+                              det_type == defs::MOENCH) &&
+                             (numinterfaces == 2)) ||
+                            (det_type == defs::EIGER)) {
+                            REQUIRE(oss1.str() ==
+                                    "rx_roi [[0, 0, 0, 0], [0, 0, 0, 0]]\n");
+                        }
+                        // others return only 1 roi per module (1 port per
+                        // module)
+                        else {
+                            REQUIRE(oss1.str() == "rx_roi [[0, 0, 0, 0]]\n");
+                        }
+                    }
+                }
                 // verify individual roi
                 {
                     stringMin = std::to_string(portSize.y - delta);
@@ -743,7 +822,7 @@ TEST_CASE("rx_roi", "[.detectorintegration][.disable_check_data_file]") {
                             REQUIRE(oss1.str() ==
                                     "rx_roi [[20, 30, " + stringMin + ", " +
                                         std::to_string(portSize.y - 1) +
-                                        "], [-1, -1]]\n");
+                                        "], [0, 0, 0, 0]]\n");
                         } else {
                             REQUIRE(oss1.str() ==
                                     "rx_roi [[20, 30, " + stringMin + ", " +

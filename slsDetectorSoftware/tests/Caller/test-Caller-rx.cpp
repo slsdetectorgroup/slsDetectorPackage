@@ -504,18 +504,18 @@ void test_rx_roi_2d_multi_horizontal_ports(Detector &det, Caller &caller) {
         }
 
         REQUIRE_NOTHROW(caller.call("rx_roi", {arg}, -1, PUT));
-        // single or 1st module
+        // single or first module
         std::ostringstream oss;
         REQUIRE_NOTHROW(caller.call("rx_roi", {}, 0, GET, oss));
         REQUIRE(oss.str() == res_mod0);
-        // second module should return no roi
+        // second module
         if (det.size() > 1) {
             std::ostringstream oss;
             REQUIRE_NOTHROW(caller.call("rx_roi", {}, 1, GET, oss));
             REQUIRE(oss.str() == res_mod1);
         }
     }
-    // setting multiple ports and verify individual roi
+    // setting multiple port roi and verify individual roi
     {
         std::string min = std::to_string(portSize.x - delta);
         std::string max = std::to_string(portSize.x + delta);
@@ -572,7 +572,7 @@ void test_rx_roi_2d_multi_vertical_ports(Detector &det, Caller &caller) {
         REQUIRE(oss.str() == res);
     }
 
-    // setting to only one port and verify individual roi
+    // setting to only one port roi and verify individual roi
     {
         std::string arg = "[5, 10, 20, 30]";
         std::string no_roi = "[0, 0, 0, 0]";
@@ -584,11 +584,11 @@ void test_rx_roi_2d_multi_vertical_ports(Detector &det, Caller &caller) {
         }
 
         REQUIRE_NOTHROW(caller.call("rx_roi", {arg}, -1, PUT));
-        // single or 1st module
+        // single or first module
         std::ostringstream oss;
         REQUIRE_NOTHROW(caller.call("rx_roi", {}, 0, GET, oss));
         REQUIRE(oss.str() == res_mod0);
-        // second module should return no roi
+        // second module
         if (det.size() > 1) {
             std::ostringstream oss;
             REQUIRE_NOTHROW(caller.call("rx_roi", {}, 1, GET, oss));
@@ -626,6 +626,7 @@ void test_rx_roi_2d_multi_vertical_ports(Detector &det, Caller &caller) {
 
 void test_rx_roi_1d(Detector &det, Caller &caller) {
     defs::xy detsize = det.getDetectorSize();
+    int delta = 50;
 
     {
         std::ostringstream oss;
@@ -661,54 +662,71 @@ void test_rx_roi_1d(Detector &det, Caller &caller) {
     REQUIRE_THROWS(
         caller.call("rx_roi", {"[0, 10,-1, -1] [5, 15, -1, -1]"}, -1, PUT));
 
-    // multiple modules
+    auto moduleSize = det.getModuleSize()[0];
+
+    // setting roi at boundary of 2nd module
     if (det.size() == 2) {
-        auto moduleSize = det.getModuleSize()[0];
         std::string min = std::to_string(moduleSize.x);
         std::string max = std::to_string(moduleSize.x + 1);
-        std::string arg1 = "[5, 10, -1, -1]";
-        std::string arg2 = "[" + min + ", " + max + ", -1, -1]";
-        std::string res = "rx_roi [[5, 10], [" + min + ", " + max + "]]\n";
+        std::string arg_mod1 = "[5, 10]";
+        std::string arg_mod2 = "[" + min + ", " + max + ", -1, -1]";
+        std::string res = "rx_roi [[" + arg_mod1 + "], [" + arg_mod2 + "]]\n";
 
         // separated by space is allowed
-        REQUIRE_NOTHROW(caller.call("rx_roi", {arg1, arg2}, -1, PUT));
+        REQUIRE_NOTHROW(caller.call("rx_roi", {arg_mod1, arg_mod2}, -1, PUT));
         std::ostringstream oss;
         // separated by semicolon with quotes is allowed (skips cmdParser)
         REQUIRE_NOTHROW(
-            caller.call("rx_roi", {arg1 + ";" + arg2}, -1, PUT, oss));
+            caller.call("rx_roi", {arg_mod1 + ";" + arg_mod2}, -1, PUT, oss));
         REQUIRE(oss.str() == res);
+    }
+    // setting to only one module and verify individual roi
+    {
+        std::string arg = "[5, 10]";
+        std::string no_roi = "[0, 0]";
+        std::string res_mod0 = "rx_roi [" + arg + "]\n";
+        std::string res_mod1 = "rx_roi [" + no_roi + "]\n";
 
-        // setting to only one port and verify individual roi
-        {
-            REQUIRE_NOTHROW(
-                caller.call("rx_roi", {"[5, 10, -1, -1]"}, -1, PUT));
-            std::ostringstream oss, oss1;
-            REQUIRE_NOTHROW(caller.call("rx_roi", {}, 0, GET, oss));
-            REQUIRE_NOTHROW(caller.call("rx_roi", {}, 1, GET, oss1));
-            REQUIRE(oss.str() == "rx_roi [[5, 10]]\n");
-            REQUIRE(oss1.str() == "rx_roi [[0, 0]]\n");
-        }
-        // verify individual roi
-        {
-            stringMin = std::to_string(moduleSize.x - 50);
-            stringMax = std::to_string(moduleSize.x + 50);
-            std::ostringstream oss, oss1;
-            REQUIRE_NOTHROW(caller.call(
-                "rx_roi", {"[" + stringMin + ", " + stringMax + "]"}, -1, PUT,
-                oss));
-            REQUIRE(oss.str() ==
-                    "rx_roi [[" + stringMin + ", " + stringMax + "]]\n");
-            REQUIRE_NOTHROW(caller.call("rx_roi", {}, 0, GET, oss1));
-            REQUIRE(oss1.str() == "rx_roi [[" + stringMin + ", " +
-                                      std::to_string(moduleSize.x - 1) +
-                                      "]]\n");
+        REQUIRE_NOTHROW(caller.call("rx_roi", {arg}, -1, PUT));
+        // first module
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(caller.call("rx_roi", {}, 0, GET, oss));
+        REQUIRE(oss.str() == res_mod0);
+        // second module
+        if (det.size() > 1) {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(caller.call("rx_roi", {}, 1, GET, oss));
+            REQUIRE(oss.str() == res_mod1);
         }
     }
-    // valid roi before acquiring
-    else {
+    // setting multiple module roi and verify individual roi
+    if (det.size() == 2) {
+        std::string min = std::to_string(moduleSize.x - delta);
+        std::string max = std::to_string(moduleSize.x + delta);
+        std::string arg = "[" + min + ", " + max + "]";
+        // for each module
+        std::string max_mod0 = std::to_string(moduleSize.x - 1);
+        std::string arg_mod0 = "[" + min + ", " + max_mod0 + "]";
+        std::string max_mod1 = std::to_string(delta);
+        std::string arg_mod1 = "[0, " + max_mod1 + "]";
+
+        std::string res_all = "rx_roi [" + arg + "]";
+        std::string res_mod0 = "rx_roi [" + arg_mod0 + "]";
+        std::string res_mod1 = "rx_roi [" + arg_mod1 + "]";
+
+        REQUIRE_NOTHROW(caller.call("rx_roi", {arg}, -1, PUT));
+        // verify multi roi
         std::ostringstream oss;
-        caller.call("rx_roi", {"10", "15"}, -1, PUT, oss);
-        REQUIRE(oss.str() == "rx_roi [[10, 15]]\n");
+        REQUIRE_NOTHROW(caller.call("rx_roi", {}, -1, GET, oss));
+        REQUIRE(oss.str() == res_all);
+        // verify 1st module
+        std::ostringstream oss1;
+        REQUIRE_NOTHROW(caller.call("rx_roi", {}, 0, GET, oss1));
+        REQUIRE(oss1.str() == res_mod0);
+        // verify 1st module
+        std::ostringstream oss2;
+        REQUIRE_NOTHROW(caller.call("rx_roi", {}, 1, GET, oss2));
+        REQUIRE(oss2.str() == res_mod1);
     }
 }
 
@@ -717,6 +735,8 @@ void test_rx_roi_2d(Detector &det, Caller &caller) {
     defs::xy detsize = det.getDetectorSize();
     int numinterfaces = det.getNumberofUDPInterfaces().tsquash(
         "inconsistent number of interfaces");
+    std::string maxx = std::to_string(detsize.x - 5);
+    std::string maxy = std::to_string(detsize.y - 5);
 
     {
         std::ostringstream oss;
@@ -730,14 +750,9 @@ void test_rx_roi_2d(Detector &det, Caller &caller) {
     }
     {
         std::ostringstream oss;
-        caller.call("rx_roi",
-                    {"1", std::to_string(detsize.x - 5), "1",
-                     std::to_string(detsize.y - 5)},
-                    -1, PUT, oss);
-        REQUIRE(oss.str() ==
-                std::string("rx_roi [[1, ") + std::to_string(detsize.x - 5) +
-                    std::string(", 1, ") + std::to_string(detsize.y - 5) +
-                    std::string("]]\n"));
+        caller.call("rx_roi", {"1", maxx, "1", maxy}, -1, PUT, oss);
+        auto res = "rx_roi [[1, " + maxx + ", 1, " + maxy + "]]";
+        REQUIRE(oss.str() == res);
     }
     REQUIRE_THROWS(caller.call("rx_roi", {"0", "0", "0", "0"}, -1, PUT));
     REQUIRE_THROWS(caller.call("rx_roi", {"-1", "-1", "-1", "-1"}, -1, PUT));
@@ -770,29 +785,22 @@ void test_rx_roi_2d(Detector &det, Caller &caller) {
     REQUIRE_THROWS(
         caller.call("rx_roi", {"[0, 10, 0, 10] [0, 10, 9, 11]"}, -1, PUT));
 
-    // multiple ports horizontally
-    if (det_type == defs::EIGER ||
-        (det.size() == 2 && det.getModuleGeometry().x > 1)) {
-        test_rx_roi_2d_multi_horizontal_ports(det, caller);
-    }
-    // valid roi before acquiring
-    else {
-        std::ostringstream oss;
-        caller.call("rx_roi",
-                    {"1", std::to_string(detsize.x - 5), "1",
-                     std::to_string(detsize.y - 5)},
-                    -1, PUT, oss);
-        REQUIRE(oss.str() ==
-                std::string("rx_roi [[1, ") + std::to_string(detsize.x - 5) +
-                    std::string(", 1, ") + std::to_string(detsize.y - 5) +
-                    std::string("]]\n"));
-    }
+    bool multiple_ports_horizontally =
+        (det_type == defs::EIGER ||
+         (det.size() > 1 && det.getModuleGeometry().x > 1));
 
-    // multiple ports vertically
-    if (((det_type == defs::JUNGFRAU || det_type == defs::MOENCH) &&
-         (numinterfaces == 2)) ||
-        (det.size() == 2 && det.getModuleGeometry().y > 1)) {
+    bool multiple_ports_vertically =
+        (((det_type == defs::JUNGFRAU || det_type == defs::MOENCH) &&
+          (numinterfaces == 2)) ||
+         (det.size() > 1 && det.getModuleGeometry().y > 1));
+
+    if (multiple_ports_horizontally) {
+        test_rx_roi_2d_multi_horizontal_ports(det, caller);
+    } else if (multiple_ports_vertically) {
         test_rx_roi_2d_multi_vertical_ports(det, caller);
+    } else {
+        // valid roi before acquiring
+        REQUIRE_NOTHROW(caller.call("rx_roi", {"1", maxx, "1", maxy}, -1, PUT));
     }
 }
 
@@ -805,11 +813,11 @@ TEST_CASE("rx_roi", "[.detectorintegration][.disable_check_data_file]") {
         REQUIRE_THROWS(caller.call("rx_roi", {"5", "10"}, -1, PUT));
     } else {
         auto prev_val = det.getRxROI();
+        bool oneD = (det_type == defs::GOTTHARD2 || det_type == defs::MYTHEN3);
+        // 2d = Jungfrau, moench, eiger
 
-        // 1d
-        if (det_type == defs::GOTTHARD2 || det_type == defs::MYTHEN3)
+        if (oneD)
             test_rx_roi_1d(det, caller);
-        // 2d eiger, jungfrau, moench
         else
             test_rx_roi_2d(det, caller);
 

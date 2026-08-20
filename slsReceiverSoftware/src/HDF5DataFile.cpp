@@ -210,24 +210,17 @@ void HDF5DataFile::CreateFile() {
                                    " is not available, check HDF5_PLUGIN_PATH");
             }
 
-            // parse generic filter parameters
-            std::vector<unsigned int> filterParams;
-            std::stringstream ss(SLS_HDF5_FILTER_PARAMS);
-            std::string token;
-            while (std::getline(ss, token, ',')) {
-                if (token.empty()) {
-                    continue;
-                }
-                filterParams.push_back(
-                    static_cast<unsigned int>(std::stoul(token, nullptr, 10)));
-            }
-
+            std::for_each(hdf5FilterParameters.begin(),
+                          hdf5FilterParameters.end(), [](unsigned int param) {
+                              LOG(logINFO)
+                                  << "HDF5 filter parameter: " << param;
+                          });
             // apply filter to property list
-            if (filterParams.empty()) {
+            if (hdf5FilterParameters.empty()) {
                 plist.setFilter(filterId, 0, 0, nullptr);
             } else {
-                plist.setFilter(filterId, 0, filterParams.size(),
-                                filterParams.data());
+                plist.setFilter(filterId, 0, hdf5FilterParameters.size(),
+                                hdf5FilterParameters.data());
             }
         }
         plistPara.setChunk(PARA_RANK, dimsChunkPara);

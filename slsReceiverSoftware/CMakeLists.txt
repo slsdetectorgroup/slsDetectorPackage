@@ -61,7 +61,8 @@ if (SLS_USE_HDF5)
     if (HDF5_FOUND)
         target_compile_definitions(slsReceiverObject PRIVATE
             SLS_HDF5_FILTER_ID=${SLS_HDF5_FILTER_ID}
-            SLS_HDF5_FILTER_PARAMS=\"${SLS_HDF5_FILTER_PARAMS}\")
+            SLS_HDF5_FILTER_PARAMS=${SLS_HDF5_FILTER_PARAMS_CPP}
+            SLS_NUM_FILTER_PARAMS=${NUM_FILTER_PARAMS})
         target_link_libraries(slsReceiverObject PUBLIC 
             ${HDF5_LIBRARIES})
         target_include_directories(slsReceiverObject PUBLIC

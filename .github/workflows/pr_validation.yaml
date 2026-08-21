@@ -8,11 +8,9 @@ on:
       - reopened
       - synchronize
       - edited
-      - labeled
-      - unlabeled
 
 permissions:
-  pull-requests: read
+  pull-requests: write
   contents: read
 
 jobs:
@@ -26,17 +24,10 @@ jobs:
         with:
           script: |
             const body = context.payload.pull_request.body || '';
+            const prNumber = context.payload.pull_request.number;
 
             /*
              * Check which primary PR type is selected.
-             *
-             * A selected checkbox looks like:
-             *
-             * - [x] Feature
-             *
-             * An unselected checkbox looks like:
-             *
-             * - [ ] Feature
              */
             const feature =
               /-\s*\[[xX]\]\s*Feature\b/.test(body);
@@ -46,9 +37,6 @@ jobs:
 
             const infrastructure =
               /-\s*\[[xX]\]\s*Infrastructure\b/.test(body);
-
-            const breakingApi =
-              /-\s*\[[xX]\]\s*This is a Breaking API change\b/.test(body);
 
             const primaryTypes = [
               feature && 'Feature',
@@ -73,9 +61,14 @@ jobs:
               return;
             }
 
+            const primaryType = primaryTypes[0];
+
             /*
              * Infrastructure PRs cannot be Breaking API.
              */
+            const breakingApi =
+              /-\s*\[[xX]\]\s*This is a Breaking API change\b/.test(body);
+
             if (infrastructure && breakingApi) {
               core.setFailed(
                 'Infrastructure PRs cannot be Breaking API changes.'
@@ -83,20 +76,64 @@ jobs:
               return;
             }
 
-            /*
-             * Breaking API is allowed only for Feature or Bug Fix.
-             */
-            if (breakingApi && !feature && !bugFix) {
-              core.setFailed(
-                'Breaking API can only be selected for Feature or Bug Fix PRs.'
-              );
-              return;
-            }
-
-            core.info(
-              `Primary PR type: ${primaryTypes[0]}`
-            );
-
+            core.info(`Primary PR type: ${primaryType}`);
             core.info(
               `Breaking API: ${breakingApi ? 'yes' : 'no'}`
             );
+
+            /*
+             * Primary PR type labels.
+             */
+            const primaryLabels = [
+              'Feature',
+              'Bug Fix',
+              'Infrastructure'
+            ];
+
+            /*
+             * Get the labels currently on the PR.
+             */
+            const { data: currentLabels } =
+              await github.rest.issues.listLabelsOnIssue({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber
+              });
+
+            const currentLabelNames =
+              currentLabels.map(label => label.name);
+
+            /*
+             * Remove any incorrect primary PR type labels.
+             */
+            for (const label of primaryLabels) {
+              if (
+                label !== primaryType &&
+                currentLabelNames.includes(label)
+              ) {
+                await github.rest.issues.removeLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: prNumber,
+                  name: label
+                });
+
+                core.info(`Removed label: ${label}`);
+              }
+            }
+
+            /*
+             * Add the correct primary PR type label.
+             */
+            if (!currentLabelNames.includes(primaryType)) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                labels: [primaryType]
+              });
+
+              core.info(`Added label: ${primaryType}`);
+            }
+
+            core.info('PR validation passed.');

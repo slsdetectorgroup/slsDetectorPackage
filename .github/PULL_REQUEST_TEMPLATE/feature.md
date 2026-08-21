@@ -4,6 +4,7 @@ about: Create a pull request for a new feature or change (minor or major) includ
 title: ""
 labels: Feature
 ---
+<!-- PR_TYPE: Feature -->
 
 ## Description
 

@@ -4,6 +4,7 @@ about: Create a pull request for a bug fix or forgotten code documentaion
 title: ""
 labels: Bug Fix
 ---
+<!-- PR_TYPE: Bug Fix -->
 
 ## Description
 

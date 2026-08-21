@@ -23,7 +23,7 @@ Link any equivalent PRs in a release candidate or developer branch.
 eg. #1245
 -->
 
-### Release notes
+## Release notes
 
 <!--
 For Feature and Bug Fix PRs:

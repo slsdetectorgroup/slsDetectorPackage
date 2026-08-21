@@ -82,15 +82,6 @@ jobs:
               return;
             }
 
-            /*
-             * Breaking API is allowed only for Feature or Bug Fix.
-             */
-            if (breakingApi && !feature && !bugFix) {
-              core.setFailed(
-                'Breaking API can only be selected for Feature or Bug Fix PRs.'
-              );
-              return;
-            }
 
             core.info(
               `Primary PR type: ${primaryTypes[0]}`

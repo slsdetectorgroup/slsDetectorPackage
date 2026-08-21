@@ -1,0 +1,101 @@
+name: PR Validation
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - edited
+      - labeled
+      - unlabeled
+
+permissions:
+  pull-requests: read
+  contents: read
+
+jobs:
+  validate-pr:
+    name: Validate PR
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validate PR type and Breaking API
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = context.payload.pull_request.body || '';
+
+            /*
+             * Check which primary PR type is selected.
+             *
+             * A selected checkbox looks like:
+             *
+             * - [x] Feature
+             *
+             * An unselected checkbox looks like:
+             *
+             * - [ ] Feature
+             */
+            const feature =
+              /-\s*\[[xX]\]\s*Feature\b/.test(body);
+
+            const bugFix =
+              /-\s*\[[xX]\]\s*Bug Fix\b/.test(body);
+
+            const infrastructure =
+              /-\s*\[[xX]\]\s*Infrastructure\b/.test(body);
+
+            const breakingApi =
+              /-\s*\[[xX]\]\s*This is a Breaking API change\b/.test(body);
+
+            const primaryTypes = [
+              feature && 'Feature',
+              bugFix && 'Bug Fix',
+              infrastructure && 'Infrastructure'
+            ].filter(Boolean);
+
+            /*
+             * Exactly one primary PR type must be selected.
+             */
+            if (primaryTypes.length === 0) {
+              core.setFailed(
+                'No primary PR type selected. Select exactly one of: Feature, Bug Fix, Infrastructure.'
+              );
+              return;
+            }
+
+            if (primaryTypes.length > 1) {
+              core.setFailed(
+                `Multiple primary PR types selected: ${primaryTypes.join(', ')}. Select exactly one.`
+              );
+              return;
+            }
+
+            /*
+             * Infrastructure PRs cannot be Breaking API.
+             */
+            if (infrastructure && breakingApi) {
+              core.setFailed(
+                'Infrastructure PRs cannot be Breaking API changes.'
+              );
+              return;
+            }
+
+            /*
+             * Breaking API is allowed only for Feature or Bug Fix.
+             */
+            if (breakingApi && !feature && !bugFix) {
+              core.setFailed(
+                'Breaking API can only be selected for Feature or Bug Fix PRs.'
+              );
+              return;
+            }
+
+            core.info(
+              `Primary PR type: ${primaryTypes[0]}`
+            );
+
+            core.info(
+              `Breaking API: ${breakingApi ? 'yes' : 'no'}`
+            );

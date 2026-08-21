@@ -12,6 +12,12 @@ Describe the infrastructure change and why it is needed.
 -->
 
 
+## Equivalent PR
+
+<! Link any euqivalent PRs in a release candidate or developer branch.
+-->
+
+
 ## Checklist
 
 <!--

@@ -1,6 +1,6 @@
 ---
 name: Feature
-about: Create a pull request for a new feature or change (minor or major)
+about: Create a pull request for a new feature or change (minor or major) including compilation and dependency related features
 title: ""
 labels: Feature
 ---

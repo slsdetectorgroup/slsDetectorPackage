@@ -4,7 +4,6 @@ about: Create a pull request for infrastructure changes in workflow, internal pr
 title: ""
 labels: Infrastructure
 ---
-<!-- Preview checklist before submitting -->
 
 ## Description
 

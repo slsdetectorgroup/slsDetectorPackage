@@ -1,3 +1,11 @@
+---
+name: Infrastructure
+about: Create a pull request for infrastructure changes in workflow, internal process documentation, helper scripts
+title: ""
+labels: Infrastructure
+---
+<!-- Preview checklist before submitting -->
+
 ## Description
 
 <!--

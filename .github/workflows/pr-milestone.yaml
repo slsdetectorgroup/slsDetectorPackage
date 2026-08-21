@@ -1,0 +1,66 @@
+name: PR Milestone
+
+on:
+  pull_request:
+    types: [opened, labeled, reopened]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  milestone:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set milestone
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const labels = context.payload.pull_request.labels.map(
+              label => label.name
+            );
+
+            let milestoneName;
+
+            if (labels.includes('Breaking API')) {
+              milestoneName = '11.0.0';
+            } else if (labels.includes('Bug Fix')) {
+              milestoneName = '10.1.1';
+            } else if (
+              labels.includes('Feature') ||
+              labels.includes('Infrastructure')
+            ) {
+              milestoneName = '10.2.0';
+            } else {
+              core.info('No PR type label found. Nothing to do.');
+              return;
+            }
+
+            core.info(`Target milestone: ${milestoneName}`);
+
+            const { data: milestones } =
+              await github.rest.issues.listMilestones({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: 'open'
+              });
+
+            const milestone = milestones.find(
+              m => m.title === milestoneName
+            );
+
+            if (!milestone) {
+              core.setFailed(
+                `Milestone "${milestoneName}" does not exist.`
+              );
+              return;
+            }
+
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              milestone: milestone.number
+            });
+
+            core.info(`Assigned milestone: ${milestoneName}`);

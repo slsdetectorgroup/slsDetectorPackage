@@ -1,3 +1,11 @@
+---
+name: Feature
+about: Create a pull request for a new feature or change (minor or major)
+title: ""
+labels: Feature
+---
+<!-- Preview checklist before submitting -->
+
 ## Description
 
 <!--

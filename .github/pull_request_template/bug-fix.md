@@ -1,3 +1,11 @@
+---
+name: Bug Fix
+about: Create a pull request for a bug fix or forgotten code documentaion
+title: ""
+labels: Bug Fix
+---
+<!-- Preview checklist before submitting -->
+
 ## Description
 
 <!--

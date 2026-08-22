@@ -1,4 +1,3 @@
-```yaml
 # This reusable workflow sets the milestone based on the
 # current PR labels.
 

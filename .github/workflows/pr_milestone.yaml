@@ -1,0 +1,151 @@
+# This workflow is triggered when a PR is labeled or unlabeled. It sets the milestone based on the PR type label.
+name: PR Milestone
+
+on:
+  pull_request:
+    types:
+      - labeled
+      - unlabeled
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  set-milestone:
+    name: Set PR milestone
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set milestone
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            const prNumber = context.payload.pull_request.number;
+            const changedLabel = context.payload.label.name;
+
+            /*
+             * Only these labels affect the milestone.
+             */
+            const milestoneLabels = [
+              'Feature',
+              'Bug Fix',
+              'Infrastructure',
+              'Breaking API'
+            ];
+
+            if (!milestoneLabels.includes(changedLabel)) {
+              core.info(
+                `Label "${changedLabel}" does not affect milestones.`
+              );
+              return;
+            }
+
+            /*
+             * Read release targets from release-targets.yaml.
+             */
+            const releaseTargetsFile = fs.readFileSync(
+              '.github/release-targets.yaml',
+              'utf8'
+            );
+
+            const getTarget = (name) => {
+              const match = releaseTargetsFile.match(
+                new RegExp(`^${name}:\\s*["']?([^"'\\s]+)["']?`, 'm')
+              );
+
+              if (!match) {
+                core.setFailed(
+                  `Release target "${name}" was not found in release-targets.yaml.`
+                );
+                return null;
+              }
+
+              return match[1];
+            };
+
+            const major = getTarget('major');
+            const minor = getTarget('minor');
+            const bugFix = getTarget('bug_fix');
+
+            if (!major || !minor || !bugFix) {
+              return;
+            }
+
+            /*
+             * Get the current PR labels.
+             */
+            const { data: labels } =
+              await github.rest.issues.listLabelsOnIssue({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber
+              });
+
+            const labelNames =
+              labels.map(label => label.name);
+
+            /*
+             * Determine the target milestone.
+             *
+             * Breaking API has priority over the primary PR type.
+             */
+            let targetMilestone;
+
+            if (labelNames.includes('Breaking API')) {
+              targetMilestone = major;
+            } else if (labelNames.includes('Bug Fix')) {
+              targetMilestone = bugFix;
+            } else if (
+              labelNames.includes('Feature') ||
+              labelNames.includes('Infrastructure')
+            ) {
+              targetMilestone = minor;
+            } else {
+              core.info(
+                'No primary PR type label found. Leaving milestone unchanged.'
+              );
+              return;
+            }
+
+            core.info(`Target milestone: ${targetMilestone}`);
+
+            /*
+             * Find the milestone in GitHub.
+             */
+            const { data: milestones } =
+              await github.rest.issues.listMilestones({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: 'open'
+              });
+
+            const milestone = milestones.find(
+              milestone => milestone.title === targetMilestone
+            );
+
+            if (!milestone) {
+              core.setFailed(
+                `Milestone "${targetMilestone}" was not found.`
+              );
+              return;
+            }
+
+            /*
+             * Set the PR milestone.
+             */
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              milestone: milestone.number
+            });
+
+            core.info(
+              `Milestone set to "${targetMilestone}".`
+            );

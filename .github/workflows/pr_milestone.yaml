@@ -2,10 +2,11 @@
 name: PR Milestone
 
 on:
-  pull_request:
-    types:
-      - labeled
-      - unlabeled
+  workflow_call:
+    inputs:
+      pr_number:
+        required: true
+        type: number
 
 permissions:
   pull-requests: write
@@ -26,28 +27,10 @@ jobs:
           script: |
             const fs = require('fs');
 
-            const prNumber = context.payload.pull_request.number;
-            const changedLabel = context.payload.label.name;
+            const prNumber = ${{ inputs.pr_number }};
 
             /*
-             * Only these labels affect the milestone.
-             */
-            const milestoneLabels = [
-              'Feature',
-              'Bug Fix',
-              'Infrastructure',
-              'Breaking API'
-            ];
-
-            if (!milestoneLabels.includes(changedLabel)) {
-              core.info(
-                `Label "${changedLabel}" does not affect milestones.`
-              );
-              return;
-            }
-
-            /*
-             * Read release targets from release-targets.yaml.
+             * Read release targets.
              */
             const releaseTargetsFile = fs.readFileSync(
               '.github/release-targets.yaml',
@@ -61,7 +44,7 @@ jobs:
 
               if (!match) {
                 core.setFailed(
-                  `Release target "${name}" was not found in release-targets.yaml.`
+                  `Release target "${name}" was not found.`
                 );
                 return null;
               }
@@ -78,7 +61,7 @@ jobs:
             }
 
             /*
-             * Get the current PR labels.
+             * Get current PR labels.
              */
             const { data: labels } =
               await github.rest.issues.listLabelsOnIssue({
@@ -91,9 +74,9 @@ jobs:
               labels.map(label => label.name);
 
             /*
-             * Determine the target milestone.
+             * Determine the milestone.
              *
-             * Breaking API has priority over the primary PR type.
+             * Breaking API has highest priority.
              */
             let targetMilestone;
 
@@ -108,15 +91,17 @@ jobs:
               targetMilestone = minor;
             } else {
               core.info(
-                'No primary PR type label found. Leaving milestone unchanged.'
+                'No milestone-related labels found.'
               );
               return;
             }
 
-            core.info(`Target milestone: ${targetMilestone}`);
+            core.info(
+              `Target milestone: ${targetMilestone}`
+            );
 
             /*
-             * Find the milestone in GitHub.
+             * Find the milestone.
              */
             const { data: milestones } =
               await github.rest.issues.listMilestones({
@@ -137,7 +122,7 @@ jobs:
             }
 
             /*
-             * Set the PR milestone.
+             * Set the milestone.
              */
             await github.rest.issues.update({
               owner: context.repo.owner,

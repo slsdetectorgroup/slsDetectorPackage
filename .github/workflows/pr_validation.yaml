@@ -135,4 +135,27 @@ jobs:
               core.info(`Added label: ${primaryType}`);
             }
 
+            // Synchronize Breaking API label
+            if (breakingApi && !currentLabelNames.includes('Breaking API')) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                labels: ['Breaking API']
+              });
+
+              core.info('Added label: Breaking API');
+            }
+
+            if (!breakingApi && currentLabelNames.includes('Breaking API')) {
+              await github.rest.issues.removeLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                name: 'Breaking API'
+              });
+
+              core.info('Removed label: Breaking API');
+            }
+
             core.info('PR validation passed.');

@@ -160,3 +160,12 @@ jobs:
             }
 
             core.info('PR validation passed.');
+
+  milestone:
+    needs: validate-pr
+    uses: ./.github/workflows/pr_milestone.yaml
+    with:
+      pr_number: ${{ github.event.pull_request.number }}
+    permissions:
+      pull-requests: write
+      contents: read

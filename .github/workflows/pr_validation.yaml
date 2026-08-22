@@ -1,4 +1,4 @@
-# This workflow is triggered when editing the Pr description. It validates the PR type and Breaking API, then sets the labels.
+# This workflow is triggered when editing the Pr description. It validates the PR type and Breaking API, then sets the labels. It also calls the PR milestone workflow to set the milestone based on the PR type label.
 name: PR Validation
 
 on:
@@ -160,3 +160,12 @@ jobs:
             }
 
             core.info('PR validation passed.');
+
+  milestone:
+    needs: validate-pr
+    uses: ./.github/workflows/pr_milestone.yaml
+    with:
+      pr_number: ${{ github.event.pull_request.number }}
+    permissions:
+      pull-requests: write
+      contents: read

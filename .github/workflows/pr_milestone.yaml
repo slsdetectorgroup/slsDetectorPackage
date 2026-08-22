@@ -1,4 +1,7 @@
-# This workflow is triggered when a PR is labeled or unlabeled. It sets the milestone based on the PR type label.
+```yaml
+# This reusable workflow sets the milestone based on the
+# current PR labels.
+
 name: PR Milestone
 
 on:
@@ -74,19 +77,35 @@ jobs:
               labels.map(label => label.name);
 
             /*
+             * Infrastructure PRs cannot be Breaking API.
+             */
+            const hasInfrastructure =
+              labelNames.includes('Infrastructure');
+
+            const hasBreakingApi =
+              labelNames.includes('Breaking API');
+
+            if (hasInfrastructure && hasBreakingApi) {
+              core.setFailed(
+                'Infrastructure PRs cannot be Breaking API changes.'
+              );
+              return;
+            }
+
+            /*
              * Determine the milestone.
              *
              * Breaking API has highest priority.
              */
             let targetMilestone;
 
-            if (labelNames.includes('Breaking API')) {
+            if (hasBreakingApi) {
               targetMilestone = major;
             } else if (labelNames.includes('Bug Fix')) {
               targetMilestone = bugFix;
             } else if (
               labelNames.includes('Feature') ||
-              labelNames.includes('Infrastructure')
+              hasInfrastructure
             ) {
               targetMilestone = minor;
             } else {

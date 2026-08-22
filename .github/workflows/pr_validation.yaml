@@ -1,3 +1,4 @@
+# This workflow is triggered when editing the Pr description. It validates the PR type and Breaking API, then sets the labels.
 name: PR Validation
 
 on:

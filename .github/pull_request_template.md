@@ -30,8 +30,10 @@ Please review the checklist at the bottom before submitting. If ignored, the PR 
 - [ ] Infrastructure
 
 ## Breaking API
+
 <details>
 <summary>Note</summary>
+
 - Ignore this section for an Infrastructure PR<br><br>
 
 Others:
@@ -53,8 +55,10 @@ eg. #1245 (prefix '#')
 -->
 
 ## Release notes
+
 <details>
 <summary>Note</summary>
+
 - Ignore this section for an Infrastructure PR<br><br>
 
 Others:
@@ -63,6 +67,7 @@ Others:
     - a linked PR already including release notes for this PR
 - Write release notes
 </details>
+
 <!-- Selected: '[x]', Unselected: '[ ]' or Click when not in editing mode -->
 - [ ] No Release Notes
 <!-- Describe the user-visible change introduced by this PR below. -->

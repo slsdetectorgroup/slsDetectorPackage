@@ -5,7 +5,7 @@ Please review the checklist at the bottom before submitting. If ignored, the PR 
 ## PR type
 
 <details>
-<summary>Table of PR types and its descriptions</summary>
+<summary>PR types and its descriptions</summary>
 
 - Feature
   - Minor/Major

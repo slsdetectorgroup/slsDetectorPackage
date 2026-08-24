@@ -3,13 +3,24 @@ Please review the checklist at the bottom before submitting. If ignored, the PR 
 -->
 
 ## PR type
+
 <details>
 <summary>Table of PR types and its descriptions</summary>
-| PR Type | Description |
-| --- | --- |
-| Feature | Minor/Major<br>Features or changes<br>Compilation or dependency<br>Bug fixes to a feature not released yet |
-| Bug Fix | Bug fixes to released code<br>Forgotten/modifying released documentation about code |
-| Infrastructure | Workflows fix/change<br>Internal processes documentation<br>Helper Scripts<br>Bug fixes to an infrastructure not released yet |
+
+- Feature
+  - Minor/Major
+  - Features or changes
+  - Compilation or dependency
+  - Bug fixes to a feature not released yet
+- Bug Fix
+  - Bug fixes to released code
+  - Forgotten/modifying released documentation about code
+- Infrastructure
+  - Workflows fix/change
+  - Internal processes documentation
+  - Helper Scripts
+  - Bug fixes to an infrastructure not released yet
+
 </details>
 
 **Select exactly one:**
@@ -21,7 +32,9 @@ Please review the checklist at the bottom before submitting. If ignored, the PR 
 ## Breaking API
 <details>
 <summary>Note</summary>
-- Ignore this section for an Infrastructure PR
+- Ignore this section for an Infrastructure PR<br><br>
+
+Others:
 Breaking API includes:
 - API breaks
 - Not server-firmware API break
@@ -42,10 +55,9 @@ eg. #1245 (prefix '#')
 ## Release notes
 <details>
 <summary>Note</summary>
-Infrastructure PR:
-- Ignore this section
+- Ignore this section for an Infrastructure PR<br><br>
 
-Feature or Bug Fix PR:
+Others:
 - Check the 'No Release Note' if PR deals with:
     - Ctb, Xilinx Ctb or developing detector
     - a linked PR already including release notes for this PR

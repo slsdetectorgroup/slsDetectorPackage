@@ -36,9 +36,8 @@ Please review the checklist at the bottom before submitting. If ignored, the PR 
 <details>
 <summary>Note</summary>
 
-- Ignore this section for an Infrastructure PR<br><br>
+Not affecting Infrastructure PRs.
 
-Others:
 Breaking API includes:
 - API breaks
 - Not server-firmware API break
@@ -63,13 +62,18 @@ eg. #1245 (prefix '#')
 <details>
 <summary>Note</summary>
 
-- Ignore this section for an Infrastructure PR<br><br>
+Not affecting Infrastructure PRs.
 
-Others:
-- Check the 'No Release Note' if PR deals with:
+- Either check the 'No Release Note' if PR deals with:
     - Ctb, Xilinx Ctb or developing detector
     - a linked PR already including release notes for this PR
-- Write release notes
+- Or write release notes
+
+Validation fails if all conditions are met:
+- It is a bug fix or feature PR type.
+- 'No release note' checkbox is not checked.
+- No release note found in this PR.
+- No release note found in linked PRs.
 </details>
 
 <!-- Selected: '[x]', Unselected: '[ ]' or Click when not in editing mode -->
@@ -87,6 +91,7 @@ Feature or Bug Fix PRs:
     - equivalent PRs that is on another branch.
     - related PRs eg. fixes/additions to an unrelease feature PR. 
 - I have provided a release note above or checked 'No Release Note'.
+- I have added detector labels. Some automation in adding labels from code change and PR description.
 
 Infrastructure PRs:
 - I have linked any equivalent PRs that is in an another branch.

@@ -1,4 +1,4 @@
-# This workflow automatically detects detector labels for pull requests. It checks whole word matching of detector names in server folders, changed code and PR title/description. If a detector is detected, the corresponding label is added to the PR. Existing labels are left untouched. Detector labels are never removed automatically.
+# This workflow automatically detects detector labels for pull requests. This workflow is ignored for Infrastructure Prs. It checks whole word matching of detector names in server folders, changed code and PR title/description. If a detector is detected, the corresponding label is added to the PR. Existing labels are left untouched. Detector labels are never removed automatically.
 name: PR Detector Labels
 
 on:
@@ -25,6 +25,22 @@ jobs:
           script: |
             const prNumber = context.payload.pull_request.number;
             const pr = context.payload.pull_request;
+
+
+            /*
+            * Infrastructure PRs do not receive detector labels.
+            */
+            const body = pr.body || '';
+
+            const infrastructureSelected =
+              /-\s*\[[xX]\]\s*Infrastructure\b/.test(body);
+
+            if (infrastructureSelected) {
+              core.info(
+                'Infrastructure PR detected. Skipping detector label detection.'
+              );
+              return;
+            }
 
             /*
              * Known detector labels.

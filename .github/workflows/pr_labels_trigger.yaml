@@ -24,6 +24,7 @@ jobs:
         with:
           script: |
             const prNumber = context.payload.pull_request.number;
+            const body = context.payload.pull_request.body || '';
 
             const { data: currentLabels } =
               await github.rest.issues.listLabelsOnIssue({
@@ -34,6 +35,24 @@ jobs:
 
             const labelNames =
               currentLabels.map(label => label.name);
+
+            const feature =
+              /-\s*\[[xX]\]\s*Feature\b/.test(body);
+
+            const bugFix =
+              /-\s*\[[xX]\]\s*Bug Fix\b/.test(body);
+
+            const infrastructure =
+              /-\s*\[[xX]\]\s*Infrastructure\b/.test(body);
+
+            const breakingApi =
+              /-\s*\[[xX]\]\s*This is a Breaking API change\b/.test(body);
+
+            const expectedPrimary =
+              feature ? 'Feature' :
+              bugFix ? 'Bug Fix' :
+              infrastructure ? 'Infrastructure' :
+              null;
 
             const primaryLabels = [
               'Feature',
@@ -46,20 +65,31 @@ jobs:
                 labelNames.includes(label)
               );
 
-            if (selectedPrimary.length !== 1) {
+            if (expectedPrimary === null) {
               core.setFailed(
-                'Exactly one primary PR type label must be selected: Feature, Bug Fix, Infrastructure.'
+                'No primary PR type is selected in the PR description.'
               );
               return;
             }
 
-            const breakingApi =
+            if (selectedPrimary.length !== 1 || selectedPrimary[0] !== expectedPrimary) {
+              core.setFailed(
+                `PR label mismatch: description expects ${expectedPrimary}, but labels are ${selectedPrimary.join(', ') || 'none'}.`
+              );
+              return;
+            }
+
+            const hasBreakingApiLabel =
               labelNames.includes('Breaking API');
 
-            if (
-              selectedPrimary.includes('Infrastructure') &&
-              breakingApi
-            ) {
+            if (breakingApi !== hasBreakingApiLabel) {
+              core.setFailed(
+                `PR label mismatch: Breaking API checkbox is ${breakingApi ? 'checked' : 'unchecked'}, but the label state is ${hasBreakingApiLabel ? 'present' : 'absent'}.`
+              );
+              return;
+            }
+
+            if (infrastructure && hasBreakingApiLabel) {
               core.setFailed(
                 'Infrastructure PRs cannot have the Breaking API label.'
               );
@@ -67,10 +97,10 @@ jobs:
             }
 
             core.info(
-              `Valid primary PR type label: ${selectedPrimary[0]}`
+              `Label state matches PR description: ${expectedPrimary}`
             );
             core.info(
-              `Breaking API label present: ${breakingApi ? 'yes' : 'no'}`
+              `Breaking API: ${hasBreakingApiLabel ? 'present' : 'absent'}`
             );
 
   milestone:

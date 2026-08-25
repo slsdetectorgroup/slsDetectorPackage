@@ -74,15 +74,6 @@ jobs:
             );
 
             /*
-             * Primary PR type labels.
-             */
-            const primaryLabels = [
-              'Feature',
-              'Bug Fix',
-              'Infrastructure'
-            ];
-
-            /*
              * Get the labels currently on the PR.
              */
             const { data: currentLabels } =
@@ -95,41 +86,55 @@ jobs:
             const currentLabelNames =
               currentLabels.map(label => label.name);
 
-            /*
-             * Remove any incorrect primary PR type labels.
-             */
-            for (const label of primaryLabels) {
-              if (
-                label !== primaryType &&
+            const primaryLabels = [
+              'Feature',
+              'Bug Fix',
+              'Infrastructure'
+            ];
+
+            const selectedPrimary =
+              primaryLabels.filter(label =>
                 currentLabelNames.includes(label)
-              ) {
-                await github.rest.issues.removeLabel({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  issue_number: prNumber,
-                  name: label
-                });
+              );
 
-                core.info(`Removed label: ${label}`);
-              }
+            if (selectedPrimary.length > 1) {
+              core.setFailed(
+                `Invalid PR label state: multiple primary labels are present: ${selectedPrimary.join(', ')}.`
+              );
+              return;
             }
 
-            /*
-             * Add the correct primary PR type label.
-             */
-            if (!currentLabelNames.includes(primaryType)) {
-              await github.rest.issues.addLabels({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: prNumber,
-                labels: [primaryType]
-              });
-
-              core.info(`Added label: ${primaryType}`);
+            if (selectedPrimary.length === 1 && selectedPrimary[0] !== primaryType) {
+              core.setFailed(
+                `Invalid PR label state: the PR body selects ${primaryType}, but the existing label is ${selectedPrimary[0]}.`
+              );
+              return;
             }
 
-            // Synchronize Breaking API label
-            if (breakingApi && !currentLabelNames.includes('Breaking API')) {
+            if (
+              currentLabelNames.includes('Breaking API') &&
+              infrastructure
+            ) {
+              core.setFailed(
+                'Infrastructure PRs cannot have the Breaking API label.'
+              );
+              return;
+            }
+
+            if (
+              !breakingApi &&
+              currentLabelNames.includes('Breaking API')
+            ) {
+              core.setFailed(
+                'Breaking API label is present but the PR body does not mark the checkbox.'
+              );
+              return;
+            }
+
+            if (
+              breakingApi &&
+              !currentLabelNames.includes('Breaking API')
+            ) {
               await github.rest.issues.addLabels({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -140,15 +145,15 @@ jobs:
               core.info('Added label: Breaking API');
             }
 
-            if (!breakingApi && currentLabelNames.includes('Breaking API')) {
-              await github.rest.issues.removeLabel({
+            if (!currentLabelNames.includes(primaryType)) {
+              await github.rest.issues.addLabels({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: prNumber,
-                name: 'Breaking API'
+                labels: [primaryType]
               });
 
-              core.info('Removed label: Breaking API');
+              core.info(`Added label: ${primaryType}`);
             }
 
             core.info('PR validation passed.');

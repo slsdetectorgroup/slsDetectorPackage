@@ -76,48 +76,19 @@ jobs:
               labels.map(label => label.name);
 
             /*
-             * Exactly one primary PR type must be selected.
-             */
-            const primaryTypes = labelNames.filter(name =>
-              ['Feature', 'Bug Fix', 'Infrastructure'].includes(name)
-            ).filter(Boolean);
-            if (primaryTypes.length !== 1) {
-              core.setFailed(
-                'Exactly one primary PR type must be selected. Select one of: Feature, Bug Fix, Infrastructure.'
-              );
-              return;
-            }
-
-            /*
-             * Infrastructure PRs cannot be Breaking API.
-             */
-            const hasInfrastructure =
-              labelNames.includes('Infrastructure');
-
-            const hasBreakingApi =
-              labelNames.includes('Breaking API');
-
-            if (hasInfrastructure && hasBreakingApi) {
-              core.setFailed(
-                'Infrastructure PRs cannot be Breaking API changes.'
-              );
-              return;
-            }
-
-            /*
              * Determine the milestone.
              *
              * Breaking API has highest priority.
              */
             let targetMilestone;
 
-            if (hasBreakingApi) {
+            if (labelNames.includes('Breaking API')) {
               targetMilestone = major;
             } else if (labelNames.includes('Bug Fix')) {
               targetMilestone = bugFix;
             } else if (
               labelNames.includes('Feature') ||
-              hasInfrastructure
+              labelNames.includes('Infrastructure')
             ) {
               targetMilestone = minor;
             } else {

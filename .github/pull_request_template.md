@@ -83,7 +83,7 @@ Others:
 
 Feature or Bug Fix PRs:
 - checked if this is a Breaking API change.
-- linked any equivalent PRs that is on an another branch.
+- linked any equivalent PRs that is on another branch.
 - provided a release note above or checked 'No Release Note'.
 
 Infrastructure PRs:

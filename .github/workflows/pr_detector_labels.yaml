@@ -1,4 +1,4 @@
-# This workflow automatically detects detector labels for pull requests. It checks whole word matching of detector names in server folders, changed code, PR title/description, and referenced issues/PRs. If a detector is detected, the corresponding label is added to the PR. Existing labels are left untouched. Detector labels are never removed automatically.
+# This workflow automatically detects detector labels for pull requests. It checks whole word matching of detector names in server folders, changed code and PR title/description. If a detector is detected, the corresponding label is added to the PR. Existing labels are left untouched. Detector labels are never removed automatically.
 name: PR Detector Labels
 
 on:
@@ -40,16 +40,6 @@ jobs:
               'Xilinx_ctb'
             ];
 
-            /*
-             * Escape characters that have special meaning
-             * in regular expressions.
-             */
-            function escapeRegex(value) {
-              return value.replace(
-                /[.*+?^${}()|[\]\\]/g,
-                '\\$&'
-              );
-            }
 
             /*
              * Check whether a detector name appears as a
@@ -57,7 +47,7 @@ jobs:
              */
             function containsDetector(text, detector) {
               const regex = new RegExp(
-                `\\b${escapeRegex(detector)}\\b`,
+                `\\b${detector}\\b`,
                 'i'
               );
 
@@ -187,136 +177,10 @@ jobs:
               }
             }
 
-            /*
-             * --------------------------------------------------
-             * 5. Find any issue or PR mentioned in the PR
-             * --------------------------------------------------
-             *
-             * Same repository:
-             *
-             * #123
-             * Fixes #123
-             * Related to #123
-             *
-             * Cross repository:
-             *
-             * slsdetectorgroup/slsDetectorPackage#123
-             */
-            const references = new Map();
-
-            /*
-             * Same-repository references.
-             */
-            for (
-              const match of prText.matchAll(
-                /(^|[^\w])#(\d+)\b/g
-              )
-            ) {
-              const owner = context.repo.owner;
-              const repo = context.repo.repo;
-              const number = Number(match[2]);
-
-              const key =
-                `${owner}/${repo}#${number}`;
-
-              references.set(
-                key,
-                {
-                  owner,
-                  repo,
-                  number
-                }
-              );
-            }
-
-            /*
-             * Cross-repository references.
-             */
-            for (
-              const match of prText.matchAll(
-                /(?:^|[^\w])([\w.-]+)\/([\w.-]+)#(\d+)\b/g
-              )
-            ) {
-              const owner = match[1];
-              const repo = match[2];
-              const number = Number(match[3]);
-
-              const key =
-                `${owner}/${repo}#${number}`;
-
-              references.set(
-                key,
-                {
-                  owner,
-                  repo,
-                  number
-                }
-              );
-            }
-
-            core.info(
-              `Found ${references.size} referenced issue/PR(s).`
-            );
 
             /*
              * --------------------------------------------------
-             * 6. Inspect referenced issues and PRs
-             * --------------------------------------------------
-             *
-             * GitHub's Issues API returns both issues and PRs.
-             * A pull request is represented as an issue with
-             * additional pull-request information.
-             *
-             * We inspect:
-             *
-             * - title
-             * - description/body
-             */
-            for (const reference of references.values()) {
-              try {
-                const { data: referencedItem } =
-                  await github.rest.issues.get({
-                    owner: reference.owner,
-                    repo: reference.repo,
-                    issue_number: reference.number
-                  });
-
-                const referencedText = [
-                  referencedItem.title || '',
-                  referencedItem.body || ''
-                ].join('\n');
-
-                for (const detector of detectorLabels) {
-                  if (
-                    containsDetector(
-                      referencedText,
-                      detector
-                    )
-                  ) {
-                    detectedDetectors.add(detector);
-
-                    core.info(
-                      `Detected ${detector} in ` +
-                      `${reference.owner}/${reference.repo}#${reference.number}.`
-                    );
-                  }
-                }
-              } catch (error) {
-                /*
-                 * If the referenced item cannot be accessed,
-                 * don't fail the entire detector-label workflow.
-                 */
-                core.warning(
-                  `Could not inspect ` +
-                  `${reference.owner}/${reference.repo}#${reference.number}: ` +
-                  `${error.message}`
-                );
-              }
-            }
-
-            /*
-             * --------------------------------------------------
-             * 7. Get current PR labels
+             * 5. Get current PR labels
              * --------------------------------------------------
              */
             const { data: currentLabels } =
@@ -331,7 +195,7 @@ jobs:
 
             /*
              * --------------------------------------------------
-             * 8. Add detected detector labels
+             * 6. Add detected detector labels
              * --------------------------------------------------
              *
              * Existing labels are left untouched.

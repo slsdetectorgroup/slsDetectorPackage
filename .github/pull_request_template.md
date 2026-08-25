@@ -54,7 +54,7 @@ Breaking API includes:
 ## Referenced PRs
 <!-- Link any 
 - equivalent PRs in a release candidate or developer branch here
-- related PRs e.g. fixes/additions to a unreleased feature PR.
+- related PRs e.g. fixes/additions to an unreleased feature PR.
 eg. #1245 (prefix '#')
 -->
 
@@ -83,7 +83,9 @@ Others:
 
 Feature or Bug Fix PRs:
 - checked if this is a Breaking API change.
-- linked any equivalent PRs that is on another branch.
+- linked any 
+    - equivalent PRs that is on another branch.
+    - related PRs eg. fixes/additions to an unrelease feature PR. 
 - provided a release note above or checked 'No Release Note'.
 
 Infrastructure PRs:

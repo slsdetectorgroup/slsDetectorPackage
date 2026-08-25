@@ -1,3 +1,4 @@
+# This workflow automatically detects detector labels for pull requests. It checks whole word matching of detector names in server folders, changed code, PR title/description, and referenced issues/PRs. If a detector is detected, the corresponding label is added to the PR. Existing labels are left untouched. Detector labels are never removed automatically.
 name: PR Detector Labels
 
 on:

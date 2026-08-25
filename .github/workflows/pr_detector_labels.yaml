@@ -26,6 +26,22 @@ jobs:
             const prNumber = context.payload.pull_request.number;
             const pr = context.payload.pull_request;
 
+
+            /*
+            * Infrastructure PRs do not receive detector labels.
+            */
+            const body = pr.body || '';
+
+            const infrastructureSelected =
+              /-\s*\[[xX]\]\s*Infrastructure\b/.test(body);
+
+            if (infrastructureSelected) {
+              core.info(
+                'Infrastructure PR detected. Skipping detector label detection.'
+              );
+              return;
+            }
+
             /*
              * Known detector labels.
              */

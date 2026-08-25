@@ -22,7 +22,7 @@
 #include <thread>
 
 namespace sls {
-
+#mythen3 test
 void freeSharedMemory(const int detectorIndex, const int moduleIndex) {
 
     // single module

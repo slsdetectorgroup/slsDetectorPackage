@@ -69,7 +69,7 @@ Others:
 </details>
 
 <!-- Selected: '[x]', Unselected: '[ ]' or Click when not in editing mode -->
-- [ ] No Release Notes
+- [ ] No Release Note
 <!-- Describe the user-visible change introduced by this PR below. -->
 
 

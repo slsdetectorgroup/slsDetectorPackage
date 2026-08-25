@@ -41,6 +41,9 @@ jobs:
               );
               return;
             }
+            core.info(
+              `Not an infrastructure PR. Proceeding with detector label detection.`
+            );
 
             /*
              * Known detector labels.

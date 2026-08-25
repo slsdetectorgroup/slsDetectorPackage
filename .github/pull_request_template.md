@@ -79,14 +79,14 @@ Others:
 
 
 ## Checklist:
-- chosen the primary PR type.
+- I have chosen the primary PR type.
 
 Feature or Bug Fix PRs:
-- checked if this is a Breaking API change.
-- linked any 
+- I have checked if this is a Breaking API change.
+- I have linked any 
     - equivalent PRs that is on another branch.
     - related PRs eg. fixes/additions to an unrelease feature PR. 
-- provided a release note above or checked 'No Release Note'.
+- I have provided a release note above or checked 'No Release Note'.
 
 Infrastructure PRs:
-- linked any equivalent PRs that is in an another branch.
+- I have linked any equivalent PRs that is in an another branch.

@@ -68,12 +68,6 @@ Not affecting Infrastructure PRs.
     - Ctb, Xilinx Ctb or developing detector
     - a linked PR already including release notes for this PR
 - Or write release notes
-
-Validation fails if all conditions are met:
-- It is a bug fix or feature PR type.
-- 'No release note' checkbox is not checked.
-- No release note found in this PR.
-- No release note found in linked PRs.
 </details>
 
 <!-- Selected: '[x]', Unselected: '[ ]' or Click when not in editing mode -->
@@ -95,3 +89,6 @@ Feature or Bug Fix PRs:
 
 Infrastructure PRs:
 - I have linked any equivalent PRs that is in an another branch.
+
+## Workflow
+- List of automation and validations can be found at https://psich.atlassian.net/wiki/x/AQB2P

@@ -7,19 +7,21 @@ Please review the checklist at the bottom before submitting. If ignored, the PR 
 <details>
 <summary>PR types and its descriptions</summary>
 
-- Feature
-  - Minor/Major
-  - Features or changes
-  - Compilation or dependency
-  - Bug fixes to a feature not released yet
-- Bug Fix
-  - Bug fixes to released code
-  - Forgotten/modifying released documentation about code
-- Infrastructure
-  - Workflows fix/change
-  - Internal processes documentation
-  - Helper Scripts
-  - Bug fixes to an infrastructure not released yet
+- Feature PR:
+  - can be a Minor or Major change.
+  - can be an enhancement or change to existing features.
+  - can be a compilation or dependency change.
+  - can be a bug fix to a feature not released yet.
+
+- Bug Fix PR:
+  - can be a bug fix to already released code.
+  - can be modifications to already released documentation regarding code.
+
+- Infrastructure PR:
+  - can be a workflows fix or change.
+  - can be a change in internal processes documentation.
+  - can be a helper script.
+  - can be a bug fix to an infrastructure not released yet.
 
 </details>
 
@@ -49,8 +51,10 @@ Breaking API includes:
 ## Description
 <!-- Describe what this PR changes and why. -->
 
-## Equivalent PRs
-<!-- Link any equivalent PRs in a release candidate or developer branch here.
+## Referenced PRs
+<!-- Link any 
+- equivalent PRs in a release candidate or developer branch here
+- related PRs e.g. fixes/additions to a unreleased feature PR.
 eg. #1245 (prefix '#')
 -->
 
@@ -79,7 +83,7 @@ Others:
 
 Feature or Bug Fix PRs:
 - checked if this is a Breaking API change.
-- linked any equivalent PRs that is in an another branch.
+- linked any equivalent PRs that is on an another branch.
 - provided a release note above or checked 'No Release Note'.
 
 Infrastructure PRs:

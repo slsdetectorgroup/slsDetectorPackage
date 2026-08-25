@@ -1,0 +1,370 @@
+name: PR Detector Labels
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - edited
+
+permissions:
+  pull-requests: write
+  issues: read
+
+jobs:
+  detector-labels:
+    name: Detect detector labels
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Detect detector labels
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = context.payload.pull_request.number;
+            const pr = context.payload.pull_request;
+
+            /*
+             * Known detector labels.
+             */
+            const detectorLabels = [
+              'Ctb',
+              'Eiger',
+              'Moench',
+              'Mythen3',
+              'Jungfrau',
+              'Gotthard2',
+              'Matterhorn',
+              'Xilinx_ctb'
+            ];
+
+            /*
+             * Escape characters that have special meaning
+             * in regular expressions.
+             */
+            function escapeRegex(value) {
+              return value.replace(
+                /[.*+?^${}()|[\]\\]/g,
+                '\\$&'
+              );
+            }
+
+            /*
+             * Check whether a detector name appears as a
+             * complete word, case-insensitively.
+             */
+            function containsDetector(text, detector) {
+              const regex = new RegExp(
+                `\\b${escapeRegex(detector)}\\b`,
+                'i'
+              );
+
+              return regex.test(text);
+            }
+
+            /*
+             * Detectors detected by any detection method.
+             */
+            const detectedDetectors = new Set();
+
+            /*
+             * --------------------------------------------------
+             * 1. Get all files changed by the PR
+             * --------------------------------------------------
+             */
+            const files = await github.paginate(
+              github.rest.pulls.listFiles,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber,
+                per_page: 100
+              }
+            );
+
+            core.info(
+              `Found ${files.length} changed files.`
+            );
+
+            /*
+             * --------------------------------------------------
+             * 2. Detect detector from detector-server folders
+             * --------------------------------------------------
+             *
+             * Examples:
+             *
+             * slsDetectorServers/eigerDetectorServer/...
+             *                         ↓
+             *                       Eiger
+             *
+             * slsDetectorServers/xilinx_ctbDetectorServer/...
+             *                         ↓
+             *                     Xilinx_ctb
+             */
+            for (const file of files) {
+              const match = file.filename.match(
+                /^slsDetectorServers\/([^/]+)DetectorServer\//
+              );
+
+              if (!match) {
+                continue;
+              }
+
+              const detectorName = match[1];
+
+              /*
+               * Remove "DetectorServer" and capitalize
+               * the first character.
+               */
+              const detector =
+                detectorName.charAt(0).toUpperCase() +
+                detectorName.slice(1);
+
+              if (detectorLabels.includes(detector)) {
+                detectedDetectors.add(detector);
+
+                core.info(
+                  `Detected ${detector} from detector-server path: ${file.filename}`
+                );
+              }
+            }
+
+            /*
+             * --------------------------------------------------
+             * 3. Detect detector from changed code
+             * --------------------------------------------------
+             *
+             * Only the PR patch is searched.
+             *
+             * Therefore, text that already existed elsewhere
+             * in an unchanged file does not trigger a label.
+             */
+            for (const file of files) {
+              if (!file.patch) {
+                continue;
+              }
+
+              for (const detector of detectorLabels) {
+                if (
+                  containsDetector(
+                    file.patch,
+                    detector
+                  )
+                ) {
+                  detectedDetectors.add(detector);
+
+                  core.info(
+                    `Detected ${detector} in changed code: ${file.filename}`
+                  );
+                }
+              }
+            }
+
+            /*
+             * --------------------------------------------------
+             * 4. Detect detector from PR title/description
+             * --------------------------------------------------
+             */
+            const prText = [
+              pr.title || '',
+              pr.body || ''
+            ].join('\n');
+
+            for (const detector of detectorLabels) {
+              if (
+                containsDetector(
+                  prText,
+                  detector
+                )
+              ) {
+                detectedDetectors.add(detector);
+
+                core.info(
+                  `Detected ${detector} in PR title or description.`
+                );
+              }
+            }
+
+            /*
+             * --------------------------------------------------
+             * 5. Find any issue or PR mentioned in the PR
+             * --------------------------------------------------
+             *
+             * Same repository:
+             *
+             * #123
+             * Fixes #123
+             * Related to #123
+             *
+             * Cross repository:
+             *
+             * slsdetectorgroup/slsDetectorPackage#123
+             */
+            const references = new Map();
+
+            /*
+             * Same-repository references.
+             */
+            for (
+              const match of prText.matchAll(
+                /(^|[^\w])#(\d+)\b/g
+              )
+            ) {
+              const owner = context.repo.owner;
+              const repo = context.repo.repo;
+              const number = Number(match[2]);
+
+              const key =
+                `${owner}/${repo}#${number}`;
+
+              references.set(
+                key,
+                {
+                  owner,
+                  repo,
+                  number
+                }
+              );
+            }
+
+            /*
+             * Cross-repository references.
+             */
+            for (
+              const match of prText.matchAll(
+                /(?:^|[^\w])([\w.-]+)\/([\w.-]+)#(\d+)\b/g
+              )
+            ) {
+              const owner = match[1];
+              const repo = match[2];
+              const number = Number(match[3]);
+
+              const key =
+                `${owner}/${repo}#${number}`;
+
+              references.set(
+                key,
+                {
+                  owner,
+                  repo,
+                  number
+                }
+              );
+            }
+
+            core.info(
+              `Found ${references.size} referenced issue/PR(s).`
+            );
+
+            /*
+             * --------------------------------------------------
+             * 6. Inspect referenced issues and PRs
+             * --------------------------------------------------
+             *
+             * GitHub's Issues API returns both issues and PRs.
+             * A pull request is represented as an issue with
+             * additional pull-request information.
+             *
+             * We inspect:
+             *
+             * - title
+             * - description/body
+             */
+            for (const reference of references.values()) {
+              try {
+                const { data: referencedItem } =
+                  await github.rest.issues.get({
+                    owner: reference.owner,
+                    repo: reference.repo,
+                    issue_number: reference.number
+                  });
+
+                const referencedText = [
+                  referencedItem.title || '',
+                  referencedItem.body || ''
+                ].join('\n');
+
+                for (const detector of detectorLabels) {
+                  if (
+                    containsDetector(
+                      referencedText,
+                      detector
+                    )
+                  ) {
+                    detectedDetectors.add(detector);
+
+                    core.info(
+                      `Detected ${detector} in ` +
+                      `${reference.owner}/${reference.repo}#${reference.number}.`
+                    );
+                  }
+                }
+              } catch (error) {
+                /*
+                 * If the referenced item cannot be accessed,
+                 * don't fail the entire detector-label workflow.
+                 */
+                core.warning(
+                  `Could not inspect ` +
+                  `${reference.owner}/${reference.repo}#${reference.number}: ` +
+                  `${error.message}`
+                );
+              }
+            }
+
+            /*
+             * --------------------------------------------------
+             * 7. Get current PR labels
+             * --------------------------------------------------
+             */
+            const { data: currentLabels } =
+              await github.rest.issues.listLabelsOnIssue({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber
+              });
+
+            const currentLabelNames =
+              currentLabels.map(label => label.name);
+
+            /*
+             * --------------------------------------------------
+             * 8. Add detected detector labels
+             * --------------------------------------------------
+             *
+             * Existing labels are left untouched.
+             *
+             * Detector labels are NEVER removed automatically.
+             */
+            for (const detector of detectedDetectors) {
+              if (!currentLabelNames.includes(detector)) {
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: prNumber,
+                  labels: [detector]
+                });
+
+                core.info(
+                  `Added detector label: ${detector}`
+                );
+              } else {
+                core.info(
+                  `Detector label already exists: ${detector}`
+                );
+              }
+            }
+
+            /*
+             * --------------------------------------------------
+             * 9. Summary
+             * --------------------------------------------------
+             */
+            core.info(
+              `Detected detectors: ${
+                detectedDetectors.size > 0
+                  ? [...detectedDetectors].join(', ')
+                  : 'none'
+              }`
+            );

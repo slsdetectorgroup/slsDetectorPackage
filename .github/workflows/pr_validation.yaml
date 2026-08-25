@@ -47,16 +47,9 @@ jobs:
             /*
              * Exactly one primary PR type must be selected.
              */
-            if (primaryTypes.length === 0) {
+            if (primaryTypes.length !== 1) {
               core.setFailed(
-                'No primary PR type selected. Select exactly one of: Feature, Bug Fix, Infrastructure.'
-              );
-              return;
-            }
-
-            if (primaryTypes.length > 1) {
-              core.setFailed(
-                `Multiple primary PR types selected: ${primaryTypes.join(', ')}. Select exactly one.`
+                'Exactly one primary PR type must be selected. Select exactly one of: Feature, Bug Fix, Infrastructure.'
               );
               return;
             }

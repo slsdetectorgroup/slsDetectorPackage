@@ -76,6 +76,19 @@ jobs:
               labels.map(label => label.name);
 
             /*
+             * Exactly one primary PR type must be selected.
+             */
+            const primaryTypes = labelNames.filter(name =>
+              ['Feature', 'Bug Fix', 'Infrastructure'].includes(name)
+            ).filter(Boolean);
+            if (primaryTypes.length !== 1) {
+              core.setFailed(
+                'Exactly one primary PR type must be selected. Select one of: Feature, Bug Fix, Infrastructure.'
+              );
+              return;
+            }
+
+            /*
              * Infrastructure PRs cannot be Breaking API.
              */
             const hasInfrastructure =

@@ -7,6 +7,11 @@ on:
       - opened
       - reopened
       - edited
+  workflow_call:
+    inputs:
+      pr_number:
+        required: true
+        type: number
 
 permissions:
   pull-requests: write
@@ -22,8 +27,23 @@ jobs:
         uses: actions/github-script@v8
         with:
           script: |
-            const body = context.payload.pull_request.body || '';
-            const prNumber = context.payload.pull_request.number;
+            const prNumber =
+              Number('${{ inputs.pr_number || 0 }}') ||
+              context.payload.pull_request?.number;
+
+            if (!prNumber) {
+              core.setFailed('Unable to determine PR number.');
+              return;
+            }
+
+            const { data: pr } =
+              await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber
+              });
+
+            const body = pr.body || '';
 
             /*
              * Check which primary PR type is selected.
@@ -48,7 +68,7 @@ jobs:
              */
             if (primaryTypes.length !== 1) {
               core.setFailed(
-                'Exactly one primary PR type must be selected. Select exactly one of: Feature, Bug Fix, Infrastructure.'
+                'Exactly one primary PR type must be selected. Select exactly one of: Feature, Bug Fix, Infrastructure in the description.'
               );
               return;
             }
@@ -63,7 +83,7 @@ jobs:
 
             if (infrastructure && breakingApi) {
               core.setFailed(
-                'Infrastructure PRs cannot be Breaking API changes.'
+                'Infrastructure PRs cannot be Breaking API changes. Deselect Breaking API or change the PR type to Feature or Bug Fix in the description.'
               );
               return;
             }
@@ -99,14 +119,14 @@ jobs:
 
             if (selectedPrimary.length > 1) {
               core.setFailed(
-                `Invalid PR label state: multiple primary labels are present: ${selectedPrimary.join(', ')}.`
+                `Invalid PR label state: multiple primary labels are present: ${selectedPrimary.join(', ')}. Remove these primary type labels 'Feature, Bug Fix, Infrastructure' and let the workflow set the correct label based on the PR description.`
               );
               return;
             }
 
             if (selectedPrimary.length === 1 && selectedPrimary[0] !== primaryType) {
               core.setFailed(
-                `Invalid PR label state: the PR body selects ${primaryType}, but the existing label is ${selectedPrimary[0]}.`
+                `Invalid PR label state: the PR body selects ${primaryType}, but the existing label is ${selectedPrimary[0]}. Remove the existing label and let the workflow set the correct label based on the PR description.`
               );
               return;
             }
@@ -126,7 +146,7 @@ jobs:
               currentLabelNames.includes('Breaking API')
             ) {
               core.setFailed(
-                'Breaking API label is present but the PR body does not mark the checkbox.'
+                'Breaking API label is present but the PR body does not mark the checkbox. Remove the label or check the checkbox in the PR body.'
               );
               return;
             }
@@ -162,7 +182,7 @@ jobs:
     needs: validate-pr
     uses: ./.github/workflows/pr_milestone.yaml
     with:
-      pr_number: ${{ github.event.pull_request.number }}
+      pr_number: ${{ inputs.pr_number || github.event.pull_request.number }}
     permissions:
       pull-requests: write
       contents: read

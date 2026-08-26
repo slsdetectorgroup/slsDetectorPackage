@@ -14,12 +14,15 @@ permissions:
   contents: read
 
 jobs:
-  validate-labels:
-    name: Validate PR labels
+  detect-mismatch:
+    name: Detect PR label mismatch
     runs-on: ubuntu-latest
+    outputs:
+      should_run_validation: ${{ steps.detect.outputs.should_run_validation }}
 
     steps:
-      - name: Validate current PR labels
+      - name: Detect current PR label mismatch
+        id: detect
         uses: actions/github-script@v8
         with:
           script: |
@@ -65,36 +68,53 @@ jobs:
                 labelNames.includes(label)
               );
 
-            if (expectedPrimary === null) {
-              core.setFailed(
-                'No primary PR type is selected in the PR description.'
+            const triggerValidation = (reason) => {
+              core.warning(
+                `${reason} Triggering PR validation to reconcile labels from the PR description.`
               );
+              core.setOutput('should_run_validation', 'true');
               return;
+            };
+
+            // no labels
+            if (selectedPrimary.length === 0) {
+              return triggerValidation(
+                'No primary PR label is present on the PR.'
+              );
             }
 
+            // no checkbox selected in description
+            if (expectedPrimary === null) {
+              return triggerValidation(
+                'No primary PR type is selected in the PR description.'
+              );
+            }
+
+
             if (selectedPrimary.length !== 1 || selectedPrimary[0] !== expectedPrimary) {
-              core.setFailed(
+              return triggerValidation(
                 `PR label mismatch: description expects ${expectedPrimary}, but labels are ${selectedPrimary.join(', ') || 'none'}.`
               );
-              return;
             }
 
             const hasBreakingApiLabel =
               labelNames.includes('Breaking API');
 
             if (breakingApi !== hasBreakingApiLabel) {
-              core.setFailed(
+              return triggerValidation(
                 `PR label mismatch: Breaking API checkbox is ${breakingApi ? 'checked' : 'unchecked'}, but the label state is ${hasBreakingApiLabel ? 'present' : 'absent'}.`
               );
-              return;
             }
 
+            // redundant but leaving it here for clarity
             if (infrastructure && hasBreakingApiLabel) {
-              core.setFailed(
+              return triggerValidation(
                 'Infrastructure PRs cannot have the Breaking API label.'
               );
-              return;
             }
+
+            // If we reach this point, no validation is needed
+            core.setOutput('should_run_validation', 'false');
 
             core.info(
               `Label state matches PR description: ${expectedPrimary}`
@@ -103,9 +123,21 @@ jobs:
               `Breaking API: ${hasBreakingApiLabel ? 'present' : 'absent'}`
             );
 
+  run-pr-validation:
+    needs: detect-mismatch
+    if: ${{ needs.detect-mismatch.outputs.should_run_validation == 'true' }}
+    uses: ./.github/workflows/pr_validation.yaml
+    with:
+      pr_number: ${{ github.event.pull_request.number }}
+    permissions:
+      pull-requests: write
+      contents: read
+
   milestone:
-    needs: validate-labels
-    if: ${{ success() }}
+    needs:
+      - detect-mismatch
+      - run-pr-validation
+    if: ${{ needs.detect-mismatch.outputs.should_run_validation == 'false' || needs.run-pr-validation.result == 'success' }}
     uses: ./.github/workflows/pr_milestone.yaml
     with:
       pr_number: ${{ github.event.pull_request.number }}

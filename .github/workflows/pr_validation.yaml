@@ -19,7 +19,7 @@ jobs:
     name: Validate PR
     runs-on: ubuntu-latest
     outputs:
-      set_milestone: ${{ steps.validate.outputs.set_milestone }}
+      validated: ${{ steps.validate.outputs.validated }}
 
     steps:
       - name: Validate PR type and Breaking API
@@ -27,10 +27,7 @@ jobs:
         uses: actions/github-script@v8
         with:
           script: |
-            /*
-             * Set it to run milestone at the end by default
-             */
-            core.setOutput('set_milestone', 'true');  
+            core.setOutput('validated', 'true');
 
             /*
              * If triggered by label change, ignore unrelated labels.
@@ -50,7 +47,7 @@ jobs:
                 core.info(
                   `Ignoring unrelated label change: ${changedLabel}`
                 );
-                core.setOutput('set_milestone', 'false');
+                core.setOutput('validated', 'false');
                 return;
               }
             }     
@@ -209,10 +206,21 @@ jobs:
 
   milestone:
     needs: validate-pr
-    if: ${{ needs.validate-pr.outputs.set_milestone == 'true' }}
+    if: ${{ needs.validate-pr.outputs.validated == 'true' }}
     uses: ./.github/workflows/pr_milestone.yaml
     with:
       pr_number: ${{ github.event.pull_request.number }}
     permissions:
       pull-requests: write
       contents: read
+
+  
+  detector-labels:
+    needs: validate-pr
+    if: ${{ needs.validate-pr.outputs.validated == 'true' }}
+    uses: ./.github/workflows/pr_detector_labels.yaml
+    with:
+      pr_number: ${{ github.event.pull_request.number }}
+    permissions:
+      pull-requests: write
+      issues: read

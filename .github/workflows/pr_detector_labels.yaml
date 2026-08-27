@@ -1,13 +1,12 @@
-# This workflow automatically detects detector labels for pull requests. This workflow is ignored for Infrastructure Prs. It checks whole word matching of detector names in server folders, changed code and PR title/description. If a detector is detected, the corresponding label is added to the PR. Existing labels are left untouched. Detector labels are never removed automatically.
+# This reusable workflow detects detector labels for pull requests. This workflow is ignored for Infrastructure Prs. It checks whole word matching of detector names in server folders, changed code and PR title/description. If a detector is detected, the corresponding label is added to the PR. Existing labels are left untouched. Detector labels are never removed automatically.
 name: PR Detector Labels
 
 on:
-  pull_request:
-    types:
-      - opened
-      - reopened
-      - synchronize
-      - edited
+  workflow_call:
+    inputs:
+      pr_number:
+        required: true
+        type: number
 
 permissions:
   pull-requests: write
@@ -23,8 +22,14 @@ jobs:
         uses: actions/github-script@v8
         with:
           script: |
-            const prNumber = context.payload.pull_request.number;
-            const pr = context.payload.pull_request;
+            const prNumber = ${{ inputs.pr_number }};
+
+            const { data: pr } =
+              await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber
+              });
 
 
             /*

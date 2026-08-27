@@ -106,13 +106,13 @@ jobs:
 
             if (labelNames.includes('Breaking API')) {
               targetMilestone = major;
-            } else if (labelNames.includes('Bug Fix')) {
-              targetMilestone = bugFix;
+            } else if (labelNames.includes('Feature')) {
+              targetMilestone = minor;
             } else if (
-              labelNames.includes('Feature') ||
+              labelNames.includes('Bug Fix') ||
               labelNames.includes('Infrastructure')
             ) {
-              targetMilestone = minor;
+              targetMilestone = bugFix;
             } else {
               core.info(
                 'No milestone-related labels found.'
@@ -143,6 +143,10 @@ jobs:
                 `Milestone "${targetMilestone}" was not found.`
               );
               return;
+            } else {
+              core.info(
+                `Found milestone "${targetMilestone}".`
+              );
             }
 
             /*

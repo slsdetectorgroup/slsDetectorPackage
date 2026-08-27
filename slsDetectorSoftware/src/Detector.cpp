@@ -21,6 +21,8 @@
 #include <set>
 #include <thread>
 
+#test with ctb 
+
 namespace sls {
 #mythen3 test
 void freeSharedMemory(const int detectorIndex, const int moduleIndex) {

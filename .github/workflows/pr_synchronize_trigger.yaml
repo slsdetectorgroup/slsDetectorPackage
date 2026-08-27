@@ -1,6 +1,8 @@
 # This workflow is triggered when a PR is synchronized.
-# It waits for PR Validation to finish for the same PR head SHA and only
-# calls the reusable detector label workflow if that validation succeeds.
+# It checks the latest PR Validation result for the PR.
+# If PR Validation has not completed or was unsuccessful, this workflow fails.
+# If PR Validation succeeded, it calls the detector label workflow.
+
 name: PR Detector Labels Synchronize Trigger
 
 on:
@@ -10,13 +12,13 @@ on:
 
 permissions:
   actions: read
-  pull-requests: write
-  issues: read
+  pull-requests: read
 
 jobs:
-  wait-for-validation:
-    name: Wait for PR Validation
+  check-validation:
+    name: Check PR Validation
     runs-on: ubuntu-latest
+
     outputs:
       should_run_detector_labels: ${{ steps.check.outputs.should_run_detector_labels }}
 
@@ -26,92 +28,111 @@ jobs:
         uses: actions/github-script@v8
         with:
           script: |
-            const prNumber = ${{ github.event.pull_request.number }};
-            const headSha = '${{ github.event.pull_request.head.sha }}';
-            const validationWorkflowName = 'PR Validation';
+            const prNumber =
+              context.payload.pull_request.number;
 
-            const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+            const validationWorkflowName =
+              'PR Validation';
 
-            async function findValidationRun() {
-              const runs = await github.paginate(
-                github.rest.actions.listWorkflowRunsForRepo,
-                {
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  head_sha: headSha,
-                  event: 'pull_request',
-                  per_page: 100
-                }
+            /*
+             * Get recent workflow runs for PR Validation.
+             */
+            const { data } =
+              await github.rest.actions.listWorkflowRunsForRepo({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                event: 'pull_request',
+                per_page: 100
+              });
+
+            /*
+             * Find PR Validation runs associated with this PR.
+             */
+            const validationRuns = data.workflow_runs.filter(run =>
+              run.name === validationWorkflowName &&
+              run.pull_requests?.some(
+                pr => pr.number === prNumber
+              )
+            );
+
+            /*
+             * No PR Validation run means validation has not
+             * been performed for this PR.
+             */
+            if (validationRuns.length === 0) {
+              core.setFailed(
+                `No PR Validation run found for PR #${prNumber}.`
               );
-
-              return runs.find(run => run.name === validationWorkflowName);
-            }
-
-            const maxAttempts = 60;
-            const pollIntervalMs = 10000;
-            let validationRun = null;
-
-            for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-              validationRun = await findValidationRun();
-
-              if (validationRun && validationRun.status === 'completed') {
-                break;
-              }
-
-              if (attempt === maxAttempts) {
-                break;
-              }
-
-              if (validationRun) {
-                core.info(
-                  `PR Validation for PR #${prNumber} is currently ${validationRun.status}. Waiting for completion...`
-                );
-              } else {
-                core.info(
-                  `No PR Validation run found yet for PR #${prNumber} at head SHA ${headSha}. Waiting...`
-                );
-              }
-
-              await sleep(pollIntervalMs);
-            }
-
-            if (!validationRun) {
-              core.info(
-                `No PR Validation run was found for PR #${prNumber} at head SHA ${headSha}. Skipping detector labels.`
-              );
-              core.setOutput('should_run_detector_labels', 'false');
               return;
             }
 
+            /*
+             * Use the most recent PR Validation run.
+             */
+            const validationRun = validationRuns.sort(
+              (a, b) =>
+                new Date(b.created_at) -
+                new Date(a.created_at)
+            )[0];
+
+            core.info(
+              `Latest PR Validation run: ${validationRun.id}`
+            );
+
+            core.info(
+              `Status: ${validationRun.status}`
+            );
+
+            core.info(
+              `Conclusion: ${validationRun.conclusion}`
+            );
+
+            /*
+             * PR Validation must have completed.
+             */
             if (validationRun.status !== 'completed') {
-              core.info(
-                `PR Validation for PR #${prNumber} did not finish before the wait timeout. Skipping detector labels.`
+              core.setFailed(
+                `PR Validation for PR #${prNumber} has not completed. Current status: ${validationRun.status}.`
               );
-              core.setOutput('should_run_detector_labels', 'false');
               return;
             }
 
+            /*
+             * PR Validation must have succeeded.
+             */
             if (validationRun.conclusion !== 'success') {
-              core.info(
-                `PR Validation for PR #${prNumber} finished with conclusion "${validationRun.conclusion}". Skipping detector labels.`
+              core.setFailed(
+                `PR Validation for PR #${prNumber} did not succeed. Conclusion: ${validationRun.conclusion}.`
               );
-              core.setOutput('should_run_detector_labels', 'false');
               return;
             }
 
+            /*
+             * PR Validation succeeded.
+             */
             core.info(
               `PR Validation for PR #${prNumber} succeeded. Running detector labels.`
             );
 
-            core.setOutput('should_run_detector_labels', 'true');
+            core.setOutput(
+              'should_run_detector_labels',
+              'true'
+            );
 
   detector-labels:
     name: Detect detector labels on synchronize
-    needs: wait-for-validation
-    if: ${{ needs.wait-for-validation.outputs.should_run_detector_labels == 'true' }}
+    needs: check-validation
+
+    if: >
+      ${{
+        needs.check-validation.outputs.should_run_detector_labels == 'true'
+      }}
+
     uses: ./.github/workflows/pr_detector_labels.yaml
+
     with:
       pr_number: ${{ github.event.pull_request.number }}
+
     permissions:
       pull-requests: write
       issues: read

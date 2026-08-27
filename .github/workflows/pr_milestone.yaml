@@ -1,0 +1,164 @@
+# This reusable workflow sets the milestone based on the
+# current PR labels.
+
+name: PR Milestone
+
+on:
+  workflow_call:
+    inputs:
+      pr_number:
+        required: true
+        type: number
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  set-milestone:
+    name: Set PR milestone
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set milestone
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const prNumber = ${{ inputs.pr_number }};
+
+            /*
+             * Get the base branch of the PR.
+             */
+            const { data: pullRequest } =
+              await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber
+              });
+            const baseBranch = pullRequest.base.ref;
+
+            /*
+             * Return early if base is main branch. Milestone is already 
+             * managed and probably done when merging to main.
+             */
+            if (baseBranch === 'main') {
+              core.info('PR targets main. Milestone is managed separately.');
+              return;
+            }
+
+            /*
+             * Read release targets through the GitHub API
+             * from the base branch of PR.
+             */
+            const { data: file } =
+              await github.rest.repos.getContent({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                path: '.github/release-targets.yaml',
+                ref: baseBranch
+              });
+
+            const releaseTargetsFile =
+              Buffer.from(file.content, 'base64').toString('utf8');
+
+            const getTarget = (name) => {
+              const match = releaseTargetsFile.match(
+                new RegExp(`^${name}:\\s*["']?([^"'\\s]+)["']?`, 'm')
+              );
+
+              if (!match) {
+                core.setFailed(
+                  `Release target "${name}" was not found.`
+                );
+                return null;
+              }
+
+              return match[1];
+            };
+
+            const major = getTarget('major');
+            const minor = getTarget('minor');
+            const bugFix = getTarget('bug_fix');
+
+            if (!major || !minor || !bugFix) {
+              return;
+            }
+
+            /*
+             * Get current PR labels.
+             */
+            const { data: labels } =
+              await github.rest.issues.listLabelsOnIssue({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber
+              });
+
+            const labelNames =
+              labels.map(label => label.name);
+
+            /*
+             * Determine the milestone.
+             *
+             * Breaking API has highest priority.
+             */
+            let targetMilestone;
+
+            if (labelNames.includes('Breaking API')) {
+              targetMilestone = major;
+            } else if (labelNames.includes('Feature')) {
+              targetMilestone = minor;
+            } else if (
+              labelNames.includes('Bug Fix') ||
+              labelNames.includes('Infrastructure')
+            ) {
+              targetMilestone = bugFix;
+            } else {
+              core.info(
+                'No milestone-related labels found.'
+              );
+              return;
+            }
+
+            core.info(
+              `Target milestone: ${targetMilestone}`
+            );
+
+            /*
+             * Find the milestone.
+             */
+            const { data: milestones } =
+              await github.rest.issues.listMilestones({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: 'open'
+              });
+
+            const milestone = milestones.find(
+              milestone => milestone.title === targetMilestone
+            );
+
+            if (!milestone) {
+              core.setFailed(
+                `Milestone "${targetMilestone}" was not found.`
+              );
+              return;
+            } else {
+              core.info(
+                `Found milestone "${targetMilestone}".`
+              );
+            }
+
+            /*
+             * Set the milestone.
+             */
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              milestone: milestone.number
+            });
+
+            core.info(
+              `Milestone set to "${targetMilestone}".`
+            );

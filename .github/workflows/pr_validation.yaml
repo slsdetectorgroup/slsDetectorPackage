@@ -1,4 +1,4 @@
-# This workflow is triggered when editing the Pr description or changing labels. It validates the PR type and Breaking API, then sets the labels. It also calls the PR milestone workflow to set the milestone based on the PR type label.
+# This workflow is triggered when opening/reopening PR or editing the Pr description or changing labels. It ignores unrelated label changes. It validates the PR type and Breaking API, then sets the labels. It also runs the PR milestone workflow to set the milestone based on the PR type label.
 name: PR Validation
 
 on:
@@ -9,11 +9,6 @@ on:
       - edited
       - labeled
       - unlabeled
-  workflow_call:
-    inputs:
-      pr_number:
-        required: true
-        type: number
 
 permissions:
   pull-requests: write
@@ -23,15 +18,44 @@ jobs:
   validate-pr:
     name: Validate PR
     runs-on: ubuntu-latest
+    outputs:
+      set_milestone: ${{ steps.validate.outputs.set_milestone }}
 
     steps:
       - name: Validate PR type and Breaking API
+        id: validate
         uses: actions/github-script@v8
         with:
           script: |
-            const prNumber =
-              Number('${{ inputs.pr_number || 0 }}') ||
-              context.payload.pull_request?.number;
+            core.setOutput('set_milestone', 'true');  
+
+            /*
+             * If triggered by label change, ignore unrelated labels.
+             */
+            const action = context.payload.action;
+            if (action === 'labeled' || action === 'unlabeled') {
+              const changedLabel = context.payload.label?.name;
+
+              const relevantLabels = [
+                'Feature',
+                'Bug Fix',
+                'Infrastructure',
+                'Breaking API'
+              ];
+
+              if (!relevantLabels.includes(changedLabel)) {
+                core.info(
+                  `Ignoring unrelated label change: ${changedLabel}`
+                );
+                core.setOutput('set_milestone', 'false');
+                return;
+              }
+            }     
+
+            /*
+             * Read the body contents of PR
+             */
+            const prNumber = context.payload.pull_request?.number;
 
             if (!prNumber) {
               core.setFailed('Unable to determine PR number.');
@@ -182,9 +206,10 @@ jobs:
 
   milestone:
     needs: validate-pr
+    if: ${{ needs.validate-pr.outputs.set_milestone == 'true' }}
     uses: ./.github/workflows/pr_milestone.yaml
     with:
-      pr_number: ${{ inputs.pr_number || github.event.pull_request.number }}
+      pr_number: ${{ github.event.pull_request.number }}
     permissions:
       pull-requests: write
       contents: read

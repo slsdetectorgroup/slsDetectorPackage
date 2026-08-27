@@ -1,4 +1,4 @@
-# This workflow is triggered when editing the Pr description. It validates the PR type and Breaking API, then sets the labels. It also calls the PR milestone workflow to set the milestone based on the PR type label.
+# This workflow is triggered when editing the Pr description or changing labels. It validates the PR type and Breaking API, then sets the labels. It also calls the PR milestone workflow to set the milestone based on the PR type label.
 name: PR Validation
 
 on:
@@ -7,6 +7,8 @@ on:
       - opened
       - reopened
       - edited
+      - labeled
+      - unlabeled
   workflow_call:
     inputs:
       pr_number:

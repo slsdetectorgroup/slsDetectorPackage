@@ -1,0 +1,117 @@
+# This workflow is triggered when a PR is synchronized.
+# It waits for PR Validation to finish for the same PR head SHA and only
+# calls the reusable detector label workflow if that validation succeeds.
+name: PR Detector Labels Synchronize Trigger
+
+on:
+  pull_request:
+    types:
+      - synchronize
+
+permissions:
+  actions: read
+  pull-requests: write
+  issues: read
+
+jobs:
+  wait-for-validation:
+    name: Wait for PR Validation
+    runs-on: ubuntu-latest
+    outputs:
+      should_run_detector_labels: ${{ steps.check.outputs.should_run_detector_labels }}
+
+    steps:
+      - name: Check PR Validation result
+        id: check
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const prNumber = ${{ github.event.pull_request.number }};
+            const headSha = '${{ github.event.pull_request.head.sha }}';
+            const validationWorkflowName = 'PR Validation';
+
+            const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+            async function findValidationRun() {
+              const runs = await github.paginate(
+                github.rest.actions.listWorkflowRunsForRepo,
+                {
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  head_sha: headSha,
+                  event: 'pull_request',
+                  per_page: 100
+                }
+              );
+
+              return runs.find(run => run.name === validationWorkflowName);
+            }
+
+            const maxAttempts = 60;
+            const pollIntervalMs = 10000;
+            let validationRun = null;
+
+            for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+              validationRun = await findValidationRun();
+
+              if (validationRun && validationRun.status === 'completed') {
+                break;
+              }
+
+              if (attempt === maxAttempts) {
+                break;
+              }
+
+              if (validationRun) {
+                core.info(
+                  `PR Validation for PR #${prNumber} is currently ${validationRun.status}. Waiting for completion...`
+                );
+              } else {
+                core.info(
+                  `No PR Validation run found yet for PR #${prNumber} at head SHA ${headSha}. Waiting...`
+                );
+              }
+
+              await sleep(pollIntervalMs);
+            }
+
+            if (!validationRun) {
+              core.info(
+                `No PR Validation run was found for PR #${prNumber} at head SHA ${headSha}. Skipping detector labels.`
+              );
+              core.setOutput('should_run_detector_labels', 'false');
+              return;
+            }
+
+            if (validationRun.status !== 'completed') {
+              core.info(
+                `PR Validation for PR #${prNumber} did not finish before the wait timeout. Skipping detector labels.`
+              );
+              core.setOutput('should_run_detector_labels', 'false');
+              return;
+            }
+
+            if (validationRun.conclusion !== 'success') {
+              core.info(
+                `PR Validation for PR #${prNumber} finished with conclusion "${validationRun.conclusion}". Skipping detector labels.`
+              );
+              core.setOutput('should_run_detector_labels', 'false');
+              return;
+            }
+
+            core.info(
+              `PR Validation for PR #${prNumber} succeeded. Running detector labels.`
+            );
+
+            core.setOutput('should_run_detector_labels', 'true');
+
+  detector-labels:
+    name: Detect detector labels on synchronize
+    needs: wait-for-validation
+    if: ${{ needs.wait-for-validation.outputs.should_run_detector_labels == 'true' }}
+    uses: ./.github/workflows/pr_detector_labels.yaml
+    with:
+      pr_number: ${{ github.event.pull_request.number }}
+    permissions:
+      pull-requests: write
+      issues: read

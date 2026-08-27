@@ -148,10 +148,10 @@ jobs:
             /*
              * Set the milestone.
              */
-            await github.rest.pulls.update({
+            await github.rest.issues.update({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              pull_number: prNumber,
+              issue_number: prNumber,
               milestone: milestone.number
             });
 

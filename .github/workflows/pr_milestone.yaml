@@ -24,6 +24,15 @@ jobs:
         uses: actions/github-script@v8
         with:
           script: |
+            /*
+             * Set the default GitHub API version to 2026-03-10
+             */
+            github.request.defaults({
+              headers: {
+                'X-GitHub-Api-Version': '2026-03-10'
+              }
+            });
+
             const prNumber = ${{ inputs.pr_number }};
 
             /*

@@ -70,7 +70,7 @@ jobs:
              */
             if (hasFileMajor && hasFileMinor) {
               core.setFailed(
-                'Both "File Major" and "File Minor" labels are present. Only one file version label is allowed.'
+                'Both "File Major" and "File Minor" labels are present. Remove both labels and let the workflow determine the correct label based on changes to receiver_defs.h.'
               );
               return;
             }
@@ -102,7 +102,7 @@ jobs:
             if (!changedFile) {
               if (hasFileMajor || hasFileMinor) {
                 core.setFailed(
-                  `${filePath} was not changed, but a File Major/File Minor label is present.`
+                  `${filePath} was not changed, but a File Major/File Minor label is present. Remove the label and let the workflow determine the correct label based on changes to receiver_defs.h.`
                 );
                 return;
               }
@@ -211,7 +211,7 @@ jobs:
             if (!versionChanged) {
               if (hasFileMajor || hasFileMinor) {
                 core.setFailed(
-                  `Neither HDF5_WRITER_VERSION nor BINARY_WRITER_VERSION was changed, but a File Major/File Minor label is present.`
+                  `Neither HDF5_WRITER_VERSION nor BINARY_WRITER_VERSION was changed, but a File Major/File Minor label is present.  Remove the labels and let the workflow determine the correct label based on changes to receiver_defs.h.`
                 );
                 return;
               }
@@ -230,7 +230,7 @@ jobs:
             if (majorChange) {
               if (hasFileMinor) {
                 core.setFailed(
-                  'A major file version change was detected, but the PR has the "File Minor" label. Remove the "File Minor" label.'
+                  'A major file version change was detected, but the PR has the "File Minor" label. Remove the "File Minor" label and let the workflow determine the correct label based on changes to receiver_defs.h.'
                 );
                 return;
               }
@@ -262,7 +262,7 @@ jobs:
              */
             if (hasFileMajor) {
               core.setFailed(
-                'Only a minor file version change was detected, but the PR has the "File Major" label. Remove the "File Major" label.'
+                'Only a minor file version change was detected, but the PR has the "File Major" label. Remove the "File Major" label and let the workflow determine the correct label based on changes to receiver_defs.h.'
               );
               return;
             }

@@ -7,8 +7,9 @@ name: PR Synchronize Trigger
 
 on:
   pull_request:
-    types:
-      - synchronize
+    branches-ignore:
+      - 'dev/pr_automation*'
+      - 'dev/test_pr_automation*'
 
 permissions:
   actions: read
@@ -29,6 +30,7 @@ jobs:
               context.payload.pull_request.number;
 
             const validationWorkflowName =
+jobs:
               'PR Validation';
 
 
@@ -88,6 +90,7 @@ jobs:
                 new Date(a.created_at)
             )[0];
 
+jobs:
             core.info(
               `Latest PR Validation run: ${validationRun.id}`
             );

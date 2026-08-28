@@ -2,8 +2,9 @@ name: Run Simulator Tests
 
 on:
   push:
-
-
+    branches-ignore:
+      - 'dev/pr_automation*'
+      - 'dev/test_pr_automation*'
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)

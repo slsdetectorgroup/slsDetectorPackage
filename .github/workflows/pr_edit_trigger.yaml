@@ -51,7 +51,7 @@ jobs:
               }
             }   
 
-            core.info('PR Validation required.');
+            core.info('PR type validation required.');
             core.setOutput('require_validation', 'true');
 
   validate-pr-type:

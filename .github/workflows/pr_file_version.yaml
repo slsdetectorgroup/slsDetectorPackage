@@ -1,0 +1,285 @@
+# This reusable workflow checks changes to receiver_defs.h.
+# It validates the File Major and File Minor labels based on
+# changes to HDF5_WRITER_VERSION or BINARY_WRITER_VERSION.
+#
+# File Major:
+#   The value before the decimal point changes.
+#
+# File Minor:
+#   Only the value after the decimal point changes.
+#
+# Existing labels are never silently removed. If the labels do not
+# match the detected version change, the workflow fails.
+
+name: PR File Version
+
+on:
+  workflow_call:
+    inputs:
+      pr_number:
+        required: true
+        type: number
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  file-version:
+    name: Check file version
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check file version
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const prNumber = ${{ inputs.pr_number }};
+
+            const filePath =
+              'slsReceiverSoftware/src/receiver_defs.h';
+
+            const versionDefinitions = [
+              'HDF5_WRITER_VERSION',
+              'BINARY_WRITER_VERSION'
+            ];
+
+            /*
+             * --------------------------------------------------
+             * 1. Get current PR labels.
+             * --------------------------------------------------
+             */
+            const { data: currentLabels } =
+              await github.rest.issues.listLabelsOnIssue({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber
+              });
+
+            const currentLabelNames =
+              currentLabels.map(label => label.name);
+
+            const hasFileMajor =
+              currentLabelNames.includes('File Major');
+
+            const hasFileMinor =
+              currentLabelNames.includes('File Minor');
+
+            /*
+             * File Major and File Minor are mutually exclusive.
+             */
+            if (hasFileMajor && hasFileMinor) {
+              core.setFailed(
+                'Both "File Major" and "File Minor" labels are present. Only one file version label is allowed.'
+              );
+              return;
+            }
+
+            /*
+             * --------------------------------------------------
+             * 2. Get all files changed by the PR.
+             * --------------------------------------------------
+             */
+            const files = await github.paginate(
+              github.rest.pulls.listFiles,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber,
+                per_page: 100
+              }
+            );
+
+            /*
+             * --------------------------------------------------
+             * 3. Check whether receiver_defs.h was changed.
+             * --------------------------------------------------
+             */
+            const changedFile = files.find(
+              file => file.filename === filePath
+            );
+
+            if (!changedFile) {
+              if (hasFileMajor || hasFileMinor) {
+                core.setFailed(
+                  `${filePath} was not changed, but a File Major/File Minor label is present.`
+                );
+                return;
+              }
+
+              core.info(
+                `${filePath} was not changed. No file version label required.`
+              );
+              return;
+            }
+
+            core.info(
+              `${filePath} was changed. Checking file version definitions.`
+            );
+
+            /*
+             * --------------------------------------------------
+             * 4. Check the changed lines in the patch.
+             * --------------------------------------------------
+             */
+            const patch = changedFile.patch || '';
+
+            const oldVersions = {};
+            const newVersions = {};
+
+            const versionRegex =
+              /^([+-])\s*#define\s+(HDF5_WRITER_VERSION|BINARY_WRITER_VERSION)\s+\((\d+)\.(\d+)\)/;
+
+            for (const line of patch.split('\n')) {
+              const match = line.match(versionRegex);
+
+              if (!match) {
+                continue;
+              }
+
+              const changeType = match[1];
+              const name = match[2];
+              const major = Number(match[3]);
+              const minor = Number(match[4]);
+
+              if (changeType === '-') {
+                oldVersions[name] = {
+                  major,
+                  minor
+                };
+              } else if (changeType === '+') {
+                newVersions[name] = {
+                  major,
+                  minor
+                };
+              }
+            }
+
+            /*
+             * --------------------------------------------------
+             * 5. Determine the file version change.
+             * --------------------------------------------------
+             */
+            let versionChanged = false;
+            let majorChange = false;
+
+            for (const name of versionDefinitions) {
+              const oldVersion = oldVersions[name];
+              const newVersion = newVersions[name];
+
+              /*
+               * Both old and new definitions must be present
+               * in order to identify a version change.
+               */
+              if (!oldVersion || !newVersion) {
+                continue;
+              }
+
+              /*
+               * Ignore the definition if the version did not
+               * actually change.
+               */
+              if (
+                oldVersion.major === newVersion.major &&
+                oldVersion.minor === newVersion.minor
+              ) {
+                continue;
+              }
+
+              versionChanged = true;
+
+              core.info(
+                `${name}: ` +
+                `${oldVersion.major}.${oldVersion.minor} -> ` +
+                `${newVersion.major}.${newVersion.minor}`
+              );
+
+              /*
+               * A change before the decimal point is a
+               * major version change.
+               */
+              if (oldVersion.major !== newVersion.major) {
+                majorChange = true;
+              }
+            }
+
+            /*
+             * --------------------------------------------------
+             * 6. No relevant version change.
+             * --------------------------------------------------
+             */
+            if (!versionChanged) {
+              if (hasFileMajor || hasFileMinor) {
+                core.setFailed(
+                  `Neither HDF5_WRITER_VERSION nor BINARY_WRITER_VERSION was changed, but a File Major/File Minor label is present.`
+                );
+                return;
+              }
+
+              core.info(
+                'Neither HDF5_WRITER_VERSION nor BINARY_WRITER_VERSION was changed. No file version label required.'
+              );
+              return;
+            }
+
+            /*
+             * --------------------------------------------------
+             * 7. Major version change.
+             * --------------------------------------------------
+             */
+            if (majorChange) {
+              if (hasFileMinor) {
+                core.setFailed(
+                  'A major file version change was detected, but the PR has the "File Minor" label. Remove the "File Minor" label.'
+                );
+                return;
+              }
+
+              if (!hasFileMajor) {
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: prNumber,
+                  labels: ['File Major']
+                });
+
+                core.info(
+                  'Added label: File Major'
+                );
+              } else {
+                core.info(
+                  'File Major label is correctly present.'
+                );
+              }
+
+              return;
+            }
+
+            /*
+             * --------------------------------------------------
+             * 8. Minor version change.
+             * --------------------------------------------------
+             */
+            if (hasFileMajor) {
+              core.setFailed(
+                'Only a minor file version change was detected, but the PR has the "File Major" label. Remove the "File Major" label.'
+              );
+              return;
+            }
+
+            if (!hasFileMinor) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                labels: ['File Minor']
+              });
+
+              core.info(
+                'Added label: File Minor'
+              );
+            } else {
+              core.info(
+                'File Minor label is correctly present.'
+              );
+            }

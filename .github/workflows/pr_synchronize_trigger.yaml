@@ -19,3 +19,12 @@ jobs:
     permissions:
       pull-requests: write
       issues: read
+
+  file-version:
+    uses: ./.github/workflows/pr_file_version.yaml
+    with:
+      pr_number: ${{ github.event.pull_request.number }}
+    permissions:
+      pull-requests: write
+      issues: read
+

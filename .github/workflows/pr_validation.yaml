@@ -27,7 +27,7 @@ jobs:
         uses: actions/github-script@v8
         with:
           script: |
-            core.setOutput('validated', 'true');
+            core.setOutput('validated', 'true');  
 
             /*
              * If triggered by label change, ignore unrelated labels.
@@ -214,7 +214,6 @@ jobs:
       pull-requests: write
       contents: read
 
-  
   detector-labels:
     needs: validate-pr
     if: ${{ needs.validate-pr.outputs.validated == 'true' }}

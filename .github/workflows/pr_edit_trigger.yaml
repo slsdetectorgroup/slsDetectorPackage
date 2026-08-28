@@ -1,4 +1,4 @@
-# This workflow is triggered when opening/reopening PR or editing the Pr description or changing labels. It ignores unrelated label changes. It validates the PR type and Breaking API, then sets the labels. It also runs the PR milestone workflow to set the milestone based on the PR type label.
+# This workflow is triggered when opening/reopening PR, editing the PR description or changing labels. It ignores unrelated label changes. It runs PR type validation and if it succeeds, it runs PR milestone and detector labels workflow in parallel. 
 name: PR Edit Trigger
 
 on:
@@ -15,20 +15,19 @@ permissions:
   contents: read
 
 jobs:
-  validate-pr:
-    name: Validate PR
+  check-pr-trigger:
+    name: Check PR Trigger
     runs-on: ubuntu-latest
+    
     outputs:
-      validated: ${{ steps.validate.outputs.validated }}
+      require_validation: ${{ steps.check.outputs.require_validation }}
 
     steps:
-      - name: Validate PR type and Breaking API
-        id: validate
+      - name: Check whether PR Validation is required
+        id: check
         uses: actions/github-script@v8
         with:
           script: |
-            core.setOutput('validated', 'true');  
-
             /*
              * If triggered by label change, ignore unrelated labels.
              */
@@ -47,166 +46,25 @@ jobs:
                 core.info(
                   `Ignoring unrelated label change: ${changedLabel}`
                 );
-                core.setOutput('validated', 'false');
+                core.setOutput('require_validation', 'false');
                 return;
               }
             }     
 
-            /*
-             * Read the body contents of PR
-             */
-            const prNumber = context.payload.pull_request?.number;
+            core.setOutput('require_validation', 'true');
 
-            if (!prNumber) {
-              core.setFailed('Unable to determine PR number.');
-              return;
-            }
-
-            const { data: pr } =
-              await github.rest.pulls.get({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: prNumber
-              });
-
-            const body = pr.body || '';
-
-            /*
-             * Check which primary PR type is selected.
-             */
-            const feature =
-              /-\s*\[[xX]\]\s*Feature\b/.test(body);
-
-            const bugFix =
-              /-\s*\[[xX]\]\s*Bug Fix\b/.test(body);
-
-            const infrastructure =
-              /-\s*\[[xX]\]\s*Infrastructure\b/.test(body);
-
-            const primaryTypes = [
-              feature && 'Feature',
-              bugFix && 'Bug Fix',
-              infrastructure && 'Infrastructure'
-            ].filter(Boolean);
-
-            /*
-             * Exactly one primary PR type must be selected.
-             */
-            if (primaryTypes.length !== 1) {
-              core.setFailed(
-                'Exactly one primary PR type must be selected. Select exactly one of: Feature, Bug Fix, Infrastructure in the description.'
-              );
-              return;
-            }
-
-            const primaryType = primaryTypes[0];
-
-            /*
-             * Infrastructure PRs cannot be Breaking API.
-             */
-            const breakingApi =
-              /-\s*\[[xX]\]\s*This is a Breaking API change\b/.test(body);
-
-            if (infrastructure && breakingApi) {
-              core.setFailed(
-                'Infrastructure PRs cannot be Breaking API changes. Deselect Breaking API or change the PR type to Feature or Bug Fix in the description.'
-              );
-              return;
-            }
-
-            core.info(`Primary PR type: ${primaryType}`);
-            core.info(
-              `Breaking API: ${breakingApi ? 'yes' : 'no'}`
-            );
-
-            /*
-             * Get the labels currently on the PR.
-             */
-            const { data: currentLabels } =
-              await github.rest.issues.listLabelsOnIssue({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: prNumber
-              });
-
-            const currentLabelNames =
-              currentLabels.map(label => label.name);
-
-            const primaryLabels = [
-              'Feature',
-              'Bug Fix',
-              'Infrastructure'
-            ];
-
-            const selectedPrimary =
-              primaryLabels.filter(label =>
-                currentLabelNames.includes(label)
-              );
-
-            if (selectedPrimary.length > 1) {
-              core.setFailed(
-                `Invalid PR label state: multiple primary labels are present: ${selectedPrimary.join(', ')}. Remove these primary type labels 'Feature, Bug Fix, Infrastructure' and let the workflow set the correct label based on the PR description.`
-              );
-              return;
-            }
-
-            if (selectedPrimary.length === 1 && selectedPrimary[0] !== primaryType) {
-              core.setFailed(
-                `Invalid PR label state: the PR body selects ${primaryType}, but the existing label is ${selectedPrimary[0]}. Remove the existing label and let the workflow set the correct label based on the PR description.`
-              );
-              return;
-            }
-
-            if (
-              currentLabelNames.includes('Breaking API') &&
-              infrastructure
-            ) {
-              core.setFailed(
-                'Infrastructure PRs cannot have the Breaking API label.'
-              );
-              return;
-            }
-
-            if (
-              !breakingApi &&
-              currentLabelNames.includes('Breaking API')
-            ) {
-              core.setFailed(
-                'Breaking API label is present but the PR body does not mark the checkbox. Remove the label or check the checkbox in the PR body.'
-              );
-              return;
-            }
-
-            if (
-              breakingApi &&
-              !currentLabelNames.includes('Breaking API')
-            ) {
-              await github.rest.issues.addLabels({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: prNumber,
-                labels: ['Breaking API']
-              });
-
-              core.info('Added label: Breaking API');
-            }
-
-            if (!currentLabelNames.includes(primaryType)) {
-              await github.rest.issues.addLabels({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: prNumber,
-                labels: [primaryType]
-              });
-
-              core.info(`Added label: ${primaryType}`);
-            }
-
-            core.info('PR validation passed.');
+  validate-pr-type:
+    needs: check-pr-trigger
+    if: ${{ needs.check-pr-trigger.outputs.require_validation == 'true' }}
+    uses: ./.github/workflows/pr_type_validation.yaml
+    with:
+      pr_number: ${{ github.event.pull_request.number }}
+    permissions:
+      pull-requests: write
+      contents: read
 
   milestone:
-    needs: validate-pr
-    if: ${{ needs.validate-pr.outputs.validated == 'true' }}
+    needs: validate-pr-type
     uses: ./.github/workflows/pr_milestone.yaml
     with:
       pr_number: ${{ github.event.pull_request.number }}
@@ -215,8 +73,7 @@ jobs:
       contents: read
 
   detector-labels:
-    needs: validate-pr
-    if: ${{ needs.validate-pr.outputs.validated == 'true' }}
+    needs: validate-pr-type
     uses: ./.github/workflows/pr_detector_labels.yaml
     with:
       pr_number: ${{ github.event.pull_request.number }}

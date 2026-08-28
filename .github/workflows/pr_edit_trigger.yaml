@@ -39,6 +39,9 @@ jobs:
             
             if (action === 'labeled' || action === 'unlabeled') {
               const changedLabel = context.payload.label?.name;
+              core.info(
+                `Changed Label: ${changedLabel}`
+              );
 
               const relevantLabels = [
                 'Feature',
@@ -46,26 +49,17 @@ jobs:
                 'Infrastructure',
                 'Breaking API'
               ];
+              if (!relevantLabels.includes(changedLabel)) {
+                requireValidation = false;
+              }
 
               const fileLabels = [
                 'File Major',
                 'File Minor',
               ];
-
-              if (!relevantLabels.includes(changedLabel)) {
-                core.info(
-                  `Ignoring unrelated label change: ${changedLabel}`
-                );
-                requireValidation = false;
-              }
-
               if (fileLabels.includes(changedLabel)) {
-                core.info(
-                  `File version label change detected: ${changedLabel}`
-                );
                 fileLabelChange = true;
               }
-
             }   
 
             /*
@@ -75,12 +69,10 @@ jobs:
               'require_validation',
               requireValidation.toString()
             );
-
             core.setOutput(
               'file_label_change',
               fileLabelChange.toString()
             );
-
 
             /*
              * Log what will run.
@@ -88,9 +80,8 @@ jobs:
             if (requireValidation) {
               core.info('PR type validation required.');
             } else {
-              core.info('PR type validation not required.');
+              core.info('PR type validation not required: Unrelated label.');
             }
-
             if (fileLabelChange) {
               core.info('File version label change detected.');
             } else {

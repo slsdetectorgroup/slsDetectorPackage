@@ -21,13 +21,17 @@ jobs:
     
     outputs:
       require_validation: ${{ steps.check.outputs.require_validation }}
+      file_label_change: ${{ steps.check.outputs.file_label_change }}
 
     steps:
-      - name: Check whether PR Validation is required
+      - name: Check PR Trigger
         id: check
         uses: actions/github-script@v8
         with:
           script: |
+            core.setOutput('require_validation', 'true');
+            core.setOutput('file_label_change', 'false');
+
             /*
              * If triggered by label change, ignore unrelated labels.
              */
@@ -47,12 +51,33 @@ jobs:
                   `Ignoring unrelated label change: ${changedLabel}`
                 );
                 core.setOutput('require_validation', 'false');
-                return;
               }
+
+              const fileLabels = [
+                'File Major',
+                'File Minor',
+              ];
+
+              if (fileLabels.includes(changedLabel)) {
+                core.info(
+                  `File version label change detected: ${changedLabel}`
+                );
+                core.setOutput('file_label_change', 'true');
+              }
+
             }   
 
-            core.info('PR type validation required.');
-            core.setOutput('require_validation', 'true');
+            if (core.getOutput('require_validation') === 'true') {
+              core.info('PR type validation required.');
+            } else {
+              core.info('PR type validation not required.');
+            }
+
+            if (core.getOutput('file_label_change') === 'true') {
+              core.info('File version label change detected.');
+            } else {
+              core.info('No file version label change detected.');
+            }
 
   validate-pr-type:
     needs: check-pr-trigger
@@ -81,3 +106,14 @@ jobs:
     permissions:
       pull-requests: write
       issues: read
+
+  file-version:
+    needs: check-pr-trigger
+    if: ${{ needs.check-pr-trigger.outputs.file_label_change == 'true' }}
+    uses: ./.github/workflows/pr_file_version.yaml
+    with:
+      pr_number: ${{ github.event.pull_request.number }}
+    permissions:
+      pull-requests: write
+      contents: read
+

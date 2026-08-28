@@ -3,7 +3,7 @@
 # If PR Validation has not completed or was unsuccessful, this workflow fails.
 # If PR Validation succeeded, it calls the detector label workflow.
 
-name: PR Detector Labels Synchronize Trigger
+name: PR Synchronize Trigger
 
 on:
   pull_request:

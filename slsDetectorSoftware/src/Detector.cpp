@@ -21,6 +21,8 @@
 #include <set>
 #include <thread>
 
+// test something
+
 namespace sls {
 
 void freeSharedMemory(const int detectorIndex, const int moduleIndex) {

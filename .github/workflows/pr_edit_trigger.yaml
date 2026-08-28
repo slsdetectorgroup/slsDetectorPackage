@@ -29,13 +29,14 @@ jobs:
         uses: actions/github-script@v8
         with:
           script: |
-            core.setOutput('require_validation', 'true');
-            core.setOutput('file_label_change', 'false');
+            let requireValidation = true;
+            let fileLabelChange = false;
 
             /*
              * If triggered by label change, ignore unrelated labels.
              */
             const action = context.payload.action;
+            
             if (action === 'labeled' || action === 'unlabeled') {
               const changedLabel = context.payload.label?.name;
 
@@ -46,34 +47,51 @@ jobs:
                 'Breaking API'
               ];
 
-              if (!relevantLabels.includes(changedLabel)) {
-                core.info(
-                  `Ignoring unrelated label change: ${changedLabel}`
-                );
-                core.setOutput('require_validation', 'false');
-              }
-
               const fileLabels = [
                 'File Major',
                 'File Minor',
               ];
 
+              if (!relevantLabels.includes(changedLabel)) {
+                core.info(
+                  `Ignoring unrelated label change: ${changedLabel}`
+                );
+                requireValidation = false;
+              }
+
               if (fileLabels.includes(changedLabel)) {
                 core.info(
                   `File version label change detected: ${changedLabel}`
                 );
-                core.setOutput('file_label_change', 'true');
+                fileLabelChange = true;
               }
 
             }   
 
-            if (core.getOutput('require_validation') === 'true') {
+            /*
+             * Set workflow outputs.
+             */
+            core.setOutput(
+              'require_validation',
+              requireValidation.toString()
+            );
+
+            core.setOutput(
+              'file_label_change',
+              fileLabelChange.toString()
+            );
+
+
+            /*
+             * Log what will run.
+             */
+            if (requireValidation) {
               core.info('PR type validation required.');
             } else {
               core.info('PR type validation not required.');
             }
 
-            if (core.getOutput('file_label_change') === 'true') {
+            if (fileLabelChange) {
               core.info('File version label change detected.');
             } else {
               core.info('No file version label change detected.');

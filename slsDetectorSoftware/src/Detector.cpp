@@ -21,6 +21,8 @@
 #include <set>
 #include <thread>
 
+// test with ctb as well
+
 namespace sls {
 
 void freeSharedMemory(const int detectorIndex, const int moduleIndex) {

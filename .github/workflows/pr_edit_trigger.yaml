@@ -1,5 +1,5 @@
 # This workflow is triggered when opening/reopening PR or editing the Pr description or changing labels. It ignores unrelated label changes. It validates the PR type and Breaking API, then sets the labels. It also runs the PR milestone workflow to set the milestone based on the PR type label.
-name: PR Validation
+name: PR Edit Trigger
 
 on:
   pull_request:

@@ -49,8 +49,9 @@ jobs:
                 core.setOutput('require_validation', 'false');
                 return;
               }
-            }     
+            }   
 
+            core.info('PR Validation required.');
             core.setOutput('require_validation', 'true');
 
   validate-pr-type:

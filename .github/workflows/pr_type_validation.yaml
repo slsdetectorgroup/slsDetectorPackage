@@ -17,8 +17,6 @@ jobs:
   validate_pr_type:
     name: PR Type Validation
     runs-on: ubuntu-latest
-    outputs:
-      validated: ${{ steps.validate.outputs.validated }}
 
     steps:
       - name: PR Type Validation and Breaking API
@@ -26,35 +24,10 @@ jobs:
         uses: actions/github-script@v8
         with:
           script: |
-            core.setOutput('validated', 'true');  
-
-            /*
-             * If triggered by label change, ignore unrelated labels.
-             */
-            const action = context.payload.action;
-            if (action === 'labeled' || action === 'unlabeled') {
-              const changedLabel = context.payload.label?.name;
-
-              const relevantLabels = [
-                'Feature',
-                'Bug Fix',
-                'Infrastructure',
-                'Breaking API'
-              ];
-
-              if (!relevantLabels.includes(changedLabel)) {
-                core.info(
-                  `Ignoring unrelated label change: ${changedLabel}`
-                );
-                core.setOutput('validated', 'false');
-                return;
-              }
-            }     
-
             /*
              * Read the body contents of PR
              */
-            const prNumber = context.payload.pull_request?.number;
+            const prNumber = ${{ inputs.pr_number }};
 
             if (!prNumber) {
               core.setFailed('Unable to determine PR number.');

@@ -34,30 +34,46 @@ jobs:
             const validationWorkflowName =
               'PR Validation';
 
-            /*
-             * Get recent workflow runs for PR Validation.
-             */
-            const { data } =
-              await github.rest.actions.listWorkflowRunsForRepo({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                event: 'pull_request',
-                per_page: 100
-              });
 
             /*
-             * Find PR Validation runs associated with this PR.
-             */
-            const validationRuns = data.workflow_runs.filter(run =>
-              run.name === validationWorkflowName &&
-              run.pull_requests?.some(
-                pr => pr.number === prNumber
-              )
+            * Get the current PR.
+            */
+            const { data: pr } =
+              await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber
+              });
+
+            const headBranch = pr.head.ref;
+
+            core.info(
+              `Looking for PR Validation runs on branch "${headBranch}".`
             );
 
             /*
-             * No PR Validation run means validation has not
-             * been performed for this PR.
+            * Get PR Validation workflow runs for this branch.
+            */
+            const runs = await github.paginate(
+              github.rest.actions.listWorkflowRunsForRepo,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                event: 'pull_request',
+                branch: headBranch,
+                per_page: 100
+              }
+            );
+
+            /*
+            * Keep only PR Validation runs.
+            */
+            const validationRuns = runs.filter(
+              run => run.name === validationWorkflowName
+            );
+
+            /*
+             * Validation has not been performed for this PR.
              */
             if (validationRuns.length === 0) {
               core.setFailed(

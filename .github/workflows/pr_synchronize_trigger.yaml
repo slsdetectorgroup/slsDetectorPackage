@@ -19,9 +19,6 @@ jobs:
     name: Check PR Validation
     runs-on: ubuntu-latest
 
-    outputs:
-      should_run_detector_labels: ${{ steps.check.outputs.should_run_detector_labels }}
-
     steps:
       - name: Check PR Validation result
         id: check
@@ -130,25 +127,12 @@ jobs:
               `PR Validation for PR #${prNumber} succeeded. Running detector labels.`
             );
 
-            core.setOutput(
-              'should_run_detector_labels',
-              'true'
-            );
-
   detector-labels:
     name: Detect detector labels on synchronize
     needs: check-validation
-
-    if: >
-      ${{
-        needs.check-validation.outputs.should_run_detector_labels == 'true'
-      }}
-
     uses: ./.github/workflows/pr_detector_labels.yaml
-
     with:
       pr_number: ${{ github.event.pull_request.number }}
-
     permissions:
       pull-requests: write
       issues: read

@@ -1,5 +1,5 @@
 # This reusable workflow detects detector labels for pull requests. This workflow is ignored for Infrastructure Prs. It checks whole word matching of detector names in server folders, changed code and PR title/description. If a detector is detected, the corresponding label is added to the PR. Existing labels are left untouched. Detector labels are never removed automatically.
-name: PR Detector Labels
+name: PR Synchronize Trigger
 
 on:
   pull_request:

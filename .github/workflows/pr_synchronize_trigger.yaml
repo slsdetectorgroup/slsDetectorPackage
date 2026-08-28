@@ -1,138 +1,18 @@
-# This workflow is triggered when a PR is synchronized.
-# It checks the latest PR Validation result for the PR.
-# If PR Validation has not completed or was unsuccessful, this workflow fails.
-# If PR Validation succeeded, it calls the detector label workflow.
+# This workflow is triggered when code is pushed to a pull request. It runs the reusable detector label workflow.
 
 name: PR Synchronize Trigger
 
 on:
   pull_request:
-    branches-ignore:
-      - 'dev/pr_automation*'
-      - 'dev/test_pr_automation*'
+    types:
+      - synchronize
 
 permissions:
   actions: read
   pull-requests: read
 
 jobs:
-  check-validation:
-    name: Check PR Validation
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Check PR Validation result
-        id: check
-        uses: actions/github-script@v8
-        with:
-          script: |
-            const prNumber =
-              context.payload.pull_request.number;
-
-            const validationWorkflowName =
-jobs:
-              'PR Validation';
-
-
-            /*
-            * Get the current PR.
-            */
-            const { data: pr } =
-              await github.rest.pulls.get({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: prNumber
-              });
-
-            const headBranch = pr.head.ref;
-
-            core.info(
-              `Looking for PR Validation runs on branch "${headBranch}".`
-            );
-
-            /*
-            * Get PR Validation workflow runs for this branch.
-            */
-            const runs = await github.paginate(
-              github.rest.actions.listWorkflowRunsForRepo,
-              {
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                event: 'pull_request',
-                branch: headBranch,
-                per_page: 100
-              }
-            );
-
-            /*
-            * Keep only PR Validation runs.
-            */
-            const validationRuns = runs.filter(
-              run => run.name === validationWorkflowName
-            );
-
-            /*
-             * Validation has not been performed for this PR.
-             */
-            if (validationRuns.length === 0) {
-              core.setFailed(
-                `No PR Validation run found for PR #${prNumber}.`
-              );
-              return;
-            }
-
-            /*
-             * Use the most recent PR Validation run.
-             */
-            const validationRun = validationRuns.sort(
-              (a, b) =>
-                new Date(b.created_at) -
-                new Date(a.created_at)
-            )[0];
-
-jobs:
-            core.info(
-              `Latest PR Validation run: ${validationRun.id}`
-            );
-
-            core.info(
-              `Status: ${validationRun.status}`
-            );
-
-            core.info(
-              `Conclusion: ${validationRun.conclusion}`
-            );
-
-            /*
-             * PR Validation must have completed.
-             */
-            if (validationRun.status !== 'completed') {
-              core.setFailed(
-                `PR Validation for PR #${prNumber} has not completed. Current status: ${validationRun.status}.`
-              );
-              return;
-            }
-
-            /*
-             * PR Validation must have succeeded.
-             */
-            if (validationRun.conclusion !== 'success') {
-              core.setFailed(
-                `PR Validation for PR #${prNumber} did not succeed. Conclusion: ${validationRun.conclusion}.`
-              );
-              return;
-            }
-
-            /*
-             * PR Validation succeeded.
-             */
-            core.info(
-              `PR Validation for PR #${prNumber} succeeded. Running detector labels.`
-            );
-
   detector-labels:
-    name: Detect detector labels on synchronize
-    needs: check-validation
     uses: ./.github/workflows/pr_detector_labels.yaml
     with:
       pr_number: ${{ github.event.pull_request.number }}

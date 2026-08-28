@@ -1,10 +1,8 @@
 # This reusable workflow detects detector labels for pull requests. This workflow is ignored for Infrastructure Prs. It checks whole word matching of detector names in server folders, changed code and PR title/description. If a detector is detected, the corresponding label is added to the PR. Existing labels are left untouched. Detector labels are never removed automatically.
-name: PR Synchronize Trigger
+
+name: PR Detector Labels
 
 on:
-  pull_request:
-    types:
-      - synchronize
   workflow_call:
     inputs:
       pr_number:
@@ -25,32 +23,30 @@ jobs:
         uses: actions/github-script@v8
         with:
           script: |
-            const prNumber = ${{ inputs.pr_number || github.event.pull_request.number }};
-
-            const { data: pr } =
-              await github.rest.pulls.get({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: prNumber
-              });
-
+            const prNumber = ${{ inputs.pr_number }};
 
             /*
-            * Infrastructure PRs do not receive detector labels.
+            * Get the current PR labels.
             */
-            const body = pr.body || '';
+            const { data: currentLabels } =
+              await github.rest.issues.listLabelsOnIssue({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber
+              });
 
-            const infrastructureSelected =
-              /-\s*\[[xX]\]\s*Infrastructure\b/.test(body);
+            const currentLabelNames =
+              currentLabels.map(label => label.name);
 
-            if (infrastructureSelected) {
+            if (currentLabelNames.includes('Infrastructure')) {
               core.info(
-                'Infrastructure PR detected. Skipping detector label detection.'
+                'Infrastructure label found. Skipping detector label detection.'
               );
               return;
             }
+            
             core.info(
-              `Not an infrastructure PR. Proceeding with detector label detection.`
+              `Infrastructure label not found. Proceeding with detector label detection.`
             );
 
             /*
@@ -184,6 +180,14 @@ jobs:
              * 4. Detect detector from PR title/description
              * --------------------------------------------------
              */
+
+            const { data: pr } =
+              await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber
+              });
+
             const prText = [
               pr.title || '',
               pr.body || ''
@@ -204,25 +208,9 @@ jobs:
               }
             }
 
-
             /*
              * --------------------------------------------------
-             * 5. Get current PR labels
-             * --------------------------------------------------
-             */
-            const { data: currentLabels } =
-              await github.rest.issues.listLabelsOnIssue({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: prNumber
-              });
-
-            const currentLabelNames =
-              currentLabels.map(label => label.name);
-
-            /*
-             * --------------------------------------------------
-             * 6. Add detected detector labels
+             * 5. Add detected detector labels
              * --------------------------------------------------
              *
              * Existing labels are left untouched.
@@ -250,7 +238,7 @@ jobs:
 
             /*
              * --------------------------------------------------
-             * 9. Summary
+             * 6. Summary
              * --------------------------------------------------
              */
             core.info(

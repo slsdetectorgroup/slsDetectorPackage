@@ -1,5 +1,5 @@
 # test branch
-name: PR Detector Labels
+name: PR Synchronize Trigger
 
 on:
   pull_request:

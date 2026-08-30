@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: LGPL-3.0-or-other
 # Copyright (C) 2021 Contributors to the SLS Detector Package
-# from .detector import Detector, DetectorError, free_shared_memory
+from importlib.metadata import PackageNotFoundError, version
+from pathlib import Path
+
 from .eiger import Eiger
 from .ctb import Ctb
 from .dacs import NamedDacs, DetectorDacs, Dac
@@ -12,7 +14,7 @@ from .gotthard2 import Gotthard2
 from .moench import Moench
 from .pattern import Pattern, patternParameters
 from .gaincaps import Mythen3GainCapsWrapper
-from .PatternGenerator import PatternGenerator
+from .pattern_generator import PatternGenerator
 
 from . import _slsdet
 from ._slsdet import freeSharedMemory, getUserDetails
@@ -20,7 +22,7 @@ from ._slsdet import freeSharedMemory, getUserDetails
 xy = _slsdet.xy
 defs = _slsdet.slsDetectorDefs
 
-#Make enums and #defines available at top level
+# Make enums and #defines available at top level
 from .enums import *
 from .defines import *
 
@@ -38,17 +40,7 @@ Hz = _slsdet.Hz
 kHz = _slsdet.kHz
 MHz = _slsdet.MHz
 
-import os
-def read_version():
-    try:
-        version_file = os.path.join(os.path.dirname(__file__), 'VERSION')
-        with open(version_file, "r") as f:
-            return f.read().strip()
-    except:
-        raise RuntimeError("VERSION file not found in slsdet package from init.py")
-    
-__version__ = read_version()
-
-
-
-
+try:
+    __version__ = version("slsdet")
+except PackageNotFoundError:
+    __version__ = Path(__file__).parent.joinpath("VERSION").read_text().strip()

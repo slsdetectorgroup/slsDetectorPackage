@@ -28,7 +28,7 @@ Please review the checklist at the bottom before submitting. If ignored, the PR 
 <!-- Selected: '[x]', Unselected: '[ ]' or Click when not in editing mode -->
 - [ ] Feature
 - [ ] Bug Fix
-- [x] Infrastructure
+- [ ] Infrastructure
 
 
 

@@ -73,7 +73,7 @@ Not affecting Infrastructure PRs.
 
 - Either write release notes
 - Or check the 'No Release Note' if PR deals with:
-    - Ctb, Xilinx Ctb or developing detector
+    - Chip test board type or developing detector
     - a linked PR already including release notes for this PR
 </details>
 

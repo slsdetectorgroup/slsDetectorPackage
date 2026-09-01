@@ -1024,15 +1024,16 @@ std::string Caller::counters(int action) {
         if (args.empty()) {
             WrongNumberOfParameters(1);
         }
-        if (std::any_of(args.cbegin(), args.cend(), [](std::string s) {
-                return (StringTo<int>(s) < 0 || StringTo<int>(s) > 2);
+        //convert args to string and then to a vector of ints
+        auto counters = StringTo<std::vector<int>>( ToString(args));
+        if (std::any_of(counters.cbegin(), counters.cend(), [](int val) {
+                return (val < 0 || val > 2);
             })) {
             throw RuntimeError("Invalid counter indices list. Example: 0 1 2");
         }
         // convert vector to counter enable mask
         uint32_t mask = 0;
-        for (size_t i = 0; i < args.size(); ++i) {
-            int val = StringTo<int>(args[i]);
+        for (auto val : counters) {
             // already enabled earlier
             if (mask & (1 << val)) {
                 std::ostringstream oss;
@@ -1236,11 +1237,7 @@ std::string Caller::rx_dbitlist(int action) {
         }
         // 'none' option already covered as t is empty by default
         else if (args[0] != "none") {
-            unsigned int ntrim = args.size();
-            t.resize(ntrim);
-            for (unsigned int i = 0; i < ntrim; ++i) {
-                t[i] = StringTo<int>(args[i]);
-            }
+            t = StringTo<std::vector<int>>(ToString(args));
         }
         det->setRxDbitList(t, std::vector<int>{det_id});
         os << ToString(args) << '\n';

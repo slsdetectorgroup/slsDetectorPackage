@@ -9,16 +9,26 @@ Please review the checklist at the bottom before submitting. If ignored, the PR 
 <details>
 <summary>Help</summary>
 
-- Feature PR:<ul><li>Minor/Major change</li><li>Enhancement</li><li>Compilation/dependency change</li><li>Bug fix to an unreleased feature</li></ul>
-- Bug Fix PR:<ul><li>Bug fix to released code</li><li>Modifications to released documentation</li></ul>
-- Infrastructure PR:<ul><li>Workflow/process change</li><li>Helper script</li><li>Internal documentation change</li><li>Bug fix to unreleased infrastructure</li></ul>
+- Feature PR:
+   - Minor/Major change
+   - Enhancement
+   - Compilation/dependency change
+   - Bug fix to an unreleased feature
+- Bug Fix PR:
+   - Bug fix to released code
+   - Modifications to released documentation
+- Infrastructure PR:
+   - Workflow/process change
+   - Helper script
+   - Internal documentation change
+   - Bug fix to unreleased infrastructure
 </details>
 
 **Select exactly one:**
 <!-- Selected: '[x]', Unselected: '[ ]' or Click when not in editing mode -->
 - [ ] Feature
 - [ ] Bug Fix
-- [ ] Infrastructure
+- [x] Infrastructure
 
 
 
@@ -27,8 +37,12 @@ Please review the checklist at the bottom before submitting. If ignored, the PR 
 <details>
 <summary>Help</summary>
 
-Not affecting Infrastructure PRs.<br><br>
-Breaking API includes:<ul><li>API breaks</li><li>Not server-firmware API break</li><li>Major file version change (not just aare affected)</li></ul>
+Not affecting Infrastructure PRs.
+
+Breaking API includes:
+- API breaks
+- Not server-firmware API break
+- Major file version change (not just aare affected)
 </details>
 
 <!-- Selected: '[x]', Unselected: '[ ]' or Click when not in editing mode -->
@@ -48,6 +62,8 @@ Breaking API includes:<ul><li>API breaks</li><li>Not server-firmware API break</
 eg. #1245 (prefix '#')
 -->
 
+
+
 ## Release notes
 
 <details>
@@ -55,10 +71,10 @@ eg. #1245 (prefix '#')
 
 Not affecting Infrastructure PRs.
 
-<ul><li>Either write release notes</li>
-<li> Or check the 'No Release Note' if PR deals with:
-<ul><li>Chip test board type or developing detector</li>
-<li>A referenced PR already including release notes for this PR</li></ul></li></ul>
+- Either write release notes
+- Or check the 'No Release Note' if PR deals with:
+    - Ctb, Xilinx Ctb or developing detector
+    - a linked PR already including release notes for this PR
 </details>
 
 <!-- Selected: '[x]', Unselected: '[ ]' or Click when not in editing mode -->
@@ -72,16 +88,18 @@ Not affecting Infrastructure PRs.
 <details>
 <summary> Before submitting </summary>
 
-<ul><li>I have chosen the primary PR type.</li>
-<li>Feature or Bug Fix PRs:
-<ul><li>I have checked if this is a Breaking API change.</li>
-<li>I have linked any
-<ul><li>equivalent PRs that is on another branch.</li>
-<li>related PRs eg. fixes/additions to an unrelease feature PR. </li></ul></li>
-<li>I have provided a release note above or checked 'No Release Note'.</li>
-<li>I have added detector labels. Some automation in adding labels from code change and PR description.</li></ul></li>
-<li>Infrastructure PRs:
-<ul><li>I have linked any equivalent PRs that is in an another branch.</li></ul></li></ul>
+- I have chosen the primary PR type.
+
+Feature or Bug Fix PRs:
+- I have checked if this is a Breaking API change.
+- I have linked any 
+    - equivalent PRs that is on another branch.
+    - related PRs eg. fixes/additions to an unrelease feature PR. 
+- I have provided a release note above or checked 'No Release Note'.
+- I have added detector labels. Some automation in adding labels from code change and PR description.
+
+Infrastructure PRs:
+- I have linked any equivalent PRs that is in an another branch.
 
 </details>
 

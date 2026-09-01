@@ -103,8 +103,14 @@ jobs:
 
             /*
              * --------------------------------------------------
-             * 2. Detect detector from detector-server folders
+             * 2. Detect detector from changed files
              * --------------------------------------------------
+             *
+             * We inspect each file once and short-circuit as soon
+             * as a detector-server folder confirms a label. That
+             * avoids scanning the same detector folder again and
+             * avoids checking the rest of the file for unrelated
+             * detector names.
              *
              * Examples:
              *
@@ -116,45 +122,49 @@ jobs:
              *                         ↓
              *                     Xilinx_ctb
              */
+            const ignoredDetectorServerFolders = new Set();
+
             for (const file of files) {
-              const match = file.filename.match(
+              const serverMatch = file.filename.match(
                 /^slsDetectorServers\/([^/]+)DetectorServer\//
               );
 
-              if (!match) {
-                continue;
+              if (serverMatch) {
+                const detectorFolder = serverMatch[0];
+
+                // Skip all later files under a detected detector folder.
+                if (ignoredDetectorServerFolders.has(detectorFolder)) {
+                  core.info(
+                    `Skipping file in ignored detector-server folder: ${file.filename}`
+                  );
+                  continue;
+                }
+
+                const detectorName = serverMatch[1];
+
+                /*
+                 * Remove "DetectorServer" and capitalize
+                 * the first character.
+                 */
+                const detector =
+                  detectorName.charAt(0).toUpperCase() +
+                  detectorName.slice(1);
+
+                if (detectorLabels.includes(detector)) {
+                  detectedDetectors.add(detector);
+
+                  core.info(
+                    `Detected ${detector} from detector-server path: ${file.filename}`
+                  );
+
+                  // Once a detector is confirmed from the server folder,
+                  // do not inspect this file or the rest of that folder.
+                  ignoredDetectorServerFolders.add(detectorFolder);
+                  continue;
+                }
               }
 
-              const detectorName = match[1];
-
-              /*
-               * Remove "DetectorServer" and capitalize
-               * the first character.
-               */
-              const detector =
-                detectorName.charAt(0).toUpperCase() +
-                detectorName.slice(1);
-
-              if (detectorLabels.includes(detector)) {
-                detectedDetectors.add(detector);
-
-                core.info(
-                  `Detected ${detector} from detector-server path: ${file.filename}`
-                );
-              }
-            }
-
-            /*
-             * --------------------------------------------------
-             * 3. Detect detector from changed code
-             * --------------------------------------------------
-             *
-             * Only the PR patch is searched.
-             *
-             * Therefore, text that already existed elsewhere
-             * in an unchanged file does not trigger a label.
-             */
-            for (const file of files) {
+              // Only inspect the PR patch, never the full file.
               if (!file.patch) {
                 continue;
               }
@@ -177,7 +187,7 @@ jobs:
 
             /*
              * --------------------------------------------------
-             * 4. Detect detector from PR title/description
+             * 3. Detect detector from PR title/description
              * --------------------------------------------------
              */
 

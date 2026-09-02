@@ -36,7 +36,7 @@ jobs:
              * If triggered by label change, ignore unrelated labels.
              */
             const action = context.payload.action;
-            
+
             if (action === 'labeled' || action === 'unlabeled') {
               const changedLabel = context.payload.label?.name;
               core.info(
@@ -49,6 +49,7 @@ jobs:
                 'Infrastructure',
                 'Breaking API'
               ];
+
               if (!relevantLabels.includes(changedLabel)) {
                 requireValidation = false;
               }
@@ -59,12 +60,9 @@ jobs:
               ];
               if (fileLabels.includes(changedLabel)) {
                 fileLabelChange = true;
-              }
+              }             
             }   
 
-            /*
-             * Set workflow outputs.
-             */
             core.setOutput(
               'require_validation',
               requireValidation.toString()
@@ -74,9 +72,6 @@ jobs:
               fileLabelChange.toString()
             );
 
-            /*
-             * Log what will run.
-             */
             if (requireValidation) {
               core.info('PR type validation required.');
             } else {
@@ -86,7 +81,7 @@ jobs:
               core.info('File version label change detected.');
             } else {
               core.info('No file version label change detected.');
-            }
+            }           
 
   validate-pr-type:
     needs: check-pr-trigger
@@ -125,4 +120,3 @@ jobs:
     permissions:
       pull-requests: write
       contents: read
-

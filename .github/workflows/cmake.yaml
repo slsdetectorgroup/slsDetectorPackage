@@ -1,7 +1,16 @@
 name: Native CMake Build
 
-on: [push, pull_request, workflow_dispatch] 
-
+on:
+  push:
+    branches-ignore:
+      - 'dev/pr_automation*'
+      - 'dev/test_pr_automation*'
+  pull_request:
+    branches-ignore:
+      - 'dev/pr_automation*'
+      - 'dev/test_pr_automation*'
+  workflow_dispatch:
+    
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Debug

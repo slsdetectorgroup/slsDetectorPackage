@@ -1,7 +1,11 @@
 name: slsdet
 
-on: [pull_request]
-
+on:
+  pull_request:
+    branches-ignore:
+      - 'dev/pr_automation*'
+      - 'dev/test_pr_automation*'
+      
 jobs:
   build:
     strategy:

@@ -1,0 +1,21 @@
+# This workflow is triggered when code is pushed to a pull request. It runs the reusable detector label workflow.
+
+name: PR Synchronize Trigger
+
+on:
+  pull_request:
+    types:
+      - synchronize
+
+permissions:
+  actions: read
+  pull-requests: read
+
+jobs:
+  detector-labels:
+    uses: ./.github/workflows/pr_detector_labels.yaml
+    with:
+      pr_number: ${{ github.event.pull_request.number }}
+    permissions:
+      pull-requests: write
+      issues: read

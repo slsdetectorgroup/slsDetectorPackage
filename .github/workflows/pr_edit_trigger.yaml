@@ -1,0 +1,83 @@
+# This workflow is triggered when opening/reopening PR, editing the PR description or changing labels. It ignores unrelated label changes. It runs PR type validation and if it succeeds, it runs PR milestone and detector labels workflow in parallel. 
+name: PR Edit Trigger
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - edited
+      - labeled
+      - unlabeled
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  check-pr-trigger:
+    name: Check PR Trigger
+    runs-on: ubuntu-latest
+    
+    outputs:
+      require_validation: ${{ steps.check.outputs.require_validation }}
+
+    steps:
+      - name: Check whether PR Validation is required
+        id: check
+        uses: actions/github-script@v8
+        with:
+          script: |
+            /*
+             * If triggered by label change, ignore unrelated labels.
+             */
+            const action = context.payload.action;
+            if (action === 'labeled' || action === 'unlabeled') {
+              const changedLabel = context.payload.label?.name;
+
+              const relevantLabels = [
+                'Feature',
+                'Bug Fix',
+                'Infrastructure',
+                'Breaking API'
+              ];
+
+              if (!relevantLabels.includes(changedLabel)) {
+                core.info(
+                  `Ignoring unrelated label change: ${changedLabel}`
+                );
+                core.setOutput('require_validation', 'false');
+                return;
+              }
+            }   
+
+            core.info('PR type validation required.');
+            core.setOutput('require_validation', 'true');
+
+  validate-pr-type:
+    needs: check-pr-trigger
+    if: ${{ needs.check-pr-trigger.outputs.require_validation == 'true' }}
+    uses: ./.github/workflows/pr_type_validation.yaml
+    with:
+      pr_number: ${{ github.event.pull_request.number }}
+    permissions:
+      pull-requests: write
+      contents: read
+
+  milestone:
+    needs: validate-pr-type
+    uses: ./.github/workflows/pr_milestone.yaml
+    with:
+      pr_number: ${{ github.event.pull_request.number }}
+    permissions:
+      pull-requests: write
+      contents: read
+
+  detector-labels:
+    needs: validate-pr-type
+    uses: ./.github/workflows/pr_detector_labels.yaml
+    with:
+      pr_number: ${{ github.event.pull_request.number }}
+    permissions:
+      pull-requests: write
+      issues: read

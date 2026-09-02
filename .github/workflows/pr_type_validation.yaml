@@ -1,64 +1,33 @@
-# This workflow is triggered when opening/reopening PR or editing the Pr description or changing labels. It ignores unrelated label changes. It validates the PR type and Breaking API, then sets the labels. It also runs the PR milestone workflow to set the milestone based on the PR type label.
-name: PR Validation
+# This reusable workflow reads the primary type and breaking api selection from the PR description and validates the PR labels. It ensures that exactly one primary type is selected, and that the Breaking API label is consistent with the checkbox in the PR description. It also adds or removes labels as necessary to match the PR description.
+
+name: PR Type Validation
 
 on:
-  pull_request:
-    types:
-      - opened
-      - reopened
-      - edited
-      - labeled
-      - unlabeled
+  workflow_call:
+    inputs:
+      pr_number:
+        required: true
+        type: number
 
 permissions:
   pull-requests: write
   contents: read
 
 jobs:
-  validate-pr:
-    name: Validate PR
+  validate_pr_type:
+    name: PR Type Validation
     runs-on: ubuntu-latest
-    outputs:
-      set_milestone: ${{ steps.validate.outputs.set_milestone }}
 
     steps:
-      - name: Validate PR type and Breaking API
+      - name: PR Type Validation and Breaking API
         id: validate
         uses: actions/github-script@v8
         with:
           script: |
             /*
-             * Set it to run milestone at the end by default
-             */
-            core.setOutput('set_milestone', 'true');  
-
-            /*
-             * If triggered by label change, ignore unrelated labels.
-             */
-            const action = context.payload.action;
-            if (action === 'labeled' || action === 'unlabeled') {
-              const changedLabel = context.payload.label?.name;
-
-              const relevantLabels = [
-                'Feature',
-                'Bug Fix',
-                'Infrastructure',
-                'Breaking API'
-              ];
-
-              if (!relevantLabels.includes(changedLabel)) {
-                core.info(
-                  `Ignoring unrelated label change: ${changedLabel}`
-                );
-                core.setOutput('set_milestone', 'false');
-                return;
-              }
-            }     
-
-            /*
              * Read the body contents of PR
              */
-            const prNumber = context.payload.pull_request?.number;
+            const prNumber = ${{ inputs.pr_number }};
 
             if (!prNumber) {
               core.setFailed('Unable to determine PR number.');
@@ -206,13 +175,3 @@ jobs:
             }
 
             core.info('PR validation passed.');
-
-  milestone:
-    needs: validate-pr
-    if: ${{ needs.validate-pr.outputs.set_milestone == 'true' }}
-    uses: ./.github/workflows/pr_milestone.yaml
-    with:
-      pr_number: ${{ github.event.pull_request.number }}
-    permissions:
-      pull-requests: write
-      contents: read

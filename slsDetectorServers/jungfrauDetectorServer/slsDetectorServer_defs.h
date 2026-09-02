@@ -63,10 +63,6 @@
 #define DEFAULT_TIMING_INFO_DECODER      (SWISSFEL)
 #define DEFAULT_ELECTRON_COLLECTION_MODE (0)
 
-#define MAX_PEDESTAL_LOOPS                                                     \
-    (PEDESTAL_MODE_ITRTNS_MSK >> PEDESTAL_MODE_ITRTNS_OFST)
-#define MAX_PEDESTAL_FRAMES                                                    \
-    (PEDESTAL_MODE_LNGTH_MSK >> PEDESTAL_MODE_LNGTH_OFST)
 #define HIGHVOLTAGE_MIN      (60)
 #define HIGHVOLTAGE_MAX      (200)
 #define DAC_MIN_MV           (0)

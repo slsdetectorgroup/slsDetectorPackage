@@ -10832,20 +10832,6 @@ int set_pedestal_mode(int file_des) {
                         "be 0. [%hhu, %hu].\n",
                         frames, loops);
                 LOG(logERROR, (mess));
-            } else if (frames > MAX_PEDESTAL_FRAMES) {
-                ret = FAIL;
-                sprintf(mess,
-                        "Could not set pedestal mode. Frames [%hhu] cannot be "
-                        "greater than %d.\n",
-                        frames, MAX_PEDESTAL_FRAMES);
-                LOG(logERROR, (mess));
-            } else if (loops > MAX_PEDESTAL_LOOPS) {
-                ret = FAIL;
-                sprintf(mess,
-                        "Could not set pedestal mode. Loops [%hu] cannot be "
-                        "greater than %d.\n",
-                        loops, MAX_PEDESTAL_LOOPS);
-                LOG(logERROR, (mess));
             } else {
                 setPedestalMode(enable, frames, loops);
                 int retvalEnable = getPedestalMode();

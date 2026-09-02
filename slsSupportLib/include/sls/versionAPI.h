@@ -8,6 +8,6 @@
 #define APIMOENCH     "0.0.0 0x260424"
 #define APIEIGER      "0.0.0 0x260807"
 #define APIXILINXCTB  "0.0.0 0x260813"
-#define APIJUNGFRAU   "0.0.0 0x260814"
+#define APIJUNGFRAU   "0.0.0 0x260902"
 #define APIMYTHEN3    "0.0.0 0x260506"
 #define APIMATTERHORN "0.0.0 0x260529"

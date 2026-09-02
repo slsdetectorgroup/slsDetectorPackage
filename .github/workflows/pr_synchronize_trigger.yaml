@@ -1,4 +1,4 @@
-# This workflow is triggered when code is pushed to a pull request. It runs the reusable detector label workflow Nd the file version workflow in parallel.
+# This workflow is triggered when code is pushed to a pull request. It runs the reusable detector label workflow and the file version workflow in parallel.
 
 name: PR Synchronize Trigger
 

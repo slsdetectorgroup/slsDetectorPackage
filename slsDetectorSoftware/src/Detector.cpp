@@ -21,6 +21,8 @@
 #include <set>
 #include <thread>
 
+// test something again mythen3
+
 namespace sls {
 
 void freeSharedMemory(const int detectorIndex, const int moduleIndex) {

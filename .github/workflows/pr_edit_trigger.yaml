@@ -1,4 +1,4 @@
-# This workflow is triggered when opening/reopening PR, editing the PR description or changing labels. It ignores unrelated label changes. It runs PR type validation and if it succeeds, it runs PR milestone and detector labels workflow in parallel. 
+# test branch
 name: PR Edit Trigger
 
 on:

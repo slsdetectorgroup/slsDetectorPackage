@@ -1,13 +1,25 @@
 <!--
-Please stick to this template and fill out every section.
-The expandable <details> sections provide additional information and tips to help you choose the appropriate options. You do not need to modify them.
-Please review the checklist at the bottom before submitting. If ignored, the PR validation could fail.
+Please complete all relevant sections. If not, validation could fail.
+
+The expandable sections are guidance only — do not modify or fill them out.
 -->
+
+<details>
+<summary>Help</summary>
+
+The following are managed automatically by workflow. Do not set them manually. 
+- Labels: Feature, Bug Fix, Infrastructure, Breaking API
+- Milestone
+
+See PR Automation & Validation below for details.
+</details>
+
+
 
 ## PR type
 
 <details>
-<summary>?</summary>
+<summary>Help</summary>
 
 - Feature PR:
    - Minor/Major change
@@ -28,14 +40,14 @@ Please review the checklist at the bottom before submitting. If ignored, the PR 
 <!-- Selected: '[x]', Unselected: '[ ]' or Click when not in editing mode -->
 - [ ] Feature
 - [ ] Bug Fix
-- [ ] Infrastructure
+- [x] Infrastructure
 
 
 
 ## Breaking API
 
 <details>
-<summary>?</summary>
+<summary>Help</summary>
 
 Not affecting Infrastructure PRs.
 
@@ -52,22 +64,25 @@ Breaking API includes:
 
 ## Description
 <!-- Describe what this PR changes and why. -->
+- Cleans up the PR template and removes any detector type names that match the labels for future github detector name workflows that use them.
+- Also separating reference and equivalent PRs
+
+
+
+## Equivalent PRs
+<!-- Link any equivalent PRs in a release candidate or developer branch here. The one in release candidate branch should have release notes. eg. #0001  (prefix '#') -->
 
 
 
 ## Referenced PRs
-<!-- Link any 
-- equivalent PRs in a release candidate or developer branch here
-- related PRs e.g. fixes/additions to an unreleased feature PR.
-eg. #1245 (prefix '#')
--->
+<!-- Link any related PRs e.g. fixes/additions to an unreleased feature PR. The unreleased feature PR should have release notes. eg. #0001 (prefix '#') -->
 
 
 
 ## Release notes
 
 <details>
-<summary>?</summary>
+<summary>Help</summary>
 
 Not affecting Infrastructure PRs.
 
@@ -75,7 +90,8 @@ Choose one:
 - Write release notes
 - Check the 'No Release Note' if PR deals with:
     - Chip test board type or developing detector
-    - a linked PR already including release notes for this PR
+    - an equivalent PR in release candidate branch with release notes for this PR
+    - a linked PR with release notes for this PR
 </details>
 
 <!-- Selected: '[x]', Unselected: '[ ]' or Click when not in editing mode -->

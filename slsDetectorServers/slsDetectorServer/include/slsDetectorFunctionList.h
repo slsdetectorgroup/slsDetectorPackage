@@ -567,7 +567,8 @@ void configureChip();
 int autoCompDisable(int on);
 int setComparatorDisableTime(int64_t val);
 int64_t getComparatorDisableTime();
-void configureASICTimer();
+void configureAsicPrechargeTimer();
+void updateAsicCDSTimer();
 #endif
 int setReadoutSpeed(int val);
 int getReadoutSpeed(int *retval);

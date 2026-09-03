@@ -673,7 +673,8 @@ void setupDetector() {
     resetCore();
 
     alignDeserializer();
-    configureASICTimer();
+    configureAsicPrechargeTimer();
+    updateAsicCDSTimer();
     bus_w(ADC_PORT_INVERT_REG,
           (isHardwareVersion_1_0() ? ADC_PORT_INVERT_BOARD2_VAL
                                    : ADC_PORT_INVERT_VAL));
@@ -2208,17 +2209,41 @@ int64_t getComparatorDisableTime() {
     return bus_r(COMP_DSBLE_TIME_REG) / (1E-3 * CLK_RUN);
 }
 
-void configureASICTimer() {
-    bus_w(ASIC_CTRL_REG, (bus_r(ASIC_CTRL_REG) & ~ASIC_CTRL_PRCHRG_TMR_MSK) |
-                             ASIC_CTRL_PRCHRG_TMR_VAL);
+void configureAsicPrechargeTimer() {
+    uint32_t addr = ASIC_CTRL_REG;
+    uint32_t mask = ASIC_CTRL_PRCHRG_TMR_MSK;
+    uint32_t ofst = ASIC_CTRL_PRCHRG_TMR_OFST;
+    uint32_t value = ASIC_CTRL_PRCHRG_TMR_VAL;
+    bus_w(addr, bus_r(addr) & ~mask);
+    bus_w(addr, bus_r(addr) | value);
+    LOG(logINFO, ("Configured ASIC Precharge Timer [0x%x]\n",
+                  ((bus_r(addr) & mask) >> ofst)));
+}
 
-    uint32_t val = ASIC_CTRL_DS_TMR_CHIP1_1_VAL;
-    // TODO: value of chipindex v1_2 value to be decided.
+// configure ASIC correlated double sampling timer
+void updateAsicCDSTimer() {
+    uint32_t addr = ASIC_CTRL_REG;
+    uint32_t mask = ASIC_CTRL_CDS_TMR_MSK;
+    uint32_t ofst = ASIC_CTRL_CDS_TMR_OFST;
+    uint32_t low_res_val = ASIC_CTRL_CDS_TMR_LOW_FLTR_RSSTR_VAL;
+    uint32_t high_res_val = ASIC_CTRL_CDS_TMR_HIGH_FLTR_RSSTR_VAL;
+    uint32_t val = 0;
+
+    // chip v1.0 has always low res value
+    // chip v1.1 and 1.2 depends on filter resistor value
+    bus_w(addr, bus_r(addr) & ~mask);
     if (chipIndex == v1_0) {
-        val = ASIC_CTRL_DS_TMR_VAL;
+        val = low_res_val;
+    } else {
+        if (getFilterResistor() == 0) {
+            val = low_res_val;
+        } else {
+            val = high_res_val;
+        }
     }
-    bus_w(ASIC_CTRL_REG, (bus_r(ASIC_CTRL_REG) & ~ASIC_CTRL_DS_TMR_MSK) | val);
-    LOG(logINFO, ("Configured ASIC Timer [0x%x]\n", bus_r(ASIC_CTRL_REG)));
+    bus_w(addr, bus_r(addr) | val);
+    LOG(logINFO,
+        ("Configured ASIC CDS Timer [0x%x]\n", ((bus_r(addr) & mask) >> ofst)));
 }
 
 int setReadoutSpeed(int val) {
@@ -2569,22 +2594,27 @@ int getFilterResistor() {
 }
 
 int setFilterResistor(int value) {
-    // lower resistor
-    if (value == 0) {
+    uint32_t addr = CONFIG_V11_REG;
+    uint32_t low_res_mask = CONFIG_V11_FLTR_RSSTR_SMLR_MSK;
+
+    switch (value) {
+    case 0:
         LOG(logINFO, ("Setting Lower Filter Resistor\n"));
-        bus_w(CONFIG_V11_REG,
-              bus_r(CONFIG_V11_REG) | CONFIG_V11_FLTR_RSSTR_SMLR_MSK);
+        bus_w(addr, bus_r(addr) | low_res_mask);
+        updateAsicCDSTimer();
         return OK;
-    }
-    // higher resistor
-    else if (value == 1) {
+
+    case 1:
         LOG(logINFO, ("Setting Higher Filter Resistor\n"));
-        bus_w(CONFIG_V11_REG,
-              bus_r(CONFIG_V11_REG) & ~CONFIG_V11_FLTR_RSSTR_SMLR_MSK);
+        bus_w(addr, bus_r(addr) & ~low_res_mask);
+        updateAsicCDSTimer();
         return OK;
+
+    default:
+        LOG(logERROR,
+            ("Could not set Filter Resistor. Invalid value %d\n", value));
+        return FAIL;
     }
-    LOG(logERROR, ("Could not set Filter Resistor. Invalid value %d\n", value));
-    return FAIL;
 }
 
 int getNumberOfFilterCells() {

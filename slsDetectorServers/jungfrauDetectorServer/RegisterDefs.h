@@ -492,10 +492,10 @@ Time before end of exposure when comparator is disabled */
 #define ASIC_CTRL_PRCHRG_TMR_MSK            (0x000000FF << ASIC_CTRL_PRCHRG_TMR_OFST)
 #define ASIC_CTRL_PRCHRG_TMR_VAL            ((0x1F << ASIC_CTRL_PRCHRG_TMR_OFST) & ASIC_CTRL_PRCHRG_TMR_MSK)
 // tDS = (DST + 1) * 25ns
-#define ASIC_CTRL_DS_TMR_OFST               (8)
-#define ASIC_CTRL_DS_TMR_MSK                (0x000000FF << ASIC_CTRL_DS_TMR_OFST)
-#define ASIC_CTRL_DS_TMR_VAL                ((0x1F << ASIC_CTRL_DS_TMR_OFST) & ASIC_CTRL_DS_TMR_MSK)
-#define ASIC_CTRL_DS_TMR_CHIP1_1_VAL        ((0xFF << ASIC_CTRL_DS_TMR_OFST) & ASIC_CTRL_DS_TMR_MSK)
+#define ASIC_CTRL_CDS_TMR_OFST               (8)
+#define ASIC_CTRL_CDS_TMR_MSK                (0x000000FF << ASIC_CTRL_CDS_TMR_OFST)
+#define ASIC_CTRL_CDS_TMR_LOW_FLTR_RSSTR_VAL ((0x1F << ASIC_CTRL_CDS_TMR_OFST) & ASIC_CTRL_CDS_TMR_MSK)
+#define ASIC_CTRL_CDS_TMR_HIGH_FLTR_RSSTR_VAL ((0x5F << ASIC_CTRL_CDS_TMR_OFST) & ASIC_CTRL_CDS_TMR_MSK)
 
 /* ADC 0 Deserializer Control */
 #define ADC_DSRLZR_0_REG                    (0xF0 << MEM_MAP_SHIFT)

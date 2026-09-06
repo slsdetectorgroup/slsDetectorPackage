@@ -40,7 +40,7 @@ See PR Automation & Validation below for details.
 <!-- Selected: '[x]', Unselected: '[ ]' or Click when not in editing mode -->
 - [ ] Feature
 - [ ] Bug Fix
-- [x] Infrastructure
+- [ ] Infrastructure
 
 
 
@@ -64,18 +64,32 @@ Breaking API includes:
 
 ## Description
 <!-- Describe what this PR changes and why. -->
-- Cleans up the PR template and removes any detector type names that match the labels for future github detector name workflows that use them.
-- Also separating reference and equivalent PRs
 
 
 
 ## Equivalent PRs
-<!-- Link any equivalent PRs in a release candidate or developer branch here. The one in release candidate branch should have release notes. eg. #0001  (prefix '#') -->
+<details>
+<summary>Help</summary>
+
+- Equivalent PR is a duplicated PR on another branch (RC or developer).
+- If the current PR doesn't have any release notes, link the PR that does.
+- Equivalent PRs in RC branches keep release notes instead of developer branch PRs.
+</details>
+
+<!-- Link any equivalent PRs using a prefix '#' followed by PR number -->
 
 
 
 ## Referenced PRs
-<!-- Link any related PRs e.g. fixes/additions to an unreleased feature PR. The unreleased feature PR should have release notes. eg. #0001 (prefix '#') -->
+<details>
+<summary>Help</summary>
+
+- Referenced PR is any related PR.
+- If the current PR doesn't have any release notes, link the PR that does.
+- Eg. Current PR has no release notes when it is a bug fix to an unreleased feature PR that already has release notes.
+</details>
+
+<!-- Link any referenced PRs using a prefix '#' followed by PR number -->
 
 
 

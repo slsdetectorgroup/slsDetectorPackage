@@ -65,6 +65,9 @@ jobs:
             const hasFileMinor =
               currentLabelNames.includes('File Minor');
 
+            const hasBreakingAPI =
+              currentLabelNames.includes('Breaking API');
+
             /*
              * File Major and File Minor are mutually exclusive.
              */
@@ -231,6 +234,13 @@ jobs:
               if (hasFileMinor) {
                 core.setFailed(
                   'A major file version change was detected, but the PR has the "File Minor" label. Remove the "File Minor" label and let the workflow determine the correct label based on changes to receiver_defs.h.'
+                );
+                return;
+              }
+
+              if (!hasBreakingAPI) {
+                core.setFailed(
+                  'A major file version change was detected, and the PR has not recognized "Breaking API". Please check the checkbox "Breaking API" in the PR description so that the appropriate label can be added to the PR and milestone recalculated.'
                 );
                 return;
               }

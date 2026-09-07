@@ -22,6 +22,7 @@ jobs:
     outputs:
       require_validation: ${{ steps.check.outputs.require_validation }}
       file_label_change: ${{ steps.check.outputs.file_label_change }}
+      pr_edited: ${{ steps.check.outputs.pr_edited }}
 
     steps:
       - name: Check PR Trigger
@@ -36,6 +37,7 @@ jobs:
              * If triggered by label change, ignore unrelated labels.
              */
             const action = context.payload.action;
+            const prEdited = action === 'edited';
 
             if (action === 'labeled' || action === 'unlabeled') {
               const changedLabel = context.payload.label?.name;
@@ -63,7 +65,7 @@ jobs:
               if (fileLabels.includes(changedLabel)) {
                 fileLabelChange = true;
               }             
-            }   
+            } 
 
             core.setOutput(
               'require_validation',
@@ -73,16 +75,20 @@ jobs:
               'file_label_change',
               fileLabelChange.toString()
             );
+            core.setOutput(
+              'pr_edited',
+              prEdited.toString()
+            );
 
             if (requireValidation) {
-              core.info('PR type validation required.');
+              core.info('PR type validation: Required.');
             } else {
-              core.info('PR type validation not required: Unrelated label.');
+              core.info('PR type validation: Not required - Unrelated label.');
             }
             if (fileLabelChange) {
-              core.info('File version (or Breaking API) label change detected.');
+              core.info('File label or Breaking API: Changed.');
             } else {
-              core.info('No file version (or Breaking API) label change detected.');
+              core.info('File label or Breaking API: No Change.');
             }           
 
   validate-pr-type:
@@ -114,8 +120,20 @@ jobs:
       issues: read
 
   file-version:
-    needs: check-pr-trigger
-    if: ${{ needs.check-pr-trigger.outputs.file_label_change == 'true' }}
+    needs: 
+      - check-pr-trigger
+      - validate-pr-type
+    if: >-
+      ${{
+        always() &&
+        (
+          needs.check-pr-trigger.outputs.file_label_change == 'true' ||
+          (
+            needs.check-pr-trigger.outputs.pr_edited == 'true' &&
+            needs.validate-pr-type.result == 'success'
+          )
+        )
+      }}
     uses: ./.github/workflows/pr_file_version.yaml
     with:
       pr_number: ${{ github.event.pull_request.number }}

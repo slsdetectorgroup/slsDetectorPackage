@@ -54,9 +54,11 @@ jobs:
                 requireValidation = false;
               }
 
+              // File Major requires Breaking API label
               const fileLabels = [
                 'File Major',
                 'File Minor',
+                'Breaking API'
               ];
               if (fileLabels.includes(changedLabel)) {
                 fileLabelChange = true;

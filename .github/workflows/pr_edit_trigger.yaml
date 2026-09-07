@@ -80,9 +80,9 @@ jobs:
               core.info('PR type validation not required: Unrelated label.');
             }
             if (fileLabelChange) {
-              core.info('File version label change detected.');
+              core.info('File version (or Breaking API) label change detected.');
             } else {
-              core.info('No file version label change detected.');
+              core.info('No file version (or Breaking API) label change detected.');
             }           
 
   validate-pr-type:

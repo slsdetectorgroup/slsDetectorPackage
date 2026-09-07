@@ -258,7 +258,7 @@ jobs:
                 );
               } else {
                 core.info(
-                  'File Major label is correctly present.'
+                  'File Major label and Breaking API label are correctly present.'
                 );
               }
 

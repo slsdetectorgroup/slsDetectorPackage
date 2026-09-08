@@ -217,6 +217,52 @@ Example cmake options               Comment
     For v7.x.x of slsDetectorPackage and older, refer :ref:`zeromq notes for cmk script option to hint library location. <zeromq for different slsDetectorPackage versions>` 
 
 
+3.2.3. Build RPM packages
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+CPack builds separate RPMs for the command line tools (``cli``), receiver
+executables (``receiver``), Moench processing tools (``zmq``), and GUI (``gui``).
+Install ``rpm-build`` and the dependencies for the selected features, and build
+on the target distribution or a matching container.
+
+For example, to package the command line tools, receiver and GUI:
+
+.. code-block:: bash
+
+    cmake -S . -B build -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/usr -DSLS_USE_GUI=ON \
+        -DSLS_INSTALL_VERSIONED_BINARIES=ON
+    cmake --build build -j4
+    cpack --config build/CPackConfig.cmake -G RPM \
+        -D 'CPACK_COMPONENTS_ALL=cli;receiver;gui' -B build
+
+Select only components enabled in the build. Add ``-DSLS_USE_MOENCH=ON`` and
+the ``zmq`` component to package the Moench tools.
+
+``SLS_INSTALL_VERSIONED_BINARIES=ON`` includes the project version in the RPM
+package names, for example ``slsdetectorpackage-9.2.0-cli`` and
+``slsdetectorpackage-9.2.0-gui``. Installed executables also receive a version
+suffix, such as ``sls_detector_get-9.2.0`` and ``slsDetectorGui-9.2.0``. This
+allows RPMs for different project versions to be installed side by side.
+RPM revisions of the same project version retain the same package names and
+can be upgraded normally.
+
+RPM filenames include the version once, for example
+``slsdetectorpackage-cli-9.2.0-1.fc44.x86_64.rpm``. The package's internal name
+remains ``slsdetectorpackage-9.2.0-cli`` and its RPM version remains ``9.2.0``.
+
+The option also applies to Jungfrau processing tools and virtual detector
+servers installed with ``cmake --install``. These are outside the current RPM
+component selection. Executables in the build directory keep their original
+names. With the option set to ``OFF`` (the default), installed executables and
+RPM package names omit the project version.
+
+The RPM components contain executables; Python bindings, libraries and headers
+are not included. A full ``cmake --install`` still installs libraries and
+headers at their usual paths, so use separate prefixes for full installations
+of different versions.
+
+
 3.3. Build on old distributions using conda
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

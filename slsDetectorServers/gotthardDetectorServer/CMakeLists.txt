@@ -38,8 +38,6 @@ set_target_properties(gotthardDetectorServer_virtual PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
-install(TARGETS gotthardDetectorServer_virtual
-    RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
+sls_install_executable(gotthardDetectorServer_virtual)
 
 configure_file(config_gotthard.txt ${CMAKE_BINARY_DIR}/bin/config_gotthard.txt COPYONLY)

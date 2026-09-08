@@ -111,8 +111,10 @@ if(SLS_USE_TEXTCLIENT)
         if((CMAKE_BUILD_TYPE STREQUAL "Release") AND SLS_LTO_AVAILABLE)
             set_property(TARGET ${val1} PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
         endif()
+
+        sls_install_executable(${val1} DESTINATION bin COMPONENT cli)
     endforeach()
-    install(TARGETS ${det_bin_names} DESTINATION bin)
+
 
 
 endif(SLS_USE_TEXTCLIENT)

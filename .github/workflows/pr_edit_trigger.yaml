@@ -21,19 +21,29 @@ jobs:
     
     outputs:
       require_validation: ${{ steps.check.outputs.require_validation }}
+      file_label_change: ${{ steps.check.outputs.file_label_change }}
+      pr_edited: ${{ steps.check.outputs.pr_edited }}
 
     steps:
-      - name: Check whether PR Validation is required
+      - name: Check PR Trigger
         id: check
         uses: actions/github-script@v8
         with:
           script: |
+            let requireValidation = true;
+            let fileLabelChange = false;
+
             /*
              * If triggered by label change, ignore unrelated labels.
              */
             const action = context.payload.action;
+            const prEdited = action === 'edited';
+
             if (action === 'labeled' || action === 'unlabeled') {
               const changedLabel = context.payload.label?.name;
+              core.info(
+                `Changed Label: ${changedLabel}`
+              );
 
               const relevantLabels = [
                 'Feature',
@@ -43,16 +53,43 @@ jobs:
               ];
 
               if (!relevantLabels.includes(changedLabel)) {
-                core.info(
-                  `Ignoring unrelated label change: ${changedLabel}`
-                );
-                core.setOutput('require_validation', 'false');
-                return;
+                requireValidation = false;
               }
-            }   
 
-            core.info('PR type validation required.');
-            core.setOutput('require_validation', 'true');
+              // File Major requires Breaking API label
+              const fileLabels = [
+                'File Major',
+                'File Minor',
+                'Breaking API'
+              ];
+              if (fileLabels.includes(changedLabel)) {
+                fileLabelChange = true;
+              }             
+            } 
+
+            core.setOutput(
+              'require_validation',
+              requireValidation.toString()
+            );
+            core.setOutput(
+              'file_label_change',
+              fileLabelChange.toString()
+            );
+            core.setOutput(
+              'pr_edited',
+              prEdited.toString()
+            );
+
+            if (requireValidation) {
+              core.info('PR type validation: Required.');
+            } else {
+              core.info('PR type validation: Not required - Unrelated label.');
+            }
+            if (fileLabelChange) {
+              core.info('File label or Breaking API: Changed.');
+            } else {
+              core.info('File label or Breaking API: No Change.');
+            }           
 
   validate-pr-type:
     needs: check-pr-trigger
@@ -81,3 +118,25 @@ jobs:
     permissions:
       pull-requests: write
       issues: read
+
+  file-version:
+    needs: 
+      - check-pr-trigger
+      - validate-pr-type
+    if: >-
+      ${{
+        always() &&
+        (
+          needs.check-pr-trigger.outputs.file_label_change == 'true' ||
+          (
+            needs.check-pr-trigger.outputs.pr_edited == 'true' &&
+            needs.validate-pr-type.result == 'success'
+          )
+        )
+      }}
+    uses: ./.github/workflows/pr_file_version.yaml
+    with:
+      pr_number: ${{ github.event.pull_request.number }}
+    permissions:
+      pull-requests: write
+      contents: read

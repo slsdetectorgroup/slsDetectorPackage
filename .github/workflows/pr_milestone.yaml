@@ -81,6 +81,9 @@ jobs:
             const bugFix = getTarget('bug_fix');
 
             if (!major || !minor || !bugFix) {
+              core.setFailed(
+                'Required release targets (major, minor, bug_fix) could not be resolved from yaml file.'
+              );
               return;
             }
 

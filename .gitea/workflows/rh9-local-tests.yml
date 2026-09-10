@@ -40,7 +40,7 @@ jobs:
       - name: Simulator unit tests
         run: |
           cd build/bin
-          python3.13 test_simulators.py -g
+          python3.13 test_simulators.py
 
       - name: Run frame synchronizer tests
         run: |

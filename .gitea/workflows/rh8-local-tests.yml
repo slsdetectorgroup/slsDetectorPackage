@@ -47,7 +47,7 @@ jobs:
           source /home/gitea_runner/.bashrc
           conda activate det
           cd build/bin
-          python test_simulators.py -g
+          python test_simulators.py
 
       - name: Run frame synchronizer tests
         run: |

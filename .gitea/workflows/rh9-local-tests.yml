@@ -39,10 +39,14 @@ jobs:
 
       - name: Simulator unit tests
         run: |
+          export PYTHONPATH=$PWD/build/bin:$PYTHONPATH
+          export PATH=$PWD/build/bin:$PATH        
           cd build/bin
           python3.13 test_simulators.py
 
       - name: Run frame synchronizer tests
         run: |
+          export PYTHONPATH=$PWD/build/bin:$PYTHONPATH
+          export PATH=$PWD/build/bin:$PATH        
           cd build/bin
           python3.13 test_frame_synchronizer.py

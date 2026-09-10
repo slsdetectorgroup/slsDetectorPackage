@@ -79,9 +79,13 @@ def killProcess(name, fp):
 def cleanSharedmemory(fp):
     Log(LogLevel.INFO, 'Cleaning up shared memory', fp)
     try:
-        p = subprocess.run(['sls_detector_get', 'free'], stdout=fp, stderr=fp)
-    except:
-        raise RuntimeException('Could not free shared memory')
+        p = subprocess.run(['sls_detector_get', 'free'], capture_output=True, text=True)
+    except Exception as e:
+        raise RuntimeException(f'Could not free shared memory: {str(e)}') from e
+
+    if p.returncode != 0:
+        reason = (p.stderr or p.stdout or f'exit code {p.returncode}').strip().splitlines()[0]
+        raise RuntimeException(f'Could not free shared memory: {reason}')
 
 
 def cleanup(fp):

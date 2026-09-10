@@ -46,6 +46,8 @@ jobs:
         run: |
           source /home/gitea_runner/.bashrc
           conda activate det
+          export PYTHONPATH=$PWD/build/bin:$PYTHONPATH
+          export SLSDETNAME=gitea_runner_tests
           cd build/bin
           python test_simulators.py
 
@@ -53,5 +55,7 @@ jobs:
         run: |
           source /home/gitea_runner/.bashrc
           conda activate det
+          export PYTHONPATH=$PWD/build/bin:$PYTHONPATH
+          export SLSDETNAME=gitea_runner_tests
           cd build/bin
           python test_frame_synchronizer.py 

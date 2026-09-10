@@ -39,7 +39,6 @@ jobs:
           conda activate det
           export PYTHONPATH=$PWD/build/bin:$PYTHONPATH
           export SLSDETNAME=gitea_runner_tests
-          python -m pytest -m detectorintegration python/tests --detector-integration 
           python -m pytest python/tests
 
 

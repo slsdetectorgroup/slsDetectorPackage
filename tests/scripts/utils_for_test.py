@@ -83,7 +83,6 @@ def cleanSharedmemory(fp):
     except:
         raise RuntimeException('Could not free shared memory')
 
-
 def cleanup(fp):
     Log(LogLevel.INFO, 'Cleaning up')
     Log(LogLevel.INFO, 'Cleaning up', fp)

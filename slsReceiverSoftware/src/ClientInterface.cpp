@@ -236,8 +236,9 @@ int ClientInterface::decodeFunction(Interface &socket) {
     if (fnum <= NUM_DET_FUNCTIONS || fnum >= NUM_REC_FUNCTIONS) {
         throw RuntimeError(UNRECOGNIZED_FNUM_ENUM + std::to_string(fnum));
     } else {
-        LOG(logDEBUG1) << "calling function fnum: " << fnum << " ("
-                       << getFunctionNameFromEnum((enum detFuncs)fnum) << ")";
+        LOG(logINFO) << "Client " << server.getThisClient()
+                     << " calling function fnum: " << fnum << " ("
+                     << getFunctionNameFromEnum((enum detFuncs)fnum) << ")";
         ret = (this->*flist[fnum])(socket);
         LOG(logDEBUG1) << "Function "
                        << getFunctionNameFromEnum((enum detFuncs)fnum)

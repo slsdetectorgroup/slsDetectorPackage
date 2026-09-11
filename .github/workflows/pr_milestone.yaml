@@ -73,8 +73,17 @@ jobs:
               return;
             }
 
+            /**
+             * 3. If PR targets a branch that is not developer, do nothing.
+             */
+            if (baseBranch !== 'developer') {
+              core.info('PR does not target developer branch. Skipping milestone management.');
+              core.setOutput('target_milestone', '');
+              return;
+            }
+
             /*
-             * 3. If PR targets developer, check "Equivalent PRs" in the PR body.
+             * 4. If PR targets developer, check "Equivalent PRs" in the PR body.
              * If an equivalent PR targets an RC branch (for example 9.1.0.rc),
              * use the corresponding release milestone (for example 9.1.0).
              */
@@ -123,7 +132,7 @@ jobs:
             }
 
             /*
-             * 4. Read release targets through the GitHub API
+             * 5. Read release targets through the GitHub API
              * from the base branch of PR.
              */
             const { data: file } =

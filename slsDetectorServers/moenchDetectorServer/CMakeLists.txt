@@ -36,9 +36,8 @@ set_target_properties(moenchDetectorServer_virtual PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
-install(TARGETS moenchDetectorServer_virtual
+sls_install_executable(moenchDetectorServer_virtual
     EXPORT "${TARGETS_EXPORT_NAME}"
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
 configure_file(detid_moench.txt ${CMAKE_BINARY_DIR}/bin/detid_moench.txt COPYONLY)

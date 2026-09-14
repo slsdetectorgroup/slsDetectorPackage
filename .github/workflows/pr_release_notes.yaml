@@ -62,7 +62,7 @@ jobs:
                 return '';
               }
               const section = stripIgnoredContent(match[2] || '');
-              return section;
+              return section.trim();
             };
 
             /**

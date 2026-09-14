@@ -4,7 +4,9 @@
 # them in an equivalent PR or referenced PR, else validation fails. If it is an 
 # Infrastructure PR or release notes are not found in an equivalent or 
 # referenced PR, it should add label 'No Release Note'.
-.
+
+#test branch
+
 name: PR Release Notes
 
 on:
@@ -149,6 +151,9 @@ jobs:
 
             core.info('No release notes found in the current PR body.');
 
+            /**
+             * Function to add the "No Release Note" label to the current PR.
+             */
             const addNoReleaseNoteLabel = async () => {
               await github.rest.issues.addLabels({
                 owner: context.repo.owner,

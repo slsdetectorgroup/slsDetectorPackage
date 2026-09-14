@@ -110,6 +110,16 @@ jobs:
       pull-requests: write
       contents: read
 
+  release-notes:
+    needs: validate-pr-type
+    uses: ./.github/workflows/pr_release_notes.yaml
+    with:
+      pr_number: ${{ github.event.pull_request.number }}
+    permissions:
+      pull-requests: write
+      contents: read
+      issues: write
+
   detector-labels:
     needs: validate-pr-type
     uses: ./.github/workflows/pr_detector_labels.yaml

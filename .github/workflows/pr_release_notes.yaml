@@ -1,0 +1,205 @@
+# This reusable workflow validates the PR release notes. It ignores comments and
+# <details> blocks, checks for notes under the "## Release notes" section,. If 
+# release notes are not found and it is not an Infrastructure PR, it should find
+# them in an equivalent PR or referenced PR, else validation fails. If it is an 
+# Infrastructure PR or release notes are not found in an equivalent or 
+# referenced PR, it should add label 'No Release Note'.
+.
+name: PR Release Notes
+
+on:
+  workflow_call:
+    inputs:
+      pr_number:
+        required: true
+        type: number
+
+permissions:
+  pull-requests: write
+  contents: read
+  issues: write
+
+jobs:
+  check-release-notes:
+    name: Check PR release notes
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validate presence of release notes
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const prNumber = ${{ inputs.pr_number }};
+
+            if (!prNumber) {
+              core.setFailed('Unable to determine PR number.');
+              return;
+            }
+
+            /**
+             * Strips ignored content such as comments and 
+             * <details> blocks from the given text.
+             */
+            const stripIgnoredContent = (text = '') => {
+              return (text || '')
+                .replace(/<!--.*?-->/gs, '\n')
+                .replace(/<details\b[\s\S]*?<\/details>/gi, '\n')
+                .trim();
+            };
+
+            /**
+             * Finds the "Release notes" section text without ignored content.
+             */
+            const findReleaseNotesSection = (body = '') => {
+              const sanitized = stripIgnoredContent(body || '');
+              if (!sanitized) {
+                return '';
+              }
+              const match = sanitized.match(
+                /(^|\n)#{1,6}\s*Release notes\s*\n([\s\S]*?)(?=\n#{1,6}\s+\S|\s*$)/i
+              );
+              if (!match) {
+                return '';
+              }
+              const section = stripIgnoredContent(match[2] || '');
+              return section;
+            };
+
+            /**
+             * Parses a list of PR numbers from the given text.
+             */
+            const parseNumberList = (text) => {
+              if (!text) {
+                return [];
+              }
+              return Array.from(
+                new Set(
+                  Array.from(text.matchAll(/#(\d+)/g), match => Number(match[1]))
+                )
+              );
+            };
+
+            const findReferencedPrNumbers = (body = '') => {
+              if (!body) {
+                return [];
+              }
+              const relevantSections = [
+                'Equivalent PRs',
+                'Referenced PRs'
+              ];
+              const patterns = relevantSections.map(section =>
+                new RegExp(
+                  `(^|\\n)#{1,6}\\s*${section.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&')}\\s*\\n([\\s\\S]*?)(?=\\n#{1,6}\\s+\\S|\\s*$)`,
+                  'i'
+                )
+              );
+              const numbers = [];
+              for (const pattern of patterns) {
+                const match = body.match(pattern);
+                if (match && match[2]) {
+                  numbers.push(...parseNumberList(match[2]));
+                }
+              }
+              return Array.from(new Set(numbers));
+            };
+
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber
+            });
+
+            const baseBranch = pr.base.ref;
+
+            if (baseBranch === 'main') {
+              core.info('PR targets main branch. Release notes validation is not required.');
+              return;
+            }
+
+            const { data: labels } =
+              await github.rest.issues.listLabelsOnIssue({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber
+              });
+
+            const labelNames = labels.map(label => label.name);
+            const hasInfrastructure = labelNames.includes('Infrastructure');
+            const releaseNotes = findReleaseNotesSection(pr.body || '');
+            const hasNoReleaseNoteLabel = labelNames.includes('No release note');
+
+            if (releaseNotes) {
+              if (hasNoReleaseNoteLabel) {
+                core.setFailed(
+                  'The PR has a "## Release notes" section but is also labeled "No release note". Remove the label or remove the release notes section.'
+                );
+                return;
+              }
+
+              if (hasInfrastructure) {
+                core.setFailed(
+                  'Infrastructure PRs cannot include release notes. Remove the "## Release notes" section or change the PR type.'
+                );
+                return;
+              }
+
+              core.info('Release notes found in the PR body.');
+              return;
+            }
+
+            core.info('No release notes found in the current PR body.');
+
+            const addNoReleaseNoteLabel = async () => {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                labels: ['No Release Note']
+              });
+
+              core.info('Added label: No Release Note');
+            };
+
+            if (hasInfrastructure) {
+              await addNoReleaseNoteLabel();
+
+              core.info('Infrastructure PR with no release notes is permitted. Added label: No Release Note');
+              return;
+            }
+
+            const equivalentAndReferencedPrNumbers = findReferencedPrNumbers(pr.body || '');
+
+            for (const referencedPrNumber of equivalentAndReferencedPrNumbers) {
+              if (referencedPrNumber === prNumber) {
+                continue;
+              }
+
+              try {
+                const { data: referencedPr } =
+                  await github.rest.pulls.get({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    pull_number: referencedPrNumber
+                  });
+
+                const referencedNotes = findReleaseNotesSection(referencedPr.body || '');
+
+                if (referencedNotes) {
+                  core.info(
+                    `Release notes found in equivalent/referenced PR #${referencedPrNumber}. ` +
+                    `Using that as the source for this PR.`
+                  );
+
+                  await addNoReleaseNoteLabel();
+                  return;
+                }
+              } catch (error) {
+                core.warning(
+                  `Unable to inspect referenced PR #${referencedPrNumber}: ${error.message}`
+                );
+              }
+            }
+
+            core.setFailed(
+              'No release notes were found in the PR body, equivalent PRs, or referenced PRs.'
+            );

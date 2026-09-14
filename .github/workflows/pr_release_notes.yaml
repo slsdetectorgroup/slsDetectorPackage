@@ -37,13 +37,14 @@ jobs:
             }
 
             /**
-             * Strips ignored content such as comments and 
-             * <details> blocks from the given text.
+             * Strips ignored content such as comments, <details> blocks 
+             * and "No Release Note" checkbox from the given text.
              */
             const stripIgnoredContent = (text = '') => {
               return (text || '')
                 .replace(/<!--.*?-->/gs, '\n')
                 .replace(/<details\b[\s\S]*?<\/details>/gi, '\n')
+                .replace(/\n\s*[-*]\s*\[[ xX]\]\s*No\s*Release\s*Note\s*\n/gi, '\n')
                 .trim();
             };
 
@@ -61,8 +62,8 @@ jobs:
               if (!match) {
                 return '';
               }
-              const section = stripIgnoredContent(match[2] || '');
-              return section.trim();
+              const section = stripIgnoredContent(match[2] || '').trim();
+              return section.length > 0 ? section : '';
             };
 
             /**
@@ -151,6 +152,9 @@ jobs:
 
             core.info('No release notes found in the current PR body.');
 
+            /**
+             * Function to add the "No Release Note" label to the current PR.
+             */
             const addNoReleaseNoteLabel = async () => {
               await github.rest.issues.addLabels({
                 owner: context.repo.owner,

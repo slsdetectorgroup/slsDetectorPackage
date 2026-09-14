@@ -3,9 +3,13 @@
 #pragma once
 
 #include "File.h"
+#include <array>
 #include <mutex>
 
 namespace sls {
+
+constexpr std::array<unsigned int, SLS_NUM_FILTER_PARAMS> hdf5FilterParameters{
+    SLS_HDF5_FILTER_PARAMS};
 
 class HDF5DataFile : private virtual slsDetectorDefs, public File {
 

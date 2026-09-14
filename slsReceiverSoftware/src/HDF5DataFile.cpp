@@ -4,6 +4,7 @@
 #include "receiver_defs.h"
 
 #include <iomanip>
+#include <sstream>
 
 namespace sls {
 
@@ -193,6 +194,35 @@ void HDF5DataFile::CreateFile() {
         plist.setFillValue(dataType, &fill_value);
         // plistPara.setFillValue(dataType, &fill_value);
         plist.setChunk(DATA_RANK, dimsChunk);
+
+        // option to add generic filter to property list
+        /* TODO:
+            - as command instead of compile time ?
+            - allow nested filters ?
+        */
+        if (SLS_HDF5_FILTER_ID > 0) {
+            // HDF5 filters are dynamically registered --> check if the filter
+            // is available
+            const auto filterId = static_cast<H5Z_filter_t>(SLS_HDF5_FILTER_ID);
+            if (H5Zfilter_avail(filterId) <= 0) {
+                throw RuntimeError("HDF5 filter ID " +
+                                   std::to_string(SLS_HDF5_FILTER_ID) +
+                                   " is not available, check HDF5_PLUGIN_PATH");
+            }
+
+            std::for_each(hdf5FilterParameters.begin(),
+                          hdf5FilterParameters.end(), [](unsigned int param) {
+                              LOG(logINFO)
+                                  << "HDF5 filter parameter: " << param;
+                          });
+            // apply filter to property list
+            if (hdf5FilterParameters.empty()) {
+                plist.setFilter(filterId, 0, 0, nullptr);
+            } else {
+                plist.setFilter(filterId, 0, hdf5FilterParameters.size(),
+                                hdf5FilterParameters.data());
+            }
+        }
         plistPara.setChunk(PARA_RANK, dimsChunkPara);
 
         // dataset

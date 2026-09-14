@@ -132,9 +132,10 @@ jobs:
             const releaseNotes = findReleaseNotesSection(pr.body || '');
             const hasNoReleaseNoteLabel = labelNames.includes('No release note');
 
-            core.info(`Release notes section found: ${releaseNotes}`);
 
             if (releaseNotes) {
+              core.info(`Release notes found in the PR body: ${releaseNotes}`);
+
               if (hasNoReleaseNoteLabel) {
                 core.setFailed(
                   'The PR has a "## Release notes" section but is also labeled "No release note". Remove the label or remove the release notes section.'
@@ -149,7 +150,7 @@ jobs:
                 return;
               }
 
-              core.info('Release notes found in the PR body.');
+              core.info(`Confirm no further action required for release notes.`);
               return;
             }
 

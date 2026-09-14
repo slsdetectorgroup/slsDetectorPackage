@@ -130,6 +130,8 @@ jobs:
             const releaseNotes = findReleaseNotesSection(pr.body || '');
             const hasNoReleaseNoteLabel = labelNames.includes('No release note');
 
+            core.setInfo(`Release notes section found: ${!!releaseNotes}`);
+
             if (releaseNotes) {
               if (hasNoReleaseNoteLabel) {
                 core.setFailed(

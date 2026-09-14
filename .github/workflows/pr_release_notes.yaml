@@ -55,17 +55,20 @@ jobs:
              */
             const findReleaseNotesSection = (body = '') => {
               const sanitized = stripIgnoredContent(body || '');
-              if (!sanitized) {
-                return '';
-              }
+              if (!sanitized) return '';
+
               const match = sanitized.match(
                 /(^|\n)#{1,6}\s*Release notes\s*\n([\s\S]*?)(?=\n#{1,6}\s+\S|\s*$)/i
               );
-              if (!match) {
-                return '';
-              }
-              const section = stripIgnoredContent(match[2] || '').trim();
-              return section.length > 0 ? section : '';
+              if (!match) return '';
+
+              let section = (match[2] || '')
+                .split('\n')
+                .filter(line => !/^#{1,6}\s+/.test(line.trim()))
+                .join('\n')
+                .trim();
+
+              return section;
             };
 
             /**

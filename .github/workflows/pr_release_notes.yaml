@@ -4,7 +4,9 @@
 # them in an equivalent PR or referenced PR, else validation fails. If it is an 
 # Infrastructure PR or release notes are not found in an equivalent or 
 # referenced PR, it should add label 'No Release Note'.
-.
+
+#test branch
+
 name: PR Release Notes
 
 on:

@@ -71,6 +71,35 @@ jobs:
             };
 
             /**
+             * Upserts AI assisted notes subsection under ## Release notes.
+             */
+            const upsertAiAssistedReleaseNotes = (body = '') => {
+              const releaseNotesSectionPattern =
+                /(^|\n)(##\s*Release notes\s*\n)([\s\S]*?)(?=\n##\s+\S|\s*$)/i;
+              const aiSubsectionPattern =
+                /(^|\n)###\s*AI Assisted Release Notes\s*\n([\s\S]*?)(?=\n###\s+\S|\n##\s+\S|\s*$)/gi;
+
+              return body.replace(
+                releaseNotesSectionPattern,
+                (fullMatch, prefix, heading, sectionBody) => {
+                  const cleanedSectionBody = (sectionBody || '')
+                    .replace(aiSubsectionPattern, '\n')
+                    .trimEnd();
+
+                  const aiSubsection =
+                    '### AI Assisted Release Notes\n\n' +
+                    '**This section will be populated with AI-assisted release notes.**\n';
+
+                  const updatedSectionBody =
+                    (cleanedSectionBody ? `${cleanedSectionBody}\n\n` : '') +
+                    aiSubsection;
+
+                  return `${prefix}${heading}${updatedSectionBody}`;
+                }
+              );
+            };
+
+            /**
              * Parses a list of PR numbers from the given text.
              */
             const parseNumberList = (text) => {
@@ -146,7 +175,7 @@ jobs:
             core.info('Only developing detector labels: ' + hasOnlyDevelopingDetectors);
 
             const releaseNotes = findReleaseNotesSection(pr.body || '');
-            core.info('Release notes in current PR: ' + (releaseNotes ? 'true' : 'false'));
+            core.info('Release notes in current PR: ' + (releaseNotes ? 'true\n' : 'false\n'));
 
             if (hasInfrastructure || hasOnlyDevelopingDetectors) {
               if (releaseNotes) {
@@ -155,7 +184,7 @@ jobs:
                 );
                 return;
               }
-              core.info('\nNo release notes found, which is valid for Infrastructure or only developing Detector PRs.');
+              core.info('No release notes found, which is valid for Infrastructure or only developing Detector PRs.');
               return;
             }
 
@@ -164,13 +193,7 @@ jobs:
              * Add AI assisted release notes and return
              */
             if (releaseNotes) {
-              // Remove any existing details section with heading "AI Assisted Release Notes"
-              const updatedBody = pr.body.replace(
-                /(^|\n)#{1,6}\s*AI Assisted Release Notes\s*\n([\s\S]*?)(?=\n#{1,6}\s+\S|\s*$)/gi,
-                ''
-              ).trim(); 
-              // Add a new section with heading "AI Assisted Release Notes" and placeholder text
-              const newBody = `${updatedBody}\n\n## AI Assisted Release Notes\n\n**This section will be populated with AI-assisted release notes.**\n\n`;
+              const newBody = upsertAiAssistedReleaseNotes(pr.body || '');
 
               await github.rest.pulls.update({
                 owner: context.repo.owner,

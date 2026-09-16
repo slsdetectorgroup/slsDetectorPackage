@@ -1,6 +1,6 @@
 # This reusable workflow validates the PR release notes. It ignores comments and
-# <details> blocks, checks for notes under the "## Release notes" section,. If 
-# release notes are not found and it is not an Infrastructure PR, it should find
+# <details> blocks, checks for notes under the "## Release notes" section. If 
+# it is not an Infrastructure PR and release notes are not found, it should find
 # them in an equivalent PR or referenced PR, else validation fails. If it is an 
 # Infrastructure PR or release notes are not found in an equivalent or 
 # referenced PR, it should add label 'No Release Note'.
@@ -39,14 +39,13 @@ jobs:
             }
 
             /**
-             * Strips ignored content such as comments, <details> blocks 
-             * and "No Release Note" checkbox from the given text.
+             * Strips ignored content such as comments and <details> blocks
+             * from the given text.
              */
             const stripIgnoredContent = (text = '') => {
               return (text || '')
                 .replace(/<!--.*?-->/gs, '\n')
                 .replace(/<details\b[\s\S]*?<\/details>/gi, '\n')
-                .replace(/\n\s*[-*]\s*\[[ xX]\]\s*No\s*Release\s*Note\s*\n/gi, '\n')
                 .trim();
             };
 
@@ -128,64 +127,66 @@ jobs:
                 repo: context.repo.repo,
                 issue_number: prNumber
               });
-
             const labelNames = labels.map(label => label.name);
+            
             const hasInfrastructure = labelNames.includes('Infrastructure');
+            core.info('Infrastructure label present: ' + hasInfrastructure);
+
+            /** check that it has only developing detector labels (Ctb, Xilinx Ctb, Matterhorn) and does not have Eiger, Mythen3, Gotthard2, Jungfrau, Moench labels  */
+            const developingDetectorLabels = ['Ctb', 'Xilinx Ctb', 'Matterhorn'];
+            const otherDetectorLabels = ['Eiger', 'Mythen3', 'Gotthard2', 'Jungfrau', 'Moench'];
+            const hasDevelopingDetectorLabel = labelNames.some(
+              label => developingDetectorLabels.includes(label)
+            );
+            const hasOtherDetectorLabel = labelNames.some(
+              label => otherDetectorLabels.includes(label)
+            );
+            const hasOnlyDevelopingDetectors =
+              hasDevelopingDetectorLabel && !hasOtherDetectorLabel;
+            core.info('Only developing detector labels present: ' + hasOnlyDevelopingDetectors);
+
             const releaseNotes = findReleaseNotesSection(pr.body || '');
-            const hasNoReleaseNoteLabel = labelNames.includes('No release note');
+            core.info('Release notes found in current PR: ' + (releaseNotes ? 'Yes' : 'No'));
 
-
-            if (releaseNotes) {
-              core.info(`Release notes found in the PR body: ${releaseNotes}`);
-
-              if (hasNoReleaseNoteLabel) {
+            if (hasInfrastructure || hasOnlyDevelopingDetectors) {
+              if (releaseNotes) {
                 core.setFailed(
-                  'The PR has a "## Release notes" section but is also labeled "No release note". Remove the label or remove the release notes section.'
+                  'Infrastructure PRs or only developing Detector PRs cannot include release notes. Remove the "## Release notes" section or change the PR type.'
                 );
                 return;
               }
-
-              if (hasInfrastructure) {
-                core.setFailed(
-                  'Infrastructure PRs cannot include release notes. Remove the "## Release notes" section or change the PR type.'
-                );
-                return;
-              }
-
-              core.info(`Confirm no further action required for release notes.`);
               return;
             }
 
-            core.info('No release notes found in the current PR body.');
 
             /**
-             * Function to add the "No Release Note" label to the current PR.
+             * Add AI assisted release notes and return
              */
-            const addNoReleaseNoteLabel = async () => {
-              await github.rest.issues.addLabels({
+            if (releaseNotes) {
+              // Remove any existing details section with heading "AI Assisted Release Notes"
+              const updatedBody = pr.body.replace(
+                /(^|\n)#{1,6}\s*AI Assisted Release Notes\s*\n([\s\S]*?)(?=\n#{1,6}\s+\S|\s*$)/gi,
+                ''
+              ).trim(); 
+              // Add a new section with heading "AI Assisted Release Notes" and placeholder text
+              const newBody = `${updatedBody}\n\n## AI Assisted Release Notes\n\n**This section will be populated with AI-assisted release notes.**\n\n`;
+
+              await github.rest.pulls.update({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                issue_number: prNumber,
-                labels: ['No Release Note']
+                pull_number: prNumber,
+                body: newBody
               });
-
-              core.info('Added label: No Release Note');
-            };
-
-            if (hasInfrastructure) {
-              await addNoReleaseNoteLabel();
-
-              core.info('Infrastructure PR with no release notes is permitted. Added label: No Release Note');
+              core.info('AI Assisted Release Notes section added to PR body.');
               return;
             }
 
+            /* Find release notes in equivalent or referenced PRs */
             const equivalentAndReferencedPrNumbers = findReferencedPrNumbers(pr.body || '');
-
             for (const referencedPrNumber of equivalentAndReferencedPrNumbers) {
               if (referencedPrNumber === prNumber) {
                 continue;
               }
-
               try {
                 const { data: referencedPr } =
                   await github.rest.pulls.get({
@@ -193,16 +194,12 @@ jobs:
                     repo: context.repo.repo,
                     pull_number: referencedPrNumber
                   });
-
                 const referencedNotes = findReleaseNotesSection(referencedPr.body || '');
-
                 if (referencedNotes) {
                   core.info(
-                    `Release notes found in equivalent/referenced PR #${referencedPrNumber}. ` +
+                    `Release notes found: In equivalent/referenced PR #${referencedPrNumber}. ` +
                     `Using that as the source for this PR.`
                   );
-
-                  await addNoReleaseNoteLabel();
                   return;
                 }
               } catch (error) {

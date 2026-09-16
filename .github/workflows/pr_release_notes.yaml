@@ -20,6 +20,7 @@ permissions:
   pull-requests: write
   contents: read
   issues: write
+  models: read
 
 jobs:
   check-release-notes:
@@ -27,7 +28,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Validate presence of release notes
+      - name: Find release notes in current PR
+        id: find-current
         uses: actions/github-script@v8
         with:
           script: |
@@ -38,10 +40,9 @@ jobs:
               return;
             }
 
-            /**
-             * Strips ignored content such as comments and <details> blocks
-             * from the given text.
-             */
+            core.setOutput('needs_validation', 'true');
+            core.setOutput('has_release_notes_current', 'false');
+
             const stripIgnoredContent = (text = '') => {
               return (text || '')
                 .replace(/<!--.*?-->/gs, '\n')
@@ -49,9 +50,6 @@ jobs:
                 .trim();
             };
 
-            /**
-             * Finds the "Release notes" section text without ignored content.
-             */
             const findReleaseNotesSection = (body = '') => {
               const sanitized = stripIgnoredContent(body || '');
               if (!sanitized) return '';
@@ -70,38 +68,113 @@ jobs:
               return section;
             };
 
-            /**
-             * Upserts AI assisted notes subsection under ## Release notes.
-             */
-            const upsertAiAssistedReleaseNotes = (body = '') => {
-              const releaseNotesSectionPattern =
-                /(^|\n)(##\s*Release notes\s*\n)([\s\S]*?)(?=\n##\s+\S|\s*$)/i;
-              const aiSubsectionPattern =
-                /(^|\n)###\s*AI Assisted Release Notes\s*\n([\s\S]*?)(?=\n###\s+\S|\n##\s+\S|\s*$)/gi;
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber
+            });
 
-              return body.replace(
-                releaseNotesSectionPattern,
-                (fullMatch, prefix, heading, sectionBody) => {
-                  const cleanedSectionBody = (sectionBody || '')
-                    .replace(aiSubsectionPattern, '\n')
-                    .trimEnd();
+            const baseBranch = pr.base.ref;
 
-                  const aiSubsection =
-                    '### AI Assisted Release Notes\n\n' +
-                    '**This section will be populated with AI-assisted release notes.**\n';
+            if (baseBranch === 'main') {
+              core.info('PR targets main branch. Release notes validation is not required.');
+              core.setOutput('needs_validation', 'false');
+              return;
+            }
 
-                  const updatedSectionBody =
-                    (cleanedSectionBody ? `${cleanedSectionBody}\n\n` : '') +
-                    aiSubsection;
+            const releaseNotes = findReleaseNotesSection(pr.body || '');
+            const hasReleaseNotesCurrent = Boolean(releaseNotes);
+            core.setOutput('has_release_notes_current', hasReleaseNotesCurrent.toString());
+            core.info('Release notes in current PR: ' + (hasReleaseNotesCurrent ? 'true' : 'false'));
 
-                  return `${prefix}${heading}${updatedSectionBody}`;
-                }
-              );
+      - name: Validate with labels
+        id: validate-labels
+        if: steps.find-current.outputs.needs_validation == 'true'
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const prNumber = ${{ inputs.pr_number }};
+            const hasReleaseNotesCurrent = '${{ steps.find-current.outputs.has_release_notes_current }}' === 'true';
+
+            core.setOutput('needs_linked_pr_search', 'false');
+            core.setOutput('add_ai_release_notes', 'false');
+
+            const { data: labels } =
+              await github.rest.issues.listLabelsOnIssue({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber
+              });
+            const labelNames = labels.map(label => label.name);
+
+            const hasInfrastructure = labelNames.includes('Infrastructure');
+            core.info('Infrastructure label: ' + hasInfrastructure);
+
+            const developingDetectorLabels = ['Ctb', 'Xilinx Ctb', 'Matterhorn'];
+            const otherDetectorLabels = ['Eiger', 'Mythen3', 'Gotthard2', 'Jungfrau', 'Moench'];
+            const hasDevelopingDetectorLabel = labelNames.some(
+              label => developingDetectorLabels.includes(label)
+            );
+            const hasOtherDetectorLabel = labelNames.some(
+              label => otherDetectorLabels.includes(label)
+            );
+            const hasOnlyDevelopingDetectors =
+              hasDevelopingDetectorLabel && !hasOtherDetectorLabel;
+            core.info('Only developing detector labels: ' + hasOnlyDevelopingDetectors);
+
+            if (hasInfrastructure || hasOnlyDevelopingDetectors) {
+              if (hasReleaseNotesCurrent) {
+                core.setFailed(
+                  'Infrastructure PRs or only developing Detector PRs cannot include release notes. Remove the release notes in the "## Release notes" section, change the PR type or remove developing detector labels.'
+                );
+                return;
+              }
+              core.info('No release notes found, which is valid for Infrastructure or only developing Detector PRs.');
+              return;
+            }
+
+            if (hasReleaseNotesCurrent) {
+              core.setOutput('add_ai_release_notes', 'true');
+              core.info('Current PR has release notes; AI assisted notes will be added.');
+              return;
+            }
+
+            core.setOutput('needs_linked_pr_search', 'true');
+
+      - name: Find release notes in linked PRs
+        if: >-
+          ${{
+            steps.find-current.outputs.needs_validation == 'true' &&
+            steps.validate-labels.outputs.needs_linked_pr_search == 'true'
+          }}
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const prNumber = ${{ inputs.pr_number }};
+
+            const stripIgnoredContent = (text = '') => {
+              return (text || '')
+                .replace(/<!--.*?-->/gs, '\n')
+                .replace(/<details\b[\s\S]*?<\/details>/gi, '\n')
+                .trim();
             };
 
-            /**
-             * Parses a list of PR numbers from the given text.
-             */
+            const findReleaseNotesSection = (body = '') => {
+              const sanitized = stripIgnoredContent(body || '');
+              if (!sanitized) return '';
+
+              const match = sanitized.match(
+                /(^|\n)#{1,6}\s*Release notes\s*\n([\s\S]*?)(?=\n#{1,6}\s+\S|\s*$)/i
+              );
+              if (!match) return '';
+
+              return (match[2] || '')
+                .split('\n')
+                .filter(line => !/^#{1,6}\s+/.test(line.trim()))
+                .join('\n')
+                .trim();
+            };
+
             const parseNumberList = (text) => {
               if (!text) {
                 return [];
@@ -143,69 +216,6 @@ jobs:
               pull_number: prNumber
             });
 
-            const baseBranch = pr.base.ref;
-
-            if (baseBranch === 'main') {
-              core.info('PR targets main branch. Release notes validation is not required.');
-              return;
-            }
-
-            const { data: labels } =
-              await github.rest.issues.listLabelsOnIssue({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: prNumber
-              });
-            const labelNames = labels.map(label => label.name);
-            
-            const hasInfrastructure = labelNames.includes('Infrastructure');
-            core.info('Infrastructure label: ' + hasInfrastructure);
-
-            /** check that it has only developing detector labels (Ctb, Xilinx Ctb, Matterhorn) and does not have Eiger, Mythen3, Gotthard2, Jungfrau, Moench labels  */
-            const developingDetectorLabels = ['Ctb', 'Xilinx Ctb', 'Matterhorn'];
-            const otherDetectorLabels = ['Eiger', 'Mythen3', 'Gotthard2', 'Jungfrau', 'Moench'];
-            const hasDevelopingDetectorLabel = labelNames.some(
-              label => developingDetectorLabels.includes(label)
-            );
-            const hasOtherDetectorLabel = labelNames.some(
-              label => otherDetectorLabels.includes(label)
-            );
-            const hasOnlyDevelopingDetectors =
-              hasDevelopingDetectorLabel && !hasOtherDetectorLabel;
-            core.info('Only developing detector labels: ' + hasOnlyDevelopingDetectors);
-
-            const releaseNotes = findReleaseNotesSection(pr.body || '');
-            core.info('Release notes in current PR: ' + (releaseNotes ? 'true\n' : 'false\n'));
-
-            if (hasInfrastructure || hasOnlyDevelopingDetectors) {
-              if (releaseNotes) {
-                core.setFailed(
-                  'Infrastructure PRs or only developing Detector PRs cannot include release notes. Remove the "## Release notes" section or change the PR type.'
-                );
-                return;
-              }
-              core.info('No release notes found, which is valid for Infrastructure or only developing Detector PRs.');
-              return;
-            }
-
-
-            /**
-             * Add AI assisted release notes and return
-             */
-            if (releaseNotes) {
-              const newBody = upsertAiAssistedReleaseNotes(pr.body || '');
-
-              await github.rest.pulls.update({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: prNumber,
-                body: newBody
-              });
-              core.info('AI Assisted Release Notes section added to PR body.');
-              return;
-            }
-
-            /* Find release notes in equivalent or referenced PRs */
             const equivalentAndReferencedPrNumbers = findReferencedPrNumbers(pr.body || '');
             for (const referencedPrNumber of equivalentAndReferencedPrNumbers) {
               if (referencedPrNumber === prNumber) {
@@ -236,3 +246,168 @@ jobs:
             core.setFailed(
               'No release notes were found in the PR body, equivalent PRs, or referenced PRs.'
             );
+
+      - name: Add AI assisted release notes
+        if: >-
+          ${{
+            steps.find-current.outputs.needs_validation == 'true' &&
+            steps.validate-labels.outputs.add_ai_release_notes == 'true'
+          }}
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const prNumber = ${{ inputs.pr_number }};
+
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber
+            });
+
+            const getFallbackAiAssistedNotes = (files = []) => {
+              if (!files.length) {
+                return '- No file-level changes were available to summarize.';
+              }
+
+              const changedFiles = files
+                .slice(0, 25)
+                .map(file => {
+                  const type =
+                    file.status === 'added'
+                      ? 'Added'
+                      : file.status === 'removed'
+                      ? 'Removed'
+                      : 'Updated';
+                  return `- ${type} ${file.filename}`;
+                })
+                .join('\n');
+
+              const remainder = files.length > 25
+                ? `\n- Additional changed files not shown: ${files.length - 25}`
+                : '';
+
+              return `${changedFiles}${remainder}`;
+            };
+
+            const getAiAssistedReleaseNotes = async () => {
+              const files = await github.paginate(
+                github.rest.pulls.listFiles,
+                {
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: prNumber,
+                  per_page: 100
+                }
+              );
+
+              const compactDiff = files
+                .slice(0, 15)
+                .map(file => {
+                  const patch = (file.patch || '')
+                    .split('\n')
+                    .slice(0, 40)
+                    .join('\n');
+                  return [
+                    `File: ${file.filename}`,
+                    `Status: ${file.status}`,
+                    `Patch:`,
+                    patch || '(patch unavailable)'
+                  ].join('\n');
+                })
+                .join('\n\n---\n\n');
+
+              const prompt = [
+                'Generate concise release notes from this pull request diff.',
+                'Use markdown bullet points.',
+                'Focus on user-visible behavior, API changes, and detector-facing impact.',
+                'Do not mention internal implementation details unless externally relevant.',
+                '',
+                `PR title: ${pr.title || ''}`,
+                '',
+                compactDiff
+              ].join('\n');
+
+              try {
+                const response = await fetch(
+                  'https://models.github.ai/inference/chat/completions',
+                  {
+                    method: 'POST',
+                    headers: {
+                      Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+                      'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                      model: 'openai/gpt-4.1-mini',
+                      messages: [
+                        {
+                          role: 'system',
+                          content: 'You write concise, technical release notes for scientific detector software.'
+                        },
+                        {
+                          role: 'user',
+                          content: prompt
+                        }
+                      ],
+                      temperature: 0.2,
+                      max_tokens: 500
+                    })
+                  }
+                );
+
+                if (!response.ok) {
+                  throw new Error(`AI request failed with status ${response.status}`);
+                }
+
+                const data = await response.json();
+                const aiText = data?.choices?.[0]?.message?.content?.trim();
+
+                if (!aiText) {
+                  throw new Error('AI response did not contain message content.');
+                }
+
+                return aiText;
+              } catch (error) {
+                core.warning(
+                  `AI release notes generation failed, using fallback summary: ${error.message}`
+                );
+                return getFallbackAiAssistedNotes(files);
+              }
+            };
+
+            const upsertAiAssistedReleaseNotes = (body = '', aiNotes = '') => {
+              const releaseNotesSectionPattern =
+                /(^|\n)(##\s*Release notes\s*\n)([\s\S]*?)(?=\n##\s+\S|\s*$)/i;
+              const aiSubsectionPattern =
+                /(^|\n)###\s*AI Assisted Release Notes\s*\n([\s\S]*?)(?=\n###\s+\S|\n##\s+\S|\s*$)/gi;
+
+              return body.replace(
+                releaseNotesSectionPattern,
+                (fullMatch, prefix, heading, sectionBody) => {
+                  const cleanedSectionBody = (sectionBody || '')
+                    .replace(aiSubsectionPattern, '\n')
+                    .trimEnd();
+
+                  const aiSubsection =
+                    '### AI Assisted Release Notes\n\n' +
+                    `${aiNotes.trim() || '- No AI-assisted notes were generated.'}\n`;
+
+                  const updatedSectionBody =
+                    (cleanedSectionBody ? `${cleanedSectionBody}\n\n` : '') +
+                    aiSubsection;
+
+                  return `${prefix}${heading}${updatedSectionBody}`;
+                }
+              );
+            };
+
+            const aiAssistedNotes = await getAiAssistedReleaseNotes();
+            const newBody = upsertAiAssistedReleaseNotes(pr.body || '', aiAssistedNotes);
+
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+              body: newBody
+            });
+
+            core.info('AI Assisted Release Notes subsection updated in PR body.');

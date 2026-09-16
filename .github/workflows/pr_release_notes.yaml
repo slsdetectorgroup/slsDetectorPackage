@@ -127,7 +127,7 @@ jobs:
             const labelNames = labels.map(label => label.name);
             
             const hasInfrastructure = labelNames.includes('Infrastructure');
-            core.info('Infrastructure label present: ' + hasInfrastructure);
+            core.info('Infrastructure label: ' + hasInfrastructure);
 
             /** check that it has only developing detector labels (Ctb, Xilinx Ctb, Matterhorn) and does not have Eiger, Mythen3, Gotthard2, Jungfrau, Moench labels  */
             const developingDetectorLabels = ['Ctb', 'Xilinx Ctb', 'Matterhorn'];
@@ -140,10 +140,10 @@ jobs:
             );
             const hasOnlyDevelopingDetectors =
               hasDevelopingDetectorLabel && !hasOtherDetectorLabel;
-            core.info('Only developing detector labels present: ' + hasOnlyDevelopingDetectors);
+            core.info('Only developing detector labels: ' + hasOnlyDevelopingDetectors);
 
             const releaseNotes = findReleaseNotesSection(pr.body || '');
-            core.info('Release notes found in current PR: ' + (releaseNotes ? 'Yes' : 'No'));
+            core.info('Release notes in current PR: ' + releaseNotes);
 
             if (hasInfrastructure || hasOnlyDevelopingDetectors) {
               if (releaseNotes) {
@@ -152,6 +152,7 @@ jobs:
                 );
                 return;
               }
+              core.info('No release notes found, which is valid for Infrastructure or only developing Detector PRs.');
               return;
             }
 

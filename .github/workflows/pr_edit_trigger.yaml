@@ -102,7 +102,17 @@ jobs:
       contents: read
 
   milestone:
-    needs: validate-pr-type
+    needs:
+      - check-pr-trigger
+      - validate-pr-type
+    if: >-
+      ${{
+        always() &&
+        (
+          needs.check-pr-trigger.outputs.require_validation == 'false' ||
+          needs.validate-pr-type.result == 'success'
+        )
+      }}
     uses: ./.github/workflows/pr_milestone.yaml
     with:
       pr_number: ${{ github.event.pull_request.number }}
@@ -111,7 +121,17 @@ jobs:
       contents: read
 
   detector-labels:
-    needs: validate-pr-type
+    needs:
+      - check-pr-trigger
+      - validate-pr-type
+    if: >-
+      ${{
+        always() &&
+        (
+          needs.check-pr-trigger.outputs.require_validation == 'false' ||
+          needs.validate-pr-type.result == 'success'
+        )
+      }}
     uses: ./.github/workflows/pr_detector_labels.yaml
     with:
       pr_number: ${{ github.event.pull_request.number }}
@@ -120,7 +140,17 @@ jobs:
       issues: read
 
   release-notes:
-    needs: detector-labels
+    needs:
+      - check-pr-trigger
+      - detector-labels
+    if: >-
+      ${{
+        always() &&
+        (
+          needs.check-pr-trigger.outputs.require_validation == 'false' ||
+          needs.detector-labels.result == 'success'
+        )
+      }}
     uses: ./.github/workflows/pr_release_notes.yaml
     with:
       pr_number: ${{ github.event.pull_request.number }}
@@ -137,11 +167,11 @@ jobs:
       ${{
         always() &&
         (
-          needs.check-pr-trigger.outputs.file_label_change == 'true' ||
-          (
-            needs.check-pr-trigger.outputs.pr_edited == 'true' &&
-            needs.validate-pr-type.result == 'success'
-          )
+          needs.check-pr-trigger.outputs.file_label_change == 'true' 
+        ) ||
+        (
+          needs.check-pr-trigger.outputs.require_validation == 'false' ||
+          needs.detector-labels.result == 'success'
         )
       }}
     uses: ./.github/workflows/pr_file_version.yaml

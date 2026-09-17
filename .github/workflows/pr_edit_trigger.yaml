@@ -159,7 +159,7 @@ jobs:
       pull-requests: write
       contents: read
       issues: write
-      models: read
+      copilot-requests: write
 
   file-version:
     needs: 

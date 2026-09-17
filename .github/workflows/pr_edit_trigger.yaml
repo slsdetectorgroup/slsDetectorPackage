@@ -140,17 +140,19 @@ jobs:
       issues: read
 
   release-notes:
+    # Temporary debug gate: disable release notes job to isolate trigger behavior.
+    if: ${{ false }}
     needs:
       - check-pr-trigger
       - detector-labels
-    if: >-
-      ${{
-        always() &&
-        (
-          needs.check-pr-trigger.outputs.require_validation == 'false' ||
-          needs.detector-labels.result == 'success'
-        )
-      }}
+    # if: >-
+    #   ${{
+    #     always() &&
+    #     (
+    #       needs.check-pr-trigger.outputs.require_validation == 'false' ||
+    #       needs.detector-labels.result == 'success'
+    #     )
+    #   }}
     uses: ./.github/workflows/pr_release_notes.yaml
     with:
       pr_number: ${{ github.event.pull_request.number }}

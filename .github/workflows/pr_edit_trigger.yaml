@@ -156,10 +156,8 @@ jobs:
     with:
       pr_number: ${{ github.event.pull_request.number }}
     permissions:
-      pull-requests: write
+      pull-requests: read
       contents: read
-      issues: write
-      copilot-requests: write
 
   file-version:
     needs: 

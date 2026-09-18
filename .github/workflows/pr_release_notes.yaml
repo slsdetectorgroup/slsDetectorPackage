@@ -2,7 +2,10 @@
 # <details> blocks, checks for notes under the "## Release notes" section. If 
 # it is not an Infrastructure PR and release notes are not found, it should find
 # them in an equivalent PR or referenced PR, else validation fails. If it is an 
-# Infrastructure PR and release notes are found, validation fails. 
+# Infrastructure PR or release notes are not found in an equivalent or 
+# referenced PR, it should add label 'No Release Note'.
+
+#test branch
 
 name: PR Release Notes
 

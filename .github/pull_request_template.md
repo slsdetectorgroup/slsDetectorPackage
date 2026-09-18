@@ -8,11 +8,12 @@ The expandable sections are guidance only — do not modify or fill them out.
 <summary>Help</summary>
 
 The following are managed automatically by workflow. Do not set them manually. 
-- Labels: Feature, Bug Fix, Infrastructure, Breaking API
+- Labels: Feature, Bug Fix, Infrastructure, Breaking API, File Major, File Minor
 - Milestone
 
 See PR Automation & Validation below for details.
 </details>
+
 
 
 
@@ -44,6 +45,7 @@ See PR Automation & Validation below for details.
 
 
 
+
 ## Breaking API
 
 <details>
@@ -62,8 +64,11 @@ Breaking API includes:
 
 
 
+
 ## Description
 <!-- Describe what this PR changes and why. -->
+This is a test PR.
+
 
 
 
@@ -80,6 +85,7 @@ Breaking API includes:
 
 
 
+
 ## Referenced PRs
 <details>
 <summary>Help</summary>
@@ -93,24 +99,20 @@ Breaking API includes:
 
 
 
+
 ## Release notes
 
 <details>
 <summary>Help</summary>
 
-Not affecting Infrastructure PRs.
-
-Choose one:
-- Write release notes
-- Check the 'No Release Note' if PR deals with:
-    - Chip test board type or developing detector
-    - an equivalent PR in release candidate branch with release notes for this PR
-    - a linked PR with release notes for this PR
+Release notes not required for
+- Infrastructure PRs
+- Chip test board type or developing detector
+- PR with release notes linked in equivalent/referenced PR section
 </details>
 
-<!-- Selected: '[x]', Unselected: '[ ]' or Click when not in editing mode -->
-- [ ] No Release Note
-<!-- Choose either 'No Release Note' or describe the user-visible change introduced by this PR below. -->
+<!-- If release notes required for this PR, describe the user-visible change introduced by this PR below. -->
+
 
 
 
@@ -126,13 +128,14 @@ Feature or Bug Fix PRs:
 - I have linked any 
     - equivalent PRs that are on another branch.
     - related PRs eg. fixes/additions to an unreleased feature PR. 
-- I have provided a release note above or checked 'No Release Note'.
+- I have provided a release note if required
 - I have added detector labels. Some automation in adding labels from code change and PR description.
 
 Infrastructure PRs:
 - I have linked any equivalent PRs that are in another branch.
 
 </details>
+
 
 
 

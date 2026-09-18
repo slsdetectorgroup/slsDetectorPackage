@@ -2,7 +2,7 @@
 # <details> blocks, checks for notes under the "## Release notes" section. If 
 # it is not an Infrastructure PR and release notes are not found, it should find
 # them in an equivalent PR or referenced PR, else validation fails. If it is an 
-# Infrastructure PR and release notes are found, validation fails. If release # notes are found, it should add AI assisted notes as part of a details section.
+# Infrastructure PR and release notes are found, validation fails. 
 
 name: PR Release Notes
 
@@ -132,7 +132,7 @@ jobs:
 
             if (hasReleaseNotesCurrent) {
               core.setOutput('add_ai_release_notes', 'true');
-              core.info('Current PR has release notes; AI assisted notes will be added.');
+              core.info('Current PR has release notes.');
               return;
             }
 
@@ -244,159 +244,6 @@ jobs:
               'No release notes were found in the PR body, equivalent PRs, or referenced PRs.'
             );
 
-      - name: Add AI assisted release notes
-        if: >-
-          ${{
-            steps.find-current.outputs.needs_validation == 'true' &&
-            steps.validate-labels.outputs.add_ai_release_notes == 'true'
-          }}
-        uses: actions/github-script@v8
-        with:
-          script: |
-            const prNumber = ${{ inputs.pr_number }};
 
-            const { data: pr } = await github.rest.pulls.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: prNumber
-            });
 
-            const getFallbackAiAssistedNotes = (files = []) => {
-              if (!files.length) {
-                return '- No file-level changes were available to summarize.';
-              }
 
-              const changedFiles = files
-                .slice(0, 25)
-                .map(file => {
-                  const type =
-                    file.status === 'added'
-                      ? 'Added'
-                      : file.status === 'removed'
-                      ? 'Removed'
-                      : 'Updated';
-                  return `- ${type} ${file.filename}`;
-                })
-                .join('\n');
-
-              const remainder = files.length > 25
-                ? `\n- Additional changed files not shown: ${files.length - 25}`
-                : '';
-
-              return `${changedFiles}${remainder}`;
-            };
-
-            const getAiAssistedReleaseNotes = async () => {
-              const files = await github.paginate(
-                github.rest.pulls.listFiles,
-                {
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  pull_number: prNumber,
-                  per_page: 100
-                }
-              );
-
-              const compactDiff = files
-                .slice(0, 15)
-                .map(file => {
-                  const patch = (file.patch || '')
-                    .split('\n')
-                    .slice(0, 40)
-                    .join('\n');
-                  return [
-                    `File: ${file.filename}`,
-                    `Status: ${file.status}`,
-                    `Patch:`,
-                    patch || '(patch unavailable)'
-                  ].join('\n');
-                })
-                .join('\n\n---\n\n');
-
-              const prompt = [
-                'Generate concise release notes from this pull request diff.',
-                'Use markdown bullet points.',
-                'Focus on user-visible behavior, API changes, and detector-facing impact.',
-                'Do not mention internal implementation details unless externally relevant.',
-                '',
-                `PR title: ${pr.title || ''}`,
-                '',
-                compactDiff
-              ].join('\n');
-
-              try {
-                const { execFile } = require('child_process');
-                const { promisify } = require('util');
-                const execFileAsync = promisify(execFile);
-
-                const { stdout } = await execFileAsync(
-                  'copilot',
-                  [
-                    '-p',
-                    prompt,
-                    '-s',
-                    '--no-ask-user',
-                    '--model',
-                    'gpt-4.1-mini'
-                  ],
-                  {
-                    env: {
-                      ...process.env,
-                      GITHUB_TOKEN: process.env.GITHUB_TOKEN
-                    },
-                    maxBuffer: 1024 * 1024
-                  }
-                );
-
-                const aiText = stdout.trim();
-
-                if (!aiText) {
-                  throw new Error('AI response did not contain message content.');
-                }
-
-                return aiText;
-              } catch (error) {
-                core.warning(
-                  `AI release notes generation failed, using fallback summary: ${error.message}`
-                );
-                return getFallbackAiAssistedNotes(files);
-              }
-            };
-
-            const upsertAiAssistedReleaseNotes = (body = '', aiNotes = '') => {
-              const releaseNotesSectionPattern =
-                /(^|\n)(##\s*Release notes\s*\n)([\s\S]*?)(?=\n##\s+\S|\s*$)/i;
-              const aiSubsectionPattern =
-                /(^|\n)###\s*AI Assisted Release Notes\s*\n([\s\S]*?)(?=\n###\s+\S|\n##\s+\S|\s*$)/gi;
-
-              return body.replace(
-                releaseNotesSectionPattern,
-                (fullMatch, prefix, heading, sectionBody) => {
-                  const cleanedSectionBody = (sectionBody || '')
-                    .replace(aiSubsectionPattern, '\n')
-                    .trimEnd();
-
-                  const aiSubsection =
-                    '### AI Assisted Release Notes\n\n' +
-                    `${aiNotes.trim() || '- No AI-assisted notes were generated.'}\n`;
-
-                  const updatedSectionBody =
-                    (cleanedSectionBody ? `${cleanedSectionBody}\n\n` : '') +
-                    aiSubsection;
-
-                  return `${prefix}${heading}${updatedSectionBody}`;
-                }
-              );
-            };
-
-            const aiAssistedNotes = await getAiAssistedReleaseNotes();
-            const newBody = upsertAiAssistedReleaseNotes(pr.body || '', aiAssistedNotes);
-
-            await github.rest.pulls.update({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: prNumber,
-              body: newBody
-            });
-
-            core.info('AI Assisted Release Notes subsection updated in PR body.');

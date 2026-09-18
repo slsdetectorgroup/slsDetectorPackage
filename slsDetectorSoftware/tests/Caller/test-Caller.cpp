@@ -2620,7 +2620,7 @@ TEST_CASE("numinterfaces", "[.detectorintegration]") {
             "inconsistent numinterfaces to test");
         Result<UdpDestination> prev_udp_dest;
         IpAddr prev_src_ip2{};
-        if (prev_val == 2 && det_type != defs::EIGER) {
+        if (prev_val == 2) {
             prev_udp_dest = det.getDestinationUDPList(0);
             prev_src_ip2 = det.getSourceUDPIP2()[0];
         }
@@ -2629,17 +2629,39 @@ TEST_CASE("numinterfaces", "[.detectorintegration]") {
             caller.call("numinterfaces", {"2"}, -1, PUT, oss);
             REQUIRE(oss.str() == "numinterfaces 2\n");
         }
+        // testing file write before and after num interface change
         {
-            std::ostringstream oss;
-            caller.call("numinterfaces", {"1"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "numinterfaces 1\n");
+            auto prev_fwrite =
+                det.getFileWrite().tsquash("inconsistent file write state");
+            det.setFileWrite(true);
+            {
+                std::ostringstream oss;
+                caller.call("numinterfaces", {"1"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "numinterfaces 1\n");
+            }
+            // testing file write after num interface change
+
+            // file write is true
+            REQUIRE(det.getFileWrite().tsquash(
+                        "inconsistent file write state") == true);
+
+            // check if file write actually works
+            auto acq_state = acq::default_acquisition_state();
+            auto file_state = acq::default_file_state();
+            file_state.file_format = defs::BINARY;
+            acq::run(det, acq_state, file_state);
+            std::string fname = acq::get_master_file_name(file_state);
+            REQUIRE(std::filesystem::exists(fname));
+
+            det.setFileWrite(prev_fwrite);
         }
+
         {
             std::ostringstream oss;
             caller.call("numinterfaces", {}, -1, GET, oss);
             REQUIRE(oss.str() == "numinterfaces 1\n");
         }
-        if (prev_val == 2 && det_type != defs::EIGER) {
+        if (prev_val == 2) {
             for (int i = 0; i != det.size(); ++i) {
                 det.setDestinationUDPList({prev_udp_dest[i]}, {i});
             }

@@ -163,7 +163,7 @@ TEST_CASE("serialnumber", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER || det_type == defs::XILINX_CHIPTESTBOARD) {
+    if (det_type == defs::XILINX_CHIPTESTBOARD) {
         REQUIRE_THROWS(caller.call("serialnumber", {}, -1, GET));
     } else {
         REQUIRE_NOTHROW(caller.call("serialnumber", {}, -1, GET));

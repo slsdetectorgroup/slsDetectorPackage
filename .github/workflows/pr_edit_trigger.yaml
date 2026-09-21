@@ -69,21 +69,20 @@ jobs:
                 fileLabelChange = true;
               }
 
-            const detectorLabels = [
-              'Ctb',
-              'Eiger',
-              'Moench',
-              'Mythen3',
-              'Jungfrau',
-              'Gotthard2',
-              'Matterhorn',
-              'Xilinx_ctb'
-            ];
+              const detectorLabels = [
+                'Ctb',
+                'Eiger',
+                'Moench',
+                'Mythen3',
+                'Jungfrau',
+                'Gotthard2',
+                'Matterhorn',
+                'Xilinx_ctb'
+              ];
               if (detectorLabels.includes(changedLabel)) {
                 detectorLabelChange = true;
               }
-              }             
-            } 
+            }
 
             core.setOutput(
               'require_validation',

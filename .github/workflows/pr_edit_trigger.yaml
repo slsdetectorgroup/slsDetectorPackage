@@ -23,6 +23,7 @@ jobs:
     outputs:
       require_validation: ${{ steps.check.outputs.require_validation }}
       file_label_change: ${{ steps.check.outputs.file_label_change }}
+      detector_label_change: ${{ steps.check.outputs.detector_label_change }}
       pr_edited: ${{ steps.check.outputs.pr_edited }}
 
     steps:
@@ -33,6 +34,7 @@ jobs:
           script: |
             let requireValidation = true;
             let fileLabelChange = false;
+            let detectorLabelChange = false;
 
             /*
              * If triggered by label change, ignore unrelated labels.
@@ -65,6 +67,21 @@ jobs:
               ];
               if (fileLabels.includes(changedLabel)) {
                 fileLabelChange = true;
+              }
+
+            const detectorLabels = [
+              'Ctb',
+              'Eiger',
+              'Moench',
+              'Mythen3',
+              'Jungfrau',
+              'Gotthard2',
+              'Matterhorn',
+              'Xilinx_ctb'
+            ];
+              if (detectorLabels.includes(changedLabel)) {
+                detectorLabelChange = true;
+              }
               }             
             } 
 
@@ -75,6 +92,10 @@ jobs:
             core.setOutput(
               'file_label_change',
               fileLabelChange.toString()
+            );
+            core.setOutput(
+              'detector_label_change',
+              detectorLabelChange.toString()
             );
             core.setOutput(
               'pr_edited',
@@ -90,7 +111,12 @@ jobs:
               core.info('File label or Breaking API: Changed.');
             } else {
               core.info('File label or Breaking API: No Change.');
-            }           
+            }
+            if (detectorLabelChange) {
+              core.info('Detector label: Changed.');
+            } else {
+              core.info('Detector label: No Change.');
+            }
 
   validate-pr-type:
     needs: check-pr-trigger
@@ -129,8 +155,11 @@ jobs:
       ${{
         always() &&
         (
-          needs.check-pr-trigger.outputs.require_validation == 'false' ||
-          needs.validate-pr-type.result == 'success'
+          needs.check-pr-trigger.outputs.detector_label_change == 'false' &&
+          ( 
+            needs.check-pr-trigger.outputs.require_validation == 'false' ||
+            needs.validate-pr-type.result == 'success' 
+          )
         )
       }}
     uses: ./.github/workflows/pr_detector_labels.yaml

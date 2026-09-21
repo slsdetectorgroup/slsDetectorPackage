@@ -1,0 +1,260 @@
+# This reusable workflow detects detector labels for pull requests. This workflow is ignored for Infrastructure Prs. It checks whole word matching of detector names in server folders, changed code and PR title/description. If a detector is detected, the corresponding label is added to the PR. Existing labels are left untouched. Detector labels are never removed automatically.
+
+name: PR Detector Labels
+
+on:
+  workflow_call:
+    inputs:
+      pr_number:
+        required: true
+        type: number
+
+permissions:
+  pull-requests: write
+  issues: read
+
+jobs:
+  detector-labels:
+    name: Detect detector labels
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Detect detector labels
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const prNumber = ${{ inputs.pr_number }};
+
+            /*
+            * Get the current PR labels.
+            */
+            const { data: currentLabels } =
+              await github.rest.issues.listLabelsOnIssue({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber
+              });
+
+            const currentLabelNames =
+              currentLabels.map(label => label.name);
+
+            if (currentLabelNames.includes('Infrastructure')) {
+              core.info(
+                'Infrastructure label found. Skipping detector label detection.'
+              );
+              return;
+            }
+            
+            core.info(
+              `Infrastructure label not found. Proceeding with detector label detection.`
+            );
+
+            /*
+             * Known detector labels.
+             */
+            const detectorLabels = [
+              'Ctb',
+              'Eiger',
+              'Moench',
+              'Mythen3',
+              'Jungfrau',
+              'Gotthard2',
+              'Matterhorn',
+              'Xilinx_ctb'
+            ];
+
+
+            /*
+             * Check whether a detector name appears as a
+             * complete word, case-insensitively.
+             */
+            function containsDetector(text, detector) {
+              const regex = new RegExp(
+                `\\b${detector}\\b`,
+                'i'
+              );
+
+              return regex.test(text);
+            }
+
+            /*
+             * Detectors detected by any detection method.
+             */
+            const detectedDetectors = new Set();
+
+            /*
+             * --------------------------------------------------
+             * 1. Get all files changed by the PR
+             * --------------------------------------------------
+             */
+            const files = await github.paginate(
+              github.rest.pulls.listFiles,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber,
+                per_page: 100
+              }
+            );
+
+            core.info(
+              `Found ${files.length} changed files.`
+            );
+
+            /*
+             * --------------------------------------------------
+             * 2. Detect detector from changed files
+             * --------------------------------------------------
+             *
+             * We inspect each file once and short-circuit as soon
+             * as a detector-server folder confirms a label. That
+             * avoids scanning the same detector folder again and
+             * avoids checking the rest of the file for unrelated
+             * detector names.
+             *
+             * Examples:
+             *
+             * slsDetectorServers/eigerDetectorServer/...
+             *                         ↓
+             *                       Eiger
+             *
+             * slsDetectorServers/xilinx_ctbDetectorServer/...
+             *                         ↓
+             *                     Xilinx_ctb
+             */
+            const ignoredDetectorServerFolders = new Set();
+
+            for (const file of files) {
+              const serverMatch = file.filename.match(
+                /^slsDetectorServers\/([^/]+)DetectorServer\//
+              );
+
+              if (serverMatch) {
+                const detectorFolder = serverMatch[0];
+
+                // Skip all later files under a detected detector folder.
+                if (ignoredDetectorServerFolders.has(detectorFolder)) {
+                  core.info(
+                    `Skipping file in ignored detector-server folder: ${file.filename}`
+                  );
+                  continue;
+                }
+
+                const detectorName = serverMatch[1];
+
+                /*
+                 * Remove "DetectorServer" and capitalize
+                 * the first character.
+                 */
+                const detector =
+                  detectorName.charAt(0).toUpperCase() +
+                  detectorName.slice(1);
+
+                if (detectorLabels.includes(detector)) {
+                  detectedDetectors.add(detector);
+
+                  core.info(
+                    `Detected ${detector} from detector-server path: ${file.filename}`
+                  );
+
+                  // Once a detector is confirmed from the server folder,
+                  // do not inspect this file or the rest of that folder.
+                  ignoredDetectorServerFolders.add(detectorFolder);
+                  continue;
+                }
+              }
+
+              // Only inspect the PR patch, never the full file.
+              if (!file.patch) {
+                continue;
+              }
+
+              for (const detector of detectorLabels) {
+                if (
+                  containsDetector(
+                    file.patch,
+                    detector
+                  )
+                ) {
+                  detectedDetectors.add(detector);
+
+                  core.info(
+                    `Detected ${detector} in changed code: ${file.filename}`
+                  );
+                }
+              }
+            }
+
+            /*
+             * --------------------------------------------------
+             * 3. Detect detector from PR title/description
+             * --------------------------------------------------
+             */
+
+            const { data: pr } =
+              await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber
+              });
+
+            const prText = [
+              pr.title || '',
+              pr.body || ''
+            ].join('\n');
+
+            for (const detector of detectorLabels) {
+              if (
+                containsDetector(
+                  prText,
+                  detector
+                )
+              ) {
+                detectedDetectors.add(detector);
+
+                core.info(
+                  `Detected ${detector} in PR title or description.`
+                );
+              }
+            }
+
+            /*
+             * --------------------------------------------------
+             * 5. Add detected detector labels
+             * --------------------------------------------------
+             *
+             * Existing labels are left untouched.
+             *
+             * Detector labels are NEVER removed automatically.
+             */
+            for (const detector of detectedDetectors) {
+              if (!currentLabelNames.includes(detector)) {
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: prNumber,
+                  labels: [detector]
+                });
+
+                core.info(
+                  `Added detector label: ${detector}`
+                );
+              } else {
+                core.info(
+                  `Detector label already exists: ${detector}`
+                );
+              }
+            }
+
+            /*
+             * --------------------------------------------------
+             * 6. Summary
+             * --------------------------------------------------
+             */
+            core.info(
+              `Detected detectors: ${
+                detectedDetectors.size > 0
+                  ? [...detectedDetectors].join(', ')
+                  : 'none'
+              }`
+            );

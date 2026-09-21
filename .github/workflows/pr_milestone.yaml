@@ -20,7 +20,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Set milestone
+      - name: Determine target milestone
+        id: determine-milestone
         uses: actions/github-script@v8
         with:
           script: |
@@ -38,16 +39,100 @@ jobs:
             const baseBranch = pullRequest.base.ref;
 
             /*
-             * Return early if base is main branch. Milestone is already 
+             * 1. Return early if base is main branch. Milestone is already 
              * managed and probably done when merging to main.
              */
             if (baseBranch === 'main') {
               core.info('PR targets main. Milestone is managed separately.');
+              core.setOutput('target_milestone', '');
               return;
             }
 
             /*
-             * Read release targets through the GitHub API
+             * Helper function to set the target milestone output.
+             */
+            const setTargetMilestoneOutput = (targetMilestone) => {
+              core.info(`Target milestone: ${targetMilestone}`);
+              core.setOutput('target_milestone', targetMilestone);
+            };
+
+            /*
+             * 2. If PR targets a release-candidate branch (for example 9.1.0.rc),
+             * set milestone to the release version prefix (for example 9.1.0)
+             * and return early.
+             */
+            if (baseBranch.endsWith('.rc')) {
+              const targetMilestone = baseBranch.replace(/\.rc$/, '');
+
+              core.info(
+                `PR targets release-candidate branch "${baseBranch}". ` +
+                `Using milestone "${targetMilestone}".`
+              );
+
+              setTargetMilestoneOutput(targetMilestone);
+              return;
+            }
+
+            /**
+             * 3. If PR targets a branch that is not developer, do nothing.
+             */
+            if (baseBranch !== 'developer') {
+              core.info('PR does not target developer branch. Skipping milestone management.');
+              core.setOutput('target_milestone', '');
+              return;
+            }
+
+            /*
+             * 4. If PR targets developer, check "Equivalent PRs" in the PR body.
+             * If an equivalent PR targets an RC branch (for example 9.1.0.rc),
+             * use the corresponding release milestone (for example 9.1.0).
+             */
+            if (baseBranch === 'developer') {
+              const equivalentPrSectionMatch = pullRequest.body?.match(
+                /(^|\n)#{1,6}\s*Equivalent PRs\s*\n([\s\S]*?)(?=\n#{1,6}\s+\S|\s*$)/i
+              );
+
+              const equivalentPrNumbers =
+                equivalentPrSectionMatch?.[2]
+                  ? Array.from(
+                      equivalentPrSectionMatch[2].matchAll(/#(\d+)/g),
+                      match => Number(match[1])
+                    )
+                  : [];
+
+              for (const equivalentPrNumber of equivalentPrNumbers) {
+                if (equivalentPrNumber === prNumber) {
+                  continue;
+                }
+
+                const { data: equivalentPr } =
+                  await github.rest.pulls.get({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    pull_number: equivalentPrNumber
+                  });
+
+                const equivalentBaseBranch = equivalentPr.base.ref;
+
+                if (!equivalentBaseBranch.endsWith('.rc')) {
+                  continue;
+                }
+
+                const targetMilestone =
+                  equivalentBaseBranch.replace(/\.rc$/, '');
+
+                core.info(
+                  `Developer PR references RC PR #${equivalentPrNumber} ` +
+                  `(${equivalentBaseBranch}). Using milestone "${targetMilestone}".`
+                );
+
+                setTargetMilestoneOutput(targetMilestone);
+                return;
+              }
+            }
+
+            /*
+             * 5. Read release targets through the GitHub API
              * from the base branch of PR.
              */
             const { data: file } =
@@ -81,6 +166,9 @@ jobs:
             const bugFix = getTarget('bug_fix');
 
             if (!major || !minor || !bugFix) {
+              core.setFailed(
+                'Required release targets (major, minor, bug_fix) could not be resolved from yaml file.'
+              );
               return;
             }
 
@@ -114,19 +202,22 @@ jobs:
             ) {
               targetMilestone = bugFix;
             } else {
-              core.info(
+              core.setFailed(
                 'No milestone-related labels found.'
               );
               return;
             }
 
-            core.info(
-              `Target milestone: ${targetMilestone}`
-            );
+            setTargetMilestoneOutput(targetMilestone);
 
-            /*
-             * Find the milestone.
-             */
+      - name: Set milestone
+        if: steps.determine-milestone.outputs.target_milestone != ''
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const prNumber = ${{ inputs.pr_number }};
+            const targetMilestone = '${{ steps.determine-milestone.outputs.target_milestone }}';
+
             const { data: milestones } =
               await github.rest.issues.listMilestones({
                 owner: context.repo.owner,
@@ -143,15 +234,8 @@ jobs:
                 `Milestone "${targetMilestone}" was not found.`
               );
               return;
-            } else {
-              core.info(
-                `Found milestone "${targetMilestone}".`
-              );
             }
 
-            /*
-             * Set the milestone.
-             */
             await github.rest.issues.update({
               owner: context.repo.owner,
               repo: context.repo.repo,

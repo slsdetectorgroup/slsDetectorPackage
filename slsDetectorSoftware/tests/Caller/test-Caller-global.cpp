@@ -93,8 +93,8 @@ void test_dac_caller(defs::dacIndex index, int dacvalue, bool mV) {
 void test_dacname_caller(std::string dacname, int dacvalue, bool mV) {
     Detector det;
     auto detType = det.getDetectorType().squash(defs::GENERIC);
-    REQUIRE(detType == defs::CHIPTESTBOARD ||
-            detType == defs::XILINX_CHIPTESTBOARD);
+    REQUIRE((detType == defs::CHIPTESTBOARD ||
+             detType == defs::XILINX_CHIPTESTBOARD));
     auto index = det.getDacIndex(dacname);
     test_dac(index, dacname, dacvalue, mV);
 }

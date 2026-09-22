@@ -135,4 +135,14 @@ class CTBStateGuard {
     CTBState saved_;
 };
 
+/**
+ * @brief
+ * @param test_info current CTB state
+ * @param isXilinxCtb if the detector type is Xilinx CTB
+ * @return std::pair<uint64_t, int>  pair of image size in bytes and number of
+ * channels in dimension X (Currently only analog channels)
+ */
+std::pair<uint64_t, int> calculate_ctb_image_size(const CTBState &test_info,
+                                                  bool isXilinxCtb);
+
 } // namespace sls::test::acquire

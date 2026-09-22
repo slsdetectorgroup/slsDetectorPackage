@@ -498,7 +498,7 @@ TEST_CASE("dac", "[.detectorintegration][dacs]") {
         det_type == defs::XILINX_CHIPTESTBOARD) {
         for (int i = 0; i < 18; ++i) {
             SECTION("dac " + std::to_string(i)) {
-                test_dac_caller(static_cast<defs::dacIndex>(i), "dac", 0);
+                test_dac_caller(static_cast<defs::dacIndex>(i), 0);
             }
         }
 

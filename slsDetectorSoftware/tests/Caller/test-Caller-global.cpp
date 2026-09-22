@@ -35,35 +35,35 @@ void test_valid_port_caller(const std::string &command,
     }
 }
 
-void test_dac_caller(defs::dacIndex index, const std::string &dacname,
-                     int dacvalue, bool mV) {
+void test_dac_caller(defs::dacIndex index, int dacvalue, bool mV) {
     Detector det;
     Caller caller(&det);
-    std::string dac = dacname;
+    std::string dacname = sls::ToString(index);
+    // ctb: use only the index for dacname
+    // so that cli output is not 'dac dac 0'
+    if (index <= defs::DAC_17) {
+        dacname = std::to_string(static_cast<int>(index));
+    }
     auto value = std::to_string(dacvalue);
     auto previous = det.getDAC(index, false);
-    // chip test board
-    if (dacname == "dac") {
-        dac = std::to_string(static_cast<int>(index));
-    }
     {
         std::ostringstream oss;
-        std::vector<std::string> args = {dac, value};
+        std::vector<std::string> args = {dacname, value};
         if (mV)
             args.push_back("mV");
         std::cout << "args:" << ToString(args) << std::endl;
         caller.call("dac", args, -1, PUT, oss);
-        REQUIRE(oss.str() == std::string("dac ") + dac + " " + value +
+        REQUIRE(oss.str() == std::string("dac ") + dacname + " " + value +
                                  (mV ? " mV\n" : "\n"));
     }
     {
         std::ostringstream oss;
-        std::vector<std::string> args = {dac};
+        std::vector<std::string> args = {dacname};
         if (mV)
             args.push_back("mV");
         caller.call("dac", args, -1, GET, oss);
         REQUIRE(oss.str() ==
-                "dac " + dac + " " + value + (mV ? " mV\n" : "\n"));
+                "dac " + dacname + " " + value + (mV ? " mV\n" : "\n"));
     }
     // Reset all dacs to previous value
     for (int i = 0; i != det.size(); ++i) {

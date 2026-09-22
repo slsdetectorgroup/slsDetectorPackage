@@ -36,28 +36,34 @@ void test_valid_port_caller(const std::string &command,
 }
 
 void test_dac_caller(defs::dacIndex index, const std::string &dacname,
-                     int dacvalue) {
+                     int dacvalue, bool mV) {
     Detector det;
     Caller caller(&det);
-    std::ostringstream oss_set, oss_get;
-    auto dacstr = std::to_string(dacvalue);
+    std::string dac = dacname;
+    auto value = std::to_string(dacvalue);
     auto previous = det.getDAC(index, false);
     // chip test board
     if (dacname == "dac") {
-        auto dacIndexstr = std::to_string(static_cast<int>(index));
-        caller.call(dacname, {dacIndexstr, dacstr}, -1, PUT, oss_set);
-        REQUIRE(oss_set.str() ==
-                dacname + " " + dacIndexstr + " " + dacstr + "\n");
-        caller.call(dacname, {dacIndexstr}, -1, GET, oss_get);
-        REQUIRE(oss_get.str() ==
-                dacname + " " + dacIndexstr + " " + dacstr + "\n");
+        dac = std::to_string(static_cast<int>(index));
     }
-    // other detectors
-    else {
-        caller.call("dac", {dacname, dacstr}, -1, PUT, oss_set);
-        REQUIRE(oss_set.str() == "dac " + dacname + " " + dacstr + "\n");
-        caller.call("dac", {dacname}, -1, GET, oss_get);
-        REQUIRE(oss_get.str() == "dac " + dacname + " " + dacstr + "\n");
+    {
+        std::ostringstream oss;
+        std::vector<std::string> args = {dac, value};
+        if (mV)
+            args.push_back("mV");
+        std::cout << "args:" << ToString(args) << std::endl;
+        caller.call("dac", args, -1, PUT, oss);
+        REQUIRE(oss.str() == std::string("dac ") + dac + " " + value +
+                                 (mV ? " mV\n" : "\n"));
+    }
+    {
+        std::ostringstream oss;
+        std::vector<std::string> args = {dac};
+        if (mV)
+            args.push_back("mV");
+        caller.call("dac", args, -1, GET, oss);
+        REQUIRE(oss.str() ==
+                "dac " + dac + " " + value + (mV ? " mV\n" : "\n"));
     }
     // Reset all dacs to previous value
     for (int i = 0; i != det.size(); ++i) {
@@ -91,33 +97,6 @@ void test_onchip_dac_caller(defs::dacIndex index, const std::string &dacname,
     for (int i = 0; i != det.size(); ++i) {
         det.setOnChipDAC(index, chipIndex, prev_val[i], {i});
     }
-}
-
-std::pair<uint64_t, int>
-calculate_ctb_image_size(const acq::CTBState &test_info, bool isXilinxCtb) {
-
-    LOG(logDEBUG1) << test_info;
-    sls::CtbImageInputs inputs{};
-    inputs.mode = test_info.readout_mode;
-    inputs.nAnalogSamples = test_info.num_adc_samples;
-    inputs.adcMask = test_info.adc_enable_10g;
-    if (!isXilinxCtb && !test_info.ten_giga) {
-        inputs.adcMask = test_info.adc_enable_1g;
-    }
-    inputs.nTransceiverSamples = test_info.num_trans_samples;
-    inputs.transceiverMask = test_info.transceiver_mask;
-    inputs.nDigitalSamples = test_info.num_dbit_samples;
-    inputs.dbitOffset = test_info.dbit_offset;
-    inputs.dbitReorder = test_info.dbit_reorder;
-    inputs.dbitList = test_info.dbit_list;
-
-    auto out = computeCtbImageSize(inputs);
-    uint64_t image_size =
-        out.nAnalogBytes + out.nDigitalBytes + out.nTransceiverBytes;
-    LOG(logDEBUG1) << "Expected image size: " << image_size;
-    int npixelx = out.nPixelsX;
-    LOG(logDEBUG1) << "Expected number of pixels in x: " << npixelx;
-    return std::make_pair(image_size, npixelx);
 }
 
 } // namespace sls

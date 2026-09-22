@@ -501,6 +501,14 @@ TEST_CASE("dac", "[.detectorintegration][dacs]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::CHIPTESTBOARD ||
         det_type == defs::XILINX_CHIPTESTBOARD) {
+<<<<<<< HEAD
+=======
+        for (int i = 0; i < 18; ++i) {
+            SECTION("dac " + std::to_string(i)) {
+                test_dac_caller(static_cast<defs::dacIndex>(i), 0);
+            }
+        }
+>>>>>>> 28f6dec7f (refactored test_dac_caller)
 
         // normal dacs
         // eiger

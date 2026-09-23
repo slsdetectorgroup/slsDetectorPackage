@@ -1769,6 +1769,7 @@ Result<bool> Detector::getDataStream(const defs::portPosition port,
 
 void Detector::setDataStream(const defs::portPosition port, const bool enable,
                              Positions pos) {
+    pimpl->validatePortEnable(port, enable, pos);
     pimpl->Parallel(&Module::setDataStream, pos, port, enable);
 }
 

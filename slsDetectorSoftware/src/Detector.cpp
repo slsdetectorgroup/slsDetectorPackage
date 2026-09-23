@@ -1335,6 +1335,7 @@ Result<bool> Detector::getUDPDataStream(const defs::portPosition port,
 
 void Detector::setUDPDataStream(const defs::portPosition port,
                                 const bool enable, Positions pos) {
+    pimpl->validatePortEnable(port, enable, pos);                             
     pimpl->setUDPDataStream(port, enable, pos);
 }
 

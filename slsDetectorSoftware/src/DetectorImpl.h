@@ -320,6 +320,9 @@ class DetectorImpl : public virtual slsDetectorDefs {
 
     defs::xy getPortGeometry() const;
     std::vector<defs::ROI> getRxROI(int module_id = -1) const;
+    void validatePortEnable(const defs::portPosition port, const bool enable, std::vector<int> pos)  const;
+    void validatePortEnableRoiState(const int moduleIndex, std::vector<defs::ROI> &portRois) const;
+
     void setRxROI(const std::vector<defs::ROI> &args);
     void clearRxROI();
 

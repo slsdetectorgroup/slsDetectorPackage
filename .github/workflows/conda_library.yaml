@@ -1,10 +1,6 @@
 name: Build slsdetlib
 
-on:
-  pull_request:
-    branches-ignore:
-      - 'dev/pr_automation*'
-      - 'dev/test_pr_automation*'
+on: [pull_request]
       
 jobs:
   build:

@@ -2624,7 +2624,7 @@ TEST_CASE("numinterfaces", "[.detectorintegration]") {
             "inconsistent numinterfaces to test");
         Result<UdpDestination> prev_udp_dest;
         IpAddr prev_src_ip2{};
-        if (prev_val == 2 && det_type != defs::EIGER) {
+        if (prev_val == 2) {
             prev_udp_dest = det.getDestinationUDPList(0);
             prev_src_ip2 = det.getSourceUDPIP2()[0];
         }
@@ -2643,7 +2643,7 @@ TEST_CASE("numinterfaces", "[.detectorintegration]") {
             caller.call("numinterfaces", {}, -1, GET, oss);
             REQUIRE(oss.str() == "numinterfaces 1\n");
         }
-        if (prev_val == 2 && det_type != defs::EIGER) {
+        if (prev_val == 2) {
             for (int i = 0; i != det.size(); ++i) {
                 det.setDestinationUDPList({prev_udp_dest[i]}, {i});
             }
@@ -2665,6 +2665,50 @@ TEST_CASE("numinterfaces", "[.detectorintegration]") {
     }
     REQUIRE_THROWS(caller.call("numinterfaces", {"3"}, -1, PUT));
     REQUIRE_THROWS(caller.call("numinterfaces", {"0"}, -1, PUT));
+}
+
+TEST_CASE("numinterfaces_with_fwrite",
+          "[.detectorintegration][.disable_check_data_file]") {
+    Detector det;
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
+
+        // previous state
+        auto prev_val = det.getNumberofUDPInterfaces().tsquash(
+            "inconsistent numinterfaces to test");
+        Result<UdpDestination> prev_udp_dest;
+        IpAddr prev_src_ip2{};
+        if (prev_val == 2) {
+            prev_udp_dest = det.getDestinationUDPList(0);
+            prev_src_ip2 = det.getSourceUDPIP2()[0];
+        }
+        auto prev_fwrite =
+            det.getFileWrite().tsquash("inconsistent file write state");
+
+        // testing file write before and after num interface change
+        det.setNumberofUDPInterfaces(2);
+        det.setFileWrite(true);
+        det.setNumberofUDPInterfaces(1);
+        REQUIRE(det.getFileWrite().tsquash("inconsistent file write state") ==
+                true);
+        // check if file write actually works
+        auto acq_state = acq::default_acquisition_state();
+        auto file_state = acq::default_file_state();
+        file_state.file_format = defs::BINARY;
+        acq::run(det, acq_state, file_state);
+        std::string fname = acq::get_master_file_name(file_state);
+        REQUIRE(std::filesystem::exists(fname));
+
+        // restore previous state
+        det.setFileWrite(prev_fwrite);
+        if (prev_val == 2) {
+            for (int i = 0; i != det.size(); ++i) {
+                det.setDestinationUDPList({prev_udp_dest[i]}, {i});
+            }
+            det.setSourceUDPIP2({prev_src_ip2});
+        }
+        det.setNumberofUDPInterfaces(prev_val);
+    }
 }
 
 TEST_CASE("udp_srcip", "[.detectorintegration]") {

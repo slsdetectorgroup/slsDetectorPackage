@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #pragma once
-
 /**
  * \file ToString.h
  *
@@ -353,7 +352,9 @@ T StringTo(const std::string &f, const std::string &unit) {
     }
 }
 
-template <typename T> T StringTo(const std::string &t) {
+template <typename T,
+          std::enable_if_t<!is_container<T>::value, int> = 0>
+T StringTo(const std::string &t) {
     std::string tmp{t};
     auto unit = RemoveUnit(tmp);
     return StringTo<T>(tmp, unit);
@@ -398,6 +399,7 @@ ToString(const T &obj) {
     return obj.str();
 }
 
+/** Convert vector of strings to vector of type T */
 template <typename T>
 std::vector<T> StringTo(const std::vector<std::string> &strings) {
     std::vector<T> result;
@@ -405,6 +407,38 @@ std::vector<T> StringTo(const std::vector<std::string> &strings) {
     for (const auto &s : strings)
         result.push_back(StringTo<T>(s));
     return result;
+}
+
+/** Parse comma-separated string into vector type T (e.g.,
+ * StringTo<std::vector<int>>()) */
+template <typename T, std::enable_if_t<is_container<T>::value &&
+                                           !std::is_same_v<T, std::string>,
+                                       int> = 0>
+T StringTo(const std::string &s) {
+    using ElementType = typename T::value_type;
+    T res;
+    std::istringstream ss(s);
+    std::string item;
+    while (std::getline(ss, item, ',')) {
+        item.erase(std::remove_if(item.begin(), item.end(),
+                                  [](char c) {
+                                      return c == '[' || c == ']' || c == '"' ||
+                                             c == ' ';
+                                  }),
+                   item.end());
+
+        try {
+            if (item.empty())
+                continue;
+            auto val = StringTo<ElementType>(item);
+            res.push_back(val);
+        } catch (const std::exception &e) {
+            throw RuntimeError("Could not convert '" + item +
+                               "' to the container element type. " +
+                               std::string(e.what()));
+        }
+    }
+    return res;
 }
 
 } // namespace sls

@@ -25,5 +25,7 @@ void init_pattern(py::module &m) {
     .def("save", &sls::Pattern::save)
     .def("str", &sls::Pattern::str)
     .def("data", (pat * (sls::Pattern::*)()) & sls::Pattern::data,
-                py::return_value_policy::reference);
+                py::return_value_policy::reference)
+    .def(py::self == py::self)
+    .def(py::self != py::self);
 }

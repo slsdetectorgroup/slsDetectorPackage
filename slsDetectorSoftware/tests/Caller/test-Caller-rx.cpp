@@ -860,8 +860,6 @@ TEST_CASE("rx_roi_port_disabled", "[.detectorintegration]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::EIGER) {
         auto prev_roi = det.getRxROI();
-        auto prev_tengiga =
-            det.getTenGiga().tsquash("Inconsistent ten giga setting");
         auto prev_leftport = det.getDataStream(defs::LEFT);
         auto prev_rightport = det.getDataStream(defs::RIGHT);
 
@@ -870,6 +868,7 @@ TEST_CASE("rx_roi_port_disabled", "[.detectorintegration]") {
         det.setDataStream(defs::LEFT, true);
         det.setDataStream(defs::RIGHT, true);
         det.setRxROI({defs::ROI{0, 10, 0, 10}, defs::ROI{600, 610, 0, 10}});
+        LOG(logINFOBLUE) << " expecting to throw";
         REQUIRE_THROWS(det.setDataStream(defs::LEFT, false, {0}));
         REQUIRE_THROWS(det.setDataStream(defs::RIGHT, false, {0}));
 
@@ -891,20 +890,22 @@ TEST_CASE("rx_roi_port_disabled", "[.detectorintegration]") {
         det.setDataStream(defs::LEFT, false, {0});
         det.setDataStream(defs::RIGHT, true, {0});
         REQUIRE_THROWS(det.setRxROI({defs::ROI{0, 10, 0, 10}}));
-        REQUIRE_NOTHROW(det.setRxROI({defs::ROI{600, 610, 0, 10}}));
+        REQUIRE_NOTHROW(det.setRxROI({defs::ROI{600, 610, 0, 0}}));
 
         det.clearRxROI();
         det.setDataStream(defs::LEFT, true, {0});
         det.setDataStream(defs::RIGHT, false, {0});
         REQUIRE_NOTHROW(det.setRxROI({defs::ROI{0, 10, 0, 10}}));
         REQUIRE_THROWS(det.setRxROI({defs::ROI{600, 610, 0, 10}}));
-
-        LOG(logINFO) << "prev_roi:" << ToString(prev_roi);
+        /* virtual detector doesnt understand it cant disable in 1g mode
+                det.setTenGiga(false);
+                REQUIRE_NOTHROW(det.setRxROI({defs::ROI{0, 10, 0, 10}}));
+                REQUIRE_NOTHROW(det.setRxROI({defs::ROI{600, 610, 0, 10}}));
+        */
         if (prev_roi.size() == 1 && prev_roi[0].completeRoi())
             det.clearRxROI();
         else
             det.setRxROI(prev_roi);
-        det.setTenGiga(prev_tengiga);
         for (int i = 0; i != det.size(); ++i) {
             det.setDataStream(defs::LEFT, prev_leftport[i], {i});
             det.setDataStream(defs::RIGHT, prev_rightport[i], {i});

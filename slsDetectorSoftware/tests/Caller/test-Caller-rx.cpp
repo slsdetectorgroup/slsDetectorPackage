@@ -897,11 +897,8 @@ TEST_CASE("rx_roi_port_disabled", "[.detectorintegration]") {
         det.setDataStream(defs::RIGHT, false, {0});
         REQUIRE_NOTHROW(det.setRxROI({defs::ROI{0, 10, 0, 10}}));
         REQUIRE_THROWS(det.setRxROI({defs::ROI{600, 610, 0, 10}}));
-        /* virtual detector doesnt understand it cant disable in 1g mode
-                det.setTenGiga(false);
-                REQUIRE_NOTHROW(det.setRxROI({defs::ROI{0, 10, 0, 10}}));
-                REQUIRE_NOTHROW(det.setRxROI({defs::ROI{600, 610, 0, 10}}));
-        */
+        /* virtual detector doesnt understand it cant disable in 1g mode, so
+         * cant test */
         if (prev_roi.size() == 1 && prev_roi[0].completeRoi())
             det.clearRxROI();
         else

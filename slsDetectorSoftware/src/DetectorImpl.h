@@ -323,7 +323,9 @@ class DetectorImpl : public virtual slsDetectorDefs {
     void validatePortEnable(const defs::portPosition port, const bool enable,
                             std::vector<int> pos) const;
     void validatePortEnableRoiState(const int moduleIndex,
-                                    std::vector<defs::ROI> &portRois) const;
+                                    defs::portPosition changedPort,
+                                    const defs::ROI &portRoi,
+                                    bool enabled) const;
 
     void setRxROI(const std::vector<defs::ROI> &args);
     void clearRxROI();

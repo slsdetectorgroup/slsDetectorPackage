@@ -1863,8 +1863,11 @@ void DetectorImpl::validatePortEnable(const defs::portPosition port,
     if (modules.size() == 0) {
         throw RuntimeError("No Modules added");
     }
-    // no rois
-    auto rois = getRxROI();
+    if (shm()->detType != EIGER)
+        return;
+
+    // complete detector ROI is the default state and does not constrain
+    const auto rois = getRxROI();
     if (rois.empty() || (rois.size() == 1 && rois[0].completeRoi())) {
         return;
     }
@@ -1872,38 +1875,37 @@ void DetectorImpl::validatePortEnable(const defs::portPosition port,
         pos.resize(modules.size());
         std::iota(begin(pos), end(pos), 0);
     }
-    for (size_t i : pos) {
+      for (int i : pos) {
+        if (i < 0 || static_cast<size_t>(i) >= modules.size()) {
+            throw RuntimeError("Invalid module index: " + std::to_string(i));
+        }
         auto modRois = modules[i]->getRxROI();
-        validatePortEnableRoiState(i, modRois);
+        auto portIndex = static_cast<int>(port);
+        validatePortEnableRoiState(i, port, modRois[portIndex], enable);
     }
 }
 
 /** Assumption:
- * 1. Port Disable only for Eiger
+ * 1. Check only for Eiger because port disable is only for Eiger now
  * 2. This function called only when an Roi being set (not complete detector)
  * ie. complete ROI enabled and some ports disabled is allowed
  */
-void DetectorImpl::validatePortEnableRoiState(
-    const int moduleIndex, std::vector<defs::ROI> &modRois) const {
-    if (shm()->detType == EIGER) {
-        bool leftEnabled = modules[moduleIndex]->getDataStream(defs::LEFT);
-        bool rightEnabled = modules[moduleIndex]->getDataStream(defs::RIGHT);
-        bool leftInvalid = !leftEnabled && !modRois[0].noRoi();
-        bool rightInvalid = !rightEnabled && !modRois[1].noRoi();
-        LOG(logDEBUG1) << "left :" << leftEnabled << " right :" << rightEnabled
-                       << "leftInvalid: " << leftInvalid
-                       << " rightInvalid: " << rightInvalid;
-        if (leftInvalid || rightInvalid) {
-            std::string host = modules[moduleIndex]->getHostname();
-            std::string invalidPort = leftInvalid ? "Left" : "Right";
-            std::ostringstream oss;
-            oss << invalidPort << " port of module " << moduleIndex << " ("
-                << host << ") is not active but ROI is specified for it: "
-                << ToString(leftInvalid ? modRois[0] : modRois[1])
-                << ". Please disable the ROI for this port or enable the port.";
-            throw RuntimeError(oss.str());
-        }
-    }
+void DetectorImpl::validatePortEnableRoiState(const int moduleIndex,
+                                              defs::portPosition changedPort,
+                                              const defs::ROI &portRoi,
+                                              bool enabled) const {
+    if (shm()->detType != EIGER)
+        return;
+    // enabled or disabled and no roi
+    if (enabled || portRoi.noRoi())
+        return;
+    // diabled but ROI specified
+    std::ostringstream oss;
+    oss << (changedPort == defs::LEFT ? "Left" : "Right") << " port of module "
+        << moduleIndex << " (" << modules[moduleIndex]->getHostname()
+        << ") is not active but ROI is specified for it: " << ToString(portRoi)
+        << ". Please disable the ROI for this port or enable the port.";
+    throw RuntimeError(oss.str());
 }
 
 void DetectorImpl::setRxROI(const std::vector<defs::ROI> &args) {
@@ -1938,17 +1940,20 @@ void DetectorImpl::setRxROI(const std::vector<defs::ROI> &args) {
                 roi.ymax = -1;
             }
         }
-        // check overlap with module
+        // check overlap of each roi with module
         for (const auto &arg : args) {
             if (arg.overlap(moduleGlobalRoi)) {
                 convertGlobalRoiToPortLevel(arg, moduleGlobalRoi, portRois);
             }
         }
-        // validate that specific ROI does not overlap with disabled ports
+        // validate roi against port enables
         if (shm()->detType == EIGER) {
-            auto tengiga = Parallel(&Module::getTenGiga, {}).squash(false);
-            if (tengiga)
-                validatePortEnableRoiState(iModule, portRois);
+            for (int iport = 0; iport != nPortsPerModule; ++iport) {
+                auto port = static_cast<defs::portPosition>(iport);
+                auto enable = modules[iModule]->getDataStream(port);
+                validatePortEnableRoiState(iModule, port, portRois[iport],
+                                           enable);
+            }
         }
         moduleRois.push_back(portRois);
     }

@@ -496,12 +496,8 @@ TEST_CASE("dac", "[.detectorintegration][dacs]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::CHIPTESTBOARD ||
         det_type == defs::XILINX_CHIPTESTBOARD) {
-        for (int i = 0; i < 18; ++i) {
-            SECTION("dac " + std::to_string(i)) {
-                test_dac_caller(static_cast<defs::dacIndex>(i), "dac", 0);
-            }
-        }
 
+        // normal dacs
         // eiger
         // REQUIRE_THROWS(caller.call("dac", {"vthreshold"}, -1, GET));
         // REQUIRE_THROWS(caller.call("dac", {"vsvp"}, -1, GET));
@@ -561,6 +557,27 @@ TEST_CASE("dac", "[.detectorintegration][dacs]") {
         REQUIRE_THROWS(caller.call("dac", {"vb_cs"}, -1, GET));
         REQUIRE_THROWS(caller.call("dac", {"vb_opa_fd"}, -1, GET));
         REQUIRE_THROWS(caller.call("dac", {"vcom_adc2"}, -1, GET));
+
+        // ctb and xilinx
+        for (int idac = 0; idac < 18; ++idac) {
+
+            SECTION("dac " + std::to_string(idac)) {
+                test_dac_caller(static_cast<defs::dacIndex>(idac), 0);
+                test_dac_caller(static_cast<defs::dacIndex>(idac), 1200);
+                test_dac_caller(static_cast<defs::dacIndex>(idac), 1200, true);
+                test_dac_caller(static_cast<defs::dacIndex>(idac), -100);
+
+                // dac name
+                std::string dacname_str = "dacname" + std::to_string(idac);
+                det.setDacName(static_cast<defs::dacIndex>(idac), dacname_str);
+                test_dacname_caller(dacname_str, -100);
+            }
+            REQUIRE_THROWS(
+                caller.call("dac", {std::to_string(idac), "-2"}, -1, PUT));
+            // REQUIRE_THROWS(
+            //     caller.call("dac", {std::to_string(idac), "-1"}, -1, PUT));
+            //     not yet implemented in v10.x.x
+        }
     }
 }
 

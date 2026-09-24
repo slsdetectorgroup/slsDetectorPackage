@@ -84,7 +84,6 @@ foreach(exe ${MOENCH_EXECUTABLES})
         set_property(TARGET ${exe} PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
     endif()
 
+    sls_install_executable(${exe} DESTINATION bin COMPONENT zmq)
     
 endforeach(exe ${MOENCH_EXECUTABLES})
-
-install(TARGETS ${MOENCH_EXECUTABLES} DESTINATION bin)

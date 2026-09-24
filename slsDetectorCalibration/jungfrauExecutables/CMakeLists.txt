@@ -95,7 +95,5 @@ foreach(exe ${JUNGFRAU_EXECUTABLES})
         set_property(TARGET ${exe} PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
     endif()
 
-    
+    sls_install_executable(${exe} DESTINATION bin)
 endforeach(exe ${JUNGFRAU_EXECUTABLES})
-
-install(TARGETS ${JUNGFRAU_EXECUTABLES} DESTINATION bin)

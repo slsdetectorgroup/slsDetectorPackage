@@ -37,9 +37,7 @@ set_target_properties(eigerDetectorServer_virtual PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
-install(TARGETS eigerDetectorServer_virtual 
-    RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
+sls_install_executable(eigerDetectorServer_virtual)
 
 
 configure_file(config_eiger.txt ${CMAKE_BINARY_DIR}/bin/config_eiger.txt COPYONLY)

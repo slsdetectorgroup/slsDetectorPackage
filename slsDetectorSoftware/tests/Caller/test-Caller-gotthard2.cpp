@@ -106,8 +106,7 @@ TEST_CASE("timegotthard2", "[.detectorintegration]") {
 }
 /* dacs */
 
-TEST_CASE("Setting and reading back GOTTHARD2 dacs",
-          "[.detectorintegration][dacs]") {
+TEST_CASE("gotthard2 dac", "[.detectorintegration][dacs]") {
     // vref_h_adc,   vb_comp_fe, vb_comp_adc,  vcom_cds,
     // vref_restore, vb_opa_1st, vref_comp_fe, vcom_adc1,
     // vref_prech,   vref_l_adc, vref_cds,     vb_cs,
@@ -117,46 +116,20 @@ TEST_CASE("Setting and reading back GOTTHARD2 dacs",
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::GOTTHARD2) {
-        SECTION("vref_h_adc") {
-            test_dac_caller(defs::VREF_H_ADC, "vref_h_adc", 2099);
-        }
-        SECTION("vb_comp_fe") {
-            test_dac_caller(defs::VB_COMP_FE, "vb_comp_fe", 0);
-        }
-        SECTION("vb_comp_adc") {
-            test_dac_caller(defs::VB_COMP_ADC, "vb_comp_adc", 0);
-        }
-        SECTION("vcom_cds") {
-            test_dac_caller(defs::VCOM_CDS, "vcom_cds", 1400);
-        }
-        SECTION("vref_rstore") {
-            test_dac_caller(defs::VREF_RSTORE, "vref_rstore", 640);
-        }
-        SECTION("vb_opa_1st") {
-            test_dac_caller(defs::VB_OPA_1ST, "vb_opa_1st", 0);
-        }
-        SECTION("vref_comp_fe") {
-            test_dac_caller(defs::VREF_COMP_FE, "vref_comp_fe", 0);
-        }
-        SECTION("vcom_adc1") {
-            test_dac_caller(defs::VCOM_ADC1, "vcom_adc1", 1400);
-        }
-        SECTION("vref_prech") {
-            test_dac_caller(defs::VREF_PRECH, "vref_prech", 1720);
-        }
-        SECTION("vref_l_adc") {
-            test_dac_caller(defs::VREF_L_ADC, "vref_l_adc", 700);
-        }
-        SECTION("vref_cds") {
-            test_dac_caller(defs::VREF_CDS, "vref_cds", 1200);
-        }
-        SECTION("vb_cs") { test_dac_caller(defs::VB_CS, "vb_cs", 2799); }
-        SECTION("vb_opa_fd") {
-            test_dac_caller(defs::VB_OPA_FD, "vb_opa_fd", 0);
-        }
-        SECTION("vcom_adc2") {
-            test_dac_caller(defs::VCOM_ADC2, "vcom_adc2", 1400);
-        }
+        SECTION("vref_h_adc") { test_dac_caller(defs::VREF_H_ADC, 2099); }
+        SECTION("vb_comp_fe") { test_dac_caller(defs::VB_COMP_FE, 0); }
+        SECTION("vb_comp_adc") { test_dac_caller(defs::VB_COMP_ADC, 0); }
+        SECTION("vcom_cds") { test_dac_caller(defs::VCOM_CDS, 1400); }
+        SECTION("vref_rstore") { test_dac_caller(defs::VREF_RSTORE, 640); }
+        SECTION("vb_opa_1st") { test_dac_caller(defs::VB_OPA_1ST, 0); }
+        SECTION("vref_comp_fe") { test_dac_caller(defs::VREF_COMP_FE, 0); }
+        SECTION("vcom_adc1") { test_dac_caller(defs::VCOM_ADC1, 1400); }
+        SECTION("vref_prech") { test_dac_caller(defs::VREF_PRECH, 1720); }
+        SECTION("vref_l_adc") { test_dac_caller(defs::VREF_L_ADC, 700); }
+        SECTION("vref_cds") { test_dac_caller(defs::VREF_CDS, 1200); }
+        SECTION("vb_cs") { test_dac_caller(defs::VB_CS, 2799); }
+        SECTION("vb_opa_fd") { test_dac_caller(defs::VB_OPA_FD, 0); }
+        SECTION("vcom_adc2") { test_dac_caller(defs::VCOM_ADC2, 1400); }
         // eiger
         REQUIRE_THROWS(caller.call("dac", {"vthreshold"}, -1, GET));
         REQUIRE_THROWS(caller.call("dac", {"vsvp"}, -1, GET));

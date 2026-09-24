@@ -45,40 +45,58 @@ void test_valid_port_caller(const std::string &command,
     }
 }
 
-void test_dac_caller(defs::dacIndex index, const std::string &dacname,
-                     int dacvalue, bool mV) {
+void test_dac(defs::dacIndex index, std::string dacname, int dacvalue,
+              bool mV) {
     Detector det;
     Caller caller(&det);
-    std::string dac = dacname;
     auto value = std::to_string(dacvalue);
     auto previous = det.getDAC(index, false);
-    // chip test board
-    if (dacname == "dac") {
-        dac = std::to_string(static_cast<int>(index));
-    }
     {
         std::ostringstream oss;
-        std::vector<std::string> args = {dac, value};
+        std::vector<std::string> args = {dacname, value};
         if (mV)
             args.push_back("mV");
         std::cout << "args:" << ToString(args) << std::endl;
         caller.call("dac", args, -1, PUT, oss);
-        REQUIRE(oss.str() == std::string("dac ") + dac + " " + value +
+        REQUIRE(oss.str() == std::string("dac ") + dacname + " " + value +
                                  (mV ? " mV\n" : "\n"));
     }
     {
         std::ostringstream oss;
-        std::vector<std::string> args = {dac};
+        std::vector<std::string> args = {dacname};
         if (mV)
             args.push_back("mV");
         caller.call("dac", args, -1, GET, oss);
-        REQUIRE(oss.str() ==
-                "dac " + dac + " " + value + (mV ? " mV\n" : "\n"));
+        {
+            std::ostringstream oss_expected;
+            oss_expected << "dac " << dacname << " " << value
+                         << (mV ? " mV" : "") << '\n';
+            REQUIRE(oss.str() == oss_expected.str());
+        }
     }
     // Reset all dacs to previous value
     for (int i = 0; i != det.size(); ++i) {
         det.setDAC(index, previous[i], false, {i});
     }
+}
+
+void test_dac_caller(defs::dacIndex index, int dacvalue, bool mV) {
+    std::string dacname = sls::ToString(index);
+    // ctb: use only the index for dacname
+    // so that cli output is not 'dac dac 0'
+    if (index <= defs::DAC_17) {
+        dacname = std::to_string(static_cast<int>(index));
+    }
+    test_dac(index, dacname, dacvalue, mV);
+}
+
+void test_dacname_caller(std::string dacname, int dacvalue, bool mV) {
+    Detector det;
+    auto detType = det.getDetectorType().squash(defs::GENERIC);
+    REQUIRE((detType == defs::CHIPTESTBOARD ||
+             detType == defs::XILINX_CHIPTESTBOARD));
+    auto index = det.getDacIndex(dacname);
+    test_dac(index, dacname, dacvalue, mV);
 }
 
 void test_onchip_dac_caller(defs::dacIndex index, const std::string &dacname,

@@ -48,6 +48,15 @@ bool DetectorImpl::isAllPositions(Positions pos) const {
             (pos.size() == modules.size()));
 }
 
+std::vector<int> DetectorImpl::fillInPositions(Positions pos) const {
+    if (isAllPositions(pos)) {
+        std::vector<int> positions(modules.size());
+        std::iota(begin(positions), end(positions), 0);
+        return positions;
+    }
+    return pos;
+}
+
 void DetectorImpl::setAcquiringFlag(bool flag) { shm()->acquiringFlag = flag; }
 
 int DetectorImpl::getDetectorIndex() const { return detectorIndex; }
@@ -1640,6 +1649,7 @@ Result<bool> DetectorImpl::getUDPDataStream(const defs::portPosition port,
 void DetectorImpl::setUDPDataStream(const defs::portPosition port,
                                     const bool enable, Positions pos) {
     assertTwoUDPDataInterfaces("set enable/disable UDP ports");
+    validatePortEnable(port, enable, pos);
     Parallel(&Module::setUDPDataStream, pos, port, enable);
     updateRxUDPDatastreamMetadata();
 }
@@ -1860,22 +1870,10 @@ void DetectorImpl::convertGlobalRoiToPortLevel(
 void DetectorImpl::validatePortEnable(const defs::portPosition port,
                                       const bool enable,
                                       std::vector<int> pos) const {
-    if (modules.size() == 0) {
-        throw RuntimeError("No Modules added");
-    }
-    if (shm()->detType != EIGER)
+    if (isCompleteROI())
         return;
-
-    // complete detector ROI is the default state and does not constrain
-    const auto rois = getRxROI();
-    if (rois.empty() || (rois.size() == 1 && rois[0].completeRoi())) {
-        return;
-    }
-    if (pos.empty() || (pos.size() == 1 && pos[0] == -1)) {
-        pos.resize(modules.size());
-        std::iota(begin(pos), end(pos), 0);
-    }
-      for (int i : pos) {
+    auto positions = fillInPositions(pos);
+    for (int i : positions) {
         if (i < 0 || static_cast<size_t>(i) >= modules.size()) {
             throw RuntimeError("Invalid module index: " + std::to_string(i));
         }
@@ -1894,15 +1892,13 @@ void DetectorImpl::validatePortEnableRoiState(const int moduleIndex,
                                               defs::portPosition changedPort,
                                               const defs::ROI &portRoi,
                                               bool enabled) const {
-    if (shm()->detType != EIGER)
-        return;
     // enabled or disabled and no roi
     if (enabled || portRoi.noRoi())
         return;
     // diabled but ROI specified
     std::ostringstream oss;
-    oss << (changedPort == defs::LEFT ? "Left" : "Right") << " port of module "
-        << moduleIndex << " (" << modules[moduleIndex]->getHostname()
+    oss << ToString(changedPort) << " port of module " << moduleIndex << " ("
+        << modules[moduleIndex]->getHostname()
         << ") is not active but ROI is specified for it: " << ToString(portRoi)
         << ". Please disable the ROI for this port or enable the port.";
     throw RuntimeError(oss.str());
@@ -1947,10 +1943,11 @@ void DetectorImpl::setRxROI(const std::vector<defs::ROI> &args) {
             }
         }
         // validate roi against port enables
-        if (shm()->detType == EIGER) {
+        if (nPortsPerModule == 2) {
+            auto ports = getPortPositionList();
             for (int iport = 0; iport != nPortsPerModule; ++iport) {
-                auto port = static_cast<defs::portPosition>(iport);
-                auto enable = modules[iModule]->getDataStream(port);
+                defs::portPosition port = ports[iport];
+                auto enable = modules[iModule]->getUDPDataStream(port);
                 validatePortEnableRoiState(iModule, port, portRois[iport],
                                            enable);
             }
@@ -1975,6 +1972,14 @@ void DetectorImpl::clearRxROI() {
         modules[iModule]->setRxROI(std::vector<defs::ROI>(nPortsPerModule));
     }
     modules[0]->setRxROIMetadata(std::vector<defs::ROI>(1));
+}
+
+bool DetectorImpl::isCompleteROI() const {
+    const auto rois = getRxROI();
+    if (rois.empty() || (rois.size() == 1 && rois[0].completeRoi())) {
+        return true;
+    }
+    return false;
 }
 
 void DetectorImpl::getBadChannels(const std::string &fname,

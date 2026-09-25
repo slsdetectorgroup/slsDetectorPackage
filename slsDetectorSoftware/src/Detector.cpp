@@ -1335,7 +1335,6 @@ Result<bool> Detector::getUDPDataStream(const defs::portPosition port,
 
 void Detector::setUDPDataStream(const defs::portPosition port,
                                 const bool enable, Positions pos) {
-    pimpl->validatePortEnable(port, enable, pos);                             
     pimpl->setUDPDataStream(port, enable, pos);
 }
 
@@ -1485,6 +1484,8 @@ void Detector::setRxROI(const std::vector<defs::ROI> &args) {
 }
 
 void Detector::clearRxROI() { pimpl->clearRxROI(); }
+
+bool Detector::isCompleteROI() const { return pimpl->isCompleteROI(); }
 
 // File
 

@@ -1037,6 +1037,9 @@ class Detector {
 
     void clearRxROI();
 
+    /** Returns true if the current ROI covers the complete detector (default)*/
+    bool isCompleteROI() const;
+
     ///@}
 
     /** @name File */

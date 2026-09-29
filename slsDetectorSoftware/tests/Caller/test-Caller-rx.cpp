@@ -858,55 +858,61 @@ TEST_CASE("rx_roi", "[.detectorintegration][.disable_check_data_file]") {
 TEST_CASE("rx_roi_port_disabled", "[.detectorintegration]") {
     Detector det;
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER) {
+    auto two_ports = (det_type == defs::EIGER);
+    if (two_ports) {
         auto prev_roi = det.getRxROI();
-        auto prev_leftport = det.getDataStream(defs::LEFT);
-        auto prev_rightport = det.getDataStream(defs::RIGHT);
+        std::vector<defs::portPosition> ports = {defs::LEFT, defs::RIGHT};
+        auto prev_port0 = det.getDataStream(ports[0], {0})[0];
+        auto prev_port1 = det.getDataStream(ports[1], {0})[0];
+        bool prev_tengiga = det.getTenGiga().squash(false);
 
-        det.clearRxROI();
+        std::vector<defs::ROI> rois = {defs::ROI{0, 10, 0, 20},
+                                       defs::ROI{600, 610, 0, 30}};
         det.setTenGiga(true);
-        det.setDataStream(defs::LEFT, true);
-        det.setDataStream(defs::RIGHT, true);
-        det.setRxROI({defs::ROI{0, 10, 0, 10}, defs::ROI{600, 610, 0, 10}});
-        LOG(logINFOBLUE) << " expecting to throw";
-        REQUIRE_THROWS(det.setDataStream(defs::LEFT, false, {0}));
-        REQUIRE_THROWS(det.setDataStream(defs::RIGHT, false, {0}));
 
         det.clearRxROI();
-        det.setDataStream(defs::LEFT, true);
-        det.setDataStream(defs::RIGHT, true);
-        det.setRxROI({defs::ROI{0, 10, 0, 10}});
-        REQUIRE_THROWS(det.setDataStream(defs::LEFT, false, {0}));
-        REQUIRE_NOTHROW(det.setDataStream(defs::RIGHT, false, {0}));
+        det.setDataStream(ports[0], true, {0});
+        det.setDataStream(ports[1], true, {0});
+        det.setRxROI(rois);
+        REQUIRE_THROWS(det.setDataStream(ports[0], false));
+        REQUIRE_THROWS(det.setUDPDataStream(ports[1], false));
 
         det.clearRxROI();
-        det.setDataStream(defs::LEFT, true);
-        det.setDataStream(defs::RIGHT, true);
-        det.setRxROI({defs::ROI{600, 610, 0, 10}});
-        REQUIRE_NOTHROW(det.setDataStream(defs::LEFT, false, {0}));
-        REQUIRE_THROWS(det.setDataStream(defs::RIGHT, false, {0}));
+        det.setDataStream(ports[0], true, {0});
+        det.setDataStream(ports[1], true, {0});
+        det.setRxROI({rois[0]});
+        REQUIRE_THROWS(det.setDataStream(ports[0], false));
+        REQUIRE_NOTHROW(det.setDataStream(ports[1], false));
 
         det.clearRxROI();
-        det.setDataStream(defs::LEFT, false, {0});
-        det.setDataStream(defs::RIGHT, true, {0});
-        REQUIRE_THROWS(det.setRxROI({defs::ROI{0, 10, 0, 10}}));
-        REQUIRE_NOTHROW(det.setRxROI({defs::ROI{600, 610, 0, 0}}));
+        det.setDataStream(ports[0], true, {0});
+        det.setDataStream(ports[1], true, {0});
+        det.setRxROI({rois[1]});
+        REQUIRE_NOTHROW(det.setDataStream(ports[0], false));
+        REQUIRE_THROWS(det.setDataStream(ports[1], false));
 
         det.clearRxROI();
-        det.setDataStream(defs::LEFT, true, {0});
-        det.setDataStream(defs::RIGHT, false, {0});
-        REQUIRE_NOTHROW(det.setRxROI({defs::ROI{0, 10, 0, 10}}));
-        REQUIRE_THROWS(det.setRxROI({defs::ROI{600, 610, 0, 10}}));
-        /* virtual detector doesnt understand it cant disable in 1g mode, so
-         * cant test */
+        det.setDataStream(ports[0], false, {0});
+        det.setDataStream(ports[1], true, {0});
+        REQUIRE_THROWS(det.setRxROI({rois[0]}));
+        REQUIRE_NOTHROW(det.setRxROI({rois[1]}));
+
+        det.clearRxROI();
+        det.setDataStream(ports[0], true, {0});
+        det.setDataStream(ports[1], false, {0});
+        REQUIRE_NOTHROW(det.setRxROI({rois[0]}));
+        REQUIRE_THROWS(det.setRxROI({rois[1]}));
+
+        /* eiger virtual detector doesnt understand it cant disable in 1g mode,
+         * so cant test in 1g mode */
+
         if (prev_roi.size() == 1 && prev_roi[0].completeRoi())
             det.clearRxROI();
         else
             det.setRxROI(prev_roi);
-        for (int i = 0; i != det.size(); ++i) {
-            det.setDataStream(defs::LEFT, prev_leftport[i], {i});
-            det.setDataStream(defs::RIGHT, prev_rightport[i], {i});
-        }
+        det.setDataStream(ports[0], prev_port0, {0});
+        det.setDataStream(ports[1], prev_port1, {0});
+        det.setTenGiga(prev_tengiga);
     }
 }
 

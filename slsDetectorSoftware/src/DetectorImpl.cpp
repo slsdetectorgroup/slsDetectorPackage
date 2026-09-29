@@ -1878,7 +1878,13 @@ void DetectorImpl::validatePortEnable(const defs::portPosition port,
             throw RuntimeError("Invalid module index: " + std::to_string(i));
         }
         auto modRois = modules[i]->getRxROI();
-        auto portIndex = static_cast<int>(port);
+        auto portList = getPortPositionList();
+        int portIndex = 0;
+        for (auto p : portList) {
+            if (p == port)
+                break;
+            portIndex++;
+        }
         validatePortEnableRoiState(i, port, modRois[portIndex], enable);
     }
 }

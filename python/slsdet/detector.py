@@ -622,7 +622,7 @@ class Detector(CppDetectorApi):
         >>> d.exptime = 5e-07
         >>> 
         >>> # using timedelta (up to microseconds precision)
-        >>> from datatime import timedelta
+        >>> from datetime import timedelta
         >>> d.exptime = timedelta(seconds = 1, microseconds = 3)
         >>> 
         >>> # using DurationWrapper to set in seconds
@@ -674,7 +674,7 @@ class Detector(CppDetectorApi):
         >>> d.period = 5e-07
         >>> 
         >>> # using timedelta (up to microseconds precision)
-        >>> from datatime import timedelta
+        >>> from datetime import timedelta
         >>> d.period = timedelta(seconds = 1, microseconds = 3)
         >>> 
         >>> # using DurationWrapper to set in seconds
@@ -740,7 +740,7 @@ class Detector(CppDetectorApi):
         >>> d.delay = 5e-07
         >>> 
         >>> # using timedelta (up to microseconds precision)
-        >>> from datatime import timedelta
+        >>> from datetime import timedelta
         >>> d.delay = timedelta(seconds = 1, microseconds = 3)
         >>> 
         >>> # using DurationWrapper to set in seconds
@@ -827,16 +827,21 @@ class Detector(CppDetectorApi):
     @property
     @element
     def txdelay(self):
-        """
+        r"""
         [Eiger][Jungfrau][Moench][Mythen3] Set transmission delay for all modules in the detector using the step size provided.
         
         Note
         ----
-        Sets up the following for every module:\n
-        \t\t[Eiger] txdelay_left to (2 \* mod_index \* n_delay), \n
-        \t\t[Eiger] txdelay_right to ((2 \* mod_index + 1) \* n_delay) and \n
-        \t\t[Eiger] txdelay_frame to (2 \* num_modules \* n_delay)  \n
-        \t\t[Jungfrau][Moench][Mythen3] txdelay_frame to (num_modules \* n_delay)\n\n
+        Sets up the following for every module:
+
+        [Eiger] txdelay_left to (2 \* mod_index \* n_delay), 
+
+        [Eiger] txdelay_right to ((2 \* mod_index + 1) \* n_delay) and 
+
+        [Eiger] txdelay_frame to (2 \* num_modules \* n_delay)  
+
+        [Jungfrau][Moench][Mythen3] txdelay_frame to (num_modules \* n_delay)
+        
         Please refer txdelay_left, txdelay_right and txdelay_frame for details.
         """
         return self.getTransmissionDelay()
@@ -2135,6 +2140,8 @@ class Detector(CppDetectorApi):
         firmware_febl = "Unknown"
         firmware_febr = "Unknown"
         firmware_beb = "Unknown"
+        jungfrau = False
+        chip = "Unknown"
         receiver_in_shm = False
 
         release = self.packageversion
@@ -2144,6 +2151,7 @@ class Detector(CppDetectorApi):
             # shared memory has detectors
             type = self.type
             eiger = (self.type == detectorType.EIGER)
+            jungfrau = (self.type == detectorType.JUNGFRAU)
             receiver_in_shm = self.use_receiver
             if receiver_in_shm:
                 # cannot connect to receiver
@@ -2161,6 +2169,8 @@ class Detector(CppDetectorApi):
                     firmware_beb = self.firmwareversion
                     firmware_febl = self.getFrontEndFirmwareVersion(slsDetectorDefs.fpgaPosition.FRONT_LEFT)
                     firmware_febr = self.getFrontEndFirmwareVersion(slsDetectorDefs.fpgaPosition.FRONT_RIGHT)
+                if jungfrau:
+                    chip = self.chipversion
             except Exception as e:
                 pass
 
@@ -2173,6 +2183,8 @@ class Detector(CppDetectorApi):
             version_list ['firmware (Febr)'] = {firmware_febr}
         else:
             version_list ['firmware'] = {firmware}
+        if jungfrau:
+            version_list ['chip'] = {chip}
         version_list ['detectorserver'] = {detectorserver}
         version_list ['kernel'] = kernel
         version_list ['hardware'] = hardware
@@ -2342,8 +2354,8 @@ class Detector(CppDetectorApi):
         Note
         -----
         Default: AUTO_TIMING \n
-        [Jungfrau][Moench][Ctb][Gotthard2][Xilinx Ctb] AUTO_TIMING, TRIGGER_EXPOSURE \n
-        [Mythen3] AUTO_TIMING, TRIGGER_EXPOSURE, GATED, TRIGGER_GATED \n
+        [Jungfrau][Moench][Ctb][Gotthard2] AUTO_TIMING, TRIGGER_EXPOSURE \n
+        [Mythen3][Xilinx Ctb] AUTO_TIMING, TRIGGER_EXPOSURE, GATED, TRIGGER_GATED \n
         [Eiger] AUTO_TIMING, TRIGGER_EXPOSURE, GATED, BURST_TRIGGER
         """
         return self.getTimingMode()
@@ -2424,19 +2436,63 @@ class Detector(CppDetectorApi):
     """
 
     @property
-    def datastream(self):
+    def udp_datastream(self):
         """
-        datastream [left|right] [0, 1]
-	    [Eiger] Enables or disables data streaming from left or/and right side of detector for 10GbE mode. 1 (enabled) by default.
+        Get or set UDP data streaming for detector/receiver ports.
+
+        [Eiger]: LEFT, RIGHT - 10GbE UDP ports of the detector.
+        [Jungfrau][Moench]: TOP, BOTTOM - UDP ports of the receiver
+        (only when numinterfaces is set to 2).
+
+        :getter: Returns a dictionary containing the UDP data stream enable state
+            for all available ports. When multiple detector modules are present,
+            identical values are returned as a single boolean. If different
+            values are found, a list of booleans is returned.
+
+        :setter: Takes a tuple of ``(portPosition, bool)`` to set the UDP data
+            stream state for a single port.
+
+        Enum: portPosition
+
+        Example
+        -------
+        Get UDP streaming state for all ports:
+
+            >>> d.udp_datastream
+            {<portPosition.TOP: 2>: False, <portPosition.BOTTOM: 3>: True}
+
+        Multiple detectors with identical states:
+
+            >>> d.udp_datastream
+            {<portPosition.TOP: 2>: False, <portPosition.BOTTOM: 3>: True}
+
+        Multiple detectors with different states:
+
+            >>> d.udp_datastream
+            {<portPosition.TOP: 2>: [False, True], <portPosition.BOTTOM: 3>: [True, True]}
+
+        Enable UDP streaming for a specific port:
+
+            >>> from slsdet import portPosition
+            >>> d.udp_datastream = (portPosition.TOP, True)
+
+        Disable UDP streaming for a specific port:
+
+            >>> d.udp_datastream = (portPosition.BOTTOM, False)
         """
         result = {}
-        for port in [defs.LEFT, defs.RIGHT]:
-            result[port] = element_if_equal(self.getDataStream(port))
+        if self.type in [detectorType.JUNGFRAU, detectorType.MOENCH]:
+            ports = [defs.TOP, defs.BOTTOM]
+        else:
+            ports = [defs.LEFT, defs.RIGHT]     
+
+        for port in ports:
+            result[port] = element_if_equal(self.getUDPDataStream(port))
         return result
 
-    @datastream.setter
-    def datastream(self, value):
-        ut.set_using_dict(self.setDataStream, *value)
+    @udp_datastream.setter
+    def udp_datastream(self, value):
+        self.setUDPDataStream(*value)
 
     @property
     @element
@@ -2468,7 +2524,7 @@ class Detector(CppDetectorApi):
         >>> d.subexptime = 5e-07
         >>> 
         >>> # using timedelta (up to microseconds precision)
-        >>> from datatime import timedelta
+        >>> from datetime import timedelta
         >>> d.subexptime = timedelta(seconds = 1.23, microseconds = 203)
         >>> 
         >>> # using DurationWrapper to set in seconds
@@ -2534,7 +2590,7 @@ class Detector(CppDetectorApi):
         >>> d.subdeadtime = 5e-07
         >>> 
         >>> # using timedelta (up to microseconds precision)
-        >>> from datatime import timedelta
+        >>> from datetime import timedelta
         >>> d.subdeadtime = timedelta(seconds = 1.23, microseconds = 203)
         >>> 
         >>> # using DurationWrapper to set in seconds
@@ -2689,12 +2745,12 @@ class Detector(CppDetectorApi):
     @element
     def chipversion(self):
         """
-        [Jungfrau] Chip version of module. Can be 1.0 or 1.1.
+        [Jungfrau] Chip version of module.
 
         Example
         -------
         >>> d.chipversion
-        '1.0'
+        '1.2 Normal'
         """
         return self.getChipVersion()
 
@@ -2731,7 +2787,7 @@ class Detector(CppDetectorApi):
         >>> d.compdisabletime = 5e-07
         >>> 
         >>> # using timedelta (up to microseconds precision)
-        >>> from datatime import timedelta
+        >>> from datetime import timedelta
         >>> d.compdisabletime = timedelta(seconds = 1, microseconds = 3)
         >>> 
         >>> # using DurationWrapper to set in seconds
@@ -2824,7 +2880,7 @@ class Detector(CppDetectorApi):
         >>> d.storagecell_delay = 5e-07
         >>> 
         >>> # using timedelta (up to microseconds precision)
-        >>> from datatime import timedelta
+        >>> from datetime import timedelta
         >>> d.storagecell_delay = timedelta(seconds = 1, microseconds = 3)
         >>> 
         >>> # using DurationWrapper to set in seconds
@@ -3170,7 +3226,7 @@ class Detector(CppDetectorApi):
         >>> d.burstperiod = 5e-07
         >>> 
         >>> # using timedelta (up to microseconds precision)
-        >>> from datatime import timedelta
+        >>> from datetime import timedelta
         >>> d.burstperiod = timedelta(seconds = 1, microseconds = 3)
         >>> 
         >>> # using DurationWrapper to set in seconds
@@ -3330,7 +3386,7 @@ class Detector(CppDetectorApi):
         >>> d.gatedelay = 5e-07
         >>> 
         >>> # using timedelta (up to microseconds precision)
-        >>> from datatime import timedelta
+        >>> from datetime import timedelta
         >>> d.gatedelay = timedelta(seconds = 1, microseconds = 3)
         >>> 
         >>> # using DurationWrapper to set in seconds

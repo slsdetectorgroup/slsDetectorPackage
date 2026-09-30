@@ -53,6 +53,10 @@ void MasterAttributes::GetJungfrauBinaryAttributes(writer *w) {
     WriteBinaryExposureTme(w);
     WriteBinaryAcquisitionPeriod(w);
     WriteBinaryNumberOfUDPInterfaces(w);
+    if (numUDPInterfaces == 2) {
+        WriteBinaryUDPPortsType(w);
+        WriteBinaryUDPPortsDisabled(w);
+    }
     WriteBinaryNumberOfRows(w);
     WriteBinaryReadoutSpeed(w);
 }
@@ -63,6 +67,10 @@ void MasterAttributes::WriteJungfrauHDF5Attributes(H5::Group *group) {
     WriteHDF5ExposureTime(group);
     WriteHDF5AcquisitionPeriod(group);
     WriteHDF5NumberOfUDPInterfaces(group);
+    if (numUDPInterfaces == 2) {
+        WriteHDF5UDPPortsType(group);
+        WriteHDF5UDPPortsDisabled(group);
+    }
     WriteHDF5NumberOfRows(group);
     WriteHDF5ReadoutSpeed(group);
 }
@@ -73,6 +81,10 @@ void MasterAttributes::GetMoenchBinaryAttributes(writer *w) {
     WriteBinaryExposureTme(w);
     WriteBinaryAcquisitionPeriod(w);
     WriteBinaryNumberOfUDPInterfaces(w);
+    if (numUDPInterfaces == 2) {
+        WriteBinaryUDPPortsType(w);
+        WriteBinaryUDPPortsDisabled(w);
+    }
     WriteBinaryNumberOfRows(w);
     WriteBinaryReadoutSpeed(w);
 }
@@ -83,6 +95,10 @@ void MasterAttributes::WriteMoenchHDF5Attributes(H5::Group *group) {
     WriteHDF5ExposureTime(group);
     WriteHDF5AcquisitionPeriod(group);
     WriteHDF5NumberOfUDPInterfaces(group);
+    if (numUDPInterfaces == 2) {
+        WriteHDF5UDPPortsType(group);
+        WriteHDF5UDPPortsDisabled(group);
+    }
     WriteHDF5NumberOfRows(group);
     WriteHDF5ReadoutSpeed(group);
 }
@@ -98,6 +114,8 @@ void MasterAttributes::GetEigerBinaryAttributes(writer *w) {
     WriteBinarySubExposureTime(w);
     WriteBinarySubAcquisitionPeriod(w);
     WriteBinaryQuad(w);
+    WriteBinaryUDPPortsType(w);
+    WriteBinaryUDPPortsDisabled(w);
     WriteBinaryNumberOfRows(w);
     WriteBinaryRateCorrections(w);
     WriteBinaryReadoutSpeed(w);
@@ -114,6 +132,8 @@ void MasterAttributes::WriteEigerHDF5Attributes(H5::Group *group) {
     WriteHDF5SubExposureTime(group);
     WriteHDF5SubAcquisitionPeriod(group);
     WriteHDF5Quad(group);
+    WriteHDF5UDPPortsType(group);
+    WriteHDF5UDPPortsDisabled(group);
     WriteHDF5NumberOfRows(group);
     WriteHDF5RateCorrections(group);
     WriteHDF5ReadoutSpeed(group);
@@ -690,6 +710,26 @@ void MasterAttributes::WriteHDF5TransceiverSamples(H5::Group *group) {
 }
 #endif
 
+void MasterAttributes::WriteBinaryUDPPortsType(writer *w) {
+    WriteBinary(w, N_UDP_PORTS_TYPE.data(), udpPortTypes);
+}
+
+#ifdef HDF5C
+void MasterAttributes::WriteHDF5UDPPortsType(H5::Group *group) {
+    WriteHDF5StringArray(group, N_UDP_PORTS_TYPE.data(), udpPortTypes);
+}
+#endif
+
+void MasterAttributes::WriteBinaryUDPPortsDisabled(writer *w) {
+    WriteBinary(w, N_UDP_PORTS_DISABLED.data(), udpPortsDisabled);
+}
+
+#ifdef HDF5C
+void MasterAttributes::WriteHDF5UDPPortsDisabled(H5::Group *group) {
+    WriteHDF5Int(group, N_UDP_PORTS_DISABLED.data(), udpPortsDisabled);
+}
+#endif
+
 #ifdef HDF5C
 void MasterAttributes::WriteHDF5String(H5::Group *group,
                                        const std::string &name,
@@ -704,15 +744,25 @@ void MasterAttributes::WriteHDF5String(H5::Group *group,
 void MasterAttributes::WriteHDF5StringArray(
     H5::Group *group, const std::string &name,
     const std::vector<std::string> &value) {
-    std::vector<const char *> c;
-    for (auto &s : value) {
-        c.push_back(s.c_str());
+    try {
+        std::vector<const char *> c;
+        for (auto &s : value) {
+            c.push_back(s.c_str());
+        }
+        hsize_t dims[1] = {c.size()};
+        H5::DataSpace dataspace(1, dims);
+        H5::StrType strdatatype(H5::PredType::C_S1, H5T_VARIABLE);
+        H5::DataSet dataset =
+            group->createDataSet(name, strdatatype, dataspace);
+        dataset.write(c.data(), strdatatype);
+    } catch (H5::Exception &e) {
+        e.printErrorStack();
+        throw RuntimeError("Could not write attribute " + name +
+                           " in HDf5 file");
+    } catch (std::exception &e) {
+        throw RuntimeError("Other excetion: Could not write attribute " + name +
+                           " in HDf5 file. " + std::string(e.what()));
     }
-    hsize_t dims[1] = {c.size()};
-    H5::DataSpace dataspace(1, dims);
-    H5::StrType strdatatype(H5::PredType::C_S1, H5T_VARIABLE);
-    H5::DataSet dataset = group->createDataSet(name, strdatatype, dataspace);
-    dataset.write(c.data(), strdatatype);
 }
 #endif
 

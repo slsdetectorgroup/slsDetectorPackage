@@ -166,7 +166,7 @@ int ClientInterface::functionTable(){
 	flist[F_GET_RECEIVER_STREAMING_PORT]	= 	&ClientInterface::get_streaming_port;
 	flist[F_SET_RECEIVER_SILENT_MODE]		= 	&ClientInterface::set_silent_mode;
 	flist[F_GET_RECEIVER_SILENT_MODE]		= 	&ClientInterface::get_silent_mode;
-	flist[F_RESTREAM_STOP_FROM_RECEIVER]	= 	&ClientInterface::restream_stop;
+	flist[F_STREAM_RX_DUMMY_HEADER_FROM_RECEIVER]	= 	&ClientInterface::stream_rx_dummy_header;
 	flist[F_SET_ADDITIONAL_JSON_HEADER]     =   &ClientInterface::set_additional_json_header;
 	flist[F_GET_ADDITIONAL_JSON_HEADER]     =   &ClientInterface::get_additional_json_header;
     flist[F_RECEIVER_UDP_SOCK_BUF_SIZE]     =   &ClientInterface::set_udp_socket_buffer_size;
@@ -207,7 +207,7 @@ int ClientInterface::functionTable(){
     flist[F_GET_RECEIVER_STREAMING_HWM]     =   &ClientInterface::get_streaming_hwm;
     flist[F_SET_RECEIVER_STREAMING_HWM]     =   &ClientInterface::set_streaming_hwm;
     flist[F_RECEIVER_SET_ALL_THRESHOLD]     =   &ClientInterface::set_all_threshold;
-    flist[F_RECEIVER_SET_DATASTREAM]        =   &ClientInterface::set_detector_datastream;
+    flist[F_RECEIVER_SET_UDP_DATASTREAM]    =   &ClientInterface::set_port_udp_datastream;
     flist[F_GET_RECEIVER_ARPING]            =   &ClientInterface::get_arping;
     flist[F_SET_RECEIVER_ARPING]            =   &ClientInterface::set_arping;
     flist[F_RECEIVER_GET_RECEIVER_ROI]      =   &ClientInterface::get_receiver_roi;
@@ -221,6 +221,10 @@ int ClientInterface::functionTable(){
     flist[F_SET_RECEIVER_DBIT_REORDER]      =   &ClientInterface::set_dbit_reorder;
     flist[F_RECEIVER_GET_ROI_METADATA]      =   &ClientInterface::get_roi_metadata;
     flist[F_SET_RECEIVER_READOUT_SPEED]     =   &ClientInterface::set_readout_speed;
+    flist[F_RECEIVER_GET_UDP_DATASTREAM]    =   &ClientInterface::get_port_udp_datastream;
+    flist[F_RECEIVER_SET_UDP_PORT_DISABLE_META] =   &ClientInterface::set_udp_port_disable_meta;
+    flist[F_RECEIVER_GET_UDP_PORT_DISABLE_META] =   &ClientInterface::get_udp_port_disable_meta;
+
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
 		LOG(logDEBUG1) << "function fnum: " << i << " (" <<
@@ -383,8 +387,8 @@ int ClientInterface::setup_receiver(Interface &socket) {
             impl()->setSubPeriod(std::chrono::nanoseconds(arg.subExpTimeNs) +
                                  std::chrono::nanoseconds(arg.subDeadTimeNs));
             impl()->setActivate(static_cast<bool>(arg.activate));
-            impl()->setDetectorDataStream(LEFT, arg.dataStreamLeft);
-            impl()->setDetectorDataStream(RIGHT, arg.dataStreamRight);
+            impl()->setUDPDataStream(LEFT, arg.dataStreamLeft);
+            impl()->setUDPDataStream(RIGHT, arg.dataStreamRight);
             impl()->setQuad(arg.quad == 0 ? false : true);
             impl()->setThresholdEnergy(arg.thresholdEnergyeV[0]);
         }
@@ -398,7 +402,7 @@ int ClientInterface::setup_receiver(Interface &socket) {
             }
             impl()->setThresholdEnergy(val);
         }
-        if (detType == EIGER || detType == MYTHEN3) {
+        if (detType == EIGER || detType == MYTHEN3 || detType == MATTERHORN) {
             impl()->setDynamicRange(arg.dynamicRange);
         }
         impl()->setTimingMode(arg.timMode);
@@ -429,6 +433,10 @@ int ClientInterface::setup_receiver(Interface &socket) {
             impl()->setGateDelay3(std::chrono::nanoseconds(arg.gateDelay3Ns));
             impl()->setNumberOfGates(arg.gates);
         }
+        if (detType == MATTERHORN) {
+            impl()->setCounterMask(arg.countermask);
+        }
+        LOG(logDEBUG) << "set counter mask to " << arg.countermask;
         if (detType == GOTTHARD2) {
             impl()->setBurstMode(arg.burstType);
         }
@@ -450,6 +458,7 @@ void ClientInterface::setDetectorType(detectorType arg) {
     case MOENCH:
     case MYTHEN3:
     case GOTTHARD2:
+    case MATTERHORN:
         break;
     default:
         throw RuntimeError("Unknown detector type: " + std::to_string(arg));
@@ -666,12 +675,21 @@ int ClientInterface::set_dynamic_range(Interface &socket) {
             break;
         */
         case 4:
+            if (detType == MATTERHORN || detType == EIGER) {
+                exists = true;
+            }
+            break;
         case 12:
             if (detType == EIGER) {
                 exists = true;
             }
             break;
         case 8:
+            if (detType == MATTERHORN || detType == EIGER ||
+                detType == MYTHEN3) {
+                exists = true;
+            }
+            break;
         case 32:
             if (detType == EIGER || detType == MYTHEN3) {
                 exists = true;
@@ -813,32 +831,17 @@ int ClientInterface::get_file_index(Interface &socket) {
 
 int ClientInterface::get_frame_index(Interface &socket) {
     auto retval = impl()->getCurrentFrameIndex();
-    LOG(logDEBUG1) << "frames index:" << ToString(retval);
-    auto size = static_cast<int>(retval.size());
-    socket.Send(OK);
-    socket.Send(size);
-    socket.Send(retval);
-    return OK;
+    return socket.sendVariableResult(retval);
 }
 
 int ClientInterface::get_missing_packets(Interface &socket) {
     auto missing_packets = impl()->getNumMissingPackets();
-    LOG(logDEBUG1) << "missing packets:" << ToString(missing_packets);
-    auto size = static_cast<int>(missing_packets.size());
-    socket.Send(OK);
-    socket.Send(size);
-    socket.Send(missing_packets);
-    return OK;
+    return socket.sendVariableResult(missing_packets);
 }
 
 int ClientInterface::get_frames_caught(Interface &socket) {
     auto retval = impl()->getFramesCaught();
-    LOG(logDEBUG1) << "frames caught:" << ToString(retval);
-    auto size = static_cast<int>(retval.size());
-    socket.Send(OK);
-    socket.Send(size);
-    socket.Send(retval);
-    return OK;
+    return socket.sendVariableResult(retval);
 }
 
 int ClientInterface::set_file_write(Interface &socket) {
@@ -1082,50 +1085,52 @@ int ClientInterface::get_silent_mode(Interface &socket) {
     return socket.sendResult(retval);
 }
 
-int ClientInterface::restream_stop(Interface &socket) {
+int ClientInterface::stream_rx_dummy_header(Interface &socket) {
     verifyIdle(socket);
     if (!impl()->getDataStreamEnable()) {
         throw RuntimeError(
-            "Could not restream stop packet as data Streaming is disabled");
+            "Could not stream rx dummy header as data Streaming is disabled");
     } else {
         LOG(logDEBUG1) << "Restreaming stop";
-        impl()->restreamStop();
+        impl()->streamRxDummyHeader();
     }
     return socket.Send(OK);
 }
 
 int ClientInterface::set_additional_json_header(Interface &socket) {
-    std::map<std::string, std::string> json;
-    auto size = socket.Receive<int>();
-    if (size > 0) {
-        std::string buff(size, '\0');
-        socket.Receive(&buff[0], buff.size());
-        std::istringstream iss(buff);
-        std::string key, value;
-        while (iss >> key) {
-            iss >> value;
-            json[key] = value;
-        }
-    }
     // verifyIdle(socket); allowing it to be set on the fly
-    LOG(logDEBUG1) << "Setting additional json header: " << ToString(json);
-    impl()->setAdditionalJsonHeader(json);
+
+    auto vec = socket.receiveVariableArgs<std::vector<char>>();
+    // convert vector<char> to string (space separated)
+    std::string longString(vec.begin(), vec.end());
+    // convert string to map of key-value pairs
+    std::map<std::string, std::string> args;
+    std::istringstream iss(longString);
+    std::string key, value;
+    while (iss >> key) {
+        iss >> value;
+        args[key] = value;
+    }
+    LOG(logDEBUG1) << "Setting additional json header: " << ToString(args);
+
+    impl()->setAdditionalJsonHeader(args);
     return socket.Send(OK);
 }
 
 int ClientInterface::get_additional_json_header(Interface &socket) {
     std::map<std::string, std::string> json = impl()->getAdditionalJsonHeader();
     LOG(logDEBUG1) << "additional json header:" << ToString(json);
+
+    // convert map to string (space separated) to send over socket
     std::ostringstream oss;
     for (auto &it : json) {
         oss << it.first << ' ' << it.second << ' ';
     }
-    auto buff = oss.str();
-    auto size = static_cast<int>(buff.size());
-    socket.sendResult(size);
-    if (size > 0)
-        socket.Send(buff);
-    return OK;
+    auto longString = oss.str();
+
+    // conver to vector<char> to send over socket (variable vector length impl)
+    std::vector<char> retval(longString.begin(), longString.end());
+    return socket.sendVariableResult(retval);
 }
 
 int ClientInterface::set_udp_socket_buffer_size(Interface &socket) {
@@ -1594,16 +1599,13 @@ int ClientInterface::set_streaming_start_fnum(Interface &socket) {
 }
 
 int ClientInterface::set_rate_correct(Interface &socket) {
-    auto index = socket.Receive<int>();
-    if (index <= 0) {
-        throw RuntimeError("Invalid number of rate correction values: " +
-                           std::to_string(index));
-    }
-    LOG(logDEBUG) << "Number of detectors for rate correction: " << index;
-    std::vector<int64_t> t(index);
-    socket.Receive(t);
     verifyIdle(socket);
-    LOG(logINFO) << "Setting rate corrections[" << index << ']';
+
+    auto t = socket.receiveVariableArgs<std::vector<int64_t>>();
+    if (t.size() <= 0)
+        throw RuntimeError("Invalid number of rate correction values: " +
+                           std::to_string(t.size()));
+    LOG(logINFO) << "Setting rate corrections[" << t.size() << ']';
     impl()->setRateCorrections(t);
     return socket.Send(OK);
 }
@@ -1653,25 +1655,56 @@ int ClientInterface::set_all_threshold(Interface &socket) {
     return socket.Send(OK);
 }
 
-int ClientInterface::set_detector_datastream(Interface &socket) {
-    int args[2]{-1, -1};
-    socket.Receive(args);
-    portPosition port = static_cast<portPosition>(args[0]);
+void ClientInterface::validate_port_position(const portPosition port) {
+    bool exists = false;
     switch (port) {
     case LEFT:
     case RIGHT:
+        if (detType == EIGER) {
+            exists = true;
+        }
+        break;
+    case TOP:
+    case BOTTOM:
+        if (detType == JUNGFRAU || detType == MOENCH) {
+            exists = true;
+        }
         break;
     default:
         throw RuntimeError("Invalid port type");
     }
-    bool enable = static_cast<int>(args[1]);
-    LOG(logDEBUG1) << "Setting datastream (" << ToString(port) << ") to "
-                   << ToString(enable);
-    if (detType != EIGER)
+    if (!exists) {
+        modeNotImplemented("Port type", port);
+    }
+}
+
+int ClientInterface::set_port_udp_datastream(Interface &socket) {
+    if (detType != EIGER && detType != JUNGFRAU && detType != MOENCH)
         functionNotImplemented();
+    int args[2]{-1, -1};
+    socket.Receive(args);
+    portPosition port = static_cast<portPosition>(args[0]);
+    validate_port_position(port);
+    bool enable = static_cast<bool>(args[1]);
+    if (impl()->getNumberofUDPInterfaces() == 1)
+        throw RuntimeError("Cannot change UDP port datastream with only 1 "
+                           "interface enabled. Hint: set 'numinterfaces' to 2");
+    LOG(logDEBUG1) << "Setting udp datastream (" << ToString(port) << ") to "
+                   << ToString(enable);
     verifyIdle(socket);
-    impl()->setDetectorDataStream(port, enable);
+    impl()->setUDPDataStream(port, enable);
     return socket.Send(OK);
+}
+
+int ClientInterface::get_port_udp_datastream(Interface &socket) {
+    auto arg = socket.Receive<int>();
+    portPosition port = static_cast<portPosition>(arg);
+    validate_port_position(port);
+    LOG(logDEBUG1) << "Getting udp datastream (" << ToString(port) << ")";
+    if (detType != EIGER && detType != JUNGFRAU && detType != MOENCH)
+        functionNotImplemented();
+    auto retval = static_cast<int>(impl()->getUDPDataStream(port));
+    return socket.sendResult(retval);
 }
 
 int ClientInterface::get_arping(Interface &socket) {
@@ -1699,58 +1732,41 @@ int ClientInterface::set_arping(Interface &socket) {
 int ClientInterface::get_receiver_roi(Interface &socket) {
     auto retvals = impl()->getPortROIs();
     LOG(logDEBUG1) << "Receiver roi retval:" << ToString(retvals);
-    auto size = static_cast<int>(retvals.size());
-    if (size != impl()->getNumberofUDPInterfaces()) {
-        throw RuntimeError("Invalid number of ROIs received: " +
-                           std::to_string(size) + ". Expected: " +
-                           std::to_string(impl()->getNumberofUDPInterfaces()));
-    }
-    socket.Send(size);
-    if (size > 0)
-        socket.Send(retvals);
-    return OK;
+    return socket.sendVariableResult(retvals);
 }
 
 int ClientInterface::set_receiver_roi(Interface &socket) {
-    auto roiSize = socket.Receive<int>();
-    std::vector<ROI> args(roiSize);
-    if (roiSize > 0) {
-        socket.Receive(args);
-    }
-    if (roiSize != impl()->getNumberofUDPInterfaces()) {
-        throw RuntimeError("Invalid number of ROIs received: " +
-                           std::to_string(roiSize) + ". Expected: " +
-                           std::to_string(impl()->getNumberofUDPInterfaces()));
-    }
     if (detType == CHIPTESTBOARD || detType == XILINX_CHIPTESTBOARD)
         functionNotImplemented();
-    LOG(logDEBUG1) << "Set Receiver ROI: " << ToString(args);
     verifyIdle(socket);
+
+    auto args = socket.receiveVariableArgs<std::vector<ROI>>();
+    auto numInterfaces = impl()->getNumberofUDPInterfaces();
+    if (static_cast<int>(args.size()) != numInterfaces) {
+        std::ostringstream oss;
+        oss << "Invalid number of ROIs received: " << args.size()
+            << ". Expected: " << numInterfaces;
+        throw RuntimeError(oss.str());
+    }
+    LOG(logDEBUG1) << "Set Receiver ROI: " << ToString(args);
     try {
         impl()->setPortROIs(args);
     } catch (const std::exception &e) {
         throw RuntimeError("Could not set Receiver ROI [" +
                            std::string(e.what()) + ']');
     }
-
     return socket.Send(OK);
 }
 
 int ClientInterface::set_receiver_roi_metadata(Interface &socket) {
-    auto roiSize = socket.Receive<int>();
-    LOG(logDEBUG1) << "Number of ReceiverROI metadata: " << roiSize;
-    if (roiSize < 1) {
-        throw RuntimeError("Invalid number of ROIs received: " +
-                           std::to_string(roiSize) + ". Min: 1.");
-    }
-    std::vector<ROI> rois(roiSize);
-    if (roiSize > 0) {
-        socket.Receive(rois);
-    }
     if (detType == CHIPTESTBOARD || detType == XILINX_CHIPTESTBOARD)
         functionNotImplemented();
     verifyIdle(socket);
-    LOG(logINFO) << "Setting ReceiverROI metadata[" << roiSize << ']';
+
+    auto rois = socket.receiveVariableArgs<std::vector<ROI>>();
+    if (rois.size() < 1)
+        throw RuntimeError("Invalid number of ROI metadata: " +
+                           std::to_string(rois.size()) + ". Min: 1.");
     try {
         impl()->setMultiROIMetadata(rois);
     } catch (const std::exception &e) {
@@ -1847,12 +1863,7 @@ int ClientInterface::get_roi_metadata(Interface &socket) {
     if (detType == CHIPTESTBOARD || detType == XILINX_CHIPTESTBOARD)
         functionNotImplemented();
     auto retvals = impl()->getMultiROIMetadata();
-    LOG(logDEBUG1) << "Receiver ROI metadata retval:" << ToString(retvals);
-    auto size = static_cast<int>(retvals.size());
-    socket.Send(size);
-    if (size > 0)
-        socket.Send(retvals);
-    return OK;
+    return socket.sendVariableResult(retvals);
 }
 
 int ClientInterface::set_readout_speed(Interface &socket) {
@@ -1882,6 +1893,23 @@ int ClientInterface::set_readout_speed(Interface &socket) {
     LOG(logDEBUG1) << "Setting readout speed to " << value;
     impl()->setReadoutSpeed(static_cast<speedLevel>(value));
     return socket.Send(OK);
+}
+
+int ClientInterface::set_udp_port_disable_meta(Interface &socket) {
+    verifyIdle(socket);
+    auto portsDisabled = socket.receiveVariableArgs<std::vector<int>>();
+    try {
+        impl()->setUDPPortsDisabledMetadata(portsDisabled);
+    } catch (const std::exception &e) {
+        throw RuntimeError("Could not update UDP ports disabled metadata [" +
+                           std::string(e.what()) + ']');
+    }
+    return socket.Send(OK);
+}
+
+int ClientInterface::get_udp_port_disable_meta(Interface &socket) {
+    auto retvals = impl()->getUDPPortsDisabledMetadata();
+    return socket.sendVariableResult(retvals);
 }
 
 } // namespace sls

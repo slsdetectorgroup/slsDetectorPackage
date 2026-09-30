@@ -56,7 +56,6 @@ class InferAction {
     int daclist();
     int dacname();
     int dacvalues();
-    int datastream();
     int dbitclk();
     int dbitphase();
     int dbitpipeline();
@@ -220,6 +219,7 @@ class InferAction {
     int rx_start();
     int rx_status();
     int rx_stop();
+    int rx_streamdummyheader();
     int rx_tcpport();
     int rx_threads();
     int rx_udpsocksize();
@@ -295,6 +295,7 @@ class InferAction {
     int txdelay_right();
     int type();
     int udp_cleardst();
+    int udp_datastream();
     int udp_dstip();
     int udp_dstip2();
     int udp_dstlist();
@@ -389,7 +390,6 @@ class InferAction {
         {"daclist", &InferAction::daclist},
         {"dacname", &InferAction::dacname},
         {"dacvalues", &InferAction::dacvalues},
-        {"datastream", &InferAction::datastream},
         {"dbitclk", &InferAction::dbitclk},
         {"dbitphase", &InferAction::dbitphase},
         {"dbitpipeline", &InferAction::dbitpipeline},
@@ -556,6 +556,7 @@ class InferAction {
         {"rx_start", &InferAction::rx_start},
         {"rx_status", &InferAction::rx_status},
         {"rx_stop", &InferAction::rx_stop},
+        {"rx_streamdummyheader", &InferAction::rx_streamdummyheader},
         {"rx_tcpport", &InferAction::rx_tcpport},
         {"rx_threads", &InferAction::rx_threads},
         {"rx_udpsocksize", &InferAction::rx_udpsocksize},
@@ -632,6 +633,7 @@ class InferAction {
         {"txdelay_right", &InferAction::txdelay_right},
         {"type", &InferAction::type},
         {"udp_cleardst", &InferAction::udp_cleardst},
+        {"udp_datastream", &InferAction::udp_datastream},
         {"udp_dstip", &InferAction::udp_dstip},
         {"udp_dstip2", &InferAction::udp_dstip2},
         {"udp_dstlist", &InferAction::udp_dstlist},

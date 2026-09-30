@@ -4,7 +4,6 @@ on:
   push:
 
 
-
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Debug  
@@ -20,7 +19,8 @@ jobs:
           cache: 'pip'
       - run: pip install pytest numpy colorama pyzmq
 
-      - uses: awalsh128/cache-apt-pkgs-action@latest
+      # using a stable action version instead of latest to create/restore cache for now
+      - uses: awalsh128/cache-apt-pkgs-action@v1.6.1
         with:
           packages: libhdf5-dev libfmt-dev
           version: 1.0

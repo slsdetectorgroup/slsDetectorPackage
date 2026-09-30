@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CtbConfig.h"
-#include "SharedMemory.h"
 #include "sls/Result.h"
+#include "sls/SharedMemory.h"
 #include "sls/ZmqSocket.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
@@ -278,10 +278,9 @@ class DetectorImpl : public virtual slsDetectorDefs {
     void stopDetector(Positions pos);
 
     /**
-     * Combines data from all readouts and gives it to the gui
-     * or just gives progress of acquisition by polling receivers
+     * gives progress of acquisition by polling receivers
      */
-    void processData(bool receiver);
+    void printRxProgress();
 
     /**
      * Convert raw file
@@ -309,6 +308,15 @@ class DetectorImpl : public virtual slsDetectorDefs {
                        std::vector<int> positions) const;
     std::vector<std::pair<std::string, uint16_t>>
     verifyUniqueRxHost(const std::vector<std::string> &names) const;
+
+    void assertTwoUDPDataInterfaces(const std::string &cmd) const;
+    Result<bool> getUDPDataStream(const defs::portPosition port,
+                                  Positions pos) const;
+    void setUDPDataStream(const defs::portPosition port, const bool enable,
+                          Positions pos);
+    void updateRxUDPDatastreamMetadata();
+    std::vector<int> getRxDisabledUDPPortIndices() const;
+    std::vector<defs::portPosition> getPortPositionList() const;
 
     defs::xy getPortGeometry() const;
     std::vector<defs::ROI> getRxROI(int module_id = -1) const;
@@ -441,7 +449,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
 
     void printProgress(double progress);
 
-    void startProcessingThread(bool receiver);
+    void startRxZmqProcessingThread();
+    void startRxProgressThread();
 
     /**
      * Check if processing thread is ready to join main thread

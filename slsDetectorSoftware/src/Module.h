@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #pragma once
-#include "SharedMemory.h"
 #include "sls/ClientSocket.h"
 #include "sls/Pattern.h"
+#include "sls/SharedMemory.h"
 #include "sls/StaticVector.h"
 #include "sls/bit_utils.h"
 #include "sls/logger.h"
@@ -111,6 +111,7 @@ class Module : public virtual slsDetectorDefs {
     void setAllThresholdEnergy(std::array<int, 3> e_eV,
                                detectorSettings isettings, bool trimbits);
     std::string getSettingsDir() const;
+    void updateRxThresholdEnergyMetadata();
     std::string setSettingsDir(const std::string &dir);
     void loadTrimbits(const std::string &fname);
     void saveTrimbits(const std::string &fname);
@@ -215,7 +216,7 @@ class Module : public virtual slsDetectorDefs {
     void startAcquisition();
     void startReadout();
     void stopAcquisition();
-    void restreamStopFromReceiver();
+    void streamRxDummyHeader();
     void startAndReadAll();
     runStatus getRunStatus() const;
     runStatus getReceiverStatus() const;
@@ -279,6 +280,10 @@ class Module : public virtual slsDetectorDefs {
     void setTransmissionDelayLeft(int value);
     int getTransmissionDelayRight() const;
     void setTransmissionDelayRight(int value);
+    bool getUDPDataStream(const portPosition port) const;
+    void setUDPDataStream(const portPosition port, const bool enable);
+    void updateRxUDPPortDisableMetadata(const std::vector<int> &disable);
+    std::vector<int> getRxUDPPortDisableMetadata() const;
 
     /**************************************************
      *                                                *
@@ -388,8 +393,6 @@ class Module : public virtual slsDetectorDefs {
     void pulseChip(int n_pulses = 0);
     bool getQuad() const;
     void setQuad(const bool enable);
-    bool getDataStream(const portPosition port) const;
-    void setDataStream(const portPosition port, const bool enable);
     bool getTop() const;
     void setTop(bool value);
 
@@ -398,7 +401,7 @@ class Module : public virtual slsDetectorDefs {
      *    Jungfrau/Moench Specific                    *
      *                                                *
      * ************************************************/
-    double getChipVersion() const;
+    std::string getChipVersion() const;
     int getThresholdTemperature() const;
     void setThresholdTemperature(int val);
     bool getTemperatureControl() const;
@@ -624,8 +627,17 @@ class Module : public virtual slsDetectorDefs {
   private:
     std::string getReceiverLongVersion() const;
 
+    void checkArgs(const void *args, size_t args_size) const;
     void checkArgs(const void *args, size_t args_size, void *retval,
                    size_t retval_size) const;
+
+    DetectorSocket createDetectorSocket() const;
+
+    template <typename Arg>
+    void sendToDetectorVarVector(int fnum, const std::vector<Arg> &args) const;
+
+    template <typename Ret>
+    std::vector<Ret> sendToDetectorVarVector(int fnum) const;
 
     /**
      * Send function parameters to detector (control server)
@@ -672,6 +684,9 @@ class Module : public virtual slsDetectorDefs {
     Ret sendToDetector(int fnum, const Arg &args) const;
 
     /** Send function parameters to detector (stop server) */
+
+    DetectorSocket createDetectorStopSocket() const;
+
     void sendToDetectorStop(int fnum, const void *args, size_t args_size,
                             void *retval, size_t retval_size);
 
@@ -711,6 +726,15 @@ class Module : public virtual slsDetectorDefs {
     Ret sendToDetectorStop(int fnum, const Arg &args) const;
 
     /** Send function parameters to receiver */
+
+    ReceiverSocket createReceiverSocket() const;
+
+    template <typename Arg>
+    void sendToReceiverVarVector(int fnum, const std::vector<Arg> &args) const;
+
+    template <typename Ret>
+    std::vector<Ret> sendToReceiverVarVector(int fnum) const;
+
     void sendToReceiver(int fnum, const void *args, size_t args_size,
                         void *retval, size_t retval_size);
 

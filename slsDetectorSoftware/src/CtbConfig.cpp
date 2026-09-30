@@ -1,6 +1,6 @@
 
 #include "CtbConfig.h"
-#include "SharedMemory.h"
+#include "sls/SharedMemory.h"
 #include "sls/ToString.h"
 #include "sls/string_utils.h"
 

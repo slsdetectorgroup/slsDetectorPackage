@@ -2,102 +2,72 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #pragma once
 
-#include "Caller.h"
-#include "sls/Detector.h"
-#include "sls/ToString.h"
-#include "sls/logger.h"
+#include "checks/MasterFileChecks.h"
 #include "sls/sls_detector_defs.h"
 
 #include <chrono>
 #include <filesystem>
 #include <optional>
+#include <string>
 #include <thread>
 
 namespace sls {
-struct testFileInfo {
-    std::string file_path{"/tmp"};
-    std::string file_prefix{"sls_test"};
-    int64_t file_acq_index{0};
-    bool file_write{true};
-    bool file_overwrite{true};
-    slsDetectorDefs::fileFormat file_format{slsDetectorDefs::BINARY};
-    std::string getMasterFileNamePrefix() const {
-        return file_path + "/" + file_prefix + "_master_" +
-               std::to_string(file_acq_index);
-    }
-    std::string getVirtualFileName() const {
-        return file_path + "/" + file_prefix + "_virtual_" +
-               std::to_string(file_acq_index) + ".h5";
-    }
-    inline void print() const {
-        LOG(logINFO) << "File Info: "
-                     << "\n\tFile Path: " << file_path
-                     << "\n\tFile Prefix: " << file_prefix
-                     << "\n\tFile Acquisition Index: " << file_acq_index
-                     << "\n\tFile Write: " << file_write
-                     << "\n\tFile Overwrite: " << file_overwrite
-                     << "\n\tFile Format: " << ToString(file_format)
-                     << "\n\tMaster Filename: " << getMasterFileNamePrefix()
-                     << "\n\tVirtual Filename: " << getVirtualFileName();
-    }
-};
 
-struct testCtbAcquireInfo {
-    defs::readoutMode readout_mode{defs::ANALOG_AND_DIGITAL};
-    bool ten_giga{false};
-    int num_adc_samples{5000};
-    int num_dbit_samples{6000};
-    int num_trans_samples{288};
-    uint32_t adc_enable_1g{0xFFFFFF00};
-    uint32_t adc_enable_10g{0xFF00FFFF};
-    int dbit_offset{0};
-    std::vector<int> dbit_list{0, 12, 2, 43};
-    bool dbit_reorder{false};
-    uint32_t transceiver_mask{0x3};
+int chipVersionToX10(const std::string &chipVersion);
 
-    inline void print() const {
-        LOG(logINFO) << "CTB Acquire Info: "
-                     << "\n\tReadout Mode: " << ToString(readout_mode)
-                     << "\n\tTen Giga: " << ten_giga
-                     << "\n\tADC Enable 1G: " << std::hex << adc_enable_1g
-                     << std::dec << "\n\tADC Enable 10G: " << std::hex
-                     << adc_enable_10g << std::dec
-                     << "\n\tNumber of Analog Samples: " << num_adc_samples
-                     << "\n\tNumber of Digital Samples: " << num_dbit_samples
-                     << "\n\tNumber of Transceiver Samples: "
-                     << num_trans_samples << "\n\tDBIT Offset: " << dbit_offset
-                     << "\n\tDBIT Reorder: " << dbit_reorder
-                     << "\n\tDBIT List: " << ToString(dbit_list)
-                     << "\n\tTransceiver Mask: " << std::hex << transceiver_mask
-                     << std::dec << std::endl;
-    }
-};
+namespace acq = sls::test::acquire;
+namespace mf = sls::test::master_file;
+namespace checks = sls::test::checks;
 
 void test_valid_port_caller(const std::string &command,
                             const std::vector<std::string> &arguments,
                             int detector_id, int action);
 
-void test_dac_caller(slsDetectorDefs::dacIndex index,
-                     const std::string &dacname, int dacvalue, bool mV = false);
+void test_dac(defs::dacIndex index, std::string dacname, int dacvalue,
+              bool mV = false);
+void test_dac_caller(slsDetectorDefs::dacIndex index, int dacvalue,
+                     bool mV = false);
+void test_dacname_caller(std::string dacname, int dacvalue, bool mV = false);
+
 void test_onchip_dac_caller(slsDetectorDefs::dacIndex index,
                             const std::string &dacname, int dacvalue);
 
-testFileInfo get_file_state(const Detector &det);
-void set_file_state(Detector &det, const testFileInfo &file_info);
-void test_acquire_binary_file_size(const testFileInfo &file_info,
-                                   uint64_t num_frames_to_acquire,
-                                   uint64_t expected_image_size);
+/**
+ * Helper function to run an acquisition and check the master file (both binary
+ * and hdf5) for expected values. The function takes in a lambda that is called
+ * with the master filechecker object to perform checks on the master file. The
+ * acquisition is run with default acquisition and file states, but these can be
+ * modified within the lambda if needed. This version has the master file
+ * checker object created within the function instead of using a helper
+ * function, to allow for more flexibility in handling exceptions (especially
+ * HDF5 exceptions) and logging.
+ */
+template <typename F>
+void test_run_with_master_file_checker(Detector &det, F f) {
 
-void test_acquire_with_receiver(Caller &caller, const Detector &det);
+    auto acq_state = acq::default_acquisition_state();
+    auto file_state = acq::default_file_state();
+    std::array<defs::fileFormat, 2> formats = {defs::BINARY, defs::HDF5};
 
-void create_files_for_acquire(
-    Detector &det, Caller &caller, int64_t num_frames = 1,
-    const std::optional<testCtbAcquireInfo> &test_info = std::nullopt);
-
-testCtbAcquireInfo get_ctb_config_state(const Detector &det);
-void set_ctb_config_state(Detector &det,
-                          const testCtbAcquireInfo &ctb_config_info);
-std::pair<uint64_t, int>
-calculate_ctb_image_size(const testCtbAcquireInfo &test_info, bool isXilinxCtb);
+    for (const auto &format : formats) {
+        file_state.file_format = format;
+        acq::run(det, acq_state, file_state);
+        std::string fname = acq::get_master_file_name(file_state);
+        if (format == defs::HDF5) {
+#ifdef HDF5C
+            try {
+                mf::Checker<mf::H5Context> checker(fname);
+                f(det, acq_state, file_state, checker);
+            } catch (H5::Exception &e) {
+                LOG(logERROR) << "HDF5 error: " << e.getDetailMsg();
+                throw;
+            }
+#endif
+        } else {
+            mf::Checker<mf::JsonContext> checker(fname);
+            f(det, acq_state, file_state, checker);
+        }
+    }
+}
 
 } // namespace sls

@@ -1,11 +1,13 @@
-#include "CommandLineOptions.h"
-#include "VirtualMatterhornServer.h"
+#include "CommandLineOptions.hpp"
+#include MATTERHORN_SERVER_HEADER
+#include "helpers/Helpers.hpp"
 #include "sls/logger.h"
 #include "sls/sls_detector_exceptions.h"
 #include "sls/versionAPI.h"
 #include <semaphore.h>
 
 #include <csignal>
+#include <fmt/format.h>
 #include <signal.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -62,6 +64,9 @@ int main(int argc, char *argv[]) {
 
     LOG(TLogLevel::logINFOMAGENTA) << cli.printOptions();
 
+    // free shared memory from previous run (not removed if detector crashed)
+    freeSharedMemory();
+
     // Register Ctrl+C handler
     std::signal(SIGINT, sigInterruptHandler);
 
@@ -75,11 +80,12 @@ int main(int argc, char *argv[]) {
 
         LOG(TLogLevel::logINFOBLUE) << "Stop Server [" << opts.port + 1 << "]";
         try {
-            VirtualMatterhornServer stopServer(opts.port + 1);
+            MATTERHORN_SERVER_CLASS<true> stopServer(opts.port + 1);
             while (!interruption) {
                 pause(); // wait for signal to exit
             }
         } catch (...) {
+            LOG(logERROR) << "Some Error occured in Stop Server, exiting";
             kill(getppid(), SIGINT); // tell parent to exit // TODO: should then
                                      // also return EXIT_FAILURE
         }
@@ -93,13 +99,14 @@ int main(int argc, char *argv[]) {
         LOG(TLogLevel::logINFOBLUE) << "Control Server [" << opts.port << "]\n";
 
         try {
-            VirtualMatterhornServer server(
+            MATTERHORN_SERVER_CLASS server(
                 opts.port); // TODO use virtual if compiled with virtual
                             // simulators on
             while (!interruption) {
                 pause(); // wait for signal to exit
             }
         } catch (...) {
+            LOG(logERROR) << "Some Error occured in Control Server, exiting";
             LOG(sls::logINFOBLUE)
                 << "Exiting Control Server [ Tid: " << gettid() << " ]";
             LOG(sls::logINFO) << "Exiting Detector Server";

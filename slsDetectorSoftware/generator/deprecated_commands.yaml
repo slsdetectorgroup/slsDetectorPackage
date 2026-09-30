@@ -1,4 +1,3 @@
-#configuration
 detectorversion:  firmwareversion
 softwareversion:  detectorserverversion
 receiverversion:  rx_version
@@ -8,8 +7,6 @@ detsizechan:  detsize
 trimdir:  settingspath
 settingsdir:  settingspath
 flippeddatax:  fliprows
-
-#acquisition parameters
 cycles:  triggers
 cyclesl:  triggersl
 clkdivider:  readoutspeed
@@ -18,10 +15,6 @@ vhighvoltage:  highvoltage
 digitest:  imagetest
 filter:  filterresistor
 readnlines:  readnrows
-
-# temperature
-
-# super old dacs
 vtr:  vtrim
 vrf:  vrpreamp
 vrs:  vrshaper
@@ -33,8 +26,6 @@ vshaperneg:  vrshaper_n
 viinsh:  vishaper
 vpl:  vcal_n
 vph:  vcal_p
-
-# dacs
 vthreshold:  dac
 vsvp:  dac
 vsvn:  dac
@@ -93,17 +84,11 @@ vb_sda:  dac
 vcasc_sfp:  dac
 vipre_cds:  dac
 ibias_sfp:  dac
-
-
 defaultdacs:  resetdacs
-
-#acquisition
 busy:  clearbusy
 receiver:  rx_status
 framescaught:  rx_framescaught
 startingfnum:  nextframenumber
-
-#Network Configuration (Detector<->Receiver)
 detectorip:  udp_srcip
 detectorip2:  udp_srcip2
 detectormac:  udp_srcmac
@@ -118,15 +103,11 @@ flowcontrol_10g:  flowcontrol10g
 txndelay_frame:  txdelay_frame
 txndelay_left:  txdelay_left
 txndelay_right:  txdelay_right
-
-#Receiver Config
 r_silent:  rx_silent
 r_discardpolicy:  rx_discardpolicy
 r_padding:  rx_padding
 r_lock:  rx_lock
 r_lastclient:  rx_lastclient
-
-#File
 fileformat:  fformat
 outdir:  fpath
 index:  findex
@@ -134,23 +115,13 @@ enablefwrite:  fwrite
 masterfile:  fmaster
 overwrite:  foverwrite
 r_framesperfile:  rx_framesperfile
-
-#ZMQ Streaming Parameters (Receiver<->Client)
 r_readfreq:  rx_zmqfreq
 rx_readfreq:  rx_zmqfreq
 rx_datastream:  rx_zmqstream
-
-#Eiger Specific
 resmat:  partialreset
-
-#Jungfrau Specific
 storagecells:  extrastoragecells
 auto_comp_disable:  autocompdisable
 comp_disable_time:  compdisabletime
-
-#Gotthard2 Specific
-#Mythen3 Specific
-#CTB Specific
 adc:  slowadc
 flags:  romode
 i_a:  im_a
@@ -158,16 +129,10 @@ i_b:  im_b
 i_c:  im_c
 i_d:  im_d
 i_io:  im_io
-
-#Pattern
 patternX: pattern
-#Moench
-
-#Advanced
 copydetectorserver:  updatedetectorserver
-
-#Insignificant
 nframes:  framecounter
 now:  runtime
 timestamp:  frametime
 frameindex:  rx_frameindex
+datastream:  udp_datastream

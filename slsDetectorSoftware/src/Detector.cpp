@@ -616,6 +616,10 @@ std::vector<defs::timingMode> Detector::getTimingModeList() const {
         return std::vector<defs::timingMode>{defs::AUTO_TIMING,
                                              defs::TRIGGER_EXPOSURE,
                                              defs::GATED, defs::TRIGGER_GATED};
+    case defs::XILINX_CHIPTESTBOARD:
+        return std::vector<defs::timingMode>{defs::AUTO_TIMING,
+                                             defs::TRIGGER_EXPOSURE,
+                                             defs::GATED, defs::TRIGGER_GATED};
     default:
         return std::vector<defs::timingMode>{defs::AUTO_TIMING,
                                              defs::TRIGGER_EXPOSURE};
@@ -1082,43 +1086,50 @@ Result<int> Detector::getNumberofUDPInterfaces(Positions pos) const {
     return pimpl->Parallel(&Module::getNumberofUDPInterfacesFromShm, pos);
 }
 
-void Detector::setNumberofUDPInterfaces(int n, Positions pos) {
+void Detector::setNumberofUDPInterfaces(int n) {
     auto detType = getDetectorType().squash();
     if (detType != defs::JUNGFRAU && detType != defs::MOENCH) {
         throw RuntimeError(
             "Cannot set number of udp interfaces for this detector.");
     }
     // also called by vetostream (for gotthard2)
-    setNumberofUDPInterfaces_(n, pos);
+    setNumberofUDPInterfaces_(n);
 }
 
-void Detector::setNumberofUDPInterfaces_(int n, Positions pos) {
+void Detector::setNumberofUDPInterfaces_(int n) {
     if (!size()) {
         throw RuntimeError("No modules added.");
     }
-    bool previouslyClientStreaming = pimpl->getDataStreamingToClient();
-    uint16_t clientStartingPort = getClientZmqPort({0}).squash(0);
+
+    // get starting ports and disable zmq streaming
+    // rx
     bool useReceiver = getUseReceiverFlag().squash(false);
     bool previouslyReceiverStreaming = false;
     uint16_t rxStartingPort = 0;
     if (useReceiver) {
-        previouslyReceiverStreaming = getRxZmqDataStream(pos).squash(true);
+        previouslyReceiverStreaming = getRxZmqDataStream().squash(true);
+        setRxZmqDataStream(false);
         rxStartingPort = getRxZmqPort({0}).squash(0);
     }
-    pimpl->Parallel(&Module::setNumberofUDPInterfaces, pos, n);
+    // client
+    bool previouslyClientStreaming = pimpl->getDataStreamingToClient();
+    uint16_t clientStartingPort = getClientZmqPort({0}).squash(0);
+    pimpl->setDataStreamingToClient(false);
+
+    pimpl->Parallel(&Module::setNumberofUDPInterfaces, {}, n);
+
     // ensure receiver zmq socket ports are multiplied by 2 (2 interfaces)
     setClientZmqPort(clientStartingPort, -1);
-    if (getUseReceiverFlag().squash(false)) {
+    if (useReceiver) {
         setRxZmqPort(rxStartingPort, -1);
     }
+
     // redo the zmq sockets if enabled
     if (previouslyClientStreaming) {
-        pimpl->setDataStreamingToClient(false);
         pimpl->setDataStreamingToClient(true);
     }
-    if (previouslyReceiverStreaming) {
-        setRxZmqDataStream(false, pos);
-        setRxZmqDataStream(true, pos);
+    if (useReceiver && previouslyReceiverStreaming) {
+        setRxZmqDataStream(true);
     }
 }
 
@@ -1315,6 +1326,24 @@ int Detector::getTransmissionDelay() const {
 
 void Detector::setTransmissionDelay(int step) {
     pimpl->setTransmissionDelay(step);
+}
+
+Result<bool> Detector::getUDPDataStream(const defs::portPosition port,
+                                        Positions pos) const {
+    return pimpl->getUDPDataStream(port, pos);
+}
+
+void Detector::setUDPDataStream(const defs::portPosition port,
+                                const bool enable, Positions pos) {
+    pimpl->setUDPDataStream(port, enable, pos);
+}
+
+std::vector<int> Detector::getRxDisabledUDPPortIndices() const {
+    return pimpl->getRxDisabledUDPPortIndices();
+}
+
+std::vector<defs::portPosition> Detector::getPortPositionList() const {
+    return pimpl->getPortPositionList();
 }
 
 // Receiver
@@ -1620,7 +1649,12 @@ void Detector::setClientZmqIp(const IpAddr ip, Positions pos) {
 int Detector::getClientZmqHwm() const { return pimpl->getClientStreamingHwm(); }
 
 void Detector::setClientZmqHwm(const int limit) {
+    bool previouslyClientStreaming = pimpl->getDataStreamingToClient();
     pimpl->setClientStreamingHwm(limit);
+    if (previouslyClientStreaming) {
+        pimpl->setDataStreamingToClient(false);
+        pimpl->setDataStreamingToClient(true);
+    }
 }
 
 Result<int> Detector::getRxZmqHwm(Positions pos) const {
@@ -1634,6 +1668,10 @@ void Detector::setRxZmqHwm(const int limit) {
         setRxZmqDataStream(false, {});
         setRxZmqDataStream(true, {});
     }
+}
+
+void Detector::streamRxDummyHeader(Positions pos) const {
+    pimpl->Parallel(&Module::streamRxDummyHeader, pos);
 }
 
 // Eiger Specific
@@ -1746,16 +1784,6 @@ void Detector::setQuad(const bool enable) {
     pimpl->Parallel(&Module::setQuad, {}, enable);
 }
 
-Result<bool> Detector::getDataStream(const defs::portPosition port,
-                                     Positions pos) const {
-    return pimpl->Parallel(&Module::getDataStream, pos, port);
-}
-
-void Detector::setDataStream(const defs::portPosition port, const bool enable,
-                             Positions pos) {
-    pimpl->Parallel(&Module::setDataStream, pos, port, enable);
-}
-
 Result<bool> Detector::getTop(Positions pos) const {
     return pimpl->Parallel(&Module::getTop, pos);
 }
@@ -1765,7 +1793,7 @@ void Detector::setTop(bool value, Positions pos) {
 }
 
 // Jungfrau/moench Specific
-Result<double> Detector::getChipVersion(Positions pos) const {
+Result<std::string> Detector::getChipVersion(Positions pos) const {
     return pimpl->Parallel(&Module::getChipVersion, pos);
 }
 
@@ -2008,7 +2036,7 @@ void Detector::setVetoStream(defs::streamingInterface interface,
              ? 2
              : 1);
     if (numinterfaces != old_numinterfaces) {
-        setNumberofUDPInterfaces_(numinterfaces, pos);
+        setNumberofUDPInterfaces_(numinterfaces);
     }
 }
 

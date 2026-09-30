@@ -89,9 +89,6 @@
 // NOLINTEND(cppcoreguidelines-macro-usage)
 #ifdef __cplusplus
 
-// TODO: why are all these defs inside a class? - why not static
-enum ReturnCode { OK = 0, FAIL = 1 };
-
 class slsDetectorDefs {
   public:
 #endif
@@ -111,8 +108,7 @@ class slsDetectorDefs {
                    // slsDetectorDefs instead of grouped in a class
     };
 
-    /**  return values */
-    enum { OK, FAIL };
+    enum ReturnCode { OK, FAIL };
 
     enum boolFormat { TrueFalse, OnOff, OneZero };
 

@@ -10,16 +10,16 @@ namespace sls {
 int ServerInterface::sendResult(int ret, void *retval, int retvalSize,
                                 char *mess) {
 
-    write(&ret, sizeof(ret));
+    Send(&ret, sizeof(ret));
     if (ret == defs::FAIL) {
         if (mess != nullptr) {
-            write(mess, MAX_STR_LENGTH);
+            Send(mess, MAX_STR_LENGTH);
         } else {
             LOG(logERROR) << "No error message provided for this "
                              "failure. Will mess up TCP\n";
         }
     } else {
-        write(retval, retvalSize);
+        Send(retval, retvalSize);
     }
     return ret;
 }

@@ -574,17 +574,15 @@ TEST_CASE("dac", "[.detectorintegration][dacs]") {
         for (int idac = 0; idac < 18; ++idac) {
 
             SECTION("dac " + std::to_string(idac)) {
-                test_dac_caller(static_cast<defs::dacIndex>(idac), "dac", 0);
-                test_dac_caller(static_cast<defs::dacIndex>(idac), "dac", 1200);
-                test_dac_caller(static_cast<defs::dacIndex>(idac), "dac", 1200,
-                                true);
-                test_dac_caller(static_cast<defs::dacIndex>(idac), "dac", -100);
+                test_dac_caller(static_cast<defs::dacIndex>(idac), 0);
+                test_dac_caller(static_cast<defs::dacIndex>(idac), 1200);
+                test_dac_caller(static_cast<defs::dacIndex>(idac), 1200, true);
+                test_dac_caller(static_cast<defs::dacIndex>(idac), -100);
 
                 // dac name
-                det.setDacName(static_cast<defs::dacIndex>(idac),
-                               "dacname" + std::to_string(idac));
-                test_dac_caller(defs::DAC_0, "dacname" + std::to_string(idac),
-                                -100);
+                std::string dacname_str = "dacname" + std::to_string(idac);
+                det.setDacName(static_cast<defs::dacIndex>(idac), dacname_str);
+                test_dacname_caller(dacname_str, -100);
             }
             REQUIRE_THROWS(
                 caller.call("dac", {std::to_string(idac), "-2"}, -1, PUT));

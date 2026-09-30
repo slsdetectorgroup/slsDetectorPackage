@@ -52,7 +52,7 @@ slsDetectorPackage
     pyenums
     pypower
     pyexamples
-    pyPatternGenerator
+    pypatterngenerator
     pattern
 
 .. toctree::

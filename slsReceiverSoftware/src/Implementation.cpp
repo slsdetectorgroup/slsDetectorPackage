@@ -1164,6 +1164,13 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
 
         // test socket buffer size with current set up
         setUDPSocketBufferSize(0);
+
+        // set up file write if enabled
+        if (fileWriteEnable) {
+            for (const auto &it : dataProcessor)
+                it->SetupFileWriter(fileWriteEnable, fileFormatType,
+                                    &hdf5LibMutex);
+        }
     }
 
     LOG(logINFO) << "Number of Interfaces: " << generalData->numUDPInterfaces;

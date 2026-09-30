@@ -25,11 +25,11 @@ Additionally the core requires the following dependencies:
 
  * fmt 12.1.0 (packaged in libs)
  * ZeroMQ 4.3.4 (packaged in libs)
- * rapidjson (packaged in libs)
+ * rapidjson 1.1.0 (packaged in libs)
 
 .. note:: 
 
-    Both fmt, ZeroMQ and rapidjson are bundled in libs. One does not need to pre-install them on the system. Alternatively, one can fetch fmt and ZeroMQ from GitHub by passing the cmake options ``-DSLS_FETCH_FMT_FROM_GITHUB=ON`` and ``-DSLS_FETCH_ZEROMQ_FROM_GITHUB=ON`` respectively.
+    Fmt, ZeroMQ and rapidjson are bundled in libs. One does not need to pre-install them on the system. Alternatively, one can fetch fmt and ZeroMQ from GitHub by passing the cmake options ``-DSLS_FETCH_FMT_FROM_GITHUB=ON`` and ``-DSLS_FETCH_ZEROMQ_FROM_GITHUB=ON`` respectively.
 
 .. note:: 
 
@@ -90,7 +90,7 @@ Dependencies to build Tests
 
 To build the tests the following dependencies are needed:
 
- * Catch2 3.4.0 (packaged in libs)
+ * Catch2 2.13.8 (packaged in libs)
 
 .. note:: 
     

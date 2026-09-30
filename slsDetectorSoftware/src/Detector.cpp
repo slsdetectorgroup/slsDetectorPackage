@@ -616,6 +616,10 @@ std::vector<defs::timingMode> Detector::getTimingModeList() const {
         return std::vector<defs::timingMode>{defs::AUTO_TIMING,
                                              defs::TRIGGER_EXPOSURE,
                                              defs::GATED, defs::TRIGGER_GATED};
+    case defs::XILINX_CHIPTESTBOARD:
+        return std::vector<defs::timingMode>{defs::AUTO_TIMING,
+                                             defs::TRIGGER_EXPOSURE,
+                                             defs::GATED, defs::TRIGGER_GATED};
     default:
         return std::vector<defs::timingMode>{defs::AUTO_TIMING,
                                              defs::TRIGGER_EXPOSURE};
@@ -1789,7 +1793,7 @@ void Detector::setTop(bool value, Positions pos) {
 }
 
 // Jungfrau/moench Specific
-Result<double> Detector::getChipVersion(Positions pos) const {
+Result<std::string> Detector::getChipVersion(Positions pos) const {
     return pimpl->Parallel(&Module::getChipVersion, pos);
 }
 

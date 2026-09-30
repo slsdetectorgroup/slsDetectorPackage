@@ -1427,7 +1427,7 @@ std::string Caller::chipversion(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << R"V0G0N(
-	[Jungfrau] Returns chip version. Can be 1.0 or 1.1 )V0G0N"
+	[Jungfrau] Returns chip version as string. For example, 'v1.1' or 'v1.2 Low Noise' )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -13897,8 +13897,8 @@ std::string Caller::timing(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << R"V0G0N([auto|trigger|gating|burst_trigger|trigger_gating]
 	Timing Mode of detector.
-	[Jungfrau][Moench][Ctb][Gotthard2][Xilinx Ctb] [auto|trigger]
-	[Mythen3] [auto|trigger|gating|trigger_gating]
+	[Jungfrau][Moench][Ctb][Gotthard2] [auto|trigger]
+	[Mythen3][Xilinx Ctb] [auto|trigger|gating|trigger_gating]
 	[Eiger] [auto|trigger|gating|burst_trigger] )V0G0N"
            << std::endl;
         return os.str();

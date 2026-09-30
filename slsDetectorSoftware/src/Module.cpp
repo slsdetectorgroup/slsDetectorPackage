@@ -1851,8 +1851,10 @@ void Module::setTop(bool value) {
 }
 
 // Jungfrau/Moench Specific
-double Module::getChipVersion() const {
-    return (sendToDetector<int>(F_GET_CHIP_VERSION)) / 10.00;
+std::string Module::getChipVersion() const {
+    char retval[MAX_STR_LENGTH]{};
+    sendToDetector(F_GET_CHIP_VERSION, nullptr, retval);
+    return retval;
 }
 
 int Module::getThresholdTemperature() const {

@@ -298,7 +298,7 @@ if __name__ == "__main__":
     libclang_path = find_libclang()
     cindex.Config.set_library_file(libclang_path)
     check_libclang_version(supported_libclang_versions)
-    check_clang_format_version(12)
+    check_clang_format_version(17)
     check_for_compile_commands_json(cargs.build_path)
 
     print("Parsing functions in Detector.h - ", end="", flush=True)

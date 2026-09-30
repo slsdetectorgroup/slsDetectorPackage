@@ -8,9 +8,8 @@ to be installed.
 When the Detector API is updated this file should be run
 manually.
 
-Tested with libclang 12 and 20-23. The output is formatted with
-clang-format 12 which conda can't install next to a newer libclang,
-there use: pip install clang-format==12.0.1
+Tested with libclang 17-23. The output is formatted with
+clang-format 17.
 """
 import os
 from clang import cindex
@@ -119,7 +118,7 @@ def check_for_parse_errors(tu):
 
 default_build_path = "/home/l_frojdh/sls/build/"
 fpath = "../../slsDetectorSoftware/src/Detector.cpp"
-supported_libclang_versions = (12, 20, 21, 22, 23)
+supported_libclang_versions = (17, 18, 19, 20, 21, 22, 23)
 
 
 m = []
@@ -165,10 +164,10 @@ def type_spelling(node, type):
     """
     Spelling of the return type of a method or the type of a parameter.
 
-    libclang 12 printed a type name written without scope as sls::Positions,
-    newer versions give it as written in the source (Positions). To be
-    independent of the version we look up the declarations and add the scope
-    ourselves. Names already written with a scope (defs::xy) are left as they are.
+    libclang gives a type name as it is written in the source (Positions).
+    The generated file is outside the sls namespace, so we look up the
+    declarations and add the scope ourselves (sls::Positions). Names already
+    written with a scope (defs::xy) are left as they are.
     """
     spelling = type.spelling
     for decl in referenced_types(node):
@@ -181,8 +180,8 @@ def get_compile_args(build_path):
     """Arguments to parse Detector.cpp with, from the compilation database"""
     db = cindex.CompilationDatabase.fromDirectory(build_path)
     args = list(next(iter(db.getCompileCommands(fpath))).arguments)
-    # Drop the compiler and the source file. Newer versions of libclang put
-    # "--" before the file and anything we add after that is read as a file name
+    # Drop the compiler and the source file. libclang puts "--" before the
+    # file and anything we add after that is read as a file name
     args = args[1:-1]
     if args and args[-1] == "--":
         args.pop()

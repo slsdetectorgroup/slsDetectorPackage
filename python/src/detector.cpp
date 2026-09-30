@@ -1461,7 +1461,7 @@ void init_det(py::module &m) {
                        py::arg(), py::arg(), py::arg() = Positions{});
     CppDetectorApi.def(
         "getExptimeForAllGates",
-        (Result<std::array<ns, 3>>(Detector::*)(sls::Positions) const) &
+        (Result<std::array<sls::ns, 3>>(Detector::*)(sls::Positions) const) &
             Detector::getExptimeForAllGates,
         py::arg() = Positions{});
     CppDetectorApi.def(
@@ -1475,7 +1475,7 @@ void init_det(py::module &m) {
                        py::arg(), py::arg(), py::arg() = Positions{});
     CppDetectorApi.def(
         "getGateDelayForAllGates",
-        (Result<std::array<ns, 3>>(Detector::*)(sls::Positions) const) &
+        (Result<std::array<sls::ns, 3>>(Detector::*)(sls::Positions) const) &
             Detector::getGateDelayForAllGates,
         py::arg() = Positions{});
     CppDetectorApi.def("getChipStatusRegister",
@@ -1851,12 +1851,13 @@ void init_det(py::module &m) {
                            Detector::clearRegisterDefinitions);
     CppDetectorApi.def(
         "setRegisterDefinitions",
-        (void (Detector::*)(const std::map<std::string, RegisterAddress> &)) &
+        (void (Detector::*)(
+            const std::map<std::string, sls::RegisterAddress> &)) &
             Detector::setRegisterDefinitions,
         py::arg());
     CppDetectorApi.def(
         "getRegisterDefinitions",
-        (std::map<std::string, RegisterAddress>(Detector::*)() const) &
+        (std::map<std::string, sls::RegisterAddress>(Detector::*)() const) &
             Detector::getRegisterDefinitions);
     CppDetectorApi.def("getBitDefinitionsCount",
                        (int (Detector::*)() const) &
@@ -1891,12 +1892,13 @@ void init_det(py::module &m) {
                        (void (Detector::*)()) & Detector::clearBitDefinitions);
     CppDetectorApi.def(
         "setBitDefinitions",
-        (void (Detector::*)(const std::map<std::string, BitAddress> &)) &
+        (void (Detector::*)(const std::map<std::string, sls::BitAddress> &)) &
             Detector::setBitDefinitions,
         py::arg());
-    CppDetectorApi.def("getBitDefinitions", (std::map<std::string, BitAddress>(
-                                                Detector::*)() const) &
-                                                Detector::getBitDefinitions);
+    CppDetectorApi.def(
+        "getBitDefinitions",
+        (std::map<std::string, sls::BitAddress>(Detector::*)() const) &
+            Detector::getBitDefinitions);
     CppDetectorApi.def("configureTransceiver",
                        (void (Detector::*)(sls::Positions)) &
                            Detector::configureTransceiver,

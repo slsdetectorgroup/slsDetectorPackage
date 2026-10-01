@@ -1013,6 +1013,9 @@ std::string Caller::counters(int action) {
               "enabled. Each element in list can be 0 - 2 and must be non "
               "repetitive. Enabling counters sets vth dacs to remembered "
               "values and disabling sets them to disabled values."
+              "Accepts both space separated and comma separated list of indices"
+              "optionally enclosed in brackets. Example: 0 1 2 or 0,1,2 or "
+              "[0,1,2] or [0 1 2]"
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {
@@ -1026,9 +1029,8 @@ std::string Caller::counters(int action) {
         }
         // accepts both "0 1 2" and "0,1,2"
         auto counters = StringTo<std::vector<int>>(join(args, ','));
-        if (std::any_of(counters.cbegin(), counters.cend(), [](int val) {
-                return (val < 0 || val > 2);
-            })) {
+        if (std::any_of(counters.cbegin(), counters.cend(),
+                        [](int val) { return (val < 0 || val > 2); })) {
             throw RuntimeError("Invalid counter indices list. Example: 0 1 2");
         }
         // convert vector to counter enable mask
@@ -1217,6 +1219,9 @@ std::string Caller::rx_dbitlist(int action) {
               "receiver list, the data size will be bigger if the number of "
               "samples is not divisible by 8 as every signal bit is padded to "
               "the next byte when combining all the samples in the receiver."
+              "Accepts both space separated and comma separated list of indices"
+              "optionally enclosed in brackets. Example: 0 11 37 or 3,10,15 or "
+              "[62,21] or [0 1 2]"
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {

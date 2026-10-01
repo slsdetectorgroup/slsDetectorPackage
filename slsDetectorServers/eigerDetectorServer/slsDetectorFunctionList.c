@@ -2782,7 +2782,7 @@ void *start_timer(void *arg) {
          dr, bytesPerPixel, tgEnable, datasize, packetsize, maxPacketsPerFrame,
          npixelsx, databytes));
 
-    // Generate data (on the heap, too large for the stack of a thread)
+    // Generate data
     char *imageData = (char *)calloc(databytes * 2, 1);
     if (imageData == NULL) {
         LOG(logERROR, ("Could not allocate memory for virtual image\n"));

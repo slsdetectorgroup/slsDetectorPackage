@@ -3077,7 +3077,7 @@ void *start_timer(void *arg) {
     const int packetsPerFrame =
         ((maxPacketsPerFrame / 2) * readNRows) / (maxRows / 2);
 
-    // Generate data (on the heap, too large for the stack of a thread)
+    // Generate data
     char *imageData = (char *)calloc(DATA_BYTES, 1);
     if (imageData == NULL) {
         LOG(logERROR, ("Could not allocate memory for virtual image\n"));

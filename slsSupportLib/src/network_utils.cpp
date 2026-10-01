@@ -15,10 +15,15 @@
 #include <net/if.h>
 #include <netdb.h>
 #include <sstream>
-#include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+
+#ifdef __APPLE__
+#include <net/if_dl.h> // sockaddr_dl, LLADDR
+#else
+#include <netpacket/packet.h> // sockaddr_ll
+#endif
 
 namespace sls {
 
@@ -177,37 +182,45 @@ IpAddr InterfaceNameToIp(const std::string &ifn) {
 }
 
 MacAddr InterfaceNameToMac(const std::string &inf) {
-
-#ifdef __APPLE__
-    throw RuntimeError("InterfaceNameToMac not implemented on macOS yet");
-#else
-
-    // TODO! Copied from genericSocket needs to be refactored!
-    struct ifreq ifr;
-    char mac[32];
-    const int mac_len = sizeof(mac);
-    memset(mac, 0, mac_len);
-
-    int sock = socket(PF_INET, SOCK_STREAM, 0);
-    strncpy(ifr.ifr_name, inf.c_str(), sizeof(ifr.ifr_name) - 1);
-    ifr.ifr_name[sizeof(ifr.ifr_name) - 1] = '\0';
-
-    if (-1 == ioctl(sock, SIOCGIFHWADDR, &ifr)) {
-        perror("ioctl(SIOCGIFHWADDR) ");
+    // Single getifaddrs()-based implementation for both Linux and macOS.
+    // The link-layer address is found on:
+    //   - Linux:       AF_PACKET entries (sockaddr_ll, sll_addr / sll_halen)
+    //   - macOS / BSD: AF_LINK   entries (sockaddr_dl, LLADDR / sdl_alen)
+    struct ifaddrs *ifaddr = nullptr;
+    if (getifaddrs(&ifaddr) == -1) {
         return MacAddr{};
     }
-    for (int j = 0, k = 0; j < 6; j++) {
-        k += snprintf(
-            mac + k, mac_len - k - 1, j ? ":%02X" : "%02X",
-            (int)(unsigned int)(unsigned char)ifr.ifr_hwaddr.sa_data[j]);
-    }
-    mac[mac_len - 1] = '\0';
+    MacAddr result{};
+    for (struct ifaddrs *ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next) {
+        if (ifa->ifa_addr == nullptr)
+            continue;
+        if (inf != ifa->ifa_name)
+            continue;
 
-    if (sock != 1) {
-        close(sock);
-    }
-    return MacAddr(mac);
+#ifdef __APPLE__
+        if (ifa->ifa_addr->sa_family != AF_LINK)
+            continue;
+        auto *sdl = reinterpret_cast<struct sockaddr_dl *>(ifa->ifa_addr);
+        if (sdl->sdl_alen != 6)
+            continue;
+        const auto *p = reinterpret_cast<const unsigned char *>(LLADDR(sdl));
+#else
+        if (ifa->ifa_addr->sa_family != AF_PACKET)
+            continue;
+        auto *sll = reinterpret_cast<struct sockaddr_ll *>(ifa->ifa_addr);
+        if (sll->sll_halen != 6)
+            continue;
+        const auto *p = sll->sll_addr;
 #endif
+
+        char mac[18];
+        snprintf(mac, sizeof(mac), "%02X:%02X:%02X:%02X:%02X:%02X", p[0], p[1],
+                 p[2], p[3], p[4], p[5]);
+        result = MacAddr(mac);
+        break;
+    }
+    freeifaddrs(ifaddr);
+    return result;
 }
 
 void validatePortNumber(uint16_t port) {

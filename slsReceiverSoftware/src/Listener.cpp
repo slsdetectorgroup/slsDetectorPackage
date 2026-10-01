@@ -161,8 +161,8 @@ void Listener::CreateUDPSocket(int &actualSize) {
 
         udpSocketAlive = true;
 
-        // doubled due to kernel bookkeeping (could also be less due to
-        // permissions)
+        // doubled on Linux due to kernel bookkeeping (could also be less due
+        // to permissions)
         actualSize = udpSocket->getBufferSize();
 
     } catch (std::exception &e) {
@@ -200,7 +200,8 @@ void Listener::CreateDummySocketForUDPSocketBufferSize(int s, int &actualSize) {
     generalData->udpSocketBufferSize = size;
 
     if (disabledPort) {
-        actualSize = (generalData->udpSocketBufferSize * 2);
+        actualSize = (generalData->udpSocketBufferSize *
+                      UdpRxSocket::kernelBufferSizeFactor);
         return;
     }
 
@@ -221,13 +222,14 @@ void Listener::CreateDummySocketForUDPSocketBufferSize(int s, int &actualSize) {
                       (ip.empty() ? nullptr : ip.c_str()),
                       generalData->udpSocketBufferSize);
 
-        // doubled due to kernel bookkeeping (could also be less due to
-        // permissions)
+        // doubled on Linux due to kernel bookkeeping (could also be less due
+        // to permissions)
         actualSize = g.getBufferSize();
         if (actualSize == -1) {
             generalData->udpSocketBufferSize = previousSize;
         } else {
-            generalData->udpSocketBufferSize = actualSize / 2;
+            generalData->udpSocketBufferSize =
+                actualSize / UdpRxSocket::kernelBufferSizeFactor;
         }
         // to allow udp sockets to be able to bind in the future
     } catch (...) {

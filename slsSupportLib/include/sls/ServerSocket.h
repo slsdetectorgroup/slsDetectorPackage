@@ -5,6 +5,7 @@
 #include "sls/DataSocket.h"
 #include "sls/ServerInterface.h"
 #include "sls/network_utils.h"
+#include <atomic>
 #include <cstdint>
 #include <netdb.h>
 #include <string>
@@ -17,6 +18,8 @@ class ServerSocket : public DataSocket {
   public:
     ServerSocket(int port);
     ServerInterface accept();
+    // makes a blocked (or future) accept() throw
+    void shutdown();
     IpAddr getLastClient() const noexcept { return lastClient; }
     IpAddr getThisClient() const noexcept { return thisClient; }
     IpAddr getLockedBy() const noexcept { return lockedBy; }
@@ -30,6 +33,7 @@ class ServerSocket : public DataSocket {
     IpAddr lastClient;
     IpAddr lockedBy;
     int serverPort;
+    std::atomic<bool> shutdownRequested{false};
 };
 
 }; // namespace sls

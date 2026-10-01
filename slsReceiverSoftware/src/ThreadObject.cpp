@@ -6,22 +6,16 @@
  ***********************************************/
 
 #include "ThreadObject.h"
+#include "sls/thread_utils.h"
 #include "sls/container_utils.h"
 #include <iostream>
 #include <unistd.h>
 
 namespace sls {
 
-// gettid added in glibc 2.30
-#if __GLIBC__ == 2 && __GLIBC_MINOR__ < 30
-#include <sys/syscall.h>
-#define gettid() syscall(SYS_gettid)
-#endif
-
 ThreadObject::ThreadObject(int index, std::string type)
     : index(index), type(type) {
     LOG(logDEBUG) << type << " thread created: " << index;
-    sem_init(&semaphore, 1, 0);
     try {
         threadObject = std::thread(&ThreadObject::RunningThread, this);
     } catch (...) {
@@ -32,9 +26,8 @@ ThreadObject::ThreadObject(int index, std::string type)
 
 ThreadObject::~ThreadObject() {
     killThread = true;
-    sem_post(&semaphore);
+    semaphore.release();
     threadObject.join();
-    sem_destroy(&semaphore);
 }
 
 pid_t ThreadObject::GetThreadId() const { return threadId; }
@@ -46,7 +39,7 @@ void ThreadObject::StartRunning() { runningFlag = true; }
 void ThreadObject::StopRunning() { runningFlag = false; }
 
 void ThreadObject::RunningThread() {
-    threadId = gettid();
+    threadId = getThreadId();
     LOG(logINFOBLUE) << "Created [ " << type << "Thread " << index
                      << ", Tid: " << threadId << "]";
     while (!killThread) {
@@ -54,14 +47,14 @@ void ThreadObject::RunningThread() {
             ThreadExecution();
         }
         // wait till the next acquisition
-        sem_wait(&semaphore);
+        semaphore.acquire();
     }
     LOG(logINFOBLUE) << "Exiting [ " << type << " Thread " << index
                      << ", Tid: " << threadId << "]";
     threadId = 0;
 }
 
-void ThreadObject::Continue() { sem_post(&semaphore); }
+void ThreadObject::Continue() { semaphore.release(); }
 
 void ThreadObject::SetThreadPriority(int priority) {
     struct sched_param param;

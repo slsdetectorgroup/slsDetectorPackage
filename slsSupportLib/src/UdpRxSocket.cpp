@@ -46,12 +46,13 @@ UdpRxSocket::UdpRxSocket(uint16_t port, ssize_t packet_size,
     // we set it. Otherwise we leave it there since it could have been
     // set by the rx_udpsocksize command
     if (kernel_buffer_size) {
-        auto current = getBufferSize() / 2;
+        auto current = getBufferSize() / kernelBufferSizeFactor;
         if (current < kernel_buffer_size) {
             setBufferSize(kernel_buffer_size);
-            if (getBufferSize() / 2 < kernel_buffer_size) {
+            if (getBufferSize() / kernelBufferSizeFactor < kernel_buffer_size) {
                 LOG(logWARNING)
-                    << "Could not set buffer size. Got: " << getBufferSize() / 2
+                    << "Could not set buffer size. Got: "
+                    << getBufferSize() / kernelBufferSizeFactor
                     << " instead of " << kernel_buffer_size;
             }
         }
@@ -91,5 +92,37 @@ void UdpRxSocket::setBufferSize(int size) {
 void UdpRxSocket::Shutdown() {
     // not closing yet on purpose, but read gives -1
     shutdown(sockfd_, SHUT_RDWR);
+#ifndef __linux__
+    // On Linux shutdown() wakes up a thread blocked in recvfrom() even though
+    // the socket is not connected. On macOS/BSD it only returns ENOTCONN and
+    // the reader stays blocked, so wake it up with an empty datagram.
+    WakeUpReceiver();
+#endif
+}
+
+void UdpRxSocket::WakeUpReceiver() noexcept {
+    struct sockaddr_storage addr {};
+    socklen_t addrlen = sizeof(addr);
+    if (getsockname(sockfd_, reinterpret_cast<struct sockaddr *>(&addr),
+                    &addrlen) == -1) {
+        return;
+    }
+    // bound to any address, reach it through loopback
+    if (addr.ss_family == AF_INET) {
+        auto *a = reinterpret_cast<struct sockaddr_in *>(&addr);
+        if (a->sin_addr.s_addr == htonl(INADDR_ANY))
+            a->sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+    } else if (addr.ss_family == AF_INET6) {
+        auto *a = reinterpret_cast<struct sockaddr_in6 *>(&addr);
+        if (IN6_IS_ADDR_UNSPECIFIED(&a->sin6_addr))
+            a->sin6_addr = in6addr_loopback;
+    }
+    int fd = socket(addr.ss_family, SOCK_DGRAM, 0);
+    if (fd == -1) {
+        return;
+    }
+    sendto(fd, nullptr, 0, 0, reinterpret_cast<struct sockaddr *>(&addr),
+           addrlen);
+    close(fd);
 }
 } // namespace sls

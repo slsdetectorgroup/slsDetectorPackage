@@ -9,12 +9,13 @@
  *@short creates/destroys a thread
  */
 
+#include "sls/counting_semaphore.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
 
 #include <atomic>
-#include <semaphore.h>
 #include <string>
+#include <sys/types.h> // pid_t
 #include <thread>
 
 namespace sls {
@@ -45,7 +46,7 @@ class ThreadObject : private virtual slsDetectorDefs {
     std::atomic<bool> killThread{false};
     std::atomic<bool> runningFlag{false};
     std::thread threadObject;
-    sem_t semaphore;
+    binary_semaphore semaphore{0};
     const std::string type;
     std::atomic<pid_t> threadId{0};
 };

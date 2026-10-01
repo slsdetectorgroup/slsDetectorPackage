@@ -2782,8 +2782,15 @@ void *start_timer(void *arg) {
          dr, bytesPerPixel, tgEnable, datasize, packetsize, maxPacketsPerFrame,
          npixelsx, databytes));
 
-    // Generate data
-    char imageData[databytes * 2];
+    // Generate data (on the heap, too large for the stack of a thread)
+    char *imageData = (char *)malloc(databytes * 2);
+    if (imageData == NULL) {
+        LOG(logERROR, ("Could not allocate memory for virtual image\n"));
+        closeUDPSocket(0);
+        closeUDPSocket(1);
+        sharedMemory_setStatus(IDLE);
+        return NULL;
+    }
     memset(imageData, 0, databytes * 2);
     {
         int npixels = NCHAN * NCHIP;
@@ -3014,6 +3021,7 @@ void *start_timer(void *arg) {
         }
         setNextFrameNumber(frameNr + numFrames);
     }
+    free(imageData);
 
     closeUDPSocket(0);
     closeUDPSocket(1);

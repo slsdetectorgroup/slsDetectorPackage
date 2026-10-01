@@ -6,6 +6,7 @@ main_src = ../slsDetectorServer/src/
 support_lib = ../../slsSupportLib/include/
 det_lib = ../../slsDetectorSoftware/include/sls/
 md5_dir = ../../slsSupportLib/src/
+script_dir = ../../etc/
 
 CROSS  		= nios2-buildroot-linux-gnu-
 CC    		= $(CROSS)gcc
@@ -28,7 +29,7 @@ boot: $(OBJS)
 version_name=APIMYTHEN3
 version_path=slsDetectorServers/mythen3DetectorServer
 versioning: 
-	cd ../../ && echo $(PWD) && echo `tput setaf 6; python etc/updateAPIVersion.py $(version_name) $(version_path);  tput sgr0;`
+	echo `tput setaf 6; python $(script_dir)updateAPIVersion.py $(version_name) $(version_path);  tput sgr0;`
 
 
 $(PROGS): $(OBJS)

@@ -17,30 +17,21 @@ using test::PUT;
 
 /* dacs */
 
-TEST_CASE("Setting and reading back Jungfrau dacs",
-          "[.detectorintegration][dacs]") {
+TEST_CASE("jungfrau dac", "[.detectorintegration][dacs]") {
     // vb_comp, vdd_prot, vin_com, vref_prech, vb_pixbuf, vb_ds, vref_ds,
     // vref_comp
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::JUNGFRAU) {
-        SECTION("vb_comp") { test_dac_caller(defs::VB_COMP, "vb_comp", 1220); }
-        SECTION("vdd_prot") {
-            test_dac_caller(defs::VDD_PROT, "vdd_prot", 3000);
-        }
-        SECTION("vin_com") { test_dac_caller(defs::VIN_COM, "vin_com", 1053); }
-        SECTION("vref_prech") {
-            test_dac_caller(defs::VREF_PRECH, "vref_prech", 1450);
-        }
-        SECTION("vb_pixbuf") {
-            test_dac_caller(defs::VB_PIXBUF, "vb_pixbuf", 750);
-        }
-        SECTION("vb_ds") { test_dac_caller(defs::VB_DS, "vb_ds", 1000); }
-        SECTION("vref_ds") { test_dac_caller(defs::VREF_DS, "vref_ds", 480); }
-        SECTION("vref_comp") {
-            test_dac_caller(defs::VREF_COMP, "vref_comp", 420);
-        }
+        SECTION("vb_comp") { test_dac_caller(defs::VB_COMP, 1220); }
+        SECTION("vdd_prot") { test_dac_caller(defs::VDD_PROT, 3000); }
+        SECTION("vin_com") { test_dac_caller(defs::VIN_COM, 1053); }
+        SECTION("vref_prech") { test_dac_caller(defs::VREF_PRECH, 1450); }
+        SECTION("vb_pixbuf") { test_dac_caller(defs::VB_PIXBUF, 750); }
+        SECTION("vb_ds") { test_dac_caller(defs::VB_DS, 1000); }
+        SECTION("vref_ds") { test_dac_caller(defs::VREF_DS, 480); }
+        SECTION("vref_comp") { test_dac_caller(defs::VREF_COMP, 420); }
         // eiger
         REQUIRE_THROWS(caller.call("vthreshold", {}, -1, GET));
         REQUIRE_THROWS(caller.call("vsvp", {}, -1, GET));
@@ -285,8 +276,9 @@ TEST_CASE("extrastoragecells", "[.detectorintegration]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::JUNGFRAU) {
-        // chip version 1.0
-        if (det.getChipVersion().squash() * 10 == 10) {
+        auto chipVersion = chipVersionToX10(det.getChipVersion().squash());
+        // chip version 1.0 and 1.2
+        if (chipVersion == 10 || chipVersion == 12) {
             auto prev_val = det.getNumberOfAdditionalStorageCells().tsquash(
                 "inconsistent #additional storage cells to test");
             {
@@ -334,8 +326,9 @@ TEST_CASE("storagecell_start", "[.detectorintegration]") {
             caller.call("storagecell_start", {"1"}, -1, PUT, oss);
             REQUIRE(oss.str() == "storagecell_start 1\n");
         }
-        // chip version 1.0
-        if (det.getChipVersion().squash() * 10 == 10) {
+        auto chipVersion = chipVersionToX10(det.getChipVersion().squash());
+        // chip version 1.0 and chip version 1.2
+        if (chipVersion == 10 || chipVersion == 12) {
             std::ostringstream oss;
             caller.call("storagecell_start", {"15"}, -1, PUT, oss);
             REQUIRE(oss.str() == "storagecell_start 15\n");
@@ -373,8 +366,9 @@ TEST_CASE("storagecell_delay", "[.detectorintegration]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::JUNGFRAU) {
-        // chip version 1.0
-        if (det.getChipVersion().squash() * 10 == 10) {
+        // chip version 1.0 and 1.2
+        auto chipVersion = chipVersionToX10(det.getChipVersion().squash());
+        if (chipVersion == 10 || chipVersion == 12) {
             auto prev_val = det.getStorageCellDelay();
             {
                 std::ostringstream oss;
@@ -464,7 +458,7 @@ TEST_CASE("filtercells", "[.detectorintegration]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::JUNGFRAU) {
         // chip version 1.1
-        if (det.getChipVersion().squash() * 10 == 11) {
+        if (chipVersionToX10(det.getChipVersion().squash()) == 11) {
             auto prev_val = det.getNumberOfFilterCells();
             {
                 std::ostringstream oss;
@@ -491,7 +485,7 @@ TEST_CASE("filtercells", "[.detectorintegration]") {
                 det.setNumberOfFilterCells(prev_val[i], {i});
             }
         }
-        // chip version 1.0
+        // chip version 1.0 and 1.2
         else {
             // cannot set/get filter cell
             REQUIRE_THROWS(caller.call("filtercells", {"1"}, -1, PUT));
@@ -521,9 +515,11 @@ TEST_CASE("pedestalmode", "[.detectorintegration]") {
 
         REQUIRE_THROWS(caller.call("pedestalmode", {"256", "10"}, -1, PUT));
         REQUIRE_THROWS(caller.call("pedestalmode", {"-1", "10"}, 0, PUT));
-        REQUIRE_THROWS(caller.call("pedestalmode", {"20", "1000"}, 0, PUT));
+        REQUIRE_THROWS(caller.call("pedestalmode", {"20", "65536"}, 0, PUT));
         REQUIRE_THROWS(caller.call("pedestalmode", {"2000", "100"}, 0, PUT));
         REQUIRE_THROWS(caller.call("pedestalmode", {"20", "-1"}, 0, PUT));
+
+        REQUIRE_NOTHROW(caller.call("pedestalmode", {"20", "4000"}, 0, PUT));
 
         {
             std::ostringstream oss;

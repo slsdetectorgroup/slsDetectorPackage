@@ -35,7 +35,8 @@ void run(Detector &det, const AcquisitionState &acq_state,
          const FileState &file_state) {
 
     INFO(ToString(det.getDetectorType().squash(defs::GENERIC))
-         << " acquiring with num_frames = " << acq_state.num_frames);
+         << " acquiring with num_frames = " << acq_state.num_frames
+         << ". Check PC Tuning Options\n");
 
     FileStateGuard file_guard(det, file_state);
     AcquisitionStateGuard acq_guard(det, acq_state);

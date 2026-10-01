@@ -741,7 +741,7 @@ column:
       function: setColumn
 
 timing:
-  help: "[auto|trigger|gating|burst_trigger|trigger_gating]\n\tTiming Mode of detector.\n\t[Jungfrau][Moench][Ctb][Gotthard2][Xilinx Ctb] [auto|trigger]\n\t[Mythen3] [auto|trigger|gating|trigger_gating]\n\t[Eiger] [auto|trigger|gating|burst_trigger]"
+  help: "[auto|trigger|gating|burst_trigger|trigger_gating]\n\tTiming Mode of detector.\n\t[Jungfrau][Moench][Ctb][Gotthard2] [auto|trigger]\n\t[Mythen3][Xilinx Ctb] [auto|trigger|gating|trigger_gating]\n\t[Eiger] [auto|trigger|gating|burst_trigger]"
   inherit_actions: INTEGER_COMMAND_VEC_ID
   actions:
     GET:
@@ -1969,7 +1969,7 @@ rx_threads:
 
 chipversion:
   inherit_actions: GET_COMMAND
-  help: "\n\t[Jungfrau] Returns chip version. Can be 1.0 or 1.1"
+  help: "\n\t[Jungfrau] Returns chip version as string. For example, 'v1.1' or 'v1.2 Low Noise'"
   actions:
     GET:
       function: getChipVersion

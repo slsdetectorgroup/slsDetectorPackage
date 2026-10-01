@@ -47,11 +47,13 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
      * Creates Zmq Sockets
      * (throws an exception if it couldnt create zmq sockets)
      * @param port streaming port start index
-     * @param hwm streaming high water mark
+     * @param hwm high water mark for zmq socket
      */
     void CreateZmqSockets(uint16_t port, int hwm);
     void CloseZmqSocket();
     void StreamRxDummyHeader();
+    void RestreamStop();
+    int GetZmqHwm() const;
 
   private:
     /**

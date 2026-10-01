@@ -1164,6 +1164,13 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
 
         // test socket buffer size with current set up
         setUDPSocketBufferSize(0);
+
+        // set up file write if enabled
+        if (fileWriteEnable) {
+            for (const auto &it : dataProcessor)
+                it->SetupFileWriter(fileWriteEnable, fileFormatType,
+                                    &hdf5LibMutex);
+        }
     }
 
     LOG(logINFO) << "Number of Interfaces: " << generalData->numUDPInterfaces;
@@ -1307,7 +1314,26 @@ void Implementation::setStreamingPort(const uint16_t i) {
     LOG(logINFO) << "Streaming Port: " << streamingPort;
 }
 
-int Implementation::getStreamingHwm() const { return streamingHwm; }
+int Implementation::getStreamingHwm() const {
+    switch (dataStreamer.size()) {
+    case 0:
+        return streamingHwm;
+    case 2:
+        if (dataStreamer[0]->GetZmqHwm() != dataStreamer[1]->GetZmqHwm()) {
+            throw RuntimeError(
+                "Streaming Hwm is not same for all data streamers: " +
+                std::to_string(dataStreamer[0]->GetZmqHwm()) + ", " +
+                std::to_string(dataStreamer[1]->GetZmqHwm()));
+        }
+        [[fallthrough]];
+    case 1:
+        return dataStreamer[0]->GetZmqHwm();
+        break;
+    default:
+        throw RuntimeError("Invalid number of data streamers: " +
+                           std::to_string(dataStreamer.size()));
+    }
+}
 
 void Implementation::setStreamingHwm(const int i) {
     streamingHwm = i;

@@ -8,9 +8,12 @@
 #include <chrono>
 #include <filesystem>
 #include <optional>
+#include <string>
 #include <thread>
 
 namespace sls {
+
+int chipVersionToX10(const std::string &chipVersion);
 
 namespace acq = sls::test::acquire;
 namespace mf = sls::test::master_file;
@@ -20,8 +23,12 @@ void test_valid_port_caller(const std::string &command,
                             const std::vector<std::string> &arguments,
                             int detector_id, int action);
 
-void test_dac_caller(slsDetectorDefs::dacIndex index,
-                     const std::string &dacname, int dacvalue, bool mV = false);
+void test_dac(defs::dacIndex index, std::string dacname, int dacvalue,
+              bool mV = false);
+void test_dac_caller(slsDetectorDefs::dacIndex index, int dacvalue,
+                     bool mV = false);
+void test_dacname_caller(std::string dacname, int dacvalue, bool mV = false);
+
 void test_onchip_dac_caller(slsDetectorDefs::dacIndex index,
                             const std::string &dacname, int dacvalue);
 

@@ -1,7 +1,7 @@
 name: Build slsdetlib
 
 on: [pull_request]
-
+      
 jobs:
   build:
     strategy:

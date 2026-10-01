@@ -1,3 +1,0 @@
-slsDetectorPackage/6.1.1:
-  - relstage: unstable
-    build_requires: cmake/3.15.5 zeromq/4.3.4

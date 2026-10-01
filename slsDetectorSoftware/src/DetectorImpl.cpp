@@ -470,22 +470,13 @@ void DetectorImpl::createReceivingDataSockets() {
     size_t numSockets = modules.size() * numUDPInterfaces;
 
     for (size_t iSocket = 0; iSocket < numSockets; ++iSocket) {
-        uint32_t portnum =
-            (modules[iSocket / numUDPInterfaces]->getClientStreamingPort());
+        auto imod = iSocket / numUDPInterfaces;
+        uint32_t portnum = modules[imod]->getClientStreamingPort();
         portnum += (iSocket % numUDPInterfaces);
         try {
+            auto ip = modules[imod]->getClientStreamingIP().str();
             zmqSocket.push_back(
-                make_unique<ZmqSocket>(modules[iSocket / numUDPInterfaces]
-                                           ->getClientStreamingIP()
-                                           .str()
-                                           .c_str(),
-                                       portnum));
-            // set high water mark
-            int hwm = shm()->zmqHwm;
-            if (hwm >= 0) {
-                zmqSocket[iSocket]->SetReceiveHighWaterMark(hwm);
-                // need not reconnect. cannot be connected (detector idle)
-            }
+                make_unique<ZmqSocket>(ip.c_str(), portnum, shm()->zmqHwm));
             LOG(logINFO) << "Zmq Client[" << iSocket << "] at "
                          << zmqSocket.back()->GetZmqServerAddress() << "[hwm: "
                          << zmqSocket.back()->GetReceiveHighWaterMark() << "]";
@@ -1064,23 +1055,7 @@ void DetectorImpl::setClientStreamingHwm(const int limit) {
     }
     // update shm
     shm()->zmqHwm = limit;
-
-    // streaming enabled
-    if (client_downstream) {
-        // custom limit, set it directly
-        if (limit >= 0) {
-            for (auto &it : zmqSocket) {
-                it->SetReceiveHighWaterMark(limit);
-                // need not reconnect. cannot be connected (detector idle)
-            }
-            LOG(logINFO) << "Setting Client Zmq socket rcv hwm to " << limit;
-        }
-        // default, disable and enable to get default
-        else {
-            setDataStreamingToClient(false);
-            setDataStreamingToClient(true);
-        }
-    }
+    LOG(logINFO) << "Setting Client Zmq socket rcv hwm to " << limit;
 }
 
 void DetectorImpl::registerAcquisitionFinishedCallback(void (*func)(double, int,
@@ -1695,7 +1670,9 @@ void DetectorImpl::updateRxUDPDatastreamMetadata() {
         }
     }
 
-    modules[0]->updateRxUDPPortDisableMetadata(disable);
+    if (modules[0]->getUseReceiverFlag()) {
+        modules[0]->updateRxUDPPortDisableMetadata(disable);
+    }
 }
 
 std::vector<int> DetectorImpl::getRxDisabledUDPPortIndices() const {

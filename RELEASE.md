@@ -71,6 +71,8 @@ allow disabling one UDP interface in the receiver.
 
 setting number of UDP interfaces can only be set at detector level and not at module level. (individual modules)
 
+zmqsocket - allowing hwm to be set already at the constructor level. As before, can still be set after construction with socket reconnection.
+
 2  On-board Detector Server Compatibility
 ==========================================
 

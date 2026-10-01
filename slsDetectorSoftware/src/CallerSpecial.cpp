@@ -424,41 +424,43 @@ std::string Caller::threshold(int action) {
             throw RuntimeError("Not implemented for this detector\n");
         }
     } else if (action == defs::PUT_ACTION) {
+        if (args.empty()) {
+            WrongNumberOfParameters(1);
+        }
         defs::detectorType type = det->getDetectorType().squash();
-        if (type == defs::EIGER && args.size() != 1 && args.size() != 2) {
-            WrongNumberOfParameters(1);
-        }
-        if (type == defs::MYTHEN3 && (args.size() < 1 || args.size() > 4)) {
-            WrongNumberOfParameters(1);
-        }
-
         bool trimbits = (cmd == "thresholdnotb") ? false : true;
-        std::array<int, 3> energy = {StringTo<int>(args[0]), 0, 0};
-        energy[1] = energy[0];
-        energy[2] = energy[0];
-        defs::detectorSettings sett = defs::STANDARD;
 
-        // check if argument has settings or get it
-        if (args.size() == 2 || args.size() == 4) {
-            sett = StringTo<defs::detectorSettings>(args[args.size() - 1]);
+        // settings is optional, last and the only argument starting with a
+        // letter. The energies before it accept "a b c" as well as "a,b,c"
+        auto energyArgs = args;
+        defs::detectorSettings sett = defs::STANDARD;
+        if (std::isalpha(static_cast<unsigned char>(args.back()[0]))) {
+            sett = StringTo<defs::detectorSettings>(args.back());
+            energyArgs.pop_back();
         } else {
             sett = det->getSettings(std::vector<int>{det_id})
                        .tsquash("Inconsistent settings between detectors");
         }
+        auto energy = StringTo<std::vector<int>>(join(energyArgs, ','));
 
-        // get other threshold values
-        if (args.size() > 2) {
-            energy[1] = StringTo<int>(args[1]);
-            energy[2] = StringTo<int>(args[2]);
-        }
         switch (type) {
         case defs::EIGER:
+            if (energy.size() != 1) {
+                throw RuntimeError("Expected one threshold energy");
+            }
             det->setThresholdEnergy(energy[0], sett, trimbits,
                                     std::vector<int>{det_id});
             break;
         case defs::MYTHEN3:
-            det->setThresholdEnergy(energy, sett, trimbits,
-                                    std::vector<int>{det_id});
+            // one energy applies to all three counters
+            if (energy.size() == 1) {
+                energy.resize(3, energy[0]);
+            }
+            if (energy.size() != 3) {
+                throw RuntimeError("Expected one or three threshold energies");
+            }
+            det->setThresholdEnergy({energy[0], energy[1], energy[2]}, sett,
+                                    trimbits, std::vector<int>{det_id});
             break;
         default:
             throw RuntimeError("Not implemented for this detector\n");
@@ -494,6 +496,7 @@ std::string Caller::trimen(int action) {
     }
     return os.str();
 }
+
 std::string Caller::badchannels(int action) {
     std::ostringstream os;
     if (action == defs::HELP_ACTION) {

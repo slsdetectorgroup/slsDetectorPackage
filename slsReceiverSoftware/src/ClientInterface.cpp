@@ -3,6 +3,7 @@
 #include "ClientInterface.h"
 #include "sls/ServerSocket.h"
 #include "sls/StaticVector.h"
+#include "sls/thread_utils.h"
 #include "sls/ToString.h"
 
 #include "sls/sls_detector_exceptions.h"
@@ -27,12 +28,6 @@ namespace sls {
 using ns = std::chrono::nanoseconds;
 using Interface = ServerInterface;
 
-// gettid added in glibc 2.30
-#if __GLIBC__ == 2 && __GLIBC_MINOR__ < 30
-#include <sys/syscall.h>
-#define gettid() syscall(SYS_gettid)
-#endif
-
 std::mutex ClientInterface::callbackMutex;
 
 ClientInterface::~ClientInterface() {
@@ -47,7 +42,7 @@ ClientInterface::ClientInterface(uint16_t portNumber)
     : detType(GENERIC), portNumber(portNumber), server(portNumber) {
     validatePortNumber(portNumber);
     functionTable();
-    parentThreadId = gettid();
+    parentThreadId = getThreadId();
     tcpThread =
         make_unique<std::thread>(&ClientInterface::startTCPServer, this);
 }
@@ -79,7 +74,7 @@ void ClientInterface::registerCallBackRawDataReady(
 }
 
 void ClientInterface::startTCPServer() {
-    tcpThreadId = gettid();
+    tcpThreadId = getThreadId();
     LOG(logINFOBLUE) << "Created [ TCP server Tid: " << tcpThreadId << "]";
     LOG(logINFO) << "SLS Receiver starting TCP Server on port " << portNumber
                  << '\n';

@@ -3,6 +3,7 @@
 /* slsReceiver */
 #include "CommandLineOptions.h"
 #include "sls/Receiver.h"
+#include "sls/thread_utils.h"
 #include "sls/ToString.h"
 #include "sls/container_utils.h"
 #include "sls/logger.h"
@@ -12,12 +13,6 @@
 #include <csignal> //SIGINT
 #include <semaphore.h>
 #include <unistd.h>
-
-// gettid added in glibc 2.30
-#if __GLIBC__ == 2 && __GLIBC_MINOR__ < 30
-#include <sys/syscall.h>
-#define gettid() syscall(SYS_gettid)
-#endif
 
 sem_t semaphore;
 
@@ -44,7 +39,8 @@ int main(int argc, char *argv[]) {
         return EXIT_SUCCESS;
     }
 
-    LOG(sls::logINFOBLUE) << "Current Process [ Tid: " << gettid() << " ]";
+    LOG(sls::logINFOBLUE) << "Current Process [ Tid: " << sls::getThreadId()
+                          << " ]";
 
     // close files on ctrl+c
     sls::setupSignalHandler(SIGINT, sigInterruptHandler);
@@ -60,10 +56,11 @@ int main(int argc, char *argv[]) {
         sem_destroy(&semaphore);
     } catch (...) {
         sem_destroy(&semaphore);
-        LOG(sls::logINFOBLUE) << "Exiting [ Tid: " << gettid() << " ]";
+        LOG(sls::logINFOBLUE)
+            << "Exiting [ Tid: " << sls::getThreadId() << " ]";
         throw;
     }
-    LOG(sls::logINFOBLUE) << "Exiting [ Tid: " << gettid() << " ]";
+    LOG(sls::logINFOBLUE) << "Exiting [ Tid: " << sls::getThreadId() << " ]";
     LOG(sls::logINFO) << "Exiting Receiver";
     return EXIT_SUCCESS;
 }

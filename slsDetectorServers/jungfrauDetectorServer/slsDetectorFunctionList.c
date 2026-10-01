@@ -3078,8 +3078,11 @@ void *start_timer(void *arg) {
         ((maxPacketsPerFrame / 2) * readNRows) / (maxRows / 2);
 
     // Generate data
-    char imageData[DATA_BYTES];
-    memset(imageData, 0, DATA_BYTES);
+    char *imageData = (char *)calloc(DATA_BYTES, 1);
+    if (imageData == NULL) {
+        LOG(logERROR, ("Could not allocate memory for virtual image\n"));
+        exit(EXIT_FAILURE);
+    }
     {
         const int npixels = (NCHAN * NCHIP);
         const int pixelsPerPacket = dataSize / NUM_BYTES_PER_PIXEL;
@@ -3252,6 +3255,7 @@ void *start_timer(void *arg) {
         }
         setNextFrameNumber(frameNr + numFrames);
     }
+    free(imageData);
 
     closeUDPSocket(0);
     if (numInterfaces == 2) {

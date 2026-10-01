@@ -50,7 +50,11 @@ void CmdParser::Parse(std::string s) {
     // Command and args should now be all that's left in the string
     std::istringstream iss(s);
     auto it = std::istream_iterator<std::string>(iss);
-    command_ = *it++; // First arg is the comand to run
+
+    // Only id/position (or whitespace) and no command leaves nothing to
+    // read, dereferencing the end-of-stream iterator is undefined behaviour
+    if (it != std::istream_iterator<std::string>())
+        command_ = *it++; // First arg is the comand to run
 
     arguments_ =
         std::vector<std::string>(it, std::istream_iterator<std::string>());

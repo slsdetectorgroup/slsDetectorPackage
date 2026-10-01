@@ -409,4 +409,63 @@ TEST_CASE("Parse a command in the form 0-1:command") {
     REQUIRE(p.command() == "exptime");
 }
 
+TEST_CASE("Parse only det id without command gives empty command") {
+    CmdParser p;
+    p.Parse("7-");
+    REQUIRE(p.multi_id() == 7);
+    REQUIRE(p.detector_id() == -1);
+    REQUIRE(p.receiver_id() == -1);
+    REQUIRE(p.command().empty());
+    REQUIRE(p.arguments().empty());
+}
+
+TEST_CASE("Parse only mod id without command gives empty command") {
+    CmdParser p;
+    p.Parse("0:");
+    REQUIRE(p.multi_id() == 0);
+    REQUIRE(p.detector_id() == 0);
+    REQUIRE(p.receiver_id() == -1);
+    REQUIRE(p.command().empty());
+    REQUIRE(p.arguments().empty());
+}
+
+TEST_CASE("Parse only mod and receiver id without command gives empty command") {
+    CmdParser p;
+    p.Parse("0:1");
+    REQUIRE(p.multi_id() == 0);
+    REQUIRE(p.detector_id() == 0);
+    REQUIRE(p.receiver_id() == 1);
+    REQUIRE(p.command().empty());
+    REQUIRE(p.arguments().empty());
+}
+
+TEST_CASE("Parse only whitespace gives empty command and default id") {
+    CmdParser p;
+    p.Parse("  ");
+    REQUIRE(p.multi_id() == 0);
+    REQUIRE(p.detector_id() == -1);
+    REQUIRE(p.receiver_id() == -1);
+    REQUIRE(p.command().empty());
+    REQUIRE(p.arguments().empty());
+}
+
+TEST_CASE("Parse only --help without command gives empty command") {
+    CmdParser p;
+    p.Parse("--help");
+    REQUIRE(p.isHelp());
+    REQUIRE(p.command().empty());
+    REQUIRE(p.arguments().empty());
+}
+
+TEST_CASE("Parse only id from argv without command gives empty command") {
+    int argc = 2;
+    const char *const argv[]{"caller", "7-"};
+    CmdParser p;
+    p.Parse(argc, argv);
+    REQUIRE(p.multi_id() == 7);
+    REQUIRE(p.detector_id() == -1);
+    REQUIRE(p.command().empty());
+    REQUIRE(p.arguments().empty());
+}
+
 } // namespace sls

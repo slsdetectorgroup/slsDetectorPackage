@@ -3078,12 +3078,11 @@ void *start_timer(void *arg) {
         ((maxPacketsPerFrame / 2) * readNRows) / (maxRows / 2);
 
     // Generate data (on the heap, too large for the stack of a thread)
-    char *imageData = (char *)malloc(DATA_BYTES);
+    char *imageData = (char *)calloc(DATA_BYTES, 1);
     if (imageData == NULL) {
         LOG(logERROR, ("Could not allocate memory for virtual image\n"));
         exit(EXIT_FAILURE);
     }
-    memset(imageData, 0, DATA_BYTES);
     {
         const int npixels = (NCHAN * NCHIP);
         const int pixelsPerPacket = dataSize / NUM_BYTES_PER_PIXEL;

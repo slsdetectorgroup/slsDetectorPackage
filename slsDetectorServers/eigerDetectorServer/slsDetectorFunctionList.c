@@ -2783,12 +2783,11 @@ void *start_timer(void *arg) {
          npixelsx, databytes));
 
     // Generate data (on the heap, too large for the stack of a thread)
-    char *imageData = (char *)malloc(databytes * 2);
+    char *imageData = (char *)calloc(databytes * 2, 1);
     if (imageData == NULL) {
         LOG(logERROR, ("Could not allocate memory for virtual image\n"));
         exit(EXIT_FAILURE);
     }
-    memset(imageData, 0, databytes * 2);
     {
         int npixels = NCHAN * NCHIP;
         const int pixelsPerPacket = (double)datasize / bytesPerPixel;

@@ -9,6 +9,7 @@
 #include "sls/Receiver.h"
 #include "sls/ToString.h"
 #include "sls/container_utils.h"
+#include "sls/counting_semaphore.h"
 #include "sls/logger.h"
 #include "sls/network_utils.h"
 #include "sls/sls_detector_defs.h"
@@ -50,16 +51,14 @@ struct FrameStatus {
     bool starting = true;
     bool terminate = false;
     int num_receivers;
-    sem_t available;
+    sls::counting_semaphore<> available{0};
     std::mutex mtx;
     ZmqMsgList headers;
     PortFrameMap frames;
     ZmqMsgList ends;
 
     FrameStatus(bool start, bool term, int num_recv)
-        : starting(start), terminate(term), num_receivers(num_recv) {
-        sem_init(&available, 0, 0);
-    }
+        : starting(start), terminate(term), num_receivers(num_recv) {}
 };
 FrameStatus *global_frame_status = nullptr;
 
@@ -170,7 +169,7 @@ void Correlate(FrameStatus *stat) {
     }
 
     while (true) {
-        sem_wait(&(stat->available));
+        stat->available.acquire();
         {
             std::lock_guard<std::mutex> lock(stat->mtx);
 
@@ -333,7 +332,7 @@ void StartAcquisitionCallback(
             stat->frames[port].clear();
         }
     }
-    sem_post(&stat->available);
+    stat->available.release();
 }
 
 void AcquisitionFinishedCallback(
@@ -371,7 +370,7 @@ void AcquisitionFinishedCallback(
         std::lock_guard<std::mutex> lock(stat->mtx);
         stat->ends.push_back(hmsg);
     }
-    sem_post(&stat->available);
+    stat->available.release();
 }
 
 void GetDataCallback(slsDetectorDefs::sls_receiver_header &header,
@@ -492,7 +491,7 @@ void GetDataCallback(slsDetectorDefs::sls_receiver_header &header,
         stat->frames[callbackHeader.udpPort][header.detHeader.frameNumber]
             .push_back(msg);
     }
-    sem_post(&stat->available);
+    stat->available.release();
 }
 
 std::vector<sem_t> semaphores;
@@ -583,10 +582,9 @@ int main(int argc, char *argv[]) {
     {
         std::lock_guard<std::mutex> lock(stat.mtx);
         stat.terminate = true;
-        sem_post(&stat.available);
+        stat.available.release();
     }
     combinerThread.join();
-    sem_destroy(&stat.available);
 
     if (threadException) {
         try {

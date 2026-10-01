@@ -858,8 +858,7 @@ TEST_CASE("rx_roi", "[.detectorintegration][.disable_check_data_file]") {
 TEST_CASE("rx_roi_port_disabled", "[.detectorintegration]") {
     Detector det;
     auto det_type = det.getDetectorType().squash();
-    auto two_ports = (det_type == defs::EIGER);
-    if (two_ports) {
+    if (det_type == defs::EIGER) {
         auto prev_roi = det.getRxROI();
         std::vector<defs::portPosition> ports = {defs::LEFT, defs::RIGHT};
         auto prev_port0 = det.getDataStream(ports[0], {0})[0];
@@ -875,7 +874,7 @@ TEST_CASE("rx_roi_port_disabled", "[.detectorintegration]") {
         det.setDataStream(ports[1], true, {0});
         det.setRxROI(rois);
         REQUIRE_THROWS(det.setDataStream(ports[0], false));
-        REQUIRE_THROWS(det.setUDPDataStream(ports[1], false));
+        REQUIRE_THROWS(det.setDataStream(ports[1], false));
 
         det.clearRxROI();
         det.setDataStream(ports[0], true, {0});

@@ -48,6 +48,15 @@ bool DetectorImpl::isAllPositions(Positions pos) const {
             (pos.size() == modules.size()));
 }
 
+std::vector<int> DetectorImpl::fillInPositions(Positions pos) const {
+    if (isAllPositions(pos)) {
+        std::vector<int> positions(modules.size());
+        std::iota(begin(positions), end(positions), 0);
+        return positions;
+    }
+    return pos;
+}
+
 void DetectorImpl::setAcquiringFlag(bool flag) { shm()->acquiringFlag = flag; }
 
 int DetectorImpl::getDetectorIndex() const { return detectorIndex; }
@@ -1787,27 +1796,18 @@ void DetectorImpl::convertGlobalRoiToPortLevel(
 void DetectorImpl::validatePortEnable(const defs::portPosition port,
                                       const bool enable,
                                       std::vector<int> pos) const {
-    if (modules.size() == 0) {
-        throw RuntimeError("No Modules added");
-    }
     if (shm()->detType != EIGER)
         return;
-
-    // complete detector ROI is the default state and does not constrain
-    const auto rois = getRxROI();
-    if (rois.empty() || (rois.size() == 1 && rois[0].completeRoi())) {
+    if (isCompleteROI())
         return;
-    }
-    if (pos.empty() || (pos.size() == 1 && pos[0] == -1)) {
-        pos.resize(modules.size());
-        std::iota(begin(pos), end(pos), 0);
-    }
-    for (int i : pos) {
+    auto positions = fillInPositions(pos);
+    for (int i : positions) {
         if (i < 0 || static_cast<size_t>(i) >= modules.size()) {
             throw RuntimeError("Invalid module index: " + std::to_string(i));
         }
         auto modRois = modules[i]->getRxROI();
-        auto portIndex = static_cast<int>(port);
+        auto portIndex =
+            static_cast<int>(port); // only eiger (no top, bottom for port)
         validatePortEnableRoiState(i, port, modRois[portIndex], enable);
     }
 }
@@ -1828,8 +1828,8 @@ void DetectorImpl::validatePortEnableRoiState(const int moduleIndex,
         return;
     // diabled but ROI specified
     std::ostringstream oss;
-    oss << (changedPort == defs::LEFT ? "Left" : "Right") << " port of module "
-        << moduleIndex << " (" << modules[moduleIndex]->getHostname()
+    oss << ToString(changedPort) << " port of module " << moduleIndex << " ("
+        << modules[moduleIndex]->getHostname()
         << ") is not active but ROI is specified for it: " << ToString(portRoi)
         << ". Please disable the ROI for this port or enable the port.";
     throw RuntimeError(oss.str());
@@ -1902,6 +1902,14 @@ void DetectorImpl::clearRxROI() {
         modules[iModule]->setRxROI(std::vector<defs::ROI>(nPortsPerModule));
     }
     modules[0]->setRxROIMetadata(std::vector<defs::ROI>(1));
+}
+
+bool DetectorImpl::isCompleteROI() const {
+    const auto rois = getRxROI();
+    if (rois.empty() || (rois.size() == 1 && rois[0].completeRoi())) {
+        return true;
+    }
+    return false;
 }
 
 void DetectorImpl::getBadChannels(const std::string &fname,

@@ -1463,6 +1463,8 @@ void Detector::setRxROI(const std::vector<defs::ROI> &args) {
 
 void Detector::clearRxROI() { pimpl->clearRxROI(); }
 
+bool Detector::isCompleteROI() const { return pimpl->isCompleteROI(); }
+
 // File
 
 Result<defs::fileFormat> Detector::getFileFormat(Positions pos) const {

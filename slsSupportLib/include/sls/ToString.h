@@ -416,15 +416,32 @@ template <typename T, std::enable_if_t<is_container<T>::value &&
                                        int> = 0>
 T StringTo(const std::string &s) {
     using ElementType = typename T::value_type;
+    // Enclosing brackets are optional but must match. Nested pairs are
+    // accepted since the caller may already have wrapped the list once.
+    std::string list = s;
+    auto strip = [](std::string &str) {
+        auto first = str.find_first_not_of(' ');
+        if (first == std::string::npos) {
+            str.clear();
+            return;
+        }
+        str = str.substr(first, str.find_last_not_of(' ') - first + 1);
+    };
+    strip(list);
+    while (list.size() >= 2 && list.front() == '[' && list.back() == ']') {
+        list = list.substr(1, list.size() - 2);
+        strip(list);
+    }
+    if (list.find_first_of("[]") != std::string::npos) {
+        throw RuntimeError("Mismatched brackets in list '" + s + "'");
+    }
+
     T res;
-    std::istringstream ss(s);
+    std::istringstream ss(list);
     std::string item;
     while (std::getline(ss, item, ',')) {
         item.erase(std::remove_if(item.begin(), item.end(),
-                                  [](char c) {
-                                      return c == '[' || c == ']' || c == '"' ||
-                                             c == ' ';
-                                  }),
+                                  [](char c) { return c == '"' || c == ' '; }),
                    item.end());
 
         try {

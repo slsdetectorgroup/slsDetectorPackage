@@ -1024,8 +1024,8 @@ std::string Caller::counters(int action) {
         if (args.empty()) {
             WrongNumberOfParameters(1);
         }
-        //convert args to string and then to a vector of ints
-        auto counters = StringTo<std::vector<int>>( ToString(args));
+        // accepts both "0 1 2" and "0,1,2"
+        auto counters = StringTo<std::vector<int>>(join(args, ','));
         if (std::any_of(counters.cbegin(), counters.cend(), [](int val) {
                 return (val < 0 || val > 2);
             })) {
@@ -1043,7 +1043,7 @@ std::string Caller::counters(int action) {
             mask |= (1 << val);
         }
         det->setCounterMask(mask, std::vector<int>{det_id});
-        os << ToString(args) << '\n';
+        os << ToString(counters) << '\n';
     } else {
         throw RuntimeError("Unknown action");
     }
@@ -1237,10 +1237,10 @@ std::string Caller::rx_dbitlist(int action) {
         }
         // 'none' option already covered as t is empty by default
         else if (args[0] != "none") {
-            t = StringTo<std::vector<int>>(ToString(args));
+            t = StringTo<std::vector<int>>(join(args, ','));
         }
         det->setRxDbitList(t, std::vector<int>{det_id});
-        os << ToString(args) << '\n';
+        os << ToString(t) << '\n';
     } else {
         throw RuntimeError("Unknown action");
     }

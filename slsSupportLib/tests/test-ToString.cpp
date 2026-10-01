@@ -422,6 +422,17 @@ TEST_CASE("Convert string to vector of ints") {
     REQUIRE(StringTo<std::vector<int>>("[8]") == std::vector<int>{8});
     REQUIRE(StringTo<std::vector<int>>("9, ") == std::vector<int>{9});
     REQUIRE(StringTo<std::vector<int>>("") == std::vector<int>{});
+    REQUIRE(StringTo<std::vector<int>>("[]") == std::vector<int>{});
+    REQUIRE(StringTo<std::vector<int>>(" [ [1, 2] ] ") ==
+            std::vector<int>{1, 2});
+}
+
+TEST_CASE("Mismatched brackets in string to vector throws") {
+    REQUIRE_THROWS(StringTo<std::vector<int>>("[1, 2"));
+    REQUIRE_THROWS(StringTo<std::vector<int>>("1, 2]"));
+    REQUIRE_THROWS(StringTo<std::vector<int>>("[[1, 2]"));
+    REQUIRE_THROWS(StringTo<std::vector<int>>("1]2"));
+    REQUIRE_THROWS(StringTo<std::vector<int>>("[1], [2]"));
 }
 
 } // namespace sls

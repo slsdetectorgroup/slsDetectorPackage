@@ -146,6 +146,10 @@ int main(int argc, char *argv[]) {
     // child waits for SIGINT synchronously via sigwait() instead of using a
     // signal handler that posts to a semaphore. This avoids relying on
     // sem_init() on unnamed semaphores, which is unimplemented on macOS.
+    // The handler is never run but SIGINT must not be ignored (default when
+    // started in the background from a script): macOS discards an ignored
+    // signal even while it is blocked and sigwait() would never return.
+    sls::setupSignalHandler(SIGINT, [](int) {});
     sigset_t sigset;
     sigemptyset(&sigset);
     sigaddset(&sigset, SIGINT);

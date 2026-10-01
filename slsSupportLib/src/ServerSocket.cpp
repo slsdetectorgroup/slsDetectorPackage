@@ -49,6 +49,10 @@ ServerInterface ServerSocket::accept() {
     socklen_t addr_size = sizeof clientAddr;
     int newSocket =
         ::accept(getSocketId(), (struct sockaddr *)&clientAddr, &addr_size);
+    if (shutdownRequested && newSocket != -1) {
+        ::close(newSocket);
+        newSocket = -1;
+    }
     if (newSocket == -1) {
         throw SocketError("Server ERROR: socket accept failed\n");
     }
@@ -58,6 +62,25 @@ ServerInterface ServerSocket::accept() {
     thisClient = IpAddr{tc};
     // Set socket buffer size
     return ServerInterface(newSocket);
+}
+
+void ServerSocket::shutdown() {
+    shutdownRequested = true;
+    DataSocket::shutdown();
+#ifndef __linux__
+    // On Linux shutdown() on a listening socket makes a blocked accept()
+    // return with an error. On macOS/BSD it only returns ENOTCONN and accept()
+    // stays blocked, so wake it up with a connection to ourselves.
+    int fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (fd != -1) {
+        struct sockaddr_in addr {};
+        addr.sin_family = AF_INET;
+        addr.sin_port = htons(serverPort);
+        addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+        ::connect(fd, (struct sockaddr *)&addr, sizeof(addr));
+        ::close(fd);
+    }
+#endif
 }
 
 }; // namespace sls

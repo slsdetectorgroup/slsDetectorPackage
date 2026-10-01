@@ -36,6 +36,10 @@ int main(int argc, char *argv[]) {
     // signal synchronously with sigwait() further down. This avoids needing a
     // signal handler that posts to a semaphore, which is not portable to
     // macOS (sem_init on unnamed semaphores is unimplemented there).
+    // The handler is never run but SIGINT must not be ignored (default when
+    // started in the background from a script): macOS discards an ignored
+    // signal even while it is blocked and sigwait() would never return.
+    sls::setupSignalHandler(SIGINT, [](int) {});
     sigset_t sigset;
     sigemptyset(&sigset);
     sigaddset(&sigset, SIGINT);

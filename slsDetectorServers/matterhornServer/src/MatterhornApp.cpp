@@ -3,6 +3,7 @@
 #include "helpers/Helpers.hpp"
 #include "sls/logger.h"
 #include "sls/sls_detector_exceptions.h"
+#include "sls/thread_utils.h"
 #include "sls/versionAPI.h"
 #include <semaphore.h>
 
@@ -11,20 +12,6 @@
 #include <signal.h>
 #include <sys/wait.h>
 #include <unistd.h>
-
-// gettid added in glibc 2.30
-#if defined(__APPLE__)
-#include <cstdint>
-#include <pthread.h>
-static inline uint64_t gettid() {
-    uint64_t tid = 0;
-    pthread_threadid_np(nullptr, &tid);
-    return tid;
-}
-#elif __GLIBC__ == 2 && __GLIBC_MINOR__ < 30
-#include <sys/syscall.h>
-#define gettid() syscall(SYS_gettid)
-#endif
 
 using namespace sls;
 

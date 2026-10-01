@@ -15,7 +15,17 @@ class UdpRxSocket {
     const ssize_t packet_size_;
     int sockfd_{-1};
 
+    void WakeUpReceiver() noexcept;
+
   public:
+    // Linux doubles the requested SO_RCVBUF (kernel bookkeeping overhead) and
+    // getsockopt returns the doubled value. macOS/BSD return the size as set.
+#ifdef __linux__
+    static constexpr int kernelBufferSizeFactor = 2;
+#else
+    static constexpr int kernelBufferSizeFactor = 1;
+#endif
+
     UdpRxSocket(uint16_t port, ssize_t packet_size,
                 const char *hostname = nullptr, int kernel_buffer_size = 0);
     ~UdpRxSocket();

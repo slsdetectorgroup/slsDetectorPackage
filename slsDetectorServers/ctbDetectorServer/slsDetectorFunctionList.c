@@ -2629,13 +2629,10 @@ void *start_timer(void *arg) {
     int packetsPerFrame = ceil((double)imageSize / (double)dataSize);
 
     // Generate Data
-    char *imageData = (char *)malloc(imageSize);
-    memset(imageData, 0, imageSize);
-
+    char *imageData = (char *)calloc(imageSize, 1);
     if (imageData == NULL) {
-        LOG(logERROR, ("Can not allocate image Data RAM."
-                       "Probable cause: Memory Leak.\n"));
-        return NULL;
+        LOG(logERROR, ("Could not allocate memory for virtual image\n"));
+        exit(EXIT_FAILURE);
     }
     /*
     for (int i = 0; i < imageSize; i += sizeof(uint16_t)) {

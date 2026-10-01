@@ -371,10 +371,10 @@ class Detector {
     Result<defs::timingMode> getTimingMode(Positions pos = {}) const;
 
     /**
-     * [Jungfrau][Moench][CTB][Gotthard2][Xilinx CTB]
-     * Options: AUTO_TIMING, TRIGGER_EXPOSURE \n [Mythen3] Options: AUTO_TIMING,
-     * TRIGGER_EXPOSURE, GATED, TRIGGER_GATED \n [Eiger] Options: AUTO_TIMING,
-     * TRIGGER_EXPOSURE, GATED, BURST_TRIGGER
+     * [Jungfrau][Moench][CTB][Gotthard2]
+     * Options: AUTO_TIMING, TRIGGER_EXPOSURE \n [Mythen3][Xilinx CTB] Options:
+     * AUTO_TIMING, TRIGGER_EXPOSURE, GATED, TRIGGER_GATED \n [Eiger] Options:
+     * AUTO_TIMING, TRIGGER_EXPOSURE, GATED, BURST_TRIGGER
      */
     void setTimingMode(defs::timingMode value, Positions pos = {});
 
@@ -719,8 +719,9 @@ class Detector {
      * restarts client and receiver zmq sockets if zmq streaming enabled. \n
      * [Gotthard2] second interface enabled to send veto information via 10Gbps
      * for debugging. By default, if veto enabled, it is sent via 2.5 gbps
-     * interface. \nSetting this resets the receiver roi */
-    void setNumberofUDPInterfaces(int n, Positions pos = {});
+     * interface. \nSetting this resets the receiver roi and any udp datastream
+     * disables */
+    void setNumberofUDPInterfaces(int n);
 
     /** [Jungfrau][Moench] */
     Result<int> getSelectedUDPInterface(Positions pos = {}) const;
@@ -897,6 +898,37 @@ class Detector {
      */
     void setTransmissionDelay(int step);
 
+    /** [Eiger] Returns whether the 10GbE UDP data stream from detector is
+     * enabled. Options: LEFT, RIGHT [Jungfrau][Moench] Returns whether the UDP
+     * data stream from receiver is enabled. Options: TOP, BOTTOM
+     *
+     */
+    Result<bool> getUDPDataStream(const defs::portPosition port,
+                                  Positions pos = {}) const;
+
+    /** [Eiger] Enables or disables UDP data streaming from left or right of
+     * 10GbE UDP port of the detector. Default: enabled. Options: LEFT, RIGHT \n
+     * [Jungfrau][Moench] Enables or disables UDP data streaming from the top or
+     * bottom of receiver. Default: enabled. Options: TOP, BOTTOM. This option
+     * is available only when numinterfaces is set to 2.
+     */
+    void setUDPDataStream(const defs::portPosition port, const bool enable,
+                          Positions pos = {});
+
+    /** List of disabled UDP ports with index (moduleIndex * 2 + portIndex),
+     * where portIndex is 0 for BOTTOM/LEFT port, and 1 for TOP/RIGHT port.
+     * It is the index with 'd' in the file name when writing data. \n
+     * [Eiger] LEFT, RIGHT
+     * [Jungfrau][Moench] TOP, BOTTOM
+     * This feature is available only when numinterfaces is set to 2.
+     */
+    std::vector<int> getRxDisabledUDPPortIndices() const;
+
+    /** list of possible port positions.
+     * [Eiger] LEFT, RIGHT
+     * [Jungfrau][Moench] TOP, BOTTOM
+     */
+    std::vector<defs::portPosition> getPortPositionList() const;
     ///@}
 
     /** @name Receiver Configuration */
@@ -1162,6 +1194,7 @@ class Detector {
      */
     void setRxZmqHwm(const int limit);
 
+    void streamRxDummyHeader(Positions pos = {}) const;
     ///@}
 
     /** @name Eiger Specific */
@@ -1251,16 +1284,6 @@ class Detector {
      * hardware required). */
     void setQuad(const bool enable);
 
-    /** [Eiger] */
-    Result<bool> getDataStream(const defs::portPosition port,
-                               Positions pos = {}) const;
-
-    /** [Eiger] enable or disable data streaming from left or right of detector
-     * for 10GbE. Default: enabled
-     */
-    void setDataStream(const defs::portPosition port, const bool enable,
-                       Positions pos = {});
-
     /** [Eiger] Advanced */
     Result<bool> getTop(Positions pos = {}) const;
 
@@ -1278,7 +1301,7 @@ class Detector {
      * ************************************************/
 
     /** [Jungfrau] */
-    Result<double> getChipVersion(Positions pos = {}) const;
+    Result<std::string> getChipVersion(Positions pos = {}) const;
 
     /** [Jungfrau][Moench] */
     Result<int> getThresholdTemperature(Positions pos = {}) const;
@@ -2271,7 +2294,7 @@ class Detector {
   private:
     std::vector<uint16_t> getValidPortNumbers(uint16_t start_port);
     void updateRxRateCorrections();
-    void setNumberofUDPInterfaces_(int n, Positions pos);
+    void setNumberofUDPInterfaces_(int n);
 };
 
 } // namespace sls

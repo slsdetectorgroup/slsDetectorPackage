@@ -12,7 +12,7 @@ Every acquisition will create a master file and data files.
 
 An acquisition can have multiple data files for a single frame. The number of files is determined by the number of UDP ports per module and the number of modules.
 
-    * Every modules has its own receiver process. Every receiver process can have 1 or 2 UDP ports.
+    * Every module has its own receiver process. Every receiver process can have 1 or 2 UDP ports.
     * Each UDP port will create its own file. Therefore, each receiver can write 1 or 2 files.
     * So, for example a detector with 4 modules with 2 UDP ports each will create a total of 8 files with file names containing UDP port index **'_d0'** to **'_d7'**.
 

@@ -1,15 +1,30 @@
-#include "CommandLineOptions.h"
-#include "VirtualMatterhornServer.h"
-#include "sls/thread_utils.h"
+#include "CommandLineOptions.hpp"
+#include MATTERHORN_SERVER_HEADER
+#include "helpers/Helpers.hpp"
 #include "sls/logger.h"
 #include "sls/sls_detector_exceptions.h"
 #include "sls/versionAPI.h"
 #include <semaphore.h>
 
 #include <csignal>
+#include <fmt/format.h>
 #include <signal.h>
 #include <sys/wait.h>
 #include <unistd.h>
+
+// gettid added in glibc 2.30
+#if defined(__APPLE__)
+#include <cstdint>
+#include <pthread.h>
+static inline uint64_t gettid() {
+    uint64_t tid = 0;
+    pthread_threadid_np(nullptr, &tid);
+    return tid;
+}
+#elif __GLIBC__ == 2 && __GLIBC_MINOR__ < 30
+#include <sys/syscall.h>
+#define gettid() syscall(SYS_gettid)
+#endif
 
 using namespace sls;
 
@@ -49,6 +64,9 @@ int main(int argc, char *argv[]) {
 
     LOG(TLogLevel::logINFOMAGENTA) << cli.printOptions();
 
+    // free shared memory from previous run (not removed if detector crashed)
+    freeSharedMemory();
+
     // Register Ctrl+C handler
     std::signal(SIGINT, sigInterruptHandler);
 
@@ -62,11 +80,12 @@ int main(int argc, char *argv[]) {
 
         LOG(TLogLevel::logINFOBLUE) << "Stop Server [" << opts.port + 1 << "]";
         try {
-            VirtualMatterhornServer stopServer(opts.port + 1);
+            MATTERHORN_SERVER_CLASS<true> stopServer(opts.port + 1);
             while (!interruption) {
                 pause(); // wait for signal to exit
             }
         } catch (...) {
+            LOG(logERROR) << "Some Error occured in Stop Server, exiting";
             kill(getppid(), SIGINT); // tell parent to exit // TODO: should then
                                      // also return EXIT_FAILURE
         }
@@ -80,13 +99,14 @@ int main(int argc, char *argv[]) {
         LOG(TLogLevel::logINFOBLUE) << "Control Server [" << opts.port << "]\n";
 
         try {
-            VirtualMatterhornServer server(
+            MATTERHORN_SERVER_CLASS server(
                 opts.port); // TODO use virtual if compiled with virtual
                             // simulators on
             while (!interruption) {
                 pause(); // wait for signal to exit
             }
         } catch (...) {
+            LOG(logERROR) << "Some Error occured in Control Server, exiting";
             LOG(sls::logINFOBLUE)
                 << "Exiting Control Server [ Tid: " << getThreadId() << " ]";
             LOG(sls::logINFO) << "Exiting Detector Server";

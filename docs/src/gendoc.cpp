@@ -45,13 +45,16 @@ int main() {
 
     for (const auto &cmd : commands) {
         std::ostringstream os;
-        std::cout << cmd << '\n';
         caller.call(cmd, {}, -1, slsDetectorDefs::HELP_ACTION, os);
 
         auto tmp = os.str().erase(0, cmd.size());
         auto usage = tmp.substr(0, tmp.find_first_of('\n'));
         tmp.erase(0, usage.size());
         auto help = replace_all(tmp, "\n\t", "\n\t\t| ");
+
+        if (help.back() != '\n') {
+            help.push_back('\n');
+        }
         fs << '\t' << cmd << usage << help << "\n";
     }
 

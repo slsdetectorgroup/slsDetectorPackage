@@ -313,6 +313,8 @@ std::string Caller::versions(int action) {
         std::string vBebFirmware = "Unknown";
         std::string vFeblFirmware = "Unknown";
         std::string vFebrFirmware = "Unknown";
+        bool jungfrau = false;
+        std::string vChipVersion = "Unknown";
         bool receiver = false;
         std::string vReceiver = "Unknown";
 
@@ -323,6 +325,7 @@ std::string Caller::versions(int action) {
             // shared memory has detectors
             vType = OutString(det->getDetectorType());
             eiger = (det->getDetectorType().squash() == defs::EIGER);
+            jungfrau = (det->getDetectorType().squash() == defs::JUNGFRAU);
             receiver = det->getUseReceiverFlag().squash(false);
             if (receiver) {
                 // cannot connect to receiver
@@ -350,6 +353,10 @@ std::string Caller::versions(int action) {
                     vFebrFirmware = OutString(det->getFrontEndFirmwareVersion(
                         defs::FRONT_RIGHT, std::vector<int>{det_id}));
                 }
+                if (jungfrau) {
+                    vChipVersion = OutString(
+                        det->getChipVersion(std::vector<int>{det_id}));
+                }
             } catch (const std::exception &e) {
             }
         }
@@ -363,6 +370,9 @@ std::string Caller::versions(int action) {
                << "\nFirmware (Febr) : " << vFebrFirmware;
         } else {
             os << "\nFirmware        : " << vFirmware;
+        }
+        if (jungfrau) {
+            os << "\nChip            : " << vChipVersion;
         }
         os << "\nServer          : " << vServer
            << "\nKernel          : " << vKernel
@@ -1586,7 +1596,7 @@ std::string Caller::define_bit(int action) {
 std::string Caller::definelist_reg(int action) {
     std::ostringstream os;
     if (action == defs::HELP_ACTION) {
-        os << "List of user-defined register definitions in shared memory."
+        os << "\n\t List of user-defined register definitions in shared memory."
            << '\n';
     } else if (action == defs::PUT_ACTION) {
         throw RuntimeError("cannot put");
@@ -1605,7 +1615,8 @@ std::string Caller::definelist_reg(int action) {
 std::string Caller::definelist_bit(int action) {
     std::ostringstream os;
     if (action == defs::HELP_ACTION) {
-        os << "List of user-defined bit definitions in shared memory." << '\n';
+        os << "\n\t List of user-defined bit definitions in shared memory."
+           << '\n';
     } else if (action == defs::PUT_ACTION) {
         throw RuntimeError("cannot put");
     } else if (action == defs::GET_ACTION) {

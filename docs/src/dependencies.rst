@@ -25,11 +25,11 @@ Additionally the core requires the following dependencies:
 
  * fmt 12.1.0 (packaged in libs)
  * ZeroMQ 4.3.4 (packaged in libs)
- * rapidjson (packaged in libs)
+ * rapidjson 1.1.0 (packaged in libs)
 
 .. note:: 
 
-    Both fmt, ZeroMQ and rapidjson are bundled in libs. One does not need to pre-install them on the system. Alternatively, one can fetch fmt and ZeroMQ from GitHub by passing the cmake options ``-DSLS_FETCH_FMT_FROM_GITHUB=ON`` and ``-DSLS_FETCH_ZEROMQ_FROM_GITHUB=ON`` respectively.
+    Fmt, ZeroMQ and rapidjson are bundled in libs. One does not need to pre-install them on the system. Alternatively, one can fetch fmt and ZeroMQ from GitHub by passing the cmake options ``-DSLS_FETCH_FMT_FROM_GITHUB=ON`` and ``-DSLS_FETCH_ZEROMQ_FROM_GITHUB=ON`` respectively.
 
 .. note:: 
 
@@ -53,9 +53,9 @@ To build the python module the following dependencies are needed:
 
     Refer :ref:`pybind11 notes. <pybind for different slsDetectorPackage versions>`  
 
--------------------------------
+------------------------------------
 Dependencies to build documentation
--------------------------------
+------------------------------------
 
 To build this documentation that you are reading now the following dependencies are needed: 
 
@@ -76,7 +76,7 @@ To build the GUI the following dependencies are needed:
 
     Qwt is bundled in libs. One does not need to pre-install it on the system.
 
-------------------------------------------------------
+-----------------------------------------------------
 Dependencies to build Moench and Jungfrau executables
 -----------------------------------------------------
 
@@ -90,7 +90,7 @@ Dependencies to build Tests
 
 To build the tests the following dependencies are needed:
 
- * Catch2 3.4.0 (packaged in libs)
+ * Catch2 2.13.8 (packaged in libs)
 
 .. note:: 
     

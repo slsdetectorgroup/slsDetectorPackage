@@ -49,7 +49,7 @@ If you want to disable testing that involves a data file that require pc tuning 
 
 .. note ::   
 
-    Ensure that there are no spaces betweent the tags and no '.', else hardly any test will be matched.
+    Ensure that there are no spaces between the tags and no '.', else hardly any test will be matched.
 
 .. _python simulator script:
 
@@ -67,12 +67,14 @@ This runs all tests marked with the tag ``[.detectorintegration]`` for all detec
 If you want to run them for a specific virtual detector or a specific test use the following command:
 
 .. code-block:: console
+
     cd build
     python bin/test_simulators.py --servers jungfrau --test "[dacs]"
 
 You can exclude specific tests by adding the option ``~[<disable_test_name>]``. Again, we assume that this marker is added to the tests that you want to exclude. 
 
 .. code-block:: console
+
     cd build
     python bin/test_simulators.py --servers eiger jungfrau moench --test "[detectorintegration]~[disable_check_data_file]"
 
@@ -98,10 +100,11 @@ If a test requires a detector mark them with the pytest marker ``@pytest.mark.de
 To run only tests requiring virtual detectors use the following command:
 
 .. code-block:: console
+    
     #in build
     python -m pytest -m detectorintegration ../python/tests/
 
-There is a helper test fixture in ``slsDetectorSoftware/python/tests/conftest.py`` called ``session_simulator`` that sets up virtual detectors and yields the test for all detectors. The set up is done for every test automatically. Note that the fixture persist over the entire session e.g. the fixture is setup one detector at a time and runs all tests using this fixture before cleaning up and moving on to the next detector. It saves time if the setup and cleanup is expensive.
+There is a helper test fixture in ``slsDetectorSoftware/python/tests/conftest.py`` called ``session_simulator`` that sets up virtual detectors and yields the test for all detectors. The set up is done for every test automatically. Note that the fixture persists over the entire session e.g. the fixture is setup one detector at a time and runs all tests using this fixture before cleaning up and moving on to the next detector. It saves time if the setup and cleanup is expensive.
 
 Example usage: 
 

@@ -19,8 +19,8 @@ namespace sls {
 // files
 
 // versions
-#define HDF5_WRITER_VERSION   (7.0) // 1 decimal places
-#define BINARY_WRITER_VERSION (8.0) // 1 decimal places
+#define HDF5_WRITER_VERSION   (7.1) // 1 decimal places
+#define BINARY_WRITER_VERSION (8.1) // 1 decimal places
 
 #define MAX_FRAMES_PER_FILE            20000
 #define SHORT_MAX_FRAMES_PER_FILE      100000
@@ -31,6 +31,9 @@ namespace sls {
 #define XILINX_CTB_MAX_FRAMES_PER_FILE 20000
 #define MYTHEN3_MAX_FRAMES_PER_FILE    10000
 #define GOTTHARD2_MAX_FRAMES_PER_FILE  20000
+#define MATTERHORN_MAX_FRAMES_PER_FILE                                         \
+    20000 // dummy value for now - maybe even specialized receiver for
+          // matterhorn?
 
 #define STATISTIC_FRAMENUMBER_INFINITE (20000)
 

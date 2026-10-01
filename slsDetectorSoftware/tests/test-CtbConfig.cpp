@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 #include "CtbConfig.h"
-#include "SharedMemory.h"
+#include "sls/SharedMemory.h"
 #include <fstream>
 #include <set>
 

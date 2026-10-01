@@ -1079,7 +1079,8 @@ TEST_CASE("timing", "[.detectorintegration]") {
             REQUIRE(oss2.str() == "timing burst_trigger\n");
         }
         REQUIRE_THROWS(caller.call("timing", {"trigger_gating"}, -1, PUT));
-    } else if (det_type == defs::MYTHEN3) {
+    } else if (det_type == defs::MYTHEN3 ||
+               det_type == defs::XILINX_CHIPTESTBOARD) {
         {
             std::ostringstream oss1, oss2;
             caller.call("timing", {"gating"}, -1, PUT, oss1);
@@ -1120,13 +1121,16 @@ TEST_CASE("readoutspeed", "[.detectorintegration]") {
         det_type == defs::MOENCH || det_type == defs::GOTTHARD2 ||
         det_type == defs::MYTHEN3) {
         auto prev_val = det.getReadoutSpeed();
+        bool fullSpeedSupportedJungfrauBoards = false;
+        if (det_type == defs::JUNGFRAU) {
+            auto chipVersion = chipVersionToX10(det.getChipVersion().squash());
+            fullSpeedSupportedJungfrauBoards = (chipVersion >= 11);
+        }
 
-        // full speed for jungfrau/moench only works for new boards (chipv1.1 is
-        // with new board [hw1.0 and chipv1.0 not tested here])
-        if (((det_type == defs::JUNGFRAU) &&
-             det.getChipVersion().squash() * 10 == 11) ||
-            det_type == defs::EIGER || det_type == defs::MOENCH ||
-            det_type == defs::MYTHEN3) {
+        // full speed for jungfrau/moench only works for new boards [hw1.0 and
+        // chipv1.0 not tested here]
+        if (fullSpeedSupportedJungfrauBoards || det_type == defs::EIGER ||
+            det_type == defs::MOENCH || det_type == defs::MYTHEN3) {
             std::ostringstream oss1, oss2, oss3, oss4;
             caller.call("readoutspeed", {"0"}, -1, PUT, oss1);
             REQUIRE(oss1.str() == "readoutspeed full_speed\n");
@@ -1692,14 +1696,13 @@ TEST_CASE("filterresistor", "[.detectorintegration]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    // only for chipv1.1
-    bool chip11 = false;
-    if (det_type == defs::JUNGFRAU &&
-        det.getChipVersion().squash() * 10 == 11) {
-        chip11 = true;
+    bool hasFeature = false;
+    if (det_type == defs::JUNGFRAU) {
+        auto chipVersion = chipVersionToX10(det.getChipVersion().squash());
+        hasFeature = (chipVersion == 11 || chipVersion == 12);
     }
 
-    if (det_type == defs::GOTTHARD2 || chip11) {
+    if (det_type == defs::GOTTHARD2 || hasFeature) {
         auto prev_val = det.getFilterResistor();
         {
             std::ostringstream oss;
@@ -1866,9 +1869,8 @@ TEST_CASE("currentsource", "[.detectorintegration]") {
         else {
             int chipVersion = 10;
             if (det_type == defs::JUNGFRAU) {
-                chipVersion = det.getChipVersion().tsquash(
-                                  "inconsistent chip versions to test") *
-                              10;
+                chipVersion = chipVersionToX10(det.getChipVersion().tsquash(
+                    "inconsistent chip versions to test"));
             }
             if (chipVersion == 10) {
                 REQUIRE_THROWS(caller.call("currentsource", {"1"}, -1, PUT));
@@ -1909,7 +1911,7 @@ TEST_CASE("currentsource", "[.detectorintegration]") {
                             "currentsource [enabled, nofix, 63]\n");
                 }
             }
-            // chipv1.1
+            // chipv1.1 and chip v1.2
             else {
                 REQUIRE_THROWS(caller.call("currentsource", {"1"}, -1, PUT));
                 REQUIRE_THROWS(
@@ -2618,7 +2620,7 @@ TEST_CASE("numinterfaces", "[.detectorintegration]") {
             "inconsistent numinterfaces to test");
         Result<UdpDestination> prev_udp_dest;
         IpAddr prev_src_ip2{};
-        if (prev_val == 2 && det_type != defs::EIGER) {
+        if (prev_val == 2) {
             prev_udp_dest = det.getDestinationUDPList(0);
             prev_src_ip2 = det.getSourceUDPIP2()[0];
         }
@@ -2637,7 +2639,7 @@ TEST_CASE("numinterfaces", "[.detectorintegration]") {
             caller.call("numinterfaces", {}, -1, GET, oss);
             REQUIRE(oss.str() == "numinterfaces 1\n");
         }
-        if (prev_val == 2 && det_type != defs::EIGER) {
+        if (prev_val == 2) {
             for (int i = 0; i != det.size(); ++i) {
                 det.setDestinationUDPList({prev_udp_dest[i]}, {i});
             }
@@ -2659,6 +2661,50 @@ TEST_CASE("numinterfaces", "[.detectorintegration]") {
     }
     REQUIRE_THROWS(caller.call("numinterfaces", {"3"}, -1, PUT));
     REQUIRE_THROWS(caller.call("numinterfaces", {"0"}, -1, PUT));
+}
+
+TEST_CASE("numinterfaces_with_fwrite",
+          "[.detectorintegration][.disable_check_data_file]") {
+    Detector det;
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
+
+        // previous state
+        auto prev_val = det.getNumberofUDPInterfaces().tsquash(
+            "inconsistent numinterfaces to test");
+        Result<UdpDestination> prev_udp_dest;
+        IpAddr prev_src_ip2{};
+        if (prev_val == 2) {
+            prev_udp_dest = det.getDestinationUDPList(0);
+            prev_src_ip2 = det.getSourceUDPIP2()[0];
+        }
+        auto prev_fwrite =
+            det.getFileWrite().tsquash("inconsistent file write state");
+
+        // testing file write before and after num interface change
+        det.setNumberofUDPInterfaces(2);
+        det.setFileWrite(true);
+        det.setNumberofUDPInterfaces(1);
+        REQUIRE(det.getFileWrite().tsquash("inconsistent file write state") ==
+                true);
+        // check if file write actually works
+        auto acq_state = acq::default_acquisition_state();
+        auto file_state = acq::default_file_state();
+        file_state.file_format = defs::BINARY;
+        acq::run(det, acq_state, file_state);
+        std::string fname = acq::get_master_file_name(file_state);
+        REQUIRE(std::filesystem::exists(fname));
+
+        // restore previous state
+        det.setFileWrite(prev_fwrite);
+        if (prev_val == 2) {
+            for (int i = 0; i != det.size(); ++i) {
+                det.setDestinationUDPList({prev_udp_dest[i]}, {i});
+            }
+            det.setSourceUDPIP2({prev_src_ip2});
+        }
+        det.setNumberofUDPInterfaces(prev_val);
+    }
 }
 
 TEST_CASE("udp_srcip", "[.detectorintegration]") {
@@ -3065,6 +3111,95 @@ TEST_CASE("txdelay", "[.detectorintegration]") {
         }
     } else {
         REQUIRE_THROWS(caller.call("txdelay", {}, -1, GET));
+    }
+}
+
+TEST_CASE("udp_datastream", "[.detectorintegration]") {
+    Detector det;
+    Caller caller(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER) {
+        auto prev_val_left = det.getUDPDataStream(defs::LEFT);
+        auto prev_val_right = det.getUDPDataStream(defs::RIGHT);
+
+        // invalid args
+        REQUIRE_THROWS(caller.call("udp_datastream", {"top", "1"}, -1, PUT));
+        REQUIRE_THROWS(caller.call("udp_datastream", {"bottom", "1"}, -1, PUT));
+        // no "left" or "right" argument
+        REQUIRE_THROWS(caller.call("udp_datastream", {"1"}, -1, PUT));
+        {
+            std::ostringstream oss;
+            caller.call("udp_datastream", {"left", "0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "udp_datastream [left, 0]\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("udp_datastream", {"right", "0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "udp_datastream [right, 0]\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("udp_datastream", {"left", "1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "udp_datastream [left, 1]\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("udp_datastream", {"right", "1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "udp_datastream [right, 1]\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setUDPDataStream(defs::LEFT, prev_val_left[i], {i});
+            det.setUDPDataStream(defs::RIGHT, prev_val_right[i], {i});
+        }
+    } else if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
+
+        // throw with 1 interface
+        if (det.getNumberofUDPInterfaces().squash() == 1) {
+            REQUIRE_THROWS(
+                caller.call("udp_datastream", {"top", "0"}, -1, PUT));
+        }
+        // 2 interfaces
+        else {
+            auto prev_val_top = det.getUDPDataStream(defs::TOP);
+            auto prev_val_bottom = det.getUDPDataStream(defs::BOTTOM);
+
+            // invalid args
+            REQUIRE_THROWS(
+                caller.call("udp_datastream", {"left", "1"}, -1, PUT));
+            REQUIRE_THROWS(
+                caller.call("udp_datastream", {"right", "1"}, -1, PUT));
+            // no "top" or "bottom" argument
+            REQUIRE_THROWS(caller.call("udp_datastream", {"1"}, -1, PUT));
+            {
+                std::ostringstream oss;
+                caller.call("udp_datastream", {"top", "0"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "udp_datastream [top, 0]\n");
+            }
+            {
+                std::ostringstream oss;
+                caller.call("udp_datastream", {"bottom", "0"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "udp_datastream [bottom, 0]\n");
+            }
+            {
+                std::ostringstream oss;
+                caller.call("udp_datastream", {"top", "1"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "udp_datastream [top, 1]\n");
+            }
+            {
+                std::ostringstream oss;
+                caller.call("udp_datastream", {"bottom", "1"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "udp_datastream [bottom, 1]\n");
+            }
+            for (int i = 0; i != det.size(); ++i) {
+                det.setUDPDataStream(defs::TOP, prev_val_top[i], {i});
+                det.setUDPDataStream(defs::BOTTOM, prev_val_bottom[i], {i});
+            }
+        }
+    } else {
+        REQUIRE_THROWS(caller.call("udp_datastream", {}, -1, GET));
+        REQUIRE_THROWS(caller.call("udp_datastream", {"1"}, -1, PUT));
+        REQUIRE_THROWS(caller.call("udp_datastream", {"left", "1"}, -1, PUT));
+        REQUIRE_THROWS(caller.call("udp_datastream", {"top", "1"}, -1, PUT));
     }
 }
 

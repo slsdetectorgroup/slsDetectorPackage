@@ -48,9 +48,11 @@ slsDetectorPackage
 
     pygettingstarted
     pydetector
+    pyctb
     pyenums
+    pypower
     pyexamples
-    pyPatternGenerator
+    pypatterngenerator
     pattern
 
 .. toctree::

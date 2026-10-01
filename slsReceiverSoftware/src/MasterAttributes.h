@@ -68,6 +68,8 @@ class MasterAttributes {
     std::map<std::string, std::string> additionalJsonHeader;
     uint64_t framesInFile{0};
     slsDetectorDefs::speedLevel readoutSpeed{slsDetectorDefs::FULL_SPEED};
+    std::vector<std::string> udpPortTypes;
+    std::vector<int> udpPortsDisabled;
 
     inline static const std::string_view N_DETECTOR_TYPE = "Detector Type";
     inline static const std::string_view N_TIMING_MODE = "Timing Mode";
@@ -125,6 +127,9 @@ class MasterAttributes {
     inline static const std::string_view N_SCAN_PARAMETERS = "Scan Parameters";
     inline static const std::string_view N_ADDITIONAL_JSON_HEADER =
         "Additional JSON Header";
+    inline static const std::string_view N_UDP_PORTS_DISABLED =
+        "UDP Ports Disabled";
+    inline static const std::string_view N_UDP_PORTS_TYPE = "UDP Ports Type";
 
     MasterAttributes() = default;
     ~MasterAttributes() = default;
@@ -334,7 +339,14 @@ class MasterAttributes {
 #ifdef HDF5C
     void WriteHDF5TransceiverSamples(H5::Group *group);
 #endif
-
+    void WriteBinaryUDPPortsType(writer *w);
+#ifdef HDF5C
+    void WriteHDF5UDPPortsType(H5::Group *group);
+#endif
+    void WriteBinaryUDPPortsDisabled(writer *w);
+#ifdef HDF5C
+    void WriteHDF5UDPPortsDisabled(H5::Group *group);
+#endif
     /** writes according to type */
     template <typename T> void WriteBinaryValue(writer *w, const T &value) {
         if constexpr (std::is_same_v<T, int>) {
@@ -402,10 +414,16 @@ class MasterAttributes {
     template <typename T>
     typename std::enable_if<!std::is_class<T>::value, void>::type
     WriteHDF5Int(H5::Group *group, const std::string &name, const T &value) {
-        H5::DataSpace dataspace(H5S_SCALAR);
-        auto h5type = GetHDF5Type<T>();
-        H5::DataSet dataset = group->createDataSet(name, *h5type, dataspace);
-        dataset.write(&value, *h5type);
+        try {
+            H5::DataSpace dataspace(H5S_SCALAR);
+            auto h5type = GetHDF5Type<T>();
+            H5::DataSet dataset =
+                group->createDataSet(name, *h5type, dataspace);
+            dataset.write(&value, *h5type);
+        } catch (std::exception &e) {
+            throw RuntimeError("Could not write attribute " + name +
+                               " in HDf5 file");
+        }
     }
 
     /** For arrays */
@@ -413,11 +431,17 @@ class MasterAttributes {
     typename std::enable_if<std::is_class<T>::value, void>::type
     WriteHDF5Int(H5::Group *group, const std::string &name, const T &value) {
         using ElemT = typename T::value_type;
-        auto h5type = GetHDF5Type<ElemT>();
-        hsize_t dims[1] = {value.size()};
-        H5::DataSpace dataspace(1, dims);
-        H5::DataSet dataset = group->createDataSet(name, *h5type, dataspace);
-        dataset.write(value.data(), *h5type);
+        try {
+            auto h5type = GetHDF5Type<ElemT>();
+            hsize_t dims[1] = {value.size()};
+            H5::DataSpace dataspace(1, dims);
+            H5::DataSet dataset =
+                group->createDataSet(name, *h5type, dataspace);
+            dataset.write(value.data(), *h5type);
+        } catch (std::exception &e) {
+            throw RuntimeError("Could not write attribute " + name +
+                               " in HDf5 file");
+        }
     }
 
 #endif

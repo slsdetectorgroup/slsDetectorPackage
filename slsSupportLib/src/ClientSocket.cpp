@@ -5,9 +5,11 @@
 #include "sls/sls_detector_defs.h"
 #include "sls/sls_detector_exceptions.h"
 #include "sls/sls_detector_funcs.h"
+#include "sls/string_utils.h"
 #include <arpa/inet.h>
 #include <cassert>
 #include <cstring>
+#include <fmt/format.h>
 #include <iostream>
 #include <stdexcept>
 #include <unistd.h>
@@ -24,9 +26,10 @@ ClientSocket::ClientSocket(std::string stype, const std::string &host,
     hints.ai_flags |= AI_CANONNAME;
 
     if (getaddrinfo(host.c_str(), nullptr, &hints, &result) != 0) {
-        std::string msg = "ClientSocket cannot decode host:" + host +
-                          " on port " + std::to_string(port) + "\n";
-        throw SocketError(msg);
+
+        auto msg = fmt::format("Cannot resolve {} hostname: '{}'",
+                               to_lower(socketType), host);
+        throwError(msg);
     }
 
     // TODO! Erik, results could have multiple entries do we need to loop
@@ -40,10 +43,10 @@ ClientSocket::ClientSocket(std::string stype, const std::string &host,
     if (::connect(getSocketId(), (struct sockaddr *)&serverAddr,
                   sizeof(serverAddr)) != 0) {
         freeaddrinfo(result);
-        std::string msg = "ClientSocket: Cannot connect to " + socketType +
-                          ":" + host + " on port " + std::to_string(port) +
-                          "\n";
-        throw SocketError(msg);
+        auto msg = fmt::format("Cannot connect to {} on {}:{}\n",
+                               to_lower(socketType), host, port);
+
+        throwError(msg);
     }
     freeaddrinfo(result);
 }
@@ -54,52 +57,54 @@ ClientSocket::ClientSocket(std::string sType, struct sockaddr_in addr)
     if (::connect(getSocketId(), (struct sockaddr *)&addr, sizeof(addr)) != 0) {
         char address[INET_ADDRSTRLEN];
         inet_ntop(AF_INET, &addr.sin_addr, address, INET_ADDRSTRLEN);
-        std::string msg = "ClientSocket: Cannot connect to " + socketType +
-                          ":" + address + " on port " +
-                          std::to_string(addr.sin_port) + "\n";
-        throw SocketError(msg);
+        auto msg = fmt::format("Cannot connect to {} on {}:{}",
+                               to_lower(socketType), address, addr.sin_port);
+        throwError(msg);
     }
 }
 
-int ClientSocket::sendCommandThenRead(int fnum, const void *args,
-                                      size_t args_size, void *retval,
-                                      size_t retval_size) {
-    int ret = slsDetectorDefs::FAIL;
-    Send(&fnum, sizeof(fnum));
-    setFnum(fnum);
-    Send(args, args_size);
-    readReply(ret, retval, retval_size);
-    return ret;
+void ClientSocket::throwError(const std::string &msg) const {
+    if (socketType == "Receiver") {
+        throw ReceiverError(msg);
+    } else if (socketType == "Detector") {
+        throw DetectorError(msg);
+    } else {
+        throw GuiError(msg);
+    }
 }
 
-void ClientSocket::readReply(int &ret, void *retval, size_t retval_size) {
+void ClientSocket::sendCommandThenRead(int fnum, const void *args,
+                                       size_t args_size, void *retval,
+                                       size_t retval_size) {
+    sendCommand(fnum, args, args_size);
+    readReply(retval, retval_size);
+}
+
+void ClientSocket::sendCommand(int fnum, const void *args, size_t args_size) {
+    Send(fnum);
+    setFnum(fnum);
+    Send(args, args_size);
+}
+
+void ClientSocket::readReply(void *retval, size_t retval_size) {
 
     try {
+        int ret = slsDetectorDefs::FAIL;
         Receive(&ret, sizeof(ret));
         if (ret == slsDetectorDefs::FAIL) {
             std::string mess = readErrorMessage();
             // Do we need to know hostname here?
             // In that case save it???
-            if (socketType == "Receiver") {
-                throw ReceiverError("Receiver returned: " + std::string(mess));
-            } else if (socketType == "Detector") {
-                throw DetectorError("Detector returned: " + std::string(mess));
-            } else {
-                throw GuiError(mess);
-            }
+            throwError(socketType + " returned: " + mess);
         }
         // get retval
         Receive(retval, retval_size);
     }
     // debugging
     catch (SocketError &e) {
-        if (socketType == "Receiver") {
-            throw ReceiverError("Receiver returned: " + std::string(e.what()));
-        } else if (socketType == "Detector") {
-            throw DetectorError("Detector returned: " + std::string(e.what()));
-        } else {
-            throw GuiError(e.what());
-        }
+        auto msg = fmt::format("While reading reply from {} {}",
+                               to_lower(socketType), e.what());
+        throwError(msg);
     }
 }
 

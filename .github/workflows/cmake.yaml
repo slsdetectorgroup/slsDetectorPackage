@@ -1,7 +1,7 @@
 name: Native CMake Build
 
-on: [push, pull_request] 
-
+on: [push, pull_request, workflow_dispatch] 
+    
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Debug
@@ -14,14 +14,15 @@ jobs:
     runs-on: ubuntu-latest
     name: Configure and build using cmake
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: 3.12
           cache: 'pip'
       - run: pip install pytest numpy colorama
 
-      - uses: awalsh128/cache-apt-pkgs-action@latest
+      # using a stable action version instead of latest to create/restore cache for now
+      - uses: awalsh128/cache-apt-pkgs-action@v1.6.1
         with:
           packages: libhdf5-dev qtbase5-dev qt5-qmake libqt5svg5-dev libpng-dev libtiff-dev libfmt-dev
           version: 1.0
@@ -37,7 +38,9 @@ jobs:
           -DSLS_USE_PYTHON=ON \
           -DSLS_USE_HDF5=ON \
           -DSLS_USE_GUI=ON \
-          -DSLS_USE_MOENCH=ON
+          -DSLS_USE_MOENCH=ON \
+          -DSLS_TREAT_WARNINGS_AS_ERRORS=ON \
+          -DSLS_USE_MATTERHORN=ON
 
       - name: Build
         # Build your program with the given configuration

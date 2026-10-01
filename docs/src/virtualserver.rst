@@ -85,7 +85,7 @@ For a Single Module (With Options)
         # sets destination udp ports (not needed, default is 50001)
         udp_dstport 50012
 
-        # source udp ips must be same subnet at destintaion udp ips
+        # source udp ips must be same subnet at destination udp ips
         # takes the same ip as hostname
         udp_srcip auto
 
@@ -111,7 +111,7 @@ For Multiple Modules
         # sets increasing destination udp ports
         udp_dstport 50012
 
-        # source udp ips must be same subnet at destintaion udp ips
+        # source udp ips must be same subnet at destination udp ips
         0:udp_srcip 192.168.1.112
         1:udp_srcip 192.168.1.114
 

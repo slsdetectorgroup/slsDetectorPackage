@@ -2,8 +2,8 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 
 #define DISABLE_STATIC_ASSERT // to be able to test obsolete shm without isValid
-#include "SharedMemory.h"
 #include "catch.hpp"
+#include "sls/SharedMemory.h"
 #include "sls/string_utils.h"
 #include <filesystem>
 

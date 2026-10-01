@@ -20,8 +20,8 @@ API_FILE = ROOT_DIR / "slsSupportLib/include/sls/versionAPI.h"
 VERSION_FILE = ROOT_DIR / "VERSION"
 
 parser = argparse.ArgumentParser(description = 'updates API version')
-parser.add_argument('api_module_name', choices=["APILIB", "APIRECEIVER", "APICTB", "APIGOTTHARD2", "APIMOENCH", "APIEIGER", "APIXILINXCTB", "APIJUNGFRAU", "APIMYTHEN3"], help = 'module name to change api version options are: ["APILIB", "APIRECEIVER", "APICTB", "APIGOTTHARD2", "APIMOENCH", "APIEIGER", "APIXILINXCTB", "APIJUNGFRAU", "APIMYTHEN3"]')
-parser.add_argument('api_dir', help = 'Relative or absolute path to the module code')
+parser.add_argument('api_module_name', choices=["APILIB", "APIRECEIVER", "APICTB", "APIGOTTHARD2", "APIMOENCH", "APIEIGER", "APIXILINXCTB", "APIJUNGFRAU", "APIMYTHEN3", "APIMATTERHORN"], help = 'module name to change api version options are: ["APILIB", "APIRECEIVER", "APICTB", "APIGOTTHARD2", "APIMOENCH", "APIEIGER", "APIXILINXCTB", "APIJUNGFRAU", "APIMYTHEN3", "APIMATTERHORN"]')
+parser.add_argument('api_dirs', nargs="+", help = 'Relative or absolute paths to the module code')
 
 def update_api_file(new_api : str, api_module_name : str, api_file_name : str): 
 
@@ -36,21 +36,22 @@ def update_api_file(new_api : str, api_module_name : str, api_file_name : str):
             else:
                 api_file.write(line)
 
-def get_latest_modification_date(directory : str):
+def get_latest_modification_date(directories : list[str]):
     latest_time = 0
     latest_date = None
 
-    for root, dirs, files in os.walk(directory):
-        for file in files:
-            if file.endswith(".o"):
-                continue
-            full_path = os.path.join(root, file)
-            try:
-                mtime = os.path.getmtime(full_path)
-                if mtime > latest_time:
-                    latest_time = mtime
-            except FileNotFoundError:
-                continue
+    for directory in directories:
+        for root, dirs, files in os.walk(directory):
+            for file in files:
+                if file.endswith(".o"):
+                    continue
+                full_path = os.path.join(root, file)
+                try:
+                    mtime = os.path.getmtime(full_path)
+                    if mtime > latest_time:
+                        latest_time = mtime
+                except FileNotFoundError:
+                    continue
     
     latest_date = datetime.fromtimestamp(latest_time).strftime("%y%m%d")            
 
@@ -74,9 +75,9 @@ if __name__ == "__main__":
 
     args = parser.parse_args() 
 
-    api_dir = ROOT_DIR / args.api_dir
+    api_dirs = [ROOT_DIR / api_dir for api_dir in args.api_dirs]
     
 
-    update_api_version(args.api_module_name, api_dir)
+    update_api_version(args.api_module_name, api_dirs)
 
 

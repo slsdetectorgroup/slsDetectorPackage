@@ -209,21 +209,10 @@ else()
             URL ${CMAKE_CURRENT_SOURCE_DIR}/libs/fmt/fmt-12.1.0.tar.gz
             # Compute hash: md5sum fmt-12.1.0.tar.gz 
             URL_HASH MD5=92eb6f492e4838e5f024ce5207beafc7) 
+    set(FMT_INSTALL ON CACHE BOOL "")
     FetchContent_MakeAvailable(fmt)
     set_property(TARGET fmt PROPERTY POSITION_INDEPENDENT_CODE ON)
 endif()
-
-# Export fmt 
-if(SLS_MASTER_PROJECT)
-    install(TARGETS fmt
-        EXPORT ${TARGETS_EXPORT_NAME}
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-        INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-    )
-endif()
-
 
 option(SLS_USE_HDF5 "HDF5 File format" OFF)
 option(SLS_BUILD_SHARED_LIBRARIES "Build shared libaries" OFF)
@@ -247,6 +236,7 @@ option(SLS_USE_MOENCH "compile zmq and post processing for Moench" OFF)
 option(SLS_USE_JUNGFRAU "compile post processing for Jungfrau" OFF)
 option(SLS_USE_MATTERHORN "compile matterhorn server" OFF)
 option(SLS_INSTALL_VERSIONED_BINARIES "Add version number to binaries on install" OFF) #Needed for multi version RPM
+option(SLS_TREAT_WARNINGS_AS_ERRORS "Treat warnings as errors" OFF)
 
 #Convenience option to switch off defaults when building Moench binaries only
 option(SLS_BUILD_ONLY_MOENCH "compile only Moench" OFF)
@@ -258,6 +248,18 @@ if(SLS_BUILD_ONLY_MOENCH)
     set(SLS_USE_RECEIVER OFF CACHE BOOL "Disabled for MOENCH_ONLY" FORCE)
     set(SLS_USE_RECEIVER_BINARIES OFF CACHE BOOL "Disabled for MOENCH_ONLY" FORCE)
     set(SLS_USE_MOENCH ON CACHE BOOL "Enable" FORCE)
+endif()
+
+option(SLS_BUILD_ONLY_MATTERHORN "compile only Matterhorn" OFF)
+if(SLS_BUILD_ONLY_MATTERHORN)
+    message(STATUS "Build MATTERHORN server only!")
+    set(SLS_BUILD_SHARED_LIBRARIES OFF CACHE BOOL "Disabled for MATTERHORN_ONLY" FORCE)
+    set(SLS_USE_TEXTCLIENT OFF CACHE BOOL "Disabled for MATTERHORN_ONLY" FORCE)
+    set(SLS_USE_DETECTOR ON CACHE BOOL "Disabled for MATTERHORN_ONLY" FORCE)
+    set(SLS_USE_RECEIVER OFF CACHE BOOL "Disabled for MATTERHORN_ONLY" FORCE)
+    set(SLS_USE_RECEIVER_BINARIES OFF CACHE BOOL "Disabled for MATTERHORN_ONLY" FORCE)
+    set(SLS_USE_SERVER ON CACHE BOOL "Enable building cpp server" FORCE)
+    set(SLS_USE_MATTERHORN ON CACHE BOOL "Enable Matterhorn" FORCE)
 endif()
 
 #Convenience option to switch off defaults when building Jungfrau binaries only
@@ -358,7 +360,9 @@ if (NOT TARGET slsProjectWarnings)
                                                 -Wno-missing-field-initializers)
     endif()
 
-
+    if(SLS_TREAT_WARNINGS_AS_ERRORS)
+        target_compile_options(slsProjectWarnings INTERFACE -Werror)
+    endif()
 endif()
 
 
@@ -387,6 +391,10 @@ if (NOT TARGET slsProjectCSettings)
         target_compile_options(slsProjectCSettings INTERFACE -fsanitize=address,undefined -fno-omit-frame-pointer)
         target_link_libraries(slsProjectCSettings INTERFACE -fsanitize=address,undefined)
     endif()
+
+    if(SLS_TREAT_WARNINGS_AS_ERRORS)
+        target_compile_options(slsProjectCSettings INTERFACE -Werror)
+    endif() 
 endif()
 
 
@@ -444,13 +452,14 @@ if (SLS_USE_GUI)
     add_subdirectory(slsDetectorGui)
 endif (SLS_USE_GUI)
 
-if (SLS_USE_MATTERHORN)
-    add_subdirectory(slsDetectorServers/matterhornServer)
-endif() 
-
 if (SLS_USE_SIMULATOR)
     add_subdirectory(slsDetectorServers)
 endif (SLS_USE_SIMULATOR)
+
+# cant add_subdirectory twice 
+if (SLS_USE_MATTERHORN AND !SLS_USE_SIMULATOR) 
+    add_subdirectory(slsDetectorServers/matterhornServer)
+endif() 
 
 if (SLS_USE_PYTHON)
     find_package (Python 3.8 COMPONENTS Interpreter Development.Module REQUIRED)
@@ -494,13 +503,15 @@ if(SLS_BUILD_DOCS)
     add_subdirectory(docs)
 endif(SLS_BUILD_DOCS)
 
-if(SLS_USE_MOENCH)
+if(SLS_USE_MOENCH OR SLS_USE_JUNGFRAU)
     add_subdirectory(slsDetectorCalibration/tiffio)
+endif() 
+
+if(SLS_USE_MOENCH)
     add_subdirectory(slsDetectorCalibration/moenchExecutables)
 endif(SLS_USE_MOENCH)
 
 if(SLS_USE_JUNGFRAU)
-    add_subdirectory(slsDetectorCalibration/tiffio)
     add_subdirectory(slsDetectorCalibration/jungfrauExecutables)
 endif(SLS_USE_JUNGFRAU)
 

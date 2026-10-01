@@ -2786,10 +2786,7 @@ void *start_timer(void *arg) {
     char *imageData = (char *)malloc(databytes * 2);
     if (imageData == NULL) {
         LOG(logERROR, ("Could not allocate memory for virtual image\n"));
-        closeUDPSocket(0);
-        closeUDPSocket(1);
-        sharedMemory_setStatus(IDLE);
-        return NULL;
+        exit(EXIT_FAILURE);
     }
     memset(imageData, 0, databytes * 2);
     {

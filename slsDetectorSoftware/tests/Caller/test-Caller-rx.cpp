@@ -855,6 +855,66 @@ TEST_CASE("rx_roi", "[.detectorintegration][.disable_check_data_file]") {
     }
 }
 
+TEST_CASE("rx_roi_port_disabled", "[.detectorintegration]") {
+    Detector det;
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER) {
+        auto prev_roi = det.getRxROI();
+        std::vector<defs::portPosition> ports = {defs::LEFT, defs::RIGHT};
+        auto prev_port0 = det.getDataStream(ports[0], {0})[0];
+        auto prev_port1 = det.getDataStream(ports[1], {0})[0];
+        bool prev_tengiga = det.getTenGiga().squash(false);
+
+        std::vector<defs::ROI> rois = {defs::ROI{0, 10, 0, 20},
+                                       defs::ROI{600, 610, 0, 30}};
+        det.setTenGiga(true);
+
+        det.clearRxROI();
+        det.setDataStream(ports[0], true, {0});
+        det.setDataStream(ports[1], true, {0});
+        det.setRxROI(rois);
+        REQUIRE_THROWS(det.setDataStream(ports[0], false));
+        REQUIRE_THROWS(det.setDataStream(ports[1], false));
+
+        det.clearRxROI();
+        det.setDataStream(ports[0], true, {0});
+        det.setDataStream(ports[1], true, {0});
+        det.setRxROI({rois[0]});
+        REQUIRE_THROWS(det.setDataStream(ports[0], false));
+        REQUIRE_NOTHROW(det.setDataStream(ports[1], false));
+
+        det.clearRxROI();
+        det.setDataStream(ports[0], true, {0});
+        det.setDataStream(ports[1], true, {0});
+        det.setRxROI({rois[1]});
+        REQUIRE_NOTHROW(det.setDataStream(ports[0], false));
+        REQUIRE_THROWS(det.setDataStream(ports[1], false));
+
+        det.clearRxROI();
+        det.setDataStream(ports[0], false, {0});
+        det.setDataStream(ports[1], true, {0});
+        REQUIRE_THROWS(det.setRxROI({rois[0]}));
+        REQUIRE_NOTHROW(det.setRxROI({rois[1]}));
+
+        det.clearRxROI();
+        det.setDataStream(ports[0], true, {0});
+        det.setDataStream(ports[1], false, {0});
+        REQUIRE_NOTHROW(det.setRxROI({rois[0]}));
+        REQUIRE_THROWS(det.setRxROI({rois[1]}));
+
+        /* eiger virtual detector doesnt understand it cant disable in 1g mode,
+         * so cant test in 1g mode */
+
+        if (prev_roi.size() == 1 && prev_roi[0].completeRoi())
+            det.clearRxROI();
+        else
+            det.setRxROI(prev_roi);
+        det.setDataStream(ports[0], prev_port0, {0});
+        det.setDataStream(ports[1], prev_port1, {0});
+        det.setTenGiga(prev_tengiga);
+    }
+}
+
 TEST_CASE("rx_clearroi", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);

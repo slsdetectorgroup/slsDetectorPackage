@@ -485,14 +485,10 @@ std::string Caller::trimen(int action) {
         auto t = det->getTrimEnergies(std::vector<int>{det_id});
         os << OutString(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
-        std::vector<int> t(args.size());
-        if (!args.empty()) {
-            for (size_t i = 0; i < t.size(); ++i) {
-                t[i] = StringTo<int>(args[i]);
-            }
-        }
+        // accepts both "4500 5400" and "4500,5400", empty list clears
+        auto t = StringTo<std::vector<int>>(join(args, ','));
         det->setTrimEnergies(t, std::vector<int>{det_id});
-        os << ToString(args) << '\n';
+        os << ToString(t) << '\n';
     } else {
         throw RuntimeError("Unknown action");
     }

@@ -18,8 +18,6 @@
  * within a single process.
  */
 
-#include <condition_variable>
-#include <mutex>
 #include <sys/types.h> // pid_t
 
 #if defined(__APPLE__)
@@ -47,53 +45,5 @@ inline pid_t getThreadId() noexcept {
     return static_cast<pid_t>(::syscall(SYS_gettid));
 #endif
 }
-
-/**
- * Minimal C++17 backport of the subset of std::counting_semaphore /
- * std::binary_semaphore used in this project. API matches the C++20 std types
- * (acquire / try_acquire / release with optional update count) so call sites
- * can switch to <semaphore> verbatim once the project moves to C++20. Built
- * on std::mutex + std::condition_variable; therefore NOT async-signal-safe,
- * do not call release() from a signal handler.
- */
-class counting_semaphore {
-  public:
-    explicit counting_semaphore(int desired) : count_(desired) {}
-
-    counting_semaphore(const counting_semaphore &) = delete;
-    counting_semaphore &operator=(const counting_semaphore &) = delete;
-
-    void acquire() {
-        std::unique_lock<std::mutex> lk(mtx_);
-        cv_.wait(lk, [this] { return count_ > 0; });
-        --count_;
-    }
-
-    bool try_acquire() noexcept {
-        std::lock_guard<std::mutex> lk(mtx_);
-        if (count_ == 0)
-            return false;
-        --count_;
-        return true;
-    }
-
-    void release(int update = 1) {
-        {
-            std::lock_guard<std::mutex> lk(mtx_);
-            count_ += update;
-        }
-        if (update == 1)
-            cv_.notify_one();
-        else
-            cv_.notify_all();
-    }
-
-  private:
-    std::mutex mtx_;
-    std::condition_variable cv_;
-    int count_;
-};
-
-using binary_semaphore = counting_semaphore;
 
 } // namespace sls

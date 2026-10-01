@@ -9,12 +9,13 @@
  *@short creates/destroys a thread
  */
 
+#include "sls/counting_semaphore.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
-#include "sls/thread_utils.h"
 
 #include <atomic>
 #include <string>
+#include <sys/types.h> // pid_t
 #include <thread>
 
 namespace sls {

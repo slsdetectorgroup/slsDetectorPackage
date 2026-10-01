@@ -9,7 +9,7 @@
  * modified by the sls detector group
  * */
 
-#include "sls/thread_utils.h"
+#include "sls/counting_semaphore.h"
 
 #include <atomic>
 #include <cstddef>
@@ -25,16 +25,16 @@ template <typename Element> class CircularFifo {
     size_t head{0};
     size_t capacity;
     std::vector<Element *> data;
-    counting_semaphore data_sem; // # of items available to read
-    counting_semaphore free_sem; // # of slots available to write
-    std::atomic<int> count_{0};  // current number of items, for diagnostics
+    counting_semaphore<> data_sem; // # of items available to read
+    counting_semaphore<> free_sem; // # of slots available to write
+    std::atomic<int> count_{0};    // current number of items, for diagnostics
 
     size_t increment(size_t i) const { return (i + 1) % capacity; }
 
   public:
     explicit CircularFifo(size_t size)
         : capacity(size + 1), data(capacity), data_sem(0),
-          free_sem(static_cast<int>(size)) {}
+          free_sem(static_cast<std::ptrdiff_t>(size)) {}
 
     CircularFifo(const CircularFifo &) = delete;
     CircularFifo(CircularFifo &&) = delete;

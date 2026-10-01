@@ -4,12 +4,12 @@
  * binary */
 #include "CommandLineOptions.h"
 #include "sls/Receiver.h"
-#include "sls/thread_utils.h"
 #include "sls/ToString.h"
 #include "sls/container_utils.h"
 #include "sls/logger.h"
 #include "sls/network_utils.h"
 #include "sls/sls_detector_defs.h"
+#include "sls/thread_utils.h"
 
 #include <csignal> //SIGINT
 #include <cstring>

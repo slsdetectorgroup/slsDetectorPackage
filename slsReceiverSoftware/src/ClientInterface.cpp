@@ -3,11 +3,11 @@
 #include "ClientInterface.h"
 #include "sls/ServerSocket.h"
 #include "sls/StaticVector.h"
-#include "sls/thread_utils.h"
 #include "sls/ToString.h"
 
 #include "sls/sls_detector_exceptions.h"
 #include "sls/string_utils.h"
+#include "sls/thread_utils.h"
 #include "sls/versionAPI.h"
 
 #include <array>

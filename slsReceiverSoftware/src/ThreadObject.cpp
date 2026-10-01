@@ -6,8 +6,8 @@
  ***********************************************/
 
 #include "ThreadObject.h"
-#include "sls/thread_utils.h"
 #include "sls/container_utils.h"
+#include "sls/thread_utils.h"
 #include <iostream>
 #include <unistd.h>
 

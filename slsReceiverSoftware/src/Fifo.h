@@ -16,6 +16,7 @@
 #include "sls/sls_detector_defs.h"
 
 #include <atomic>
+#include <mutex>
 
 namespace sls {
 
@@ -52,6 +53,12 @@ class Fifo : private virtual slsDetectorDefs {
     int fifoDepth;
     std::atomic<int> status_fifoBound;
     std::atomic<int> status_fifoFree;
+    /** fifoFree is filled by the listener (discarded frames), the data
+     * processor and the data streamer, CircularFifo allows only one producer.
+     * On its own cache line: it is written for every freed buffer, the
+     * members above are read by the listener for every frame
+     */
+    alignas(64) std::mutex fifoFreeMutex;
 };
 
 } // namespace sls

@@ -2865,7 +2865,14 @@ powervalues:
         GET:
           args:
             - argc: 0
-
+            
+hdr:
+    is_description: true
+    actions:
+        GET:
+          argc: 0
+        PUT:
+          argc: -1
 
 ################# special commands ##########################
 
@@ -3459,6 +3466,7 @@ scan:
             output: [ t, unit ]
           input: [ "defs::scanParameters(StringTo<defs::dacIndex>(args[0]), StringTo<int>(args[1]), StringTo<int>(args[2]), StringTo<int>(args[3]), t)" ]
           input_types: [ auto ]
+
 
 Trigger:
   template: true

@@ -63,6 +63,7 @@ int setChipVersionIntFromConfigFile(int val,
                                     char *mess); // for backward compatibility
 int setChipVersionStringFromConfigFile(char *cval, char *mess);
 int setChipIndex(enum CHIPINDEX ind, char *mess);
+enum CHIPINDEX getChipIndex();
 int validateChipIndex(enum CHIPINDEX ind, char *mess);
 void setChipIndexAllowedFeatures();
 int setChipVersionInFPGA(char *mess);

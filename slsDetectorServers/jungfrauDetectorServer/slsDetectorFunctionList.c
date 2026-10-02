@@ -413,6 +413,8 @@ int setChipIndex(enum CHIPINDEX ind, char *mess) {
     return setChipVersionInFPGA(mess);
 }
 
+enum CHIPINDEX getChipIndex() { return chipIndex; }
+
 int validateChipIndex(enum CHIPINDEX ind, char *mess) {
     if (ind < 0 || ind >= NUM_CHIP_INDICES) {
         sprintf(mess, "Invalid chip index %d. Options: %s\n", (int)ind,

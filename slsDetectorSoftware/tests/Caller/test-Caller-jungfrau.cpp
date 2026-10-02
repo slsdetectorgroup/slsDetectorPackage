@@ -277,8 +277,8 @@ TEST_CASE("extrastoragecells", "[.detectorintegration]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::JUNGFRAU) {
         auto chipVersion = chipVersionToX10(det.getChipVersion().squash());
-        // chip version 1.0 and 1.2
-        if (chipVersion == 10 || chipVersion == 12) {
+        // currently only chip version 1.0, later firmware for 1.2
+        if (chipVersion == 10) {//} || chipVersion == 12) {
             auto prev_val = det.getNumberOfAdditionalStorageCells().tsquash(
                 "inconsistent #additional storage cells to test");
             {

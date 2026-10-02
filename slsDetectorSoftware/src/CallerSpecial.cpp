@@ -424,41 +424,43 @@ std::string Caller::threshold(int action) {
             throw RuntimeError("Not implemented for this detector\n");
         }
     } else if (action == defs::PUT_ACTION) {
+        if (args.empty()) {
+            WrongNumberOfParameters(1);
+        }
         defs::detectorType type = det->getDetectorType().squash();
-        if (type == defs::EIGER && args.size() != 1 && args.size() != 2) {
-            WrongNumberOfParameters(1);
-        }
-        if (type == defs::MYTHEN3 && (args.size() < 1 || args.size() > 4)) {
-            WrongNumberOfParameters(1);
-        }
-
         bool trimbits = (cmd == "thresholdnotb") ? false : true;
-        std::array<int, 3> energy = {StringTo<int>(args[0]), 0, 0};
-        energy[1] = energy[0];
-        energy[2] = energy[0];
-        defs::detectorSettings sett = defs::STANDARD;
 
-        // check if argument has settings or get it
-        if (args.size() == 2 || args.size() == 4) {
-            sett = StringTo<defs::detectorSettings>(args[args.size() - 1]);
+        // settings is optional, last and the only argument starting with a
+        // letter. The energies before it accept "a b c" as well as "a,b,c"
+        auto energyArgs = args;
+        defs::detectorSettings sett = defs::STANDARD;
+        if (std::isalpha(static_cast<unsigned char>(args.back()[0]))) {
+            sett = StringTo<defs::detectorSettings>(args.back());
+            energyArgs.pop_back();
         } else {
             sett = det->getSettings(std::vector<int>{det_id})
                        .tsquash("Inconsistent settings between detectors");
         }
+        auto energy = StringTo<std::vector<int>>(join(energyArgs, ','));
 
-        // get other threshold values
-        if (args.size() > 2) {
-            energy[1] = StringTo<int>(args[1]);
-            energy[2] = StringTo<int>(args[2]);
-        }
         switch (type) {
         case defs::EIGER:
+            if (energy.size() != 1) {
+                throw RuntimeError("Expected one threshold energy");
+            }
             det->setThresholdEnergy(energy[0], sett, trimbits,
                                     std::vector<int>{det_id});
             break;
         case defs::MYTHEN3:
-            det->setThresholdEnergy(energy, sett, trimbits,
-                                    std::vector<int>{det_id});
+            // one energy applies to all three counters
+            if (energy.size() == 1) {
+                energy.resize(3, energy[0]);
+            }
+            if (energy.size() != 3) {
+                throw RuntimeError("Expected one or three threshold energies");
+            }
+            det->setThresholdEnergy({energy[0], energy[1], energy[2]}, sett,
+                                    trimbits, std::vector<int>{det_id});
             break;
         default:
             throw RuntimeError("Not implemented for this detector\n");
@@ -485,19 +487,16 @@ std::string Caller::trimen(int action) {
         auto t = det->getTrimEnergies(std::vector<int>{det_id});
         os << OutString(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
-        std::vector<int> t(args.size());
-        if (!args.empty()) {
-            for (size_t i = 0; i < t.size(); ++i) {
-                t[i] = StringTo<int>(args[i]);
-            }
-        }
+        // accepts both "4500 5400" and "4500,5400", empty list clears
+        auto t = StringTo<std::vector<int>>(join(args, ','));
         det->setTrimEnergies(t, std::vector<int>{det_id});
-        os << ToString(args) << '\n';
+        os << ToString(t) << '\n';
     } else {
         throw RuntimeError("Unknown action");
     }
     return os.str();
 }
+
 std::string Caller::badchannels(int action) {
     std::ostringstream os;
     if (action == defs::HELP_ACTION) {
@@ -1013,6 +1012,9 @@ std::string Caller::counters(int action) {
               "enabled. Each element in list can be 0 - 2 and must be non "
               "repetitive. Enabling counters sets vth dacs to remembered "
               "values and disabling sets them to disabled values."
+              "Accepts both space separated and comma separated list of indices"
+              "optionally enclosed in brackets. Example: 0 1 2 or 0,1,2 or "
+              "[0,1,2] or [0 1 2]"
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {
@@ -1024,15 +1026,15 @@ std::string Caller::counters(int action) {
         if (args.empty()) {
             WrongNumberOfParameters(1);
         }
-        if (std::any_of(args.cbegin(), args.cend(), [](std::string s) {
-                return (StringTo<int>(s) < 0 || StringTo<int>(s) > 2);
-            })) {
+        // accepts both "0 1 2" and "0,1,2"
+        auto counters = StringTo<std::vector<int>>(join(args, ','));
+        if (std::any_of(counters.cbegin(), counters.cend(),
+                        [](int val) { return (val < 0 || val > 2); })) {
             throw RuntimeError("Invalid counter indices list. Example: 0 1 2");
         }
         // convert vector to counter enable mask
         uint32_t mask = 0;
-        for (size_t i = 0; i < args.size(); ++i) {
-            int val = StringTo<int>(args[i]);
+        for (auto val : counters) {
             // already enabled earlier
             if (mask & (1 << val)) {
                 std::ostringstream oss;
@@ -1042,7 +1044,7 @@ std::string Caller::counters(int action) {
             mask |= (1 << val);
         }
         det->setCounterMask(mask, std::vector<int>{det_id});
-        os << ToString(args) << '\n';
+        os << ToString(counters) << '\n';
     } else {
         throw RuntimeError("Unknown action");
     }
@@ -1216,6 +1218,9 @@ std::string Caller::rx_dbitlist(int action) {
               "receiver list, the data size will be bigger if the number of "
               "samples is not divisible by 8 as every signal bit is padded to "
               "the next byte when combining all the samples in the receiver."
+              "Accepts both space separated and comma separated list of indices"
+              "optionally enclosed in brackets. Example: 0 11 37 or 3,10,15 or "
+              "[62,21] or [0 1 2]"
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {
@@ -1236,14 +1241,10 @@ std::string Caller::rx_dbitlist(int action) {
         }
         // 'none' option already covered as t is empty by default
         else if (args[0] != "none") {
-            unsigned int ntrim = args.size();
-            t.resize(ntrim);
-            for (unsigned int i = 0; i < ntrim; ++i) {
-                t[i] = StringTo<int>(args[i]);
-            }
+            t = StringTo<std::vector<int>>(join(args, ','));
         }
         det->setRxDbitList(t, std::vector<int>{det_id});
-        os << ToString(args) << '\n';
+        os << ToString(t) << '\n';
     } else {
         throw RuntimeError("Unknown action");
     }

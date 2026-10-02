@@ -49,9 +49,15 @@ enum detectorSettings thisSettings = UNINITIALIZED;
 static enum CHIPINDEX chipIndex = v1_0;
 int highvoltage = 0;
 int dacValues[NDAC] = {};
-int defaultDacValues[] = DEFAULT_DAC_VALS;
-int defaultDacValue_G0[] = SPECIAL_DEFAULT_DYNAMIC_GAIN_VALS;
-int defaultDacValue_HG0[] = SPECIAL_DEFAULT_DYNAMICHG0_GAIN_VALS;
+int defaultDacValues[NDAC] = DEFAULT_DAC_VALS;
+
+static int defaultDacList_G0[NSPECIALDACS] = SPECIAL_DEFAULT_DYNAMIC_GAIN_VALS;
+static int defaultDacList_HG0[NSPECIALDACS] =
+    SPECIAL_DEFAULT_DYNAMICHG0_GAIN_VALS;
+static int defaultDacList_v1_2[NSPECIALDACS] = SPECIAL_DEFAULT_V1_2_GAIN_VALS;
+int *defaultDacValue_G0 = defaultDacList_G0;
+int *defaultDacValue_HG0 = defaultDacList_HG0;
+
 int32_t clkPhase[NUM_CLOCKS] = {};
 int detPos[4] = {};
 bool chipConfigured = false;
@@ -67,6 +73,7 @@ bool has_current_src_normal = false;
 bool has_current_src_64bit_selection = false;
 bool has_current_src_reverse_bits_selection = false;
 bool has_storage_start_in_chip_config = false;
+bool has_step_reduction = false;
 
 int isInitCheckDone() { return initCheckDone; }
 
@@ -428,6 +435,9 @@ void setChipIndexAllowedFeatures() {
         has_current_src_64bit_selection = false;
         has_current_src_reverse_bits_selection = false;
         has_storage_start_in_chip_config = false;
+        has_step_reduction = false;
+        defaultDacValue_G0 = defaultDacList_G0;
+        defaultDacValue_HG0 = defaultDacList_HG0;
         break;
     case v1_1:
         has_configure_chip = true;
@@ -438,6 +448,9 @@ void setChipIndexAllowedFeatures() {
         has_current_src_64bit_selection = true;
         has_current_src_reverse_bits_selection = true;
         has_storage_start_in_chip_config = true;
+        has_step_reduction = false;
+        defaultDacValue_G0 = defaultDacList_G0;
+        defaultDacValue_HG0 = defaultDacList_HG0;
         break;
     case v1_2_NORMAL:
     case v1_2_LOW_NOISE:
@@ -450,6 +463,9 @@ void setChipIndexAllowedFeatures() {
         has_current_src_64bit_selection = true;
         has_current_src_reverse_bits_selection = false;
         has_storage_start_in_chip_config = true;
+        has_step_reduction = true;
+        defaultDacValue_G0 = defaultDacList_v1_2;
+        defaultDacValue_HG0 = defaultDacList_v1_2;
         break;
     default:
         LOG(logERROR, ("Unknown chip index %d\n", (int)chipIndex));
@@ -608,6 +624,9 @@ void setupDetector() {
         clkPhase[i] = 0;
     }
     chipConfigured = false;
+    defaultDacValue_G0 = defaultDacList_G0;
+    defaultDacValue_HG0 = defaultDacList_HG0;
+
 #ifdef VIRTUAL
     if (isControlServer) {
         sharedMemory_setStatus(IDLE);
@@ -685,6 +704,10 @@ void setupDetector() {
     setSettings(DEFAULT_SETTINGS);
     setGainMode(DEFAULT_GAINMODE);
 
+    autoCompDisable(DEFAULT_AUTO_COMP_DISABLE);
+    setComparatorDisableTime(chipIndex == v1_0 ? DEFAULT_COMP_DISABLE_TIME_v1_0
+                                               : DEFAULT_COMP_DISABLE_TIME);
+
     setNumFrames(DEFAULT_NUM_FRAMES);
     setNumTriggers(DEFAULT_NUM_CYCLES);
     setExpTime(DEFAULT_EXPTIME);
@@ -710,6 +733,8 @@ void setupDetector() {
         setFilterResistor(DEFAULT_FILTER_RESISTOR);
     if (hasFilterCellsFeature())
         setNumberOfFilterCells(DEFAULT_FILTER_CELL);
+    if (hasStepReductionFeature())
+        enableStepReduction();
 
     if (!isHardwareVersion_1_0()) {
         setFlipRows(DEFAULT_FLIP_ROWS);
@@ -2142,6 +2167,8 @@ bool hasStorageCellStartInChipConfig() {
     return has_storage_start_in_chip_config;
 }
 
+bool hasStepReductionFeature() { return has_step_reduction; }
+
 bool isChipConfigured() { return chipConfigured; }
 
 void configureChip() {
@@ -2209,16 +2236,31 @@ int64_t getComparatorDisableTime() {
 }
 
 void configureASICTimer() {
+    configureAsicPrechargeTimer();
+    configureAsicDSTimer();
+}
+
+void configureAsicPrechargeTimer() {
     bus_w(ASIC_CTRL_REG, (bus_r(ASIC_CTRL_REG) & ~ASIC_CTRL_PRCHRG_TMR_MSK) |
                              ASIC_CTRL_PRCHRG_TMR_VAL);
+    uint32_t retval = ((bus_r(ASIC_CTRL_REG) & ASIC_CTRL_PRCHRG_TMR_MSK) >>
+                       ASIC_CTRL_PRCHRG_TMR_OFST);
+    LOG(logINFO, ("Configured ASIC Precharge Timer [0x%x]\n", retval));
+}
 
-    uint32_t val = ASIC_CTRL_DS_TMR_CHIP1_1_VAL;
-    // TODO: value of chipindex v1_2 value to be decided.
-    if (chipIndex == v1_0) {
-        val = ASIC_CTRL_DS_TMR_VAL;
+void configureAsicDSTimer() {
+    // chipv1.0 => always low res val
+    // chipv1.1+ => depending on res filter
+    uint32_t val = ASIC_CTRL_DS_TMR_LOW_RES_VAL;
+    if (chipIndex != v1_0 && getFilterResistor() == 1) {
+        val = ASIC_CTRL_DS_TMR_HIGH_RES_VAL;
     }
     bus_w(ASIC_CTRL_REG, (bus_r(ASIC_CTRL_REG) & ~ASIC_CTRL_DS_TMR_MSK) | val);
-    LOG(logINFO, ("Configured ASIC Timer [0x%x]\n", bus_r(ASIC_CTRL_REG)));
+    uint32_t retval = ((bus_r(ASIC_CTRL_REG) & ASIC_CTRL_DS_TMR_MSK) >>
+                       ASIC_CTRL_DS_TMR_OFST);
+    LOG(logINFO, ("Configured ASIC DS Timer [0x%x]\n", retval));
+
+    LOG(logINFO, ("asic reg:0x%x\n", bus_r(ASIC_CTRL_REG)));
 }
 
 int setReadoutSpeed(int val) {
@@ -2569,22 +2611,26 @@ int getFilterResistor() {
 }
 
 int setFilterResistor(int value) {
+    if (value != 0 && value != 1) {
+        LOG(logERROR, ("Invalid value for Filter Resistor: %d\n", value));
+        return FAIL;
+    }
+
     // lower resistor
     if (value == 0) {
         LOG(logINFO, ("Setting Lower Filter Resistor\n"));
         bus_w(CONFIG_V11_REG,
               bus_r(CONFIG_V11_REG) | CONFIG_V11_FLTR_RSSTR_SMLR_MSK);
-        return OK;
     }
     // higher resistor
     else if (value == 1) {
         LOG(logINFO, ("Setting Higher Filter Resistor\n"));
         bus_w(CONFIG_V11_REG,
               bus_r(CONFIG_V11_REG) & ~CONFIG_V11_FLTR_RSSTR_SMLR_MSK);
-        return OK;
     }
-    LOG(logERROR, ("Could not set Filter Resistor. Invalid value %d\n", value));
-    return FAIL;
+
+    configureAsicDSTimer();
+    return OK;
 }
 
 int getNumberOfFilterCells() {
@@ -2598,8 +2644,8 @@ int getNumberOfFilterCells() {
     // flip all contents of register //TODO FIRMWARE FIX
     regval ^= BIT32_MASK;
 #endif
-    uint32_t retval =
-        (regval & CONFIG_V11_FLTR_CLL_MSK) >> CONFIG_V11_FLTR_CLL_OFST;
+    uint32_t retval = (regval & CONFIG_V11_STATUS_FLTR_CLL_MSK) >>
+                      CONFIG_V11_STATUS_FLTR_CLL_OFST;
     // count number of bits = which icell
     return (__builtin_popcount(retval));
 }
@@ -2836,6 +2882,11 @@ void setPedestalMode(int enable, uint8_t frames, uint16_t loops) {
     }
 }
 
+void enableStepReduction() {
+    LOG(logINFO, ("Enabling step reduction\n"));
+    bus_w(CONFIG_V11_REG, bus_r(CONFIG_V11_REG) | CONFIG_V12_RST_STP_RDCTN_MSK);
+}
+
 int setTimingInfoDecoder(enum timingInfoDecoder val) {
     switch (val) {
     case SWISSFEL:
@@ -2879,11 +2930,17 @@ int getElectronCollectionMode() {
 void setElectronCollectionMode(int enable) {
     LOG(logINFO,
         ("Setting Collection Mode to %s\n", enable == 0 ? "Hole" : "Electron"));
+
+    uint32_t val = bus_r(DAQ_REG);
+    uint32_t mask =
+        DAQ_ELCTRN_CLLCTN_MDE_MSK | DAQ_CDS_BYPASS_MSK | DAQ_CDS_RESET_MSK;
     if (enable) {
-        bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_ELCTRN_CLLCTN_MDE_MSK);
+        val |= mask;
+        LOG(logINFO, ("\tCDS reset and bypassed\n"));
     } else {
-        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_ELCTRN_CLLCTN_MDE_MSK);
+        val &= ~mask;
     }
+    bus_w(DAQ_REG, val);
     configureChip();
 }
 
@@ -2987,8 +3044,8 @@ void *start_timer(void *arg) {
     const int maxRows = MAX_ROWS_PER_READOUT;
     int readNRows = getReadNRows();
     if (readNRows == -1) {
-        LOG(logERROR,
-            ("number of rows is -1. Assuming no partial readout (#rows).\n"));
+        LOG(logERROR, ("number of rows is -1. Assuming no partial readout "
+                       "(#rows).\n"));
         readNRows = MAX_ROWS_PER_READOUT;
     }
     const int packetsPerFrame =
@@ -3217,7 +3274,8 @@ int softwareTrigger(int block) {
     LOG(logINFO, ("Sending Software Trigger\n"));
     bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_SOFTWARE_TRIGGER_MSK);
     bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_SOFTWARE_TRIGGER_MSK);
-    // wait to make sure its out of this state and even 'wait for start frame'
+    // wait to make sure its out of this state and even 'wait for start
+    // frame'
     usleep(100);
 
 #ifndef VIRTUAL

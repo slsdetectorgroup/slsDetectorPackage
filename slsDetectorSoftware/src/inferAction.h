@@ -108,6 +108,7 @@ class InferAction {
     int gates();
     int getbit();
     int hardwareversion();
+    int hdr();
     int highvoltage();
     int hostname();
     int im_a();
@@ -442,6 +443,7 @@ class InferAction {
         {"gates", &InferAction::gates},
         {"getbit", &InferAction::getbit},
         {"hardwareversion", &InferAction::hardwareversion},
+        {"hdr", &InferAction::hdr},
         {"highvoltage", &InferAction::highvoltage},
         {"hostname", &InferAction::hostname},
         {"im_a", &InferAction::im_a},

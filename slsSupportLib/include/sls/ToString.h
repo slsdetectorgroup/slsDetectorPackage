@@ -46,6 +46,7 @@ std::string ToString(const defs::gainMode s);
 std::string ToString(const defs::polarity s);
 std::string ToString(const defs::timingInfoDecoder s);
 std::string ToString(const defs::collectionMode s);
+std::string ToString(const defs::operationMode s);
 
 std::string ToString(bool value);
 
@@ -59,6 +60,9 @@ std::ostream &operator<<(std::ostream &os,
 std::string ToString(const slsDetectorDefs::scanParameters &r);
 std::ostream &operator<<(std::ostream &os,
                          const slsDetectorDefs::scanParameters &r);
+std::string ToString(const slsDetectorDefs::hdrParameters &r);
+std::ostream &operator<<(std::ostream &os,
+                         const slsDetectorDefs::hdrParameters &r);
 std::string ToString(const slsDetectorDefs::currentSrcParameters &r);
 std::ostream &operator<<(std::ostream &os,
                          const slsDetectorDefs::currentSrcParameters &r);
@@ -324,6 +328,7 @@ template <> defs::gainMode StringTo(const std::string &s);
 template <> defs::polarity StringTo(const std::string &s);
 template <> defs::timingInfoDecoder StringTo(const std::string &s);
 template <> defs::collectionMode StringTo(const std::string &s);
+template <> defs::operationMode StringTo(const std::string &s);
 
 template <> uint8_t StringTo(const std::string &s);
 template <> uint16_t StringTo(const std::string &s);

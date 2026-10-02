@@ -1520,6 +1520,12 @@ int InferAction::hardwareversion() {
     }
 }
 
+int InferAction::hdr() {
+
+    throw RuntimeError("sls_detector is disabled for command: hdr. Use "
+                       "sls_detector_get or sls_detector_put");
+}
+
 int InferAction::highvoltage() {
 
     if (args.size() == 0) {

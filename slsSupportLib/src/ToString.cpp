@@ -123,6 +123,24 @@ std::ostream &operator<<(std::ostream &os,
     return os << ToString(r);
 }
 
+std::string ToString(const slsDetectorDefs::hdrParameters &r) {
+    std::ostringstream oss;
+    oss << '[';
+    if (r.enable) {
+        oss << "enabled" << " " << ToString(r.opMode) << std::endl;
+    } else {
+        oss << "disabled";
+    }
+    oss << ']';
+    return oss.str();
+}
+
+std::ostream &operator<<(std::ostream &os,
+                         const slsDetectorDefs::hdrParameters &r) {
+    return os << ToString(r);
+}
+
+
 std::string ToString(const slsDetectorDefs::currentSrcParameters &r) {
     std::ostringstream oss;
     if (r.fix < -1 || r.fix > 1 || r.normal < -1 || r.normal > 1) {
@@ -694,6 +712,17 @@ std::string ToString(const defs::collectionMode s) {
     }
 }
 
+std::string ToString(const defs::operationMode s) {
+    switch (s) {
+    case defs::SYNCHROTRON:
+        return std::string("synchrotron");
+    case defs::FEL:
+        return std::string("fel");
+    default:
+        return std::string("Unknown");
+    }
+}
+
 const std::string &ToString(const std::string &s) { return s; }
 
 template <> defs::detectorType StringTo(const std::string &s) {
@@ -1125,6 +1154,14 @@ template <> defs::collectionMode StringTo(const std::string &s) {
     if (s == "electron")
         return defs::ELECTRON;
     throw RuntimeError("Unknown collection mode " + s);
+}
+
+template <> defs::operationMode StringTo(const std::string &s) {
+    if (s == "synchrotron")
+        return defs::SYNCHROTRON;
+    if (s == "fel")
+        return defs::FEL;
+    throw RuntimeError("Unknown operation mode " + s);
 }
 
 template <> uint8_t StringTo(const std::string &s) {

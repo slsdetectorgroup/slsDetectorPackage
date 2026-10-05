@@ -527,7 +527,10 @@ enum streamingInterface {
     enum polarity { POSITIVE, NEGATIVE };
     enum timingInfoDecoder { SWISSFEL, SHINE };
     enum collectionMode { HOLE, ELECTRON };
-    enum operationMode {SYNCHROTRON, FEL}
+    enum operationMode {
+        SYNCHROTRON,
+        FEL
+    }
 
 #ifdef __cplusplus
 

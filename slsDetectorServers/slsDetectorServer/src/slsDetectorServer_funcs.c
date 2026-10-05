@@ -515,6 +515,8 @@ void function_table() {
     flist[F_SET_COLLECTION_MODE] = &set_collection_mode;
     flist[F_GET_PATTERN_WAIT_INTERVAL] = &get_pattern_wait_interval;
     flist[F_SET_PATTERN_WAIT_INTERVAL] = &set_pattern_wait_interval;
+    flist[F_SET_HDR] = &set_hdr;
+    flist[F_GET_HDR] = &get_hdr;
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
         LOG(logERROR, ("The last detector function enum has reached its "
@@ -11070,4 +11072,50 @@ int set_pattern_wait_interval(int file_des) {
 
 #endif
     return Server_SendResult(file_des, INT64, NULL, 0);
+}
+
+int set_hdr(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int args[2] = {-1, -1};
+
+#ifndef JUNGFRAUD
+    functionNotImplemented();
+#else
+    if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+        return printSocketReadError();
+    if (Server_VerifyLock() == OK) {
+        int enable = args[0];
+        enum operationMode mode = args[1];
+        LOG(logDEBUG1, ("Setting HDR: %u %u\n", enable, mode));
+
+        if (enable != 0 && enable != 1) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not set HDR. Invalid enable argument %d. Options: "
+                    "[0, 1]\n",
+                    enable);
+            LOG(logERROR, (mess));
+        } else if (mode != SYNCHROTRON && mode != FEL) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not set HDR. Invalid mode argument %d. Options: "
+                    "[SYNCHROTRON, FEL]\n",
+                    mode);
+            LOG(logERROR, (mess));
+        } else if (mode == FEL && getChipIndex() != v1_2_HDR) {
+            ret = FAIL;
+            sprintf(mess, "Could not set HDR. FEL mode is only supported for "
+                          "chip index v1.2 HDR\n");
+            LOG(logERROR, (mess));
+        } else if (check_detector_idle("set HDR") == OK) {
+            ret = setHDR(enable, mode);
+            if (ret == FAIL) {
+                sprintf(mess, "Could not set HDR to %d %d\n", args[0], args[1]);
+                LOG(logERROR, (mess));
+            }
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
 }

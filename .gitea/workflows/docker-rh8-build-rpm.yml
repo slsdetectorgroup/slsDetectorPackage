@@ -1,0 +1,98 @@
+name: Build RPMs on RHEL8 docker image
+
+on:
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: "Upload the RPMs to the Gitea package registry"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: "ubuntu-latest"
+    container:
+      image: gitea.psi.ch/detectors/rhel8-detectors-dev
+    steps:
+      - name: Clone repository
+        run: |
+          git lfs install --skip-smudge
+          echo Cloning ${{ github.ref_name }}
+          git clone https://${{secrets.GITHUB_TOKEN}}@gitea.psi.ch/${{ github.repository }}.git --branch=${{ github.ref_name }} .
+
+      - name: Install build dependencies
+        run: |
+          dnf -y install rpm-build qt5-qtbase-devel qt5-qtsvg-devel \
+            libpng-devel zlib-devel expat-devel libtiff-devel
+
+      - name: Build with versioned binaries
+        run: |
+          cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=/usr \
+            -DSLS_USE_GUI=ON \
+            -DSLS_USE_MOENCH=ON \
+            -DSLS_INSTALL_VERSIONED_BINARIES=ON
+          cmake --build build -j 2
+
+      - name: Build RPMs
+        run: |
+          cpack --config build/CPackConfig.cmake -G RPM \
+            -D 'CPACK_COMPONENTS_ALL=cli;receiver;zmq;gui' -B build/rpms
+
+      - name: Inspect RPMs
+        run: |
+          for rpm in build/rpms/*.rpm; do
+            echo "::group::$rpm"
+            rpm -qpi "$rpm"
+            rpm -qpl "$rpm"
+            rpm -qpR "$rpm"
+            echo "::endgroup::"
+          done
+
+      - name: Install RPMs and check versioned binaries
+        run: |
+          VERSION=$(cat VERSION)
+          dnf -y install build/rpms/*.rpm
+          for component in cli receiver zmq gui; do
+            rpm -q slsdetectorpackage-${VERSION}-${component}
+          done
+          for exe in sls_detector_get sls_detector_put slsReceiver \
+            slsMultiReceiver slsFrameSynchronizer moench03ZmqProcess slsDetectorGui; do
+            test -x /usr/bin/${exe}-${VERSION}
+            test ! -e /usr/bin/${exe}
+          done
+          sls_detector_get-${VERSION} --version
+          slsReceiver-${VERSION} --version
+
+      - name: Upload RPMs to Gitea
+        if: ${{ inputs.deploy }}
+        env:
+          SERVICE: ${{ secrets.SERVICE }}
+        run: |
+          url=https://gitea.psi.ch/api/packages/${{ github.repository_owner }}/rpm/el8
+          upload() {
+            curl --silent --show-error --output /tmp/upload-response \
+              --write-out "%{http_code}" \
+              --user "detectors-gitea:${SERVICE}" \
+              --upload-file "$1" "$url/upload"
+          }
+          for rpm in build/rpms/*.rpm; do
+            echo "Uploading $rpm"
+            code=$(upload "$rpm")
+            if [ "$code" = 409 ]; then
+              echo "Already in the registry, replacing"
+              curl --silent --show-error --fail -X DELETE \
+                --user "detectors-gitea:${SERVICE}" \
+                "$url/package/$(rpm -qp --queryformat '%{NAME}/%{VERSION}-%{RELEASE}/%{ARCH}' "$rpm")"
+              code=$(upload "$rpm")
+            fi
+            if [ "$code" != 201 ]; then
+              echo "Upload failed with HTTP $code"
+              cat /tmp/upload-response
+              exit 1
+            fi
+          done

@@ -16,6 +16,7 @@
 #include "sls/sls_detector_defs.h"
 
 #include <atomic>
+#include <mutex>
 
 namespace sls {
 
@@ -52,6 +53,9 @@ class Fifo : private virtual slsDetectorDefs {
     int fifoDepth;
     std::atomic<int> status_fifoBound;
     std::atomic<int> status_fifoFree;
+    /** fifoFree has several producers, CircularFifo allows only one.
+     * Aligned to avoid false sharing with the members above */
+    alignas(128) std::mutex fifoFreeMutex;
 };
 
 } // namespace sls

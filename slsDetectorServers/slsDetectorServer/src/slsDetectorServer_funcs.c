@@ -2277,7 +2277,7 @@ int set_num_additional_storage_cells(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        if (!hasStorageCellsFeature()) {
+        if (!hasStorageCellsFeature() || getChipIndex() > v1_1) {
             ret = FAIL;
             sprintf(mess, "Cannot set addl. number of storage cells for this "
                           "chip version\n");

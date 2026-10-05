@@ -138,7 +138,8 @@ std::string ToString(const slsDetectorDefs::hdrParameters &r) {
     std::ostringstream oss;
     oss << '[';
     if (r.enable) {
-        oss << "enabled" << " " << ToString(r.opMode) << std::endl;
+        oss << "enabled"
+            << " " << ToString(r.opMode) << std::endl;
     } else {
         oss << "disabled";
     }
@@ -150,7 +151,6 @@ std::ostream &operator<<(std::ostream &os,
                          const slsDetectorDefs::hdrParameters &r) {
     return os << ToString(r);
 }
-
 
 std::string ToString(const slsDetectorDefs::currentSrcParameters &r) {
     std::ostringstream oss;

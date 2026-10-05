@@ -2146,7 +2146,9 @@ defs::FrequencyUnit Caller::parseFrequencyUnit(const std::string &unit) {
 std::string Caller::hdr(int action) {
     std::ostringstream os;
     if (action == defs::HELP_ACTION) {
-        os << "synchrotron|fel|0]\n\t[Jungfrau] Enables the high dynamic range in detector. 0 disables HDR. Synchrontron is the default. FEL can only be used with chip version '1.2 HDR'."
+        os << "synchrotron|fel|0]\n\t[Jungfrau] Enables the high dynamic range "
+              "in detector. 0 disables HDR. Synchrontron is the default. FEL "
+              "can only be used with chip version '1.2 HDR'."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (args.size() != 0) {
@@ -2161,12 +2163,14 @@ std::string Caller::hdr(int action) {
         if (sls::is_int(args[0])) {
             auto val = StringTo<int>(args[0]);
             if (val == 0) {
-                det->setHDR(defs::HDR::DISABLED, std::vector<int>{det_id});
+                det->setHDR(defs::hdrParameters(), std::vector<int>{det_id});
             } else {
-                throw RuntimeError("Did you mean to disable HDR? Then Please use '0' to do so. Unknown argument: " + args[0]);
+                throw RuntimeError("Did you mean to disable HDR? Then Please "
+                                   "use '0' to do so. Unknown argument: " +
+                                   args[0]);
             }
         }
-        auto val = StringTo<defs::HDR>(args[0]);
+        auto val = StringTo<defs::hdrParameters>(args[0]);
         det->setHDR(val, std::vector<int>{det_id});
         os << ToString(val) << '\n';
     } else {

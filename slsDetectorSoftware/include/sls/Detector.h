@@ -1399,6 +1399,12 @@ class Detector {
     /** [Jungfrau] */
     void setCollectionMode(defs::collectionMode value, Positions pos = {});
 
+    /** [Jungfrau] */
+    Result<defs::hdrParameters> getHDR(Positions pos = {}) const;
+
+    /** [Jungfrau] */
+    void setHDR(const defs::hdrParameters par, Positions pos = {});
+
     ///@}
 
     /** @name Gotthard2 Specific */

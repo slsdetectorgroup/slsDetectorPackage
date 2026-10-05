@@ -1904,6 +1904,14 @@ void Detector::setCollectionMode(defs::collectionMode value, Positions pos) {
     pimpl->Parallel(&Module::setCollectionMode, pos, value);
 }
 
+Result<defs::hdrParameters> Detector::getHDR(Positions pos) const {
+    return pimpl->Parallel(&Module::getHDR, pos);
+}
+
+void Detector::setHDR(const defs::hdrParameters par, Positions pos) {
+    pimpl->Parallel(&Module::setHDR, pos, par);
+}
+
 // Gotthard2 Specific
 
 Result<int64_t> Detector::getNumberOfBursts(Positions pos) const {

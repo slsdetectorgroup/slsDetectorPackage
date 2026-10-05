@@ -338,3 +338,5 @@ int get_collection_mode(int);
 int set_collection_mode(int);
 int get_pattern_wait_interval(int);
 int set_pattern_wait_interval(int);
+int set_hdr(int);
+int get_hdr(int);

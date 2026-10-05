@@ -17,7 +17,7 @@ dependencies = [
 
 [tool.cibuildwheel]
 before-all = "uname -a"
-build = "cp{311,312,313}-manylinux_x86_64"
+build = "cp{311,312,313,314}-manylinux_x86_64"
 
 [tool.scikit-build.build]
 verbose = true
@@ -31,6 +31,7 @@ components = [ "python",]
 [tool.scikit-build.cmake.define]
 SLS_USE_RECEIVER = "OFF"
 SLS_USE_RECEIVER_BINARIES = "OFF"
+SLS_USE_SERVER = "OFF"
 SLS_USE_TEXTCLIENT = "OFF"
 SLS_BUILD_SHARED_LIBRARIES = "OFF"
 SLS_USE_PYTHON = "ON"

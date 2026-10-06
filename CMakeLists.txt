@@ -219,6 +219,7 @@ option(SLS_BUILD_SHARED_LIBRARIES "Build shared libaries" OFF)
 option(SLS_USE_TEXTCLIENT "Text Client" ON)
 option(SLS_USE_DETECTOR "Detector libs" ON)
 option(SLS_USE_RECEIVER "Receiver" ON)
+option(SLS_USE_SERVER "Server" ON)
 option(SLS_USE_RECEIVER_BINARIES "Receiver binaries" ON)
 option(SLS_USE_GUI "GUI" OFF)
 option(SLS_USE_SIMULATOR "Simulator" OFF)
@@ -257,6 +258,7 @@ if(SLS_BUILD_ONLY_MATTERHORN)
     set(SLS_USE_DETECTOR ON CACHE BOOL "Disabled for MATTERHORN_ONLY" FORCE)
     set(SLS_USE_RECEIVER OFF CACHE BOOL "Disabled for MATTERHORN_ONLY" FORCE)
     set(SLS_USE_RECEIVER_BINARIES OFF CACHE BOOL "Disabled for MATTERHORN_ONLY" FORCE)
+    set(SLS_USE_SERVER ON CACHE BOOL "Enable building cpp server" FORCE)
     set(SLS_USE_MATTERHORN ON CACHE BOOL "Enable Matterhorn" FORCE)
 endif()
 
@@ -436,6 +438,11 @@ if (SLS_USE_DETECTOR OR SLS_USE_TEXTCLIENT)
     add_subdirectory(slsDetectorSoftware)
 endif()
 
+# TODO refactor with simulators 
+if (SLS_USE_SERVER) 
+    add_subdirectory(slsDetectorServers/slsDetectorServer_cpp)
+endif()
+
 if (SLS_USE_RECEIVER)
     add_subdirectory(slsReceiverSoftware) 
 endif (SLS_USE_RECEIVER)
@@ -450,8 +457,7 @@ if (SLS_USE_SIMULATOR)
 endif (SLS_USE_SIMULATOR)
 
 # cant add_subdirectory twice 
-if (SLS_USE_MATTERHORN AND NOT SLS_USE_SIMULATOR) 
-    add_subdirectory(slsDetectorServers/slsDetectorServer_cpp)
+if (SLS_USE_MATTERHORN AND !SLS_USE_SIMULATOR) 
     add_subdirectory(slsDetectorServers/matterhornServer)
 endif() 
 

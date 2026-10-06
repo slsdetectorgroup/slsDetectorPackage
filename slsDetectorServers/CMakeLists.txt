@@ -8,8 +8,6 @@ install(TARGETS slsProjectCSettings
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
-
-add_subdirectory(slsDetectorServer_cpp)
 add_subdirectory(ctbDetectorServer)
 add_subdirectory(xilinx_ctbDetectorServer)
 add_subdirectory(eigerDetectorServer)

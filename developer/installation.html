@@ -54,6 +54,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#build-from-source-using-cmake">3.2. Build from Source</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#build-using-cmake">3.2.1. Build using CMake</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#build-using-in-built-cmk-sh-script">3.2.2. Build using in-built cmk.sh script</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#build-rpm-packages">3.2.3. Build RPM packages</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#build-on-old-distributions-using-conda">3.3. Build on old distributions using conda</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#build-slsdetectorgui-qt5">3.4. Build slsDetectorGui (Qt5)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#build-this-documentation">3.5. Build this documentation</a></li>
@@ -180,12 +181,13 @@
 <li><p><a class="reference internal" href="#build-from-source-using-cmake" id="id10">3.2. Build from Source</a></p></li>
 <li><p><a class="reference internal" href="#build-using-cmake" id="id11">3.2.1. Build using CMake</a></p></li>
 <li><p><a class="reference internal" href="#build-using-in-built-cmk-sh-script" id="id12">3.2.2. Build using in-built cmk.sh script</a></p></li>
-<li><p><a class="reference internal" href="#build-on-old-distributions-using-conda" id="id13">3.3. Build on old distributions using conda</a></p></li>
-<li><p><a class="reference internal" href="#build-slsdetectorgui-qt5" id="id14">3.4. Build slsDetectorGui (Qt5)</a></p></li>
-<li><p><a class="reference internal" href="#build-this-documentation" id="id15">3.5. Build this documentation</a></p></li>
+<li><p><a class="reference internal" href="#build-rpm-packages" id="id13">3.2.3. Build RPM packages</a></p></li>
+<li><p><a class="reference internal" href="#build-on-old-distributions-using-conda" id="id14">3.3. Build on old distributions using conda</a></p></li>
+<li><p><a class="reference internal" href="#build-slsdetectorgui-qt5" id="id15">3.4. Build slsDetectorGui (Qt5)</a></p></li>
+<li><p><a class="reference internal" href="#build-this-documentation" id="id16">3.5. Build this documentation</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#pybind-and-zeromq" id="id16">4. Pybind and Zeromq</a></p></li>
+<li><p><a class="reference internal" href="#pybind-and-zeromq" id="id17">4. Pybind and Zeromq</a></p></li>
 </ul>
 </nav>
 <section id="overview">
@@ -403,6 +405,43 @@ Usage:<span class="w"> </span><span class="nv">$0</span><span class="w"> </span>
 <p class="admonition-title">Note</p>
 <p>For v7.x.x of slsDetectorPackage and older, refer <a class="reference internal" href="#zeromq-for-different-slsdetectorpackage-versions"><span class="std std-ref">zeromq notes for cmk script option to hint library location.</span></a></p>
 </div>
+</section>
+<section id="build-rpm-packages">
+<h3><a class="toc-backref" href="#contents" role="doc-backlink">3.2.3. Build RPM packages</a><a class="headerlink" href="#build-rpm-packages" title="Link to this heading"></a></h3>
+<p>CPack builds separate RPMs for the command line tools (<code class="docutils literal notranslate"><span class="pre">cli</span></code>), receiver
+executables (<code class="docutils literal notranslate"><span class="pre">receiver</span></code>), Moench processing tools (<code class="docutils literal notranslate"><span class="pre">zmq</span></code>), and GUI (<code class="docutils literal notranslate"><span class="pre">gui</span></code>).
+Install <code class="docutils literal notranslate"><span class="pre">rpm-build</span></code> and the dependencies for the selected features, and build
+on the target distribution or a matching container.</p>
+<p>For example, to package the command line tools, receiver and GUI:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cmake<span class="w"> </span>-S<span class="w"> </span>.<span class="w"> </span>-B<span class="w"> </span>build<span class="w"> </span>-DCMAKE_BUILD_TYPE<span class="o">=</span>Release<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-DCMAKE_INSTALL_PREFIX<span class="o">=</span>/usr<span class="w"> </span>-DSLS_USE_GUI<span class="o">=</span>ON<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-DSLS_INSTALL_VERSIONED_BINARIES<span class="o">=</span>ON
+cmake<span class="w"> </span>--build<span class="w"> </span>build<span class="w"> </span>-j4
+cpack<span class="w"> </span>--config<span class="w"> </span>build/CPackConfig.cmake<span class="w"> </span>-G<span class="w"> </span>RPM<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-D<span class="w"> </span><span class="s1">'CPACK_COMPONENTS_ALL=cli;receiver;gui'</span><span class="w"> </span>-B<span class="w"> </span>build
+</pre></div>
+</div>
+<p>Select only components enabled in the build. Add <code class="docutils literal notranslate"><span class="pre">-DSLS_USE_MOENCH=ON</span></code> and
+the <code class="docutils literal notranslate"><span class="pre">zmq</span></code> component to package the Moench tools.</p>
+<p><code class="docutils literal notranslate"><span class="pre">SLS_INSTALL_VERSIONED_BINARIES=ON</span></code> includes the project version in the RPM
+package names, for example <code class="docutils literal notranslate"><span class="pre">slsdetectorpackage-10.1.0-cli</span></code> and
+<code class="docutils literal notranslate"><span class="pre">slsdetectorpackage-10.1.0-gui</span></code>. Installed executables also receive a version
+suffix, such as <code class="docutils literal notranslate"><span class="pre">sls_detector_get-10.1.0</span></code> and <code class="docutils literal notranslate"><span class="pre">slsDetectorGui-10.1.0</span></code>. This
+allows RPMs for different project versions to be installed side by side.
+RPM revisions of the same project version retain the same package names and
+can be upgraded normally.</p>
+<p>RPM filenames include the version once, for example
+<code class="docutils literal notranslate"><span class="pre">slsdetectorpackage-cli-10.1.0-1.fc44.x86_64.rpm</span></code>. The package’s internal name
+remains <code class="docutils literal notranslate"><span class="pre">slsdetectorpackage-10.1.0-cli</span></code> and its RPM version remains <code class="docutils literal notranslate"><span class="pre">10.1.0</span></code>.</p>
+<p>The option also applies to Jungfrau processing tools and virtual detector
+servers installed with <code class="docutils literal notranslate"><span class="pre">cmake</span> <span class="pre">--install</span></code>. These are outside the current RPM
+component selection. Executables in the build directory keep their original
+names. With the option set to <code class="docutils literal notranslate"><span class="pre">OFF</span></code> (the default), installed executables and
+RPM package names omit the project version.</p>
+<p>The RPM components contain executables; Python bindings, libraries and headers
+are not included. A full <code class="docutils literal notranslate"><span class="pre">cmake</span> <span class="pre">--install</span></code> still installs libraries and
+headers at their usual paths, so use separate prefixes for full installations
+of different versions.</p>
 </section>
 <section id="build-on-old-distributions-using-conda">
 <h3><a class="toc-backref" href="#contents" role="doc-backlink">3.3. Build on old distributions using conda</a><a class="headerlink" href="#build-on-old-distributions-using-conda" title="Link to this heading"></a></h3>

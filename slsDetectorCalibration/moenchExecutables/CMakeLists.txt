@@ -92,19 +92,6 @@ foreach(exe ${MOENCH_EXECUTABLES})
         set_property(TARGET ${exe} PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
     endif()
 
-    # Mainly for RPMs to enable side by side installations of different versions
-    if(SLS_INSTALL_VERSIONED_BINARIES)
-        install(PROGRAMS "$<TARGET_FILE:${exe}>"
-            DESTINATION bin
-            RENAME "$<TARGET_FILE_BASE_NAME:${exe}>-${PROJECT_VERSION}"
-            COMPONENT zmq
-        )
-    else()
-            install(TARGETS ${exe}
-            DESTINATION bin
-            COMPONENT zmq
-        )
-    endif()
+    sls_install_executable(${exe} DESTINATION bin COMPONENT zmq)
     
 endforeach(exe ${MOENCH_EXECUTABLES})
-

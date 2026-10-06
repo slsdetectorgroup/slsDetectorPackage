@@ -109,21 +109,9 @@ if(SLS_USE_TEXTCLIENT)
             set_property(TARGET ${val1} PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
         endif()
 
-        # Mainly for RPMs to enable side by side installations of different versions
-        if(SLS_INSTALL_VERSIONED_BINARIES)
-            install(PROGRAMS "$<TARGET_FILE:${val1}>"
-                DESTINATION bin
-                RENAME "$<TARGET_FILE_BASE_NAME:${val1}>-${PROJECT_VERSION}"
-                COMPONENT cli
-            )
-        else()
-             install(TARGETS ${val1}
-                DESTINATION bin
-                COMPONENT cli
-            )
-        endif()
+        sls_install_executable(${val1} DESTINATION bin COMPONENT cli)
     endforeach()
-    
+
 
 
 endif(SLS_USE_TEXTCLIENT)

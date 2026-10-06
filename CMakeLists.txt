@@ -436,11 +436,6 @@ if (SLS_USE_DETECTOR OR SLS_USE_TEXTCLIENT)
     add_subdirectory(slsDetectorSoftware)
 endif()
 
-# TODO refactor with simulators 
-if (SLS_USE_SERVER) 
-    add_subdirectory(slsDetectorServers/slsDetectorServer_cpp)
-endif()
-
 if (SLS_USE_RECEIVER)
     add_subdirectory(slsReceiverSoftware) 
 endif (SLS_USE_RECEIVER)
@@ -450,15 +445,10 @@ if (SLS_USE_GUI)
     add_subdirectory(slsDetectorGui)
 endif (SLS_USE_GUI)
 
-if (SLS_USE_SIMULATOR)
+if (SLS_USE_SIMULATOR OR SLS_USE_MATTERHORN)
     add_subdirectory(slsDetectorServers)
-endif (SLS_USE_SIMULATOR)
+endif (SLS_USE_SIMULATOR OR SLS_USE_MATTERHORN)
 
-# cant add_subdirectory twice 
-if (SLS_USE_MATTERHORN AND NOT SLS_USE_SIMULATOR) 
-    add_subdirectory(slsDetectorServers/slsDetectorServer_cpp)
-    add_subdirectory(slsDetectorServers/matterhornServer)
-endif() 
 
 if (SLS_USE_PYTHON)
     find_package (Python 3.8 COMPONENTS Interpreter Development.Module REQUIRED)

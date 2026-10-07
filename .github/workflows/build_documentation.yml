@@ -83,11 +83,15 @@ jobs:
                 python docs/main_index/render_main_index.py \
                 --version "${{ steps.version.outputs.version }}" \
                 --date "$(date +'%d.%m.%Y')" 
+
+            #if: (github.event_name == 'push' && github.ref == 'refs/heads/main')
+            - name: Commit and Push version index changes
+              run: | 
                 git config user.name "github-actions"
                 git config user.email "github-actions@github.com"
 
                 git add docs/main_index/versions.yaml docs/main_index/index.html 
-                git commit -m "Update version index for" [[skip ci]]
+                git commit -m "Update version index for [skip ci]"
                 git push origin HEAD:${{ github.ref_name }} 
 
                 # If push happened on main, also sync same file changes to developer

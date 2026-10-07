@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Default Values &mdash; slsDetectorPackage 0.0.0  documentation</title>
+  <title>Default Values &mdash; slsDetectorPackage  documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/css/extra.css?v=2be88464" />
@@ -33,7 +33,7 @@
           
           
           <a href="index.html" class="icon icon-home">
-            slsDetectorPackage 0.0.0
+            slsDetectorPackage
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -68,11 +68,9 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="pygettingstarted.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pydetector.html">Detector</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pyctb.html">Ctb</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pyenums.html">Enums</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pypower.html">Power Supply</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pyexamples.html">Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pypatterngenerator.html">PatternGenerator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyPatternGenerator.html">PatternGenerator</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pattern.html">Pattern</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Command line</span></p>
@@ -85,7 +83,6 @@
 <li class="toctree-l1"><a class="reference internal" href="type_traits.html">TypeTraits</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ToString.html">ToString</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Versioning.html">Package Versioning</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Testing.html">Testing</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Firmware</span></p>
 <ul>
@@ -156,7 +153,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">slsDetectorPackage 0.0.0</a>
+          <a href="index.html">slsDetectorPackage</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -334,82 +331,79 @@
 <tr class="row-odd"><td><p>DEFAULT_TRIMMING_RUN_CLKDIV</p></td>
 <td><p>40</p></td>
 </tr>
-<tr class="row-even"><td><p>NS_TO_CLK_CYCLE</p></td>
-<td><p>1E-3</p></td>
-</tr>
-<tr class="row-odd"><td><p>FULL_SPEED_CLKDIV</p></td>
+<tr class="row-even"><td><p>FULL_SPEED_CLKDIV</p></td>
 <td><p>10</p></td>
 </tr>
-<tr class="row-even"><td><p>HALF_SPEED_CLKDIV</p></td>
+<tr class="row-odd"><td><p>HALF_SPEED_CLKDIV</p></td>
 <td><p>20</p></td>
 </tr>
-<tr class="row-odd"><td><p>QUARTER_SPEED_CLKDIV</p></td>
+<tr class="row-even"><td><p>QUARTER_SPEED_CLKDIV</p></td>
 <td><p>40</p></td>
 </tr>
-<tr class="row-even"><td><p>DEFAULT_ASIC_LATCHING_NUM_PULSES</p></td>
+<tr class="row-odd"><td><p>DEFAULT_ASIC_LATCHING_NUM_PULSES</p></td>
 <td><p>10</p></td>
 </tr>
-<tr class="row-odd"><td><p>DEFAULT_MSTR_OTPT_P1_NUM_PULSES</p></td>
+<tr class="row-even"><td><p>DEFAULT_MSTR_OTPT_P1_NUM_PULSES</p></td>
 <td><p>20</p></td>
 </tr>
-<tr class="row-even"><td><p>DEFAULT_ADIF_PIPELINE_VAL</p></td>
+<tr class="row-odd"><td><p>DEFAULT_ADIF_PIPELINE_VAL</p></td>
 <td><p>8</p></td>
 </tr>
-<tr class="row-odd"><td><p>DEFAULT_ADIF_ADD_OFST_VAL</p></td>
+<tr class="row-even"><td><p>DEFAULT_ADIF_ADD_OFST_VAL</p></td>
 <td><p>0</p></td>
 </tr>
-<tr class="row-even"><td><p>MAX_TIMESLOT_VAL</p></td>
+<tr class="row-odd"><td><p>MAX_TIMESLOT_VAL</p></td>
 <td><p>0xFFFFFF</p></td>
 </tr>
-<tr class="row-odd"><td><p>IP_HEADER_SIZE</p></td>
+<tr class="row-even"><td><p>IP_HEADER_SIZE</p></td>
 <td><p>20</p></td>
 </tr>
-<tr class="row-even"><td><p>FIXED_PLL_FREQUENCY</p></td>
+<tr class="row-odd"><td><p>FIXED_PLL_FREQUENCY</p></td>
 <td><p>020000000</p></td>
 </tr>
-<tr class="row-odd"><td><p>SYSTEM_PLL_VCO_FREQ_HZ</p></td>
+<tr class="row-even"><td><p>SYSTEM_PLL_VCO_FREQ_HZ</p></td>
 <td><p>1000000000</p></td>
 </tr>
-<tr class="row-even"><td><p>MAX_NUM_DESERIALIZERS</p></td>
+<tr class="row-odd"><td><p>MAX_NUM_DESERIALIZERS</p></td>
 <td><p>40</p></td>
 </tr>
-<tr class="row-odd"><td><p>BIT16_MASK</p></td>
+<tr class="row-even"><td><p>BIT16_MASK</p></td>
 <td><p>0xFFFF</p></td>
 </tr>
-<tr class="row-even"><td><p>MAX_TRIMBITS_VALUE</p></td>
+<tr class="row-odd"><td><p>MAX_TRIMBITS_VALUE</p></td>
 <td><p>63</p></td>
 </tr>
-<tr class="row-odd"><td><p>NUMSETTINGS</p></td>
+<tr class="row-even"><td><p>NUMSETTINGS</p></td>
 <td><p>3</p></td>
 </tr>
-<tr class="row-even"><td><p>NSPECIALDACS</p></td>
+<tr class="row-odd"><td><p>NSPECIALDACS</p></td>
 <td><p>2</p></td>
 </tr>
-<tr class="row-odd"><td><p>SPECIALDACINDEX</p></td>
+<tr class="row-even"><td><p>SPECIALDACINDEX</p></td>
 <td><p>{M_VRPREAMP, M_VRSHAPER};</p></td>
 </tr>
-<tr class="row-even"><td><p>SPECIAL_DEFAULT_STANDARD_DAC_VALS</p></td>
+<tr class="row-odd"><td><p>SPECIAL_DEFAULT_STANDARD_DAC_VALS</p></td>
 <td><p>{ 1100, 1280 }</p></td>
 </tr>
-<tr class="row-odd"><td><p>SPECIAL_DEFAULT_FAST_DAC_VALS</p></td>
+<tr class="row-even"><td><p>SPECIAL_DEFAULT_FAST_DAC_VALS</p></td>
 <td><p>{ 300, 1500 }</p></td>
 </tr>
-<tr class="row-even"><td><p>SPECIAL_DEFAULT_HIGHGAIN_DAC_VALS</p></td>
+<tr class="row-odd"><td><p>SPECIAL_DEFAULT_HIGHGAIN_DAC_VALS</p></td>
 <td><p>{ 1300, 1100 }</p></td>
 </tr>
-<tr class="row-odd"><td><p>NUM_CLOCKS_TO_SET</p></td>
+<tr class="row-even"><td><p>NUM_CLOCKS_TO_SET</p></td>
 <td><p>1</p></td>
 </tr>
-<tr class="row-even"><td><p>SYSTEM_PLL</p></td>
+<tr class="row-odd"><td><p>SYSTEM_PLL</p></td>
 <td><p>1</p></td>
 </tr>
-<tr class="row-odd"><td><p>UDP_IP_HEADER_LENGTH_BYTES</p></td>
+<tr class="row-even"><td><p>UDP_IP_HEADER_LENGTH_BYTES</p></td>
 <td><p>28</p></td>
 </tr>
-<tr class="row-even"><td><p>PACKETS_PER_FRAME_10G</p></td>
+<tr class="row-odd"><td><p>PACKETS_PER_FRAME_10G</p></td>
 <td><p>2</p></td>
 </tr>
-<tr class="row-odd"><td><p>PACKETS_PER_FRAME_1G</p></td>
+<tr class="row-even"><td><p>PACKETS_PER_FRAME_1G</p></td>
 <td><p>20</p></td>
 </tr>
 </tbody>
@@ -1175,7 +1169,7 @@
 <td><p>0x181130</p></td>
 </tr>
 <tr class="row-odd"><td><p>REQRD_FRMWR_VRSN</p></td>
-<td><p>0x260504</p></td>
+<td><p>0x230705</p></td>
 </tr>
 <tr class="row-even"><td><p>NUM_HARDWARE_VERSIONS</p></td>
 <td><p>1</p></td>
@@ -1228,6 +1222,24 @@
 <tr class="row-even"><td><p>CLK_FREQ</p></td>
 <td><p>156.25</p></td>
 </tr>
+<tr class="row-odd"><td><p>I2C_POWER_VIO_DEVICE_ID</p></td>
+<td><p>0x40</p></td>
+</tr>
+<tr class="row-even"><td><p>I2C_POWER_VA_DEVICE_ID</p></td>
+<td><p>0x41</p></td>
+</tr>
+<tr class="row-odd"><td><p>I2C_POWER_VB_DEVICE_ID</p></td>
+<td><p>0x42</p></td>
+</tr>
+<tr class="row-even"><td><p>I2C_POWER_VC_DEVICE_ID</p></td>
+<td><p>0x43</p></td>
+</tr>
+<tr class="row-odd"><td><p>I2C_POWER_VD_DEVICE_ID</p></td>
+<td><p>0x44</p></td>
+</tr>
+<tr class="row-even"><td><p>I2C_SHUNT_RESISTER_OHMS</p></td>
+<td><p>0.005</p></td>
+</tr>
 <tr class="row-odd"><td><p>DEFAULT_DATA_BYTES</p></td>
 <td><p>NCHIP * NCHAN * NUM_BITS_PER_PIXEL</p></td>
 </tr>
@@ -1256,7 +1268,7 @@
 <td><p>0</p></td>
 </tr>
 <tr class="row-even"><td><p>DEFAULT_VLIMIT</p></td>
-<td><p>0</p></td>
+<td><p>-100</p></td>
 </tr>
 <tr class="row-odd"><td><p>DEFAULT_TIMING_MODE</p></td>
 <td><p>AUTO_TIMING</p></td>
@@ -1265,118 +1277,106 @@
 <td><p>0x7e9a</p></td>
 </tr>
 <tr class="row-odd"><td><p>DEFAULT_RUN_CLK</p></td>
-<td><p>80000000</p></td>
+<td><p>200</p></td>
 </tr>
 <tr class="row-even"><td><p>DEFAULT_ADC_CLK</p></td>
-<td><p>40000000</p></td>
+<td><p>40</p></td>
 </tr>
 <tr class="row-odd"><td><p>DEFAULT_SYNC_CLK</p></td>
-<td><p>40000000</p></td>
+<td><p>40</p></td>
 </tr>
 <tr class="row-even"><td><p>DEFAULT_DBIT_CLK</p></td>
-<td><p>200000000</p></td>
+<td><p>200</p></td>
 </tr>
-<tr class="row-odd"><td><p>NS_TO_CLK_CYCLE</p></td>
-<td><p>1E-9</p></td>
-</tr>
-<tr class="row-even"><td><p>DEFAULT_TRANSCEIVER_MASK</p></td>
+<tr class="row-odd"><td><p>DEFAULT_TRANSCEIVER_MASK</p></td>
 <td><p>0x3</p></td>
 </tr>
-<tr class="row-odd"><td><p>MIN_CLK_FREQ</p></td>
-<td><p>2000000</p></td>
-</tr>
-<tr class="row-even"><td><p>MAX_CLK_FREQ</p></td>
-<td><p>300000000</p></td>
-</tr>
-<tr class="row-odd"><td><p>MAX_TRANSCEIVER_MASK</p></td>
+<tr class="row-even"><td><p>MAX_TRANSCEIVER_MASK</p></td>
 <td><p>0xF</p></td>
 </tr>
-<tr class="row-even"><td><p>MAX_TRANSCEIVER_SAMPLES</p></td>
+<tr class="row-odd"><td><p>MAX_TRANSCEIVER_SAMPLES</p></td>
 <td><p>0xFFFF</p></td>
 </tr>
-<tr class="row-odd"><td><p>UDP_HEADER_MAX_FRAME_VALUE</p></td>
+<tr class="row-even"><td><p>UDP_HEADER_MAX_FRAME_VALUE</p></td>
 <td><p>0xFFFFFFFFFFFF</p></td>
 </tr>
-<tr class="row-even"><td><p>HIGHVOLTAGE_MIN</p></td>
+<tr class="row-odd"><td><p>HIGHVOLTAGE_MIN</p></td>
 <td><p>60</p></td>
 </tr>
-<tr class="row-odd"><td><p>HIGHVOLTAGE_MAX</p></td>
+<tr class="row-even"><td><p>HIGHVOLTAGE_MAX</p></td>
 <td><p>200</p></td>
 </tr>
-<tr class="row-even"><td><p>DAC_MIN_MV</p></td>
+<tr class="row-odd"><td><p>DAC_MIN_MV</p></td>
 <td><p>0</p></td>
 </tr>
-<tr class="row-odd"><td><p>DAC_MAX_MV</p></td>
+<tr class="row-even"><td><p>DAC_MAX_MV</p></td>
 <td><p>2500</p></td>
 </tr>
-<tr class="row-even"><td><p>VCHIP_MIN_MV</p></td>
+<tr class="row-odd"><td><p>VCHIP_MIN_MV</p></td>
 <td><p>1673</p></td>
 </tr>
-<tr class="row-odd"><td><p>VCHIP_MAX_MV</p></td>
+<tr class="row-even"><td><p>VCHIP_MAX_MV</p></td>
 <td><p>2668</p></td>
 </tr>
-<tr class="row-even"><td><p>POWER_RGLTR_MIN</p></td>
+<tr class="row-odd"><td><p>POWER_RGLTR_MIN</p></td>
 <td><p>636</p></td>
 </tr>
-<tr class="row-odd"><td><p>POWER_RGLTR_MAX</p></td>
+<tr class="row-even"><td><p>POWER_RGLTR_MAX</p></td>
 <td><p>2638</p></td>
 </tr>
-<tr class="row-even"><td><p>VCHIP_POWER_INCRMNT</p></td>
+<tr class="row-odd"><td><p>VCHIP_POWER_INCRMNT</p></td>
 <td><p>200</p></td>
 </tr>
-<tr class="row-odd"><td><p>VIO_MIN_MV</p></td>
+<tr class="row-even"><td><p>VIO_MIN_MV</p></td>
 <td><p>1200</p></td>
 </tr>
-<tr class="row-even"><td><p>DIGITAL_IO_DELAY_MAXIMUM_PS</p></td>
+<tr class="row-odd"><td><p>DIGITAL_IO_DELAY_MAXIMUM_PS</p></td>
 <td><p>OUTPUT_DELAY_0_OTPT_STTNG_MSK &gt;&gt; OUTPUT_DELAY_0_OTPT_STTNG_OFST) * OUTPUT_DELAY_0_OTPT_STTNG_STEPS</p></td>
 </tr>
-<tr class="row-odd"><td><p>MAX_PHASE_SHIFTS_STEPS</p></td>
+<tr class="row-even"><td><p>MAX_PHASE_SHIFTS_STEPS</p></td>
 <td><p>8</p></td>
 </tr>
-<tr class="row-even"><td><p>WAIT_TME_US_FR_ACQDONE_REG</p></td>
+<tr class="row-odd"><td><p>WAIT_TME_US_FR_ACQDONE_REG</p></td>
 <td><p>100</p></td>
 </tr>
-<tr class="row-odd"><td><p>WAIT_TIME_US_PLL</p></td>
+<tr class="row-even"><td><p>WAIT_TIME_US_PLL</p></td>
 <td><p>10 * 1000</p></td>
 </tr>
-<tr class="row-even"><td><p>WAIT_TIME_US_STP_ACQ</p></td>
+<tr class="row-odd"><td><p>WAIT_TIME_US_STP_ACQ</p></td>
 <td><p>100</p></td>
 </tr>
-<tr class="row-odd"><td><p>WAIT_TIME_CONFIGURE_MAC</p></td>
+<tr class="row-even"><td><p>WAIT_TIME_CONFIGURE_MAC</p></td>
 <td><p>2 * 1000 * 1000</p></td>
 </tr>
-<tr class="row-even"><td><p>WAIT_TIME_PATTERN_READ</p></td>
+<tr class="row-odd"><td><p>WAIT_TIME_PATTERN_READ</p></td>
 <td><p>10</p></td>
 </tr>
-<tr class="row-odd"><td><p>WAIT_TIME_1US_FOR_LOOP_CNT</p></td>
+<tr class="row-even"><td><p>WAIT_TIME_1US_FOR_LOOP_CNT</p></td>
 <td><p>50</p></td>
 </tr>
-<tr class="row-even"><td><p>MSB_OF_64_BIT_REG_OFST</p></td>
+<tr class="row-odd"><td><p>MSB_OF_64_BIT_REG_OFST</p></td>
 <td><p>32</p></td>
 </tr>
-<tr class="row-odd"><td><p>LSB_OF_64_BIT_REG_OFST</p></td>
+<tr class="row-even"><td><p>LSB_OF_64_BIT_REG_OFST</p></td>
 <td><p>0</p></td>
 </tr>
-<tr class="row-even"><td><p>BIT32_MSK</p></td>
+<tr class="row-odd"><td><p>BIT32_MSK</p></td>
 <td><p>0xFFFFFFFF</p></td>
 </tr>
-<tr class="row-odd"><td><p>BIT16_MASK</p></td>
+<tr class="row-even"><td><p>BIT16_MASK</p></td>
 <td><p>0xFFFF</p></td>
 </tr>
-<tr class="row-even"><td><p>MAXIMUM_ADC_CLK</p></td>
-<td><p>65000000</p></td>
+<tr class="row-odd"><td><p>MAXIMUM_ADC_CLK</p></td>
+<td><p>65</p></td>
 </tr>
-<tr class="row-odd"><td><p>PLL_VCO_FREQ_HZ</p></td>
-<td><p>800000000</p></td>
+<tr class="row-even"><td><p>PLL_VCO_FREQ_MHZ</p></td>
+<td><p>800</p></td>
 </tr>
-<tr class="row-even"><td><p>IP_HEADER_SIZE</p></td>
+<tr class="row-odd"><td><p>IP_HEADER_SIZE</p></td>
 <td><p>20</p></td>
 </tr>
-<tr class="row-odd"><td><p>UDP_IP_HEADER_LENGTH_BYTES</p></td>
+<tr class="row-even"><td><p>UDP_IP_HEADER_LENGTH_BYTES</p></td>
 <td><p>28</p></td>
-</tr>
-<tr class="row-even"><td><p>PWR_NAMES</p></td>
-<td><p>VA, VB, VC, VD, VIO</p></td>
 </tr>
 </tbody>
 </table>
@@ -1673,10 +1673,10 @@
 <td><p>0x171220</p></td>
 </tr>
 <tr class="row-odd"><td><p>REQRD_FRMWRE_VRSN_BOARD2</p></td>
-<td><p>0x260814</p></td>
+<td><p>0x250209</p></td>
 </tr>
 <tr class="row-even"><td><p>REQRD_FRMWRE_VRSN</p></td>
-<td><p>0x260813</p></td>
+<td><p>0x250208</p></td>
 </tr>
 <tr class="row-odd"><td><p>NUM_HARDWARE_VERSIONS</p></td>
 <td><p>2</p></td>
@@ -1732,89 +1732,83 @@
 <tr class="row-even"><td><p>CONFIG_FILE</p></td>
 <td><p>config_jungfrau.txt</p></td>
 </tr>
-<tr class="row-odd"><td><p>DEFAULT_AUTO_COMP_DISABLE</p></td>
-<td><p>0</p></td>
-</tr>
-<tr class="row-even"><td><p>DEFAULT_COMP_DISABLE_TIME_v1_0</p></td>
-<td><p>5 * 1000</p></td>
-</tr>
-<tr class="row-odd"><td><p>DEFAULT_COMP_DISABLE_TIME</p></td>
-<td><p>2 * 1000</p></td>
-</tr>
-<tr class="row-even"><td><p>DEFAULT_NUM_FRAMES</p></td>
+<tr class="row-odd"><td><p>DEFAULT_NUM_FRAMES</p></td>
 <td><p>100 * 1000 * 1000</p></td>
 </tr>
-<tr class="row-odd"><td><p>DEFAULT_STARTING_FRAME_NUMBER</p></td>
+<tr class="row-even"><td><p>DEFAULT_STARTING_FRAME_NUMBER</p></td>
 <td><p>1</p></td>
 </tr>
-<tr class="row-even"><td><p>DEFAULT_NUM_CYCLES</p></td>
+<tr class="row-odd"><td><p>DEFAULT_NUM_CYCLES</p></td>
 <td><p>1</p></td>
 </tr>
-<tr class="row-odd"><td><p>DEFAULT_EXPTIME</p></td>
+<tr class="row-even"><td><p>DEFAULT_EXPTIME</p></td>
 <td><p>10 * 1000</p></td>
 </tr>
-<tr class="row-even"><td><p>DEFAULT_PERIOD</p></td>
+<tr class="row-odd"><td><p>DEFAULT_PERIOD</p></td>
 <td><p>2 * 1000 * 1000</p></td>
 </tr>
-<tr class="row-odd"><td><p>DEFAULT_DELAY</p></td>
+<tr class="row-even"><td><p>DEFAULT_DELAY</p></td>
 <td><p>0</p></td>
 </tr>
-<tr class="row-even"><td><p>DEFAULT_HIGH_VOLTAGE</p></td>
+<tr class="row-odd"><td><p>DEFAULT_HIGH_VOLTAGE</p></td>
 <td><p>0</p></td>
 </tr>
-<tr class="row-odd"><td><p>DEFAULT_TIMING_MODE</p></td>
+<tr class="row-even"><td><p>DEFAULT_TIMING_MODE</p></td>
 <td><p>AUTO_TIMING</p></td>
 </tr>
-<tr class="row-even"><td><p>DEFAULT_SETTINGS</p></td>
+<tr class="row-odd"><td><p>DEFAULT_SETTINGS</p></td>
 <td><p>GAIN0</p></td>
 </tr>
-<tr class="row-odd"><td><p>DEFAULT_GAINMODE</p></td>
+<tr class="row-even"><td><p>DEFAULT_GAINMODE</p></td>
 <td><p>DYNAMIC</p></td>
 </tr>
-<tr class="row-even"><td><p>DEFAULT_TX_UDP_PORT</p></td>
+<tr class="row-odd"><td><p>DEFAULT_TX_UDP_PORT</p></td>
 <td><p>0x7e9a</p></td>
 </tr>
-<tr class="row-odd"><td><p>DEFAULT_TMP_CNTRL</p></td>
+<tr class="row-even"><td><p>DEFAULT_TMP_CNTRL</p></td>
 <td><p>1</p></td>
 </tr>
-<tr class="row-even"><td><p>DEFAULT_TMP_THRSHLD</p></td>
+<tr class="row-odd"><td><p>DEFAULT_TMP_THRSHLD</p></td>
 <td><p>65 * 1000</p></td>
 </tr>
-<tr class="row-odd"><td><p>DEFAULT_NUM_STRG_CLLS</p></td>
+<tr class="row-even"><td><p>DEFAULT_NUM_STRG_CLLS</p></td>
 <td><p>0</p></td>
 </tr>
-<tr class="row-even"><td><p>DEFAULT_STRG_CLL_STRT</p></td>
+<tr class="row-odd"><td><p>DEFAULT_STRG_CLL_STRT</p></td>
 <td><p>0xf</p></td>
 </tr>
-<tr class="row-odd"><td><p>DEFAULT_STRG_CLL_STRT_CHIP11</p></td>
+<tr class="row-even"><td><p>DEFAULT_STRG_CLL_STRT_CHIP11</p></td>
 <td><p>0x3</p></td>
 </tr>
-<tr class="row-even"><td><p>DEFAULT_STRG_CLL_DLY</p></td>
+<tr class="row-odd"><td><p>DEFAULT_STRG_CLL_DLY</p></td>
 <td><p>0</p></td>
 </tr>
-<tr class="row-odd"><td><p>DEFAULT_FLIP_ROWS</p></td>
+<tr class="row-even"><td><p>DEFAULT_FLIP_ROWS</p></td>
 <td><p>0</p></td>
 </tr>
-<tr class="row-even"><td><p>DEFAULT_FILTER_RESISTOR</p></td>
-<td><p>0</p></td>
-</tr>
-<tr class="row-odd"><td><p>DEFAULT_FILTER_CELL</p></td>
-<td><p>0</p></td>
-</tr>
-<tr class="row-even"><td><p>DEFAULT_PEDESTAL_MODE</p></td>
-<td><p>0</p></td>
-</tr>
-<tr class="row-odd"><td><p>DEFAULT_PEDESTAL_FRAMES</p></td>
+<tr class="row-odd"><td><p>DEFAULT_FILTER_RESISTOR</p></td>
 <td><p>1</p></td>
 </tr>
-<tr class="row-even"><td><p>DEFAULT_PEDESTAL_LOOPS</p></td>
+<tr class="row-even"><td><p>DEFAULT_FILTER_CELL</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-odd"><td><p>DEFAULT_PEDESTAL_MODE</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-even"><td><p>DEFAULT_PEDESTAL_FRAMES</p></td>
 <td><p>1</p></td>
 </tr>
-<tr class="row-odd"><td><p>DEFAULT_TIMING_INFO_DECODER</p></td>
+<tr class="row-odd"><td><p>DEFAULT_PEDESTAL_LOOPS</p></td>
+<td><p>1</p></td>
+</tr>
+<tr class="row-even"><td><p>DEFAULT_TIMING_INFO_DECODER</p></td>
 <td><p>SWISSFEL</p></td>
 </tr>
-<tr class="row-even"><td><p>DEFAULT_ELECTRON_COLLECTION_MODE</p></td>
+<tr class="row-odd"><td><p>DEFAULT_ELECTRON_COLLECTION_MODE</p></td>
 <td><p>0</p></td>
+</tr>
+<tr class="row-even"><td><p>MAX_PEDESTAL_LOOPS</p></td>
+<td><p>0xFF</p></td>
 </tr>
 <tr class="row-odd"><td><p>HIGHVOLTAGE_MIN</p></td>
 <td><p>60</p></td>
@@ -1853,7 +1847,7 @@
 <td><p>3</p></td>
 </tr>
 <tr class="row-odd"><td><p>MAX_STORAGE_CELL_DLY_NS_VAL</p></td>
-<td><p>STORAGE_CELL_EXPSRE_TMR_MAX_VAL</p></td>
+<td><p>ASIC_CTRL_EXPSRE_TMR_MAX_VAL</p></td>
 </tr>
 <tr class="row-even"><td><p>ACQ_TIME_MIN_CLOCK</p></td>
 <td><p>2</p></td>
@@ -1984,35 +1978,23 @@
 <tr class="row-even"><td><p>UDP_IP_HEADER_LENGTH_BYTES</p></td>
 <td><p>28</p></td>
 </tr>
-<tr class="row-odd"><td><p>CHIP_VALS</p></td>
-<td><p>{10, 11, 120, 121, 122, 13};</p></td>
-</tr>
-<tr class="row-even"><td><p>CHIP_VALS_HELP</p></td>
-<td><p>10, 11, 120, 121, 122, 13</p></td>
-</tr>
-<tr class="row-odd"><td><p>CHIP_NAMES</p></td>
-<td><p>v1.0, v1.1, v1.2 Normal, v1.2 Low Noise, v1.2 HDR, v1.3 Burst Mode</p></td>
-</tr>
-<tr class="row-even"><td><p>MASTER_NAMES</p></td>
+<tr class="row-odd"><td><p>MASTER_NAMES</p></td>
 <td><p>hardware, master, slave</p></td>
 </tr>
-<tr class="row-odd"><td><p>NUMSETTINGS</p></td>
+<tr class="row-even"><td><p>NUMSETTINGS</p></td>
 <td><p>2</p></td>
 </tr>
-<tr class="row-even"><td><p>NSPECIALDACS</p></td>
+<tr class="row-odd"><td><p>NSPECIALDACS</p></td>
 <td><p>3</p></td>
 </tr>
-<tr class="row-odd"><td><p>SPECIALDACINDEX</p></td>
+<tr class="row-even"><td><p>SPECIALDACINDEX</p></td>
 <td><p>{J_VREF_PRECH, J_VREF_DS, J_VREF_COMP};</p></td>
 </tr>
-<tr class="row-even"><td><p>SPECIAL_DEFAULT_DYNAMIC_GAIN_VALS</p></td>
+<tr class="row-odd"><td><p>SPECIAL_DEFAULT_DYNAMIC_GAIN_VALS</p></td>
 <td><p>{ 1450, 480, 420 }</p></td>
 </tr>
-<tr class="row-odd"><td><p>SPECIAL_DEFAULT_DYNAMICHG0_GAIN_VALS</p></td>
+<tr class="row-even"><td><p>SPECIAL_DEFAULT_DYNAMICHG0_GAIN_VALS</p></td>
 <td><p>{ 1550, 450, 620 }</p></td>
-</tr>
-<tr class="row-even"><td><p>SPECIAL_DEFAULT_V1_2_GAIN_VALS</p></td>
-<td><p>{ 1500, 480, 460 }</p></td>
 </tr>
 </tbody>
 </table>

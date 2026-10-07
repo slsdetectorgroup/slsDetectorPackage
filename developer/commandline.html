@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Command line interface &mdash; slsDetectorPackage 0.0.0  documentation</title>
+  <title>Command line interface &mdash; slsDetectorPackage  documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/css/extra.css?v=2be88464" />
@@ -33,7 +33,7 @@
           
           
           <a href="index.html" class="icon icon-home">
-            slsDetectorPackage 0.0.0
+            slsDetectorPackage
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -68,11 +68,9 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="pygettingstarted.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pydetector.html">Detector</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pyctb.html">Ctb</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pyenums.html">Enums</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pypower.html">Power Supply</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pyexamples.html">Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pypatterngenerator.html">PatternGenerator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyPatternGenerator.html">PatternGenerator</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pattern.html">Pattern</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Command line</span></p>
@@ -97,7 +95,6 @@
 <li class="toctree-l1"><a class="reference internal" href="type_traits.html">TypeTraits</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ToString.html">ToString</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Versioning.html">Package Versioning</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Testing.html">Testing</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Firmware</span></p>
 <ul>
@@ -145,7 +142,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">slsDetectorPackage 0.0.0</a>
+          <a href="index.html">slsDetectorPackage</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -258,8 +255,8 @@
 <div class="line">[Eiger] 1 is default. 0 deactivates readout and does not send data.</div>
 </div>
 </dd>
-<dt id="term-adcclk-n_clk-optional-unit-Hz-default-kHz-MHz">adcclk [n_clk] [(optional unit) Hz(default)|kHz|MHz]<a class="headerlink" href="#term-adcclk-n_clk-optional-unit-Hz-default-kHz-MHz" title="Link to this term"></a></dt><dd><div class="line-block">
-<div class="line">[Ctb][Xilinx Ctb] ADC clock frequency.</div>
+<dt id="term-adcclk-n_clk-in-MHz">adcclk [n_clk in MHz]<a class="headerlink" href="#term-adcclk-n_clk-in-MHz" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb] ADC clock frequency in MHz.</div>
 </div>
 </dd>
 <dt id="term-adcenable-bitmask">adcenable [bitmask]<a class="headerlink" href="#term-adcenable-bitmask" title="Link to this term"></a></dt><dd><div class="line-block">
@@ -357,25 +354,12 @@
 </div>
 </dd>
 <dt id="term-chipversion">chipversion<a class="headerlink" href="#term-chipversion" title="Link to this term"></a></dt><dd><div class="line-block">
-<div class="line">[Jungfrau] Returns chip version as string. For example, ‘v1.1’ or ‘v1.2 Low Noise’</div>
+<div class="line">[Jungfrau] Returns chip version. Can be 1.0 or 1.1</div>
 </div>
 </dd>
 <dt id="term-clearbit-reg-address-in-hex-bit-index">clearbit [reg address in hex] [bit index]<a class="headerlink" href="#term-clearbit-reg-address-in-hex-bit-index" title="Link to this term"></a></dt><dd><div class="line-block">
 <div class="line">Clears bit in address.</div>
 <div class="line">Use –validate to force validation.</div>
-</div>
-<div class="line-block">
-<div class="line">[Ctb][Xilinx_Ctb] Address or bit position can also be a user-defined name that was set previously using the define command. When using bit names, avoid register name/ address as the bit name is tied to a specific register already.</div>
-</div>
-<div class="line-block">
-<div class="line">eg.</div>
-<div class="line">sls_detector_get getbit 0x200 2</div>
-<div class="line">sls_detector_get getbit test_reg 2</div>
-<div class="line">sls_detector_get getbit test_bit</div>
-<div class="line">sls_detector_put setbit 0x200 2</div>
-<div class="line">sls_detector_put setbit test_reg 2</div>
-<div class="line">sls_detector_put setbit test_bit</div>
-<div class="line">sls_detector_put clearbit test_bit</div>
 </div>
 </dd>
 <dt id="term-clearbusy">clearbusy<a class="headerlink" href="#term-clearbusy" title="Link to this term"></a></dt><dd><div class="line-block">
@@ -443,7 +427,7 @@
 </div>
 </div>
 </dd>
-<dt id="term-dac-dac-name-dac-or-mV-value-optional-unit-mV">dac [dac name] [dac or mV value] [(optional unit) mV]<a class="headerlink" href="#term-dac-dac-name-dac-or-mV-value-optional-unit-mV" title="Link to this term"></a></dt><dd><div class="line-block">
+<dt id="term-dac-dac-dac-name-dac-or-mV-value-optional-unit-mV">dac dac [dac name] [dac or mV value] [(optional unit) mV]<a class="headerlink" href="#term-dac-dac-dac-name-dac-or-mV-value-optional-unit-mV" title="Link to this term"></a></dt><dd><div class="line-block">
 <div class="line">[Ctb] Use dac index for dac name.</div>
 </div>
 </dd>
@@ -464,8 +448,12 @@
 <div class="line">Gets the values for every dac for this detector.</div>
 </div>
 </dd>
-<dt id="term-dbitclk-n_clk-optional-unit-Hz-default-kHz-MHz">dbitclk [n_clk] [(optional unit) Hz(default)|kHz|MHz]<a class="headerlink" href="#term-dbitclk-n_clk-optional-unit-Hz-default-kHz-MHz" title="Link to this term"></a></dt><dd><div class="line-block">
-<div class="line">[Ctb][Xilinx Ctb]  Clock for latching the digital bits.</div>
+<dt id="term-datastream-left-right-0-1">datastream [left|right] [0, 1]<a class="headerlink" href="#term-datastream-left-right-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Eiger] Enables or disables data streaming from left or/and right side of detector for 10 GbE mode. 1 (enabled) by default.</div>
+</div>
+</dd>
+<dt id="term-dbitclk-n_clk-in-MHz">dbitclk [n_clk in MHz]<a class="headerlink" href="#term-dbitclk-n_clk-in-MHz" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb] Clock for latching the digital bits in MHz.</div>
 </div>
 </dd>
 <dt id="term-dbitphase-n_value-optional-deg">dbitphase [n_value] [(optional)deg]<a class="headerlink" href="#term-dbitphase-n_value-optional-deg" title="Link to this term"></a></dt><dd><div class="line-block">
@@ -486,61 +474,6 @@
 </dd>
 <dt id="term-defaultpattern">defaultpattern<a class="headerlink" href="#term-defaultpattern" title="Link to this term"></a></dt><dd><div class="line-block">
 <div class="line">[Mythen3] Loads and runs default pattern in pattern generator. It is to go back to initial settings.</div>
-</div>
-</dd>
-<dt id="term-define_bit-Ctb-Xilinx-Ctb">define_bit [Ctb][Xilinx Ctb]<a class="headerlink" href="#term-define_bit-Ctb-Xilinx-Ctb" title="Link to this term"></a></dt><dd><div class="line-block">
-<div class="line">[bit name] [regiser name/address] [bit position]</div>
-</div>
-<div class="line-block">
-<div class="line">Sets a user defined bit name in shared memory representing the register address and the bit position. The address can be named prior using define_reg command. The name can be upto 32 characters long.</div>
-<div class="line">eg.</div>
-<div class="line">sls_detector_put define_bit test_bit test_reg 2</div>
-<div class="line">sls_detector_put define_bit test_bit 0x200 2</div>
-</div>
-<div class="line-block">
-<div class="line">One can retrieve the bit address using the name and vice versa using both register name or address and bit position.</div>
-<div class="line">eg.</div>
-<div class="line">sls_detector_get define_bit test_bit</div>
-<div class="line">sls_detector_get define_bit test_reg 2</div>
-<div class="line">sls_detector_get define_bit 0x200 2</div>
-</div>
-<div class="line-block">
-<div class="line">One can then use this user-defined name in other commands such as for setbit, clearbit and getbit commands. When using bit names, please dont use register name or address as bit name is already tied to a specific register.</div>
-<div class="line">eg.</div>
-<div class="line">sls_detector_put setbit test_bit</div>
-<div class="line">sls_detector_put clearbit test_bit</div>
-<div class="line">sls_detector_get getbit test_bit</div>
-</div>
-</dd>
-<dt id="term-define_reg-Ctb-Xilinx-Ctb">define_reg [Ctb][Xilinx Ctb]<a class="headerlink" href="#term-define_reg-Ctb-Xilinx-Ctb" title="Link to this term"></a></dt><dd><div class="line-block">
-<div class="line">[reg name] [reg address]</div>
-</div>
-<div class="line-block">
-<div class="line">Sets a user defined register in shared memory. The name can be upto 32 characters long.</div>
-<div class="line">eg.</div>
-<div class="line">sls_detector_put define_reg test_reg 0x200</div>
-</div>
-<div class="line-block">
-<div class="line">One can retrieve the address using the name and vice versa.</div>
-<div class="line">eg.</div>
-<div class="line">sls_detector_get define_reg test_reg</div>
-<div class="line">sls_detector_get define_reg 0x200</div>
-</div>
-<div class="line-block">
-<div class="line">One can then use this user-defined name in other commands instead of hard coding the address such as for reg, setbit, clearbit and getbit commands.</div>
-<div class="line">eg.</div>
-<div class="line">sls_detector_put reg test_reg 0x1</div>
-<div class="line">sls_detector_put setbit test_reg 2</div>
-<div class="line">sls_detector_put clearbit test_reg 2</div>
-<div class="line">sls_detector_get getbit test_reg 2</div>
-</div>
-</dd>
-<dt id="term-definelist_bit">definelist_bit<a class="headerlink" href="#term-definelist_bit" title="Link to this term"></a></dt><dd><div class="line-block">
-<div class="line">List of user-defined bit definitions in shared memory.</div>
-</div>
-</dd>
-<dt id="term-definelist_reg">definelist_reg<a class="headerlink" href="#term-definelist_reg" title="Link to this term"></a></dt><dd><div class="line-block">
-<div class="line">List of user-defined register definitions in shared memory.</div>
 </div>
 </dd>
 <dt id="term-delay-duration-optional-unit-ns-us-ms-s">delay [duration] [(optional unit) ns|us|ms|s]<a class="headerlink" href="#term-delay-duration-optional-unit-ns-us-ms-s" title="Link to this term"></a></dt><dd><div class="line-block">
@@ -743,19 +676,6 @@
 <dt id="term-getbit-reg-address-in-hex-bit-index">getbit [reg address in hex] [bit index]<a class="headerlink" href="#term-getbit-reg-address-in-hex-bit-index" title="Link to this term"></a></dt><dd><div class="line-block">
 <div class="line">Gets bit in address.</div>
 </div>
-<div class="line-block">
-<div class="line">[Ctb][Xilinx_Ctb] Address or bit position can also be a user-defined name that was set previously using the define command. When using bit names, avoid register name/ address as the bit name is tied to a specific register already.</div>
-</div>
-<div class="line-block">
-<div class="line">eg.</div>
-<div class="line">sls_detector_get getbit 0x200 2</div>
-<div class="line">sls_detector_get getbit test_reg 2</div>
-<div class="line">sls_detector_get getbit test_bit</div>
-<div class="line">sls_detector_put setbit 0x200 2</div>
-<div class="line">sls_detector_put setbit test_reg 2</div>
-<div class="line">sls_detector_put setbit test_bit</div>
-<div class="line">sls_detector_put clearbit test_bit</div>
-</div>
 </dd>
 <dt id="term-hardwareversion">hardwareversion<a class="headerlink" href="#term-hardwareversion" title="Link to this term"></a></dt><dd><div class="line-block">
 <div class="line">Hardware version of detector.</div>
@@ -797,10 +717,6 @@
 </dd>
 <dt id="term-imagetest-0-1">imagetest [0, 1]<a class="headerlink" href="#term-imagetest-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
 <div class="line">[Eiger][Jungfrau][Moench] Only for Virtual servers. If 0, each pixel intensity incremented by 1. If 1, all pixels almost saturated.</div>
-</div>
-</dd>
-<dt id="term-include">include<a class="headerlink" href="#term-include" title="Link to this term"></a></dt><dd><div class="line-block">
-<div class="line">Sets detector measurement parameters to those contained in fname. Set up per measurement. Same as parameters command.</div>
 </div>
 </dd>
 <dt id="term-initialchecks-0-1">initialchecks [0, 1]<a class="headerlink" href="#term-initialchecks-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
@@ -967,7 +883,7 @@
 </div>
 </dd>
 <dt id="term-patternstart">patternstart<a class="headerlink" href="#term-patternstart" title="Link to this term"></a></dt><dd><div class="line-block">
-<div class="line">[Mythen3][Ctb][Xilinx Ctb] Starts Pattern</div>
+<div class="line">[Mythen3] Starts Pattern</div>
 </div>
 </dd>
 <dt id="term-patwait-0-6-addr">patwait [0-6] [addr]<a class="headerlink" href="#term-patwait-0-6-addr" title="Link to this term"></a></dt><dd><div class="line-block">
@@ -1046,19 +962,11 @@
 <div class="line">Port number of the control server on detector for detector-client tcp interface. Default is 1952. Normally unchanged. Set different ports for virtual servers on same pc.</div>
 </div>
 </dd>
-<dt id="term-power-all-list-of-power-names-on-off">power [all|list of power names] [on|off]<a class="headerlink" href="#term-power-all-list-of-power-names-on-off" title="Link to this term"></a></dt><dd><div class="line-block">
-<div class="line">[Ctb][Xilinx Ctb] Enable or disable power rails. Power name can be all, v_a, v_b, v_c, v_d or v_io or any defines using ‘powername’. If power name is set to ‘all’, the command applies to all ‘powers’. Enabling the power rails is in parallel, whereas retrieving the states of multiple power rails, they are queried sequentially (one after another), not in parallel.</div>
-</div>
-</dd>
 <dt id="term-powerchip-0-1">powerchip [0, 1]<a class="headerlink" href="#term-powerchip-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
-<div class="line">[Jungfrau][Moench][Mythen3][Gotthard2] Power the chip.</div>
+<div class="line">[Jungfrau][Moench][Mythen3][Gotthard2][Xilinx Ctb] Power the chip.</div>
 <div class="line">[Jungfrau][Moench] Default is 0. Get will return power status. Can be off if temperature event occured (temperature over temp_threshold with temp_control enabled. Will configure chip (only chip v1.1)</div>
 <div class="line">[Mythen3][Gotthard2] Default is 1. If module not connected or wrong module, powerchip will fail.</div>
-</div>
-</dd>
-<dt id="term-powerdac-powername-mV-value">powerdac [powername][mV value]<a class="headerlink" href="#term-powerdac-powername-mV-value" title="Link to this term"></a></dt><dd><div class="line-block">
-<div class="line">[Ctb][Xilinx Ctb] Controls the dac used for Power supply. Default names for powername are v_a, v_b, v_c, v_d, v_io, v_chip(v_chip only applies to Ctb, not Xilinx_Ctb). If custom names are assigned using the ‘powername’ command, those names could be used instead instead of the defaults. By default, all are set to minimum values.</div>
-<div class="line">[Ctb] v_chip can also be queried to get the vchip dac value, although its rail cannot be enabled or disabled by the user. It is enabled by default. Its dac value is automatically updated whenever a power dac is modified. It is then set to the max of power dacs + 200mV.</div>
+<div class="line">[Xilinx Ctb] Default is 0. Also configures the chip if powered on.</div>
 </div>
 </dd>
 <dt id="term-powerindex-name">powerindex [name]<a class="headerlink" href="#term-powerindex-name" title="Link to this term"></a></dt><dd><div class="line-block">
@@ -1073,8 +981,8 @@
 <div class="line">[Ctb][Xilinx_Ctb] Set the power at the given position to the given name.</div>
 </div>
 </dd>
-<dt id="term-powervalues">powervalues<a class="headerlink" href="#term-powervalues" title="Link to this term"></a></dt><dd><div class="line-block">
-<div class="line">[Ctb][Xilinx_Ctb] Get dac values of all powers if enabled, else ‘0’.</div>
+<dt id="term-powervalues-name">powervalues [name]<a class="headerlink" href="#term-powervalues-name" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Xilinx_Ctb] Get values of all powers.</div>
 </div>
 </dd>
 <dt id="term-programfpga-fname.pof-fname.rbf-full-path-opitonal-force-delete-normal-file">programfpga [fname.pof | fname.rbf (full path)][(opitonal)–force-delete-normal-file]<a class="headerlink" href="#term-programfpga-fname.pof-fname.rbf-full-path-opitonal-force-delete-normal-file" title="Link to this term"></a></dt><dd><div class="line-block">
@@ -1148,20 +1056,12 @@
 </div>
 </dd>
 <dt id="term-reg-address-32-bit-value-optional-validate">reg [address] [32 bit value][(optional)–validate]<a class="headerlink" href="#term-reg-address-32-bit-value-optional-validate" title="Link to this term"></a></dt><dd><div class="line-block">
-<div class="line">Reads/writes to a 32 bit register in hex.</div>
-<div class="line">Advanced Function!</div>
+<div class="line">[Mythen3][Gotthard2] Reads/writes to a 32 bit register in hex. Advanced Function!</div>
 <div class="line">Goes to stop server. Hence, can be called while calling blocking acquire().</div>
 <div class="line-block">
-<div class="line">Use –validate to enforce validation when writing to register.</div>
+<div class="line">Use –validate to force validation when writing to it.</div>
 </div>
 <div class="line">[Eiger] +0x100 for only left, +0x200 for only right.</div>
-<div class="line">[Ctb][Xilinx_Ctb] Address can also be a user-defined name that was set previously using the define command.</div>
-<div class="line-block">
-<div class="line">eg.</div>
-<div class="line">sls_detector_put reg 0x200 0xFFF –validate</div>
-<div class="line">sls_detector_get reg test_reg</div>
-<div class="line">sls_detector_put reg test_reg 0xFF</div>
-</div>
 </div>
 </dd>
 <dt id="term-resetdacs-optional-hard">resetdacs [(optional) hard]<a class="headerlink" href="#term-resetdacs-optional-hard" title="Link to this term"></a></dt><dd><div class="line-block">
@@ -1181,8 +1081,8 @@
 <div class="line">Gui uses it to rearrange for complete image</div>
 </div>
 </dd>
-<dt id="term-runclk-n_clk-optional-unit-Hz-default-kHz-MHz">runclk [n_clk] [(optional unit) Hz(default)|kHz|MHz]<a class="headerlink" href="#term-runclk-n_clk-optional-unit-Hz-default-kHz-MHz" title="Link to this term"></a></dt><dd><div class="line-block">
-<div class="line">[Ctb][Xilinx Ctb] Run clock frequency.</div>
+<dt id="term-runclk-n_clk-in-MHz">runclk [n_clk in MHz]<a class="headerlink" href="#term-runclk-n_clk-in-MHz" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb] Run clock in MHz.</div>
 </div>
 </dd>
 <dt id="term-runtime-optional-unit-ns-us-ms-s">runtime [(optional unit) ns|us|ms|s]<a class="headerlink" href="#term-runtime-optional-unit-ns-us-ms-s" title="Link to this term"></a></dt><dd><div class="line-block">
@@ -1315,10 +1215,6 @@
 <div class="line">Stops receiver listener for detector data packets and closes current data file (if file write enabled).</div>
 </div>
 </dd>
-<dt id="term-rx_streamdummyheader">rx_streamdummyheader<a class="headerlink" href="#term-rx_streamdummyheader" title="Link to this term"></a></dt><dd><div class="line-block">
-<div class="line">Sends ZMQ dummy header. The detector related fields are not set, the receiver related fields are set.</div>
-</div>
-</dd>
 <dt id="term-rx_tcpport-port">rx_tcpport [port]<a class="headerlink" href="#term-rx_tcpport-port" title="Link to this term"></a></dt><dd><div class="line-block">
 <div class="line">TCP port for client-receiver communication. Default is 1954. Must be different if multiple receivers on same pc. Must be first command to set a receiver parameter. Multi command will automatically increment for individual modules.</div>
 </div>
@@ -1396,19 +1292,6 @@
 <dt id="term-setbit-reg-address-in-hex-bit-index">setbit [reg address in hex] [bit index]<a class="headerlink" href="#term-setbit-reg-address-in-hex-bit-index" title="Link to this term"></a></dt><dd><div class="line-block">
 <div class="line">Sets bit in address.</div>
 <div class="line">Use –validate to force validation.</div>
-</div>
-<div class="line-block">
-<div class="line">[Ctb][Xilinx_Ctb] Address or bit position can also be a user-defined name that was set previously using the define command. When using bit names, avoid register name/ address as the bit name is tied to a specific register already.</div>
-</div>
-<div class="line-block">
-<div class="line">eg.</div>
-<div class="line">sls_detector_get getbit 0x200 2</div>
-<div class="line">sls_detector_get getbit test_reg 2</div>
-<div class="line">sls_detector_get getbit test_bit</div>
-<div class="line">sls_detector_put setbit 0x200 2</div>
-<div class="line">sls_detector_put setbit test_reg 2</div>
-<div class="line">sls_detector_put setbit test_bit</div>
-<div class="line">sls_detector_put clearbit test_bit</div>
 </div>
 </dd>
 <dt id="term-settings-standard-fast-highgain-dynamicgain-lowgain-mediumgain-veryhighgain-highgain0-fixgain1-fixgain2-forceswitchg1-forceswitchg2-verylowgain-g1_hg-g1_lg-g2_hc_hg-g2_hc_lg-g2_lc_hg-g2_lc_lg-g4_hg-g4_lg-gain0">settings [standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain, highgain0, fixgain1, fixgain2, forceswitchg1, forceswitchg2, verylowgain, g1_hg, g1_lg, g2_hc_hg, g2_hc_lg, g2_lc_hg, g2_lc_lg, g4_hg, g4_lg, gain0]<a class="headerlink" href="#term-settings-standard-fast-highgain-dynamicgain-lowgain-mediumgain-veryhighgain-highgain0-fixgain1-fixgain2-forceswitchg1-forceswitchg2-verylowgain-g1_hg-g1_lg-g2_hc_hg-g2_hc_lg-g2_lc_hg-g2_lc_lg-g4_hg-g4_lg-gain0" title="Link to this term"></a></dt><dd><div class="line-block">
@@ -1503,8 +1386,8 @@
 <div class="line">[Jungfrau][Moench] Enables or disables synchronization between modules. Sync mode requires at least one master configured. Also requires flatband cabling between master and slave with termination board.</div>
 </div>
 </dd>
-<dt id="term-syncclk-n_clk-optional-unit-Hz-default-kHz-MHz">syncclk [n_clk] [(optional unit) Hz(default)|kHz|MHz]<a class="headerlink" href="#term-syncclk-n_clk-optional-unit-Hz-default-kHz-MHz" title="Link to this term"></a></dt><dd><div class="line-block">
-<div class="line">[Ctb] Sync clock.</div>
+<dt id="term-syncclk-n_clk-in-MHz">syncclk [n_clk in MHz]<a class="headerlink" href="#term-syncclk-n_clk-in-MHz" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb] Sync clock in MHz.</div>
 </div>
 </dd>
 <dt id="term-temp_10ge-n_value">temp_10ge [n_value]<a class="headerlink" href="#term-temp_10ge-n_value" title="Link to this term"></a></dt><dd><div class="line-block">
@@ -1586,8 +1469,8 @@
 </dd>
 <dt id="term-timing-auto-trigger-gating-burst_trigger-trigger_gating">timing [auto|trigger|gating|burst_trigger|trigger_gating]<a class="headerlink" href="#term-timing-auto-trigger-gating-burst_trigger-trigger_gating" title="Link to this term"></a></dt><dd><div class="line-block">
 <div class="line">Timing Mode of detector.</div>
-<div class="line">[Jungfrau][Moench][Ctb][Gotthard2] [auto|trigger]</div>
-<div class="line">[Mythen3][Xilinx Ctb] [auto|trigger|gating|trigger_gating]</div>
+<div class="line">[Jungfrau][Moench][Ctb][Gotthard2][Xilinx Ctb] [auto|trigger]</div>
+<div class="line">[Mythen3] [auto|trigger|gating|trigger_gating]</div>
 <div class="line">[Eiger] [auto|trigger|gating|burst_trigger]</div>
 </div>
 </dd>
@@ -1668,11 +1551,6 @@
 </dd>
 <dt id="term-udp_cleardst">udp_cleardst<a class="headerlink" href="#term-udp_cleardst" title="Link to this term"></a></dt><dd><div class="line-block">
 <div class="line">Clears udp destination details on the detector.</div>
-</div>
-</dd>
-<dt id="term-udp_datastream-left-right-top-bottom-0-1">udp_datastream [left|right|top|bottom] [0, 1]<a class="headerlink" href="#term-udp_datastream-left-right-top-bottom-0-1" title="Link to this term"></a></dt><dd><div class="line-block">
-<div class="line">Enables or disables UDP data streaming from left or right of 10GbE UDP port of the detector. Options: left, right. Both ports are enabled (1) by default.</div>
-<div class="line">Enables or disables UDP data streaming from the top or bottom of receiver. This option is available only when numinterfaces is set to 2. Options: top, bottom. Both interfaces are enabled (1) by default.</div>
 </div>
 </dd>
 <dt id="term-udp_dstip-x.x.x.x-or-auto">udp_dstip [x.x.x.x] or auto<a class="headerlink" href="#term-udp_dstip-x.x.x.x-or-auto" title="Link to this term"></a></dt><dd><div class="line-block">
@@ -1790,8 +1668,32 @@
 <div class="line">User details from shared memory (hostname, type, PID, User, Date).</div>
 </div>
 </dd>
+<dt id="term-v_a-n_value">v_a [n_value]<a class="headerlink" href="#term-v_a-n_value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Xilinx Ctb] Power supply a in mV.</div>
+</div>
+</dd>
+<dt id="term-v_b-n_value">v_b [n_value]<a class="headerlink" href="#term-v_b-n_value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Xilinx Ctb] Power supply b in mV.</div>
+</div>
+</dd>
+<dt id="term-v_c-n_value">v_c [n_value]<a class="headerlink" href="#term-v_c-n_value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Xilinx Ctb] Power supply c in mV.</div>
+</div>
+</dd>
+<dt id="term-v_chip-n_value">v_chip [n_value]<a class="headerlink" href="#term-v_chip-n_value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb] Power supply chip in mV. Do not use it unless you are completely sure you will not fry the board.</div>
+</div>
+</dd>
+<dt id="term-v_d-n_value">v_d [n_value]<a class="headerlink" href="#term-v_d-n_value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Xilinx Ctb] Power supply d in mV.</div>
+</div>
+</dd>
+<dt id="term-v_io-n_value">v_io [n_value]<a class="headerlink" href="#term-v_io-n_value" title="Link to this term"></a></dt><dd><div class="line-block">
+<div class="line">[Ctb][Xilinx Ctb] Power supply io in mV. Minimum 1200 mV. Must be the first power regulator to be set after fpga reset (on-board detector server start up).</div>
+</div>
+</dd>
 <dt id="term-v_limit-n_value">v_limit [n_value]<a class="headerlink" href="#term-v_limit-n_value" title="Link to this term"></a></dt><dd><div class="line-block">
-<div class="line">[Ctb][Xilinx Ctb] Soft limit for power supplies and DACS in mV.</div>
+<div class="line">[Ctb][Xilinx Ctb] Soft limit for power supplies (ctb only) and DACS in mV.</div>
 </div>
 </dd>
 <dt id="term-vchip_comp_adc-chip-index-0-9-1-for-all-10-bit-hex-value">vchip_comp_adc [chip index 0-9, -1 for all][10 bit hex value]<a class="headerlink" href="#term-vchip_comp_adc-chip-index-0-9-1-for-all-10-bit-hex-value" title="Link to this term"></a></dt><dd><div class="line-block">
@@ -1937,394 +1839,391 @@
 <tr class="row-odd"><td><p>cyclesl</p></td>
 <td><p>triggersl</p></td>
 </tr>
-<tr class="row-even"><td><p>datastream</p></td>
-<td><p>udp_datastream</p></td>
-</tr>
-<tr class="row-odd"><td><p>defaultdacs</p></td>
+<tr class="row-even"><td><p>defaultdacs</p></td>
 <td><p>resetdacs</p></td>
 </tr>
-<tr class="row-even"><td><p>detectorip</p></td>
+<tr class="row-odd"><td><p>detectorip</p></td>
 <td><p>udp_srcip</p></td>
 </tr>
-<tr class="row-odd"><td><p>detectorip2</p></td>
+<tr class="row-even"><td><p>detectorip2</p></td>
 <td><p>udp_srcip2</p></td>
 </tr>
-<tr class="row-even"><td><p>detectormac</p></td>
+<tr class="row-odd"><td><p>detectormac</p></td>
 <td><p>udp_srcmac</p></td>
 </tr>
-<tr class="row-odd"><td><p>detectormac2</p></td>
+<tr class="row-even"><td><p>detectormac2</p></td>
 <td><p>udp_srcmac2</p></td>
 </tr>
-<tr class="row-even"><td><p>detectornumber</p></td>
+<tr class="row-odd"><td><p>detectornumber</p></td>
 <td><p>serialnumber</p></td>
 </tr>
-<tr class="row-odd"><td><p>detectorversion</p></td>
+<tr class="row-even"><td><p>detectorversion</p></td>
 <td><p>firmwareversion</p></td>
 </tr>
-<tr class="row-even"><td><p>detsizechan</p></td>
+<tr class="row-odd"><td><p>detsizechan</p></td>
 <td><p>detsize</p></td>
 </tr>
-<tr class="row-odd"><td><p>digitest</p></td>
+<tr class="row-even"><td><p>digitest</p></td>
 <td><p>imagetest</p></td>
 </tr>
-<tr class="row-even"><td><p>enablefwrite</p></td>
+<tr class="row-odd"><td><p>enablefwrite</p></td>
 <td><p>fwrite</p></td>
 </tr>
-<tr class="row-odd"><td><p>fileformat</p></td>
+<tr class="row-even"><td><p>fileformat</p></td>
 <td><p>fformat</p></td>
 </tr>
-<tr class="row-even"><td><p>filter</p></td>
+<tr class="row-odd"><td><p>filter</p></td>
 <td><p>filterresistor</p></td>
 </tr>
-<tr class="row-odd"><td><p>flags</p></td>
+<tr class="row-even"><td><p>flags</p></td>
 <td><p>romode</p></td>
 </tr>
-<tr class="row-even"><td><p>flippeddatax</p></td>
+<tr class="row-odd"><td><p>flippeddatax</p></td>
 <td><p>fliprows</p></td>
 </tr>
-<tr class="row-odd"><td><p>flowcontrol_10g</p></td>
+<tr class="row-even"><td><p>flowcontrol_10g</p></td>
 <td><p>flowcontrol10g</p></td>
 </tr>
-<tr class="row-even"><td><p>frameindex</p></td>
+<tr class="row-odd"><td><p>frameindex</p></td>
 <td><p>rx_frameindex</p></td>
 </tr>
-<tr class="row-odd"><td><p>framescaught</p></td>
+<tr class="row-even"><td><p>framescaught</p></td>
 <td><p>rx_framescaught</p></td>
 </tr>
-<tr class="row-even"><td><p>i_a</p></td>
+<tr class="row-odd"><td><p>i_a</p></td>
 <td><p>im_a</p></td>
 </tr>
-<tr class="row-odd"><td><p>i_b</p></td>
+<tr class="row-even"><td><p>i_b</p></td>
 <td><p>im_b</p></td>
 </tr>
-<tr class="row-even"><td><p>i_c</p></td>
+<tr class="row-odd"><td><p>i_c</p></td>
 <td><p>im_c</p></td>
 </tr>
-<tr class="row-odd"><td><p>i_d</p></td>
+<tr class="row-even"><td><p>i_d</p></td>
 <td><p>im_d</p></td>
 </tr>
-<tr class="row-even"><td><p>i_io</p></td>
+<tr class="row-odd"><td><p>i_io</p></td>
 <td><p>im_io</p></td>
 </tr>
-<tr class="row-odd"><td><p>ibias_sfp</p></td>
+<tr class="row-even"><td><p>ibias_sfp</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>index</p></td>
+<tr class="row-odd"><td><p>index</p></td>
 <td><p>findex</p></td>
 </tr>
-<tr class="row-odd"><td><p>iodelay</p></td>
+<tr class="row-even"><td><p>iodelay</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>masterfile</p></td>
+<tr class="row-odd"><td><p>masterfile</p></td>
 <td><p>fmaster</p></td>
 </tr>
-<tr class="row-odd"><td><p>nframes</p></td>
+<tr class="row-even"><td><p>nframes</p></td>
 <td><p>framecounter</p></td>
 </tr>
-<tr class="row-even"><td><p>now</p></td>
+<tr class="row-odd"><td><p>now</p></td>
 <td><p>runtime</p></td>
 </tr>
-<tr class="row-odd"><td><p>outdir</p></td>
+<tr class="row-even"><td><p>outdir</p></td>
 <td><p>fpath</p></td>
 </tr>
-<tr class="row-even"><td><p>overwrite</p></td>
+<tr class="row-odd"><td><p>overwrite</p></td>
 <td><p>foverwrite</p></td>
 </tr>
-<tr class="row-odd"><td><p>patternX</p></td>
+<tr class="row-even"><td><p>patternX</p></td>
 <td><p>pattern</p></td>
 </tr>
-<tr class="row-even"><td><p>r_discardpolicy</p></td>
+<tr class="row-odd"><td><p>r_discardpolicy</p></td>
 <td><p>rx_discardpolicy</p></td>
 </tr>
-<tr class="row-odd"><td><p>r_framesperfile</p></td>
+<tr class="row-even"><td><p>r_framesperfile</p></td>
 <td><p>rx_framesperfile</p></td>
 </tr>
-<tr class="row-even"><td><p>r_lastclient</p></td>
+<tr class="row-odd"><td><p>r_lastclient</p></td>
 <td><p>rx_lastclient</p></td>
 </tr>
-<tr class="row-odd"><td><p>r_lock</p></td>
+<tr class="row-even"><td><p>r_lock</p></td>
 <td><p>rx_lock</p></td>
 </tr>
-<tr class="row-even"><td><p>r_padding</p></td>
+<tr class="row-odd"><td><p>r_padding</p></td>
 <td><p>rx_padding</p></td>
 </tr>
-<tr class="row-odd"><td><p>r_readfreq</p></td>
+<tr class="row-even"><td><p>r_readfreq</p></td>
 <td><p>rx_zmqfreq</p></td>
 </tr>
-<tr class="row-even"><td><p>r_silent</p></td>
+<tr class="row-odd"><td><p>r_silent</p></td>
 <td><p>rx_silent</p></td>
 </tr>
-<tr class="row-odd"><td><p>readnlines</p></td>
+<tr class="row-even"><td><p>readnlines</p></td>
 <td><p>readnrows</p></td>
 </tr>
-<tr class="row-even"><td><p>receiver</p></td>
+<tr class="row-odd"><td><p>receiver</p></td>
 <td><p>rx_status</p></td>
 </tr>
-<tr class="row-odd"><td><p>receiverversion</p></td>
+<tr class="row-even"><td><p>receiverversion</p></td>
 <td><p>rx_version</p></td>
 </tr>
-<tr class="row-even"><td><p>resmat</p></td>
+<tr class="row-odd"><td><p>resmat</p></td>
 <td><p>partialreset</p></td>
 </tr>
-<tr class="row-odd"><td><p>rx_datastream</p></td>
+<tr class="row-even"><td><p>rx_datastream</p></td>
 <td><p>rx_zmqstream</p></td>
 </tr>
-<tr class="row-even"><td><p>rx_readfreq</p></td>
+<tr class="row-odd"><td><p>rx_readfreq</p></td>
 <td><p>rx_zmqfreq</p></td>
 </tr>
-<tr class="row-odd"><td><p>rx_udpip</p></td>
+<tr class="row-even"><td><p>rx_udpip</p></td>
 <td><p>udp_dstip</p></td>
 </tr>
-<tr class="row-even"><td><p>rx_udpip2</p></td>
+<tr class="row-odd"><td><p>rx_udpip2</p></td>
 <td><p>udp_dstip2</p></td>
 </tr>
-<tr class="row-odd"><td><p>rx_udpmac</p></td>
+<tr class="row-even"><td><p>rx_udpmac</p></td>
 <td><p>udp_dstmac</p></td>
 </tr>
-<tr class="row-even"><td><p>rx_udpmac2</p></td>
+<tr class="row-odd"><td><p>rx_udpmac2</p></td>
 <td><p>udp_dstmac2</p></td>
 </tr>
-<tr class="row-odd"><td><p>rx_udpport</p></td>
+<tr class="row-even"><td><p>rx_udpport</p></td>
 <td><p>udp_dstport</p></td>
 </tr>
-<tr class="row-even"><td><p>rx_udpport2</p></td>
+<tr class="row-odd"><td><p>rx_udpport2</p></td>
 <td><p>udp_dstport2</p></td>
 </tr>
-<tr class="row-odd"><td><p>rxb_lb</p></td>
+<tr class="row-even"><td><p>rxb_lb</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>rxb_rb</p></td>
+<tr class="row-odd"><td><p>rxb_rb</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>settingsdir</p></td>
+<tr class="row-even"><td><p>settingsdir</p></td>
 <td><p>settingspath</p></td>
 </tr>
-<tr class="row-even"><td><p>softwareversion</p></td>
+<tr class="row-odd"><td><p>softwareversion</p></td>
 <td><p>detectorserverversion</p></td>
 </tr>
-<tr class="row-odd"><td><p>speed</p></td>
+<tr class="row-even"><td><p>speed</p></td>
 <td><p>readoutspeed</p></td>
 </tr>
-<tr class="row-even"><td><p>startingfnum</p></td>
+<tr class="row-odd"><td><p>startingfnum</p></td>
 <td><p>nextframenumber</p></td>
 </tr>
-<tr class="row-odd"><td><p>storagecells</p></td>
+<tr class="row-even"><td><p>storagecells</p></td>
 <td><p>extrastoragecells</p></td>
 </tr>
-<tr class="row-even"><td><p>thisversion</p></td>
+<tr class="row-odd"><td><p>thisversion</p></td>
 <td><p>clientversion</p></td>
 </tr>
-<tr class="row-odd"><td><p>timestamp</p></td>
+<tr class="row-even"><td><p>timestamp</p></td>
 <td><p>frametime</p></td>
 </tr>
-<tr class="row-even"><td><p>trimdir</p></td>
+<tr class="row-odd"><td><p>trimdir</p></td>
 <td><p>settingspath</p></td>
 </tr>
-<tr class="row-odd"><td><p>txndelay_frame</p></td>
+<tr class="row-even"><td><p>txndelay_frame</p></td>
 <td><p>txdelay_frame</p></td>
 </tr>
-<tr class="row-even"><td><p>txndelay_left</p></td>
+<tr class="row-odd"><td><p>txndelay_left</p></td>
 <td><p>txdelay_left</p></td>
 </tr>
-<tr class="row-odd"><td><p>txndelay_right</p></td>
+<tr class="row-even"><td><p>txndelay_right</p></td>
 <td><p>txdelay_right</p></td>
 </tr>
-<tr class="row-even"><td><p>vb_comp</p></td>
+<tr class="row-odd"><td><p>vb_comp</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vb_comp_adc</p></td>
+<tr class="row-even"><td><p>vb_comp_adc</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vb_comp_fe</p></td>
+<tr class="row-odd"><td><p>vb_comp_fe</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vb_cs</p></td>
+<tr class="row-even"><td><p>vb_cs</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vb_ds</p></td>
+<tr class="row-odd"><td><p>vb_ds</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vb_opa_1st</p></td>
+<tr class="row-even"><td><p>vb_opa_1st</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vb_opa_fd</p></td>
+<tr class="row-odd"><td><p>vb_opa_fd</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vb_pixbuf</p></td>
+<tr class="row-even"><td><p>vb_pixbuf</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vb_sda</p></td>
+<tr class="row-odd"><td><p>vb_sda</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vbp_colbuf</p></td>
+<tr class="row-even"><td><p>vbp_colbuf</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vcal</p></td>
+<tr class="row-odd"><td><p>vcal</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vcal_n</p></td>
+<tr class="row-even"><td><p>vcal_n</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vcal_p</p></td>
+<tr class="row-odd"><td><p>vcal_p</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vcall</p></td>
+<tr class="row-even"><td><p>vcall</p></td>
 <td><p>vcal</p></td>
 </tr>
-<tr class="row-even"><td><p>vcas</p></td>
+<tr class="row-odd"><td><p>vcas</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vcasc_sfp</p></td>
+<tr class="row-even"><td><p>vcasc_sfp</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vcassh</p></td>
+<tr class="row-odd"><td><p>vcassh</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vcmp_ll</p></td>
+<tr class="row-even"><td><p>vcmp_ll</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vcmp_lr</p></td>
+<tr class="row-odd"><td><p>vcmp_lr</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vcmp_rl</p></td>
+<tr class="row-even"><td><p>vcmp_rl</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vcmp_rr</p></td>
+<tr class="row-odd"><td><p>vcmp_rr</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vcn</p></td>
+<tr class="row-even"><td><p>vcn</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vcom_adc1</p></td>
+<tr class="row-odd"><td><p>vcom_adc1</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vcom_adc2</p></td>
+<tr class="row-even"><td><p>vcom_adc2</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vcom_cds</p></td>
+<tr class="row-odd"><td><p>vcom_cds</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vcp</p></td>
+<tr class="row-even"><td><p>vcp</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vdcsh</p></td>
+<tr class="row-odd"><td><p>vdcsh</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vdd_prot</p></td>
+<tr class="row-even"><td><p>vdd_prot</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vhighvoltage</p></td>
+<tr class="row-odd"><td><p>vhighvoltage</p></td>
 <td><p>highvoltage</p></td>
 </tr>
-<tr class="row-odd"><td><p>vicin</p></td>
+<tr class="row-even"><td><p>vicin</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>viinsh</p></td>
+<tr class="row-odd"><td><p>viinsh</p></td>
 <td><p>vishaper</p></td>
 </tr>
-<tr class="row-odd"><td><p>vin_cm</p></td>
+<tr class="row-even"><td><p>vin_cm</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vin_com</p></td>
+<tr class="row-odd"><td><p>vin_com</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vipre</p></td>
+<tr class="row-even"><td><p>vipre</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vipre_cds</p></td>
+<tr class="row-odd"><td><p>vipre_cds</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vipre_out</p></td>
+<tr class="row-even"><td><p>vipre_out</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vis</p></td>
+<tr class="row-odd"><td><p>vis</p></td>
 <td><p>vishaper</p></td>
 </tr>
-<tr class="row-odd"><td><p>vishaper</p></td>
+<tr class="row-even"><td><p>vishaper</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vout_cm</p></td>
+<tr class="row-odd"><td><p>vout_cm</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vph</p></td>
+<tr class="row-even"><td><p>vph</p></td>
 <td><p>vcal_p</p></td>
 </tr>
-<tr class="row-even"><td><p>vpl</p></td>
+<tr class="row-odd"><td><p>vpl</p></td>
 <td><p>vcal_n</p></td>
 </tr>
-<tr class="row-odd"><td><p>vpreamp</p></td>
+<tr class="row-even"><td><p>vpreamp</p></td>
 <td><p>vrpreamp</p></td>
 </tr>
-<tr class="row-even"><td><p>vref_cds</p></td>
+<tr class="row-odd"><td><p>vref_cds</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vref_comp</p></td>
+<tr class="row-even"><td><p>vref_comp</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vref_comp_fe</p></td>
+<tr class="row-odd"><td><p>vref_comp_fe</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vref_ds</p></td>
+<tr class="row-even"><td><p>vref_ds</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vref_h_adc</p></td>
+<tr class="row-odd"><td><p>vref_h_adc</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vref_l_adc</p></td>
+<tr class="row-even"><td><p>vref_l_adc</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vref_prech</p></td>
+<tr class="row-odd"><td><p>vref_prech</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vref_rstore</p></td>
+<tr class="row-even"><td><p>vref_rstore</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vrf</p></td>
+<tr class="row-odd"><td><p>vrf</p></td>
 <td><p>vrpreamp</p></td>
 </tr>
-<tr class="row-odd"><td><p>vrpreamp</p></td>
+<tr class="row-even"><td><p>vrpreamp</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vrs</p></td>
+<tr class="row-odd"><td><p>vrs</p></td>
 <td><p>vrshaper</p></td>
 </tr>
-<tr class="row-odd"><td><p>vrshaper</p></td>
+<tr class="row-even"><td><p>vrshaper</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vrshaper_n</p></td>
+<tr class="row-odd"><td><p>vrshaper_n</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vshaper</p></td>
+<tr class="row-even"><td><p>vshaper</p></td>
 <td><p>vrshaper</p></td>
 </tr>
-<tr class="row-even"><td><p>vshaperneg</p></td>
+<tr class="row-odd"><td><p>vshaperneg</p></td>
 <td><p>vrshaper_n</p></td>
 </tr>
-<tr class="row-odd"><td><p>vsvn</p></td>
+<tr class="row-even"><td><p>vsvn</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vsvp</p></td>
+<tr class="row-odd"><td><p>vsvp</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vtgstv</p></td>
+<tr class="row-even"><td><p>vtgstv</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vth1</p></td>
+<tr class="row-odd"><td><p>vth1</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vth2</p></td>
+<tr class="row-even"><td><p>vth2</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vth3</p></td>
+<tr class="row-odd"><td><p>vth3</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-odd"><td><p>vthreshold</p></td>
+<tr class="row-even"><td><p>vthreshold</p></td>
 <td><p>dac</p></td>
 </tr>
-<tr class="row-even"><td><p>vtr</p></td>
+<tr class="row-odd"><td><p>vtr</p></td>
 <td><p>vtrim</p></td>
 </tr>
-<tr class="row-odd"><td><p>vtrim</p></td>
+<tr class="row-even"><td><p>vtrim</p></td>
 <td><p>dac</p></td>
 </tr>
 </tbody>

@@ -10,6 +10,7 @@ This document describes the differences between v10.0.1 and v10.0.0
     1           New, Changed or Resolved Features
         1.1     Compilation
         1.2     Receiver
+        1.3     Package Distribution
     2           On-board Detector Server Compatibility
     3           Firmware Requirements
     4           Kernel Requirements
@@ -23,13 +24,10 @@ This document describes the differences between v10.0.1 and v10.0.0
 1.1 Compilation Changes
 ========================
 
-* Added CPack RPM packaging for CLI, receiver, Moench tools and GUI.
+* Added CPack RPM packaging for CLI, receiver, Moench tools, GUI and zmq streaming.
 * Compiler option SLS_INSTALL_VERSIONED_BINARIES=ON adds the project version to RPM
   package names and all installed executable names, including the GUI,
   Jungfrau tools and virtual detector servers, for side-by-side use.
-  RPM filenames include the project version only once.
-* rpm packages are available 
-
 
 1.2 Receiver
 =============
@@ -40,36 +38,26 @@ This document describes the differences between v10.0.1 and v10.0.0
     * bug does not apply for receiver discard policy `NO_DISCARD` 
 
 
+1.3 Package Distribution
+=========================
+
+RPM packages are for CLI, Receiver, Moench tools and GUI and zmq streaming provided for the folowing platforms
+
+* RHEL9/Enterprise Linux 9 - x86_64
+* RHEL8/Enterprise Linux 8 - x86_64
+
+The RPM can be downloaded from https://gitea.psi.ch/detectors/-/packages 
+
 2  On-board Detector Server Compatibility
 ==========================================
 
-
-    Eiger       10.0.0
-    Jungfrau    10.0.0
-    Mythen3     10.0.0
-    Gotthard2   10.0.0
-    Moench      10.0.0
-  
-
-    On-board Detector Server Upgrade
-    --------------------------------
-
-    From v6.1.0 (without tftp):
-        update only on-board detector server
-            Using command 'updatedetectorserver'
-
-
-        udpate both on-board detector server and firmware simultaneously
-            Using command 'update'
-
-    Instructions available at
-        https://slsdetectorgroup.github.io/slsDetectorPackage/10.0.1/serverupgrade.html
-
-
+No need to update Detector Servers. Software changes are compatible with Detector Server version 10.0.0. 
 
 
 3 Firmware Requirements
 ========================
+
+No need to update on-board Detector-Server firmware. 
 
     Eiger       02.10.2023 (v32)                    (updated in 7.0.3)
     
@@ -147,6 +135,9 @@ This document describes the differences between v10.0.1 and v10.0.0
     
     The Source Code:
          https://github.com/slsdetectorgroup/slsDetectorPackage
+
+    RPM Packages: 
+        https://gitea.psi.ch/detectors/-/packages
             
     Documentation
     -------------

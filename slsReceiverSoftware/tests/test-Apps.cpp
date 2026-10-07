@@ -138,40 +138,23 @@ TEST_CASE("Parse version and help", "[detector]") {
     }
 }
 
-TEST_CASE("Parse port and uid", "[detector]") {
-    uid_t uid = getuid();
-    std::string uidStr = std::to_string(uid);
-    uid_t invalidUid = uid + 1000;
-    std::string invalidUidStr = std::to_string(invalidUid);
-
+TEST_CASE("Parse port", "[detector]") {
     for (auto app : {AppType::SingleReceiver, AppType::MultiReceiver,
                      AppType::FrameSynchronizer}) {
         CommandLineOptions s(app);
-        REQUIRE_THROWS(
-            s.parse({"", "-p", "1234", "-u", invalidUidStr})); // invalid uid
-        REQUIRE_THROWS(s.parse({"", "-p", "500"}));            // invalid port
 
-        auto opts = s.parse({"", "-p", "1234", "-u", uidStr});
-        std::visit(
-            [&](const auto &o) {
-                REQUIRE(o.port == 1234);
-                REQUIRE(o.userid == uid);
-            },
-            opts);
+        REQUIRE_THROWS(s.parse({"", "-p", "500"})); // invalid port
+
+        auto opts = s.parse({"", "-p", "1234"});
+        std::visit([&](const auto &o) { REQUIRE(o.port == 1234); }, opts);
 
         opts = s.parse({"", "-p", "5678"});
-        std::visit(
-            [](const auto &o) {
-                REQUIRE(o.port == 5678);
-                REQUIRE(o.userid == static_cast<uid_t>(-1)); // default
-            },
-            opts);
+        std::visit([](const auto &o) { REQUIRE(o.port == 5678); }, opts);
 
         opts = s.parse({});
         std::visit(
             [](const auto &o) {
-                REQUIRE(o.port == 1954);                     // default
-                REQUIRE(o.userid == static_cast<uid_t>(-1)); // default
+                REQUIRE(o.port == 1954); // default
             },
             opts);
     }

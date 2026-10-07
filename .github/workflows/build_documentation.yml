@@ -76,13 +76,32 @@ jobs:
                 make docs
         
             # Update main index if this is a release
+            # index.html could be lfs
             - name: Update version index
-              if: github.event_name == 'release'
+              #if: (github.event_name == 'push' && github.ref == 'refs/heads/main')
               run: |
                 python docs/main_index/render_main_index.py \
                 --version "${{ steps.version.outputs.version }}" \
                 --date "$(date +'%d.%m.%Y')" 
-            
+
+            #if: (github.event_name == 'push' && github.ref == 'refs/heads/main')
+            - name: Commit and Push version index changes
+              run: | 
+                git config user.name "github-actions"
+                git config user.email "github-actions@github.com"
+
+                git add docs/main_index/versions.yaml docs/main_index/index.html 
+                git commit -m "Update version index [skip ci]"
+                git push origin HEAD:refs/heads/${{ github.ref_name }} 
+
+                # If push happened on main, also sync same file changes to developer
+                MAIN_COMMIT="$(git rev-parse HEAD)"
+                git fetch origin developer
+                git switch -c sync-to-developer origin/developer
+                git cherry-pick "${MAIN_COMMIT}"
+                git push origin HEAD:refs/heads/developer
+                
+
             - name: Checkout gh-pages
               uses: actions/checkout@v6
               with:

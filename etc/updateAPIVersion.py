@@ -6,17 +6,18 @@ Script to update API VERSION file based on the version in VERSION file.
 
 import argparse
 import sys
+from pathlib import Path
 import os
 import re
 import time
 from datetime import datetime
 
 
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT_DIR = Path(__file__).resolve().parent.parent 
 
-API_FILE = SCRIPT_DIR + "/slsSupportLib/include/sls/versionAPI.h"
+API_FILE = ROOT_DIR / "slsSupportLib/include/sls/versionAPI.h"
 
-VERSION_FILE = SCRIPT_DIR + "/VERSION"
+VERSION_FILE = ROOT_DIR / "VERSION"
 
 parser = argparse.ArgumentParser(description = 'updates API version')
 parser.add_argument('api_module_name', choices=["APILIB", "APIRECEIVER", "APICTB", "APIGOTTHARD2", "APIMOENCH", "APIEIGER", "APIXILINXCTB", "APIJUNGFRAU", "APIMYTHEN3"], help = 'module name to change api version options are: ["APILIB", "APIRECEIVER", "APICTB", "APIGOTTHARD2", "APIMOENCH", "APIEIGER", "APIXILINXCTB", "APIJUNGFRAU", "APIMYTHEN3"]')
@@ -73,7 +74,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args() 
 
-    api_dir = SCRIPT_DIR + "/" + args.api_dir
+    api_dir = ROOT_DIR / args.api_dir
     
 
     update_api_version(args.api_module_name, api_dir)

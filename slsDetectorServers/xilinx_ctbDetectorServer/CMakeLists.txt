@@ -37,9 +37,7 @@ set_target_properties(xilinx_ctbDetectorServer_virtual PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
-install(TARGETS xilinx_ctbDetectorServer_virtual
-    RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
+sls_install_executable(xilinx_ctbDetectorServer_virtual)
 
 configure_file(chip_config_xilinx.txt ${CMAKE_BINARY_DIR}/bin/chip_config_xilinx.txt COPYONLY)
 configure_file(reset_chip_xilinx.txt ${CMAKE_BINARY_DIR}/bin/reset_chip_xilinx.txt COPYONLY)

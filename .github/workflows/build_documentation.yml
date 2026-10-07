@@ -98,6 +98,7 @@ jobs:
                 MAIN_COMMIT="$(git rev-parse HEAD)"
                 git fetch origin developer
                 git cherry-pick -X theirs "${MAIN_COMMIT}"
+                git commit --allow-empty -m "docs: sync versions from main [skip ci]"
                 git push origin HEAD:refs/heads/developer
                 
 

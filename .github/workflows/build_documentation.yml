@@ -14,9 +14,6 @@ on:
         types:
             - published
 
-permissions:
-  contents: write # to push to main and developer branches
-
 env: 
     BUILD_TYPE: RELEASE 
 
@@ -29,9 +26,9 @@ jobs:
     build-and-deploy:
         strategy: 
             matrix:
-                patform: [ubuntu-latest]
+                platform: [ubuntu-latest]
                 python-version: ["3.12"]
-        runs-on: ${{ matrix.patform }}
+        runs-on: ${{ matrix.platform }}
 
         defaults:
             run:
@@ -77,43 +74,36 @@ jobs:
                 cmake -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DSLS_BUILD_DOCS=ON -DSLS_USE_HDF5=ON -DSLS_USE_PYTHON=ON ..
                 make -j4 
                 make docs
-        
-            # Update main index if this is a release
-            # index.html could be lfs
-            - name: Update version index
-              #if: (github.event_name == 'push' && github.ref == 'refs/heads/main')
+
+            - name: Check Version Index
+              if: (github.event_name == 'push' && github.ref == 'refs/heads/main')
               run: |
-                python docs/main_index/render_main_index.py \
-                --version "${{ steps.version.outputs.version }}" \
-                --date "$(date +'%d.%m.%Y')" 
+                version=$(sed -n '2p' docs/main_index/versions.yaml | awk '{print $3}')
+                if [ "${version}" != "${{ steps.version.outputs.version }}" ]; then
+                  echo "Version mismatch: versions.yaml has ${version}, but expected ${{ steps.version.outputs.version }}"
+                  exit 1
+                fi
 
-            #if: (github.event_name == 'push' && github.ref == 'refs/heads/main')
-            - name: Commit and Push version index changes
-              run: | 
-                git config user.name "github-actions"
-                git config user.email "github-actions@github.com"
-
-                git add docs/main_index/versions.yaml docs/main_index/index.html 
-                git commit -m "Update version index [skip ci]"
-                git push origin HEAD:refs/heads/${{ github.ref_name }} 
-
-                # If push happened on main, also sync same file changes to developer
-                MAIN_COMMIT="$(git rev-parse HEAD)"
-                git fetch origin developer
-                git cherry-pick -X theirs "${MAIN_COMMIT}"
-                git commit --allow-empty -m "docs: sync versions from main [skip ci]"
-                git push origin HEAD:refs/heads/developer
+            - name: Render Documentation index
+              if: github.event_name == 'release'
+              run: |
+                python docs/main_index/render_main_index.py 
                 
-
             - name: Checkout gh-pages
               uses: actions/checkout@v6
               with:
                 ref: gh-pages
                 path: gh-pages
+
+            - name: Copy documentation to versioned folder for developer branch
+              if: github.event_name == 'push' && github.ref == 'refs/heads/developer'
+              run: |
+                VERSION="${{ steps.version.outputs.version }}"
+                mkdir -p "gh-pages/${VERSION}"
+                cp -r build/docs/html/. "gh-pages/${VERSION}/"
                 
-            
             - name: Copy documentation and Release notes to versioned folder
-              if: github.event_name == 'release' || (github.event_name == 'push')
+              if: github.event_name == 'release'
               run: |
                 VERSION="${{ steps.version.outputs.version }}"
                 mkdir -p "gh-pages/${VERSION}"

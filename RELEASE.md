@@ -41,7 +41,7 @@ This document describes the differences between v10.0.1 and v10.0.0
 1.3 Package Distribution
 =========================
 
-RPM packages are for CLI, Receiver, Moench tools and GUI and zmq streaming provided for the folowing platforms
+RPM packages for CLI, Receiver, Moench tools and GUI and zmq streaming are provided for the folowing platforms
 
 * RHEL9/Enterprise Linux 9 - x86_64
 * RHEL8/Enterprise Linux 8 - x86_64

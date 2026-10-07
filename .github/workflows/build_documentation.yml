@@ -97,8 +97,7 @@ jobs:
                 # If push happened on main, also sync same file changes to developer
                 MAIN_COMMIT="$(git rev-parse HEAD)"
                 git fetch origin developer
-                git switch -c sync-to-developer origin/developer
-                git cherry-pick "${MAIN_COMMIT}"
+                git cherry-pick -X theirs "${MAIN_COMMIT}"
                 git push origin HEAD:refs/heads/developer
                 
 

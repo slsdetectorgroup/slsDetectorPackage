@@ -1,4 +1,8 @@
 versions:
+- version: 10.0.1
+  type: Bug Fix
+  date: 07.10.2026
+  has_docs: true
 - version: 10.0.0
   type: Major
   date: 10.09.2025

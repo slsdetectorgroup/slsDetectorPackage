@@ -75,19 +75,12 @@ jobs:
                 make -j4 
                 make docs
 
-            - name: Check Version Index
-              if: (github.event_name == 'push' && github.ref == 'refs/heads/main')
-              run: |
-                version=$(sed -n '2p' docs/main_index/versions.yaml | awk '{print $3}')
-                if [ "${version}" != "${{ steps.version.outputs.version }}" ]; then
-                  echo "Version mismatch: versions.yaml has ${version}, but expected ${{ steps.version.outputs.version }}"
-                  exit 1
-                fi
 
             - name: Render Documentation index
               if: github.event_name == 'release'
               run: |
-                python docs/main_index/render_main_index.py 
+                gh release list --json tagName,publishedAt > releases.json
+                python docs/main_index/render_main_index.py --json_releases releases.json --new_version ${{ steps.version.outputs.version }}
                 
             - name: Checkout gh-pages
               uses: actions/checkout@v6

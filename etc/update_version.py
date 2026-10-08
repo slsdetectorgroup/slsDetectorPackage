@@ -60,35 +60,11 @@ def get_previous_version(data_path: Path, version : str) -> str:
 
     return prev_version
 
-def add_version_to_version_file(data_path: Path, version: str, release_type: str, date: str, has_docs: bool = True):
-    """Add a new version to the YAML data file."""
-
-    with open(data_path, 'r') as f:
-        data = yaml.safe_load(f)
-
-    # check if version has already been added
-    prev_version = data['versions'][0]["version"]
-    if version == prev_version:
-        return 
-    
-    # Add to table (check if not already present)
-    new_entry = {
-            'version': version,
-            'type': release_type,
-            'date': date,
-            'has_docs': has_docs
-    }
-    data["versions"].insert(0, new_entry)
-
-    with open(data_path, 'w') as f:
-        yaml.dump(data, f, default_flow_style=False, sort_keys=False)
-    
-    print(f"✓ Added version {new_entry} to version data")
-
 
 def main(): 
     parser = argparse.ArgumentParser(description='Update version release notes')
     parser.add_argument('--version', required=True, type=str, help='version to write to VERSION file')
+    parser.add_argument('--prev_version', required=False, type=str, help='previous version to write to RELEASE.md file')
     parser.add_argument('--update_version_only', action="store_true", help='Only update version in VERSION file, do not generate release notes')
     args = parser.parse_args()
 
@@ -96,8 +72,12 @@ def main():
     write_version_to_file(version)
 
     if not args.update_version_only:
+
+        if args.prev_version is None:
+            raise ValueError("Previous version must be provided when generating release notes. Use --prev_version to specify the previous version.")
+        
         release_type = extract_release_type(version)
-        prev_version = get_previous_version(ROOT_DIR / "docs/main_index/versions.yaml", version)
+        prev_version = args.prev_version 
 
         # Read template
         template = Path(ROOT_DIR / "RELEASE.md").read_text()
@@ -111,9 +91,6 @@ def main():
         # Write output
         Path(ROOT_DIR / "RELEASE.md").write_text(output)
         print(f"✓ Generated RELEASE.md for version {version}")
-
-        #add version to versions.yaml file
-        add_version_to_version_file(ROOT_DIR / "docs/main_index/versions.yaml", version, release_type, datetime.now().strftime("%d.%m.%Y"))
 
 # Main script
 if __name__ == "__main__":

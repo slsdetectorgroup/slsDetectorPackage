@@ -1,0 +1,341 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ZMQ: Json Header Format &mdash; slsDetectorPackage  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/css/extra.css?v=2be88464" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Troubleshooting" href="troubleshooting.html" />
+    <link rel="prev" title="HDF5 File Format" href="hdf5fileformat.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            slsDetectorPackage
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Installation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="consuming.html">Consuming slsDetectorPackage</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">C++ API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="detector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="result.html">Result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="receiver_api.html">Receiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pygettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pydetector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyenums.html">Enums</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyexamples.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Command line</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="commandline.html">Command line interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick_start_guide.html">Quick Start Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="container_utils.html">ContainerUtils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="type_traits.html">TypeTraits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ToString.html">ToString</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Firmware</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="firmware.html">Firmware Upgrade</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="servers.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverupgrade.html">Upgrade</a></li>
+<li class="toctree-l1"><a class="reference internal" href="virtualserver.html">Simulators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverdefaults.html">Default Values</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector UDP Header</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="udpheader.html">Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udpconfig.html">Config file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udpdetspec.html">Detector Specific Fields</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiver.html">In-built Receiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="receivers.html">Custom Receiver</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver Files</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="fileformat.html">File format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiverheaderformat.html">SLS Receiver Header Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="masterfileattributes.html">Master File Attributes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="binaryfileformat.html">Binary File Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hdf5fileformat.html">HDF5 File Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver ZMQ Stream</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">ZMQ: Json Header Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Troubleshooting</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">slsDetectorPackage</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">ZMQ: Json Header Format</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/zmqjsonheaderformat.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="zmq-json-header-format">
+<h1>ZMQ: Json Header Format<a class="headerlink" href="#zmq-json-header-format" title="Link to this heading"></a></h1>
+<p><strong>Change in field names from slsDetectorPackage v6.x.x to v7.0.0</strong></p>
+<ul class="simple">
+<li><p>detSpec1 &lt;- bunchId</p></li>
+<li><p>detSpec2 &lt;- reserved</p></li>
+<li><p>detSpec3 &lt;- debug</p></li>
+<li><p>detSpec4 &lt;- roundRNumber</p></li>
+</ul>
+<p><strong>Format</strong></p>
+<blockquote>
+<div><blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">{</span>
+<span class="w">    </span><span class="s2">&quot;jsonversion&quot;</span>:<span class="w"> </span>unsigned<span class="w"> </span>int,
+<span class="w">    </span><span class="s2">&quot;bitmode&quot;</span>:<span class="w"> </span>unsigned<span class="w"> </span>int,
+<span class="w">    </span><span class="s2">&quot;fileIndex&quot;</span>:<span class="w"> </span>unsigned<span class="w"> </span>long<span class="w"> </span>int,
+<span class="w">    </span><span class="s2">&quot;detshape&quot;</span>:<span class="w"> </span><span class="o">[</span>
+<span class="w">        </span>unsigned<span class="w"> </span>int,
+<span class="w">        </span>unsigned<span class="w"> </span>int
+<span class="w">    </span><span class="o">]</span>,
+<span class="w">    </span><span class="s2">&quot;shape&quot;</span>:<span class="w"> </span><span class="o">[</span>
+<span class="w">        </span>unsigned<span class="w"> </span>int,
+<span class="w">        </span>unsigned<span class="w"> </span>int
+<span class="w">    </span><span class="o">]</span>,
+<span class="w">    </span><span class="s2">&quot;size&quot;</span>:<span class="w"> </span>unsigned<span class="w"> </span>int,
+<span class="w">    </span><span class="s2">&quot;acqIndex&quot;</span>:<span class="w"> </span>unsigned<span class="w"> </span>long<span class="w"> </span>int,
+<span class="w">    </span><span class="s2">&quot;frameIndex&quot;</span>:<span class="w"> </span>unsigned<span class="w"> </span>long<span class="w"> </span>int,
+<span class="w">    </span><span class="s2">&quot;progress&quot;</span>:<span class="w"> </span>double,
+<span class="w">    </span><span class="s2">&quot;fname&quot;</span>:<span class="w"> </span>string,
+<span class="w">    </span><span class="s2">&quot;data&quot;</span>:<span class="w"> </span>unsigned<span class="w"> </span>int,
+<span class="w">    </span><span class="s2">&quot;completeImage&quot;</span>:<span class="w"> </span>unsigned<span class="w"> </span>int,
+
+<span class="w">    </span><span class="s2">&quot;frameNumber&quot;</span>:<span class="w"> </span>unsigned<span class="w"> </span>long<span class="w"> </span>long<span class="w"> </span>int,
+<span class="w">    </span><span class="s2">&quot;expLength&quot;</span>:<span class="w"> </span>unsigned<span class="w"> </span>int,
+<span class="w">    </span><span class="s2">&quot;packetNumber&quot;</span>:<span class="w"> </span>unsigned<span class="w"> </span>int,
+<span class="w">    </span><span class="s2">&quot;detSpec1&quot;</span>:<span class="w"> </span>unsigned<span class="w"> </span>long<span class="w"> </span>int,
+<span class="w">    </span><span class="s2">&quot;timestamp&quot;</span>:<span class="w"> </span>unsigned<span class="w"> </span>long<span class="w"> </span>int,
+<span class="w">    </span><span class="s2">&quot;modId&quot;</span>:<span class="w"> </span>unsigned<span class="w"> </span>int,
+<span class="w">    </span><span class="s2">&quot;row&quot;</span>:<span class="w"> </span>unsigned<span class="w"> </span>int,
+<span class="w">    </span><span class="s2">&quot;column&quot;</span>:<span class="w"> </span>unsigned<span class="w"> </span>int,
+<span class="w">    </span><span class="s2">&quot;detSpec2&quot;</span>:<span class="w"> </span>unsigned<span class="w"> </span>int,
+<span class="w">    </span><span class="s2">&quot;detSpec3&quot;</span>:<span class="w"> </span>unsigned<span class="w"> </span>int,
+<span class="w">    </span><span class="s2">&quot;detSpec4&quot;</span>:<span class="w"> </span>unsigned<span class="w"> </span>int,
+<span class="w">    </span><span class="s2">&quot;detType&quot;</span>:<span class="w"> </span>unsigned<span class="w"> </span>int,
+<span class="w">    </span><span class="s2">&quot;version&quot;</span>:<span class="w"> </span>unsigned<span class="w"> </span>int,
+
+<span class="w">    </span><span class="s2">&quot;flipRows&quot;</span>:<span class="w"> </span>unsigned<span class="w"> </span>int,
+<span class="w">    </span><span class="s2">&quot;quad&quot;</span>:<span class="w"> </span>unsigned<span class="w"> </span>int,
+<span class="w">    </span><span class="s2">&quot;addJsonHeader&quot;</span>:<span class="w"> </span><span class="o">{</span>
+<span class="w">        </span>string<span class="w"> </span>:<span class="w"> </span>string
+<span class="w">    </span><span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+</div>
+</div></blockquote>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p>Field</p></td>
+<td><p>Description</p></td>
+</tr>
+<tr class="row-even"><td><p>jsonversion</p></td>
+<td><p>Version of the json header.
+Value at 4 for v6.x.x and v7.x.x</p></td>
+</tr>
+<tr class="row-odd"><td><p>bitmode</p></td>
+<td><p>Bits per pixel [4|8|16|32]</p></td>
+</tr>
+<tr class="row-even"><td><p>fileIndex</p></td>
+<td><p>Current file acquisition index</p></td>
+</tr>
+<tr class="row-odd"><td><p>detshape</p></td>
+<td><p>Geometry of the entire detector</p></td>
+</tr>
+<tr class="row-even"><td><p>shape</p></td>
+<td><p>Geometry of the current port streamed out</p></td>
+</tr>
+<tr class="row-odd"><td><p>size</p></td>
+<td><p>Size of image of current port in bytesout</p></td>
+</tr>
+<tr class="row-even"><td><p>acqIndex</p></td>
+<td><p>Frame number from the detector (redundant)</p></td>
+</tr>
+<tr class="row-odd"><td><p>frameIndex</p></td>
+<td><p>Frame number of current acquisition
+(Starting at 0)</p></td>
+</tr>
+<tr class="row-even"><td><p>progress</p></td>
+<td><p>Progress of current acquisition in %</p></td>
+</tr>
+<tr class="row-odd"><td><p>fname</p></td>
+<td><p>Current file name</p></td>
+</tr>
+<tr class="row-even"><td><p>data</p></td>
+<td><p>1 if there is data following
+0 if dummy header</p></td>
+</tr>
+<tr class="row-odd"><td><p>completeImage</p></td>
+<td><p>1 if no missing packets for this frame
+in this port, else 0</p></td>
+</tr>
+<tr class="row-even"><td><p>frameNumber</p></td>
+<td><p>Frame number
+[From detector udp header]</p></td>
+</tr>
+<tr class="row-odd"><td><p>expLength</p></td>
+<td><p>subframe number (32 bit eiger)
+or real time exposure time in 100ns (others)
+[From detector udp header]</p></td>
+</tr>
+<tr class="row-even"><td><p>packetNumber</p></td>
+<td><p>Number of packets caught for that frame</p></td>
+</tr>
+<tr class="row-odd"><td><p>detSpec1</p></td>
+<td><p>See <a class="reference internal" href="udpdetspec.html#detector-specific-fields"><span class="std std-ref">here</span></a>
+[From detector udp header]</p></td>
+</tr>
+<tr class="row-even"><td><p>timestamp</p></td>
+<td><p>Timestamp with 10 MHz clock
+[From detector udp header]</p></td>
+</tr>
+<tr class="row-odd"><td><p>modId</p></td>
+<td><p>Module Id
+[From detector udp header]</p></td>
+</tr>
+<tr class="row-even"><td><p>row</p></td>
+<td><p>Row number in detector
+[From detector udp header]</p></td>
+</tr>
+<tr class="row-odd"><td><p>column</p></td>
+<td><p>Column number in detector
+[From detector udp header]</p></td>
+</tr>
+<tr class="row-even"><td><p>detSpec2</p></td>
+<td><p>See <a class="reference internal" href="udpdetspec.html#detector-specific-fields"><span class="std std-ref">here</span></a>
+[From detector udp header]</p></td>
+</tr>
+<tr class="row-odd"><td><p>detSpec3</p></td>
+<td><p>See <a class="reference internal" href="udpdetspec.html#detector-specific-fields"><span class="std std-ref">here</span></a>
+[From detector udp header]</p></td>
+</tr>
+<tr class="row-even"><td><p>detSpec4</p></td>
+<td><p>See <a class="reference internal" href="udpdetspec.html#detector-specific-fields"><span class="std std-ref">here</span></a>
+[From detector udp header]</p></td>
+</tr>
+<tr class="row-odd"><td><p>detType
+detSpec3</p></td>
+<td><p>Detector type enum
+See <a class="reference internal" href="udpheader.html#detector-enum"><span class="std std-ref">Detector enum</span></a>
+[From detector udp header]</p></td>
+</tr>
+<tr class="row-even"><td><p>version</p></td>
+<td><p>Detector header version. At 2
+[From detector udp header]</p></td>
+</tr>
+<tr class="row-odd"><td><p>flipRows</p></td>
+<td><p>1 if rows should be flipped.
+Usually for Eiger bottom.</p></td>
+</tr>
+<tr class="row-even"><td><p>quad</p></td>
+<td><p>1 if its an Eiger quad.</p></td>
+</tr>
+<tr class="row-odd"><td><p>addJsonHeader</p></td>
+<td><p>Optional custom parameters that is required
+for processing code.</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="hdf5fileformat.html" class="btn btn-neutral float-left" title="HDF5 File Format" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="troubleshooting.html" class="btn btn-neutral float-right" title="Troubleshooting" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, PSD Detector Group.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

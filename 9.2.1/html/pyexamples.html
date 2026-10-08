@@ -1,0 +1,455 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Examples &mdash; slsDetectorPackage  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/css/extra.css?v=2be88464" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Command line interface" href="commandline.html" />
+    <link rel="prev" title="Enums" href="pyenums.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            slsDetectorPackage
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Installation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="consuming.html">Consuming slsDetectorPackage</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">C++ API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="detector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="result.html">Result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="receiver_api.html">Receiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="pygettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pydetector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyenums.html">Enums</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#setting-exposure-time">Setting exposure time</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#converting-numbers-to-hex">Converting numbers to hex</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#simple-threshold-scan">Simple threshold scan</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#reading-temperatures">Reading temperatures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#non-blocking-acquire">Non blocking acquire</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#setting-and-getting-times">Setting and getting times</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#reading-dacs">Reading dacs</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Command line</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="commandline.html">Command line interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick_start_guide.html">Quick Start Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="container_utils.html">ContainerUtils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="type_traits.html">TypeTraits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ToString.html">ToString</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Firmware</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="firmware.html">Firmware Upgrade</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="servers.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverupgrade.html">Upgrade</a></li>
+<li class="toctree-l1"><a class="reference internal" href="virtualserver.html">Simulators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverdefaults.html">Default Values</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector UDP Header</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="udpheader.html">Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udpconfig.html">Config file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udpdetspec.html">Detector Specific Fields</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiver.html">In-built Receiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="receivers.html">Custom Receiver</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver Files</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="fileformat.html">File format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiverheaderformat.html">SLS Receiver Header Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="masterfileattributes.html">Master File Attributes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="binaryfileformat.html">Binary File Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hdf5fileformat.html">HDF5 File Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver ZMQ Stream</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="zmqjsonheaderformat.html">ZMQ: Json Header Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Troubleshooting</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">slsDetectorPackage</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Examples</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/pyexamples.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="examples">
+<h1>Examples<a class="headerlink" href="#examples" title="Link to this heading"></a></h1>
+<p>Some short examples on how to use slsdet. If something is missing don’t hesitate to
+open an issue in our our  <a class="reference external" href="https://github.com/slsdetectorgroup/slsDetectorPackage">github repo</a>.</p>
+<section id="setting-exposure-time">
+<h2>Setting exposure time<a class="headerlink" href="#setting-exposure-time" title="Link to this heading"></a></h2>
+<p>Setting and reading back exposure time can be done either using a Python
+datetime.timedelta, DurationWrapper or by setting the time in seconds.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set exposure time to 1.2 seconds</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">d</span><span class="o">.</span><span class="n">exptime</span> <span class="o">=</span> <span class="mf">1.2</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">d</span><span class="o">.</span><span class="n">exptime</span> <span class="o">=</span> <span class="mf">5e-07</span>
+
+<span class="c1"># Setting exposure time using timedelta (upto microseconds precision)</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dt</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">d</span><span class="o">.</span><span class="n">exptime</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span> <span class="o">=</span> <span class="mf">1.2</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">d</span><span class="o">.</span><span class="n">exptime</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">microseconds</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span>
+
+<span class="c1"># With timedelta any arbitrary combination of units can be used</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">t</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">microseconds</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="n">seconds</span> <span class="o">=</span> <span class="mf">5.3</span><span class="p">,</span> <span class="n">minutes</span> <span class="o">=</span> <span class="mf">.3</span><span class="p">)</span>
+
+<span class="c1"># using DurationWrapper to set in seconds</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">slsdet</span><span class="w"> </span><span class="kn">import</span> <span class="n">DurationWrapper</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">d</span><span class="o">.</span><span class="n">exptime</span> <span class="o">=</span> <span class="n">DurationWrapper</span><span class="p">(</span><span class="mf">1.2</span><span class="p">)</span>
+
+<span class="c1"># using DurationWrapper to set in ns</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">t</span> <span class="o">=</span> <span class="n">DurationWrapper</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">t</span><span class="o">.</span><span class="n">set_count</span><span class="p">(</span><span class="mi">500</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">d</span><span class="o">.</span><span class="n">exptime</span> <span class="o">=</span> <span class="n">t</span>
+
+<span class="c1"># To set exposure time for individual detector one have to resort</span>
+<span class="c1"># to the C++ style API.</span>
+<span class="c1"># Sets exposure time to 1.2 seconds for module 0, 6 and 12</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">d</span><span class="o">.</span><span class="n">setExptime</span><span class="p">(</span><span class="mf">1.2</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">12</span><span class="p">])</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">d</span><span class="o">.</span><span class="n">setExptime</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span> <span class="o">=</span> <span class="mf">1.2</span><span class="p">),</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">12</span><span class="p">])</span>
+
+<span class="c1"># to get in seconds</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">d</span><span class="o">.</span><span class="n">period</span>
+<span class="mf">181.23</span>
+
+<span class="c1"># to get in DurationWrapper</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">d</span><span class="o">.</span><span class="n">getExptime</span><span class="p">()</span>
+<span class="p">[</span><span class="n">sls</span><span class="p">::</span><span class="n">DurationWrapper</span><span class="p">(</span><span class="n">total_seconds</span><span class="p">:</span> <span class="mf">181.23</span> <span class="n">count</span><span class="p">:</span> <span class="mi">181230000000</span><span class="p">)]</span>
+</pre></div>
+</div>
+</section>
+<section id="converting-numbers-to-hex">
+<h2>Converting numbers to hex<a class="headerlink" href="#converting-numbers-to-hex" title="Link to this heading"></a></h2>
+<p>Python support entering numbers in  format by using the 0x prefix. However, when reading
+back you will get a normal integer. This can then be converted to a hex string representation
+using the built in hex() function.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">slsdet</span><span class="w"> </span><span class="kn">import</span> <span class="n">Detector</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">d</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">d</span><span class="o">.</span><span class="n">patwait0</span> <span class="o">=</span> <span class="mh">0xaa</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">d</span><span class="o">.</span><span class="n">patwait0</span>
+<span class="mi">170</span>
+
+<span class="c1"># Convert to  string</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="nb">hex</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">patwait0</span><span class="p">)</span>
+<span class="s1">&#39;0xaa&#39;</span>
+</pre></div>
+</div>
+<p>For multiple values one can use a list comprehension to loop over the values.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">values</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="p">]</span>
+<span class="go">[&#39;0x1&#39;, &#39;0x2&#39;, &#39;0x3&#39;, &#39;0x4&#39;, &#39;0x5&#39;]</span>
+
+<span class="go"># or to a single string by passing the list to .join</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">hex</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="p">])</span>
+<span class="go">&#39;0x1, 0x2, 0x3, 0x4, 0x5&#39;</span>
+</pre></div>
+</div>
+</section>
+<section id="simple-threshold-scan">
+<h2>Simple threshold scan<a class="headerlink" href="#simple-threshold-scan" title="Link to this heading"></a></h2>
+<p>Assuming you have set up your detector with exposure time, period, enabled
+file writing etc.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">slsdet</span><span class="w"> </span><span class="kn">import</span> <span class="n">Eiger</span>
+
+<span class="n">d</span> <span class="o">=</span> <span class="n">Eiger</span><span class="p">()</span>
+<span class="n">threshold</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2000</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">th</span> <span class="ow">in</span> <span class="n">threshold</span><span class="p">:</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">vthreshold</span> <span class="o">=</span> <span class="n">th</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>If we want to control the shutter of for example, the big X-ray box we can add
+this line in our code. It then opens the shutter just before the measurement
+and closes is afterwards.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">xrf_shutter_open</span><span class="p">(</span><span class="n">box</span><span class="p">,</span> <span class="s1">&#39;Fe&#39;</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">th</span> <span class="ow">in</span> <span class="n">threshold</span><span class="p">:</span>
+        <span class="n">d</span><span class="o">.</span><span class="n">vthreshold</span> <span class="o">=</span> <span class="n">th</span>
+        <span class="n">d</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="reading-temperatures">
+<h2>Reading temperatures<a class="headerlink" href="#reading-temperatures" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>d.temp
+&gt;&gt;
+temp_fpga     :  43.19°C,  51.83°C
+temp_fpgaext  :  38.50°C,  38.50°C
+temp_10ge     :  39.50°C,  39.50°C
+temp_dcdc     :  42.50°C,  42.50°C
+temp_sodl     :  39.50°C,  40.50°C
+temp_sodr     :  39.50°C,  40.50°C
+temp_fpgafl   :  40.87°C,  37.61°C
+temp_fpgafr   :  34.51°C,  35.63°C
+
+d.temp.fpga
+&gt;&gt; temp_fpga     :  40.84°C,  39.31°C
+
+t = d.temp.fpga[0]
+t
+&gt;&gt; 40.551
+
+t = d.temp.fpga[:]
+t
+&gt;&gt; [40.566, 39.128]
+</pre></div>
+</div>
+</section>
+<section id="non-blocking-acquire">
+<h2>Non blocking acquire<a class="headerlink" href="#non-blocking-acquire" title="Link to this heading"></a></h2>
+<p>There are mainly two ways to achieve a non blocking acquire when calling from the Python API. One is to manually start
+the detector and the second one is to launch the normal acquire from a different process. Depending on your measurement
+it might also be better to run the other task in a seperate process and use acq in the main thread.
+But lets start looking at the at the manual way:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">slsdet</span><span class="w"> </span><span class="kn">import</span> <span class="n">Detector</span><span class="p">,</span> <span class="n">runStatus</span>
+
+
+<span class="n">n_frames</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">t_exp</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="c1"># Set exposure time and number of frames</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">()</span>
+<span class="n">d</span><span class="o">.</span><span class="n">exptime</span> <span class="o">=</span> <span class="n">t_exp</span>
+<span class="n">d</span><span class="o">.</span><span class="n">frames</span> <span class="o">=</span> <span class="n">n_frames</span>
+
+<span class="c1"># Start the measurement</span>
+<span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="n">d</span><span class="o">.</span><span class="n">startDetector</span><span class="p">()</span>
+<span class="n">d</span><span class="o">.</span><span class="n">startReceiver</span><span class="p">()</span>
+
+<span class="c1"># Wait for the detector to be ready or do other important stuff</span>
+<span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">t_exp</span> <span class="o">*</span> <span class="n">n_frames</span><span class="p">)</span>
+
+<span class="c1"># check if the detector is ready otherwise wait a bit longer</span>
+<span class="k">while</span> <span class="n">d</span><span class="o">.</span><span class="n">status</span> <span class="o">!=</span> <span class="n">runStatus</span><span class="o">.</span><span class="n">IDLE</span><span class="p">:</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+
+<span class="c1"># Stop the receiver after we got the frames</span>
+<span class="c1"># Detector is already idle so we don&#39;t need to stop it</span>
+<span class="n">d</span><span class="o">.</span><span class="n">stopReceiver</span><span class="p">()</span>
+
+<span class="n">lost</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">rx_framescaught</span> <span class="o">-</span> <span class="n">n_frames</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">n_frames</span><span class="si">}</span><span class="s2"> frames of </span><span class="si">{</span><span class="n">t_exp</span><span class="si">}</span><span class="s2">s took </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">t0</span><span class="si">:{</span><span class="mf">.3</span><span class="si">}}</span><span class="s2">s with </span><span class="si">{</span><span class="n">lost</span><span class="si">}</span><span class="s2"> frames lost &quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Instead launching d.acq() from a different process is a bit easier since the control of receiver and detector
+is handled in the acq call. However, you need to join the process used otherwise a lot of zombie processes would
+hang around until the main process exits.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">multiprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Process</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">slsdet</span><span class="w"> </span><span class="kn">import</span> <span class="n">Detector</span><span class="p">,</span> <span class="n">runStatus</span>
+
+
+<span class="n">d</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">()</span>
+
+<span class="c1">#Create a separate process to run acquire in</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">acquire</span><span class="p">)</span>
+
+<span class="c1">#Start the thread and short sleep to allow the acq to start</span>
+<span class="n">p</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.01</span><span class="p">)</span>
+
+<span class="c1">#Do some other work</span>
+<span class="k">while</span> <span class="n">d</span><span class="o">.</span><span class="n">status</span> <span class="o">!=</span> <span class="n">runStatus</span><span class="o">.</span><span class="n">IDLE</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Working&quot;</span><span class="p">)</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+
+<span class="c1">#Join the process</span>
+<span class="n">p</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="setting-and-getting-times">
+<h2>Setting and getting times<a class="headerlink" href="#setting-and-getting-times" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">slsdet</span><span class="w"> </span><span class="kn">import</span> <span class="n">Detector</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">slsdet.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">element_if_equal</span>
+
+<span class="n">d</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">()</span>
+
+<span class="c1"># The simplest way is to set the exposure time in</span>
+<span class="c1"># seconds by using the exptime property</span>
+<span class="c1"># This sets the exposure time for all modules</span>
+<span class="n">d</span><span class="o">.</span><span class="n">exptime</span> <span class="o">=</span> <span class="mf">0.5</span>
+
+<span class="c1"># exptime also accepts a python datetime.timedelta (upto microseconds resolution)</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">milliseconds</span> <span class="o">=</span> <span class="mf">2.3</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">exptime</span> <span class="o">=</span> <span class="n">t</span>
+
+<span class="c1"># or combination of units</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">seconds</span> <span class="o">=</span> <span class="mf">1.23</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">exptime</span> <span class="o">=</span> <span class="n">t</span>
+
+<span class="c1"># using DurationWrapper to set in seconds</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">slsdet</span><span class="w"> </span><span class="kn">import</span> <span class="n">DurationWrapper</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">d</span><span class="o">.</span><span class="n">exptime</span> <span class="o">=</span> <span class="n">DurationWrapper</span><span class="p">(</span><span class="mf">1.2</span><span class="p">)</span>
+
+<span class="c1"># using DurationWrapper to set in ns</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">t</span> <span class="o">=</span> <span class="n">DurationWrapper</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">t</span><span class="o">.</span><span class="n">set_count</span><span class="p">(</span><span class="mi">500</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">d</span><span class="o">.</span><span class="n">exptime</span> <span class="o">=</span> <span class="n">t</span>
+
+<span class="c1"># exptime however always returns the time in seconds</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">d</span><span class="o">.</span><span class="n">exptime</span>
+<span class="mf">181.23</span>
+
+<span class="c1"># To get back the exposure time for each module</span>
+<span class="c1"># it&#39;s possible to use getExptime, this also returns</span>
+<span class="c1"># the values as  DurationWrapper</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">d</span><span class="o">.</span><span class="n">getExptime</span><span class="p">()</span>
+<span class="p">[</span><span class="n">sls</span><span class="p">::</span><span class="n">DurationWrapper</span><span class="p">(</span><span class="n">total_seconds</span><span class="p">:</span> <span class="mf">181.23</span> <span class="n">count</span><span class="p">:</span> <span class="mi">181230000000</span><span class="p">)]</span>
+
+<span class="c1"># In case the values are the same it&#39;s possible to use the</span>
+<span class="c1"># element_if_equal function to reduce the values to a single</span>
+<span class="c1"># value</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">t</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">getExptime</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">element_if_equal</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+<span class="n">sls</span><span class="p">::</span><span class="n">DurationWrapper</span><span class="p">(</span><span class="n">total_seconds</span><span class="p">:</span> <span class="mf">1.2</span> <span class="n">count</span><span class="p">:</span> <span class="mi">1200000000</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="reading-dacs">
+<h2>Reading dacs<a class="headerlink" href="#reading-dacs" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">slsdet</span><span class="w"> </span><span class="kn">import</span> <span class="n">Detector</span><span class="p">,</span> <span class="n">Eiger</span><span class="p">,</span> <span class="n">dacIndex</span>
+
+<span class="c1">#using the specialized class</span>
+<span class="n">e</span> <span class="o">=</span> <span class="n">Eiger</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">e</span><span class="o">.</span><span class="n">dacs</span>
+<span class="o">==========</span> <span class="n">DACS</span> <span class="o">=========</span>
+<span class="n">vsvp</span>      <span class="p">:</span>    <span class="mi">0</span>    <span class="mi">0</span>
+<span class="n">vtrim</span>     <span class="p">:</span> <span class="mi">2480</span> <span class="mi">2480</span>
+<span class="n">vrpreamp</span>  <span class="p">:</span> <span class="mi">3300</span> <span class="mi">3300</span>
+<span class="n">vrshaper</span>  <span class="p">:</span> <span class="mi">1400</span> <span class="mi">1400</span>
+<span class="n">vsvn</span>      <span class="p">:</span> <span class="mi">4000</span> <span class="mi">4000</span>
+<span class="n">vtgstv</span>    <span class="p">:</span> <span class="mi">2556</span> <span class="mi">2556</span>
+<span class="n">vcmp_ll</span>   <span class="p">:</span> <span class="mi">1000</span> <span class="mi">1000</span>
+<span class="n">vcmp_lr</span>   <span class="p">:</span> <span class="mi">1000</span> <span class="mi">1000</span>
+<span class="n">vcal</span>      <span class="p">:</span>    <span class="mi">0</span>    <span class="mi">0</span>
+<span class="n">vcmp_rl</span>   <span class="p">:</span> <span class="mi">1000</span> <span class="mi">1000</span>
+<span class="n">rxb_rb</span>    <span class="p">:</span> <span class="mi">1100</span> <span class="mi">1100</span>
+<span class="n">rxb_lb</span>    <span class="p">:</span> <span class="mi">1100</span> <span class="mi">1100</span>
+<span class="n">vcmp_rr</span>   <span class="p">:</span> <span class="mi">1000</span> <span class="mi">1000</span>
+<span class="n">vcp</span>       <span class="p">:</span> <span class="mi">1000</span> <span class="mi">1000</span>
+<span class="n">vcn</span>       <span class="p">:</span> <span class="mi">2000</span> <span class="mi">2000</span>
+<span class="n">vishaper</span>  <span class="p">:</span> <span class="mi">1550</span> <span class="mi">1550</span>
+<span class="n">iodelay</span>   <span class="p">:</span>  <span class="mi">650</span>  <span class="mi">650</span>
+
+<span class="c1"># or using the general class and the list</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">dac</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">daclist</span><span class="p">:</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">getDAC</span><span class="p">(</span><span class="n">dac</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">dac</span><span class="o">.</span><span class="n">name</span><span class="si">:</span><span class="s1">10s</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">r</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="pyenums.html" class="btn btn-neutral float-left" title="Enums" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="commandline.html" class="btn btn-neutral float-right" title="Command line interface" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, PSD Detector Group.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

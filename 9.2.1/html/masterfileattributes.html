@@ -1,0 +1,772 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Master File Attributes &mdash; slsDetectorPackage  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/css/extra.css?v=2be88464" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Binary File Format" href="binaryfileformat.html" />
+    <link rel="prev" title="SLS Receiver Header Format" href="slsreceiverheaderformat.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            slsDetectorPackage
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Installation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="consuming.html">Consuming slsDetectorPackage</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">C++ API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="detector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="result.html">Result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="receiver_api.html">Receiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pygettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pydetector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyenums.html">Enums</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyexamples.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Command line</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="commandline.html">Command line interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick_start_guide.html">Quick Start Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="container_utils.html">ContainerUtils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="type_traits.html">TypeTraits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ToString.html">ToString</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Firmware</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="firmware.html">Firmware Upgrade</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="servers.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverupgrade.html">Upgrade</a></li>
+<li class="toctree-l1"><a class="reference internal" href="virtualserver.html">Simulators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverdefaults.html">Default Values</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector UDP Header</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="udpheader.html">Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udpconfig.html">Config file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udpdetspec.html">Detector Specific Fields</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiver.html">In-built Receiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="receivers.html">Custom Receiver</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver Files</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="fileformat.html">File format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiverheaderformat.html">SLS Receiver Header Format</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Master File Attributes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#eiger">Eiger</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#jungfrau">Jungfrau</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#gotthard-ii">Gotthard II</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#mythen3">Mythen3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#moench">Moench</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#gotthard-i">Gotthard I</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#chip-test-board">Chip Test Board</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="binaryfileformat.html">Binary File Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hdf5fileformat.html">HDF5 File Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver ZMQ Stream</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="zmqjsonheaderformat.html">ZMQ: Json Header Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Troubleshooting</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">slsDetectorPackage</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Master File Attributes</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/masterfileattributes.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="master-file-attributes">
+<span id="id1"></span><h1>Master File Attributes<a class="headerlink" href="#master-file-attributes" title="Link to this heading"></a></h1>
+<p>These attributes are the same in binary and HDF5 file, but vary depending on detector type.</p>
+<section id="eiger">
+<h2>Eiger<a class="headerlink" href="#eiger" title="Link to this heading"></a></h2>
+<blockquote>
+<div><table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>Key</strong></p></td>
+<td><p><strong>Description</strong></p></td>
+</tr>
+<tr class="row-even"><td><p>Version</p></td>
+<td><p>Version of the master file
+Current value:8.0</p></td>
+</tr>
+<tr class="row-odd"><td><p>Timestamp</p></td>
+<td><p>Timestamp of creation of master file</p></td>
+</tr>
+<tr class="row-even"><td><p>Detector Type</p></td>
+<td><p>Detector type</p></td>
+</tr>
+<tr class="row-odd"><td><p>Timing Mode</p></td>
+<td><p>Timing Mode</p></td>
+</tr>
+<tr class="row-even"><td><p>Geometry</p></td>
+<td><p>Number of UDP ports in x and y dimension for
+complete detector</p></td>
+</tr>
+<tr class="row-odd"><td><p>Image Size in bytes</p></td>
+<td><p>Image size in bytes per UDP port</p></td>
+</tr>
+<tr class="row-even"><td><p>Pixels</p></td>
+<td><p>Number of pixels in x and y dimension
+per UDP port</p></td>
+</tr>
+<tr class="row-odd"><td><p>Max Frames Per File</p></td>
+<td><p>Maximum frames per file</p></td>
+</tr>
+<tr class="row-even"><td><p>Frame Discard Policy</p></td>
+<td><p>Receiever Frame discard policy
+for partial frames</p></td>
+</tr>
+<tr class="row-odd"><td><p>Frame Padding</p></td>
+<td><p>Receiver Frame padding enable
+for partial frames</p></td>
+</tr>
+<tr class="row-even"><td><p>Scan Parameters</p></td>
+<td><p>Scanning mode on detector</p></td>
+</tr>
+<tr class="row-odd"><td><p>Total Frames</p></td>
+<td><p>Total number of frames and triggers expected</p></td>
+</tr>
+<tr class="row-even"><td><p>Receiver Roi</p></td>
+<td><p>Receiver ROI in file including xmax and ymax</p></td>
+</tr>
+<tr class="row-odd"><td><p>Dynamic Range</p></td>
+<td><p>Bits per pixel</p></td>
+</tr>
+<tr class="row-even"><td><p>Ten Giga</p></td>
+<td><p>10GbE enable for data</p></td>
+</tr>
+<tr class="row-odd"><td><p>Exptime</p></td>
+<td><p>Exposure time</p></td>
+</tr>
+<tr class="row-even"><td><p>Period</p></td>
+<td><p>Period between frames</p></td>
+</tr>
+<tr class="row-odd"><td><p>Threshold Energy</p></td>
+<td><p>Threshold energy</p></td>
+</tr>
+<tr class="row-even"><td><p>Sub Exptime</p></td>
+<td><p>Sub exposure time in 32 bit mode</p></td>
+</tr>
+<tr class="row-odd"><td><p>Sub Period</p></td>
+<td><p>Sub period between frames in 32 bit mode</p></td>
+</tr>
+<tr class="row-even"><td><p>Quad</p></td>
+<td><p>Quad enable (hardware)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Number of rows</p></td>
+<td><p>Number of rows enabled for readout</p></td>
+</tr>
+<tr class="row-even"><td><p>Rate Corrections</p></td>
+<td><p>Rate Corrections</p></td>
+</tr>
+<tr class="row-odd"><td><p>Frames in File</p></td>
+<td><p>Number of frames written to file by Receiver 0</p></td>
+</tr>
+<tr class="row-even"><td><p>Frame Header Format</p></td>
+<td><p>Expected frame header format for the data files</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+<section id="jungfrau">
+<h2>Jungfrau<a class="headerlink" href="#jungfrau" title="Link to this heading"></a></h2>
+<blockquote>
+<div><table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>Key</strong></p></td>
+<td><p><strong>Description</strong></p></td>
+</tr>
+<tr class="row-even"><td><p>Version</p></td>
+<td><p>Version of the master file
+Current value:8.0</p></td>
+</tr>
+<tr class="row-odd"><td><p>Timestamp</p></td>
+<td><p>Timestamp of creation of master file</p></td>
+</tr>
+<tr class="row-even"><td><p>Detector Type</p></td>
+<td><p>Detector type</p></td>
+</tr>
+<tr class="row-odd"><td><p>Timing Mode</p></td>
+<td><p>Timing Mode</p></td>
+</tr>
+<tr class="row-even"><td><p>Geometry</p></td>
+<td><p>Number of UDP ports in x and y dimension for
+complete detector</p></td>
+</tr>
+<tr class="row-odd"><td><p>Image Size in bytes</p></td>
+<td><p>Image size in bytes per UDP port</p></td>
+</tr>
+<tr class="row-even"><td><p>Pixels</p></td>
+<td><p>Number of pixels in x and y dimension
+per UDP port</p></td>
+</tr>
+<tr class="row-odd"><td><p>Max Frames Per File</p></td>
+<td><p>Maximum frames per file</p></td>
+</tr>
+<tr class="row-even"><td><p>Frame Discard Policy</p></td>
+<td><p>Receiever Frame discard policy
+for partial frames</p></td>
+</tr>
+<tr class="row-odd"><td><p>Frame Padding</p></td>
+<td><p>Receiver Frame padding enable
+for partial frames</p></td>
+</tr>
+<tr class="row-even"><td><p>Scan Parameters</p></td>
+<td><p>Scanning mode on detector</p></td>
+</tr>
+<tr class="row-odd"><td><p>Total Frames</p></td>
+<td><p>Total number of frames and triggers expected</p></td>
+</tr>
+<tr class="row-even"><td><p>Receiver Roi</p></td>
+<td><p>Receiver ROI in file including xmax and ymax</p></td>
+</tr>
+<tr class="row-odd"><td><p>Exptime</p></td>
+<td><p>Exposure time</p></td>
+</tr>
+<tr class="row-even"><td><p>Period</p></td>
+<td><p>Period between frames</p></td>
+</tr>
+<tr class="row-odd"><td><p>Number of UDP
+Interfaces</p></td>
+<td><p>Number of UDP Interfaces enabled per module</p></td>
+</tr>
+<tr class="row-even"><td><p>Number of rows</p></td>
+<td><p>Number of rows enabled for readout</p></td>
+</tr>
+<tr class="row-odd"><td><p>Frames in File</p></td>
+<td><p>Number of frames written to file by Receiver 0</p></td>
+</tr>
+<tr class="row-even"><td><p>Frame Header Format</p></td>
+<td><p>Expected frame header format for the data files</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+<section id="gotthard-ii">
+<h2>Gotthard II<a class="headerlink" href="#gotthard-ii" title="Link to this heading"></a></h2>
+<blockquote>
+<div><table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>Key</strong></p></td>
+<td><p><strong>Description</strong></p></td>
+</tr>
+<tr class="row-even"><td><p>Version</p></td>
+<td><p>Version of the master file
+Current value:8.0</p></td>
+</tr>
+<tr class="row-odd"><td><p>Timestamp</p></td>
+<td><p>Timestamp of creation of master file</p></td>
+</tr>
+<tr class="row-even"><td><p>Detector Type</p></td>
+<td><p>Detector type</p></td>
+</tr>
+<tr class="row-odd"><td><p>Timing Mode</p></td>
+<td><p>Timing Mode</p></td>
+</tr>
+<tr class="row-even"><td><p>Geometry</p></td>
+<td><p>Number of UDP ports in x and y dimension for
+complete detector</p></td>
+</tr>
+<tr class="row-odd"><td><p>Image Size in bytes</p></td>
+<td><p>Image size in bytes per UDP port</p></td>
+</tr>
+<tr class="row-even"><td><p>Pixels</p></td>
+<td><p>Number of pixels in x and y dimension
+per UDP port</p></td>
+</tr>
+<tr class="row-odd"><td><p>Max Frames Per File</p></td>
+<td><p>Maximum frames per file</p></td>
+</tr>
+<tr class="row-even"><td><p>Frame Discard Policy</p></td>
+<td><p>Receiever Frame discard policy
+for partial frames</p></td>
+</tr>
+<tr class="row-odd"><td><p>Frame Padding</p></td>
+<td><p>Receiver Frame padding enable
+for partial frames</p></td>
+</tr>
+<tr class="row-even"><td><p>Scan Parameters</p></td>
+<td><p>Scanning mode on detector</p></td>
+</tr>
+<tr class="row-odd"><td><p>Total Frames</p></td>
+<td><p>Total number of frames and triggers expected</p></td>
+</tr>
+<tr class="row-even"><td><p>Receiver Roi</p></td>
+<td><p>Receiver ROI in file including xmax and ymax</p></td>
+</tr>
+<tr class="row-odd"><td><p>Exptime</p></td>
+<td><p>Exposure time</p></td>
+</tr>
+<tr class="row-even"><td><p>Period</p></td>
+<td><p>Period between frames</p></td>
+</tr>
+<tr class="row-odd"><td><p>Burst Mode</p></td>
+<td><p>Burst mode of detector</p></td>
+</tr>
+<tr class="row-even"><td><p>Frames in File</p></td>
+<td><p>Number of frames written to file by Receiver 0</p></td>
+</tr>
+<tr class="row-odd"><td><p>Frame Header Format</p></td>
+<td><p>Expected frame header format for the data files</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+<section id="mythen3">
+<h2>Mythen3<a class="headerlink" href="#mythen3" title="Link to this heading"></a></h2>
+<blockquote>
+<div><table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>Key</strong></p></td>
+<td><p><strong>Description</strong></p></td>
+</tr>
+<tr class="row-even"><td><p>Version</p></td>
+<td><p>Version of the master file
+Current value:8.0</p></td>
+</tr>
+<tr class="row-odd"><td><p>Timestamp</p></td>
+<td><p>Timestamp of creation of master file</p></td>
+</tr>
+<tr class="row-even"><td><p>Detector Type</p></td>
+<td><p>Detector type</p></td>
+</tr>
+<tr class="row-odd"><td><p>Timing Mode</p></td>
+<td><p>Timing Mode</p></td>
+</tr>
+<tr class="row-even"><td><p>Geometry</p></td>
+<td><p>Number of UDP ports in x and y dimension for
+complete detector</p></td>
+</tr>
+<tr class="row-odd"><td><p>Image Size in bytes</p></td>
+<td><p>Image size in bytes per UDP port</p></td>
+</tr>
+<tr class="row-even"><td><p>Pixels</p></td>
+<td><p>Number of pixels in x and y dimension
+per UDP port</p></td>
+</tr>
+<tr class="row-odd"><td><p>Max Frames Per File</p></td>
+<td><p>Maximum frames per file</p></td>
+</tr>
+<tr class="row-even"><td><p>Frame Discard Policy</p></td>
+<td><p>Receiever Frame discard policy
+for partial frames</p></td>
+</tr>
+<tr class="row-odd"><td><p>Frame Padding</p></td>
+<td><p>Receiver Frame padding enable
+for partial frames</p></td>
+</tr>
+<tr class="row-even"><td><p>Scan Parameters</p></td>
+<td><p>Scanning mode on detector</p></td>
+</tr>
+<tr class="row-odd"><td><p>Total Frames</p></td>
+<td><p>Total number of frames and triggers expected</p></td>
+</tr>
+<tr class="row-even"><td><p>Receiver Roi</p></td>
+<td><p>Receiver ROI in file including xmax and ymax</p></td>
+</tr>
+<tr class="row-odd"><td><p>Dynamic Range</p></td>
+<td><p>Bits per pixel</p></td>
+</tr>
+<tr class="row-even"><td><p>Ten Giga</p></td>
+<td><p>10GbE enable for data</p></td>
+</tr>
+<tr class="row-odd"><td><p>Period</p></td>
+<td><p>Period between frames</p></td>
+</tr>
+<tr class="row-even"><td><p>Counter Mask</p></td>
+<td><p>Mask of counters enabled</p></td>
+</tr>
+<tr class="row-odd"><td><p>Exptime1</p></td>
+<td><p>Exposure time of counter 1</p></td>
+</tr>
+<tr class="row-even"><td><p>Exptime2</p></td>
+<td><p>Exposure time of counter 2</p></td>
+</tr>
+<tr class="row-odd"><td><p>Exptime3</p></td>
+<td><p>Exposure time of counter 3</p></td>
+</tr>
+<tr class="row-even"><td><p>GateDelay1</p></td>
+<td><p>Gate delay of counter 1</p></td>
+</tr>
+<tr class="row-odd"><td><p>GateDelay2</p></td>
+<td><p>Gate delay of counter 2</p></td>
+</tr>
+<tr class="row-even"><td><p>GateDelay3</p></td>
+<td><p>Gate delay of counter 3</p></td>
+</tr>
+<tr class="row-odd"><td><p>Gates</p></td>
+<td><p>Number of gates</p></td>
+</tr>
+<tr class="row-even"><td><p>Threshold energies</p></td>
+<td><p>Threshold energy of all 3 counters</p></td>
+</tr>
+<tr class="row-odd"><td><p>Frames in File</p></td>
+<td><p>Number of frames written to file by Receiver 0</p></td>
+</tr>
+<tr class="row-even"><td><p>Frame Header Format</p></td>
+<td><p>Expected frame header format for the data files</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+<section id="moench">
+<h2>Moench<a class="headerlink" href="#moench" title="Link to this heading"></a></h2>
+<blockquote>
+<div><table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>Key</strong></p></td>
+<td><p><strong>Description</strong></p></td>
+</tr>
+<tr class="row-even"><td><p>Version</p></td>
+<td><p>Version of the master file
+Current value:8.0</p></td>
+</tr>
+<tr class="row-odd"><td><p>Timestamp</p></td>
+<td><p>Timestamp of creation of master file</p></td>
+</tr>
+<tr class="row-even"><td><p>Detector Type</p></td>
+<td><p>Detector type</p></td>
+</tr>
+<tr class="row-odd"><td><p>Timing Mode</p></td>
+<td><p>Timing Mode</p></td>
+</tr>
+<tr class="row-even"><td><p>Geometry</p></td>
+<td><p>Number of UDP ports in x and y dimension for
+complete detector</p></td>
+</tr>
+<tr class="row-odd"><td><p>Image Size in bytes</p></td>
+<td><p>Image size in bytes per UDP port</p></td>
+</tr>
+<tr class="row-even"><td><p>Pixels</p></td>
+<td><p>Number of pixels in x and y dimension
+per UDP port</p></td>
+</tr>
+<tr class="row-odd"><td><p>Max Frames Per File</p></td>
+<td><p>Maximum frames per file</p></td>
+</tr>
+<tr class="row-even"><td><p>Frame Discard Policy</p></td>
+<td><p>Receiever Frame discard policy
+for partial frames</p></td>
+</tr>
+<tr class="row-odd"><td><p>Frame Padding</p></td>
+<td><p>Receiver Frame padding enable
+for partial frames</p></td>
+</tr>
+<tr class="row-even"><td><p>Scan Parameters</p></td>
+<td><p>Scanning mode on detector</p></td>
+</tr>
+<tr class="row-odd"><td><p>Total Frames</p></td>
+<td><p>Total number of frames and triggers expected</p></td>
+</tr>
+<tr class="row-even"><td><p>Receiver Roi</p></td>
+<td><p>Receiver ROI in file including xmax and ymax</p></td>
+</tr>
+<tr class="row-odd"><td><p>Exptime</p></td>
+<td><p>Exposure time</p></td>
+</tr>
+<tr class="row-even"><td><p>Period</p></td>
+<td><p>Period between frames</p></td>
+</tr>
+<tr class="row-odd"><td><p>Number of UDP
+Interfaces</p></td>
+<td><p>Number of UDP Interfaces enabled per module</p></td>
+</tr>
+<tr class="row-even"><td><p>Number of rows</p></td>
+<td><p>Number of rows enabled for readout</p></td>
+</tr>
+<tr class="row-odd"><td><p>Frames in File</p></td>
+<td><p>Number of frames written to file by Receiver 0</p></td>
+</tr>
+<tr class="row-even"><td><p>Frame Header Format</p></td>
+<td><p>Expected frame header format for the data files</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+<section id="gotthard-i">
+<h2>Gotthard I<a class="headerlink" href="#gotthard-i" title="Link to this heading"></a></h2>
+<blockquote>
+<div><table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>Key</strong></p></td>
+<td><p><strong>Description</strong></p></td>
+</tr>
+<tr class="row-even"><td><p>Version</p></td>
+<td><p>Version of the master file
+Current value:8.0</p></td>
+</tr>
+<tr class="row-odd"><td><p>Timestamp</p></td>
+<td><p>Timestamp of creation of master file</p></td>
+</tr>
+<tr class="row-even"><td><p>Detector Type</p></td>
+<td><p>Detector type</p></td>
+</tr>
+<tr class="row-odd"><td><p>Timing Mode</p></td>
+<td><p>Timing Mode</p></td>
+</tr>
+<tr class="row-even"><td><p>Geometry</p></td>
+<td><p>Number of UDP ports in x and y dimension for
+complete detector</p></td>
+</tr>
+<tr class="row-odd"><td><p>Image Size in bytes</p></td>
+<td><p>Image size in bytes per UDP port</p></td>
+</tr>
+<tr class="row-even"><td><p>Pixels</p></td>
+<td><p>Number of pixels in x and y dimension
+per UDP port</p></td>
+</tr>
+<tr class="row-odd"><td><p>Max Frames Per File</p></td>
+<td><p>Maximum frames per file</p></td>
+</tr>
+<tr class="row-even"><td><p>Frame Discard Policy</p></td>
+<td><p>Receiever Frame discard policy
+for partial frames</p></td>
+</tr>
+<tr class="row-odd"><td><p>Frame Padding</p></td>
+<td><p>Receiver Frame padding enable
+for partial frames</p></td>
+</tr>
+<tr class="row-even"><td><p>Scan Parameters</p></td>
+<td><p>Scanning mode on detector</p></td>
+</tr>
+<tr class="row-odd"><td><p>Total Frames</p></td>
+<td><p>Total number of frames and triggers expected</p></td>
+</tr>
+<tr class="row-even"><td><p>Receiver Roi</p></td>
+<td><p>Receiver ROI in file including xmax and ymax</p></td>
+</tr>
+<tr class="row-odd"><td><p>Exptime</p></td>
+<td><p>Exposure time</p></td>
+</tr>
+<tr class="row-even"><td><p>Period</p></td>
+<td><p>Period between frames</p></td>
+</tr>
+<tr class="row-odd"><td><p>Detector Roi</p></td>
+<td><p>Roi in detector restricted to an ADC.
+Includes xmax</p></td>
+</tr>
+<tr class="row-even"><td><p>Burst Mode</p></td>
+<td><p>Burst mode of detector</p></td>
+</tr>
+<tr class="row-odd"><td><p>Frames in File</p></td>
+<td><p>Number of frames written to file by Receiver 0</p></td>
+</tr>
+<tr class="row-even"><td><p>Frame Header Format</p></td>
+<td><p>Expected frame header format for the data files</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+<section id="chip-test-board">
+<h2>Chip Test Board<a class="headerlink" href="#chip-test-board" title="Link to this heading"></a></h2>
+<blockquote>
+<div><table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>Key</strong></p></td>
+<td><p><strong>Description</strong></p></td>
+</tr>
+<tr class="row-even"><td><p>Version</p></td>
+<td><p>Version of the master file
+Current value:8.0</p></td>
+</tr>
+<tr class="row-odd"><td><p>Timestamp</p></td>
+<td><p>Timestamp of creation of master file</p></td>
+</tr>
+<tr class="row-even"><td><p>Detector Type</p></td>
+<td><p>Detector type</p></td>
+</tr>
+<tr class="row-odd"><td><p>Timing Mode</p></td>
+<td><p>Timing Mode</p></td>
+</tr>
+<tr class="row-even"><td><p>Geometry</p></td>
+<td><p>Number of UDP ports in x and y dimension for
+complete detector</p></td>
+</tr>
+<tr class="row-odd"><td><p>Image Size in bytes</p></td>
+<td><p>Image size in bytes per UDP port</p></td>
+</tr>
+<tr class="row-even"><td><p>Pixels</p></td>
+<td><p>Number of pixels in x and y dimension
+per UDP port</p></td>
+</tr>
+<tr class="row-odd"><td><p>Max Frames Per File</p></td>
+<td><p>Maximum frames per file</p></td>
+</tr>
+<tr class="row-even"><td><p>Frame Discard Policy</p></td>
+<td><p>Receiever Frame discard policy
+for partial frames</p></td>
+</tr>
+<tr class="row-odd"><td><p>Frame Padding</p></td>
+<td><p>Receiver Frame padding enable
+for partial frames</p></td>
+</tr>
+<tr class="row-even"><td><p>Scan Parameters</p></td>
+<td><p>Scanning mode on detector</p></td>
+</tr>
+<tr class="row-odd"><td><p>Total Frames</p></td>
+<td><p>Total number of frames and triggers expected</p></td>
+</tr>
+<tr class="row-even"><td><p>Receiver Roi</p></td>
+<td><p>Receiver ROI in file including xmax and ymax</p></td>
+</tr>
+<tr class="row-odd"><td><p>Exptime</p></td>
+<td><p>Exposure time</p></td>
+</tr>
+<tr class="row-even"><td><p>Period</p></td>
+<td><p>Period between frames</p></td>
+</tr>
+<tr class="row-odd"><td><p>Ten Giga</p></td>
+<td><p>Ten giga enable</p></td>
+</tr>
+<tr class="row-even"><td><p>ADC Mask</p></td>
+<td><p>Mask of channels enabled in ADC</p></td>
+</tr>
+<tr class="row-odd"><td><p>Analog Flag</p></td>
+<td><p>Analog readout enable</p></td>
+</tr>
+<tr class="row-even"><td><p>Analog Samples</p></td>
+<td><p>Number of analog samples</p></td>
+</tr>
+<tr class="row-odd"><td><p>Digital Flag</p></td>
+<td><p>Digital readout enable</p></td>
+</tr>
+<tr class="row-even"><td><p>Digital Samples</p></td>
+<td><p>Number of digital samples</p></td>
+</tr>
+<tr class="row-odd"><td><p>Dbit Offset</p></td>
+<td><p>Digital offset of valid data in bytes</p></td>
+</tr>
+<tr class="row-even"><td><p>Dbit Bitset</p></td>
+<td><p>Digital 64 bit mask of bits enabled in receiver</p></td>
+</tr>
+<tr class="row-odd"><td><p>Transceiver Mask</p></td>
+<td><p>Mask of channels enabled in Transceiver</p></td>
+</tr>
+<tr class="row-even"><td><p>Transceiver Flag</p></td>
+<td><p>Transceiver readout enable</p></td>
+</tr>
+<tr class="row-odd"><td><p>Transceiver Samples</p></td>
+<td><p>Number of transceiver samples</p></td>
+</tr>
+<tr class="row-even"><td><p>Frames in File</p></td>
+<td><p>Number of frames written to file by Receiver 0</p></td>
+</tr>
+<tr class="row-odd"><td><p>Frame Header Format</p></td>
+<td><p>Expected frame header format for the data files</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="slsreceiverheaderformat.html" class="btn btn-neutral float-left" title="SLS Receiver Header Format" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="binaryfileformat.html" class="btn btn-neutral float-right" title="Binary File Format" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, PSD Detector Group.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

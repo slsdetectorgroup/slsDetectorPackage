@@ -1,0 +1,383 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>In-built Receiver &mdash; slsDetectorPackage  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/css/extra.css?v=2be88464" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Custom Receiver" href="receivers.html" />
+    <link rel="prev" title="Detector Specific Fields" href="udpdetspec.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            slsDetectorPackage
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Installation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="consuming.html">Consuming slsDetectorPackage</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">C++ API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="detector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="result.html">Result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="receiver_api.html">Receiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pygettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pydetector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyenums.html">Enums</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyexamples.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Command line</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="commandline.html">Command line interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick_start_guide.html">Quick Start Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="container_utils.html">ContainerUtils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="type_traits.html">TypeTraits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ToString.html">ToString</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Firmware</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="firmware.html">Firmware Upgrade</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="servers.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverupgrade.html">Upgrade</a></li>
+<li class="toctree-l1"><a class="reference internal" href="virtualserver.html">Simulators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverdefaults.html">Default Values</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector UDP Header</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="udpheader.html">Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udpconfig.html">Config file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udpdetspec.html">Detector Specific Fields</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">In-built Receiver</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#receiver-variants">Receiver Variants</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#starting-up-the-receiver">Starting up the Receiver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#client-commands">Client Commands</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#performance">Performance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#using-callbacks">Using Callbacks</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="receivers.html">Custom Receiver</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver Files</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="fileformat.html">File format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiverheaderformat.html">SLS Receiver Header Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="masterfileattributes.html">Master File Attributes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="binaryfileformat.html">Binary File Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hdf5fileformat.html">HDF5 File Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver ZMQ Stream</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="zmqjsonheaderformat.html">ZMQ: Json Header Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Troubleshooting</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">slsDetectorPackage</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">In-built Receiver</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/slsreceiver.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="in-built-receiver">
+<h1>In-built Receiver<a class="headerlink" href="#in-built-receiver" title="Link to this heading"></a></h1>
+<p>The receiver essentially listens to UDP data packets sent out by the detector. It’s main features are:</p>
+<ul class="simple">
+<li><p><strong>Listening</strong>: Receives UDP data from the detector.</p></li>
+<li><p><strong>Writing to File</strong>: Optionally writes received data to disk.</p></li>
+<li><p><strong>Streaming via ZMQ</strong>: Optionally streams out the data using ZeroMQ.</p></li>
+</ul>
+<p>Each of these operations runs asynchronously and in parallel for each UDP port.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ul class="simple">
+<li><p>Can be run on the same or different machine as the client.</p></li>
+<li><p>Can be configured by the client. (set file name/ discard policy, get progress etc.)</p></li>
+<li><p>Has to be started before the client runs any receiver specific command.</p></li>
+</ul>
+</div>
+<section id="receiver-variants">
+<h2>Receiver Variants<a class="headerlink" href="#receiver-variants" title="Link to this heading"></a></h2>
+<p>There are three main receiver types. How to start them is described <a class="reference internal" href="#starting-up-the-receiver"><span class="std std-ref">below</span></a>.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Receiver Type</p></th>
+<th class="head"><p>slsReceiver</p></th>
+<th class="head"><p>slsMultiReceiver</p></th>
+<th class="head"><p>slsFrameSynchronizer</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Modules Supported</p></td>
+<td><p>1</p></td>
+<td><p>Multiple</p></td>
+<td><p>Multiple</p></td>
+</tr>
+<tr class="row-odd"><td><p>Internal Architecture</p></td>
+<td><p>Threads per porttt</p></td>
+<td><p>Multiple child processes of slsReceiver</p></td>
+<td><p>Multi-threading of slsReceiver</p></td>
+</tr>
+<tr class="row-even"><td><p>ZMQ Streaming</p></td>
+<td><p>Disabled by default</p></td>
+<td><p>Disabled by default</p></td>
+<td><p>Enabled, not optional</p></td>
+</tr>
+<tr class="row-odd"><td><p>ZMQ Synchronization</p></td>
+<td><p>No</p></td>
+<td><p>No</p></td>
+<td><p>Yes, across ports</p></td>
+</tr>
+<tr class="row-even"><td><p>Image Reconstruction</p></td>
+<td><p>No</p></td>
+<td><p>No</p></td>
+<td><p>No</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="starting-up-the-receiver">
+<span id="id1"></span><h2>Starting up the Receiver<a class="headerlink" href="#starting-up-the-receiver" title="Link to this heading"></a></h2>
+<dl>
+<dt>For a Single Module</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>slsReceiver<span class="w"> </span><span class="c1"># default port 1954</span>
+
+slsReceiver<span class="w"> </span>-t2012<span class="w"> </span><span class="c1"># custom port 2012</span>
+</pre></div>
+</div>
+</dd>
+<dt>For Multiple Modules</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># each receiver (for each module) requires a unique tcp port (if all on same machine)</span>
+
+<span class="c1"># option 1 (one for each module)</span>
+slsReceiver
+slsReceiver<span class="w"> </span>-t1955
+
+<span class="c1"># option 2</span>
+slsMultiReceiver<span class="w"> </span><span class="m">2012</span><span class="w"> </span><span class="m">2</span>
+
+<span class="c1"># option 3</span>
+slsFrameSynchronizer<span class="w"> </span><span class="m">2012</span><span class="w"> </span><span class="m">2</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</section>
+<section id="client-commands">
+<h2>Client Commands<a class="headerlink" href="#client-commands" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Client commands to the receiver begin with <strong>rx_</strong> or <strong>f_</strong> (file commands).</p></li>
+<li><p><strong>rx_hostname</strong> has to be the first command to the receiver so the client knows which receiver process to communicate with.</p></li>
+<li><p>Can use ‘auto’ for <strong>udp_dstip</strong> if using 1GbE interface or the <a class="reference internal" href="virtualserver.html#virtual-detector-servers"><span class="std std-ref">virtual simulators</span></a>.</p></li>
+</ul>
+<p>To know more about detector receiver setup in the config file, please check out <a class="reference internal" href="udpconfig.html#detector-udp-header-config"><span class="std std-ref">the detector-receiver UDP configuration in the config file</span></a> and the <a class="reference internal" href="udpheader.html#detector-udp-header"><span class="std std-ref">detector udp format</span></a>.</p>
+<p>The following are the different ways to establish contact using <strong>rx_hostname</strong> command.</p>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># ---single module---</span>
+
+<span class="c1"># default receiver port at 1954</span>
+rx_hostname<span class="w"> </span>xxx
+
+<span class="c1"># custom receiver port</span>
+rx_hostname<span class="w"> </span>xxx:1957<span class="w"> </span><span class="c1"># option 1</span>
+
+rx_tcpport<span class="w"> </span><span class="m">1957</span><span class="w">  </span><span class="c1"># option 2</span>
+rx_hostname<span class="w"> </span>xxx
+
+
+<span class="c1"># ---multi module---</span>
+
+<span class="c1"># using increasing tcp ports</span>
+rx_tcpport<span class="w"> </span><span class="m">1955</span>
+rx_hostname<span class="w"> </span>xxx
+
+<span class="c1"># custom ports</span>
+rx_hostname<span class="w"> </span>xxx:1955+xxx:1958+<span class="w"> </span><span class="c1"># option 1</span>
+
+<span class="m">0</span>:rx_tcpport<span class="w"> </span><span class="m">1954</span><span class="w"> </span><span class="c1"># option 2</span>
+<span class="m">1</span>:rx_tcpport<span class="w"> </span><span class="m">1955</span>
+<span class="m">2</span>:rx_tcpport<span class="w"> </span><span class="m">1956</span>
+rx_hostname<span class="w"> </span>xxx
+
+<span class="c1"># custom ports on different receiver machines</span>
+<span class="m">0</span>:rx_tcpport<span class="w"> </span><span class="m">1954</span>
+<span class="m">0</span>:rx_hostname<span class="w"> </span>xxx
+<span class="m">1</span>:rx_tcpport<span class="w"> </span><span class="m">1955</span>
+<span class="m">1</span>:rx_hostname<span class="w"> </span>yyyrxr
+</pre></div>
+</div>
+</div></blockquote>
+<div class="line-block">
+<div class="line">Example commands:</div>
+</div>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># to get a list of receiver commands (these dont include file commands)</span>
+sls_detector_get<span class="w"> </span>list<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>rx_
+
+<span class="c1"># some file commands are:</span>
+fwrite
+foverwrite
+findex
+fpath
+fname
+fmaster
+fformat
+
+<span class="c1"># to get help on a single commands</span>
+sls_detector_get<span class="w"> </span>-h<span class="w"> </span>rx_framescaught
+</pre></div>
+</div>
+</div></blockquote>
+<p>Example of a config file using in-built receiver</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># detector hostname</span>
+hostname<span class="w"> </span>bchip052+bchip053+
+
+<span class="c1"># udp destination port (receiver)</span>
+<span class="c1"># sets increasing destination udp ports starting at 50004</span>
+udp_dstport<span class="w"> </span><span class="m">50004</span>
+
+<span class="c1"># udp destination ip (receiver)</span>
+<span class="m">0</span>:udp_dstip<span class="w"> </span><span class="m">10</span>.0.1.100
+<span class="m">1</span>:udp_dstip<span class="w"> </span><span class="m">10</span>.0.2.100
+
+<span class="c1"># udp source ip (same subnet as udp_dstip)</span>
+<span class="m">0</span>:udp_srcip<span class="w"> </span><span class="m">10</span>.0.1.184
+<span class="m">1</span>:udp_srcip<span class="w"> </span><span class="m">10</span>.0.2.184
+
+<span class="c1"># udp destination mac - not required (picked up from udp_dstip)</span>
+<span class="c1">#udp_dstmac 22:47:d5:48:ad:ef</span>
+
+<span class="c1"># connects to receivers at increasing tcp port starting at 1954</span>
+rx_hostname<span class="w"> </span>mpc3434
+<span class="c1"># same as rx_hostname mpc3434:1954+mpc3434:1955+</span>
+</pre></div>
+</div>
+</section>
+<section id="performance">
+<h2>Performance<a class="headerlink" href="#performance" title="Link to this heading"></a></h2>
+<p>Please refer to Receiver PC Tuning options and slsReceiver Tuning under <a class="reference external" href="https://slsdetectorgroup.github.io/devdoc/troubleshooting.html">Troubleshooting</a>.</p>
+</section>
+<section id="using-callbacks">
+<h2>Using Callbacks<a class="headerlink" href="#using-callbacks" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>One can get a callback in the receiver for each frame to:</dt><dd><ul class="simple">
+<li><p>manipulate the data that will be written to file, or</p></li>
+<li><p>disable file writing in slsReceiver and take care of the data for each call back</p></li>
+</ul>
+</dd>
+</dl>
+<p>When handling callbacks, the control should be returned as soon as possible, to prevent packet loss from fifo being full.</p>
+<dl>
+<dt><strong>Example</strong></dt><dd><ul>
+<li><p><a class="reference external" href="https://github.com/slsdetectorgroup/api-examples/blob/master/e4-receiver_callbacks.cpp">main cpp file</a></p></li>
+<li><p><a class="reference external" href="https://github.com/slsdetectorgroup/api-examples/blob/master/CMakeLists.txt">cmake file</a>.</p></li>
+<li><p>how to install the slsDetectorPackage with cmake is provided <a class="reference internal" href="installation.html#build-from-source-using-cmake"><span class="std std-ref">here</span></a>.</p></li>
+<li><p>compile the example <strong>e4-rxr</strong> by:</p>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cmake<span class="w"> </span>../path/to/your/source<span class="w"> </span>-DCMAKE_PREFIX_PATH<span class="o">=</span>/path/to/sls/install
+make
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+</dd>
+</dl>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="udpdetspec.html" class="btn btn-neutral float-left" title="Detector Specific Fields" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="receivers.html" class="btn btn-neutral float-right" title="Custom Receiver" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, PSD Detector Group.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

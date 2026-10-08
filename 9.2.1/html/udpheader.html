@@ -1,0 +1,360 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Format &mdash; slsDetectorPackage  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/css/extra.css?v=2be88464" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Config file" href="udpconfig.html" />
+    <link rel="prev" title="Default Values" href="serverdefaults.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            slsDetectorPackage
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Installation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="consuming.html">Consuming slsDetectorPackage</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">C++ API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="detector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="result.html">Result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="receiver_api.html">Receiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pygettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pydetector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyenums.html">Enums</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyexamples.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Command line</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="commandline.html">Command line interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick_start_guide.html">Quick Start Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="container_utils.html">ContainerUtils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="type_traits.html">TypeTraits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ToString.html">ToString</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Firmware</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="firmware.html">Firmware Upgrade</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="servers.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverupgrade.html">Upgrade</a></li>
+<li class="toctree-l1"><a class="reference internal" href="virtualserver.html">Simulators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serverdefaults.html">Default Values</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Detector UDP Header</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Format</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#current-version">Current Version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#description">Description</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#detector-enum">Detector Enum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#previous-versions">Previous Versions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="udpconfig.html">Config file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udpdetspec.html">Detector Specific Fields</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiver.html">In-built Receiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="receivers.html">Custom Receiver</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver Files</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="fileformat.html">File format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slsreceiverheaderformat.html">SLS Receiver Header Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="masterfileattributes.html">Master File Attributes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="binaryfileformat.html">Binary File Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hdf5fileformat.html">HDF5 File Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Receiver ZMQ Stream</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="zmqjsonheaderformat.html">ZMQ: Json Header Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Troubleshooting</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">slsDetectorPackage</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Format</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/udpheader.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="format">
+<span id="detector-udp-header"></span><h1>Format<a class="headerlink" href="#format" title="Link to this heading"></a></h1>
+<p>The UDP data format for the packets consist of a common header of 48 bytes for all detectors, followed by the data for that one packet.</p>
+<section id="current-version">
+<h2>Current Version<a class="headerlink" href="#current-version" title="Link to this heading"></a></h2>
+<p><strong>v2.0 (slsDetectorPackage v7.0.0+)</strong></p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">frameNumber</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">expLength</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">packetNumber</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">detSpec1</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">timestamp</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">modId</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">row</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">column</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">detSpec2</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">detSpec3</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">detSpec4</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">detType</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">version</span><span class="p">;</span>
+<span class="p">}</span><span class="w"> </span><span class="n">sls_detector_header</span><span class="p">;</span>
+</pre></div>
+</div>
+<table class="docutils align-center" id="id2">
+<caption><span class="caption-text">&lt;—————————————————- 8 bytes per row ———————————————&gt;</span><a class="headerlink" href="#id2" title="Link to this table"></a></caption>
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 25.0%" />
+<col style="width: 25.0%" />
+<col style="width: 12.5%" />
+<col style="width: 12.5%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td colspan="5"><p>frameNumber</p></td>
+</tr>
+<tr class="row-even"><td colspan="2"><p>expLength</p></td>
+<td colspan="3"><p>packetNumber</p></td>
+</tr>
+<tr class="row-odd"><td colspan="5"><p><strong>detSpec1</strong></p></td>
+</tr>
+<tr class="row-even"><td colspan="5"><p>timestamp</p></td>
+</tr>
+<tr class="row-odd"><td><p>modId</p></td>
+<td><p>row</p></td>
+<td><p>column</p></td>
+<td colspan="2"><p><strong>detSpec2</strong></p></td>
+</tr>
+<tr class="row-even"><td colspan="2"><p><strong>detSpec3</strong></p></td>
+<td><p><strong>detSpec4</strong></p></td>
+<td><p>detType</p></td>
+<td><p>version</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Since there is no difference in the format of the UDP header from the detector
+from the previous version (v2.0), the version number stays the same.</p>
+<p>Only the struture member names have changed in sls_detector_defs.h</p>
+</div>
+</section>
+<section id="description">
+<h2>Description<a class="headerlink" href="#description" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><strong>Detector specific field</strong> descriptions are found <a class="reference internal" href="udpdetspec.html#detector-specific-fields"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><strong>frameNumber</strong>: framenumber to which the current packet belongs to.</p></li>
+<li><p><strong>expLength</strong>: measured exposure time of the frame in tenths of microsecond. It is instead the sub frame number for Eiger.</p></li>
+<li><p><strong>packetNumber</strong>: packet number of the frame to which the current data belongs to.</p></li>
+<li><p><strong>timestamp</strong>: time measured at the start of frame exposure since the start of the current measurement. It is expressed in tenths of microsecond.</p></li>
+<li><p><strong>modId</strong>: module ID picked up from det_id_[detector type].txt on the detector cpu.</p></li>
+<li><p><strong>row</strong>: row position of the module in the detector system. It is calculated by the order of the module in hostname command, as well as the detsize command. The modules are stacked row by row until they reach the y-axis limit set by detsize (if specified). Then, stacking continues in the next column and so on.</p></li>
+<li><p><strong>column</strong>: column position of the module in the detector system.  It is calculated by the order of the module in hostname command, as well as the detsize command. The modules are stacked row by row until they reach the y-axis limit set by detsize (if specified). Then, stacking continues in the next column and so on.</p></li>
+<li><p><strong>detType</strong>: detector type from enum of detectorType in the package.</p></li>
+<li><p><strong>version</strong>: current version of the detector header (0x2).</p></li>
+</ul>
+</section>
+<section id="detector-enum">
+<span id="id1"></span><h2>Detector Enum<a class="headerlink" href="#detector-enum" title="Link to this heading"></a></h2>
+<blockquote>
+<div><table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Detector Type</p></th>
+<th class="head"><p>Value</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>GENERIC</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-odd"><td><p>EIGER</p></td>
+<td><p>1</p></td>
+</tr>
+<tr class="row-even"><td><p>GOTTHARD</p></td>
+<td><p>2</p></td>
+</tr>
+<tr class="row-odd"><td><p>JUNGFRAU</p></td>
+<td><p>3</p></td>
+</tr>
+<tr class="row-even"><td><p>CHIPTESTBOARD</p></td>
+<td><p>4</p></td>
+</tr>
+<tr class="row-odd"><td><p>MOENCH</p></td>
+<td><p>5</p></td>
+</tr>
+<tr class="row-even"><td><p>MYTHEN3</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-odd"><td><p>GOTTHARD2</p></td>
+<td><p>7</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+<section id="previous-versions">
+<h2>Previous Versions<a class="headerlink" href="#previous-versions" title="Link to this heading"></a></h2>
+<p><strong>v2.0 (Package v4.0.0 -  6.x.x)</strong></p>
+<table class="docutils align-center" id="id3">
+<caption><span class="caption-text">&lt;—————————————————- 8 bytes —————————————————-&gt;</span><a class="headerlink" href="#id3" title="Link to this table"></a></caption>
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 25.0%" />
+<col style="width: 25.0%" />
+<col style="width: 12.5%" />
+<col style="width: 12.5%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td colspan="5"><p>frameNumber</p></td>
+</tr>
+<tr class="row-even"><td colspan="2"><p>expLength</p></td>
+<td colspan="3"><p>packetNumber</p></td>
+</tr>
+<tr class="row-odd"><td colspan="5"><p>bunchid</p></td>
+</tr>
+<tr class="row-even"><td colspan="5"><p>timestamp</p></td>
+</tr>
+<tr class="row-odd"><td><p>modId</p></td>
+<td><p><strong>row</strong></p></td>
+<td><p><strong>column</strong></p></td>
+<td colspan="2"><p><strong>reserved</strong></p></td>
+</tr>
+<tr class="row-even"><td colspan="2"><p>debug</p></td>
+<td><p>roundRNumber</p></td>
+<td><p>detType</p></td>
+<td><p>version</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>v1.0 (Package v3.0.0 -  3.1.5)</strong></p>
+<table class="docutils align-center" id="id4">
+<caption><span class="caption-text">&lt;—————————————————- 8 bytes —————————————————-&gt;</span><a class="headerlink" href="#id4" title="Link to this table"></a></caption>
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 25.0%" />
+<col style="width: 25.0%" />
+<col style="width: 12.5%" />
+<col style="width: 12.5%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td colspan="5"><p>frameNumber</p></td>
+</tr>
+<tr class="row-even"><td colspan="2"><p>expLength</p></td>
+<td colspan="3"><p>packetNumber</p></td>
+</tr>
+<tr class="row-odd"><td colspan="5"><p>bunchid</p></td>
+</tr>
+<tr class="row-even"><td colspan="5"><p>timestamp</p></td>
+</tr>
+<tr class="row-odd"><td><p>modId</p></td>
+<td><p>xCoord</p></td>
+<td><p>yCoord</p></td>
+<td colspan="2"><p>zCoord</p></td>
+</tr>
+<tr class="row-even"><td colspan="2"><p>debug</p></td>
+<td><p>roundRNumber</p></td>
+<td><p>detType</p></td>
+<td><p>version</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="serverdefaults.html" class="btn btn-neutral float-left" title="Default Values" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="udpconfig.html" class="btn btn-neutral float-right" title="Config file" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, PSD Detector Group.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

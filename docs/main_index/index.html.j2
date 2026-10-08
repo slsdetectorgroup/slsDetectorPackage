@@ -99,7 +99,6 @@
 </thead>
 <tbody>
 {% for v in versions %}
-{# Check if version >= 10.0.0 for .md vs .txt #}
 {% set version_parts = v["version"].split('.') | map('int') | list %}
 {% set is_new_format = (version_parts[0] > 10) or (version_parts[0] == 10 and version_parts[1] > 0 and version_parts[2] > 0) %}
 {% set release_ext = '.md' if is_new_format else '.txt' %}
@@ -151,10 +150,8 @@
       </div>
   <script>
       jQuery(function () {
-          SphinxRtdTheme.Navigation.enable(true);ion>
+          SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
-ery(function () {
-</body>hinxRtdTheme.Navigation.enable(true);
-</html></body>
+  </script>
+</body>
 </html>

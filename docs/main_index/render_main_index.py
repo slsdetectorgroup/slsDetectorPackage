@@ -85,7 +85,8 @@ def add_version(version: str, versions : list):
             'has_docs': tuple_version >= MIN_DOCS_VERSION,
             '_key': tuple_version,
         })
-
+        
+    versions.sort(key=lambda v: v['_key'], reverse=True)
 
 def main():
     parser = argparse.ArgumentParser(description='Render main index HTML from release data')

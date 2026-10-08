@@ -53,7 +53,7 @@ conda search slsdetgui
 git clone https://github.com/slsdetectorgroup/slsDetectorPackage.git --branch 7.0.0
 ```
 
-> **Note:** For v6.x.x of slsDetectorPackage and older, refer [pybind11 notes on cloning](#Pybind-and-Zeromq).
+> **Note:** For v6.x.x of slsDetectorPackage and older, refer [pybind11 notes on cloning](#4-pybind-and-zeromq).
 
 
 ### 2.2 Build from source
@@ -97,7 +97,7 @@ ccmake ..
 | -DSLS_USE_HDF5=ON              | HDF5                                   |
 | -DSLS_USE_SIMULATOR=ON         | Simulator                              |
 
-> **Note:** For v7.x.x of slsDetectorPackage and older, refer [zeromq notes for cmake option to hint library location](#Pybind-and-Zeromq).
+> **Note:** For v7.x.x of slsDetectorPackage and older, refer [zeromq notes for cmake option to hint library location](#4-pybind-and-zeromq).
 
 ### Build using in-built cmk.sh script
 
@@ -142,7 +142,7 @@ Usage: $0 [-b] [-c] [-d <HDF5 directory>] [-e] [-g] [-h] [-i]
 ./cmk.sh -r #only receiver
 ```
 
-> **Note:** For v7.x.x of slsDetectorPackage and older, refer [zeromq notes for cmk script option to hint library location](#Pybind-and-Zeromq).
+> **Note:** For v7.x.x of slsDetectorPackage and older, refer [zeromq notes for cmk script option to hint library location](#4-pybind-and-zeromq).
 
 ### Build on old distributions
 
@@ -161,7 +161,7 @@ cmake ../slsDetectorPackage -DCMAKE_PREFIX_PATH=$CONDA_PREFIX
 make -j12
 ```
 
-> **Note:** For v7.x.x of slsDetectorPackage and older, refer [zeromq notes for dependencies for conda](#Pybind-and-Zeromq).
+> **Note:** For v7.x.x of slsDetectorPackage and older, refer [zeromq notes for dependencies for conda](#4-pybind-and-zeromq).
 
 
 ### Build slsDetectorGui (Qt5)
@@ -213,11 +213,11 @@ cd slsDetectorPackage
 ./cmk.sh -cbgj9
 ```
 
-> **Note:** For v7.x.x of slsDetectorPackage and older, refer [zeromq notes for dependencies for conda](#Pybind-and-Zeromq).
+> **Note:** For v7.x.x of slsDetectorPackage and older, refer [zeromq notes for dependencies for conda](#4-pybind-and-zeromq).
 
 ### Build documentation from package
 The documentation for the slsDetectorPackage is build using a combination 
-of Doxygen, Sphinx and Breathe. The easiest way to install the dependencies
+of Doxygen, Sphinx and Breathe. The easiest w(#4-pybind-and-zeromq)ay to install the dependencies
 is to use conda 
 
 ```

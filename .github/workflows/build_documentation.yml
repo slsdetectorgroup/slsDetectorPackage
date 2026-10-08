@@ -81,6 +81,8 @@ jobs:
               run: |
                 gh release list --json tagName,publishedAt > releases.json
                 python docs/main_index/render_main_index.py --json_releases releases.json --new_version ${{ steps.version.outputs.version }}
+              env: 
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                 
             - name: Checkout gh-pages
               uses: actions/checkout@v6

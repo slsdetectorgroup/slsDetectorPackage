@@ -23,7 +23,7 @@ Upgrade
     .. code-block:: bash
 
         # the following command copies new server, creates a soft link to xxxDetectorServerxxx
-        # [Jungfrau][CTB][Moench] also deletes the old server binary and edits initttab to respawn server on reboot
+        # [Jungfrau][CTB][Moench] also deletes the old server binary and edits inittab to respawn server on reboot
         # Then, the detector controller will reboot (except Eiger)
         sls_detector_put updatedetectorserver /complete-path-to-binary/xxxDetectorServerxxx
 
@@ -42,7 +42,7 @@ Upgrade
     .. code-block:: bash
 
         # the following command copies new server from pc tftp folder, creates a soft link to xxxDetectorServerxxx
-        # [Jungfrau][CTB][Moench] also edits initttab to respawn server on reboot
+        # [Jungfrau][CTB][Moench] also edits inittab to respawn server on reboot
         # Then, the detector controller will reboot (except Eiger)
         sls_detector_put copydetectorserver xxxDetectorServerxxx pcxxx
 

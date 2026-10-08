@@ -32,7 +32,7 @@ Eiger
    +-----------------------+-------------------------------------------------+
    | Max Frames Per File   | Maximum frames per file                         |
    +-----------------------+-------------------------------------------------+
-   | Frame Discard Policy  | Receiever Frame discard policy                  |
+   | Frame Discard Policy  | Receiver Frame discard policy                   |
    |                       | for partial frames                              |
    +-----------------------+-------------------------------------------------+
    | Frame Padding         | Receiver Frame padding enable                   |
@@ -95,7 +95,7 @@ Jungfrau
    +-----------------------+-------------------------------------------------+
    | Max Frames Per File   | Maximum frames per file                         |
    +-----------------------+-------------------------------------------------+
-   | Frame Discard Policy  | Receiever Frame discard policy                  |
+   | Frame Discard Policy  | Receiver Frame discard policy                   |
    |                       | for partial frames                              |
    +-----------------------+-------------------------------------------------+
    | Frame Padding         | Receiver Frame padding enable                   |
@@ -146,7 +146,7 @@ Gotthard II
    +-----------------------+-------------------------------------------------+
    | Max Frames Per File   | Maximum frames per file                         |
    +-----------------------+-------------------------------------------------+
-   | Frame Discard Policy  | Receiever Frame discard policy                  |
+   | Frame Discard Policy  | Receiver Frame discard policy                   |
    |                       | for partial frames                              |
    +-----------------------+-------------------------------------------------+
    | Frame Padding         | Receiver Frame padding enable                   |
@@ -195,7 +195,7 @@ Mythen3
    +-----------------------+-------------------------------------------------+
    | Max Frames Per File   | Maximum frames per file                         |
    +-----------------------+-------------------------------------------------+
-   | Frame Discard Policy  | Receiever Frame discard policy                  |
+   | Frame Discard Policy  | Receiver Frame discard policy                   |
    |                       | for partial frames                              |
    +-----------------------+-------------------------------------------------+
    | Frame Padding         | Receiver Frame padding enable                   |
@@ -262,7 +262,7 @@ Moench
    +-----------------------+-------------------------------------------------+
    | Max Frames Per File   | Maximum frames per file                         |
    +-----------------------+-------------------------------------------------+
-   | Frame Discard Policy  | Receiever Frame discard policy                  |
+   | Frame Discard Policy  | Receiver Frame discard policy                   |
    |                       | for partial frames                              |
    +-----------------------+-------------------------------------------------+
    | Frame Padding         | Receiver Frame padding enable                   |
@@ -315,7 +315,7 @@ Chip Test Board
    +-----------------------+-------------------------------------------------+
    | Max Frames Per File   | Maximum frames per file                         |
    +-----------------------+-------------------------------------------------+
-   | Frame Discard Policy  | Receiever Frame discard policy                  |
+   | Frame Discard Policy  | Receiver Frame discard policy                   |
    |                       | for partial frames                              |
    +-----------------------+-------------------------------------------------+
    | Frame Padding         | Receiver Frame padding enable                   |

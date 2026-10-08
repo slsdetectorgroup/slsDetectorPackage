@@ -18,8 +18,8 @@ This package typically deals with two types of network interfaces:
 Client to Module
 -----------------
 
-.. figure:: images/Client_module_commands.png
-   :target: _images/Client_module_commands.png
+.. figure:: images/Client_module_commands.svg
+   :target: _images/Client_module_commands.svg
    :width: 700px
    :align: center
    :alt: Client Module Commands
@@ -60,8 +60,8 @@ Each physical module has its own unique IP address. As the IPs are already diffe
 Client to Receiver
 --------------------
 
-.. figure:: images/Client_receiver_commands.png
-   :target: _images/Client_receiver_commands.png
+.. figure:: images/Client_receiver_commands.svg
+   :target: _images/Client_receiver_commands.svg
    :align: center
    :alt: Client Receiver Commands
 
@@ -112,8 +112,8 @@ For example, using default TCP ports (1954, 1955):
 Module to Receiver
 -------------------
 
-.. figure:: images/Module_receiver_commands.png
-   :target: _images/Module_receiver_commands.png
+.. figure:: images/Module_receiver_commands.svg
+   :target: _images/Module_receiver_commands.svg
    :align: center
    :alt: Module Receiver Commands
 
@@ -139,9 +139,9 @@ Unlike TCP, the module (hardware) requires explicit configuration for sending im
 
 Info on where to send the image from the module to.
 
-**UDP Desination IP** - The IP of the receiver PC's 10 GbE interface, usually found via ``ifconfig``. Command: `udp_dstip <commandline.html#term-udp_dstip-x.x.x.x-or-auto>`_. For 1GbE interface and for this command, one can use 'auto' as an argument, which will pick up the IP from the `rx_hostname command <commandline.html#term-rx_hostname-hostname-or-ip-address>`_.
+**UDP Destination IP** - The IP of the receiver PC's 10 GbE interface, usually found via ``ifconfig``. Command: `udp_dstip <commandline.html#term-udp_dstip-x.x.x.x-or-auto>`_. For 1GbE interface and for this command, one can use 'auto' as an argument, which will pick up the IP from the `rx_hostname command <commandline.html#term-rx_hostname-hostname-or-ip-address>`_.
 
-**UDP desintation MAC** - Also obtained from the interface using ``ifconfig``. For built-in receivers, the module configures this automatically from the ``UDP destination IP``. For custom receivers, it must be explicitly provided. Command: `udp_dstmac <commandline.html#term-udp_dstmac-x-x-x-x-x-x>`_
+**UDP destination MAC** - Also obtained from the interface using ``ifconfig``. For built-in receivers, the module configures this automatically from the ``UDP destination IP``. For custom receivers, it must be explicitly provided. Command: `udp_dstmac <commandline.html#term-udp_dstmac-x-x-x-x-x-x>`_
 
 **UDP destination port** - Ensure uniqueness if multiple users share the interface. Command: `udp_dstport <commandline.html#term-udp_dstport-n>`_
 
@@ -173,13 +173,13 @@ As it is a one-way communication (module to receiver with no reply or acknowledg
 
 **UDP source port** - This is hardcoded in every module to the same value in the detector server and cannot be changed.
 
-Note: If there is a second UDP port on the module, use 'udp_dstport2' or 'udp_dstip2'etc. See `here <https://slsdetectorgroup.github.io/devdoc/dataformat.html>`_ for more detector specific info. 
+Note: If there is a second UDP port on the module, use 'udp_dstport2' or 'udp_dstip2' etc. See `here <https://slsdetectorgroup.github.io/devdoc/dataformat.html>`_ for more detector specific info. 
 
 Receiver to GUI
 -----------------
 
-.. figure:: images/Receiver_gui_commands.png
-   :target: _images/Receiver_gui_commands.png
+.. figure:: images/Receiver_gui_commands.svg
+   :target: _images/Receiver_gui_commands.svg
    :align: center
    :alt: Receiver GUI Commands
 
@@ -216,8 +216,8 @@ Enabling the GUI automatically streams images from the receiver via ZMQ sockets.
 Receiver to External Processing
 --------------------------------
 
-.. figure:: images/Receiver_external_process_commands.png
-   :target: _images/Receiver_external_process_commands.png
+.. figure:: images/Receiver_external_process_commands.svg
+   :target: _images/Receiver_external_process_commands.svg
    :align: center
    :alt: Click to zoom
 

@@ -26,9 +26,9 @@ jobs:
     build-and-deploy:
         strategy: 
             matrix:
-                patform: [ubuntu-latest]
+                platform: [ubuntu-latest]
                 python-version: ["3.12"]
-        runs-on: ${{ matrix.patform }}
+        runs-on: ${{ matrix.platform }}
 
         defaults:
             run:
@@ -74,24 +74,29 @@ jobs:
                 cmake -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DSLS_BUILD_DOCS=ON -DSLS_USE_HDF5=ON -DSLS_USE_PYTHON=ON ..
                 make -j4 
                 make docs
-        
-            # Update main index if this is a release
-            - name: Update version index
+
+
+            - name: Render Documentation index
               if: github.event_name == 'release'
               run: |
-                python docs/main_index/render_main_index.py \
-                --version "${{ steps.version.outputs.version }}" \
-                --date "$(date +'%d.%m.%Y')" 
-            
+                gh release list --json tagName,publishedAt > releases.json
+                python docs/main_index/render_main_index.py --json_releases releases.json --new_version ${{ steps.version.outputs.version }}
+                
             - name: Checkout gh-pages
               uses: actions/checkout@v6
               with:
                 ref: gh-pages
                 path: gh-pages
+
+            - name: Copy documentation to versioned folder for developer branch
+              if: github.event_name == 'push' && github.ref == 'refs/heads/developer'
+              run: |
+                VERSION="${{ steps.version.outputs.version }}"
+                mkdir -p "gh-pages/${VERSION}"
+                cp -r build/docs/html/. "gh-pages/${VERSION}/"
                 
-            
             - name: Copy documentation and Release notes to versioned folder
-              if: github.event_name == 'release' || (github.event_name == 'push')
+              if: github.event_name == 'release'
               run: |
                 VERSION="${{ steps.version.outputs.version }}"
                 mkdir -p "gh-pages/${VERSION}"

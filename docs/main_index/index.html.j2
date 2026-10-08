@@ -100,7 +100,7 @@
 <tbody>
 {% for v in versions %}
 {% set version_parts = v["version"].split('.') | map('int') | list %}
-{% set is_new_format = (version_parts[0] > 10) or (version_parts[0] == 10 and version_parts[1] > 0 and version_parts[2] > 0) %}
+{% set is_new_format = (version_parts[0] > 10) or (version_parts[0] == 10 and (version_parts[1] > 0 or version_parts[2] > 0)) %}
 {% set release_ext = '.md' if is_new_format else '.txt' %}
 <tr class="row-{{ 'even' if loop.index is even else 'odd' }}">
   <td><p><a class="reference external" href="https://github.com/slsdetectorgroup/slsDetectorPackage/releases/tag/{{ v["version"] }}">{{ v["version"] }}</a></p></td>

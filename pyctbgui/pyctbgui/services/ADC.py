@@ -180,8 +180,7 @@ class AdcTab(QtWidgets.QWidget):
         state = viewBox.getState()
         try:
             self.mainWindow.analog_frame = self._processImageData(data, aSamples, self.mainWindow.nADCEnabled)
-            self.plotTab.ignoreHistogramSignal = True
-            self.mainWindow.plotAnalogImage.setImage(self.mainWindow.analog_frame)
+            self.plotTab.setImage(self.mainWindow.plotAnalogImage, self.mainWindow.analog_frame)
         except Exception:
             self.logger.exception('Exception Caught')
             self.mainWindow.statusbar.setStyleSheet("color:red")
@@ -192,8 +191,6 @@ class AdcTab(QtWidgets.QWidget):
 
             self.mainWindow.statusbar.showMessage(message)
             print(message)
-
-        self.plotTab.setFrameLimits(self.mainWindow.analog_frame)
 
         # keep the zoomed in state (not 1st image)
         if self.mainWindow.firstAnalogImage:

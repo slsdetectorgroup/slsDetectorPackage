@@ -21,8 +21,6 @@ class PlotTab(QtWidgets.QWidget):
     def __init__(self, parent):
         super().__init__(parent)
         pg.setConfigOptions(imageAxisOrder="row-major")  
-        self.frame_min: float = 0.0
-        self.frame_max: float = 0.0
         uic.loadUi(Path(__file__).parent.parent / 'ui' / "plot.ui", parent)
         self.view = parent
         self.mainWindow = None
@@ -31,11 +29,9 @@ class PlotTab(QtWidgets.QWidget):
         self.transceiverTab = None
         self.acquisitionTab = None
         self.adcTab = None
-        self.cmin: float = 0.0
-        self.cmax: float = 0.0
         self.colorRangeMode: Defines.colorRange = Defines.colorRange.all
-        self.ignoreHistogramSignal: bool = False
-        self.imagePlots: list[PlotWidget] = []
+        # image view whose color levels are shown in (and edited by) cmin/cmax spinboxes
+        self.activeImageView: pg.ImageView | None = None
         # list of callback functions to notify tabs when we should hide their legend
         # follows the observer design pattern
         self.hideLegendObservers = []
@@ -58,12 +54,6 @@ class PlotTab(QtWidgets.QWidget):
         for checkBox in self.checkBoxCounters:
             checkBox.setChecked(False)
             checkBox.setEnabled(False)
-
-        self.imagePlots = (
-            self.mainWindow.plotAnalogImage,
-            self.mainWindow.plotDigitalImage,
-            self.transceiverTab.transceiverImageViews,
-        )
 
     def connect_ui(self):
         self.view.radioButtonNoPlot.clicked.connect(self.plotOptions)
@@ -231,31 +221,37 @@ class PlotTab(QtWidgets.QWidget):
         for notify_function in self.hideLegendObservers:
             notify_function()
 
-    def setCmin(self, value=None):
-        """
-        slot for setting cmin from cminSpinBox
-        also used as a normal function
-        """
-        if value is None:
-            self.cmin = self.view.cminSpinBox.value()
-        else:
-            self.cmin = value
-        self.updateColorRangeUI()
+    def imageViews(self) -> list[pg.ImageView]:
+        return [
+            self.mainWindow.plotAnalogImage,
+            self.mainWindow.plotDigitalImage,
+            *self.transceiverTab.transceiverImageViews,
+        ]
 
-    def setCmax(self, value=None):
+    def setCmin(self):
         """
-        slot for setting cmax from cmaxSpinBox
-        also used as a normal function
+        slot for setting cmin from cminSpinBox, only changes the active image view
         """
-        if value is None:
-            self.cmax = self.view.cmaxSpinBox.value()
-        else:
-            self.cmax = value
-        self.updateColorRangeUI()
+        self.setActiveLevels(self.view.cminSpinBox.value(), None)
+
+    def setCmax(self):
+        """
+        slot for setting cmax from cmaxSpinBox, only changes the active image view
+        """
+        self.setActiveLevels(None, self.view.cmaxSpinBox.value())
+
+    def setActiveLevels(self, cmin, cmax):
+        if self.activeImageView is None:
+            return
+        curMin, curMax = self.activeImageView.getHistogramWidget().item.getLevels()
+        self.setLevels(self.activeImageView,
+                       curMin if cmin is None else cmin,
+                       curMax if cmax is None else cmax)
 
     def setColorRangeMode(self, mode):
         """
         slot for setting the color range mode (all,fixed,3-97%)
+        in fixed mode the current levels of every image view are kept as they are
         """
         self.colorRangeMode = mode
 
@@ -263,62 +259,66 @@ class PlotTab(QtWidgets.QWidget):
         enableSpinBoxes = mode == Defines.colorRange.fixed
         self.view.cminSpinBox.setEnabled(enableSpinBoxes)
         self.view.cmaxSpinBox.setEnabled(enableSpinBoxes)
-        self.updateColorRange()
-        self.updateColorRangeUI()
 
-    def handleHistogramChange(self, plot):
-        """
-        slot called after changing the color bar
-        This is called even when pyqtgraph sets the image without any user intervention
-        the class attribute ignore_histogram_signal is set to False before setting the image
-        so that we can distinguish between the signal originates from pyqt or from the user
-        """
-        if not self.ignoreHistogramSignal:
-            self.cmin, self.cmax = plot.getHistogramWidget().item.getLevels()
-            self.setCmin(self.cmin)
-            self.setCmax(self.cmax)
+        for imageView in self.imageViews():
+            frame = imageView.getImageItem().image
+            levels = self.computeLevels(frame) if frame is not None else None
+            if levels is not None:
+                self.setLevels(imageView, *levels)
 
-        self.ignoreHistogramSignal = False
-        # self.setColorRangeMode(Defines.colorRange.fixed)
+    def handleHistogramChange(self, imageView):
+        """
+        slot called after the user changes the color bar of an image view
+        programmatic level changes block the histogram signals, so this is only triggered by the user
+        """
+        self.activeImageView = imageView
+        self.updateCminCmaxSpinBoxes()
 
-    def setFrameLimits(self, frame):
+    def computeLevels(self, frame):
         """
-        function called from AcquisitionTab::read_zmq to get the maximum and minimum
-        values of the decoded frame and save them in frame_min/frame_max
+        returns the (cmin, cmax) levels for frame depending on the color range mode:
+        - all:   minimum/maximum values of the frame
+        - 3-97%: ignores 3% from each end of the whole range
+        - fixed: None, the levels of the image view are kept
         """
-        self.frame_min = np.min(frame)
-        self.frame_max = np.max(frame)
-        self.updateColorRange()
+        if self.colorRangeMode == Defines.colorRange.fixed or frame.size == 0:
+            return None
+        frameMin = float(np.min(frame))
+        frameMax = float(np.max(frame))
+        if self.colorRangeMode == Defines.colorRange.center:
+            frameRange = frameMax - frameMin
+            return frameMin + 0.03 * frameRange, frameMax - 0.03 * frameRange
+        return frameMin, frameMax
 
-    def updateColorRange(self):
+    def setImage(self, imageView, frame):
         """
-        for mode:
-        - all:   sets cmin and cmax to the maximums/minimum values of the frame
-        - 3-97%: limits cmax and cmin so that we ignore 3% from each end of the whole range
-        - fixed: this function does not change cmin and cmax
+        sets frame on imageView, each image view keeps its own color levels
+        levels are recomputed from frame unless the color range mode is fixed
         """
-
-        if self.colorRangeMode == Defines.colorRange.all:
-            self.cmin = self.frame_min
-            self.cmax = self.frame_max
-        elif self.colorRangeMode == Defines.colorRange.center:
-            self.cmin = self.frame_min + 0.03 * (self.frame_max - self.frame_min)
-            self.cmax = self.frame_max - 0.03 * (self.frame_max - self.frame_min)
-
-        self.updateColorRangeUI()
-
-    def updateColorRangeUI(self):
-        """
-        updates UI views should be called after every change to cmin or cmax
-        """
-        for plot in self.imagePlots:
-            if isinstance(plot, list): # hacky for now only transceiver image is a PlotSplitter 
-                for p in plot:
-                    p.getHistogramWidget().item.setLevels(min=self.cmin, max=self.cmax)
+        histogram = imageView.getHistogramWidget().item
+        levels = self.computeLevels(frame)
+        # block histogram signals so that programmatic changes are not taken as user changes
+        with QtCore.QSignalBlocker(histogram):
+            if levels is None:
+                imageView.setImage(frame, autoLevels=False)
             else:
-                plot.getHistogramWidget().item.setLevels(min=self.cmin, max=self.cmax)
-        self.view.cminSpinBox.setValue(self.cmin)
-        self.view.cmaxSpinBox.setValue(self.cmax)
+                imageView.setImage(frame, autoLevels=False, levels=levels)
+
+        if self.activeImageView is None or not self.activeImageView.isVisible():
+            self.activeImageView = imageView
+        if imageView is self.activeImageView:
+            self.updateCminCmaxSpinBoxes()
+
+    def setLevels(self, imageView, cmin, cmax):
+        with QtCore.QSignalBlocker(imageView.getHistogramWidget().item):
+            imageView.setLevels(min=cmin, max=cmax)
+        if imageView is self.activeImageView:
+            self.updateCminCmaxSpinBoxes()
+
+    def updateCminCmaxSpinBoxes(self):
+        cmin, cmax = self.activeImageView.getHistogramWidget().item.getLevels()
+        self.view.cminSpinBox.setValue(cmin)
+        self.view.cmaxSpinBox.setValue(cmax)
 
     def setColorMap(self):
         cm = pg.colormap.getFromMatplotlib(self.view.comboBoxColorMap.currentText())

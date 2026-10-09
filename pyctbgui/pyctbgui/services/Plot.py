@@ -125,7 +125,7 @@ class PlotTab(QtWidgets.QWidget):
         nMaxX = lambda : self.transceiverTab.nTransceiverCols
 
         for index, image_view in enumerate(self.transceiverTab.transceiverImageViews):
-            frame = lambda : image_view.getImageItem().image
+            frame = lambda image_view=image_view: image_view.getImageItem().image
             image_view.scene.sigMouseMoved.connect(partial(self.showPlotValues, image_view, nMaxX, nMaxY, frame))
             image_view.getHistogramWidget().item.sigLevelChangeFinished.connect(partial(self.handleHistogramChange, image_view))
 

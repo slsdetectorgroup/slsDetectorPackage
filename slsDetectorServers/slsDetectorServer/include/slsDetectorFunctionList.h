@@ -603,6 +603,7 @@ int setTimingInfoDecoder(enum timingInfoDecoder val);
 int getTimingInfoDecoder(enum timingInfoDecoder *retval);
 int getElectronCollectionMode();
 void setElectronCollectionMode(int enable);
+void updateHDRActivationTime();
 int setHDR(bool enable, enum operationMode mode);
 int getHDR(bool *enable, enum operationMode *mode);
 #endif

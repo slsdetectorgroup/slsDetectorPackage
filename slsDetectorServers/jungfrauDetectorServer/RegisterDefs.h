@@ -301,7 +301,8 @@
 #define CONFIG_V12_STRG_CLL_OFST            (0) 
 #define CONFIG_V12_STRG_CLL_MSK             (0x0000FFFF << CONFIG_V12_STRG_CLL_OFST)
 
-
+#define CONFIG_V12_RST_STP_RDCTN_OFST       (18)
+#define CONFIG_V12_RST_STP_RDCTN_MSK        (0x00000001 << CONFIG_V12_RST_STP_RDCTN_OFST)
 // CSM mode = high current (100%), low current (16%)
 #define CONFIG_V11_CRRNT_SRC_LOW_OFST       (19) 
 #define CONFIG_V11_CRRNT_SRC_LOW_MSK        (0x00000001 << CONFIG_V11_CRRNT_SRC_LOW_OFST)
@@ -412,6 +413,10 @@
 #define DAQ_CRRNT_SRC_CLMN_SLCT_OFST        (20)
 #define DAQ_CRRNT_SRC_CLMN_SLCT_MSK         (0x0000003F << DAQ_CRRNT_SRC_CLMN_SLCT_OFST)
 #define DAQ_GAIN_MODE_MASK                  (DAQ_FRCE_SWTCH_GAIN_MSK | DAQ_FIX_GAIN_MSK | DAQ_CMP_RST_MSK)
+#define DAQ_CDS_BYPASS_OFST                  (28)
+#define DAQ_CDS_BYPASS_MSK                   (0x00000001 << DAQ_CDS_BYPASS_OFST)
+#define DAQ_CDS_RESET_OFST                   (29)
+#define DAQ_CDS_RESET_MSK                    (0x00000001 << DAQ_CDS_RESET_OFST)
 
 /** Chip Power Register */
 #define CHIP_POWER_REG                      (0x5E << MEM_MAP_SHIFT)
@@ -494,8 +499,8 @@ Time before end of exposure when comparator is disabled */
 // tDS = (DST + 1) * 25ns
 #define ASIC_CTRL_DS_TMR_OFST               (8)
 #define ASIC_CTRL_DS_TMR_MSK                (0x000000FF << ASIC_CTRL_DS_TMR_OFST)
-#define ASIC_CTRL_DS_TMR_VAL                ((0x1F << ASIC_CTRL_DS_TMR_OFST) & ASIC_CTRL_DS_TMR_MSK)
-#define ASIC_CTRL_DS_TMR_CHIP1_1_VAL        ((0xFF << ASIC_CTRL_DS_TMR_OFST) & ASIC_CTRL_DS_TMR_MSK)
+#define ASIC_CTRL_DS_TMR_LOW_RES_VAL                ((0x1F << ASIC_CTRL_DS_TMR_OFST) & ASIC_CTRL_DS_TMR_MSK)
+#define ASIC_CTRL_DS_TMR_HIGH_RES_VAL        ((0x5F << ASIC_CTRL_DS_TMR_OFST) & ASIC_CTRL_DS_TMR_MSK)
 
 /* ADC 0 Deserializer Control */
 #define ADC_DSRLZR_0_REG                    (0xF0 << MEM_MAP_SHIFT)

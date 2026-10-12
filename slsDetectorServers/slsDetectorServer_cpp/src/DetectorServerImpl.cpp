@@ -5,9 +5,6 @@
 
 namespace sls {
 
-template class DetectorServerImpl<true>;  // forward declare
-template class DetectorServerImpl<false>; // forward declare
-
 template <bool isStopServer>
 DetectorServerImpl<isStopServer>::DetectorServerImpl() {
     udpDetails[0].srcport = DEFAULT_UDP_SRC_PORTNO;
@@ -113,5 +110,10 @@ detector_setup_status
 DetectorServerImpl<isStopServer>::get_detector_setup_status() const {
     return detectorSetupStatus;
 }
+
+template class DetectorServerImpl<true>;  // explicit instantiation for stop
+                                          // server
+template class DetectorServerImpl<false>; // explicit instantiation for control
+                                          // server
 
 } // namespace sls

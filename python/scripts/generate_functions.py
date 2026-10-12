@@ -7,6 +7,9 @@ to be installed.
 
 When the Detector API is updated this file should be run
 manually.
+
+Tested with libclang 17-23. The output is formatted with
+clang-format 17.
 """
 import os
 from clang import cindex
@@ -38,11 +41,11 @@ def find_libclang():
     """Find libclang in the current Conda/Mamba environment."""
     conda_prefix = os.environ.get("CONDA_PREFIX")
     if conda_prefix:
-        lib_dir = os.path.join(conda_prefix, "lib")
-        # Look for libclang*.so files
-        for f in os.listdir(lib_dir):
-            if f.startswith("libclang") and f.endswith(".so"):
-                return os.path.join(lib_dir, f)
+        # Match the name exactly, lib also holds libclang-cpp and libclang_rt.*
+        for name in ("libclang.so", "libclang.dylib"):
+            path = os.path.join(conda_prefix, "lib", name)
+            if os.path.exists(path):
+                return path
 
     # fallback: system-wide search
     path = ctypes.util.find_library("clang")
@@ -52,7 +55,7 @@ def find_libclang():
     raise FileNotFoundError("libclang not found in CONDA_PREFIX or system paths.")
 
 
-def check_libclang_version(required="12"):
+def check_libclang_version(supported):
     # Use already-loaded libclang, or let cindex resolve it
     lib = ctypes.CDLL(cindex.Config.library_file or ctypes.util.find_library("clang"))
 
@@ -63,11 +66,13 @@ def check_libclang_version(required="12"):
 
     # Parse and check version
     match = re.search(r"version\s+(\d+)", version_str)
-    if not match or match.group(1) != required:
-        msg = red(f"libclang version {match.group(1) if match else '?'} found, but version {required} required. Bye!")
+    version = int(match.group(1)) if match else None
+    if version not in supported:
+        versions = ", ".join(str(v) for v in supported)
+        msg = red(f"libclang version {version or '?'} found, but one of {versions} required. Bye!")
         print(msg)
         sys.exit(1)
-    msg = green(f"Found libclang version {required}")
+    msg = green(f"Found libclang version {version}")
     print(msg)
 
 
@@ -95,8 +100,25 @@ def check_for_compile_commands_json(path):
         print(msg)
 
 
+def check_for_parse_errors(tu):
+    # Types that libclang fails to parse silently turn into int. Errors without
+    # a location come from compiler flags that clang does not know and are harmless
+    errors = [
+        d
+        for d in tu.diagnostics
+        if d.severity >= cindex.Diagnostic.Error and d.location.file
+    ]
+    if errors:
+        print(red("FAILED"))
+        for d in errors:
+            print(red(f"{d.location.file}:{d.location.line}: {d.spelling}"))
+        print(red("Errors while parsing, the generated types can't be trusted. Bye!"))
+        sys.exit(1)
+
+
 default_build_path = "/home/l_frojdh/sls/build/"
 fpath = "../../slsDetectorSoftware/src/Detector.cpp"
+supported_libclang_versions = (17, 18, 19, 20, 21, 22, 23)
 
 
 m = []
@@ -118,13 +140,64 @@ def get_arguments(node):
     return args
 
 
+def qualified_name(decl):
+    """Name of a declaration including its enclosing scopes, e.g. sls::Positions"""
+    parts = []
+    while decl is not None and decl.kind != cindex.CursorKind.TRANSLATION_UNIT:
+        if decl.spelling:
+            parts.append(decl.spelling)
+        decl = decl.semantic_parent
+    return "::".join(reversed(parts))
+
+
+def referenced_types(node):
+    """Declarations of the types named in the return type of a method or in a parameter"""
+    for child in node.get_children():
+        if child.kind == cindex.CursorKind.TYPE_REF:
+            yield child.referenced
+        elif node.kind == child.kind == cindex.CursorKind.PARM_DECL:
+            # parameters of a function pointer
+            yield from referenced_types(child)
+
+
+def type_spelling(node, type):
+    """
+    Spelling of the return type of a method or the type of a parameter.
+
+    libclang gives a type name as it is written in the source (Positions).
+    The generated file is outside the sls namespace, so we look up the
+    declarations and add the scope ourselves (sls::Positions). Names already
+    written with a scope (defs::xy) are left as they are.
+    """
+    spelling = type.spelling
+    for decl in referenced_types(node):
+        unqualified = rf"(?<![\w:]){re.escape(decl.spelling)}(?![\w:])"
+        spelling = re.sub(unqualified, qualified_name(decl), spelling)
+    return spelling
+
+
+def get_compile_args(build_path):
+    """Arguments to parse Detector.cpp with, from the compilation database"""
+    db = cindex.CompilationDatabase.fromDirectory(build_path)
+    args = list(next(iter(db.getCompileCommands(fpath))).arguments)
+    # Drop the compiler and the source file. libclang puts "--" before the
+    # file and anything we add after that is read as a file name
+    args = args[1:-1]
+    if args and args[-1] == "--":
+        args.pop()
+    args += "-x c++ --std=c++17".split()
+    for inc in system_include_paths("clang++"):
+        args += ["-isystem", inc]
+    return args
+
+
 def get_arguments_with_default(node):
     args = []
     for arg in node.get_arguments():
         tokens = [t.spelling for t in arg.get_tokens()]
         # print(tokens)
         if "=" in tokens:
-            if arg.type.spelling == "sls::Positions":  # TODO! automate
+            if type_spelling(arg, arg.type) == "sls::Positions":  # TODO! automate
                 args.append("py::arg() = Positions{}")
             else:
                 args.append("py::arg()" + "".join(tokens[tokens.index("=") :]))
@@ -137,9 +210,9 @@ def get_arguments_with_default(node):
 
 
 def get_fdec(node):
-    args = [a.type.spelling for a in node.get_arguments()]
+    args = [type_spelling(a, a.type) for a in node.get_arguments()]
     if node.result_type.spelling:
-        return_type = node.result_type.spelling
+        return_type = type_spelling(node, node.result_type)
     else:
         return_type = "void"
 
@@ -223,22 +296,21 @@ if __name__ == "__main__":
     
     libclang_path = find_libclang()
     cindex.Config.set_library_file(libclang_path)
-    check_libclang_version("12")
-    check_clang_format_version(12)
+    check_libclang_version(supported_libclang_versions)
+    check_clang_format_version(17)
     check_for_compile_commands_json(cargs.build_path)
 
     print("Parsing functions in Detector.h - ", end="", flush=True)
     t0 = time.perf_counter()
     # parse functions
-    db = cindex.CompilationDatabase.fromDirectory(cargs.build_path)
     index = cindex.Index.create()
-    args = db.getCompileCommands(fpath)
-    args = list(iter(args).__next__().arguments)[0:-1]
-    args = args + "-x c++ --std=c++11".split()
-    syspath = system_include_paths("clang++")
-    incargs = ["-I" + inc for inc in syspath]
-    args = args + incargs
-    tu = index.parse(fpath, args=args)
+    tu = index.parse(
+        fpath,
+        args=get_compile_args(cargs.build_path),
+        # we only need the declarations
+        options=cindex.TranslationUnit.PARSE_SKIP_FUNCTION_BODIES,
+    )
+    check_for_parse_errors(tu)
     visit(tu.cursor)
     print(green("OK"))
     print(f"Parsing took {time.perf_counter()-t0:.3f}s")

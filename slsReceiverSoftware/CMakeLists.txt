@@ -173,22 +173,12 @@ if (SLS_USE_RECEIVER_BINARIES)
         slsMultiReceiver
         slsFrameSynchronizer
     )
-    if(SLS_INSTALL_VERSIONED_BINARIES)
-        message(STATUS "Versioned binaries will be installed")
-        foreach(target IN LISTS SLS_RECEIVER_BINARIES)
-            install(PROGRAMS "$<TARGET_FILE:${target}>"
-            DESTINATION ${CMAKE_INSTALL_BINDIR}
-            RENAME "$<TARGET_FILE_BASE_NAME:${target}>-${PROJECT_VERSION}"
-            COMPONENT receiver
-            )
-        endforeach()
-    else()
-        install(TARGETS ${SLS_RECEIVER_BINARIES}
+    foreach(target IN LISTS SLS_RECEIVER_BINARIES)
+        sls_install_executable(${target}
             EXPORT "${TARGETS_EXPORT_NAME}"
-            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
             COMPONENT receiver
         )
-    endif()
+    endforeach()
 
 
 

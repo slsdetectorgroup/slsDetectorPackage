@@ -21,6 +21,8 @@ class BaseMatterhornServerImpl
     : public DetectorServerImpl<
           is_stop_server<DerivedMatterhornServerImpl>::value> {
   public:
+    using BaseServerImpl =
+        DetectorServerImpl<is_stop_server<DerivedMatterhornServerImpl>::value>;
     BaseMatterhornServerImpl();
     ~BaseMatterhornServerImpl() = default;
 
@@ -93,7 +95,7 @@ void BaseMatterhornServerImpl<DerivedMatterhornServerImpl>::setupDetector() {
     // TODO: extend
     try {
         // stop server does not talk to the board
-        if constexpr (!this->stop_server) {
+        if constexpr (!BaseServerImpl::stop_server) {
             set_num_frames(1);
             set_num_triggers(1);
             set_counter_mask(0xF); // enable counter all counters by default

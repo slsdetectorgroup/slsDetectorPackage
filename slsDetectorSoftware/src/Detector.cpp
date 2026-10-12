@@ -1463,6 +1463,8 @@ void Detector::setRxROI(const std::vector<defs::ROI> &args) {
 
 void Detector::clearRxROI() { pimpl->clearRxROI(); }
 
+bool Detector::isCompleteROI() const { return pimpl->isCompleteROI(); }
+
 // File
 
 Result<defs::fileFormat> Detector::getFileFormat(Positions pos) const {
@@ -1769,6 +1771,7 @@ Result<bool> Detector::getDataStream(const defs::portPosition port,
 
 void Detector::setDataStream(const defs::portPosition port, const bool enable,
                              Positions pos) {
+    pimpl->validatePortEnable(port, enable, pos);
     pimpl->Parallel(&Module::setDataStream, pos, port, enable);
 }
 

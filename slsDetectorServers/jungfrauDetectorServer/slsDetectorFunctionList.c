@@ -2944,6 +2944,79 @@ void setElectronCollectionMode(int enable) {
     configureChip();
 }
 
+int setHDR(bool enable, enum operationMode mode) {
+    LOG(logINFO, ("%s HDR\n", (enable ? "Enabling" : "Disabling")));
+
+    uint32_t timeout = 0;
+    uint64_t expTimeInClks =
+        get64BitReg(SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG) +
+        ACQ_TIME_MIN_CLOCK;
+    uint32_t activationTime = 0;
+    uint32_t mode_val = 0;
+    switch (mode) {
+    case SYNCHROTRON:
+        LOG(logINFO, ("\tmode: synchrotron\n"));
+        timeout = HDR_SYNC_TIME_CLK_VAL;
+        activationTime =
+            (uint32_t)((expTimeInClks * HDR_SYNC_ACTIVATION_TIME_PERCENT) /
+                       100);
+        mode_val = HDR_MODE_SYNCHROTRON_VAL;
+        break;
+    case FEL:
+        LOG(logINFO, ("\tmode: FEL\n"));
+        timeout = HDR_FEL_TIMEOUT_CLK_VAL;
+        activationTime =
+            (uint32_t)((expTimeInClks * HDR_FEL_ACTIVATION_TIME_PERCENT) / 100);
+        mode_val = HDR_MODE_FEL_VAL;
+        break;
+    default:
+        LOG(logERROR, ("Unknown HDR mode %d\n", mode));
+        return FAIL;
+    }
+
+    if (activationTime > HDR_MAX_ACTIVATION_TIME_VAL) {
+        activationTime = HDR_MAX_ACTIVATION_TIME_VAL;
+    }
+
+    uint32_t addr = HDR_REG;
+    uint32_t regval = bus_r(addr);
+    if (enable) {
+        uint32_t mask = HDR_TIMOUT_MSK | HDR_ACTIVATION_TIME_MSK |
+                        HDR_MODE_MSK | HDR_ENABLE_MSK;
+        regval &= ~mask;
+
+        regval |= ((timeout << HDR_TIMOUT_OFST) & HDR_TIMOUT_MSK);
+        regval |= ((activationTime << HDR_ACTIVATION_TIME_OFST) &
+                   HDR_ACTIVATION_TIME_MSK);
+        regval |= mode_val;
+        regval |= HDR_ENABLE_MSK;
+        bus_w(addr, regval);
+    } else {
+        bus_w(addr, regval & ~HDR_ENABLE_MSK);
+    }
+
+    return OK;
+}
+
+int getHDR(bool *enable, enum operationMode *mode) {
+    uint32_t addr = HDR_REG;
+    uint32_t regval = bus_r(addr);
+    *enable = (regval & HDR_ENABLE_MSK) ? true : false;
+    uint32_t mode_val = (regval & HDR_MODE_MSK);
+    switch (mode_val) {
+    case HDR_MODE_SYNCHROTRON_VAL:
+        *mode = SYNCHROTRON;
+        break;
+    case HDR_MODE_FEL_VAL:
+        *mode = FEL;
+        break;
+    default:
+        LOG(logERROR, ("Unknown HDR mode value %d\n", mode_val));
+        return FAIL;
+    }
+    return OK;
+}
+
 int getTenGigaFlowControl() {
     return ((bus_r(CONFIG_REG) & CONFIG_ETHRNT_FLW_CNTRL_MSK) >>
             CONFIG_ETHRNT_FLW_CNTRL_OFST);

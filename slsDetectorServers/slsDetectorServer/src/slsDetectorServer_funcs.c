@@ -11078,12 +11078,12 @@ int set_hdr(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     int args[2] = {-1, -1};
-
+    if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+        return printSocketReadError();
 #ifndef JUNGFRAUD
     functionNotImplemented();
 #else
-    if (receiveData(file_des, args, sizeof(args), INT32) < 0)
-        return printSocketReadError();
+
     if (Server_VerifyLock() == OK) {
         int enable = args[0];
         enum operationMode mode = args[1];
@@ -11118,4 +11118,27 @@ int set_hdr(int file_des) {
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_hdr(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retvals[2] = {-1, -1};
+    LOG(logDEBUG1, ("Getting HDR\n"));
+
+#ifndef JUNGFRAUD
+    functionNotImplemented();
+#else
+    bool enable = false;
+    enum operationMode mode = SYNCHROTRON;
+    ret = getHDR(&enable, &mode);
+    if (ret == FAIL) {
+        sprintf(mess, "Could not get HDR\n");
+        LOG(logERROR, (mess));
+    } else {
+        retvals[0] = enable;
+        retvals[1] = mode;
+    }
+#endif
+    return Server_SendResult(file_des, INT32, retvals, sizeof(retvals));
 }

@@ -527,10 +527,7 @@ enum streamingInterface {
     enum polarity { POSITIVE, NEGATIVE };
     enum timingInfoDecoder { SWISSFEL, SHINE };
     enum collectionMode { HOLE, ELECTRON };
-    enum operationMode {
-        SYNCHROTRON,
-        FEL
-    }
+    enum operationMode { SYNCHROTRON, FEL };
 
 #ifdef __cplusplus
 
@@ -577,6 +574,9 @@ enum streamingInterface {
             return ((enable == other.enable) && (opMode == other.opMode));
         }
     } __attribute__((packed));
+
+    static_assert(sizeof(hdrParameters) == 2 * sizeof(int),
+                  "hdrParameters TCP layout must remain two INT32 values");
 
     struct currentSrcParameters {
         int enable;

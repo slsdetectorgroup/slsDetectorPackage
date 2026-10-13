@@ -1460,14 +1460,15 @@ std::string Caller::hdr(int action) {
             if (val == 0) {
                 auto disable = defs::hdrParameters();
                 det->setHDR(disable, std::vector<int>{det_id});
-                os << val << '\n';
+                os << ToString(disable) << '\n';
             } else {
                 throw RuntimeError("Did you mean to disable HDR? Then Please "
                                    "use '0' to do so. Unknown argument: " +
                                    args[0]);
             }
         } else {
-            auto val = StringTo<defs::operationMode>(args[0]);
+            auto mode = StringTo<defs::operationMode>(args[0]);
+            auto val = defs::hdrParameters(mode);
             det->setHDR(val, std::vector<int>{det_id});
             os << ToString(val) << '\n';
         }

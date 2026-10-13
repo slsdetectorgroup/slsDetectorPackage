@@ -1458,16 +1458,19 @@ std::string Caller::hdr(int action) {
         if (sls::is_int(args[0])) {
             auto val = StringTo<int>(args[0]);
             if (val == 0) {
-                det->setHDR(defs::hdrParameters(), std::vector<int>{det_id});
+                auto disable = defs::hdrParameters();
+                det->setHDR(disable, std::vector<int>{det_id});
+                os << val << '\n';
             } else {
                 throw RuntimeError("Did you mean to disable HDR? Then Please "
                                    "use '0' to do so. Unknown argument: " +
                                    args[0]);
             }
+        } else {
+            auto val = StringTo<defs::operationMode>(args[0]);
+            det->setHDR(val, std::vector<int>{det_id});
+            os << ToString(val) << '\n';
         }
-        auto val = StringTo<defs::hdrParameters>(args[0]);
-        det->setHDR(val, std::vector<int>{det_id});
-        os << ToString(val) << '\n';
     } else {
         throw RuntimeError("Unknown action");
     }

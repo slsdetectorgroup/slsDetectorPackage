@@ -183,6 +183,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
 
     bool isAllPositions(Positions pos) const;
 
+    std::vector<int> fillInPositions(Positions pos) const;
+
     inline bool isChipTestBoard() const {
         return (shm()->detType == defs::CHIPTESTBOARD ||
                 shm()->detType == defs::XILINX_CHIPTESTBOARD);
@@ -320,8 +322,16 @@ class DetectorImpl : public virtual slsDetectorDefs {
 
     defs::xy getPortGeometry() const;
     std::vector<defs::ROI> getRxROI(int module_id = -1) const;
+    void validatePortEnable(const defs::portPosition port, const bool enable,
+                            std::vector<int> pos) const;
+    void validatePortEnableRoiState(const int moduleIndex,
+                                    defs::portPosition changedPort,
+                                    const defs::ROI &portRoi,
+                                    bool enabled) const;
+
     void setRxROI(const std::vector<defs::ROI> &args);
     void clearRxROI();
+    bool isCompleteROI() const;
 
     void getBadChannels(const std::string &fname, Positions pos) const;
     void setBadChannels(const std::string &fname, Positions pos);

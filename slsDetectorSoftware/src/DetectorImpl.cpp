@@ -48,6 +48,15 @@ bool DetectorImpl::isAllPositions(Positions pos) const {
             (pos.size() == modules.size()));
 }
 
+std::vector<int> DetectorImpl::fillInPositions(Positions pos) const {
+    if (isAllPositions(pos)) {
+        std::vector<int> positions(modules.size());
+        std::iota(begin(positions), end(positions), 0);
+        return positions;
+    }
+    return pos;
+}
+
 void DetectorImpl::setAcquiringFlag(bool flag) { shm()->acquiringFlag = flag; }
 
 int DetectorImpl::getDetectorIndex() const { return detectorIndex; }
@@ -1640,6 +1649,7 @@ Result<bool> DetectorImpl::getUDPDataStream(const defs::portPosition port,
 void DetectorImpl::setUDPDataStream(const defs::portPosition port,
                                     const bool enable, Positions pos) {
     assertTwoUDPDataInterfaces("set enable/disable UDP ports");
+    validatePortEnable(port, enable, pos);
     Parallel(&Module::setUDPDataStream, pos, port, enable);
     updateRxUDPDatastreamMetadata();
 }
@@ -1857,6 +1867,49 @@ void DetectorImpl::convertGlobalRoiToPortLevel(
     }
 }
 
+void DetectorImpl::validatePortEnable(const defs::portPosition port,
+                                      const bool enable,
+                                      std::vector<int> pos) const {
+    if (isCompleteROI())
+        return;
+    auto positions = fillInPositions(pos);
+    for (int i : positions) {
+        if (i < 0 || static_cast<size_t>(i) >= modules.size()) {
+            throw RuntimeError("Invalid module index: " + std::to_string(i));
+        }
+        auto modRois = modules[i]->getRxROI();
+        auto portList = getPortPositionList();
+        int portIndex = 0;
+        for (auto p : portList) {
+            if (p == port)
+                break;
+            portIndex++;
+        }
+        validatePortEnableRoiState(i, port, modRois[portIndex], enable);
+    }
+}
+
+/** Assumption:
+ * 1. Check only for Eiger because port disable is only for Eiger now
+ * 2. This function called only when an Roi being set (not complete detector)
+ * ie. complete ROI enabled and some ports disabled is allowed
+ */
+void DetectorImpl::validatePortEnableRoiState(const int moduleIndex,
+                                              defs::portPosition changedPort,
+                                              const defs::ROI &portRoi,
+                                              bool enabled) const {
+    // enabled or disabled and no roi
+    if (enabled || portRoi.noRoi())
+        return;
+    // diabled but ROI specified
+    std::ostringstream oss;
+    oss << ToString(changedPort) << " port of module " << moduleIndex << " ("
+        << modules[moduleIndex]->getHostname()
+        << ") is not active but ROI is specified for it: " << ToString(portRoi)
+        << ". Please disable the ROI for this port or enable the port.";
+    throw RuntimeError(oss.str());
+}
+
 void DetectorImpl::setRxROI(const std::vector<defs::ROI> &args) {
     if (shm()->detType == CHIPTESTBOARD ||
         shm()->detType == defs::XILINX_CHIPTESTBOARD) {
@@ -1871,10 +1924,13 @@ void DetectorImpl::setRxROI(const std::vector<defs::ROI> &args) {
     }
 
     validateROIs(args);
+
     int nPortsPerModule =
         Parallel(&Module::getNumberofUDPInterfacesFromShm, {})
             .tsquash("Inconsistent number of udp ports set up per module");
+    std::vector<std::vector<defs::ROI>> moduleRois;
 
+    // further validate and create port level rois for each module
     for (size_t iModule = 0; iModule < modules.size(); ++iModule) {
         auto moduleGlobalRoi = getModuleROI(iModule);
         // at most 2 rois per module (for each port)
@@ -1886,15 +1942,30 @@ void DetectorImpl::setRxROI(const std::vector<defs::ROI> &args) {
                 roi.ymax = -1;
             }
         }
-
-        // check overlap with module
+        // check overlap of each roi with module
         for (const auto &arg : args) {
             if (arg.overlap(moduleGlobalRoi)) {
                 convertGlobalRoiToPortLevel(arg, moduleGlobalRoi, portRois);
             }
         }
-        modules[iModule]->setRxROI(portRois);
+        // validate roi against port enables
+        if (nPortsPerModule == 2) {
+            auto ports = getPortPositionList();
+            for (int iport = 0; iport != nPortsPerModule; ++iport) {
+                defs::portPosition port = ports[iport];
+                auto enable = modules[iModule]->getUDPDataStream(port);
+                validatePortEnableRoiState(iModule, port, portRois[iport],
+                                           enable);
+            }
+        }
+        moduleRois.push_back(portRois);
     }
+
+    // set rois for each module
+    for (size_t iModule = 0; iModule < modules.size(); ++iModule) {
+        modules[iModule]->setRxROI(moduleRois[iModule]);
+    }
+
     // metadata
     modules[0]->setRxROIMetadata(args);
 }
@@ -1907,6 +1978,14 @@ void DetectorImpl::clearRxROI() {
         modules[iModule]->setRxROI(std::vector<defs::ROI>(nPortsPerModule));
     }
     modules[0]->setRxROIMetadata(std::vector<defs::ROI>(1));
+}
+
+bool DetectorImpl::isCompleteROI() const {
+    const auto rois = getRxROI();
+    if (rois.empty() || (rois.size() == 1 && rois[0].completeRoi())) {
+        return true;
+    }
+    return false;
 }
 
 void DetectorImpl::getBadChannels(const std::string &fname,

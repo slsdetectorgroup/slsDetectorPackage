@@ -2956,15 +2956,18 @@ void updateHDRActivationTime() {
     double percentage = (isSynchrotron ? HDR_SYNC_ACTIVATION_TIME_PERCENT
                                        : HDR_FEL_ACTIVATION_TIME_PERCENT) /
                         100;
-    uint32_t activationTime = (uint32_t)(expTimeInClks * percentage);
-    if (activationTime > HDR_MAX_ACTIVATION_TIME_VAL) {
-        activationTime = HDR_MAX_ACTIVATION_TIME_VAL;
+    uint32_t activationTimeInClks = (uint32_t)(expTimeInClks * percentage);
+    if (activationTimeInClks > HDR_MAX_ACTIVATION_TIME_VAL) {
+        LOG(logWARNING, ("HDR Activation Time (%u clocks) exceeds maximum "
+                         "value. Capping to %d clocks\n",
+                         activationTimeInClks, HDR_MAX_ACTIVATION_TIME_VAL));
+        activationTimeInClks = HDR_MAX_ACTIVATION_TIME_VAL;
     }
     LOG(logINFO, ("Updating HDR Activation Time to %d clocks (%.2f%% of "
                   "exposure time)\n",
-                  activationTime, percentage * 100.00));
+                  activationTimeInClks, percentage * 100.00));
     bus_w(HDR_REG, bus_r(HDR_REG) & ~HDR_ACTIVATION_TIME_MSK);
-    bus_w(HDR_REG, (activationTime << HDR_ACTIVATION_TIME_OFST) &
+    bus_w(HDR_REG, (activationTimeInClks << HDR_ACTIVATION_TIME_OFST) &
                        HDR_ACTIVATION_TIME_MSK);
 }
 

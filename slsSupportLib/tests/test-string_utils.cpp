@@ -52,6 +52,13 @@ TEST_CASE("split a string without end delimiter") {
     REQUIRE(r[2] == "filibom");
 }
 
+TEST_CASE("join strings") {
+    REQUIRE(join({"abra", "kadabra", "filibom"}, '+') ==
+            "abra+kadabra+filibom");
+    REQUIRE(join({"abra"}, '+') == "abra");
+    REQUIRE(join({}, '+') == "");
+}
+
 TEST_CASE("Remove char from string") {
     char str[] = "sometest";
     removeChar(str, 'e');

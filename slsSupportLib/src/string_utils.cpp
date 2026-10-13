@@ -24,6 +24,16 @@ std::vector<std::string> split(const std::string &strToSplit, char delimeter) {
     return splittedStrings;
 }
 
+std::string join(const std::vector<std::string> &strings, char delimeter) {
+    std::string joined;
+    for (const auto &s : strings) {
+        if (!joined.empty())
+            joined += delimeter;
+        joined += s;
+    }
+    return joined;
+}
+
 std::string RemoveUnit(std::string &str) {
     auto it = str.begin();
     while (it != str.end()) {

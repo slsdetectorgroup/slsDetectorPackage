@@ -22,6 +22,7 @@ endif()
 include(cmake/project_version.cmake)
 include(cmake/SlsAddFlag.cmake)
 include(cmake/helpers.cmake)
+include(cmake/SlsInstallExecutable.cmake)
 
 
 find_package(Threads REQUIRED)
@@ -219,7 +220,6 @@ option(SLS_BUILD_SHARED_LIBRARIES "Build shared libaries" OFF)
 option(SLS_USE_TEXTCLIENT "Text Client" ON)
 option(SLS_USE_DETECTOR "Detector libs" ON)
 option(SLS_USE_RECEIVER "Receiver" ON)
-option(SLS_USE_SERVER "Server" ON)
 option(SLS_USE_RECEIVER_BINARIES "Receiver binaries" ON)
 option(SLS_USE_GUI "GUI" OFF)
 option(SLS_USE_SIMULATOR "Simulator" OFF)
@@ -235,7 +235,7 @@ option(SLS_DEVEL_HEADERS "install headers for devel" OFF)
 option(SLS_USE_MOENCH "compile zmq and post processing for Moench" OFF)
 option(SLS_USE_JUNGFRAU "compile post processing for Jungfrau" OFF)
 option(SLS_USE_MATTERHORN "compile matterhorn server" OFF)
-option(SLS_INSTALL_VERSIONED_BINARIES "Add version number to binaries on install" OFF) #Needed for multi version RPM
+option(SLS_INSTALL_VERSIONED_BINARIES "Add version number to installed executables and RPM package names" OFF)
 option(SLS_TREAT_WARNINGS_AS_ERRORS "Treat warnings as errors" OFF)
 
 #Convenience option to switch off defaults when building Moench binaries only
@@ -258,7 +258,6 @@ if(SLS_BUILD_ONLY_MATTERHORN)
     set(SLS_USE_DETECTOR ON CACHE BOOL "Disabled for MATTERHORN_ONLY" FORCE)
     set(SLS_USE_RECEIVER OFF CACHE BOOL "Disabled for MATTERHORN_ONLY" FORCE)
     set(SLS_USE_RECEIVER_BINARIES OFF CACHE BOOL "Disabled for MATTERHORN_ONLY" FORCE)
-    set(SLS_USE_SERVER ON CACHE BOOL "Enable building cpp server" FORCE)
     set(SLS_USE_MATTERHORN ON CACHE BOOL "Enable Matterhorn" FORCE)
 endif()
 
@@ -438,11 +437,6 @@ if (SLS_USE_DETECTOR OR SLS_USE_TEXTCLIENT)
     add_subdirectory(slsDetectorSoftware)
 endif()
 
-# TODO refactor with simulators 
-if (SLS_USE_SERVER) 
-    add_subdirectory(slsDetectorServers/slsDetectorServer_cpp)
-endif()
-
 if (SLS_USE_RECEIVER)
     add_subdirectory(slsReceiverSoftware) 
 endif (SLS_USE_RECEIVER)
@@ -452,14 +446,10 @@ if (SLS_USE_GUI)
     add_subdirectory(slsDetectorGui)
 endif (SLS_USE_GUI)
 
-if (SLS_USE_SIMULATOR)
+if (SLS_USE_SIMULATOR OR SLS_USE_MATTERHORN)
     add_subdirectory(slsDetectorServers)
-endif (SLS_USE_SIMULATOR)
+endif (SLS_USE_SIMULATOR OR SLS_USE_MATTERHORN)
 
-# cant add_subdirectory twice 
-if (SLS_USE_MATTERHORN AND !SLS_USE_SIMULATOR) 
-    add_subdirectory(slsDetectorServers/matterhornServer)
-endif() 
 
 if (SLS_USE_PYTHON)
     find_package (Python 3.8 COMPONENTS Interpreter Development.Module REQUIRED)
@@ -531,14 +521,18 @@ set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "DAQ software for PSI developed detectors")
 
 # RPM-specific settings
+string(TOLOWER "${CPACK_PACKAGE_NAME}" CPACK_RPM_PACKAGE_NAME)
+if(SLS_INSTALL_VERSIONED_BINARIES)
+    string(APPEND CPACK_RPM_PACKAGE_NAME "-${PROJECT_VERSION}")
+endif()
 set(CPACK_GENERATOR "RPM")
-set(CPACK_RPM_FILE_NAME "RPM-DEFAULT")
+set(CPACK_RPM_FILE_NAME
+    "${PROJECT_NAME_LOWER}-%{VERSION}-%{RELEASE}.%{ARCH}.rpm")
 set(CPACK_RPM_PACKAGE_LICENSE "LGPL-3.0")
 set(CPACK_RPM_PACKAGE_GROUP "Applications/System")
 set(CPACK_RPM_PACKAGE_RELEASE 1)
 # Adds %{?dist} to the RPM Release field
 set(CPACK_RPM_PACKAGE_RELEASE_DIST ON)
-set(CPACK_RPM_PACKAGE_ARCHITECTURE "${CMAKE_SYSTEM_PROCESSOR}")
 set(CPACK_RPM_COMPONENT_INSTALL ON)
 
 
@@ -548,4 +542,10 @@ set(CPACK_RPM_GUI_PACKAGE_REQUIRES
 
 #control which RPMs are generated
 set(CPACK_COMPONENTS_ALL cli receiver zmq gui)
+# Keep the project version only once in filenames; RPM expands its metadata.
+foreach(component IN LISTS CPACK_COMPONENTS_ALL)
+    string(TOUPPER "${component}" component_upper)
+    set(CPACK_RPM_${component_upper}_FILE_NAME
+        "${PROJECT_NAME_LOWER}-${component}-%{VERSION}-%{RELEASE}.%{ARCH}.rpm")
+endforeach()
 include(CPack)

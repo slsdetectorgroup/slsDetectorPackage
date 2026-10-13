@@ -41,9 +41,7 @@ if(SLS_USE_SIMULATOR)
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
     )
 
-    install(TARGETS matterhornDetectorServer_virtual
-        RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}
-    )
+    sls_install_executable(matterhornDetectorServer_virtual)
 endif() # maybe better to have a else if build with simulators on one always uses the virtual server in MatterhornApp 
 
 if(SLS_USE_MATTERHORN) 
@@ -91,9 +89,7 @@ if(SLS_USE_MATTERHORN)
         RUNTIME_OUTPUT_DIRECTORY ${RUNTIME_OUTPUT_DIRECTORY}
     )
 
-    install(TARGETS matterhornDetectorServer
-        RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}
-    )
+    sls_install_executable(matterhornDetectorServer)
 endif()
 
 if(SLS_USE_TESTS)

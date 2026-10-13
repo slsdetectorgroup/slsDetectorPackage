@@ -1,98 +1,101 @@
 """
-Render the index HTML from a Jinja2 template with version data.
-Can also add new versions to the YAML data file.
+Render the index HTML from a Jinja2 template with release data.
+
+The release data is a JSON list as produced by
+  gh release list --json tagName,publishedAt
 
 Usage:
-  # Just render from existing data
-  python render_main_index.py --template main_index.html.j2 --output main_index.html --data versions.yaml
-  
-  # Add a new version and render
-  python render_main_index.py --data versions.yaml --add-version 10.1.0 --type Minor --date "15.10.2025" --template main_index.html.j2 --output main_index.html
+  python render_main_index.py --data releases.json --template index.html.j2 --output index.html
 """
 import argparse
+import json
 from pathlib import Path
 from jinja2 import Template
-import yaml
 import os
+from datetime import date
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
-def load_versions(data_path: Path):
-    """Load version data from YAML file."""
-    with open(data_path, 'r') as f:
-        data = yaml.safe_load(f)
-    return data['versions']
+MIN_VERSION = (5, 0, 0)       # releases older than this are not listed
+MIN_DOCS_VERSION = (9, 0, 0)  # releases older than this have no docs
 
 
-def save_versions(data_path: Path, versions):
-    """Save version data to YAML file."""
-    data = {
-        'versions': versions
-    }
-    with open(data_path, 'w') as f:
-        yaml.dump(data, f, default_flow_style=False, sort_keys=False)
-    print(f"✓ Saved version data to {data_path}")
+def parse_version(tag: str):
+    """Return (major, minor, patch) for a tag like '10.0.1', or None for e.g. '7.0.0.rc1'."""
+    parts = tag.split('.')
+    if len(parts) != 3 or not all(p.isdigit() for p in parts):
+        return None
+    return tuple(int(p) for p in parts)
 
-def extract_release_type(version: str) -> str: 
-    """Extract release type from version string."""
-    parts = version.split('.')
-    if len(parts) != 3:
-        return "Unknown"
-    major, minor, patch = map(int, parts)
-    if minor == 0 and patch == 0:
-        return "Major"
-    elif patch == 0:
-        return "Minor"
-    else:
+
+def release_type(version):
+    """Derive the release type from the version number."""
+    _, minor, patch = version
+    if patch != 0:
         return "Bug Fix"
+    if minor != 0:
+        return "Minor"
+    return "Major"
 
 
-def add_version(data_path: Path, version: str, release_type: str, date: str, has_docs: bool = True):
-    """Add a new version to the YAML data file."""
-    versions = load_versions(data_path)
-    
-    # Add to table (check if not already present)
-    new_entry = {
-            'version': version,
-            'type': release_type,
-            'date': date,
-            'has_docs': has_docs
-    }
-    versions.insert(0, new_entry)
-    
-    print(f"✓ Added version {new_entry} to version data")
-   
-    save_versions(data_path, versions)
+def read_release_json(data_path: Path):
+    """Load release data from JSON file, newest version first."""
+    with open(data_path, 'r') as f:
+        releases = json.load(f)
 
+    versions = []
+    for release in releases:
+        version = parse_version(release['tagName'])
+        if version is None or version < MIN_VERSION:
+            continue
+        versions.append({
+            'version': release['tagName'],
+            'type': release_type(version),
+            'date': release['publishedAt'].split('T')[0],
+            'has_docs': version >= MIN_DOCS_VERSION,
+            '_key': version,
+        })
 
-def render_template(template_path: Path, output_path: Path, data_path: Path):
+    versions.sort(key=lambda v: v['_key'], reverse=True)
+    return versions
+
+def render_template(template_path: Path, output_path: Path, versions : list):
     """Render the Jinja2 template with version data."""
-    versions = load_versions(data_path)
-    
+
     with open(template_path, 'r') as f:
         template = Template(f.read())
-    
+
     html = template.render(
         versions=versions
     )
-    
+
     with open(output_path, 'w') as f:
         f.write(html)
-    
+
     print(f"✓ Rendered {output_path}")
 
+def add_version(version: str, versions : list):
+    """Add a version to the versions dict if it is not already present."""
+    tuple_version = parse_version(version)
+    if version not in versions:
+        versions.insert(0,{
+            'version': version,
+            'type': release_type(tuple_version),
+            'date': date.today().strftime("%Y-%m-%d"),
+            'has_docs': tuple_version >= MIN_DOCS_VERSION,
+            '_key': tuple_version,
+        })
+        
+    versions.sort(key=lambda v: v['_key'], reverse=True)
 
 def main():
-    parser = argparse.ArgumentParser(description='Manage versions and render main index HTML')
-    parser.add_argument('--data', type=Path, default=Path(SCRIPT_DIR + "/versions.yaml"), 
-                        help='Path to versions YAML data file')
+    parser = argparse.ArgumentParser(description='Render main index HTML from release data')
+    parser.add_argument('--json_releases', type=Path,
+                        help='Path to releases JSON data file')
     
-    # Options for adding a new version
-    parser.add_argument('--version', type=str,
-                        help='new version (e.g., 10.1.0)')
-    parser.add_argument('--date', type=str,
-                        help='Release date (e.g., 15.10.2025)')
-    
+    parser.add_argument('--new_version', type=str,
+                        help='New version to add to the releases data')
+
     # Options for rendering
     parser.add_argument('--template', type=Path, default=Path(SCRIPT_DIR + "/index.html.j2"),
                         help='Path to Jinja2 template file')
@@ -100,17 +103,15 @@ def main():
                         help='Path to output HTML file')
     
     args = parser.parse_args()
-    
-    # Add new version if requested
-    if args.version:
-        if not args.date:
-            parser.error("--version requires --date")
-        release_type = extract_release_type(args.version)
-        add_version(args.data, args.version, release_type, args.date, has_docs=True)
-    
+
+    versions = read_release_json(args.json_releases)
+
+    if args.new_version: 
+        add_version(args.new_version, versions)
+
     # Render template if requested
     if args.template and args.output:
-        render_template(args.template, args.output, args.data)
+        render_template(args.template, args.output, versions)
     elif args.template or args.output:
         parser.error("--template and --output must be used together")
 

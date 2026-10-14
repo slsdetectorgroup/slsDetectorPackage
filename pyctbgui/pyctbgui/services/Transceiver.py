@@ -156,13 +156,17 @@ class TransceiverTab(QtWidgets.QWidget):
         try:
             transceiver_frame = self._processImageData(data, dSamples, self.mainWindow.romode.value,
                                                                        self.mainWindow.nDBitEnabled)
+            self.plotTab.ignoreHistogramSignal = True
+            
             for i in range(transceiver_frame.shape[0]):
-                self.plotTab.setImage(self.transceiverImageViews[i], transceiver_frame[i])
+                self.transceiverImageViews[i].setImage(transceiver_frame[i])
         except Exception as e:
             self.mainWindow.statusbar.setStyleSheet("color:red")
             self.acquisitionTab.updateCurrentFrame('Invalid Image')
             self.mainWindow.statusbar.showMessage(str(e))
             print("Error: ", str(e))
+
+        self.plotTab.setFrameLimits(transceiver_frame)
 
         # keep the zoomed in state (not 1st image)
         for idx, image_view in enumerate(self.transceiverImageViews): 

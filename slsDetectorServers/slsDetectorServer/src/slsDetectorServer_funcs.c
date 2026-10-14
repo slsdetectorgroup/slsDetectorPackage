@@ -11131,14 +11131,9 @@ int get_hdr(int file_des) {
 #else
     bool enable = false;
     enum operationMode mode = SYNCHROTRON;
-    ret = getHDR(&enable, &mode);
-    if (ret == FAIL) {
-        sprintf(mess, "Could not get HDR\n");
-        LOG(logERROR, (mess));
-    } else {
-        retvals[0] = enable;
-        retvals[1] = mode;
-    }
+    getHDR(&enable, &mode);
+    retvals[0] = enable;
+    retvals[1] = mode;
 #endif
     return Server_SendResult(file_des, INT32, retvals, sizeof(retvals));
 }

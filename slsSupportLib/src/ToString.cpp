@@ -128,7 +128,7 @@ std::string ToString(const slsDetectorDefs::hdrParameters &r) {
     oss << '[';
     if (r.enable) {
         oss << "enabled"
-            << " " << ToString(r.opMode) << std::endl;
+            << " " << ToString(r.opMode);
     } else {
         oss << "disabled";
     }

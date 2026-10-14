@@ -809,7 +809,7 @@ TEST_CASE("hdr", "[.detectorintegration]") {
         {
             std::ostringstream oss;
             REQUIRE_NOTHROW(caller.call("hdr", {"synchrotron"}, -1, PUT, oss));
-            REQUIRE(oss.str() == "hdr [synchrotron]\n");
+            REQUIRE(oss.str() == "hdr [enabled synchrotron]\n");
         }
         {
             std::ostringstream oss;
@@ -819,7 +819,7 @@ TEST_CASE("hdr", "[.detectorintegration]") {
         {
             std::ostringstream oss;
             REQUIRE_NOTHROW(caller.call("hdr", {"0"}, -1, PUT, oss));
-            REQUIRE(oss.str() == "hdr [0]\n");
+            REQUIRE(oss.str() == "hdr [disabled]\n");
         }
         {
             std::ostringstream oss;

@@ -606,7 +606,7 @@ int getElectronCollectionMode();
 void setElectronCollectionMode(int enable);
 void updateHDRActivationTime();
 int setHDR(bool enable, enum operationMode mode);
-int getHDR(bool *enable, enum operationMode *mode);
+void getHDR(bool *enable, enum operationMode *mode);
 #endif
 
 // eiger specific - iodelay, pulse, rate, temp, activate, delay nw parameter

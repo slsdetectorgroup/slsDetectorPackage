@@ -12,6 +12,10 @@ class Defines:
     Acquisition_Tab_Index = 7
     Max_Tabs = 9
 
+
+    max_counters = 4 # max number of counters
+    max_counters_tabIndex = 4
+
     class adc:
         tabIndex = 5
         count = 32
@@ -33,10 +37,6 @@ class Defines:
     class pattern:
         tabIndex = 6
         loops_count = 6
-
-    class transceiver:
-        maxcount = 4
-        maxtabIndex = 4
 
     class slowAdc:
         tabIndex = 2

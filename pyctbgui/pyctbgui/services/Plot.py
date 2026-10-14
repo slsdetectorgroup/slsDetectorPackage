@@ -21,8 +21,6 @@ class PlotTab(QtWidgets.QWidget):
     def __init__(self, parent):
         super().__init__(parent)
         pg.setConfigOptions(imageAxisOrder="row-major")  
-        self.frame_min: float = 0.0
-        self.frame_max: float = 0.0
         uic.loadUi(Path(__file__).parent.parent / 'ui' / "plot.ui", parent)
         self.view = parent
         self.mainWindow = None
@@ -31,11 +29,13 @@ class PlotTab(QtWidgets.QWidget):
         self.transceiverTab = None
         self.acquisitionTab = None
         self.adcTab = None
-        self.cmin: float = 0.0
-        self.cmax: float = 0.0
+        self.cmin: list[float] = Defines.max_counters * [0.0]
+        self.cmax: list[float] = Defines.max_counters * [0.0]
         self.colorRangeMode: Defines.colorRange = Defines.colorRange.all
         self.ignoreHistogramSignal: bool = False
         self.imagePlots: list[PlotWidget] = []
+        self.cminSpinBoxes : list[QtWidgets.QSpinBox] = None
+        self.cmaxSpinBoxes : list[QtWidgets.QSpinBox] = None
         # list of callback functions to notify tabs when we should hide their legend
         # follows the observer design pattern
         self.hideLegendObservers = []
@@ -58,6 +58,9 @@ class PlotTab(QtWidgets.QWidget):
         for checkBox in self.checkBoxCounters:
             checkBox.setChecked(False)
             checkBox.setEnabled(False)
+
+        self.cminSpinBoxes = [self.view.cminSpinBox0, self.view.cminSpinBox1, self.view.cminSpinBox2, self.view.cminSpinBox3]
+        self.cmaxSpinBoxes = [self.view.cmaxSpinBox0, self.view.cmaxSpinBox1, self.view.cmaxSpinBox2, self.view.cmaxSpinBox3]
 
         self.imagePlots = (
             self.mainWindow.plotAnalogImage,
@@ -95,11 +98,15 @@ class PlotTab(QtWidgets.QWidget):
         self.view.spinBoxPlot.editingFinished.connect(self.setPlotBit)
         self.view.pushButtonReferesh.clicked.connect(self.acquisitionTab.refresh)
         # color range widgets
-        self.view.cminSpinBox.editingFinished.connect(self.setCmin)
-        self.view.cmaxSpinBox.editingFinished.connect(self.setCmax)
         self.view.radioButtonAutomatic.clicked.connect(partial(self.setColorRangeMode, Defines.colorRange.all))
         self.view.radioButtonFixed.clicked.connect(partial(self.setColorRangeMode, Defines.colorRange.fixed))
         self.view.radioButtonCenter.clicked.connect(partial(self.setColorRangeMode, Defines.colorRange.center))
+
+        for index, cminSpinBox in enumerate(self.cminSpinBoxes):
+            cminSpinBox.editingFinished.connect(partial(self.setCmin, index=index))
+
+        for index, cmaxSpinBox in enumerate(self.cmaxSpinBoxes):
+            cmaxSpinBox.editingFinished.connect(partial(self.setCmax, index=index))
 
         for index, checkBox in enumerate(self.checkBoxCounters): 
             checkBox.stateChanged.connect(partial(self.displayCounter, index))
@@ -110,7 +117,8 @@ class PlotTab(QtWidgets.QWidget):
         frame = lambda : self.mainWindow.analog_frame
         plot = self.mainWindow.plotAnalogImage
         plot.scene.sigMouseMoved.connect(partial(self.showPlotValues, plot, nMaxX, nMaxY, frame))
-        plot.getHistogramWidget().item.sigLevelChangeFinished.connect(partial(self.handleHistogramChange, plot))
+        plot.getHistogramWidget().item.sigLevelChangeFinished.connect(lambda _histItem, plot=plot: self.handleHistogramChange(plot))
+        plot.getImageItem().sigImageChanged.connect(partial(self.updateColorRange, plot=plot))
 
         # show image Values for digital image
         nMaxY = lambda : self.mainWindow.nDigitalRows
@@ -118,7 +126,8 @@ class PlotTab(QtWidgets.QWidget):
         frame = lambda : self.mainWindow.digital_frame
         plot = self.mainWindow.plotDigitalImage
         plot.scene.sigMouseMoved.connect(partial(self.showPlotValues, plot, nMaxX, nMaxY, frame))
-        plot.getHistogramWidget().item.sigLevelChangeFinished.connect(partial(self.handleHistogramChange, plot))
+        plot.getHistogramWidget().item.sigLevelChangeFinished.connect(lambda _histItem, plot=plot: self.handleHistogramChange(plot))
+        plot.getImageItem().sigImageChanged.connect(partial(self.updateColorRange, plot=plot))
 
         # show image Values for transceiver image
         nMaxY = lambda : self.transceiverTab.nTransceiverRows
@@ -127,7 +136,9 @@ class PlotTab(QtWidgets.QWidget):
         for index, image_view in enumerate(self.transceiverTab.transceiverImageViews):
             frame = lambda image_view=image_view: image_view.getImageItem().image
             image_view.scene.sigMouseMoved.connect(partial(self.showPlotValues, image_view, nMaxX, nMaxY, frame))
-            image_view.getHistogramWidget().item.sigLevelChangeFinished.connect(partial(self.handleHistogramChange, image_view))
+            image_view.getHistogramWidget().item.sigLevelChangeFinished.connect(
+                lambda _histItem, image_view=image_view, index=index: self.handleHistogramChange(image_view, index)) # sigLevelChangeFinished passes the histogram item as the first argument, we need to ignore it and pass the image_view instead
+            image_view.getImageItem().sigImageChanged.connect(partial(self.updateColorRange, plot=image_view, index=index))
 
         self.view.checkBoxShowLegend.stateChanged.connect(self.toggleLegend)
 
@@ -231,27 +242,35 @@ class PlotTab(QtWidgets.QWidget):
         for notify_function in self.hideLegendObservers:
             notify_function()
 
-    def setCmin(self, value=None):
+    def setCmin(self, value=None, index = 0, updateColorBar=True):
         """
         slot for setting cmin from cminSpinBox
         also used as a normal function
         """
+        print("setCmin for index: ", index, " value: ", value)
         if value is None:
-            self.cmin = self.view.cminSpinBox.value()
+            self.cmin[index] = self.cminSpinBoxes[index].value()
         else:
-            self.cmin = value
-        self.updateColorRangeUI()
+            self.cmin[index] = value
+            self.cminSpinBoxes[index].setValue(self.cmin[index])
+            
+        if updateColorBar:
+            self.ignoreHistogramSignal = True
+            self.updateColorBar(index=index)
 
-    def setCmax(self, value=None):
+    def setCmax(self, value=None, index = 0, updateColorBar=True):
         """
         slot for setting cmax from cmaxSpinBox
         also used as a normal function
         """
         if value is None:
-            self.cmax = self.view.cmaxSpinBox.value()
+            self.cmax[index] = self.cmaxSpinBoxes[index].value()
         else:
-            self.cmax = value
-        self.updateColorRangeUI()
+            self.cmax[index] = value
+            self.cmaxSpinBoxes[index].setValue(self.cmax[index])
+
+        if updateColorBar:
+            self.updateColorBar(index=index)
 
     def setColorRangeMode(self, mode):
         """
@@ -261,36 +280,42 @@ class PlotTab(QtWidgets.QWidget):
 
         # disable or enable cmin/cmax spinboxes
         enableSpinBoxes = mode == Defines.colorRange.fixed
-        self.view.cminSpinBox.setEnabled(enableSpinBoxes)
-        self.view.cmaxSpinBox.setEnabled(enableSpinBoxes)
-        self.updateColorRange()
-        self.updateColorRangeUI()
+        for cminSpinBox, cmaxSpinBox in zip(self.cminSpinBoxes, self.cmaxSpinBoxes):
+            cminSpinBox.setEnabled(enableSpinBoxes)
+            cmaxSpinBox.setEnabled(enableSpinBoxes)
+            
+        for index in range(Defines.max_counters): # TODO does it work with other detectors? 
+            self.updateColorRange(index=index)
 
-    def handleHistogramChange(self, plot):
+    def handleHistogramChange(self, plot, index=0):
         """
         slot called after changing the color bar
         This is called even when pyqtgraph sets the image without any user intervention
         the class attribute ignore_histogram_signal is set to False before setting the image
         so that we can distinguish between the signal originates from pyqt or from the user
-        """
-        if not self.ignoreHistogramSignal:
-            self.cmin, self.cmax = plot.getHistogramWidget().item.getLevels()
-            self.setCmin(self.cmin)
-            self.setCmax(self.cmax)
 
-        self.ignoreHistogramSignal = False
+        Parameters
+        ----------
+        plot : Plot
+            The plot object whose histogram has changed.
+        index : int, optional
+            The index of the counter (default is 0).
+        """
+
+        #print("handleHistogramChange called with index: ", index, " ignoreHistogramSignal: ", self.ignoreHistogramSignal)
+    
+        #print("color range mode is: ", self.colorRangeMode)
+        if not self.ignoreHistogramSignal:
+            cmin, cmax = plot.getHistogramWidget().item.getLevels()
+            #print("cmin, cmax for index: ", index, cmin, cmax)
+            self.setCmin(cmin, index=index, updateColorBar=False)
+            self.setCmax(cmax, index=index, updateColorBar=False)
+            
+        #self.ignoreHistogramSignal = False
+
         # self.setColorRangeMode(Defines.colorRange.fixed)
 
-    def setFrameLimits(self, frame):
-        """
-        function called from AcquisitionTab::read_zmq to get the maximum and minimum
-        values of the decoded frame and save them in frame_min/frame_max
-        """
-        self.frame_min = np.min(frame)
-        self.frame_max = np.max(frame)
-        self.updateColorRange()
-
-    def updateColorRange(self):
+    def updateColorRange(self, plot = None, index=0):
         """
         for mode:
         - all:   sets cmin and cmax to the maximums/minimum values of the frame
@@ -299,26 +324,31 @@ class PlotTab(QtWidgets.QWidget):
         """
 
         if self.colorRangeMode == Defines.colorRange.all:
-            self.cmin = self.frame_min
-            self.cmax = self.frame_max
+            frame_min = self.cmin[index] if plot is None else np.min(plot.getImageItem().image)
+            frame_max = self.cmax[index] if plot is None else np.max(plot.getImageItem().image)
+            self.setCmin(frame_min, index=index) # TODO: need multiple frame min and frame max - from where? 
+            self.setCmax(frame_max, index=index)
         elif self.colorRangeMode == Defines.colorRange.center:
-            self.cmin = self.frame_min + 0.03 * (self.frame_max - self.frame_min)
-            self.cmax = self.frame_max - 0.03 * (self.frame_max - self.frame_min)
+            frame_min = self.cmin[index] if plot is None else np.min(plot.getImageItem().image)
+            frame_max = self.cmax[index] if plot is None else np.max(plot.getImageItem().image)
+            self.setCmin(frame_min + 0.03 * (frame_max - frame_min), index=index)
+            self.setCmax(frame_max - 0.03 * (frame_max - frame_min), index=index)
 
-        self.updateColorRangeUI()
+        elif self.colorRangeMode == Defines.colorRange.fixed:
+            self.setCmin(self.cmin[index], index=index)
+            self.setCmax(self.cmax[index], index=index)
 
-    def updateColorRangeUI(self):
+    def updateColorBar(self, index = 0): 
         """
-        updates UI views should be called after every change to cmin or cmax
+        updates the color bar of the plot at index
         """
         for plot in self.imagePlots:
             if isinstance(plot, list): # hacky for now only transceiver image is a PlotSplitter 
-                for p in plot:
-                    p.getHistogramWidget().item.setLevels(min=self.cmin, max=self.cmax)
+                #self.ignoreHistogramSignal = True
+                plot[index].getHistogramWidget().item.setLevels(min=self.cmin[index], max=self.cmax[index])
             else:
-                plot.getHistogramWidget().item.setLevels(min=self.cmin, max=self.cmax)
-        self.view.cminSpinBox.setValue(self.cmin)
-        self.view.cmaxSpinBox.setValue(self.cmax)
+                #self.ignoreHistogramSignal = True
+                plot.getHistogramWidget().item.setLevels(min=self.cmin[index], max=self.cmax[index])
 
     def setColorMap(self):
         cm = pg.colormap.getFromMatplotlib(self.view.comboBoxColorMap.currentText())
@@ -399,11 +429,11 @@ class PlotTab(QtWidgets.QWidget):
             self.mainWindow.transceiverPlots[i].hide()
 
     def addAllSelectedTransceiverPlots(self):
-        for i in range(Defines.transceiver.maxcount):
+        for i in range(Defines.max_counters):
             self.addSelectedTransceiverPlots(i)
 
     def removeAllTransceiverPlots(self):
-        for i in range(Defines.transceiver.maxcount):
+        for i in range(Defines.max_counters):
             self.mainWindow.transceiverPlots[i].hide()
 
     def showPlot(self):

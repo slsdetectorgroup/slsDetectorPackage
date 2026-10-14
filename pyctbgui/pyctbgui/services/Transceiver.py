@@ -24,18 +24,18 @@ class TransceiverTab(QtWidgets.QWidget):
         self.plotTab = None
         self.legend: LegendItem | None = None
         self.acquisitionTab = None
-        self.nCounters: int = Defines.transceiver.maxcount
+        self.nCounters: int = Defines.max_counters
         self.nTransceiverRows : int = 0
         self.nTransceiverCols : int = 0 
-        self.shownCounters: list[bool] = [True] * Defines.transceiver.maxcount # per default show all 4 counters
+        self.shownCounters: list[bool] = [True] * Defines.max_counters # per default show all 4 counters
         self.transceiverImageSplitter = QtWidgets.QSplitter(QtCore.Qt.Vertical)
         self.transceiverImageViews : list = [] # pg image view for each counter 
-        self.firstTransceiverImage : list[bool] = [True] * Defines.transceiver.maxcount # to keep track of first image for each counter to maintain zoom state
+        self.firstTransceiverImage : list[bool] = [True] * Defines.max_counters # to keep track of first image for each counter to maintain zoom state
         
     def setup_ui(self):
         self.plotTab = self.mainWindow.plotTab
         self.acquisitionTab = self.mainWindow.acquisitionTab
-        for i in range(Defines.transceiver.maxcount):
+        for i in range(Defines.max_counters):
             self.setTransceiverButtonColor(i, self.plotTab.getRandomColor())
         self.initializeAllTransceiverPlots()
 
@@ -46,7 +46,7 @@ class TransceiverTab(QtWidgets.QWidget):
         self.plotTab.subscribeToggleLegend(self.updateLegend)
 
     def connect_ui(self):
-        for i in range(Defines.transceiver.maxcount):
+        for i in range(Defines.max_counters):
             getattr(self.view, f"checkBoxTransceiver{i}").stateChanged.connect(partial(self.setTransceiverEnable, i))
             getattr(self.view,
                     f"checkBoxTransceiver{i}Plot").stateChanged.connect(partial(self.setTransceiverEnablePlot, i))
@@ -62,7 +62,7 @@ class TransceiverTab(QtWidgets.QWidget):
         """
         enabledPlots = []
         self.legend.clear()
-        for i in range(Defines.transceiver.maxcount):
+        for i in range(Defines.max_counters):
             if getattr(self.view, f'checkBoxTransceiver{i}Plot').isChecked():
                 plotName = getattr(self.view, f"labelTransceiver{i}").text()
                 enabledPlots.append((self.mainWindow.transceiverPlots[i], plotName))
@@ -111,7 +111,7 @@ class TransceiverTab(QtWidgets.QWidget):
         trans_array = self._processWaveformData(data, dSamples, self.mainWindow.romode.value,
                                                 self.mainWindow.nDBitEnabled, self.nTransceiverEnabled)
         idx = 0
-        for i in range(Defines.transceiver.maxcount):
+        for i in range(Defines.max_counters):
             checkBoxPlot = getattr(self.view, f"checkBoxTransceiver{i}Plot")
             checkBoxEn = getattr(self.view, f"checkBoxTransceiver{i}")
             if checkBoxEn.isChecked() and checkBoxPlot.isChecked():
@@ -156,7 +156,7 @@ class TransceiverTab(QtWidgets.QWidget):
         try:
             transceiver_frame = self._processImageData(data, dSamples, self.mainWindow.romode.value,
                                                                        self.mainWindow.nDBitEnabled)
-            self.plotTab.ignoreHistogramSignal = True
+            #self.plotTab.ignoreHistogramSignal = True
             
             for i in range(transceiver_frame.shape[0]):
                 self.transceiverImageViews[i].setImage(transceiver_frame[i])
@@ -165,8 +165,6 @@ class TransceiverTab(QtWidgets.QWidget):
             self.acquisitionTab.updateCurrentFrame('Invalid Image')
             self.mainWindow.statusbar.showMessage(str(e))
             print("Error: ", str(e))
-
-        self.plotTab.setFrameLimits(transceiver_frame)
 
         # keep the zoomed in state (not 1st image)
         for idx, image_view in enumerate(self.transceiverImageViews): 
@@ -180,7 +178,7 @@ class TransceiverTab(QtWidgets.QWidget):
     def update_numCounters(self, num_counters): 
         # update the number of counters and adjust the image splitter accordingly 
         self.nCounters = num_counters
-        for i in range(Defines.transceiver.maxcount): 
+        for i in range(Defines.max_counters): 
             self.shownCounters[i] = i < self.nCounters
             self.plotTab.setCounterCheckBox(i, self.shownCounters[i]) # check the counter checkbox 
             self.plotTab.enableCounterCheckBox(i, self.shownCounters[i]) # disable counter checkbox 
@@ -198,7 +196,7 @@ class TransceiverTab(QtWidgets.QWidget):
         self.mainWindow.verticalLayoutPlot.addWidget(self.mainWindow.plotTransceiverWaveform, 5)
         self.mainWindow.transceiverPlots = {}
         waveform = np.zeros(1000)
-        for i in range(Defines.transceiver.maxcount):
+        for i in range(Defines.max_counters):
             pen = pg.mkPen(color=self.getTransceiverButtonColor(i), width=1)
             legendName = getattr(self.view, f"labelTransceiver{i}").text()
             self.mainWindow.transceiverPlots[i] = self.mainWindow.plotTransceiverWaveform.plot(waveform,

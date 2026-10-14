@@ -2959,15 +2959,17 @@ void updateHDRActivationTime() {
     double percentage = (isFel ? HDR_FEL_ACTIVATION_TIME_PERCENT
                                : HDR_SYNC_ACTIVATION_TIME_PERCENT) /
                         100.0;
-    uint8_t activationTimeInClks = (uint8_t)(expTimeInClks * percentage);
+    int actTime = expTimeInClks * percentage;
 
     // cap to max
-    if (activationTimeInClks > HDR_MAX_ACTIVATION_TIME_VAL) {
+    if (actTime > HDR_MAX_ACTIVATION_TIME_VAL) {
         LOG(logWARNING, ("HDR Activation Time (%u clocks) exceeds maximum "
                          "value. Capping to %d clocks\n",
-                         activationTimeInClks, HDR_MAX_ACTIVATION_TIME_VAL));
-        activationTimeInClks = HDR_MAX_ACTIVATION_TIME_VAL;
+                         actTime, HDR_MAX_ACTIVATION_TIME_VAL));
+        actTime = HDR_MAX_ACTIVATION_TIME_VAL;
     }
+
+    uint8_t activationTimeInClks = (uint8_t)(actTime);
     LOG(logINFO,
         ("Updating HDR Activation Time to %d clocks (%d%% of exptime)\n",
          activationTimeInClks, (int)(percentage * 100.00)));

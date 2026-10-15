@@ -1249,13 +1249,7 @@ int setExpTime(int64_t val) {
     }
     set64BitReg(val, SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG);
 
-    // update hdr activation time if hdr is enabled
-    bool enable = false;
-    enum operationMode mode = SYNCHROTRON;
-    getHDR(&enable, &mode);
-    if (enable) {
-        updateHDRActivationTime();
-    }
+    updateHDRActivationTime();
 
     // validate for tolerance
     val += ACQ_TIME_MIN_CLOCK;

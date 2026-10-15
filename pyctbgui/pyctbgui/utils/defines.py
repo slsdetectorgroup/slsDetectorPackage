@@ -16,6 +16,11 @@ class Defines:
     max_counters = 4 # max number of counters
     max_counters_tabIndex = 4
 
+    class ImageType(Enum): 
+        DIGITAL = 0
+        ANALOG = 1
+        TRANSCEIVER = 2
+        
     class adc:
         tabIndex = 5
         count = 32

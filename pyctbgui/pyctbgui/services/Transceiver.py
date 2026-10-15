@@ -27,7 +27,6 @@ class TransceiverTab(QtWidgets.QWidget):
         self.nCounters: int = Defines.max_counters
         self.nTransceiverRows : int = 0
         self.nTransceiverCols : int = 0 
-        self.shownCounters: list[bool] = [True] * Defines.max_counters # per default show all 4 counters
         self.transceiverImageSplitter = QtWidgets.QSplitter(QtCore.Qt.Vertical)
         self.transceiverImageViews : list = [] # pg image view for each counter 
         self.firstTransceiverImage : list[bool] = [True] * Defines.max_counters # to keep track of first image for each counter to maintain zoom state
@@ -167,7 +166,7 @@ class TransceiverTab(QtWidgets.QWidget):
 
         # keep the zoomed in state (not 1st image)
         for idx, image_view in enumerate(self.transceiverImageViews): 
-            if(self.firstTransceiverImage[idx] and self.shownCounters[idx]):
+            if(self.firstTransceiverImage[idx] and self.plotTab.shownCounterImages[idx]):
                 self.firstTransceiverImage[idx] = False
             else: 
                 image_view.getView().setState(image_states[idx])
@@ -176,17 +175,18 @@ class TransceiverTab(QtWidgets.QWidget):
     
     def update_numCounters(self, num_counters): 
         # update the number of counters and adjust the image splitter accordingly 
+        print(f"Updating number of counters to {num_counters}")
         self.nCounters = num_counters
         for i in range(Defines.max_counters): 
-            self.shownCounters[i] = i < self.nCounters
-            self.plotTab.setCounterCheckBox(i, self.shownCounters[i]) # check the counter checkbox 
-            self.plotTab.enableCounterCheckBox(i, self.shownCounters[i]) # disable counter checkbox 
+            self.plotTab.shownCounterImages[i] = i < self.nCounters
+            self.plotTab.setCounterCheckBox(i, self.plotTab.shownCounterImages[i]) # check the counter checkbox 
+            self.plotTab.enableCounterCheckBox(i, self.plotTab.shownCounterImages[i]) # disable counter checkbox 
         
         self.update_ImageSplitter() # update the splitter to show/hide image views based on the number of counters
         
         
     def update_ImageSplitter(self):
-        for i, showncounter in enumerate(self.shownCounters):
+        for i, showncounter in enumerate(self.plotTab.shownCounterImages):
             self.transceiverImageViews[i].setVisible(showncounter)
 
     def initializeAllTransceiverPlots(self):

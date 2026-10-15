@@ -2,6 +2,7 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 
 #include "Arping.h"
+#include "sls/thread_utils.h"
 
 #include <chrono>
 #include <signal.h>
@@ -10,12 +11,6 @@
 #include <unistd.h>
 
 namespace sls {
-
-// gettid added in glibc 2.30
-#if __GLIBC__ == 2 && __GLIBC_MINOR__ < 30
-#include <sys/syscall.h>
-#define gettid() syscall(SYS_gettid)
-#endif
 
 void func(int signum) { wait(NULL); }
 
@@ -59,7 +54,7 @@ void Arping::StartProcess() {
     childPid = fork();
     // child process
     if (childPid == 0) {
-        LOG(logINFOBLUE) << "Created [ Arping Process, Tid: " << gettid()
+        LOG(logINFOBLUE) << "Created [ Arping Process, Tid: " << getThreadId()
                          << " ]";
         ProcessExecution();
     }

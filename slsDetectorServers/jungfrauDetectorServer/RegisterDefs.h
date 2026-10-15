@@ -472,8 +472,8 @@ Time before end of exposure when comparator is disabled */
 #define HDR_ACTIVATION_TIME_OFST            (16)
 #define HDR_MAX_ACTIVATION_TIME_VAL         (0xFF)
 #define HDR_ACTIVATION_TIME_MSK             (HDR_MAX_ACTIVATION_TIME_VAL << HDR_ACTIVATION_TIME_OFST)
-#define HDR_MODE_FEL_OFST                       (24)
-#define HDR_MODE_FEL_MSK                        (0x00000001 << HDR_MODE_FEL_OFST)
+#define HDR_MODE_FEL_OFST                   (24)
+#define HDR_MODE_FEL_MSK                    (0x00000001 << HDR_MODE_FEL_OFST)
 #define HDR_ENABLE_OFST                     (31)
 #define HDR_ENABLE_MSK                      (0x00000001 << HDR_ENABLE_OFST)
 

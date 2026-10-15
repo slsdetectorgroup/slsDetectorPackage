@@ -2990,7 +2990,7 @@ int setHDR(bool enable, enum operationMode mode) {
     if (!enable) {
         return OK;
     }
-
+    // mode
     uint16_t timeout = 0;
     switch (mode) {
     case SYNCHROTRON:
@@ -3007,12 +3007,17 @@ int setHDR(bool enable, enum operationMode mode) {
         LOG(logERROR, ("Unknown HDR mode %d\n", mode));
         return FAIL;
     }
-
-    regval &= ~(HDR_TIMOUT_MSK | HDR_MODE_FEL_MSK | HDR_ENABLE_MSK);
+    // timeout
+    regval &= ~HDR_TIMOUT_MSK;
     regval |= ((timeout << HDR_TIMOUT_OFST) & HDR_TIMOUT_MSK);
+    bus_w(addr, regval);
+
+    updateHDRActivationTime();
+
+    // enable HDR
     regval |= HDR_ENABLE_MSK;
     bus_w(addr, regval);
-    updateHDRActivationTime();
+
     LOG(logDEBUG, ("\tHDR Register: 0x%08x\n", bus_r(addr)));
     return OK;
 }

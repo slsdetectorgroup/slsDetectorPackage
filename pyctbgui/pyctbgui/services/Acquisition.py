@@ -134,6 +134,7 @@ class AcquisitionTab(QtWidgets.QWidget):
                 self.view.labelTransceiver.setDisabled(True)
                 self.view.spinBoxTransceiver.setDisabled(True)
                 self.plotTab.enableallCounterCheckBox(False) 
+                self.plotTab.activate_counter(0, True) # analog plot has 1 active counter by default
             case readoutMode.DIGITAL_ONLY:
                 self.view.spinBoxAnalog.setDisabled(True)
                 self.view.labelAnalog.setDisabled(True)
@@ -142,6 +143,7 @@ class AcquisitionTab(QtWidgets.QWidget):
                 self.view.labelTransceiver.setDisabled(True)
                 self.view.spinBoxTransceiver.setDisabled(True)
                 self.plotTab.enableallCounterCheckBox(False) 
+                self.plotTab.activate_counter(0, True) # digital plot has 1 active counter by default
             case readoutMode.ANALOG_AND_DIGITAL:
                 self.view.spinBoxAnalog.setEnabled(True)
                 self.view.labelAnalog.setEnabled(True)
@@ -150,6 +152,7 @@ class AcquisitionTab(QtWidgets.QWidget):
                 self.view.labelTransceiver.setDisabled(True)
                 self.view.spinBoxTransceiver.setDisabled(True)
                 self.plotTab.enableallCounterCheckBox(False) 
+                self.plotTab.activate_counter(0, True) # analog and digital plots have 1 active counter by default
             case readoutMode.TRANSCEIVER_ONLY:
                 self.view.spinBoxAnalog.setDisabled(True)
                 self.view.labelAnalog.setDisabled(True)

@@ -31,7 +31,7 @@ class PlotTab(QtWidgets.QWidget):
         self.adcTab = None
         self.cmin: list[float] = Defines.max_counters * [0.0]
         self.cmax: list[float] = Defines.max_counters * [0.0]
-        self.colorRangeMode: Defines.colorRange = Defines.colorRange.all
+        self.colorRangeMode: Defines.colorRange = Defines.colorRange.auto
         self.activated_counters: list[bool] = Defines.max_counters * [False]
         self.cminSpinBoxes : list[QtWidgets.QSpinBox] = None
         self.cmaxSpinBoxes : list[QtWidgets.QSpinBox] = None
@@ -93,7 +93,7 @@ class PlotTab(QtWidgets.QWidget):
         self.view.spinBoxPlot.editingFinished.connect(self.setPlotBit)
         self.view.pushButtonReferesh.clicked.connect(self.acquisitionTab.refresh)
         # color range widgets
-        self.view.radioButtonAutomatic.clicked.connect(partial(self.setColorRangeMode, Defines.colorRange.all))
+        self.view.radioButtonAutomatic.clicked.connect(partial(self.setColorRangeMode, Defines.colorRange.auto))
         self.view.radioButtonFixed.clicked.connect(partial(self.setColorRangeMode, Defines.colorRange.fixed))
         self.view.radioButtonCenter.clicked.connect(partial(self.setColorRangeMode, Defines.colorRange.center))
 
@@ -320,7 +320,7 @@ class PlotTab(QtWidgets.QWidget):
     def updateColorRange(self, plot = None, index=0):
         """
         for mode:
-        - all:   sets cmin and cmax to the maximums/minimum values of the frame
+        - auto:  sets cmin and cmax to the maximums/minimum values of the frame
         - 3-97%: limits cmax and cmin so that we ignore 3% from each end of the whole range
         - fixed: this function does not change cmin and cmax
         """
@@ -333,7 +333,7 @@ class PlotTab(QtWidgets.QWidget):
             elif self.mainWindow.romode.value in [0, 2]: # update analog
                 plot = self.mainWindow.plotAnalogImage
 
-        if self.colorRangeMode == Defines.colorRange.all:
+        if self.colorRangeMode == Defines.colorRange.auto:
             frame_min = np.min(plot.getImageItem().image)  
             frame_max = np.max(plot.getImageItem().image)
             self.setCmin(frame_min, index=index) 

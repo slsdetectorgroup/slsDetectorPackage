@@ -175,7 +175,6 @@ class TransceiverTab(QtWidgets.QWidget):
     
     def update_numCounters(self, num_counters): 
         # update the number of counters and adjust the image splitter accordingly 
-        print(f"Updating number of counters to {num_counters}")
         self.nCounters = num_counters
         for i in range(Defines.max_counters): 
             self.plotTab.shownCounterImages[i] = i < self.nCounters

@@ -81,9 +81,6 @@ class PlotTab(QtWidgets.QWidget):
         self.analogcmaxSpinBoxes = self.view.analogcmaxSpinBox
         self.digitalcminSpinBoxes = self.view.digitalcminSpinBox
         self.digitalcmaxSpinBoxes = self.view.digitalcmaxSpinBox
-
-    
-        #self.labelColorRangeCounters = [self.view.labelColorRangeCounter0, self.view.labelColorRangeCounter1, self.view.labelColorRangeCounter2, self.view.labelColorRangeCounter3]
         
 
     def connect_ui(self):
@@ -174,23 +171,18 @@ class PlotTab(QtWidgets.QWidget):
         """
         slot function for the counter checkboxes, enables/disables the cmin/cmax spinboxes for the counter at index, updates image splitter to show counter image
         """
-        print(f"setCounterCheckBox: index={index}, state={is_checked}")
         self.transceivercmaxSpinBoxes[index].setEnabled(is_checked and self.colorRangeMode == Defines.colorRange.fixed)
         self.transceivercminSpinBoxes[index].setEnabled(is_checked and self.colorRangeMode == Defines.colorRange.fixed)
-
-        print(f"Set Check Box: {is_checked}")
         self.shownCounterImages[index] = is_checked # TODO: maybe I dont need that 
         self.transceiverTab.update_ImageSplitter()
         
     def enableCounterCheckBox(self, index : int, enabled : bool):
-        print(f"enableCounterCheckBox: index={index}, enabled={enabled}")
         self.checkBoxCounters[index].setEnabled(enabled)
         is_checked = self.checkBoxCounters[index].isChecked()
         self.transceivercmaxSpinBoxes[index].setEnabled(enabled and is_checked and self.colorRangeMode == Defines.colorRange.fixed)
         self.transceivercminSpinBoxes[index].setEnabled(enabled and is_checked and self.colorRangeMode == Defines.colorRange.fixed)
 
     def showallCounterCheckBox(self, enabled : bool):
-        print(f"showallCounterCheckBox: {enabled}")
         for checkBox in self.checkBoxCounters:
             checkBox.setVisible(enabled)
 
@@ -416,8 +408,6 @@ class PlotTab(QtWidgets.QWidget):
         index : int, optional
             The index of the counter (default is 0).
         """
-
-        print(f"updateColorRange: imagetype={imagetype}, index={index}, colorRangeMode={self.colorRangeMode}")
         if imagetype == Defines.ImageType.TRANSCEIVER: # update transceiver
             defaultPlot = self.transceiverTab.transceiverImageViews[index]
             cmin, cmax = self.transceivercolorrange[index]

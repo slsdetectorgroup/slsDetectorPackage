@@ -133,7 +133,7 @@ class AcquisitionTab(QtWidgets.QWidget):
                 self.view.labelDigital.setDisabled(True)
                 self.view.labelTransceiver.setDisabled(True)
                 self.view.spinBoxTransceiver.setDisabled(True)
-                self.plotTab.enableallCounterCheckBox(False) 
+                self.plotTab.showallCounterCheckBox(False) 
                 self.plotTab.activate_counter(0, True) # analog plot has 1 active counter by default
             case readoutMode.DIGITAL_ONLY:
                 self.view.spinBoxAnalog.setDisabled(True)
@@ -142,7 +142,7 @@ class AcquisitionTab(QtWidgets.QWidget):
                 self.view.labelDigital.setEnabled(True)
                 self.view.labelTransceiver.setDisabled(True)
                 self.view.spinBoxTransceiver.setDisabled(True)
-                self.plotTab.enableallCounterCheckBox(False) 
+                self.plotTab.showallCounterCheckBox(False) 
                 self.plotTab.activate_counter(0, True) # digital plot has 1 active counter by default
             case readoutMode.ANALOG_AND_DIGITAL:
                 self.view.spinBoxAnalog.setEnabled(True)
@@ -151,7 +151,7 @@ class AcquisitionTab(QtWidgets.QWidget):
                 self.view.labelDigital.setEnabled(True)
                 self.view.labelTransceiver.setDisabled(True)
                 self.view.spinBoxTransceiver.setDisabled(True)
-                self.plotTab.enableallCounterCheckBox(False) 
+                self.plotTab.showallCounterCheckBox(False) 
                 self.plotTab.activate_counter(0, True) # analog and digital plots have 1 active counter by default
             case readoutMode.TRANSCEIVER_ONLY:
                 self.view.spinBoxAnalog.setDisabled(True)
@@ -160,7 +160,7 @@ class AcquisitionTab(QtWidgets.QWidget):
                 self.view.labelDigital.setDisabled(True)
                 self.view.labelTransceiver.setEnabled(True)
                 self.view.spinBoxTransceiver.setEnabled(True)
-                self.plotTab.enableallCounterCheckBox(self.plotTab.view.radioButtonImage.isChecked()) # enable counter checkboxes for matterhorn
+                self.plotTab.showallCounterCheckBox(self.plotTab.view.radioButtonImage.isChecked()) # enable counter checkboxes for matterhorn
             case _:
                 self.view.spinBoxAnalog.setDisabled(True)
                 self.view.labelAnalog.setDisabled(True)
@@ -168,7 +168,7 @@ class AcquisitionTab(QtWidgets.QWidget):
                 self.view.labelDigital.setEnabled(True)
                 self.view.labelTransceiver.setEnabled(True)
                 self.view.spinBoxTransceiver.setEnabled(True)
-                self.plotTab.enableallCounterCheckBox(self.plotTab.view.radioButtonImage.isChecked()) # enable counter checkboxes for matterhorn
+                self.plotTab.showallCounterCheckBox(self.plotTab.view.radioButtonImage.isChecked()) # enable counter checkboxes for matterhorn
 
         self.view.comboBoxROMode.currentIndexChanged.connect(self.setReadOut)
         self.view.spinBoxAnalog.editingFinished.connect(self.setAnalog)

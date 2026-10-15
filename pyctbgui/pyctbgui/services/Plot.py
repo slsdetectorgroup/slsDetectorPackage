@@ -61,7 +61,6 @@ class PlotTab(QtWidgets.QWidget):
         self.cminSpinBoxes = [self.view.cminSpinBox0, self.view.cminSpinBox1, self.view.cminSpinBox2, self.view.cminSpinBox3]
         self.cmaxSpinBoxes = [self.view.cmaxSpinBox0, self.view.cmaxSpinBox1, self.view.cmaxSpinBox2, self.view.cmaxSpinBox3]
         self.labelColorRangeCounters = [self.view.labelColorRangeCounter0, self.view.labelColorRangeCounter1, self.view.labelColorRangeCounter2, self.view.labelColorRangeCounter3]
-
         
 
     def connect_ui(self):
@@ -154,14 +153,16 @@ class PlotTab(QtWidgets.QWidget):
         self.cmaxSpinBoxes[index].setEnabled(check and self.colorRangeMode == Defines.colorRange.fixed)
         self.cminSpinBoxes[index].setEnabled(check and self.colorRangeMode == Defines.colorRange.fixed)
 
-    def enableCounterCheckBox(self, index : int, enabled : bool): 
-        is_transceiver = self.mainWindow.romode.value in [3, 4]
-        is_image = self.view.radioButtonImage.isChecked()
-        self.checkBoxCounters[index].setEnabled(enabled and is_transceiver and is_image)
+    def enableCounterCheckBox(self, index : int, enabled : bool):
+        self.checkBoxCounters[index].setEnabled(enabled)
+        self.cmaxSpinBoxes[index].setEnabled(enabled and self.colorRangeMode == Defines.colorRange.fixed)
+        self.cminSpinBoxes[index].setEnabled(enabled and self.colorRangeMode == Defines.colorRange.fixed)
 
-    def enableallCounterCheckBox(self, enabled : bool):
+    def showallCounterCheckBox(self, enabled : bool):
         for checkBox in self.checkBoxCounters:
-            checkBox.setEnabled(enabled)
+            checkBox.setVisible(enabled)
+
+        self.view.labelCounters.setVisible(enabled)
 
         # per counter color range only shown for multiple counters, otherwise only first cmin/cmax spinbox without label
         for label in self.labelColorRangeCounters:
@@ -294,8 +295,8 @@ class PlotTab(QtWidgets.QWidget):
         # disable or enable cmin/cmax spinboxes
         enableSpinBoxes = mode == Defines.colorRange.fixed
         for cminSpinBox, cmaxSpinBox, checkBox in zip(self.cminSpinBoxes, self.cmaxSpinBoxes, self.checkBoxCounters):
-            cminSpinBox.setEnabled(enableSpinBoxes and (checkBox.isChecked() or checkBox.isEnabled() == False)) # if the checkbox is disabled, we still want to enable the spinbox
-            cmaxSpinBox.setEnabled(enableSpinBoxes and (checkBox.isChecked() or checkBox.isEnabled() == False)) # if the checkbox is disabled, we still want to enable the spinbox
+            cminSpinBox.setEnabled(enableSpinBoxes and (checkBox.isChecked() and checkBox.isEnabled())) # if the checkbox is disabled, we still want to enable the spinbox
+            cmaxSpinBox.setEnabled(enableSpinBoxes and (checkBox.isChecked() and checkBox.isEnabled())) # if the checkbox is disabled, we still want to enable the spinbox
             
         for index in range(Defines.max_counters): 
             if self.activated_counters[index]:
@@ -509,18 +510,18 @@ class PlotTab(QtWidgets.QWidget):
                 'bottom', "<span style=\"color:black;font-size:14px\">Transceiver Sample [#]</span>")
 
             self.view.stackedWidgetPlotType.setCurrentIndex(0)
-            self.enableallCounterCheckBox(False) # disable counter checkboxes for waveform
+            self.showallCounterCheckBox(False) # disable counter checkboxes for waveform
 
         elif self.view.radioButtonImage.isChecked():
             self.view.stackedWidgetPlotType.setCurrentIndex(2)
             is_transceiver = self.mainWindow.romode.value in [3, 4]
-            self.enableallCounterCheckBox(is_transceiver) # enable counter checkboxes for matterhorn
+            self.showallCounterCheckBox(is_transceiver) # enable counter checkboxes for matterhorn
             self.setDecoder()
 
         if self.view.radioButtonNoPlot.isChecked():
             self.view.labelPlotOptions.hide()
             self.view.stackedWidgetPlotType.hide()
-            self.enableallCounterCheckBox(False) # disable counter checkboxes when no plot is selected
+            self.showallCounterCheckBox(False) # disable counter checkboxes when no plot is selected
         # enable plotting
         else:
             self.view.labelPlotOptions.show()

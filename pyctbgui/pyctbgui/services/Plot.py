@@ -147,11 +147,14 @@ class PlotTab(QtWidgets.QWidget):
 
     def displayCounter(self, index : int, state : int): 
         # toggle the display of the counter i and update the splitter 
+        self.setCounterCheckBox(index, state == QtCore.Qt.Checked)
         self.transceiverTab.shownCounters[index] = (state == QtCore.Qt.Checked) 
         self.transceiverTab.update_ImageSplitter()
 
     def setCounterCheckBox(self, index : int, check : bool):
         self.checkBoxCounters[index].setChecked(check)
+        self.cmaxSpinBoxes[index].setEnabled(check and self.colorRangeMode == Defines.colorRange.fixed)
+        self.cminSpinBoxes[index].setEnabled(check and self.colorRangeMode == Defines.colorRange.fixed)
 
     def enableCounterCheckBox(self, index : int, enabled : bool): 
         is_transceiver = self.mainWindow.romode.value in [3, 4]
@@ -281,9 +284,9 @@ class PlotTab(QtWidgets.QWidget):
 
         # disable or enable cmin/cmax spinboxes
         enableSpinBoxes = mode == Defines.colorRange.fixed
-        for cminSpinBox, cmaxSpinBox in zip(self.cminSpinBoxes, self.cmaxSpinBoxes):
-            cminSpinBox.setEnabled(enableSpinBoxes)
-            cmaxSpinBox.setEnabled(enableSpinBoxes)
+        for cminSpinBox, cmaxSpinBox, checkBox in zip(self.cminSpinBoxes, self.cmaxSpinBoxes, self.checkBoxCounters):
+            cminSpinBox.setEnabled(enableSpinBoxes and checkBox.isChecked())
+            cmaxSpinBox.setEnabled(enableSpinBoxes and checkBox.isChecked())
             
         for index in range(Defines.max_counters): # TODO does it work with other detectors? 
             self.updateColorRange(index=index)

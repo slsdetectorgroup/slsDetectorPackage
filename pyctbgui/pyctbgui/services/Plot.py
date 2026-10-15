@@ -32,7 +32,6 @@ class PlotTab(QtWidgets.QWidget):
         self.cmin: list[float] = Defines.max_counters * [0.0]
         self.cmax: list[float] = Defines.max_counters * [0.0]
         self.colorRangeMode: Defines.colorRange = Defines.colorRange.all
-        self.ignoreHistogramSignal: bool = False
         self.imagePlots: list[PlotWidget] = []
         self.cminSpinBoxes : list[QtWidgets.QSpinBox] = None
         self.cmaxSpinBoxes : list[QtWidgets.QSpinBox] = None
@@ -117,8 +116,9 @@ class PlotTab(QtWidgets.QWidget):
         frame = lambda : self.mainWindow.analog_frame
         plot = self.mainWindow.plotAnalogImage
         plot.scene.sigMouseMoved.connect(partial(self.showPlotValues, plot, nMaxX, nMaxY, frame))
+        plot.getImageItem().sigImageChanged.connect(partial(self.updateColorRange, plot=plot)) # order is important otherwise overwritten
         plot.getHistogramWidget().item.sigLevelChangeFinished.connect(lambda _histItem, plot=plot: self.handleHistogramChange(plot))
-        plot.getImageItem().sigImageChanged.connect(partial(self.updateColorRange, plot=plot))
+
 
         # show image Values for digital image
         nMaxY = lambda : self.mainWindow.nDigitalRows
@@ -126,8 +126,9 @@ class PlotTab(QtWidgets.QWidget):
         frame = lambda : self.mainWindow.digital_frame
         plot = self.mainWindow.plotDigitalImage
         plot.scene.sigMouseMoved.connect(partial(self.showPlotValues, plot, nMaxX, nMaxY, frame))
-        plot.getHistogramWidget().item.sigLevelChangeFinished.connect(lambda _histItem, plot=plot: self.handleHistogramChange(plot))
         plot.getImageItem().sigImageChanged.connect(partial(self.updateColorRange, plot=plot))
+        plot.getHistogramWidget().item.sigLevelChangeFinished.connect(lambda _histItem, plot=plot: self.handleHistogramChange(plot))
+        
 
         # show image Values for transceiver image
         nMaxY = lambda : self.transceiverTab.nTransceiverRows
@@ -136,10 +137,11 @@ class PlotTab(QtWidgets.QWidget):
         for index, image_view in enumerate(self.transceiverTab.transceiverImageViews):
             frame = lambda image_view=image_view: image_view.getImageItem().image
             image_view.scene.sigMouseMoved.connect(partial(self.showPlotValues, image_view, nMaxX, nMaxY, frame))
-            image_view.getHistogramWidget().item.sigLevelChangeFinished.connect(
-                lambda _histItem, image_view=image_view, index=index: self.handleHistogramChange(image_view, index)) # sigLevelChangeFinished passes the histogram item as the first argument, we need to ignore it and pass the image_view instead
             image_view.getImageItem().sigImageChanged.connect(partial(self.updateColorRange, plot=image_view, index=index))
 
+            image_view.getHistogramWidget().item.sigLevelChangeFinished.connect(
+                lambda _histItem, image_view=image_view, index=index: self.handleHistogramChange(image_view, index)) # sigLevelChangeFinished passes the histogram item as the first argument, we need to ignore it and pass the image_view instead
+            
         self.view.checkBoxShowLegend.stateChanged.connect(self.toggleLegend)
 
 
@@ -247,7 +249,7 @@ class PlotTab(QtWidgets.QWidget):
         slot for setting cmin from cminSpinBox
         also used as a normal function
         """
-        print("setCmin for index: ", index, " value: ", value)
+
         if value is None:
             self.cmin[index] = self.cminSpinBoxes[index].value()
         else:
@@ -255,7 +257,6 @@ class PlotTab(QtWidgets.QWidget):
             self.cminSpinBoxes[index].setValue(self.cmin[index])
             
         if updateColorBar:
-            self.ignoreHistogramSignal = True
             self.updateColorBar(index=index)
 
     def setCmax(self, value=None, index = 0, updateColorBar=True):
@@ -289,11 +290,6 @@ class PlotTab(QtWidgets.QWidget):
 
     def handleHistogramChange(self, plot, index=0):
         """
-        slot called after changing the color bar
-        This is called even when pyqtgraph sets the image without any user intervention
-        the class attribute ignore_histogram_signal is set to False before setting the image
-        so that we can distinguish between the signal originates from pyqt or from the user
-
         Parameters
         ----------
         plot : Plot
@@ -301,17 +297,9 @@ class PlotTab(QtWidgets.QWidget):
         index : int, optional
             The index of the counter (default is 0).
         """
-
-        #print("handleHistogramChange called with index: ", index, " ignoreHistogramSignal: ", self.ignoreHistogramSignal)
-    
-        #print("color range mode is: ", self.colorRangeMode)
-        if not self.ignoreHistogramSignal:
-            cmin, cmax = plot.getHistogramWidget().item.getLevels()
-            #print("cmin, cmax for index: ", index, cmin, cmax)
-            self.setCmin(cmin, index=index, updateColorBar=False)
-            self.setCmax(cmax, index=index, updateColorBar=False)
-            
-        #self.ignoreHistogramSignal = False
+        cmin, cmax = plot.getHistogramWidget().item.getLevels()
+        self.setCmin(cmin, index=index, updateColorBar=False)
+        self.setCmax(cmax, index=index, updateColorBar=False)
 
         # self.setColorRangeMode(Defines.colorRange.fixed)
 
@@ -324,9 +312,9 @@ class PlotTab(QtWidgets.QWidget):
         """
 
         if self.colorRangeMode == Defines.colorRange.all:
-            frame_min = self.cmin[index] if plot is None else np.min(plot.getImageItem().image)
+            frame_min = self.cmin[index] if plot is None else np.min(plot.getImageItem().image)  
             frame_max = self.cmax[index] if plot is None else np.max(plot.getImageItem().image)
-            self.setCmin(frame_min, index=index) # TODO: need multiple frame min and frame max - from where? 
+            self.setCmin(frame_min, index=index) 
             self.setCmax(frame_max, index=index)
         elif self.colorRangeMode == Defines.colorRange.center:
             frame_min = self.cmin[index] if plot is None else np.min(plot.getImageItem().image)
@@ -344,11 +332,15 @@ class PlotTab(QtWidgets.QWidget):
         """
         for plot in self.imagePlots:
             if isinstance(plot, list): # hacky for now only transceiver image is a PlotSplitter 
-                #self.ignoreHistogramSignal = True
+                plot[index].getHistogramWidget().item.sigLevelChangeFinished.disconnect() # disconnect before setting the levels
                 plot[index].getHistogramWidget().item.setLevels(min=self.cmin[index], max=self.cmax[index])
+                plot[index].getHistogramWidget().item.sigLevelChangeFinished.connect(
+                    lambda _histItem, image_view=plot[index], index=index: self.handleHistogramChange(image_view, index)) # reconnect
             else:
-                #self.ignoreHistogramSignal = True
+                plot.getHistogramWidget().item.sigLevelChangeFinished.disconnect() # disconnect before setting the levels
                 plot.getHistogramWidget().item.setLevels(min=self.cmin[index], max=self.cmax[index])
+                plot.getHistogramWidget().item.sigLevelChangeFinished.connect(
+                    lambda _histItem, image_view=plot, index=index: self.handleHistogramChange(image_view, index)) # reconnect
 
     def setColorMap(self):
         cm = pg.colormap.getFromMatplotlib(self.view.comboBoxColorMap.currentText())

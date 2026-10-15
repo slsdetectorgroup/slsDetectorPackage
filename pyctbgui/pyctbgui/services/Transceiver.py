@@ -156,10 +156,9 @@ class TransceiverTab(QtWidgets.QWidget):
         try:
             transceiver_frame = self._processImageData(data, dSamples, self.mainWindow.romode.value,
                                                                        self.mainWindow.nDBitEnabled)
-            #self.plotTab.ignoreHistogramSignal = True
             
             for i in range(transceiver_frame.shape[0]):
-                self.transceiverImageViews[i].setImage(transceiver_frame[i])
+                self.transceiverImageViews[i].setImage(transceiver_frame[i], autoLevels=False) #manually update image levels 
         except Exception as e:
             self.mainWindow.statusbar.setStyleSheet("color:red")
             self.acquisitionTab.updateCurrentFrame('Invalid Image')

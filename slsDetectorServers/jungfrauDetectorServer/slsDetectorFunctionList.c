@@ -3015,7 +3015,7 @@ int setHDR(bool enable, enum operationMode mode) {
     updateHDRActivationTime();
 
     // enable HDR
-    regval |= HDR_ENABLE_MSK;
+    regval = bus_r(addr) | HDR_ENABLE_MSK;
     bus_w(addr, regval);
 
     LOG(logDEBUG, ("\tHDR Register: 0x%08x\n", bus_r(addr)));

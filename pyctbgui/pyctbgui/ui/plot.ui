@@ -425,7 +425,7 @@
             <string>Moench04</string>
            </property>
           </item>
-           <item>
+          <item>
            <property name="text">
             <string>Moench05</string>
            </property>
@@ -1180,9 +1180,9 @@
         <property name="text">
          <string>Auto</string>
         </property>
-       <property name="checked">
-        <bool>true</bool>
-       </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
         <attribute name="buttonGroup">
          <string notr="true">buttonGroup_4</string>
         </attribute>
@@ -1229,7 +1229,7 @@
     <item row="1" column="0">
      <widget class="QTabWidget" name="tabWidgetColorRange">
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="tabColorRangeDigital">
        <attribute name="title">
@@ -1359,187 +1359,187 @@
        <attribute name="title">
         <string>Transceiver</string>
        </attribute>
-            <layout class="QGridLayout" name="gridLayoutColorRangeCounters">
-             <item row="0" column="0" colspan="8">
-              <widget class="QLabel" name="labelColorRangeValuesTransceiver">
-               <property name="text">
-                <string>Color range values:</string>
-               </property>
-              </widget>
-             </item>
-       <item row="1" column="0" rowspan="2">
-        <widget class="QLabel" name="labelColorRangeCounter0">
-         <property name="text">
-          <string>Counter 0:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QDoubleSpinBox" name="cminSpinBox0">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="prefix">
-          <string>min: </string>
-         </property>
-         <property name="minimum">
-          <double>-1000.000000000000000</double>
-         </property>
-         <property name="maximum">
-          <double>100000.000000000000000</double>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QDoubleSpinBox" name="cmaxSpinBox0">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="prefix">
-          <string>max: </string>
-         </property>
-         <property name="minimum">
-          <double>-1000.000000000000000</double>
-         </property>
-         <property name="maximum">
-          <double>100000.000000000000000</double>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="2" rowspan="2">
-        <widget class="QLabel" name="labelColorRangeCounter1">
-         <property name="text">
-          <string>Counter 1:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="3">
-        <widget class="QDoubleSpinBox" name="cminSpinBox1">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="prefix">
-          <string>min: </string>
-         </property>
-         <property name="minimum">
-          <double>-1000.000000000000000</double>
-         </property>
-         <property name="maximum">
-          <double>100000.000000000000000</double>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="3">
-        <widget class="QDoubleSpinBox" name="cmaxSpinBox1">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="prefix">
-          <string>max: </string>
-         </property>
-         <property name="minimum">
-          <double>-1000.000000000000000</double>
-         </property>
-         <property name="maximum">
-          <double>100000.000000000000000</double>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="4" rowspan="2">
-        <widget class="QLabel" name="labelColorRangeCounter2">
-         <property name="text">
-          <string>Counter 2:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="5">
-        <widget class="QDoubleSpinBox" name="cminSpinBox2">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="prefix">
-          <string>min: </string>
-         </property>
-         <property name="minimum">
-          <double>-1000.000000000000000</double>
-         </property>
-         <property name="maximum">
-          <double>100000.000000000000000</double>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="5">
-        <widget class="QDoubleSpinBox" name="cmaxSpinBox2">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="prefix">
-          <string>max: </string>
-         </property>
-         <property name="minimum">
-          <double>-1000.000000000000000</double>
-         </property>
-         <property name="maximum">
-          <double>100000.000000000000000</double>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="6" rowspan="2">
-        <widget class="QLabel" name="labelColorRangeCounter3">
-         <property name="text">
-          <string>Counter 3:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="7">
-        <widget class="QDoubleSpinBox" name="cminSpinBox3">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="prefix">
-          <string>min: </string>
-         </property>
-         <property name="minimum">
-          <double>-1000.000000000000000</double>
-         </property>
-         <property name="maximum">
-          <double>100000.000000000000000</double>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="7">
-        <widget class="QDoubleSpinBox" name="cmaxSpinBox3">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="prefix">
-          <string>max: </string>
-         </property>
-         <property name="minimum">
-          <double>-1000.000000000000000</double>
-         </property>
-         <property name="maximum">
-          <double>100000.000000000000000</double>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="8" rowspan="2">
-        <spacer name="horizontalSpacerColorRange2">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Expanding</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-            </layout>
+       <layout class="QGridLayout" name="gridLayoutColorRangeCounters">
+        <item row="0" column="0" colspan="8">
+         <widget class="QLabel" name="labelColorRangeValuesTransceiver">
+          <property name="text">
+           <string>Color range values:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0" rowspan="2">
+         <widget class="QLabel" name="labelColorRangeCounter0">
+          <property name="text">
+           <string>Counter 0:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QDoubleSpinBox" name="transceivercminSpinBox0">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="prefix">
+           <string>min: </string>
+          </property>
+          <property name="minimum">
+           <double>-1000.000000000000000</double>
+          </property>
+          <property name="maximum">
+           <double>100000.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QDoubleSpinBox" name="transceivercmaxSpinBox">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="prefix">
+           <string>max: </string>
+          </property>
+          <property name="minimum">
+           <double>-1000.000000000000000</double>
+          </property>
+          <property name="maximum">
+           <double>100000.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="2" rowspan="2">
+         <widget class="QLabel" name="labelColorRangeCounter1">
+          <property name="text">
+           <string>Counter 1:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="3">
+         <widget class="QDoubleSpinBox" name="transceivercminSpinBox1">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="prefix">
+           <string>min: </string>
+          </property>
+          <property name="minimum">
+           <double>-1000.000000000000000</double>
+          </property>
+          <property name="maximum">
+           <double>100000.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="3">
+         <widget class="QDoubleSpinBox" name="transceivercmaxSpinBox1">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="prefix">
+           <string>max: </string>
+          </property>
+          <property name="minimum">
+           <double>-1000.000000000000000</double>
+          </property>
+          <property name="maximum">
+           <double>100000.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="4" rowspan="2">
+         <widget class="QLabel" name="labelColorRangeCounter2">
+          <property name="text">
+           <string>Counter 2:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="5">
+         <widget class="QDoubleSpinBox" name="transceivercminSpinBox2">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="prefix">
+           <string>min: </string>
+          </property>
+          <property name="minimum">
+           <double>-1000.000000000000000</double>
+          </property>
+          <property name="maximum">
+           <double>100000.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="5">
+         <widget class="QDoubleSpinBox" name="transceivercmaxSpinBox2">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="prefix">
+           <string>max: </string>
+          </property>
+          <property name="minimum">
+           <double>-1000.000000000000000</double>
+          </property>
+          <property name="maximum">
+           <double>100000.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="6" rowspan="2">
+         <widget class="QLabel" name="labelColorRangeCounter3">
+          <property name="text">
+           <string>Counter 3:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="7">
+         <widget class="QDoubleSpinBox" name="transceivercminSpinBox3">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="prefix">
+           <string>min: </string>
+          </property>
+          <property name="minimum">
+           <double>-1000.000000000000000</double>
+          </property>
+          <property name="maximum">
+           <double>100000.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="7">
+         <widget class="QDoubleSpinBox" name="transceivercmaxSpinBox3">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="prefix">
+           <string>max: </string>
+          </property>
+          <property name="minimum">
+           <double>-1000.000000000000000</double>
+          </property>
+          <property name="maximum">
+           <double>100000.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="8" rowspan="2">
+         <spacer name="horizontalSpacerColorRange2">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Expanding</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
       </widget>
      </widget>
     </item>
@@ -1734,9 +1734,9 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroup_2"/>
-  <buttongroup name="buttonGroup_3"/>
   <buttongroup name="buttonGroup_4"/>
   <buttongroup name="buttonGroup"/>
+  <buttongroup name="buttonGroup_2"/>
+  <buttongroup name="buttonGroup_3"/>
  </buttongroups>
 </ui>

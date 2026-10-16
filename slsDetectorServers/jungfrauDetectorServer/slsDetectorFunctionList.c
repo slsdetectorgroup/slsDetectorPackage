@@ -463,7 +463,7 @@ void setChipIndexAllowedFeatures() {
         has_filter_cells = false;
         has_current_src_normal = true;
         has_current_src_64bit_selection = true;
-        has_current_src_reverse_bits_selection = false;
+        has_current_src_reverse_bits_selection = true;
         has_storage_start_in_chip_config = true;
         has_step_reduction = true;
         defaultDacValue_G0 = defaultDacList_v1_2;
@@ -1249,7 +1249,7 @@ int setExpTime(int64_t val) {
     }
     set64BitReg(val, SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG);
 
-    updateHDRActivationTime();
+    updateHDRTimeout();
 
     // validate for tolerance
     val += ACQ_TIME_MIN_CLOCK;
@@ -2948,7 +2948,7 @@ void setElectronCollectionMode(int enable) {
     configureChip();
 }
 
-void updateHDRActivationTime() {
+void updateHDRTimeout() {
     uint32_t addr = HDR_REG;
     uint32_t regval = bus_r(addr);
 
@@ -2957,26 +2957,23 @@ void updateHDRActivationTime() {
         ACQ_TIME_MIN_CLOCK;
     bool isFel = (regval & HDR_MODE_FEL_MSK);
 
-    double percentage = (isFel ? HDR_FEL_ACTIVATION_TIME_PERCENT
-                               : HDR_SYNC_ACTIVATION_TIME_PERCENT) /
-                        100.0;
-    int actTime = expTimeInClks * percentage;
+    double percentage =
+        (isFel ? HDR_FEL_TIMEOUT_PERCENT : HDR_SYNC_TIMEOUT_PERCENT) / 100.0;
+    int timeout = expTimeInClks * percentage;
 
     // cap to max
-    if (actTime > HDR_MAX_ACTIVATION_TIME_VAL) {
-        LOG(logWARNING, ("HDR Activation Time (%u clocks) exceeds maximum "
+    if (timeout > HDR_MAX_TIMEOUT_VAL) {
+        LOG(logWARNING, ("HDR Timeout (%u clocks) exceeds maximum "
                          "value. Capping to %d clocks\n",
-                         actTime, HDR_MAX_ACTIVATION_TIME_VAL));
-        actTime = HDR_MAX_ACTIVATION_TIME_VAL;
+                         timeout, HDR_MAX_TIMEOUT_VAL));
+        timeout = HDR_MAX_TIMEOUT_VAL;
     }
 
-    uint8_t activationTimeInClks = (uint8_t)(actTime);
-    LOG(logINFO,
-        ("Updating HDR Activation Time to %d clocks (%d%% of exptime)\n",
-         activationTimeInClks, (int)(percentage * 100.00)));
-    regval &= ~HDR_ACTIVATION_TIME_MSK;
-    regval |= ((activationTimeInClks << HDR_ACTIVATION_TIME_OFST) &
-               HDR_ACTIVATION_TIME_MSK);
+    uint16_t timeoutInClks = (uint16_t)(timeout);
+    LOG(logINFO, ("Updating HDR Timeout to %d clocks (%d%% of exptime)\n",
+                  timeoutInClks, (int)(percentage * 100.00)));
+    regval &= ~HDR_TIMOUT_MSK;
+    regval |= ((timeoutInClks << HDR_TIMOUT_OFST) & HDR_TIMOUT_MSK);
     bus_w(addr, regval);
 }
 
@@ -2991,16 +2988,16 @@ int setHDR(bool enable, enum operationMode mode) {
         return OK;
     }
     // mode
-    uint16_t timeout = 0;
+    uint16_t actTime = 0;
     switch (mode) {
     case SYNCHROTRON:
         LOG(logINFO, ("\tmode: synchrotron\n"));
-        timeout = HDR_SYNC_TIME_CLK_VAL;
+        actTime = HDR_SYNC_ACT_TIME_CLK_VAL;
         regval &= ~HDR_MODE_FEL_MSK;
         break;
     case FEL:
         LOG(logINFO, ("\tmode: FEL\n"));
-        timeout = HDR_FEL_TIMEOUT_CLK_VAL;
+        actTime = HDR_FEL_ACT_TIME_CLK_VAL;
         regval |= HDR_MODE_FEL_MSK;
         break;
     default:
@@ -3008,11 +3005,11 @@ int setHDR(bool enable, enum operationMode mode) {
         return FAIL;
     }
     // timeout
-    regval &= ~HDR_TIMOUT_MSK;
-    regval |= ((timeout << HDR_TIMOUT_OFST) & HDR_TIMOUT_MSK);
+    regval &= ~HDR_ACTIVATION_TIME_MSK;
+    regval |= ((actTime << HDR_ACTIVATION_TIME_OFST) & HDR_ACTIVATION_TIME_MSK);
     bus_w(addr, regval);
 
-    updateHDRActivationTime();
+    updateHDRTimeout();
 
     // enable HDR
     regval = bus_r(addr) | HDR_ENABLE_MSK;

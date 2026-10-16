@@ -158,10 +158,10 @@
 #define ADC_OFST_HALF_SPEED_BOARD2_VAL    (0x10)
 #define ADC_OFST_QUARTER_SPEED_BOARD2_VAL (0x08)
 
-#define HDR_SYNC_TIME_CLK_VAL            (1) // 25ns
-#define HDR_SYNC_ACTIVATION_TIME_PERCENT (8)
-#define HDR_FEL_TIMEOUT_CLK_VAL          (0) // undefined
-#define HDR_FEL_ACTIVATION_TIME_PERCENT  (0) // undefined
+#define HDR_SYNC_TIMEOUT_PERCENT  (8)
+#define HDR_SYNC_ACT_TIME_CLK_VAL (1) // 25ns
+#define HDR_FEL_TIMEOUT_PERCENT   (0) // undefined
+#define HDR_FEL_ACT_TIME_CLK_VAL  (0) // undefined
 
 /* Struct Definitions */
 typedef struct udp_header_struct {

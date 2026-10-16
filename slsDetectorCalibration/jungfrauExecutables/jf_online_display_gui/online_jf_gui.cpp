@@ -338,6 +338,17 @@ const QRgb *makePalette() {
 const QRgb *kPalette = makePalette();
 const int MARGIN = 5;
 const int SCALE_W = 50;
+// The image is drawn as a framed plot: axes with tick labels *outside* the
+// plot area (left/bottom), a thin frame, grid lines inside.
+const int AXIS_L = 52, AXIS_B = 26, AXIS_T = 6, AXIS_R = 6;
+// Deepest zoom: the smallest viewport, in image pixels.  The strip-xel build
+// maps 25/15/18.75 um pixels into panels of ~1000 x 1900, so it is allowed two
+// image pixels across (single-pixel inspection); the plain build stops at 8.
+#ifdef JFSTRX
+const double kMinViewport = 2.0;
+#else
+const double kMinViewport = 8.0;
+#endif
 
 class FastImageView : public QWidget {
   public:
@@ -347,6 +358,28 @@ class FastImageView : public QWidget {
     void setImageCopy(const float *data, int nx, int ny);
     // replaces the 256-entry colour table (GUI thread only)
     void setPaletteLut(const QRgb *lut);
+    // log intensity mapping: values <= 0 are capped at 1e-2 before the log
+    void setLogScale(bool on) {
+        m_logScale = on;
+        m_dirty = true;
+        update();
+    }
+    bool logScale() const { return m_logScale; }
+    // the in-pixel labels: whole numbers for photon counts, one decimal for the
+    // real-valued images (ADC, keV)
+    void setIntegerValues(bool on) {
+        m_integerValues = on;
+        update();
+    }
+    // histogram of the last image over its own value range (256 bins), for the
+    // scale panel that replaced the in-view colour bar
+    const std::vector<int> &histogram() const { return m_hist; }
+    void histogramRange(double &lo, double &hi) const {
+        lo = m_histLo;
+        hi = m_histHi;
+    }
+    // called (GUI thread) when a new image or histogram is ready
+    std::function<void()> onImageChanged;
     // draw pixels with no counts (value <= 0) white instead of the palette's
     // lowest colour, the way ROOT's colz draws empty cells on a white canvas.
     // Used by the photon map only; the ADC/gain images keep the full palette.
@@ -435,6 +468,13 @@ class FastImageView : public QWidget {
     double m_clo = 0, m_chi = 4000;
     double m_defClo = 0, m_defChi = 4000;
     bool m_zeroWhite = false; // photon map: no counts -> white
+    bool m_showBar = false;   // the in-view colour bar (replaced by the panel)
+    bool m_logScale = false;  // log intensity mapping (cap <= 0 at 1e-2)
+    bool m_integerValues = false; // in-pixel labels: ints (counts) or 0.0
+    double m_sx = 1.0;        // screen pixels per image pixel (last paint)
+    std::vector<int> m_hist;  // histogram of the last image
+    double m_histLo = 0.0, m_histHi = 1.0;
+    qint64 m_histMs = 0;
     double m_pixelAspectX = 1.0; // >1: pixels wider than tall
     double m_vpX = 0, m_vpY = 0;
     double m_vpW = -1, m_vpH = -1;
@@ -506,7 +546,7 @@ void FastImageView::setColorRange(double lo, double hi) {
 }
 
 void FastImageView::setViewport(double x1, double y1, double x2, double y2) {
-    if (x2 - x1 < 2 || y2 - y1 < 2)
+    if (x2 - x1 < kMinViewport || y2 - y1 < kMinViewport)
         return;
     m_vpX = x1;
     m_vpY = y1;
@@ -528,16 +568,19 @@ void FastImageView::resetView() {
 }
 
 QRect FastImageView::imageRect() const {
-    int imgW = width() - 2 * MARGIN - SCALE_W;
-    int imgH = height() - 2 * MARGIN;
-    if (imgW < 10)
-        imgW = 10;
-    if (imgH < 10)
-        imgH = 10;
-    return QRect(MARGIN, MARGIN, imgW, imgH);
+    int x0 = AXIS_L, y0 = AXIS_T;
+    int x1 = width() - AXIS_R - (m_showBar ? SCALE_W : 0);
+    int y1 = height() - AXIS_B;
+    if (x1 - x0 < 10)
+        x1 = x0 + 10;
+    if (y1 - y0 < 10)
+        y1 = y0 + 10;
+    return QRect(x0, y0, x1 - x0, y1 - y0);
 }
 
 QRect FastImageView::scaleRect() const {
+    if (!m_showBar)
+        return QRect(); // the scale panel took its place
     QRect ir = imageRect();
     return QRect(ir.right() + 4, ir.top(), SCALE_W - 4, ir.height());
 }
@@ -608,24 +651,68 @@ void FastImageView::renderImage() {    if (!m_data || m_nx <= 0 || m_ny <= 0)
         return;
     if (m_image.size() != QSize(m_nx, m_ny))
         m_image = QImage(m_nx, m_ny, QImage::Format_ARGB32);
-    double range = (m_chi > m_clo) ? (m_chi - m_clo) : 1.0;
+    // log: values <= 0 are capped at 1e-2 (log10 = -2), so an empty pixel is
+    // still distinguishable instead of being -inf
+    const double loD = m_logScale ? std::log10(std::max(m_clo, 1e-2)) : m_clo;
+    const double hiD = m_logScale ? std::log10(std::max(m_chi, 1e-2)) : m_chi;
+    const double range = (hiD > loD) ? (hiD - loD) : 1.0;
     static const QRgb kWhite = qRgb(255, 255, 255);
+    double dmin = 0.0, dmax = 1.0;
+    bool first = true;
     for (int p = 0; p < m_nx * m_ny; p++) {
-        double v = m_data[p];
+        const double v = m_data[p];
+        if (std::isfinite(v)) {
+            if (first) {
+                dmin = dmax = v;
+                first = false;
+            } else {
+                if (v < dmin)
+                    dmin = v;
+                if (v > dmax)
+                    dmax = v;
+            }
+        }
         if (m_zeroWhite && !(v > 0.0)) {
             // empty cell: white background, as the ROOT colz plot showed it
             m_image.setPixel(p % m_nx, m_ny - 1 - p / m_nx, kWhite);
             continue;
         }
-        int idx = int((v - m_clo) / range * 255);
+        const double vv = m_logScale ? std::log10(std::max(v, 1e-2)) : v;
+        int idx = int((vv - loD) / range * 255);
         if (idx < 0)
             idx = 0;
         if (idx > 255)
             idx = 255;
-        int x = p % m_nx, y = p / m_nx;
-        m_image.setPixel(x, m_ny - 1 - y, m_palette[idx]);
+        m_image.setPixel(p % m_nx, m_ny - 1 - p / m_nx, m_palette[idx]);
     }
     m_dirty = false;
+
+    // Histogram for the scale panel: walking the whole frame is cheap enough at
+    // the image cadence, but the panel only needs the shape, so a few times a
+    // second is plenty.
+    const qint64 now = QDateTime::currentMSecsSinceEpoch();
+    if (m_hist.empty() || now - m_histMs > 300) {
+        m_histMs = now;
+        if (first || dmax <= dmin)
+            dmax = dmin + 1.0;
+        m_histLo = dmin;
+        m_histHi = dmax;
+        m_hist.assign(256, 0);
+        const double sc = 255.0 / (dmax - dmin);
+        for (int p = 0; p < m_nx * m_ny; p++) {
+            const double v = m_data[p];
+            if (!std::isfinite(v))
+                continue;
+            int b = int((v - dmin) * sc);
+            if (b < 0)
+                b = 0;
+            if (b > 255)
+                b = 255;
+            m_hist[b]++;
+        }
+        if (onImageChanged)
+            onImageChanged();
+    }
 }
 
 void FastImageView::paintEvent(QPaintEvent *) {
@@ -653,6 +740,9 @@ void FastImageView::paintEvent(QPaintEvent *) {
     }
 
     p.save();
+    // Zoomed in, the scaled image is larger than the plot area: without this
+    // clip it spills over the frame and the tick labels.
+    p.setClipRect(ir);
     p.translate(ir.left(), ir.top());
     p.translate((ir.width() - vpW() * sx) * 0.5,
                 (ir.height() - vpH() * sy) * 0.5);
@@ -660,9 +750,13 @@ void FastImageView::paintEvent(QPaintEvent *) {
     p.scale(sx, sy);
     const QTransform imgToWidget = p.combinedTransform();
     m_widgetToImg = imgToWidget.inverted();
+    m_sx = sx; // screen pixels per image pixel: drives the pixel grid/labels
     p.drawImage(QPoint(0, 0), m_image);
     p.restore();
 
+    // the overlays live in the same plot area: clip them as well
+    p.save();
+    p.setClipRect(ir);
     // gate ROI overlay: convert data rows (row 0 = bottom) to display space
     if (m_ovOn && m_ovX1 > m_ovX0 && m_ovY1 > m_ovY0) {
         const double dx = m_ovX0;
@@ -692,8 +786,121 @@ void FastImageView::paintEvent(QPaintEvent *) {
         const double dh = m_rxY1 - m_rxY0;
         p.drawRect(imgToWidget.mapRect(QRectF(dx, dy, dw, dh)));
     }
+    p.restore(); // back to the full widget for the axes
 
-    // Color scale
+    // ── axes: a frame around the plot, ticks and labels outside, grid inside ──
+    {
+        QFont f = p.font();
+        f.setPixelSize(10);
+        p.setFont(f);
+        // 0..8 grid lines, on 1/2/5 steps
+        auto step = [](double span) {
+            static const double cand[] = {1,   2,   5,    10,   20,  50,
+                                          100, 200, 500,  1000, 2000, 5000};
+            for (double c : cand)
+                if (span / c <= 8.0)
+                    return c;
+            return 10000.0;
+        };
+        const double x0 = m_vpX, x1 = m_vpX + vpW();
+        const double y0 = m_vpY, y1 = m_vpY + vpH(); // display rows (top down)
+        const double sxStep = step(x1 - x0), syStep = step(y1 - y0);
+        const QPen grid(QColor(95, 95, 95));
+        const QPen tick(QColor(215, 215, 215));
+        for (double gx = std::ceil(x0 / sxStep) * sxStep; gx <= x1;
+             gx += sxStep) {
+            const double wx = imgToWidget.map(QPointF(gx, 0)).x();
+            QPen g2 = grid;
+            g2.setStyle(Qt::DotLine);
+            p.setPen(g2);
+            p.drawLine(QPointF(wx, ir.top()), QPointF(wx, ir.bottom()));
+            p.setPen(tick);
+            p.drawLine(QPointF(wx, ir.bottom() + 1), QPointF(wx, ir.bottom() + 4));
+            p.drawText(QRectF(wx - 26, ir.bottom() + 5, 52, 14),
+                       Qt::AlignHCenter | Qt::AlignTop,
+                       QString::number(gx, 'f', 0));
+        }
+        for (double gy = std::ceil(y0 / syStep) * syStep; gy <= y1;
+             gy += syStep) {
+            const double wy = imgToWidget.map(QPointF(0, gy)).y();
+            QPen g2 = grid;
+            g2.setStyle(Qt::DotLine);
+            p.setPen(g2);
+            p.drawLine(QPointF(ir.left(), wy), QPointF(ir.right(), wy));
+            p.setPen(tick);
+            p.drawLine(QPointF(ir.left() - 4, wy), QPointF(ir.left() - 1, wy));
+            // the label is the DATA row (row 0 at the bottom), as everywhere else
+            p.drawText(QRectF(ir.left() - 50, wy - 7, 44, 14),
+                       Qt::AlignRight | Qt::AlignVCenter,
+                       QString::number(double(m_ny) - 1.0 - gy, 'f', 0));
+        }
+        p.setPen(QPen(QColor(225, 225, 225)));
+        p.setBrush(Qt::NoBrush);
+        p.drawRect(ir.adjusted(0, 0, -1, -1));
+    }
+
+    // ── pixel grid and in-pixel values, once a pixel is big enough ──────────
+    if (m_sx >= 16.0) {
+        const double x0 = m_vpX, x1 = m_vpX + vpW();
+        const double y0 = m_vpY, y1 = m_vpY + vpH();
+        // thin outline around every pixel (only when a sane number is visible)
+        if (vpW() <= 256 && vpH() <= 256) {
+            QPen px(QColor(55, 55, 55));
+            px.setCosmetic(true);
+            p.setPen(px);
+            for (double gx = std::floor(x0); gx <= x1 + 1; gx += 1.0) {
+                const double wx = imgToWidget.map(QPointF(gx, 0)).x();
+                p.drawLine(QPointF(wx, ir.top()), QPointF(wx, ir.bottom()));
+            }
+            for (double gy = std::floor(y0); gy <= y1 + 1; gy += 1.0) {
+                const double wy = imgToWidget.map(QPointF(0, gy)).y();
+                p.drawLine(QPointF(ir.left(), wy), QPointF(ir.right(), wy));
+            }
+        }
+        if (m_sx >= 50.0 && vpW() <= 64 && vpH() <= 64) {
+            QFont f = p.font();
+            // The label has to fit *inside* the pixel: six characters for the
+            // real-valued images ("XXXXX.y"), five for the photon counts, at
+            // roughly 0.62 em per digit.  The 0.30 em cap still gives the
+            // "small, tidy number" look at deep zoom.
+            const int maxChars = m_integerValues ? 5 : 6;
+            const double bySize = m_sx * 0.30;
+            const double byWidth = m_sx * 0.92 / (0.62 * maxChars);
+            f.setPixelSize(std::max(
+                7, std::min(20, int(std::min(bySize, byWidth)))));
+            p.setFont(f);
+            for (int gy = int(std::floor(y0)); gy <= int(y1); gy++) {
+                for (int gx = int(std::floor(x0)); gx <= int(x1); gx++) {
+                    if (gx < 0 || gy < 0 || gx >= m_nx || gy >= m_ny)
+                        continue;
+                    const double v = m_data[gx + (m_ny - 1 - gy) * m_nx];
+                    if (!std::isfinite(v))
+                        continue;
+                    // text colour from the pixel that was actually painted
+                    const QRgb c = m_image.pixel(gx, gy);
+                    const int lum = (qRed(c) * 299 + qGreen(c) * 587 +
+                                     qBlue(c) * 114) /
+                                    1000;
+                    p.setPen(lum > 140 ? QColor(15, 15, 15)
+                                       : QColor(245, 245, 245));
+                    const QString txt =
+                        m_integerValues
+                            ? QString::number(qint64(std::llround(v)))
+                            : QString::number(v, 'f', 1);
+                    const QPointF ctr =
+                        imgToWidget.map(QPointF(gx + 0.5, gy + 0.5));
+                    p.drawText(QRectF(ctr.x() - m_sx * 0.5,
+                                      ctr.y() - m_sx * 0.5, m_sx, m_sx),
+                               Qt::AlignCenter, txt);
+                }
+            }
+        }
+    }
+
+    // in-view colour bar: kept for builds that still ask for it (the scale
+    // panel replaced it in the windows)
+    if (!m_showBar)
+        return;
     QRect sr = scaleRect();
     for (int yy = sr.top(); yy <= sr.bottom(); yy++) {
         double frac = 1.0 - double(yy - sr.top()) / sr.height();
@@ -813,10 +1020,10 @@ void FastImageView::wheelEvent(QWheelEvent *e) {
 
     double factor = (e->angleDelta().y() > 0) ? 1.0 / 1.18 : 1.18;
     double nw = vpW() * factor, nh = vpH() * factor;
-    if (nw < 8)
-        nw = 8;
-    if (nh < 8)
-        nh = 8;
+    if (nw < kMinViewport)
+        nw = kMinViewport;
+    if (nh < kMinViewport)
+        nh = kMinViewport;
     if (nw > m_nx)
         nw = m_nx;
     if (nh > m_ny)
@@ -882,6 +1089,298 @@ QLabel *makeValueLabel(const QString &text, QWidget *parent) {
 // ---------------------------------------------------------------------------
 // MainWindow
 // ---------------------------------------------------------------------------
+// The histogram the scale panel shows: the image's own distribution with the
+// currently mapped range drawn over it, so the effect of the two ends is
+// visible while they are set.
+// The histogram strip of the scale panel.  It is deliberately thin (a fixed
+// ~38 px) and the two range ends are drawn at FIXED positions - a quarter and
+// three quarters of the width - so the *value axis* moves under them: the data
+// window shown is the selected range widened by half a range on either side.
+// Dragging a marker changes that end of the range; the histogram rescales so
+// the marker returns to its fixed spot.  The horizontal axis follows the image
+// mapping (lin or log), the bar heights have their own lin/log switch.
+class ScaleHisto : public QWidget {
+  public:
+    explicit ScaleHisto(QWidget *parent = nullptr) : QWidget(parent) {
+        setFixedHeight(38);
+        setMouseTracking(true);
+        setToolTip("Distribution of the last image (its own value range); the\n"
+                   "band between the two markers is the range mapped to the\n"
+                   "palette.  Markers sit at 1/4 and 3/4 and the axis rescales\n"
+                   "under them - drag either one to change that end.");
+    }
+    // dlo/dhi: value range of the bins; clo/chi: the mapped range
+    void setData(const std::vector<int> *h, double dlo, double dhi, double clo,
+                 double chi, bool logX, bool logY) {
+        h_ = h;
+        dlo_ = dlo;
+        dhi_ = dhi;
+        if (!dragging_) { // while dragging the pending values win
+            clo_ = clo;
+            chi_ = chi;
+        }
+        logX_ = logX;
+        logY_ = logY;
+        update();
+    }
+    // dragging a marker reports the new range (GUI thread)
+    std::function<void(double, double)> onRangeChanged;
+
+  protected:
+    void paintEvent(QPaintEvent *) override {
+        QPainter p(this);
+        p.fillRect(rect(), QColor(28, 28, 28));
+        const int W = width(), H = height();
+        // the shown window is the selected range +- half a range
+        const double span = (chi_ > clo_) ? (chi_ - clo_) : 1.0;
+        double wlo = clo_ - 0.5 * span, whi = chi_ + 0.5 * span;
+        if (logX_) { // work in log space, capping <= 0 at 1e-2
+            wlo = std::log10(std::max(wlo, 1e-2));
+            whi = std::log10(std::max(whi, 1e-2));
+            if (whi <= wlo)
+                whi = wlo + 1.0;
+        }
+        auto mapv = [&](double v) {
+            return logX_ ? std::log10(std::max(v, 1e-2)) : v;
+        };
+        auto xof = [&](double v) {
+            return (mapv(v) - wlo) / (whi - wlo) * W;
+        };
+        if (h_ && !h_->empty() && dhi_ > dlo_) {
+            int mx = 1;
+            for (int v : *h_)
+                if (v > mx)
+                    mx = v;
+            const double lmx = std::log10(double(mx) + 1.0);
+            const double binW = (dhi_ - dlo_) / double(h_->size());
+            QBrush bar(QColor(120, 190, 255));
+            p.setPen(Qt::NoPen);
+            p.setBrush(bar);
+            for (size_t i = 0; i < h_->size(); i++) {
+                if ((*h_)[i] <= 0)
+                    continue;
+                // solid: the bar is as wide as the bin spacing on screen
+                const double x0 = xof(dlo_ + double(i) * binW);
+                const double x1 = xof(dlo_ + double(i + 1) * binW);
+                const double bh =
+                    logY_ ? (std::log10(double((*h_)[i]) + 1.0) / lmx)
+                          : (double((*h_)[i]) / double(mx));
+                const double w = std::max(1.0, x1 - x0);
+                if (x0 > W || x0 + w < 0)
+                    continue;
+                p.drawRect(QRectF(x0, H - 3 - bh * (H - 6), w,
+                                  std::max(1.0, bh * (H - 6))));
+            }
+        }
+        // the two markers at their fixed places (they are what the axis follows)
+        const double xa = 0.25 * W, xb = 0.75 * W;
+        p.fillRect(QRectF(xa, 0, xb - xa, H), QColor(255, 255, 255, 26));
+        QPen mk(QColor(255, 205, 110));
+        mk.setWidth(2);
+        p.setPen(mk);
+        p.setBrush(Qt::NoBrush);
+        p.drawLine(QPointF(xa, 0), QPointF(xa, H));
+        p.drawLine(QPointF(xb, 0), QPointF(xb, H));
+        QFont f = p.font();
+        f.setPixelSize(9);
+        p.setFont(f);
+        p.setPen(QColor(255, 225, 160));
+        p.drawText(QRectF(xa + 3, 1, W - xa - 6, 11), Qt::AlignLeft | Qt::AlignTop,
+                   QString::number(clo_, 'g', 4));
+        p.drawText(QRectF(3, 1, xb - 3, 11), Qt::AlignRight | Qt::AlignTop,
+                   QString::number(chi_, 'g', 4));
+    }
+    void mousePressEvent(QMouseEvent *e) override {
+        const double xa = 0.25 * width(), xb = 0.75 * width();
+        const double d = std::abs(e->pos().x() - xa);
+        const double d2 = std::abs(e->pos().x() - xb);
+        dragMin_ = d <= d2;
+        if (std::min(d, d2) > 10) {
+            dragMin_ = -1; // too far from either marker: ignore
+            return;
+        }
+        // Dragging only moves this strip: re-rendering a megapixel image on
+        // every mouse move is what made it crawl, so the new range is applied
+        // when the button comes back up (see mouseReleaseEvent).
+        dragging_ = true;
+        mouseMoveEvent(e);
+    }
+    void mouseMoveEvent(QMouseEvent *e) override {
+        if (dragMin_ < 0)
+            return;
+        const int W = width();
+        const double span = (chi_ > clo_) ? (chi_ - clo_) : 1.0;
+        double wlo = clo_ - 0.5 * span, whi = chi_ + 0.5 * span;
+        if (logX_) {
+            wlo = std::log10(std::max(wlo, 1e-2));
+            whi = std::log10(std::max(whi, 1e-2));
+            if (whi <= wlo)
+                whi = wlo + 1.0;
+        }
+        // the value under the cursor in the window in force right now
+        const double t = std::max(0.0, std::min(1.0, double(e->pos().x()) / W));
+        const double v =
+            logX_ ? std::pow(10.0, wlo + t * (whi - wlo)) : wlo + t * (whi - wlo);
+        if (dragMin_)
+            clo_ = std::min(v, chi_ - 1e-9);
+        else
+            chi_ = std::max(v, clo_ + 1e-9);
+        update(); // the strip follows the drag; the image waits for the release
+    }
+    void mouseReleaseEvent(QMouseEvent *) override {
+        if (dragMin_ >= 0 && dragging_) {
+            dragging_ = false;
+            if (onRangeChanged)
+                onRangeChanged(clo_, chi_); // one update, as soon as released
+        }
+        dragMin_ = -1;
+    }
+
+  private:
+    const std::vector<int> *h_ = nullptr;
+    double dlo_ = 0.0, dhi_ = 1.0, clo_ = 0.0, chi_ = 1.0;
+    bool logX_ = false, logY_ = false;
+    int dragMin_ = -1;
+    bool dragging_ = false; // a marker drag in progress: preview only
+};
+
+// What replaced the colour bar at the side of the image: a small panel with the
+// histogram, the palette, a lin/log switch and the two ends of the mapped range.
+class ScalePanel : public QWidget {
+  public:
+    ScalePanel(FastImageView *view, QWidget *parent = nullptr)
+        : QWidget(parent), view_(view) {
+        auto *col = new QVBoxLayout(this);
+        col->setContentsMargins(4, 2, 4, 4);
+        col->setSpacing(3);
+        histo_ = new ScaleHisto(this);
+        col->addWidget(histo_);
+        auto *row = new QHBoxLayout();
+        row->setSpacing(4);
+        pal_ = new QComboBox(this);
+        for (int i = 0; i <= int(Palette::Sunset); i++)
+            pal_->addItem(paletteName(static_cast<Palette>(i)));
+        scale_ = new QComboBox(this);
+        scale_->addItem("lin");
+        scale_->addItem("log");
+        scale_->setToolTip("image: log10(value), values <= 0 are capped at\n"
+                           "1e-2 so empty pixels stay visible");
+        hscale_ = new QComboBox(this);
+        hscale_->addItem("lin");
+        hscale_->addItem("log");
+        hscale_->setToolTip("histogram bars: linear counts, or log10(count+1).\n"
+                            "The histogram's value axis always follows the image\n"
+                            "mapping above.");
+        lo_ = new QDoubleSpinBox(this);
+        hi_ = new QDoubleSpinBox(this);
+        for (QDoubleSpinBox *b : {lo_, hi_}) {
+            b->setRange(-1e9, 1e9);
+            b->setDecimals(1);
+            b->setSingleStep(1.0);
+            b->setKeyboardTracking(false);
+        }
+        row->addWidget(new QLabel("palette:", this));
+        row->addWidget(pal_);
+        row->addWidget(new QLabel("image", this));
+        row->addWidget(scale_);
+        row->addWidget(new QLabel("histo", this));
+        row->addWidget(hscale_);
+        row->addWidget(new QLabel("min", this));
+        row->addWidget(lo_);
+        row->addWidget(new QLabel("max", this));
+        row->addWidget(hi_);
+        row->addStretch(1);
+        col->addLayout(row);
+        connect(pal_, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+                [this](int) { push(); });
+        connect(scale_, QOverload<int>::of(&QComboBox::currentIndexChanged),
+                this, [this](int i) {
+                    if (suppress_ || !view_)
+                        return;
+                    view_->setLogScale(i == 1);
+                    refresh();
+                });
+        connect(hscale_, QOverload<int>::of(&QComboBox::currentIndexChanged),
+                this, [this](int) { refresh(); });
+        connect(lo_, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this,
+                [this](double) { push(); });
+        connect(hi_, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this,
+                [this](double) { push(); });
+        if (histo_)
+            histo_->onRangeChanged = [this](double a, double b) {
+                if (suppress_ || !view_)
+                    return;
+                printf("[scale] range %.4g .. %.4g\n", a, b);
+                fflush(stdout);
+                view_->setColorRange(a, b);
+                suppress_++;
+                if (lo_)
+                    lo_->setValue(a);
+                if (hi_)
+                    hi_->setValue(b);
+                suppress_--;
+                refresh();
+            };
+        // as thin as asked: the image takes the window, the panel stays small
+        setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+        setFixedHeight(38 + 30);
+        if (view_) {
+            view_->onImageChanged = [this]() { refresh(); };
+            refresh();
+        }
+    }
+    // pull the view's state into the controls (after Set Ranges, a palette key…)
+    void syncFromView() { refresh(); }
+    // 0 = colour, 1 = BW, 2 = BW 2 - used by the b/B/c shortcuts
+    void setPaletteChoice(int i) {
+        if (pal_ && i >= 0 && i < pal_->count())
+            pal_->setCurrentIndex(i);
+    }
+
+  private:
+    void push() { // controls -> view
+        if (suppress_ || !view_)
+            return;
+        const int pi = pal_ ? pal_->currentIndex() : 0;
+        view_->setPaletteLut(paletteLut(static_cast<Palette>(pi)));
+        double a = lo_ ? lo_->value() : 0.0, b = hi_ ? hi_->value() : 1.0;
+        if (b <= a) {
+            b = a + 1.0;
+            suppress_++;
+            if (hi_)
+                hi_->setValue(b);
+            suppress_--;
+        }
+        view_->setColorRange(a, b);
+        refresh();
+    }
+    void refresh() { // view -> controls
+        if (!view_)
+            return;
+        suppress_++;
+        double a = 0.0, b = 1.0;
+        view_->colorRange(a, b);
+        if (lo_)
+            lo_->setValue(a);
+        if (hi_)
+            hi_->setValue(b);
+        if (scale_)
+            scale_->setCurrentIndex(view_->logScale() ? 1 : 0);
+        double lo = 0.0, hi = 1.0;
+        view_->histogramRange(lo, hi);
+        if (histo_)
+            histo_->setData(&view_->histogram(), lo, hi, a, b,
+                            view_->logScale(),
+                            hscale_ && hscale_->currentIndex() == 1);
+        suppress_--;
+    }
+    FastImageView *view_ = nullptr;
+    ScaleHisto *histo_ = nullptr;
+    QComboBox *pal_ = nullptr, *scale_ = nullptr, *hscale_ = nullptr;
+    QDoubleSpinBox *lo_ = nullptr, *hi_ = nullptr;
+    int suppress_ = 0;
+};
+
 class MainWindow : public QMainWindow {
   public:
     MainWindow();
@@ -907,7 +1406,8 @@ class MainWindow : public QMainWindow {
     void slower();
     void toggleGain();
     void setApplyGain(bool on);
-    void zoomTo(double x1, double y1, double x2, double y2);
+    void zoomTo(FastImageView *src, double x1, double y1, double x2,
+                double y2);
     void bwPalette1();
     void bwPalette2();
     void colPal();
@@ -1071,10 +1571,14 @@ class MainWindow : public QMainWindow {
     FastImageView *m_adcView = nullptr;
     FastImageView *m_gainView = nullptr;
     QWidget *m_adcWin = nullptr;
+    ScalePanel *m_adcScale_ = nullptr;
+    ScalePanel *m_photonScale_ = nullptr;
     QWidget *m_gainWin = nullptr;
     QWidget *m_photonWin = nullptr;
     FastImageView *m_photonView = nullptr;
     QCheckBox *pmapCumulative_ = nullptr;
+    QCheckBox *zoomCoordChk_ = nullptr; // Display: link the image zoom levels
+    bool zoomCoord_ = true;             // on = any window zooms them all
     QSpinBox *pmapEverySpin_ = nullptr;
     uint64_t pmapSeq_ = 0;
 #ifdef JFSTRX
@@ -1559,6 +2063,20 @@ void MainWindow::setupUI() {
     ctrlGrid->addWidget(btnRates, 2, 1);
     ctrlGrid->addWidget(btnResetHis, 3, 0);
     ctrlGrid->addWidget(btnResetAxis, 3, 1);
+    zoomCoordChk_ = new QCheckBox("zoom coordination", ctrlGroup);
+    zoomCoordChk_->setChecked(true); // the historic ADC-master behaviour
+    zoomCoordChk_->setToolTip(
+        "On: zooming any image window zooms all of them (and the ROOT plots)\n"
+        "to the same rectangle.  Off: every window keeps its own zoom, and\n"
+        "nothing is propagated.");
+    ctrlGrid->addWidget(zoomCoordChk_, 4, 0, 1, 3);
+    connect(zoomCoordChk_, &QCheckBox::toggled, this, [this](bool on) {
+        zoomCoord_ = on;
+        printf("[zoom] coordination %s\n", on ? "on" : "off");
+        fflush(stdout);
+        statusLabel->setText(on ? "Status: zoom coordination on (all linked)"
+                                : "Status: zoom coordination off (independent)");
+    });
 
     // (the Display panel is added below the Gain panel, see below: it shows
     // the result, so it comes after the chain that produces it)
@@ -1994,25 +2512,34 @@ void MainWindow::setupUI() {
 
     // ── Fast image views (separate top-level windows, as in the original) ──
     m_adcView = new FastImageView();
-    m_adcView->setPaletteLut(paletteLut(Palette::Color)); // match the ROOT plots
+    m_adcView->setPaletteLut(paletteLut(Palette::Color));
+    if (m_adcScale_)
+        m_adcScale_->setPaletteChoice(0); // match the ROOT plots
     // the ADC (main) image opens on the ADC range of the Set Ranges dialog
     m_adcView->setColorRange(adcmin.load(), adcmax.load());
     m_adcWin = new QWidget(nullptr, Qt::Window);
     m_adcWin->setWindowTitle("ADC Image");
-    m_adcWin->resize(1024 + 80, 512 + 40);
+    m_adcWin->resize(1024 + 80, 512 + 40 + 90); // + the scale panel
     auto *adcLay = new QVBoxLayout(m_adcWin);
     adcLay->setContentsMargins(0, 0, 0, 0);
-    adcLay->addWidget(m_adcView);
+    adcLay->addWidget(m_adcView, 1);
+    m_adcScale_ = new ScalePanel(m_adcView, m_adcWin);
+    adcLay->addWidget(m_adcScale_, 0);
     m_adcWin->show();
 
     m_gainView = new FastImageView();
-    m_gainView->setColorRange(0, 4);
+    // The gain image has four valid values, so it gets a fixed four-colour code
+    // (0 blue, 1 green, 2 yellow, 3 red, all desaturated) and no scale panel:
+    // there is no colour scale to choose and no distribution worth showing.
+    m_gainView->setPaletteLut(paletteLut(Palette::Gain4));
+    m_gainView->setIntegerValues(true);
+    m_gainView->setColorRange(0, 3);
     m_gainWin = new QWidget(nullptr, Qt::Window);
     m_gainWin->setWindowTitle("Gain Image");
-    m_gainWin->resize(1024 + 80, 512 + 40);
+    m_gainWin->resize(1024 + 80, 512 + 40); // no scale panel here
     auto *gainLay = new QVBoxLayout(m_gainWin);
     gainLay->setContentsMargins(0, 0, 0, 0);
-    gainLay->addWidget(m_gainView);
+    gainLay->addWidget(m_gainView, 1);
     m_gainWin->show();
 
     m_photonView = new FastImageView();
@@ -2021,10 +2548,13 @@ void MainWindow::setupUI() {
     m_photonView->setColorRange(0, 8); // photons per pixel over one image
     m_photonWin = new QWidget(nullptr, Qt::Window);
     m_photonWin->setWindowTitle("Photon Map (virtual photon counting)");
-    m_photonWin->resize(1024 + 80, 512 + 40);
+    m_photonWin->resize(1024 + 80, 512 + 40 + 90);
     auto *photonLay = new QVBoxLayout(m_photonWin);
     photonLay->setContentsMargins(0, 0, 0, 0);
-    photonLay->addWidget(m_photonView);
+    m_photonView->setIntegerValues(true); // photon counts: whole numbers
+    photonLay->addWidget(m_photonView, 1);
+    m_photonScale_ = new ScalePanel(m_photonView, m_photonWin);
+    photonLay->addWidget(m_photonScale_, 0);
     m_photonWin->show();
 
 #ifdef JFSTRX
@@ -2078,8 +2608,16 @@ void MainWindow::setupUI() {
     // Master-slave zoom: the ADC view is the master; the gain view follows
     // immediately (same thread) and the ROOT photon map follows through a
     // coalesced command, so only the newest viewport is ever redrawn.
-    m_adcView->onZoomChanged = [this](double x1, double y1, double x2,
-                                      double y2) { zoomTo(x1, y1, x2, y2); };
+    // all three image windows report their zoom; zoomTo() decides what follows
+    auto wireZoom = [this](FastImageView *v) {
+        if (!v)
+            return;
+        v->onZoomChanged = [this, v](double x1, double y1, double x2,
+                                     double y2) { zoomTo(v, x1, y1, x2, y2); };
+    };
+    wireZoom(m_adcView);
+    wireZoom(m_gainView);
+    wireZoom(m_photonView);
 
     // ── Timers (started by start()) ──
     processTimer = new QTimer(this);
@@ -2549,9 +3087,11 @@ void MainWindow::layoutFlow() {
                rect(btnSelectRoi_).c_str(), rect(btnSaveRoi).c_str(),
                rect(btnQuit).c_str(), rect(btnPedeTrack_).c_str(),
                rect(pmapGroup_).c_str());
-        printf("[rect] unsetRoi %s | selectRoi %s | thr %s | minPix %s\n",
+        printf("[rect] unsetRoi %s | selectRoi %s | thr %s | minPix %s | "
+               "zoomCoord %s\n",
                rect(btnUnsetRoi_).c_str(), rect(btnSelectRoi_).c_str(),
-               rect(thrSpin_).c_str(), rect(minPixSpin_).c_str());
+               rect(thrSpin_).c_str(), rect(minPixSpin_).c_str(),
+               rect(zoomCoordChk_).c_str());
         printf("[rect] saveFramesRadio %s | savePhotonRadio %s | "
                "saveCorrected %s\n",
                rect(saveModeFrames_).c_str(), rect(saveModePhoton_).c_str(),
@@ -3094,6 +3634,8 @@ void MainWindow::bwPalette1() {
     c.type = RootCmdType::PaletteBW1;
     pushRootCmd(c);
     m_adcView->setPaletteLut(paletteLut(Palette::BW1)); // same colours as ROOT
+    if (m_adcScale_)
+        m_adcScale_->setPaletteChoice(1);
     statusLabel->setText("Status: BW palette");
 }
 
@@ -3102,6 +3644,8 @@ void MainWindow::bwPalette2() {
     c.type = RootCmdType::PaletteBW2;
     pushRootCmd(c);
     m_adcView->setPaletteLut(paletteLut(Palette::BW2));
+    if (m_adcScale_)
+        m_adcScale_->setPaletteChoice(2);
     statusLabel->setText("Status: BW palette 2");
 }
 
@@ -3120,13 +3664,24 @@ void MainWindow::colPal() {
 // range converted to data rows AND framed on pixel edges (the histogram has
 // one bin per pixel centred on the integer coordinate, so showing display rows
 // [y1,y2) means the data range [ny-y2-0.5, ny-y1-0.5]).
-void MainWindow::zoomTo(double x1, double y1, double x2, double y2) {
-    if (x2 - x1 < 2 || y2 - y1 < 2)
+// A window was zoomed.  With "zoom coordination" ticked (the default) every
+// other window and the ROOT plots follow the rectangle; unticked, each window
+// is on its own and nothing is propagated.
+void MainWindow::zoomTo(FastImageView *src, double x1, double y1, double x2,
+                        double y2) {
+    if (x2 - x1 < kMinViewport || y2 - y1 < kMinViewport)
         return; // never push a degenerate range to the ROOT canvases
-    if (m_gainView)
-        m_gainView->setViewport(x1, y1, x2, y2);
-    if (m_photonView)
-        m_photonView->setViewport(x1, y1, x2, y2);
+    if (!zoomCoord_)
+        return;
+    printf("[zoom] coordinated from %s\n",
+           src == m_adcView    ? "ADC"
+           : src == m_gainView ? "gain"
+           : src == m_photonView ? "photon"
+                                 : "?");
+    fflush(stdout);
+    for (FastImageView *v : {m_adcView, m_gainView, m_photonView})
+        if (v && v != src)
+            v->setViewport(x1, y1, x2, y2);
     const double ny =
         (m_adcView && m_adcView->imageHeight() > 0)
             ? static_cast<double>(m_adcView->imageHeight())
@@ -3898,6 +4453,8 @@ void MainWindow::setRanges(int amin, int amax, int pmin, int pmax, int cmin,
     chipxmax = cmax;
     if ((amin != imgLo || amax != imgHi) && m_adcView) {
         m_adcView->setColorRange(amin, amax);
+        if (m_adcScale_)
+            m_adcScale_->syncFromView();
         cout << "Ranges set: ADC image [" << amin << "," << amax << "]"
              << endl;
     }

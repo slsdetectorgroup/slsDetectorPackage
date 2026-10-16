@@ -744,3 +744,157 @@ Operator requests, all in and verified with a running `--save-photon` run:
   running save: gate on + clicking a gate spinbox -> dialog shown and declining
   logged `[save] gate change refused during the run (Min pixels above threshold
   -> 6)`; the same click with `--no-gate` -> no dialog, no log line.
+
+### Image windows redrawn as plots (frame, axes, pixel grid, scale panel)
+
+Operator request: replace the side colour bar with a panel and make the images
+read as plots.
+
+* `FastImageView::imageRect()` now reserves axis margins (52 left / 26 bottom /
+  6 top-right) instead of the old bar strip; `paintEvent()` draws the frame,
+  tick labels outside the plot (Y = data rows, row 0 at the bottom), a dotted
+  grid inside it, and keeps the gate-ROI / receiver-ROI overlays as before.
+* `m_sx` (screen pixels per image pixel, from the last paint) drives the pixel
+  detail: thin outlines from 16 px, in-pixel values from 50 px
+  (`setIntegerValues(true)` for the photon map -> whole numbers, one decimal for
+  the real-valued images).  The label colour is chosen from the luminance of the
+  pixel that was actually painted; the loops are capped (<=256 px visible for
+  the grid, <=64 for the labels) so a deep zoom can never stall the painter.
+* The colour bar is off (`m_showBar = false`; `scaleRect()` returns an empty
+  rect so the old drag code is inert) and each image window now carries a
+  `ScalePanel` under it: `ScaleHisto` (the image's own 256-bin distribution with
+  the mapped range highlighted, refreshed at most every 300 ms from
+  `renderImage()`), a palette chooser wired to `paletteLut()` (kept in sync with
+  the `b`/`Shift+B`/`c` shortcuts), a lin/log switch, and min/max spin boxes
+  (also synced from `Set Ranges...`).
+* log mode maps `log10(max(v, 1e-2))` against `log10(max(range, 1e-2))`, so
+  values <= 0 land at 1e-2 = -2 instead of -inf, and the "zero is white" rule
+  for the photon map still applies first.
+* Verified on screen: the framed plot with the X labels (475..505) and Y labels
+  (97..90, high at the top) outside the frame, the dotted grid, the per-pixel
+  outlines at ~33 screen px/pixel, and the panel below with the histogram,
+  `palette: Col (jet)`, `lin`, `min -200.0`, `max 1000.0` (the ADC defaults).
+  Not yet seen on screen: the in-pixel numbers (they need >50 px/pixel, my
+  scripted wheel zoom stopped at ~33) and the histogram with a varied image
+  (a uniform test frame gives a single bin).  The old bar's drag-to-stretch on
+  the scale is gone by design: the range is set with the spin boxes (dragging on
+  the histogram is a possible follow-up).
+
+* Scale histogram refined to the operator's spec: fixed 38 px strip (the image
+  keeps the window stretch, the panel has a fixed height - about a tenth of the
+  window), one **solid** bar per bin whose width is the bin spacing on screen,
+  and the two range markers pinned at **1/4 and 3/4** of the width with the value
+  axis rescaling under them (the drawn window is the selected range widened by
+  half a range on each side, so dragging a marker moves that end of the range
+  and the marker snaps back to its fixed spot).  The bars are draggable
+  (`onRangeChanged` -> the panel pushes the new range into the view and the spin
+  boxes) and the ends are printed next to the markers.  A **second lin/log
+  switch** was added: `image` for the intensity mapping, `histo` for the bar
+  heights (log10(count+1)); the histogram's value axis always follows the image
+  switch.  Verified on screen: the thin strip with the two orange markers at
+  1/4 and 3/4 labelled `702.7` and `1000`, and a drag of the left marker moving
+  `min` from -200 to 702.7 (the bars were off-window by then, which is the
+  fixed-marker behaviour).
+
+### Palette list widened to the matplotlib family
+
+The scale panel's palette chooser now offers 18 maps instead of 3 (the original
+`Col (jet)`, the two ROOT-like greys, then the new ones).  The `Palette` enum
+keeps `Color/BW1/BW2` first so the `b` / `Shift+B` / `c` shortcuts and
+`setPaletteChoice()` keep working, and `paletteName()` (new, in
+`online_jf_root.cpp`, deliberately outside the anonymous namespace) feeds the
+combo so the names live in one place.
+
+* New: Turbo, Viridis, Plasma, Inferno, Magma, Cividis, Hot, Grey (linear),
+  Grey reversed, Coolwarm, BWR, Seismic, RdBu, YlGnBu, Sunset.
+* Anchors: the perceptually uniform ones are matplotlib's published anchors and
+  Turbo is Google's; the diverging/sequential set uses matplotlib's definitions
+  and the ColorBrewer / Paul Tol anchors (YlGnBu, Sunset) as republished in
+  `bokeh/palettes.py`, which is where I looked them up - bokeh's licence header
+  attributes Viridis/Magma/Plasma/Inferno to Nathaniel Smith et al. (CC0),
+  Turbo to Google (Apache-2.0), the Brewer maps to Cynthia Brewer (Apache-2.0)
+  and Tol's to Paul Tol (BSD-3).  Everything is interpolated by the existing
+  piecewise-linear `PaletteDef`, whose stop/colour arrays were grown from 5 to
+  24 entries to hold the 15-anchor turbo ramp; the LUTs are now one
+  `g_luts[kNumPalettes][256]` table built by the same `buildLut()` loop, so a new
+  palette is only an enum entry plus its anchors.
+* Verified: the entry list builds and the app runs; selecting `Seismic
+  (diverging)` in the ADC window turned the image seismic-blue (raw ~100 ADU on
+  the -200..1000 range lands just below the white midpoint, as expected) with
+  the panel and histogram following.
+
+* The **gain window** lost its scale panel entirely (no histogram, no palette /
+  lin-log / range controls): its image holds four valid numbers - the gain bits
+  0..3 - so there is neither a distribution to show nor a scale to choose.  It
+  now uses a fixed `Palette::Gain4` map (0 muted blue, 1 muted green, 2 muted
+  yellow, 3 muted red, all desaturated on purpose so a large flat map does not
+  glare) with the range pinned to 0..3, and whole-number in-pixel labels.  The
+  palette is in the enum but deliberately **not** in the chooser loop
+  (`i <= int(Palette::Sunset)`), so the three image windows keep their own
+  choices.
+
+* In-pixel numbers: the font now also has to fit the *width* of the label, not
+  just the pixel height - five characters for the photon counts, six for the
+  real-valued images ("XXXXX.y"), at ~0.62 em per digit, still capped at 0.30 em
+  of the pixel so the "small tidy number" look is kept (range now 7..20 px).
+  At 50 px/pixel that is 12 px instead of 15, which is what makes five digits
+  fit; the widest label stays under the pixel edge for every zoom level above
+  the 50 px threshold.
+
+### Zoom coordination switch (Display panel)
+
+Operator request: zooming used to be ADC-master only (the ADC view propagated to
+the gain/photon windows and the ROOT plots, never the other way round).  Now
+`zoomTo(FastImageView *src, ...)` takes the view that asked, and every image view
+reports its zoom through the same wiring (`wireZoom()` for ADC, gain and photon),
+so **any** window zooms all of them.  A new `zoom coordination` checkbox in the
+Display panel (default **on**) gates the propagation: when it is off, `zoomTo()`
+returns immediately, so each window keeps its own zoom and nothing is pushed to
+the others - including the ROOT canvases, which as a consequence no longer follow
+the ADC while the box is off (say the word if they should keep following it
+regardless).  Both transitions are logged (`[zoom] coordination on/off`) and
+every coordinated zoom logs its source (`[zoom] coordinated from ADC/gain/photon`).
+
+Verified: with the default on, five wheel steps over the ADC window produced 10
+`coordinated from ADC` events (two per step: wheel plus the drag path); the
+checkbox is present at a sane place in the Display panel
+(`[rect] zoomCoord 476,730 333x23`, ticked).  The OFF case is a single
+`if (!zoomCoord_) return;` on that same path.
+
+### Makefile: both variants from one `make`
+
+`make jfstrx` used to rebuild the *same* binary with `-DJFSTRX` (the old
+`.buildflags` stamp existed only to force a full rebuild when switching), so the
+two variants overwrote each other.  Now the objects and the executables are
+separate:
+
+* `online_jf_*.o` + `jf_online_display_gui` (normal),
+* `online_jf_*.JFSTRX.o` + `jf_online_display_gui_JFSTRX` (compiled with
+  `-DJFSTRX`),
+
+and `all` builds both, so the two can never be mixed by accident (they have
+different geometry and struct layouts).  `make normal` and `make jfstrx` remain
+as aliases, the flag stamp is gone, `clean` removes both sets, and `.gitignore`
+covers the second binary and the `.JFSTRX.o` files.
+
+* Zoomed images were painted over the axes: the scaled image is much larger than
+  the plot area (only the viewport window is meant to be visible), and the ROI
+  overlays were drawn in widget coordinates without a clip, so a ROI partly
+  outside the visible window ran across the tick labels and up to the window
+  edge.  `paintEvent()` now sets `setClipRect(ir)` around the image and around
+  the two overlays (restoring before the axes so the frame, grid and labels are
+  drawn on top of a clean widget).  Verified by sampling a deep-zoom screenshot:
+  the margin left of the frame is the widget's black background, not image
+  colour, while the plot interior still carries the image.
+
+* The strip-xel decoder (../../dataStructures/jungfrauLGADStrixelsData_new.h)
+  dumped its header on every construction - "Jungfrau strixels 2X single chip
+  with full module data" / "sizeofheader = 112" - once per displayed frame in
+  the JFSTRX build.  Those three `std::cout` statements are commented out (the
+  header is shared, outside this project, so the edit needed the wider sandbox
+  permission; it is a comment-only change and easy to revert).
+* Deepest zoom is now build-dependent (`kMinViewport`): 8 image pixels across in
+  the plain build as before, **2** in the JFSTRX build, so single strixel pixels
+  can be inspected (the mapped panels are ~1000 x 1900).  The same constant
+  guards `setViewport()` and `zoomTo()`, so a coordinated zoom propagates down
+  to the new limit.

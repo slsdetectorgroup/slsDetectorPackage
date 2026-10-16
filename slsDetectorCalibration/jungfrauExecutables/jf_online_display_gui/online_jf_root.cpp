@@ -512,10 +512,10 @@ namespace {
 struct PaletteDef {
     // piecewise-linear colour stops (used when nstops > 0)
     int nstops = 0;
-    double stops[5] = {0, 0, 0, 0, 0};
-    double r[5] = {0, 0, 0, 0, 0};
-    double g[5] = {0, 0, 0, 0, 0};
-    double b[5] = {0, 0, 0, 0, 0};
+    double stops[24] = {0, 0, 0, 0, 0};
+    double r[24] = {0, 0, 0, 0, 0};
+    double g[24] = {0, 0, 0, 0, 0};
+    double b[24] = {0, 0, 0, 0, 0};
     // gray ramp exponent (used when nstops == 0)
     double gamma = 1.0;
 };
@@ -545,16 +545,356 @@ const PaletteDef &paletteDef(Palette p) {
         d.gamma = 0.9; // same exponent the original 'B' button used
         return d;
     }();
+    static const PaletteDef turbo = [] {
+        PaletteDef d;
+        d.nstops = 15;
+        d.stops[0] = 0.0000;
+        d.stops[1] = 0.0714;
+        d.stops[2] = 0.1429;
+        d.stops[3] = 0.2143;
+        d.stops[4] = 0.2857;
+        d.stops[5] = 0.3571;
+        d.stops[6] = 0.4286;
+        d.stops[7] = 0.5000;
+        d.stops[8] = 0.5714;
+        d.stops[9] = 0.6429;
+        d.stops[10] = 0.7143;
+        d.stops[11] = 0.7857;
+        d.stops[12] = 0.8571;
+        d.stops[13] = 0.9286;
+        d.stops[14] = 1.0000;
+        d.r[0] = 0.1882; d.r[1] = 0.2549; d.r[2] = 0.2745; d.r[3] = 0.2235;
+        d.r[4] = 0.1059; d.r[5] = 0.1412; d.r[6] = 0.3804; d.r[7] = 0.6431;
+        d.r[8] = 0.8196; d.r[9] = 0.9529; d.r[10] = 0.9961; d.r[11] = 0.9529;
+        d.r[12] = 0.8510; d.r[13] = 0.6941; d.r[14] = 0.4784;
+        d.g[0] = 0.0706; d.g[1] = 0.2706; d.g[2] = 0.4588; d.g[3] = 0.6353;
+        d.g[4] = 0.8118; d.g[5] = 0.9255; d.g[6] = 0.9882; d.g[7] = 0.9882;
+        d.g[8] = 0.9098; d.g[9] = 0.7765; d.g[10] = 0.6078; d.g[11] = 0.3882;
+        d.g[12] = 0.2196; d.g[13] = 0.0980; d.g[14] = 0.0157;
+        d.b[0] = 0.2314; d.b[1] = 0.6706; d.b[2] = 0.9294; d.b[3] = 0.9882;
+        d.b[4] = 0.8314; d.b[5] = 0.6510; d.b[6] = 0.4235; d.b[7] = 0.2314;
+        d.b[8] = 0.2039; d.b[9] = 0.2275; d.b[10] = 0.1765; d.b[11] = 0.0824;
+        d.b[12] = 0.0235; d.b[13] = 0.0039; d.b[14] = 0.0078;
+        return d;
+    }();
+    static const PaletteDef viridis = [] {
+        PaletteDef d;
+        d.nstops = 10;
+        d.stops[0] = 0.0000;
+        d.stops[1] = 0.1111;
+        d.stops[2] = 0.2222;
+        d.stops[3] = 0.3333;
+        d.stops[4] = 0.4444;
+        d.stops[5] = 0.5556;
+        d.stops[6] = 0.6667;
+        d.stops[7] = 0.7778;
+        d.stops[8] = 0.8889;
+        d.stops[9] = 1.0000;
+        d.r[0] = 0.2667; d.r[1] = 0.2824; d.r[2] = 0.2431; d.r[3] = 0.1922;
+        d.r[4] = 0.1490; d.r[5] = 0.1216; d.r[6] = 0.2078; d.r[7] = 0.4314;
+        d.r[8] = 0.7098; d.r[9] = 0.9922;
+        d.g[0] = 0.0039; d.g[1] = 0.1569; d.g[2] = 0.2863; d.g[3] = 0.4078;
+        d.g[4] = 0.5098; d.g[5] = 0.6196; d.g[6] = 0.7176; d.g[7] = 0.8078;
+        d.g[8] = 0.8706; d.g[9] = 0.9059;
+        d.b[0] = 0.3294; d.b[1] = 0.4706; d.b[2] = 0.5373; d.b[3] = 0.5569;
+        d.b[4] = 0.5569; d.b[5] = 0.5373; d.b[6] = 0.4745; d.b[7] = 0.3451;
+        d.b[8] = 0.1686; d.b[9] = 0.1451;
+        return d;
+    }();
+    static const PaletteDef plasma = [] {
+        PaletteDef d;
+        d.nstops = 10;
+        d.stops[0] = 0.0000;
+        d.stops[1] = 0.1111;
+        d.stops[2] = 0.2222;
+        d.stops[3] = 0.3333;
+        d.stops[4] = 0.4444;
+        d.stops[5] = 0.5556;
+        d.stops[6] = 0.6667;
+        d.stops[7] = 0.7778;
+        d.stops[8] = 0.8889;
+        d.stops[9] = 1.0000;
+        d.r[0] = 0.0510; d.r[1] = 0.2745; d.r[2] = 0.4471; d.r[3] = 0.6118;
+        d.r[4] = 0.7412; d.r[5] = 0.8471; d.r[6] = 0.9294; d.r[7] = 0.9843;
+        d.r[8] = 0.9922; d.r[9] = 0.9412;
+        d.g[0] = 0.0314; d.g[1] = 0.0118; d.g[2] = 0.0039; d.g[3] = 0.0902;
+        d.g[4] = 0.2157; d.g[5] = 0.3412; d.g[6] = 0.4745; d.g[7] = 0.6235;
+        d.g[8] = 0.7922; d.g[9] = 0.9765;
+        d.b[0] = 0.5294; d.b[1] = 0.6235; d.b[2] = 0.6588; d.b[3] = 0.6196;
+        d.b[4] = 0.5255; d.b[5] = 0.4196; d.b[6] = 0.3255; d.b[7] = 0.2275;
+        d.b[8] = 0.1490; d.b[9] = 0.1294;
+        return d;
+    }();
+    static const PaletteDef inferno = [] {
+        PaletteDef d;
+        d.nstops = 10;
+        d.stops[0] = 0.0000;
+        d.stops[1] = 0.1111;
+        d.stops[2] = 0.2222;
+        d.stops[3] = 0.3333;
+        d.stops[4] = 0.4444;
+        d.stops[5] = 0.5556;
+        d.stops[6] = 0.6667;
+        d.stops[7] = 0.7778;
+        d.stops[8] = 0.8889;
+        d.stops[9] = 1.0000;
+        d.r[0] = 0.0000; d.r[1] = 0.1059; d.r[2] = 0.2902; d.r[3] = 0.4706;
+        d.r[4] = 0.6471; d.r[5] = 0.8118; d.r[6] = 0.9294; d.r[7] = 0.9843;
+        d.r[8] = 0.9686; d.r[9] = 0.9882;
+        d.g[0] = 0.0000; d.g[1] = 0.0471; d.g[2] = 0.0471; d.g[3] = 0.1098;
+        d.g[4] = 0.1725; d.g[5] = 0.2667; d.g[6] = 0.4118; d.g[7] = 0.6078;
+        d.g[8] = 0.8196; d.g[9] = 1.0000;
+        d.b[0] = 0.0157; d.b[1] = 0.2549; d.b[2] = 0.4196; d.b[3] = 0.4275;
+        d.b[4] = 0.3765; d.b[5] = 0.2745; d.b[6] = 0.1451; d.b[7] = 0.0235;
+        d.b[8] = 0.2392; d.b[9] = 0.6431;
+        return d;
+    }();
+    static const PaletteDef magma = [] {
+        PaletteDef d;
+        d.nstops = 10;
+        d.stops[0] = 0.0000;
+        d.stops[1] = 0.1111;
+        d.stops[2] = 0.2222;
+        d.stops[3] = 0.3333;
+        d.stops[4] = 0.4444;
+        d.stops[5] = 0.5556;
+        d.stops[6] = 0.6667;
+        d.stops[7] = 0.7778;
+        d.stops[8] = 0.8889;
+        d.stops[9] = 1.0000;
+        d.r[0] = 0.0000; d.r[1] = 0.0941; d.r[2] = 0.2667; d.r[3] = 0.4471;
+        d.r[4] = 0.6196; d.r[5] = 0.8039; d.r[6] = 0.9451; d.r[7] = 0.9922;
+        d.r[8] = 0.9961; d.r[9] = 0.9882;
+        d.g[0] = 0.0000; d.g[1] = 0.0588; d.g[2] = 0.0588; d.g[3] = 0.1216;
+        d.g[4] = 0.1843; d.g[5] = 0.2510; d.g[6] = 0.3765; d.g[7] = 0.5882;
+        d.g[8] = 0.7922; d.g[9] = 0.9922;
+        d.b[0] = 0.0157; d.b[1] = 0.2392; d.b[2] = 0.4627; d.b[3] = 0.5059;
+        d.b[4] = 0.4980; d.b[5] = 0.4431; d.b[6] = 0.3647; d.b[7] = 0.4078;
+        d.b[8] = 0.5529; d.b[9] = 0.7490;
+        return d;
+    }();
+    static const PaletteDef cividis = [] {
+        PaletteDef d;
+        d.nstops = 10;
+        d.stops[0] = 0.0000;
+        d.stops[1] = 0.1111;
+        d.stops[2] = 0.2222;
+        d.stops[3] = 0.3333;
+        d.stops[4] = 0.4444;
+        d.stops[5] = 0.5556;
+        d.stops[6] = 0.6667;
+        d.stops[7] = 0.7778;
+        d.stops[8] = 0.8889;
+        d.stops[9] = 1.0000;
+        d.r[0] = 0.0000; d.r[1] = 0.0706; d.r[2] = 0.2314; d.r[3] = 0.3412;
+        d.r[4] = 0.4392; d.r[5] = 0.5412; d.r[6] = 0.6471; d.r[7] = 0.7647;
+        d.r[8] = 0.8824; d.r[9] = 0.9961;
+        d.g[0] = 0.1333; d.g[1] = 0.2078; d.g[2] = 0.2863; d.g[3] = 0.3647;
+        d.g[4] = 0.4431; d.g[5] = 0.5255; d.g[6] = 0.6118; d.g[7] = 0.7020;
+        d.g[8] = 0.8000; d.g[9] = 0.9098;
+        d.b[0] = 0.3059; d.b[1] = 0.4392; d.b[2] = 0.4235; d.b[3] = 0.4275;
+        d.b[4] = 0.4510; d.b[5] = 0.4706; d.b[6] = 0.4549; d.b[7] = 0.4118;
+        d.b[8] = 0.3333; d.b[9] = 0.2196;
+        return d;
+    }();
+    static const PaletteDef hot = [] {
+        PaletteDef d;
+        d.nstops = 4;
+        d.stops[0] = 0.0000;
+        d.stops[1] = 0.3650;
+        d.stops[2] = 0.7460;
+        d.stops[3] = 1.0000;
+        d.r[0] = 0.0000; d.r[1] = 1.0000; d.r[2] = 1.0000; d.r[3] = 1.0000;
+        d.g[0] = 0.0000; d.g[1] = 0.0000; d.g[2] = 1.0000; d.g[3] = 1.0000;
+        d.b[0] = 0.0000; d.b[1] = 0.0000; d.b[2] = 0.0000; d.b[3] = 1.0000;
+        return d;
+    }();
+    static const PaletteDef gray = [] {
+        PaletteDef d;
+        d.nstops = 2;
+        d.stops[0] = 0.0000;
+        d.stops[1] = 1.0000;
+        d.r[0] = 0.0000; d.r[1] = 1.0000;
+        d.g[0] = 0.0000; d.g[1] = 1.0000;
+        d.b[0] = 0.0000; d.b[1] = 1.0000;
+        return d;
+    }();
+    static const PaletteDef gray_r = [] {
+        PaletteDef d;
+        d.nstops = 2;
+        d.stops[0] = 0.0000;
+        d.stops[1] = 1.0000;
+        d.r[0] = 1.0000; d.r[1] = 0.0000;
+        d.g[0] = 1.0000; d.g[1] = 0.0000;
+        d.b[0] = 1.0000; d.b[1] = 0.0000;
+        return d;
+    }();
+    static const PaletteDef coolwarm = [] {
+        PaletteDef d;
+        d.nstops = 3;
+        d.stops[0] = 0.0000;
+        d.stops[1] = 0.5000;
+        d.stops[2] = 1.0000;
+        d.r[0] = 0.2314; d.r[1] = 0.8667; d.r[2] = 0.7059;
+        d.g[0] = 0.2980; d.g[1] = 0.8667; d.g[2] = 0.0157;
+        d.b[0] = 0.7529; d.b[1] = 0.8667; d.b[2] = 0.1490;
+        return d;
+    }();
+    static const PaletteDef bwr = [] {
+        PaletteDef d;
+        d.nstops = 3;
+        d.stops[0] = 0.0000;
+        d.stops[1] = 0.5000;
+        d.stops[2] = 1.0000;
+        d.r[0] = 0.0000; d.r[1] = 1.0000; d.r[2] = 1.0000;
+        d.g[0] = 0.0000; d.g[1] = 1.0000; d.g[2] = 0.0000;
+        d.b[0] = 1.0000; d.b[1] = 1.0000; d.b[2] = 0.0000;
+        return d;
+    }();
+    static const PaletteDef seismic = [] {
+        PaletteDef d;
+        d.nstops = 5;
+        d.stops[0] = 0.0000;
+        d.stops[1] = 0.2500;
+        d.stops[2] = 0.5000;
+        d.stops[3] = 0.7500;
+        d.stops[4] = 1.0000;
+        d.r[0] = 0.0000; d.r[1] = 0.0000; d.r[2] = 1.0000; d.r[3] = 1.0000;
+        d.r[4] = 0.5020;
+        d.g[0] = 0.0000; d.g[1] = 0.0000; d.g[2] = 1.0000; d.g[3] = 0.0000;
+        d.g[4] = 0.0000;
+        d.b[0] = 0.3020; d.b[1] = 1.0000; d.b[2] = 1.0000; d.b[3] = 0.0000;
+        d.b[4] = 0.0000;
+        return d;
+    }();
+    static const PaletteDef rdbu = [] {
+        PaletteDef d;
+        d.nstops = 9;
+        d.stops[0] = 0.0000;
+        d.stops[1] = 0.1250;
+        d.stops[2] = 0.2500;
+        d.stops[3] = 0.3750;
+        d.stops[4] = 0.5000;
+        d.stops[5] = 0.6250;
+        d.stops[6] = 0.7500;
+        d.stops[7] = 0.8750;
+        d.stops[8] = 1.0000;
+        d.r[0] = 0.6980; d.r[1] = 0.8392; d.r[2] = 0.9569; d.r[3] = 0.9922;
+        d.r[4] = 0.9686; d.r[5] = 0.8196; d.r[6] = 0.5725; d.r[7] = 0.2627;
+        d.r[8] = 0.1294;
+        d.g[0] = 0.0941; d.g[1] = 0.3765; d.g[2] = 0.6471; d.g[3] = 0.8588;
+        d.g[4] = 0.9686; d.g[5] = 0.8980; d.g[6] = 0.7725; d.g[7] = 0.5765;
+        d.g[8] = 0.4000;
+        d.b[0] = 0.1686; d.b[1] = 0.3020; d.b[2] = 0.5098; d.b[3] = 0.7804;
+        d.b[4] = 0.9686; d.b[5] = 0.9412; d.b[6] = 0.8706; d.b[7] = 0.7647;
+        d.b[8] = 0.6745;
+        return d;
+    }();
+    static const PaletteDef ylgnbu = [] {
+        PaletteDef d;
+        d.nstops = 9;
+        d.stops[0] = 0.0000;
+        d.stops[1] = 0.1250;
+        d.stops[2] = 0.2500;
+        d.stops[3] = 0.3750;
+        d.stops[4] = 0.5000;
+        d.stops[5] = 0.6250;
+        d.stops[6] = 0.7500;
+        d.stops[7] = 0.8750;
+        d.stops[8] = 1.0000;
+        d.r[0] = 0.0314; d.r[1] = 0.1451; d.r[2] = 0.1333; d.r[3] = 0.1137;
+        d.r[4] = 0.2549; d.r[5] = 0.4980; d.r[6] = 0.7804; d.r[7] = 0.9294;
+        d.r[8] = 1.0000;
+        d.g[0] = 0.1137; d.g[1] = 0.2039; d.g[2] = 0.3686; d.g[3] = 0.5686;
+        d.g[4] = 0.7137; d.g[5] = 0.8039; d.g[6] = 0.9137; d.g[7] = 0.9725;
+        d.g[8] = 1.0000;
+        d.b[0] = 0.3451; d.b[1] = 0.5804; d.b[2] = 0.6588; d.b[3] = 0.7529;
+        d.b[4] = 0.7686; d.b[5] = 0.7333; d.b[6] = 0.7059; d.b[7] = 0.6941;
+        d.b[8] = 0.8510;
+        return d;
+    }();
+    static const PaletteDef sunset = [] {
+        PaletteDef d;
+        d.nstops = 11;
+        d.stops[0] = 0.0000;
+        d.stops[1] = 0.1000;
+        d.stops[2] = 0.2000;
+        d.stops[3] = 0.3000;
+        d.stops[4] = 0.4000;
+        d.stops[5] = 0.5000;
+        d.stops[6] = 0.6000;
+        d.stops[7] = 0.7000;
+        d.stops[8] = 0.8000;
+        d.stops[9] = 0.9000;
+        d.stops[10] = 1.0000;
+        d.r[0] = 0.2118; d.r[1] = 0.2902; d.r[2] = 0.4314; d.r[3] = 0.5961;
+        d.r[4] = 0.7608; d.r[5] = 0.9176; d.r[6] = 0.9961; d.r[7] = 0.9922;
+        d.r[8] = 0.9647; d.r[9] = 0.8667; d.r[10] = 0.6471;
+        d.g[0] = 0.2941; d.g[1] = 0.4824; d.g[2] = 0.6510; d.g[3] = 0.7922;
+        d.g[4] = 0.8941; d.g[5] = 0.9255; d.g[6] = 0.8549; d.g[7] = 0.7020;
+        d.g[8] = 0.4941; d.g[9] = 0.2392; d.g[10] = 0.0000;
+        d.b[0] = 0.6039; d.b[1] = 0.7176; d.b[2] = 0.8039; d.b[3] = 0.8824;
+        d.b[4] = 0.9373; d.b[5] = 0.8000; d.b[6] = 0.5451; d.b[7] = 0.4000;
+        d.b[8] = 0.2941; d.b[9] = 0.1765; d.b[10] = 0.1490;
+        return d;
+    }();
+
+    // The gain image holds one of four numbers (the Jungfrau gain bits).  These
+    // are deliberately desaturated so a large flat map does not glare.
+    static const PaletteDef gain4 = [] {
+        PaletteDef d;
+        d.nstops = 4;
+        d.stops[0] = 0.0000; d.stops[1] = 0.3333; d.stops[2] = 0.6667;
+        d.stops[3] = 1.0000;
+        d.r[0] = 0.3725; d.r[1] = 0.4353; d.r[2] = 0.7961; d.r[3] = 0.6902;
+        d.g[0] = 0.5020; d.g[1] = 0.6275; d.g[2] = 0.7412; d.g[3] = 0.4157;
+        d.b[0] = 0.6588; d.b[1] = 0.4353; d.b[2] = 0.4157; d.b[3] = 0.3882;
+        return d;
+    }();
+
     switch (p) {
     case Palette::BW1:
         return bw1;
     case Palette::BW2:
         return bw2;
+    case Palette::Turbo:
+        return turbo;
+    case Palette::Viridis:
+        return viridis;
+    case Palette::Plasma:
+        return plasma;
+    case Palette::Inferno:
+        return inferno;
+    case Palette::Magma:
+        return magma;
+    case Palette::Cividis:
+        return cividis;
+    case Palette::Hot:
+        return hot;
+    case Palette::Gray:
+        return gray;
+    case Palette::Gray_r:
+        return gray_r;
+    case Palette::Coolwarm:
+        return coolwarm;
+    case Palette::Bwr:
+        return bwr;
+    case Palette::Seismic:
+        return seismic;
+    case Palette::RdBu:
+        return rdbu;
+    case Palette::YlGnBu:
+        return ylgnbu;
+    case Palette::Sunset:
+        return sunset;
+    case Palette::Gain4:
+        return gain4;
     case Palette::Color:
     default:
         return color;
     }
 }
+
 
 // 256-entry lookup table sampled from exactly the same definition
 void buildLut(const PaletteDef &d, QRgb *out) {
@@ -581,29 +921,68 @@ void buildLut(const PaletteDef &d, QRgb *out) {
     }
 }
 
-QRgb g_lutColor[256];
-QRgb g_lutBW1[256];
-QRgb g_lutBW2[256];
+// one 256-entry table per palette, all built the same way from paletteDef()
+constexpr int kNumPalettes = int(Palette::Gain4) + 1;
+QRgb g_luts[kNumPalettes][256];
 struct LutInit {
     LutInit() {
-        buildLut(paletteDef(Palette::Color), g_lutColor);
-        buildLut(paletteDef(Palette::BW1), g_lutBW1);
-        buildLut(paletteDef(Palette::BW2), g_lutBW2);
+        for (int i = 0; i < kNumPalettes; i++)
+            buildLut(paletteDef(static_cast<Palette>(i)), g_luts[i]);
     }
 } g_lutInit;
 
 } // namespace
 
-const QRgb *paletteLut(Palette p) {
+// Labels for the scale panel's palette chooser (same order as the enum).
+const char *paletteName(Palette p) {
     switch (p) {
-    case Palette::BW1:
-        return g_lutBW1;
-    case Palette::BW2:
-        return g_lutBW2;
+    case Palette::Gain4:
+        return "gain 0..3 (fixed)";
     case Palette::Color:
-    default:
-        return g_lutColor;
+        return "Col (jet)";
+    case Palette::BW1:
+        return "BW grey 1";
+    case Palette::BW2:
+        return "BW grey 2";
+    case Palette::Turbo:
+        return "Turbo";
+    case Palette::Viridis:
+        return "Viridis";
+    case Palette::Plasma:
+        return "Plasma";
+    case Palette::Inferno:
+        return "Inferno";
+    case Palette::Magma:
+        return "Magma";
+    case Palette::Cividis:
+        return "Cividis (colorblind)";
+    case Palette::Hot:
+        return "Hot";
+    case Palette::Gray:
+        return "Grey (linear)";
+    case Palette::Gray_r:
+        return "Grey reversed";
+    case Palette::Coolwarm:
+        return "Coolwarm (diverging)";
+    case Palette::Bwr:
+        return "BWR (diverging)";
+    case Palette::Seismic:
+        return "Seismic (diverging)";
+    case Palette::RdBu:
+        return "RdBu (diverging)";
+    case Palette::YlGnBu:
+        return "YlGnBu (Brewer)";
+    case Palette::Sunset:
+        return "Sunset (Tol)";
     }
+    return "?";
+}
+
+const QRgb *paletteLut(Palette p) {
+    const int i = int(p);
+    if (i < 0 || i >= kNumPalettes)
+        return g_luts[int(Palette::Color)];
+    return g_luts[i];
 }
 
 // ROOT-thread only: rebuild the ROOT gradient colour table

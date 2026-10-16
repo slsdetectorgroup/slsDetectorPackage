@@ -4,7 +4,9 @@
 #   onlinedisp_zmq                             (Qt5 + ROOT display)
 #
 # Usage:
-#   make -f Makefile            (or just: make)
+#   make                        -> ./jf_online_display_gui            (normal)
+#                                  ./jf_online_display_gui_JFSTRX     (strip-xel)
+#   make normal | make jfstrx    single variant (aliases)
 #   ./jf_online_display_gui <rx_host> [rx_port] [gate_threshold] [min_pixels] [pede_file]
 #                    [--pub PORT] [--contig] [--no-gate] [--pede-frames N]
 #
@@ -50,31 +52,41 @@ CXXFLAGS ?= -std=c++17 -O3 -Wall -pthread
 
 LIBS = $(QT_LIBS) $(ROOT_LIBS) $(ZMQ_STATIC) $(HDF5_LIBS) -lsodium -lpthread -lrt -lm
 
-OBJS = online_jf_core.o online_jf_root.o online_jf_gui.o online_jf_h5.o
+OBJS           = online_jf_core.o online_jf_root.o online_jf_gui.o online_jf_h5.o
+# The strip-xel variant compiles the same sources with -DJFSTRX into its own
+# objects: the two builds have different geometry and struct layouts, so they
+# must never share object files (mixing them is a hard crash).
+JFSTRX_OBJS    = online_jf_core.JFSTRX.o online_jf_root.JFSTRX.o \
+                 online_jf_gui.JFSTRX.o online_jf_h5.JFSTRX.o
 
-all: jf_online_display_gui
+BIN            = jf_online_display_gui
+BIN_JFSTRX     = jf_online_display_gui_JFSTRX
 
-# The objects depend on a stamp holding the compile flags, so switching between
-# `make` and `make jfstrx` rebuilds every object instead of linking a mix of
-# JFSTRX and non-JFSTRX objects (different geometry and struct layouts: crash).
-# The stamp is only rewritten when the flags change.
 ALL_CXXFLAGS = $(CXXFLAGS) $(ROOT_CFLAGS) $(QT_CXXFLAGS) $(INCDIR)
 
-.buildflags: FORCE
-	@echo '$(ALL_CXXFLAGS)' | cmp -s - $@ || echo '$(ALL_CXXFLAGS)' > $@
+# `make` builds BOTH executables: the normal one and the LGAD strip-xel one
+# (the decoder is header-only, no extra library).
+all: $(BIN) $(BIN_JFSTRX)
 
-%.o: %.cpp online_jf.h .buildflags
+# the strip-xel decoder header is header-only and lives outside this directory:
+# touch it and the variant that uses it must be rebuilt
+STRIXEL_HDR = $(CAL)/dataStructures/jungfrauLGADStrixelsData_new.h
+
+%.JFSTRX.o: %.cpp online_jf.h $(STRIXEL_HDR)
+	$(CXX) $(ALL_CXXFLAGS) -DJFSTRX -c $< -o $@
+
+%.o: %.cpp online_jf.h
 	$(CXX) $(ALL_CXXFLAGS) -c $< -o $@
 
-jf_online_display_gui: $(OBJS)
+$(BIN): $(OBJS)
 	$(CXX) -o $@ $(OBJS) $(LIBS)
 
-# Optional: build with the LGAD strip-xel decoder paths enabled.
-# The decoder is header-only, so no extra library is needed.
-# The flag stamp above triggers the full rebuild, so no `clean` prerequisite
-# (which also raced with the build under make -j).
-jfstrx: CXXFLAGS += -DJFSTRX
-jfstrx: jf_online_display_gui
+$(BIN_JFSTRX): $(JFSTRX_OBJS)
+	$(CXX) -o $@ $(JFSTRX_OBJS) $(LIBS)
+
+# kept so the old habits still work
+normal: $(BIN)
+jfstrx: $(BIN_JFSTRX)
 
 # Synthetic slsReceiver stand-in used to exercise the program without
 # hardware (see test/jf_feeder.cpp).
@@ -84,8 +96,8 @@ test/jf_feeder: test/jf_feeder.cpp
 	$(CXX) -std=c++17 -O2 -pthread $(INCDIR) -o $@ $< $(ZMQ_STATIC) -lsodium -lpthread -lrt -lm
 
 clean:
-	rm -f $(OBJS) jf_online_display_gui test/jf_feeder .buildflags
+	rm -f $(OBJS) $(JFSTRX_OBJS) $(BIN) $(BIN_JFSTRX) test/jf_feeder
 
 FORCE:
 
-.PHONY: all clean jfstrx feeder FORCE
+.PHONY: all clean jfstrx normal feeder

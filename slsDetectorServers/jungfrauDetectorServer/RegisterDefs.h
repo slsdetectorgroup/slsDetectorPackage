@@ -463,6 +463,20 @@
 Time before end of exposure when comparator is disabled */
 #define COMP_DSBLE_TIME_REG                  (0x6C << MEM_MAP_SHIFT)
 
+/* High Dynamic Range, timeout and activation time tT = T x 25 ns  */
+#define HDR_REG                             (0x6D << MEM_MAP_SHIFT)
+ 
+#define HDR_TIMOUT_OFST                     (0)
+#define HDR_MAX_TIMEOUT_VAL                 (0xFFFF)
+#define HDR_TIMOUT_MSK                      (HDR_MAX_TIMEOUT_VAL << HDR_TIMOUT_OFST)
+#define HDR_ACTIVATION_TIME_OFST            (16)
+#define HDR_MAX_ACTIVATION_TIME_VAL         (0xFF)
+#define HDR_ACTIVATION_TIME_MSK             (HDR_MAX_ACTIVATION_TIME_VAL << HDR_ACTIVATION_TIME_OFST)
+#define HDR_MODE_FEL_OFST                   (24)
+#define HDR_MODE_FEL_MSK                    (0x00000001 << HDR_MODE_FEL_OFST)
+#define HDR_ENABLE_OFST                     (31)
+#define HDR_ENABLE_MSK                      (0x00000001 << HDR_ENABLE_OFST)
+
 
 /* Trigger Delay 32 bit register */
 #define SET_TRIGGER_DELAY_LSB_REG           (0x70 << MEM_MAP_SHIFT)

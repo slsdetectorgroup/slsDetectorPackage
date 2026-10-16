@@ -561,7 +561,6 @@ bool hasFilterResistorFeature();
 bool hasFilterCellsFeature();
 bool hasCurrentSourceNormalFeature();
 bool hasCurrentSource64BitSelectionFeature();
-bool hasCurrentSourceReverseBitsSelectionFeature();
 bool hasStorageCellStartInChipConfig();
 bool hasStepReductionFeature();
 bool isChipConfigured();

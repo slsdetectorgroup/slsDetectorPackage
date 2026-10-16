@@ -71,7 +71,6 @@ bool has_filter_resistor = false;
 bool has_filter_cells = false;
 bool has_current_src_normal = false;
 bool has_current_src_64bit_selection = false;
-bool has_current_src_reverse_bits_selection = false;
 bool has_storage_start_in_chip_config = false;
 bool has_step_reduction = false;
 
@@ -435,7 +434,6 @@ void setChipIndexAllowedFeatures() {
         has_filter_cells = false;
         has_current_src_normal = false;
         has_current_src_64bit_selection = false;
-        has_current_src_reverse_bits_selection = false;
         has_storage_start_in_chip_config = false;
         has_step_reduction = false;
         defaultDacValue_G0 = defaultDacList_G0;
@@ -448,7 +446,6 @@ void setChipIndexAllowedFeatures() {
         has_filter_cells = true;
         has_current_src_normal = true;
         has_current_src_64bit_selection = true;
-        has_current_src_reverse_bits_selection = true;
         has_storage_start_in_chip_config = true;
         has_step_reduction = false;
         defaultDacValue_G0 = defaultDacList_G0;
@@ -463,7 +460,6 @@ void setChipIndexAllowedFeatures() {
         has_filter_cells = false;
         has_current_src_normal = true;
         has_current_src_64bit_selection = true;
-        has_current_src_reverse_bits_selection = true;
         has_storage_start_in_chip_config = true;
         has_step_reduction = true;
         defaultDacValue_G0 = defaultDacList_v1_2;
@@ -2163,10 +2159,6 @@ bool hasCurrentSource64BitSelectionFeature() {
     return has_current_src_64bit_selection;
 }
 
-bool hasCurrentSourceReverseBitsSelectionFeature() {
-    return has_current_src_reverse_bits_selection;
-}
-
 bool hasStorageCellStartInChipConfig() {
     return has_storage_start_in_chip_config;
 }
@@ -2716,23 +2708,9 @@ void enableCurrentSource(int fix, uint64_t select, int normal) {
 
     // select (64 bits)
     else {
-        uint64_t retval = 0;
-        // reverse bits select first
-        if (hasCurrentSourceReverseBitsSelectionFeature()) {
-            uint64_t tmp = select;
-            for (int i = 0; i != 64; ++i) {
-                // get each bit from LSB side
-                uint64_t bit = (tmp >> i) & 0x1;
-                // push the bit into MSB side
-                retval |= (bit << (63 - i));
-            }
-        } else {
-            retval = select;
-        }
-
         LOG(logINFO, ("\tSetting selection to 0x%lx (inverted from 0x%lx)\n",
-                      (long unsigned int)retval, (long unsigned int)select));
-        set64BitReg(retval, CRRNT_SRC_COL_LSB_REG, CRRNT_SRC_COL_MSB_REG);
+                      (long unsigned int)select, (long unsigned int)select));
+        set64BitReg(select, CRRNT_SRC_COL_LSB_REG, CRRNT_SRC_COL_MSB_REG);
     }
 
     if (hasCurrentSourceNormalFeature()) {
@@ -2789,23 +2767,7 @@ uint64_t getSelectCurrentSource() {
         return ((bus_r(DAQ_REG) & DAQ_CRRNT_SRC_CLMN_SLCT_MSK) >>
                 DAQ_CRRNT_SRC_CLMN_SLCT_OFST);
     } else {
-        // invert the select
-        uint64_t regval =
-            get64BitReg(CRRNT_SRC_COL_LSB_REG, CRRNT_SRC_COL_MSB_REG);
-
-        uint64_t retval = regval;
-        if (hasCurrentSourceReverseBitsSelectionFeature()) {
-            uint64_t tmp = regval;
-            uint64_t inverted = 0;
-            for (int i = 0; i != 64; ++i) {
-                // get each bit from LSB side
-                uint64_t bit = (tmp >> i) & 0x1;
-                // push the bit into MSB side
-                inverted |= (bit << (63 - i));
-            }
-            retval = inverted;
-        }
-        return retval;
+        return get64BitReg(CRRNT_SRC_COL_LSB_REG, CRRNT_SRC_COL_MSB_REG);
     }
 }
 

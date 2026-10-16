@@ -76,7 +76,7 @@ inline CtbImageOutputs computeCtbImageSize(const CtbImageInputs &in) {
         in.mode == slsDetectorDefs::ANALOG_AND_DIGITAL) {
         int nAnalogChans = __builtin_popcount(in.adcMask);
 
-        out.nPixelsX += nAnalogChans;
+        out.nPixelsX += nAnalogChans * in.nAnalogSamples;
         out.nAnalogBytes =
             nAnalogChans * num_bytes_per_analog_channel * in.nAnalogSamples;
         LOG(logDEBUG1) << " Number of Analog Channels:" << nAnalogChans
@@ -137,7 +137,7 @@ inline CtbImageOutputs computeCtbImageSize(const CtbImageInputs &in) {
         in.mode == slsDetectorDefs::DIGITAL_AND_TRANSCEIVER) {
         int nTransceiverChans = __builtin_popcount(in.transceiverMask);
 
-        out.nPixelsX += nTransceiverChans;
+        out.nPixelsX += nTransceiverChans * in.nTransceiverSamples;
         out.nTransceiverBytes = nTransceiverChans *
                                 num_bytes_per_transceiver_channel *
                                 in.nTransceiverSamples;

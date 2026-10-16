@@ -36,8 +36,6 @@ class PlotTab(QtWidgets.QWidget):
         self.showdigitalImage : bool = False
         self.showanalogImage : bool = False
 
-        self.activated_counters: list[bool] = Defines.max_counters * [False]
-
         # color range variables 
         self.colorRangeMode: Defines.colorRange = Defines.colorRange.auto
 

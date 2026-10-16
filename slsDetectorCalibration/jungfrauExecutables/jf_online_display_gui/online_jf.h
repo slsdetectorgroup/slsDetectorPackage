@@ -476,7 +476,22 @@ enum class RootCmdType {
 
 // One palette definition drives both the ROOT colour table and the 256-entry
 // lookup table used by the fast ADC/photon image widgets.
-enum class Palette { Color, BW1, BW2 };
+// The palettes offered by the image scale panel.  Color / BW1 / BW2 are the
+// original three (kept first: the b / Shift+B / c shortcuts use those indices);
+// the rest are the matplotlib family that is useful for detector images -
+// perceptually uniform (viridis, plasma, inferno, magma, cividis), turbo,
+// hot, grey, and the diverging maps for pedestal-corrected data that can go
+// negative.
+enum class Palette {
+    Color, BW1, BW2,
+    Turbo, Viridis, Plasma, Inferno, Magma, Cividis,
+    Hot, Gray, Gray_r,
+    Coolwarm, Bwr, Seismic, RdBu, YlGnBu, Sunset,
+    // not in the chooser: the gain map has four valid values (the gain bits
+    // 0..3) and gets a fixed, calm blue/green/yellow/red code
+    Gain4
+};
+const char *paletteName(Palette p); // label for the scale panel
 void loadRootPalette(Palette p);   // ROOT thread only
 const QRgb *paletteLut(Palette p); // static table, safe from any thread
 struct RootCmd {

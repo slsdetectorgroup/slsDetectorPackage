@@ -24,6 +24,9 @@ The originals in the parent directory are untouched.
 
 ```sh
 make                 # -> ./jf_online_display_gui      (Qt5 + ROOT + static libzmq)
+make                 # also builds ./jf_online_display_gui_JFSTRX, the
+                     # LGAD strip-xel variant of the same sources
+                     # (-DJFSTRX; `make normal` / `make jfstrx` build one)
 make feeder          # -> ./test/jf_feeder      (synthetic slsReceiver, testing)
 make clean
 make jfstrx          # optional -DJFSTRX (LGAD strip-xel) build
@@ -347,7 +350,37 @@ counting* (left column, under the gates):
 | photon threshold | threshold of the photon map; a pixel above it counts `(value + threshold) / (2 x threshold)` photons.  It is in **ADU** while the gain correction is off (default 150) and in **keV** while it is on (default 4.0): the counting value is then the pedestal-subtracted ADC divided by the pixel's ADU/keV (gain map, else the nominal 40).  Both numbers are kept, and switching the gain swaps which one the row shows, so neither is ever overwritten.  Toggling the gain while a photon-map save runs changes the unit of the maps written from that moment on, which the run announces (`[gain] warning: the photon-counting unit is now keV ...`); the JSON keeps the value it recorded at save start |
 
 The photon window has no ROI and no gate: the ADC image, the gain image and the
-photon map are three independent windows.  Pixels with **no photons are drawn
+photon map are three independent windows.
+
+**The image windows are plots.**  Each one draws the image inside a frame with
+X/Y axes, tick labels *outside* the plot area and a light dotted grid inside it
+(the Y labels are data rows, row 0 at the bottom, like everywhere else).  When
+the zoom makes an image pixel at least **16 screen pixels** wide, every pixel is
+outlined with a thin line; above **50 screen pixels** the value is written inside
+each pixel - whole numbers for the photon map (counts), one decimal for the
+real-valued ADC/keV images.  The colour bar that used to sit at the right of the
+image is replaced by a thin **scale panel** under it (its histogram strip is
+~38 px, about a tenth of the window):
+
+* the **histogram** of the last image, one solid bar per bin - the bar is as wide
+  as the bin spacing - with the mapped range highlighted;
+* the two range **markers are pinned at 1/4 and 3/4** and the value axis
+  rescales under them (the strip shows the selected range widened by half a
+  range on each side), so **dragging a marker** moves that end of the range; the
+  ends are printed next to the markers and in the spin boxes;
+* a **palette** chooser with the matplotlib family that is useful for detector
+  images: the original `Col (jet)` / `BW grey 1` / `BW grey 2` (also on `b` /
+  `Shift+B` / `c`), `Turbo`, the perceptually uniform `Viridis`, `Plasma`,
+  `Inferno`, `Magma` and `Cividis` (colour-blind friendly), `Hot`,
+  `Grey (linear)`, `Grey reversed`, the diverging `Coolwarm`, `BWR`, `Seismic`
+  and `RdBu` (handy for pedestal-corrected data that goes negative),
+  `YlGnBu (Brewer)` and `Sunset (Tol)`.  Pick one per window; the ROOT plots
+  follow the `b` / `Shift+B` / `c` keys as before;
+* **two lin/log switches** - `image` for the intensity mapping (log maps
+  log10(value) and caps values <= 0 at 1e-2 so empty pixels stay visible) and
+  `histo` for the bar heights (log10(count + 1)); the histogram's *value* axis
+  always follows the image switch;
+* `min` / `max` spin boxes for the same pair as `Set Ranges...`.  Pixels with **no photons are drawn
 white** - the way ROOT's `colz` leaves empty cells on the white canvas - while
 every pixel above zero takes the palette colour, so a faint map stays readable
 instead of drowning in the palette's lowest colour.  The colour bar keeps the

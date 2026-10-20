@@ -11111,7 +11111,8 @@ int set_hdr(int file_des) {
         } else if (check_detector_idle("set HDR") == OK) {
             ret = setHDR(enable, mode);
             if (ret == FAIL) {
-                sprintf(mess, "Could not set HDR to %d %d\n", args[0], args[1]);
+                sprintf(mess, "Could not %s HDR to mode: %d %d\n",
+                        enable ? "enable" : "disable", args[1]);
                 LOG(logERROR, (mess));
             }
         }

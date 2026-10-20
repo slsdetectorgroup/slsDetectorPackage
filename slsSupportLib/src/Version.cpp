@@ -1,11 +1,31 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "sls/Version.h"
+#include "sls/logger.h"
 #include "sls/sls_detector_exceptions.h"
 #include "sls/string_utils.h"
+#include <cstdio>
 #include <sstream>
 
 namespace sls {
+
+bool Version::parseSemanticVersion(const std::string &version, int &major,
+                                   int &minor, int &patch, std::string &extra) {
+    char extraBuffer[256] = {'\0'};
+    // Parse major.minor.patch and capture any optional trailing suffix.
+    const int scanned = sscanf(version.c_str(), "%d.%d.%d%255s", &major, &minor,
+                               &patch, extraBuffer);
+
+    if (scanned == 3) {
+        extra.clear();
+        return true;
+    }
+    if (scanned == 4) {
+        extra = extraBuffer;
+        return true;
+    }
+    return false;
+}
 
 Version::Version(const std::string &s) {
     auto list = split(s, ' ');
@@ -62,14 +82,27 @@ bool Version::operator==(const Version &other) const {
 bool Version::operator<=(const Version &other) const {
     // both have semantic versioning
     if (hasSemanticVersioning() && other.hasSemanticVersioning()) {
-        // release version
-        std::string otherVersion = other.getVersion();
-        if (version_ == otherVersion)
-            return true;
-        // less than
-        return (std::lexicographical_compare(version_.begin(), version_.end(),
-                                             otherVersion.begin(),
-                                             otherVersion.end()));
+        int major = 0, minor = 0, patch = 0;
+        int otherMajor = 0, otherMinor = 0, otherPatch = 0;
+        std::string extra;
+        std::string otherExtra;
+
+        if (Version::parseSemanticVersion(version_, major, minor, patch,
+                                          extra) &&
+            Version::parseSemanticVersion(other.getVersion(), otherMajor,
+                                          otherMinor, otherPatch, otherExtra)) {
+            if (major != otherMajor)
+                return major < otherMajor;
+            if (minor != otherMinor)
+                return minor < otherMinor;
+            if (patch != otherPatch)
+                return patch < otherPatch;
+            return extra <= otherExtra;
+        }
+
+        LOG(logWARNING) << "Could not compare semantic versions: " << version_
+                        << " and " << other.getVersion()
+                        << ". Comparing dates instead.";
     }
     // compare dates
     return date_ <= other.getDate();

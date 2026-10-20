@@ -9,7 +9,9 @@ TEST_CASE("check if version is semantic", "[version]") {
 
     auto [version_string, has_semantic_version] =
         GENERATE(std::make_tuple("developer 0x250512", false),
-                 std::make_tuple("0.0.0 0x250512", false));
+                 std::make_tuple("0.0.0 0x250512", false),
+                 std::make_tuple("10.1.1 0x250512", true),
+                 std::make_tuple("0x250512", false));
 
     Version version(version_string);
 
@@ -24,13 +26,22 @@ TEST_CASE("semantic version ordering compares numerically", "[version]") {
     CHECK_FALSE(v10 <= v9);
 }
 
-TEST_CASE("semantic version compares extra suffix lexicographically",
+TEST_CASE("semantic version compares prerelease lexicographically",
           "[version]") {
     Version rc("10.1.1.rc 0x250512");
     Version zz("10.1.1.zz 0x250512");
 
     CHECK(rc <= zz);
     CHECK_FALSE(zz <= rc);
+}
+
+TEST_CASE("semantic version compares prerelease with no prerelease",
+          "[version]") {
+    Version prerelease("10.1.1.rc 0x250512");
+    Version release("10.1.1 0x250512");
+
+    CHECK_FALSE(prerelease <= release);
+    CHECK(release <= prerelease);
 }
 
 TEST_CASE(
@@ -43,12 +54,37 @@ TEST_CASE(
     CHECK_FALSE(valid <= malformed);
 }
 
-TEST_CASE("semantic version compares extra suffix and without", "[version]") {
+TEST_CASE("semantic version compares prerelease and without", "[version]") {
     Version v1011rc("10.1.1.rc 0x250512");
     Version v1010("10.1.0 0x250512");
 
     CHECK_FALSE(v1011rc <= v1010);
     CHECK(v1010 <= v1011rc);
+}
+
+TEST_CASE("semantic version", "[version]") {
+    auto version = Version("10.1.1.rc 0x250512");
+    CHECK(version.hasSemanticVersioning());
+    CHECK(version.getDate() == "0x250512");
+    CHECK(version.toString() == "10.1.1.rc 0x250512");
+    auto semver = version.getSemanticVersion();
+    CHECK(semver.toString() == "10.1.1.rc");
+    CHECK(semver.major == 10);
+    CHECK(semver.minor == 1);
+    CHECK(semver.patch == 1);
+    CHECK(semver.prerelease == "rc");
+
+    version = Version("0.0.0 0x250512");
+    CHECK_FALSE(version.hasSemanticVersioning());
+    CHECK(version.getDate() == "0x250512");
+    CHECK(version.toString() == "0.0.0 0x250512");
+    REQUIRE_THROWS(version.getSemanticVersion());
+
+    version = Version("0x250512");
+    CHECK_FALSE(version.hasSemanticVersioning());
+    CHECK(version.getDate() == "0x250512");
+    CHECK(version.toString() == "0.0.0 0x250512");
+    REQUIRE_THROWS(version.getSemanticVersion());
 }
 
 } // namespace sls

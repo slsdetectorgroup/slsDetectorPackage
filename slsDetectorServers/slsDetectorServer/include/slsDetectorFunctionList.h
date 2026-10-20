@@ -102,6 +102,7 @@ int setChipVersionIntFromConfigFile(int val,
                                     char *mess); // for backward compatibility
 int setChipVersionStringFromConfigFile(char *cval, char *mess);
 int setChipIndex(enum CHIPINDEX ind, char *mess);
+enum CHIPINDEX getChipIndex();
 int validateChipIndex(enum CHIPINDEX ind, char *mess);
 void setChipIndexAllowedFeatures();
 int setChipVersionInFPGA(char *mess);
@@ -560,7 +561,6 @@ bool hasFilterResistorFeature();
 bool hasFilterCellsFeature();
 bool hasCurrentSourceNormalFeature();
 bool hasCurrentSource64BitSelectionFeature();
-bool hasCurrentSourceReverseBitsSelectionFeature();
 bool hasStorageCellStartInChipConfig();
 bool hasStepReductionFeature();
 bool isChipConfigured();
@@ -603,6 +603,9 @@ int setTimingInfoDecoder(enum timingInfoDecoder val);
 int getTimingInfoDecoder(enum timingInfoDecoder *retval);
 int getElectronCollectionMode();
 void setElectronCollectionMode(int enable);
+void updateHDRTimeout();
+int setHDR(bool enable, enum operationMode mode);
+void getHDR(bool *enable, enum operationMode *mode);
 #endif
 
 // eiger specific - iodelay, pulse, rate, temp, activate, delay nw parameter

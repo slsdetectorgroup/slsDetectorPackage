@@ -16,6 +16,10 @@ class Version {
   public:
     explicit Version(const std::string &s);
 
+    static bool parseSemanticVersion(const std::string &version, int &major,
+                                     int &minor, int &patch,
+                                     std::string &extra);
+
     bool hasSemanticVersioning() const;
     std::string getVersion() const;
     std::string getDate() const;

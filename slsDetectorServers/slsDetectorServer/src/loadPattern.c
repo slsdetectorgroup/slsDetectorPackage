@@ -170,7 +170,12 @@ int validate_writePatternWord(char *message, int addr, uint64_t word) {
     uint64_t retval = readPatternWord(addr);
     LOG(logDEBUG1, ("Pattern word (addr:0x%x) retval: 0x%llx\n", addr,
                     (long long int)retval));
-    validate64(&ret, message, word, retval, "set pattern word", HEX);
+    // runs for every pattern word: only build the message on a mismatch
+    if (retval != word) {
+        char mode[64];
+        sprintf(mode, "set pattern word for addr 0x%x", addr);
+        validate64(&ret, message, word, retval, mode, HEX);
+    }
 #endif
     return ret;
 }

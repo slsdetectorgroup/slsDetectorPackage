@@ -149,9 +149,6 @@ int validate_writePatternWord(char *message, int addr, uint64_t word) {
     uint64_t retval = readPatternWord(addr);
     LOG(logDEBUG1, ("Pattern word (addr:0x%x) retval: 0x%llx\n", addr,
                     (long long int)retval));
-    char mode[128];
-    memset(mode, 0, sizeof(mode));
-    sprintf(mode, "set pattern word for addr 0x%x", addr);
     validate64(&ret, message, word, retval, "set pattern word", HEX);
 #endif
     return ret;
@@ -700,7 +697,7 @@ int loadPattern(char *message, enum TLogLevel printLevel,
     int ret = OK;
     memset(clientPatternfile, 0, MAX_STR_LENGTH);
     memcpy(clientPatternfile, patfname, MAX_STR_LENGTH);
-    printf("Client Pattern File:%s\n", clientPatternfile);
+    LOG(logDEBUG1, ("Client Pattern File:%s\n", clientPatternfile));
 #ifdef MYTHEN3D
     trimmingPrint = printLevel;
 #endif

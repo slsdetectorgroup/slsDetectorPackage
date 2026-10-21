@@ -14,10 +14,6 @@ struct SemanticVersion {
     int patch{0};
     std::string prerelease{};
 
-    /**
-     * If empty, return {}
-     * If 0.0.0, only prerelease is returned (eg. developer, 0.0.0, other non
-     * semantic versioning) */
     std::string toString() const;
     bool operator==(const SemanticVersion &other) const;
     bool operator<=(const SemanticVersion &other) const;
@@ -35,7 +31,6 @@ class Version {
     explicit Version(const std::string &s);
     std::string toString() const;
     bool hasSemanticVersioning() const;
-
     std::string getVersion() const;
     std::string getDate() const;
     std::string concise() const;

@@ -72,19 +72,55 @@ TEST_CASE("semantic version", "[version]") {
     CHECK(semver.major == 10);
     CHECK(semver.minor == 1);
     CHECK(semver.patch == 1);
-    CHECK(semver.prerelease == "rc");
+    CHECK(semver.prerelease == ".rc");
 
-    version = Version("0.0.0 0x250512");
-    CHECK_FALSE(version.hasSemanticVersioning());
-    CHECK(version.getDate() == "0x250512");
-    CHECK(version.toString() == "0.0.0 0x250512");
-    REQUIRE_THROWS(version.getSemanticVersion());
+    auto version2 = Version("9.2.1 0x250512");
+    CHECK(version2.hasSemanticVersioning());
+    CHECK(version2.getDate() == "0x250512");
+    CHECK(version2.toString() == "9.2.1 0x250512");
+    auto semver2 = version2.getSemanticVersion();
+    CHECK(semver2.toString() == "9.2.1");
+    CHECK(semver2.major == 9);
+    CHECK(semver2.minor == 2);
+    CHECK(semver2.patch == 1);
+    CHECK(semver2.prerelease == "");
+    CHECK(version != version2);
 
-    version = Version("0x250512");
-    CHECK_FALSE(version.hasSemanticVersioning());
-    CHECK(version.getDate() == "0x250512");
-    CHECK(version.toString() == "0.0.0 0x250512");
-    REQUIRE_THROWS(version.getSemanticVersion());
+    auto dev_version = Version("developer 0x250512");
+    CHECK_FALSE(dev_version.hasSemanticVersioning());
+    CHECK(dev_version.getDate() == "0x250512");
+    CHECK(dev_version.toString() == "0.0.0 0x250512");
+    REQUIRE_THROWS(dev_version.getSemanticVersion());
+    REQUIRE_THROWS(dev_version.getMajorVersion());
+    REQUIRE_THROWS(dev_version.getMinorVersion());
+    REQUIRE_THROWS(dev_version.getPatchVersion());
+    REQUIRE_THROWS(dev_version.getPrereleaseVersion());
+    REQUIRE_THROWS(dev_version.isBackwardCompatible(version));
+    CHECK(dev_version == version);
+
+    auto zero_version = Version("0.0.0 0x250512");
+    CHECK_FALSE(zero_version.hasSemanticVersioning());
+    CHECK(zero_version.getDate() == "0x250512");
+    CHECK(zero_version.toString() == "0.0.0 0x250512");
+    REQUIRE_THROWS(zero_version.getSemanticVersion());
+    REQUIRE_THROWS(zero_version.getMajorVersion());
+    REQUIRE_THROWS(zero_version.getMinorVersion());
+    REQUIRE_THROWS(zero_version.getPatchVersion());
+    REQUIRE_THROWS(zero_version.getPrereleaseVersion());
+    REQUIRE_THROWS(zero_version.isBackwardCompatible(version));
+    CHECK(zero_version == dev_version);
+
+    auto date_only_version = Version("0x250512");
+    CHECK_FALSE(date_only_version.hasSemanticVersioning());
+    CHECK(date_only_version.getDate() == "0x250512");
+    CHECK(date_only_version.toString() == "0.0.0 0x250512");
+    REQUIRE_THROWS(date_only_version.getSemanticVersion());
+    REQUIRE_THROWS(date_only_version.getMajorVersion());
+    REQUIRE_THROWS(date_only_version.getMinorVersion());
+    REQUIRE_THROWS(date_only_version.getPatchVersion());
+    REQUIRE_THROWS(date_only_version.getPrereleaseVersion());
+    REQUIRE_THROWS(date_only_version.isBackwardCompatible(version));
+    CHECK(date_only_version == zero_version);
 }
 
 } // namespace sls

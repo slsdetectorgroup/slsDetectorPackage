@@ -40,8 +40,8 @@ TEST_CASE("semantic version compares prerelease with no prerelease",
     Version prerelease("10.1.1.rc 0x250512");
     Version release("10.1.1 0x250512");
 
-    CHECK_FALSE(prerelease <= release);
-    CHECK(release <= prerelease);
+    CHECK(prerelease <= release);
+    CHECK_FALSE(release <= prerelease);
 }
 
 TEST_CASE(
@@ -85,6 +85,17 @@ TEST_CASE("semantic version", "[version]") {
     CHECK(semver2.patch == 1);
     CHECK(semver2.prerelease == "");
     CHECK(version != version2);
+    CHECK(version2 <= version);
+    CHECK_FALSE(version <= version2);
+
+    auto version3 = Version("10.1.1.rc2 0x250512");
+    CHECK(version <= version3);
+
+    auto version4 = Version("10.1.1.rc3 0x250512");
+    CHECK(version3 <= version4);
+
+    auto release = Version("10.1.1 0x250512");
+    CHECK(version <= release);
 
     auto dev_version = Version("developer 0x250512");
     CHECK_FALSE(dev_version.hasSemanticVersioning());

@@ -30,6 +30,12 @@ bool SemanticVersion::operator<=(const SemanticVersion &other) const {
         return minor < other.minor;
     if (patch != other.patch)
         return patch < other.patch;
+
+    // A release version is greater than its prerelease
+    if (prerelease.empty() && !other.prerelease.empty())
+        return false;
+    if (!prerelease.empty() && other.prerelease.empty())
+        return true;
     return prerelease <= other.prerelease;
 }
 

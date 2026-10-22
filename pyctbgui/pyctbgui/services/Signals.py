@@ -193,7 +193,7 @@ class SignalsTab(QtWidgets.QWidget):
         self.mainWindow.nDigitalRows = 0
         self.mainWindow.nDigitalCols = 0
         self.mainWindow.digital_frame = np.zeros((self.mainWindow.nDigitalRows, self.mainWindow.nDigitalCols))
-        self.mainWindow.plotDigitalImage.setImage(self.mainWindow.digital_frame)
+        self.mainWindow.plotDigitalImage.setImage(self.mainWindow.digital_frame, autoLevels=False) 
         self.mainWindow.verticalLayoutPlot.addWidget(self.mainWindow.plotDigitalImage, 4)
 
     def updateSignalNames(self):

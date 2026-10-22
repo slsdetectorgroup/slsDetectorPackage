@@ -1870,7 +1870,7 @@ void DetectorImpl::convertGlobalRoiToPortLevel(
 void DetectorImpl::validatePortEnable(const defs::portPosition port,
                                       const bool enable,
                                       std::vector<int> pos) const {
-    if (isCompleteROI())
+    if (isCompleteRxROI())
         return;
     auto positions = fillInPositions(pos);
     for (int i : positions) {
@@ -1980,7 +1980,7 @@ void DetectorImpl::clearRxROI() {
     modules[0]->setRxROIMetadata(std::vector<defs::ROI>(1));
 }
 
-bool DetectorImpl::isCompleteROI() const {
+bool DetectorImpl::isCompleteRxRoi() const {
     const auto rois = getRxROI();
     if (rois.empty() || (rois.size() == 1 && rois[0].completeRoi())) {
         return true;

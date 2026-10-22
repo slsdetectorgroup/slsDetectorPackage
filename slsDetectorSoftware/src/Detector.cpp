@@ -1486,7 +1486,7 @@ void Detector::setRxROI(const std::vector<defs::ROI> &args) {
 
 void Detector::clearRxROI() { pimpl->clearRxROI(); }
 
-bool Detector::isCompleteROI() const { return pimpl->isCompleteROI(); }
+bool Detector::isCompleteRxRoi() const { return pimpl->isCompleteRxRoi(); }
 
 // File
 

@@ -177,9 +177,8 @@ int main(int argc, char *argv[]) {
 
         /**	- if child process */
         else if (pid == 0) {
-            LOG(sls::logINFOBLUE)
-                << "Child process " << i << " [ Tid: " << sls::getThreadId()
-                << ']';
+            LOG(sls::logINFOBLUE) << "Child process " << i
+                                  << " [ Tid: " << sls::getThreadId() << ']';
 
             try {
                 uint16_t port = m.port + i;
@@ -210,13 +209,15 @@ int main(int argc, char *argv[]) {
                 // each child process gets a copy of the semaphore
                 sem_wait(&semaphore);
                 sem_destroy(&semaphore);
-                LOG(sls::logINFOBLUE) << "Exiting Child Process [ Tid: "
-                                      << sls::getThreadId() << ']';
+                LOG(sls::logINFOBLUE)
+                    << "Exiting Child Process [ Tid: " << sls::getThreadId()
+                    << ']';
                 exit(EXIT_SUCCESS);
             } catch (...) {
                 sem_destroy(&semaphore);
-                LOG(sls::logINFOBLUE) << "Exiting Child Process [ Tid: "
-                                      << sls::getThreadId() << " ]";
+                LOG(sls::logINFOBLUE)
+                    << "Exiting Child Process [ Tid: " << sls::getThreadId()
+                    << " ]";
                 exit(EXIT_FAILURE);
             }
         }

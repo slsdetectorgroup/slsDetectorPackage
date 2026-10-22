@@ -1798,7 +1798,7 @@ void DetectorImpl::validatePortEnable(const defs::portPosition port,
                                       std::vector<int> pos) const {
     if (shm()->detType != EIGER)
         return;
-    if (isCompleteROI())
+    if (isCompleteRxRoi())
         return;
     auto positions = fillInPositions(pos);
     for (int i : positions) {
@@ -1904,7 +1904,7 @@ void DetectorImpl::clearRxROI() {
     modules[0]->setRxROIMetadata(std::vector<defs::ROI>(1));
 }
 
-bool DetectorImpl::isCompleteROI() const {
+bool DetectorImpl::isCompleteRxRoi() const {
     const auto rois = getRxROI();
     if (rois.empty() || (rois.size() == 1 && rois[0].completeRoi())) {
         return true;

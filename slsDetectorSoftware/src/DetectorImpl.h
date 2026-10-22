@@ -307,7 +307,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
 
     void setRxROI(const std::vector<defs::ROI> &args);
     void clearRxROI();
-    bool isCompleteROI() const;
+    bool isCompleteRxRoi() const;
 
     void getBadChannels(const std::string &fname, Positions pos) const;
     void setBadChannels(const std::string &fname, Positions pos);

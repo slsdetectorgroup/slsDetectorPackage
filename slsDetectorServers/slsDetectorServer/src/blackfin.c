@@ -8,10 +8,11 @@
 #include "sls/sls_detector_defs.h"
 
 #include <fcntl.h>    // open
+#include <stdio.h>    // fopen
 #include <sys/mman.h> // mmap
+#include <unistd.h>   // usleep
 
 /* global variables */
-const uint64_t BFIN_CYCLES_1uSECOND = 20;
 u_int32_t *csp0base = 0;
 
 #define CSP0     0x20200000
@@ -125,6 +126,8 @@ int mapCSP0(void) {
 #endif
         LOG(logINFO, ("csp0base mapped from %p to %p\n", csp0base,
                       (csp0base + MEM_SIZE)));
+        if (initCycleCounter() == FAIL)
+            return FAIL;
         LOG(logINFO, ("Status Register: %08x\n", bus_r(STATUS_REG)));
     } else
         LOG(logINFO, ("Memory already mapped before\n"));
@@ -133,10 +136,57 @@ int mapCSP0(void) {
 
 uint32_t *Blackfin_getBaseAddress() { return csp0base; }
 
-// usleep is not viable on blackfin
-void usleep_bf(uint64_t i) {
-    uint64_t j = i * BFIN_CYCLES_1uSECOND;
-    while (--j) {
-        asm volatile("");
+#ifdef __bfin__
+/* BF537 core clock; refined from /proc/cpuinfo in initCycleCounter() */
+#define BFIN_CCLK_HZ_DEFAULT 525000000UL
+static uint32_t bfinCyclesPerUs = BFIN_CCLK_HZ_DEFAULT / 1000000;
+
+static inline uint32_t get_cycles(void) {
+    uint32_t cycles;
+    __asm__ volatile("%0 = CYCLES;" : "=d"(cycles));
+    return cycles;
+}
+#endif
+
+int initCycleCounter(void) {
+#ifndef __bfin__
+    return OK; // virtual build: usleep_bf falls back to usleep
+#else
+    // kernel reports "cpu MHz : 525.000/131.250" (core/system)
+    FILE *fp = fopen("/proc/cpuinfo", "r");
+    if (fp != NULL) {
+        char line[128];
+        double mhz = 0;
+        while (fgets(line, sizeof(line), fp) != NULL) {
+            if (sscanf(line, "cpu MHz : %lf", &mhz) == 1 && mhz > 0) {
+                bfinCyclesPerUs = (uint32_t)mhz;
+                break;
+            }
+        }
+        fclose(fp);
     }
+    // CYCLES only counts if the kernel set SYSCFG.CCEN; refuse to run
+    // otherwise, because usleep_bf would spin forever
+    uint32_t c0 = get_cycles();
+    for (volatile int i = 0; i < 1000; ++i)
+        ;
+    if (get_cycles() == c0) {
+        LOG(logERROR, ("Blackfin cycle counter is not running\n"));
+        return FAIL;
+    }
+    LOG(logINFO, ("Cycle counter running at %u cycles/us\n", bfinCyclesPerUs));
+    return OK;
+#endif
+}
+
+// usleep is not viable on blackfin (10 ms tick); spin on the core cycle counter
+void usleep_bf(uint32_t us) {
+#ifndef __bfin__
+    usleep(us);
+#else
+    uint32_t start = get_cycles();
+    uint32_t wait = us * bfinCyclesPerUs; // valid below ~8 s
+    while ((uint32_t)(get_cycles() - start) < wait)
+        ;
+#endif
 }

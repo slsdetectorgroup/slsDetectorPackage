@@ -11,6 +11,8 @@ CROSS  		= bfin-uclinux-
 CC    		= $(CROSS)gcc
 CFLAGS		+=  -Wall -std=gnu99 -DMOENCHD  -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(current_dir)  #-DVERBOSEI #-DVERBOSE 
 LDLIBS		+= 	-lm -lrt -pthread
+# FLAT stack size: elf2flt defaults to 4 KB, the update and startup paths need more than 8 KB
+LDLIBS		+= 	-Wl,-elf2flt=-s262144
 PROGS		= 	moenchDetectorServer 
 DESTDIR		?= 	bin
 INSTMODE	= 	0777

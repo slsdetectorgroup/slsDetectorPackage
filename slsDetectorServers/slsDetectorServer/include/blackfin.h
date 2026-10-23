@@ -126,4 +126,4 @@ int mapCSP0(void);
 int initCycleCounter(void);
 
 /** busy-wait for usecs on the core cycle counter */
-void usleep_bf(uint64_t us);
+void usleep_bf(uint32_t us);

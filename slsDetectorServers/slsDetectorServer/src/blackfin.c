@@ -180,12 +180,12 @@ int initCycleCounter(void) {
 }
 
 // usleep is not viable on blackfin (10 ms tick); spin on the core cycle counter
-void usleep_bf(uint64_t us) {
+void usleep_bf(uint32_t us) {
 #ifndef __bfin__
     usleep(us);
 #else
     uint32_t start = get_cycles();
-    uint32_t wait = (uint32_t)(us * bfinCyclesPerUs); // valid below ~8 s
+    uint32_t wait = us * bfinCyclesPerUs; // valid below ~8 s
     while ((uint32_t)(get_cycles() - start) < wait)
         ;
 #endif

@@ -45,7 +45,6 @@ int64_t Feb_Control_RateTable_Tau_in_nsec = -1;
 int64_t Feb_Control_RateTable_Period_in_nsec = -1;
 unsigned int Feb_Control_rate_correction_table[1024] = {};
 double Feb_Control_rate_meas[16384] = {};
-double ratemax = -1;
 
 // setup
 void Feb_Control_activate(int activate) { Feb_Control_activated = activate; }
@@ -1980,6 +1979,7 @@ int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec) {
     unsigned int np = 16384; // max slope 16 * 1024
     double b0[1024];
     double m[1024];
+    double ratemax = -1;
 
     if (tau_in_sec < 0 || period_in_sec < 0) {
         if (dr == 32) {

@@ -2022,7 +2022,7 @@ int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec) {
      */
 
     int next_i = 0;
-    double beforemax;
+    double beforemax = 0;
     b0[0] = 0;
     m[0] = 1;
 
@@ -2032,6 +2032,7 @@ int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec) {
     for (int b = 1; b < 1024; b++) {
         if (m[b - 1] < 15) {
             double s = 0, sx = 0, sy = 0, sxx = 0, sxy = 0;
+            int filled = 0;
             for (;; next_i++) {
                 if (next_i >= np) {
                     for (; b < 1024; b++) {
@@ -2044,7 +2045,7 @@ int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec) {
                             (((int)(m[b] + 0.5) & 0xf) << 14) |
                             ((int)(b0[b] + 0.5) & 0x3fff);
                     }
-                    b = 1024;
+                    filled = 1;
                     break;
                 }
 
@@ -2069,6 +2070,8 @@ int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec) {
             Feb_Control_rate_meas[next_i]: %f\n", x, y, s, sx, sy, sxx, sxy,
             next_i, b, Feb_Control_rate_meas[next_i]));*/
             }
+            if (filled)
+                break;
             double delta = s * sxx - sx * sx;
             b0[b] = (sxx * sy - sx * sxy) / delta;
             m[b] = (s * sxy - sx * sy) / delta;

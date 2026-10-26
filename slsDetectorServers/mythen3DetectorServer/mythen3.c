@@ -304,8 +304,6 @@ patternParameters *setChannelRegisterChip(int ichip, char *mask,
                 chanReg |= (0x1 << (3 + icounter));
             }
         }
-        chanReg /= 2;
-        // deserialize
         if (chanReg & CHAN_REG_BAD_CHANNEL_MSK) {
             LOG(logINFOBLUE,
                 ("badchannel [chanReg:0x%x modCounter:%d, modChan:%d, "
@@ -313,6 +311,8 @@ patternParameters *setChannelRegisterChip(int ichip, char *mask,
                  chanReg, ichip * NCHAN + ich * NCOUNTERS,
                  ichip * NCHAN_1_COUNTER + ich, ichip, ich));
         }
+        chanReg /= 2;
+        // deserialize
         for (int i = 0; i < 23; i++) {
             patword = clearBit(SIGNAL_clk, patword);
             pat->word[iaddr++] = patword;

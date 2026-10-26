@@ -125,5 +125,9 @@ int mapCSP0(void);
  */
 int initCycleCounter(void);
 
-/** busy-wait for usecs on the core cycle counter */
-void usleep_bf(uint32_t us);
+/**
+ * busy-wait for usecs on the core cycle counter
+ * @returns 0, or -1 without sleeping if the wait does not fit the 32-bit
+ * cycle count (about 8 s at 525 MHz)
+ */
+int usleep_bf(uint32_t us);

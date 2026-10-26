@@ -136,11 +136,11 @@ int mapCSP0(void) {
 
 uint32_t *Blackfin_getBaseAddress() { return csp0base; }
 
-#ifdef __bfin__
 /* BF537 core clock; refined from /proc/cpuinfo in initCycleCounter() */
 #define BFIN_CCLK_HZ_DEFAULT 525000000UL
 static uint32_t bfinCyclesPerUs = BFIN_CCLK_HZ_DEFAULT / 1000000;
 
+#ifdef __bfin__
 static inline uint32_t get_cycles(void) {
     uint32_t cycles;
     __asm__ volatile("%0 = CYCLES;" : "=d"(cycles));
@@ -180,13 +180,18 @@ int initCycleCounter(void) {
 }
 
 // usleep is not viable on blackfin (10 ms tick); spin on the core cycle counter
-void usleep_bf(uint32_t us) {
+int usleep_bf(uint32_t us) {
+    // the wait is counted in core cycles in a uint32_t: about 8 s at 525 MHz
+    if (us > UINT32_MAX / bfinCyclesPerUs) {
+        return -1;
+    }
 #ifndef __bfin__
     usleep(us);
 #else
     uint32_t start = get_cycles();
-    uint32_t wait = us * bfinCyclesPerUs; // valid below ~8 s
+    uint32_t wait = us * bfinCyclesPerUs;
     while ((uint32_t)(get_cycles() - start) < wait)
         ;
 #endif
+    return 0;
 }

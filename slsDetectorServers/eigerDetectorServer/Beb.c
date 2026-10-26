@@ -1379,9 +1379,7 @@ int Beb_open(u_int32_t **csp0base, u_int32_t offset) {
 }
 
 u_int32_t Beb_Read32(u_int32_t *baseaddr, u_int32_t offset) {
-    volatile u_int32_t value;
-    value = *(u_int32_t *)(baseaddr + offset / (sizeof(u_int32_t)));
-    return value;
+    return *(volatile u_int32_t *)(baseaddr + offset / sizeof(u_int32_t));
 }
 
 u_int32_t Beb_Write32(u_int32_t *baseaddr, u_int32_t offset, u_int32_t data) {

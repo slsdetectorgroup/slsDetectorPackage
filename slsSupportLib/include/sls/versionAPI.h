@@ -9,5 +9,5 @@
 #define APIEIGER      "0.0.0 0x260807"
 #define APIXILINXCTB  "0.0.0 0x260813"
 #define APIJUNGFRAU   "0.0.0 0x261002"
-#define APIMYTHEN3    "0.0.0 0x260506"
+#define APIMYTHEN3    "0.0.0 0x261022"
 #define APIMATTERHORN "0.0.0 0x260529"

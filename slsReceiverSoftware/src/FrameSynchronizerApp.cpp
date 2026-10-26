@@ -541,30 +541,30 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i != f.numReceivers; ++i) {
         uint16_t port = f.port + i;
         sem_t *semaphore = &semaphores[i];
-        threads.emplace_back(
-            [i, semaphore, port, user_data, &threadException]() {
-                LOG(sls::logINFOBLUE) << "Thread " << i << " [ Tid: "
-                                      << sls::getThreadId() << ']';
-                try {
-                    sls::Receiver receiver(port);
-                    receiver.registerCallBackStartAcquisition(
-                        StartAcquisitionCallback, user_data);
-                    receiver.registerCallBackAcquisitionFinished(
-                        AcquisitionFinishedCallback, user_data);
-                    receiver.registerCallBackRawDataReady(GetDataCallback,
-                                                          user_data);
+        threads.emplace_back([i, semaphore, port, user_data,
+                              &threadException]() {
+            LOG(sls::logINFOBLUE)
+                << "Thread " << i << " [ Tid: " << sls::getThreadId() << ']';
+            try {
+                sls::Receiver receiver(port);
+                receiver.registerCallBackStartAcquisition(
+                    StartAcquisitionCallback, user_data);
+                receiver.registerCallBackAcquisitionFinished(
+                    AcquisitionFinishedCallback, user_data);
+                receiver.registerCallBackRawDataReady(GetDataCallback,
+                                                      user_data);
 
-                    /**	- as long as no Ctrl+C */
-                    // each child shares the common semaphore
-                    sem_wait(semaphore);
-                } catch (...) {
-                    // capture exception and raise SIGINT to exit gracefully
-                    threadException = std::current_exception();
-                    raise(SIGINT);
-                }
-                LOG(sls::logINFOBLUE) << "Exiting Thread " << i << " [ Tid: "
-                                      << sls::getThreadId() << " ]";
-            });
+                /**	- as long as no Ctrl+C */
+                // each child shares the common semaphore
+                sem_wait(semaphore);
+            } catch (...) {
+                // capture exception and raise SIGINT to exit gracefully
+                threadException = std::current_exception();
+                raise(SIGINT);
+            }
+            LOG(sls::logINFOBLUE) << "Exiting Thread " << i
+                                  << " [ Tid: " << sls::getThreadId() << " ]";
+        });
     }
 
     for (auto &t : threads) {

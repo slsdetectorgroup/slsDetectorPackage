@@ -11,19 +11,7 @@
 #include "sls/thread_utils.h"
 
 #include <csignal> //SIGINT
-#include <semaphore.h>
 #include <unistd.h>
-
-sem_t semaphore;
-
-/**
- * Control+C Interrupt Handler
- * to let all the other process know to exit properly
- */
-void sigInterruptHandler(int signal) {
-    (void)signal; // suppress unused warning if needed
-    sem_post(&semaphore);
-}
 
 int main(int argc, char *argv[]) {
 
@@ -42,20 +30,17 @@ int main(int argc, char *argv[]) {
     LOG(sls::logINFOBLUE) << "Current Process [ Tid: " << sls::getThreadId()
                           << " ]";
 
-    // close files on ctrl+c
-    sls::setupSignalHandler(SIGINT, sigInterruptHandler);
+    // close files on ctrl+c: SIGINT is blocked (before the receiver threads
+    // are created, so they inherit the mask) and waited for synchronously
+    sls::blockSignal(SIGINT);
     // handle locally on socket crash
     sls::setupSignalHandler(SIGPIPE, SIG_IGN);
-
-    sem_init(&semaphore, 1, 0);
 
     try {
         sls::Receiver r(o.port);
         LOG(sls::logINFO) << "[ Press \'Ctrl+c\' to exit ]";
-        sem_wait(&semaphore);
-        sem_destroy(&semaphore);
+        sls::waitForSignal(SIGINT);
     } catch (...) {
-        sem_destroy(&semaphore);
         LOG(sls::logINFOBLUE)
             << "Exiting [ Tid: " << sls::getThreadId() << " ]";
         throw;

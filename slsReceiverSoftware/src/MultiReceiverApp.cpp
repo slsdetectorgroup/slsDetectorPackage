@@ -13,7 +13,6 @@
 
 #include <csignal> //SIGINT
 #include <cstring>
-#include <semaphore.h>
 #include <sys/wait.h> //wait
 #include <unistd.h>
 
@@ -125,18 +124,6 @@ void GetData(slsDetectorDefs::sls_receiver_header &header,
     // imageSize = 26000;
 }
 
-sem_t semaphore;
-
-/**
- * Control+C Interrupt Handler
- * to let all the processes know to exit properly
- * All child processes will call the handler (parent process set to ignore)
- */
-void sigInterruptHandler(int signal) {
-    (void)signal; // suppress unused warning if needed
-    sem_post(&semaphore);
-}
-
 int main(int argc, char *argv[]) {
 
     CommandLineOptions cli(AppType::MultiReceiver);
@@ -154,12 +141,11 @@ int main(int argc, char *argv[]) {
     LOG(sls::logINFOBLUE) << "Current Process [ Tid: " << sls::getThreadId()
                           << ']';
 
-    // close files on ctrl+c
-    sls::setupSignalHandler(SIGINT, sigInterruptHandler);
+    // close files on ctrl+c: SIGINT is blocked before forking so that every
+    // child process inherits the mask and can wait for it synchronously
+    sls::blockSignal(SIGINT);
     // handle locally on socket crash
     sls::setupSignalHandler(SIGPIPE, SIG_IGN);
-
-    sem_init(&semaphore, 1, 0);
 
     /** - loop over receivers */
     for (int i = 0; i < m.numReceivers; ++i) {
@@ -206,15 +192,12 @@ int main(int argc, char *argv[]) {
                 }
 
                 /**	- as long as no Ctrl+C */
-                // each child process gets a copy of the semaphore
-                sem_wait(&semaphore);
-                sem_destroy(&semaphore);
+                sls::waitForSignal(SIGINT);
                 LOG(sls::logINFOBLUE)
                     << "Exiting Child Process [ Tid: " << sls::getThreadId()
                     << ']';
                 exit(EXIT_SUCCESS);
             } catch (...) {
-                sem_destroy(&semaphore);
                 LOG(sls::logINFOBLUE)
                     << "Exiting Child Process [ Tid: " << sls::getThreadId()
                     << " ]";

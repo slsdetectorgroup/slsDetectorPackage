@@ -6,6 +6,7 @@
 #include "xparameters.h"
 
 #include <fcntl.h>
+#include <stddef.h>
 #include <string.h>
 #include <sys/mman.h>
 #include <unistd.h>
@@ -127,7 +128,8 @@ int Beb_SetHeaderData(uint64_t src_mac, uint32_t src_ip, uint16_t src_port,
 }
 
 void Beb_AdjustIPChecksum(struct udp_header_type *ip) {
-    unsigned char *cptr = (unsigned char *)ip->ver_headerlen;
+    unsigned char *cptr =
+        (unsigned char *)ip + offsetof(struct udp_header_type, ver_headerlen);
 
     ip->ip_header_checksum[0] = 0;
     ip->ip_header_checksum[1] = 0;
@@ -330,7 +332,7 @@ int Beb_SetTop(enum TOPINDEX ind) {
     }
 
     char *top_names[] = {TOP_NAMES};
-    int newval = Beb_Write32(csp0base, BEB_CONFIG_WR_OFST, value);
+    u_int32_t newval = Beb_Write32(csp0base, BEB_CONFIG_WR_OFST, value);
     if (newval != value) {
         LOG(logERROR,
             ("Could not set Top flag to %s in Beb\n", top_names[ind]));
@@ -375,7 +377,7 @@ int Beb_SetMaster(enum MASTERINDEX ind) {
     }
 
     char *master_names[] = {MASTER_NAMES};
-    int newval = Beb_Write32(csp0base, BEB_CONFIG_WR_OFST, value);
+    u_int32_t newval = Beb_Write32(csp0base, BEB_CONFIG_WR_OFST, value);
     if (newval != value) {
         LOG(logERROR,
             ("Could not set Master flag to %s in Beb\n", master_names[ind]));
@@ -1125,7 +1127,7 @@ int Beb_SetDetectorPosition(int pos[]) {
                     value | ((posval << UDP_HEADER_Y_OFST) & UDP_HEADER_Y_MSK));
         value = Beb_Read32(csp0base, UDP_HEADER_B_LEFT_OFST);
         if ((value & UDP_HEADER_Y_MSK) !=
-            ((posval << UDP_HEADER_Y_OFST) & UDP_HEADER_Y_MSK)) {
+            (uint32_t)((posval << UDP_HEADER_Y_OFST) & UDP_HEADER_Y_MSK)) {
             LOG(logERROR, ("Could not set column position for left port\n"));
             ret = FAIL;
         }
@@ -1138,7 +1140,7 @@ int Beb_SetDetectorPosition(int pos[]) {
                     value | ((posval << UDP_HEADER_Y_OFST) & UDP_HEADER_Y_MSK));
         value = Beb_Read32(csp0base, UDP_HEADER_B_RIGHT_OFST);
         if ((value & UDP_HEADER_Y_MSK) !=
-            ((posval << UDP_HEADER_Y_OFST) & UDP_HEADER_Y_MSK)) {
+            (uint32_t)((posval << UDP_HEADER_Y_OFST) & UDP_HEADER_Y_MSK)) {
             LOG(logERROR, ("Could not set column position for right port\n"));
             ret = FAIL;
         }

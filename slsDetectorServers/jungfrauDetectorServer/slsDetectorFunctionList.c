@@ -416,7 +416,7 @@ int setChipIndex(enum CHIPINDEX ind, char *mess) {
 enum CHIPINDEX getChipIndex() { return chipIndex; }
 
 int validateChipIndex(enum CHIPINDEX ind, char *mess) {
-    if (ind < 0 || ind >= NUM_CHIP_INDICES) {
+    if (ind >= NUM_CHIP_INDICES) {
         sprintf(mess, "Invalid chip index %d. Options: %s\n", (int)ind,
                 CHIP_VALS_HELP);
         LOG(logERROR, (mess));
@@ -846,7 +846,7 @@ int getDefaultDac(enum DACINDEX index, enum detectorSettings sett,
         return FAIL;
     }
 
-    if (index < 0 || index >= NDAC)
+    if (index >= NDAC)
         return FAIL;
     *retval = defaultDacValues[index];
     return OK;
@@ -882,7 +882,7 @@ int setDefaultDac(enum DACINDEX index, enum detectorSettings sett, int value) {
         // not a special dac
         return FAIL;
     }
-    if (index < 0 || index >= NDAC)
+    if (index >= NDAC)
         return FAIL;
     LOG(logINFO, ("Setting Default Dac [%d - %s]: %d\n", (int)index,
                   dac_names[index], value));
@@ -1564,7 +1564,7 @@ void setGainMode(enum gainMode mode) {
 
 /* parameters - dac, adc, hv */
 int validateDACIndex(enum DACINDEX ind, char *mess) {
-    if (ind < 0 || ind >= NDAC) {
+    if (ind >= NDAC) {
         sprintf(mess, "Could not set DAC. Invalid index %d\n", ind);
         LOG(logERROR, (mess));
         return FAIL;

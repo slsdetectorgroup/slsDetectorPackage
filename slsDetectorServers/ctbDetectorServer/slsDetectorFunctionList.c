@@ -1355,7 +1355,7 @@ int setVLimit(int val, char *mess) {
 }
 
 int validateDACIndex(enum DACINDEX ind, char *mess) {
-    if (ind < 0 || ind >= NDAC_ONLY) {
+    if (ind >= NDAC_ONLY) {
         sprintf(mess, "Could not set/get DAC. Invalid index %d\n", ind);
         LOG(logERROR, (mess));
         return FAIL;
@@ -1464,7 +1464,7 @@ int setDAC(enum DACINDEX ind, int val, bool mV, char *mess) {
 }
 
 int validatePowerDACIndex(enum powerIndex ind, char *mess) {
-    if (ind < 0 || ind > V_POWER_IO) {
+    if (ind > V_POWER_IO) {
         sprintf(mess, "Could not set/get Power DAC. Invalid index %d\n", ind);
         LOG(logERROR, (mess));
         return FAIL;
@@ -2330,7 +2330,7 @@ int validatePhaseinDegrees(enum CLKINDEX ind, int val, int retval) {
 }
 
 int setFrequency(enum CLKINDEX ind, int val) {
-    if (ind < 0 || ind >= NUM_CLOCKS) {
+    if (ind >= NUM_CLOCKS) {
         LOG(logERROR, ("Unknown clock index %d to set frequency\n", ind));
         return FAIL;
     }
@@ -2380,7 +2380,7 @@ int setFrequency(enum CLKINDEX ind, int val) {
 }
 
 int getFrequency(enum CLKINDEX ind) {
-    if (ind < 0 || ind >= NUM_CLOCKS) {
+    if (ind >= NUM_CLOCKS) {
         LOG(logERROR, ("Unknown clock index %d to get frequency\n", ind));
         return -1;
     }

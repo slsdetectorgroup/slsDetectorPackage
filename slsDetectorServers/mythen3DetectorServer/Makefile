@@ -10,7 +10,7 @@ script_dir = ../../etc/
 
 CROSS  		= nios2-buildroot-linux-gnu-
 CC    		= $(CROSS)gcc
-CFLAGS		+=  -Wall -std=gnu99 -DMYTHEN3D  -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(det_lib) -I$(current_dir)  #-DDEBUG1 #-DVERBOSEI #-DVERBOSE 
+CFLAGS		+=  -O2 -Wall -Wextra -Wno-unused-parameter -Wformat=2 -Wredundant-decls -Werror=return-type -std=gnu99 -DMYTHEN3D  -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(det_lib) -I$(current_dir)  #-DDEBUG1 #-DVERBOSEI #-DVERBOSE 
 LDLIBS		+= 	-lm -lrt -pthread
 PROGS		= 	mythen3DetectorServer 
 DESTDIR		?= 	bin

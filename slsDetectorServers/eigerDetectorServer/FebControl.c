@@ -136,13 +136,6 @@ void Feb_Control_CloseSerialCommunication() {
 
 int Feb_Control_CheckSetup(int master) {
     LOG(logDEBUG1, ("Checking Set up\n"));
-
-    for (unsigned int j = 0; j < 4; j++) {
-        if (Feb_Control_idelay[j] < 0) {
-            LOG(logERROR, ("idelay chip %d not set.\n", j));
-            return 0;
-        }
-    }
     int value = 0;
     if ((Feb_Control_master) && (!Feb_Control_GetHighVoltage(&value))) {
         LOG(logERROR, ("high voltage not set.\n"));
@@ -489,7 +482,7 @@ float Feb_Control_DACToVoltage(unsigned int digital, unsigned int nsteps,
 
 int Feb_Control_SetDAC(unsigned int ch, int value) {
     unsigned int dst_num = Feb_Control_rightAddress;
-    if (ch < 0 || ch > 15) {
+    if (ch > 15) {
         LOG(logERROR, ("invalid ch for SetDAC.\n"));
         return 0;
     }
@@ -661,7 +654,7 @@ int Feb_Control_SetTrimbits(unsigned int *trimbits, int top) {
 
 int Feb_Control_SaveAllTrimbitsTo(int value, int top) {
     unsigned int chanregs[Feb_Control_trimbit_size];
-    for (int i = 0; i < Feb_Control_trimbit_size; i++)
+    for (int i = 0; i < (int)Feb_Control_trimbit_size; i++)
         chanregs[i] = value;
     return Feb_Control_SetTrimbits(chanregs, top);
 }
@@ -1997,7 +1990,7 @@ int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec) {
     LOG(logINFO, ("Changing Rate Correction Table tau:%0.8f sec, period:%f sec",
                   tau_in_sec, period_in_sec));
     LOG(logINFO, ("\tCalculating table for tau of %lld ns.\n", tau_in_Nsec));
-    for (int i = 0; i < np; i++) {
+    for (int i = 0; i < (int)np; i++) {
         Feb_Control_rate_meas[i] = i * exp(-i / period_in_sec * tau_in_sec);
         if (Feb_Control_rate_meas[i] > ratemax)
             ratemax = Feb_Control_rate_meas[i];
@@ -2032,7 +2025,7 @@ int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec) {
             double s = 0, sx = 0, sy = 0, sxx = 0, sxy = 0;
             int filled = 0;
             for (;; next_i++) {
-                if (next_i >= np) {
+                if (next_i >= (int)np) {
                     for (; b < 1024; b++) {
                         if (beforemax > ratemax)
                             b0[b] = beforemax;

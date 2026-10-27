@@ -94,16 +94,13 @@ int LTC2620_D_SetDacValue(int dacnum, int val, char *dacname, char *mess) {
     // fname to write to
     char fname[MAX_STR_LENGTH];
     memset(fname, 0, MAX_STR_LENGTH);
-    char fnameFormat[MAX_STR_LENGTH];
-    memset(fnameFormat, 0, MAX_STR_LENGTH);
-    strcpy(fnameFormat, LTC2620_D_DriverFileName);
-    sprintf(fname, "%s%d", fnameFormat, dacnum);
+    snprintf(fname, sizeof(fname), "%s%d", LTC2620_D_DriverFileName, dacnum);
 #if defined(XILINX_CHIPTESTBOARDD)
     if (val == LTC2620_D_PWR_DOWN_VAL) {
-        strcpy(fnameFormat, LTC2620_D_PowerDownDriverFileName);
+        snprintf(fname, sizeof(fname), "%s%d",
+                 LTC2620_D_PowerDownDriverFileName, dacnum);
         val = 1; //-100?:Invalid Argument
     }
-    sprintf(fname, fnameFormat, dacnum);
 #endif
     LOG(logDEBUG1, ("fname %s\n", fname));
 

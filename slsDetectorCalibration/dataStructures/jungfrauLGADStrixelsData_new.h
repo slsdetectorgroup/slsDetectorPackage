@@ -331,7 +331,7 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
         }
 
         iframe = 0;
-        std::cout << "data struct created" << std::endl;
+        //  std::cout << "data struct created" << std::endl; // per frame: too noisy
     };
 
     /**

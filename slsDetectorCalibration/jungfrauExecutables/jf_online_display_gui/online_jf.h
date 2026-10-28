@@ -493,7 +493,10 @@ enum class RootCmdType {
     Zoom,
     SetChipRange,
     // colour scale of the ROOT 2D map (canvas A5): a, b = min, max
-    SetMapRange
+    SetMapRange,
+    // show (a = 1) or hide (a = 0) every ROOT canvas: the operator can start
+    // with them hidden and bring them back from the Display panel
+    ShowPlots
 };
 
 // One palette definition drives both the ROOT colour table and the 256-entry

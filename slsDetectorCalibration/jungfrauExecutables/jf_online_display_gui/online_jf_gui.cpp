@@ -383,6 +383,10 @@ class FastImageView : public QWidget {
     }
     // called (GUI thread) when a new image or histogram is ready
     std::function<void()> onImageChanged;
+    // called when the colour range changes: the strixel panels mirror the ADC
+    // scale instead of keeping a stale copy of it
+    std::function<void(double, double)> onColorRangeChanged;
+    std::function<void(const QRgb *)> onPaletteChanged;
     // draw pixels with no counts (value <= 0) white instead of the palette's
     // lowest colour, the way ROOT's colz draws empty cells on a white canvas.
     // Used by the photon map only; the ADC/gain images keep the full palette.
@@ -565,6 +569,8 @@ void FastImageView::setImageCopy(const float *data, int nx, int ny) {
 }
 
 void FastImageView::setPaletteLut(const QRgb *lut) {
+    if (onPaletteChanged && lut)
+        onPaletteChanged(lut);
     if (!lut)
         return;
     for (int i = 0; i < 256; i++)
@@ -580,6 +586,8 @@ void FastImageView::setColorRange(double lo, double hi) {
     m_defChi = hi;
     m_histMs = 0; // the bins follow the window: recompute on the next render
     m_dirty = true;
+    if (onColorRangeChanged)
+        onColorRangeChanged(lo, hi);
     update();
 }
 
@@ -1831,7 +1839,9 @@ class MainWindow : public QMainWindow {
     QWidget *m_photonWin = nullptr;
     FastImageView *m_photonView = nullptr;
     QCheckBox *pmapCumulative_ = nullptr;
-    QCheckBox *zoomCoordChk_ = nullptr; // Display: link the image zoom levels
+    QCheckBox *zoomCoordChk_ = nullptr;
+    QPushButton *btnShowGain_ = nullptr;  // Display: reveal the Gain window
+    QPushButton *btnShowPlots_ = nullptr; // Display: reveal the ROOT canvases // Display: link the image zoom levels
     bool zoomCoord_ = true;             // on = any window zooms them all
     QSpinBox *pmapEverySpin_ = nullptr;
     uint64_t pmapSeq_ = 0;
@@ -1839,6 +1849,7 @@ class MainWindow : public QMainWindow {
     // separate strixel window: six group panels, display only (no ROI)
     std::array<FastImageView *, kNumAdcPanels> m_adcPanelView{};
     QWidget *m_adcPanelWin = nullptr;
+    QLabel *m_adcPanelZ = nullptr;   // "Z: lo .. hi" legend of the strixel panels
 #endif
 
     // last receiver ROI mirrored onto the ADC image (red box)
@@ -2349,6 +2360,41 @@ void MainWindow::setupUI() {
         "to the same rectangle.  Off: every window keeps its own zoom, and\n"
         "nothing is propagated.");
     ctrlGrid->addWidget(zoomCoordChk_, 4, 0, 1, 3);
+    // Both start hidden ("disabled by default"): the operator reveals them.
+    btnShowGain_ = new QPushButton("show gain image", ctrlGroup);
+    btnShowGain_->setCheckable(true);
+    btnShowGain_->setChecked(false);
+    btnShowGain_->setToolTip(
+        "Show or hide the separate Gain Image window.  It is hidden at\n"
+        "startup; the gain map itself is still used when the gain correction\n"
+        "is on.");
+    btnShowPlots_ = new QPushButton("show ROOT plots", ctrlGroup);
+    btnShowPlots_->setCheckable(true);
+    btnShowPlots_->setChecked(false);
+    btnShowPlots_->setToolTip(
+        "Show or hide the ROOT spectra canvases (PH spectra, ROI PH, L vs R,\n"
+        "the 2D map).  They are hidden at startup; the histograms keep being\n"
+        "filled, so showing them later shows the accumulated data.");
+    ctrlGrid->addWidget(btnShowGain_, 5, 0, 1, 2);
+    ctrlGrid->addWidget(btnShowPlots_, 6, 0, 1, 2);
+    connect(btnShowGain_, &QPushButton::toggled, this, [this](bool on) {
+        if (m_gainWin)
+            m_gainWin->setVisible(on);
+        printf("[display] gain image %s\n", on ? "shown" : "hidden");
+        fflush(stdout);
+        statusLabel->setText(on ? "Status: gain image shown"
+                                : "Status: gain image hidden");
+    });
+    connect(btnShowPlots_, &QPushButton::toggled, this, [this](bool on) {
+        RootCmd c;
+        c.type = RootCmdType::ShowPlots;
+        c.a = on ? 1.0 : 0.0;
+        pushRootCmd(c);
+        printf("[display] ROOT plots %s\n", on ? "shown" : "hidden");
+        fflush(stdout);
+        statusLabel->setText(on ? "Status: ROOT plots shown"
+                                : "Status: ROOT plots hidden");
+    });
     connect(zoomCoordChk_, &QCheckBox::toggled, this, [this](bool on) {
         zoomCoord_ = on;
         printf("[zoom] coordination %s\n", on ? "on" : "off");
@@ -2873,7 +2919,7 @@ void MainWindow::setupUI() {
     auto *gainLay = new QVBoxLayout(m_gainWin);
     gainLay->setContentsMargins(0, 0, 0, 0);
     gainLay->addWidget(m_gainView, 1);
-    m_gainWin->show();
+    m_gainWin->hide(); // hidden by default: "show gain image" in Display
 
     m_photonView = new FastImageView();
     m_photonView->setPaletteLut(paletteLut(Palette::Color));
@@ -2899,7 +2945,17 @@ void MainWindow::setupUI() {
     m_adcPanelWin = new QWidget(nullptr, Qt::Window);
     m_adcPanelWin->setWindowTitle("ADC Strixel Panels (JFSTRX)");
     m_adcPanelWin->resize(900, 900);
-    auto *panelRow = new QHBoxLayout(m_adcPanelWin);
+    auto *panelOuter = new QVBoxLayout(m_adcPanelWin);
+    panelOuter->setContentsMargins(4, 2, 4, 2);
+    panelOuter->setSpacing(2);
+    m_adcPanelZ = new QLabel(m_adcPanelWin);
+    m_adcPanelZ->setAlignment(Qt::AlignCenter);
+    m_adcPanelZ->setToolTip(
+        "The six strixel panels use the ADC image's Z scale (colour range and\n"
+        "palette): change it in the ADC window's scale panel and they follow.");
+    panelOuter->addWidget(m_adcPanelZ);
+    auto *panelRow = new QHBoxLayout();
+    panelOuter->addLayout(panelRow, 1);
     panelRow->setContentsMargins(2, 2, 2, 2);
     auto *panelCol0 = new QVBoxLayout();
     auto *panelCol1 = new QVBoxLayout();
@@ -2936,6 +2992,31 @@ void MainWindow::setupUI() {
             m_adcPanelView[p] = v;
         }
     }
+    // The strixel panels have no scale of their own: they follow the ADC
+    // image's colour range and palette, which is where the Z scale lives.
+    auto syncPanels = [this]() {
+        double lo = 0.0, hi = 1.0;
+        m_adcView->colorRange(lo, hi);
+        for (auto *v : m_adcPanelView)
+            if (v)
+                v->setColorRange(lo, hi);
+        if (m_adcPanelZ)
+            m_adcPanelZ->setText(
+                QString("Z scale: follows the ADC image  (Z: %1 .. %2)")
+                    .arg(lo, 0, 'g', 5)
+                    .arg(hi, 0, 'g', 5));
+    };
+    m_adcView->onColorRangeChanged = [syncPanels](double, double) {
+        syncPanels();
+    };
+    // only the ADC view propagates: the panels must not re-emit (that would
+    // bounce the palette back and forth for ever)
+    m_adcView->onPaletteChanged = [this](const QRgb *lut) {
+        for (auto *w : m_adcPanelView)
+            if (w)
+                w->setPaletteLut(lut);
+    };
+    syncPanels();
     m_adcPanelWin->show();
 #endif
 
@@ -3005,6 +3086,14 @@ void MainWindow::connectShortcuts() {
 // lifecycle
 // ---------------------------------------------------------------------------
 void MainWindow::start() {
+    // The ROOT canvases are hidden by default ("show ROOT plots" in Display);
+    // the command is queued here because the ROOT thread runs by now.
+    {
+        RootCmd c;
+        c.type = RootCmdType::ShowPlots;
+        c.a = 0.0;
+        pushRootCmd(c);
+    }
     // Pedestals must be installed before the threads start reading frames.
     std::string perr;
     if (pathExists(g_cfg.pedeFile)) {

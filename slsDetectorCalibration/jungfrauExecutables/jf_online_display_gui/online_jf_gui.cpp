@@ -2309,14 +2309,18 @@ void MainWindow::setupUI() {
         "off: every displayed image shows only the photons counted since the\n"
         "previous one; on: the map keeps adding up (the old behaviour)");
     pmapGrid->addWidget(pmapCumulative_, 0, 0, 1, 2);
-    pmapGrid->addWidget(new QLabel("plot every N images:", pmapGroup), 1, 0);
+    pmapGrid->addWidget(
+        new QLabel("write plot every N (gated) images:", pmapGroup), 1, 0);
     pmapEverySpin_ = new QSpinBox(pmapGroup);
     pmapEverySpin_->setRange(1, 1000000);
     pmapEverySpin_->setSingleStep(100);
     pmapEverySpin_->setValue(gPmapEvery.load());
     pmapEverySpin_->setToolTip(
-        "how many analysed frames go into one image of the photon map\n"
-        "(default 2000; independent of the ADC image decimation)");
+        "How many analysed frames are accumulated into one photon map image.\n"
+        "It counts the frames that reach the analysis, i.e. AFTER the gate and\n"
+        "the frame decimation, so the wall-clock interval between two maps\n"
+        "grows when frames are rejected or skipped (it is not independent of\n"
+        "them).  Default 2000.");
     pmapGrid->addWidget(pmapEverySpin_, 1, 1);
     photonThrLabel_ = new QLabel("photon threshold (ADU):", pmapGroup);
     pmapGrid->addWidget(photonThrLabel_, 2, 0);
@@ -2751,7 +2755,8 @@ void MainWindow::setupUI() {
             [this](int v) {
                 gPmapEvery = v > 0 ? v : 1;
                 statusLabel->setText(
-                    QString("Status: photon map every %1 frames").arg(v));
+                    QString("Status: one photon map every %1 analysed frames")
+                        .arg(v));
             });
     connect(photonThrSpin_, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
             this, [this](double v) {

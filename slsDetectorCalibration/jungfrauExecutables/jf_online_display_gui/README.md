@@ -22,7 +22,24 @@ The originals in the parent directory are untouched.
 
 ## Build
 
+Two equivalent builds exist: **CMake** (same as the rest of the package) and the
+self-contained Makefile.  Both produce the same two programs from the same
+sources.
+
 ```sh
+# CMake (out-of-tree, nothing is written into the source directory)
+cmake -S . -B cmake-build -DCMAKE_BUILD_TYPE=Release
+cmake --build cmake-build -j                 # both variants + tests
+./cmake-build/jf_online_display_gui          # normal
+./cmake-build/jf_online_display_gui_JFSTRX   # LGAD strip-xel variant
+./cmake-build/gate_contig_test               # gate unit test (ctest also runs it)
+./cmake-build/jf_feeder                      # synthetic slsReceiver
+#   -DJF_BUILD_TESTS=OFF skips the test and the feeder
+#   -DJF_ZMQ_STATIC=/path/libzmq.a overrides the ZMQ library
+#   (Qt5, ROOT and HDF5 are found with find_package; without a usable
+#    static libzmq the build falls back to the system one via pkg-config)
+
+# Makefile (identical binaries, in-tree objects)
 make                 # -> ./jf_online_display_gui      (Qt5 + ROOT + static libzmq)
 make                 # also builds ./jf_online_display_gui_JFSTRX, the
                      # LGAD strip-xel variant of the same sources
@@ -132,21 +149,15 @@ So for one Jungfrau module split in two, each port streams 1024×256
   (`shape`, `size`), and the slabs are copied into the full 1024×512 frame.
   An interface that streams a *full* 1024×512 buffer instead is handled too:
   only its own slab is taken out of it.
-* **Pairing and alignment.** Slabs are matched on the detector frame
-  number, and an assembled frame is *always* complete and index-aligned (see
-  [Keeping the interfaces aligned](#keeping-the-interfaces-aligned)). A straggler is waited for 100 ms — or up to 2 s during the first 5 s
-  after data starts arriving, which covers a second interface that comes up
-  late. **A slab whose partner never arrives is held, not discarded**: the
-  other interface is left to queue (flow control, bounded by `--rx-hwm`) and the
-  pipeline waits for the pair. In other words one dead interface stops the
-  assembled frames - and with them the display, the counters, saving and
-  tracking - until it returns; the waiting socket is not polled, so the acq
-  thread no longer spins at 100 % while it waits. Nothing is assembled or logged
-  while no interface has delivered anything yet, so starting the program
-  *before* the acquisition is harmless.
-  *(An earlier version of this section promised that a missing interface was
-  ignored after a timeout and the frame assembled from what was available; the
-  code never did that.  Implementing it is an open item.)*
+* **Pairing and alignment.** Every socket is drained continuously - nothing is
+  ever held back, so the receiver's buffer stays empty - and the newest slab of
+  each interface is paired. If their frame numbers differ the pair is dropped,
+  so an assembled frame is always stitched from a single detector frame (see
+  [Keeping the interfaces aligned](#keeping-the-interfaces-aligned)). If no
+  pair succeeds for 500 ms the interfaces are permanently offset (one of them
+  keeps skipping): the newest slabs are then paired anyway to keep the stream
+  alive, and strict pairing returns as soon as the numbers match again. A dead
+  interface never stops the others; it is reported, not waited for.
 * **Everything downstream is unchanged**: gate, images, photon map, T vs B /
   L vs R, ROOT fills and the pedestal layout all operate on the assembled
   1024×512 frame, so the existing `current_pede.dat` stays valid.
@@ -288,43 +299,31 @@ gain groups, with no locking added.
 `frameIndex` cannot be used as a shared key: `DataStreamer` computes it as
 `frameNumber - firstIndex` and `firstIndex` is per-streamer, so the two
 interfaces can legitimately report different `frameIndex` for the same frame.
-Pairing is therefore done on the **absolute `frameNumber`**, and an assembled
-frame always satisfies: all interfaces present, all with the same
-`frameNumber`.
+Pairing therefore uses the **absolute `frameNumber`**.
 
-The strategy has three parts:
+Three rules, in order of importance:
 
-1. **Flow control (keeps a pair possible).** An interface holding a slab that
-   has not been paired yet is *not* read again. The lagging interface catches
-   up instead, and the leading interface's socket queue buffers its newer
-   frames. Without this, a persistently lagging interface could never be
-   paired, because the leader's matching frame would be overwritten before the
-   partner arrived.
-2. **Resynchronising (mid-run connect, backlog, disturbance).** Slabs older
-   than the leading frame number are discarded - they can never be paired any
-   more - and counted in `resync`. A large gap is caught up in one burst. If
-   an interface has produced nothing for 500 ms it is treated as stalled and
-   the pending slabs are discarded (counted in `unpaired`) rather than shown
-   half-filled, so a dead stream can never freeze the image or produce a torn
-   frame.
-3. **Bounded latency.** The receive queue per interface is deliberately small
-   (`--rx-hwm`, default 64), so the display shows *now* rather than a backlog
-   that grows without bound. If a stream is faster than the program can
-   consume, ZMQ discards the excess before it costs any CPU here; the frames
-   dropped by an explicit catch-up burst are counted in `behind`.
+1. **Never hold a slab (no back-pressure).** slsReceiver has its own ring
+   buffer; if our ZMQ queue fills, the *receiver* skips frames on that
+   interface - per interface, not per frame - and the two frame numbers are
+   offset from then on. So every socket is drained to its newest message on
+   every wake-up and nothing is ever kept back.
+2. **Pair index-aligned or drop the pair.** The newest slab of each interface
+   is paired; if the numbers differ, both are discarded (`resync`) and the next
+   pair is tried. An assembled frame is therefore always stitched from one
+   detector frame, and no frame is ever shown or saved half-filled.
+3. **Latch when the offset is structural.** After 500 ms without a successful
+   pair the newest slabs are paired anyway (counted separately and logged) so a
+   permanently offset interface still streams; the first matching pair returns
+   the pipeline to strict pairing.
 
-What the GUI shows per interface and for the pair:
-
-```
-30001: connected [1024x256]  (22076 frames, last #4153021)
-30002: connected [1024x256]  (22076 frames, last #4153021)
-Frame alignment: delta 0 | aligned 22076 | resync drops 1 | behind drops 0 | unpaired 0
-```
-
-`delta` is the difference between the newest frame numbers of the two
-interfaces (0 = in step, small = normal arrival jitter). `aligned` counts the
-frames that were assembled and passed to the gate. `--stats` prints the same
-as `resync=`, `behind=` and `unpaired=`.
+Decimation is a manual choice: `--decimate 2|4|8` assembles one frame in N,
+chosen by the shared frame number so both interfaces drop the same frames. The
+automatic ladder (`--auto-decimate`) reacts only to frames actually queued in
+the gate (`framesIn - framesPass - framesDrop - framesScDrop`) - counting gate
+rejects as backlog used to pin it at 1/8 - and climbs back after 5 s without a
+backlog. Everything is audited through `--stats` (`resync`, `behind`,
+`incomplete`, `[align] keep=1/N shed=n`) and the rate-limited log messages.
 
 ## Display controls
 

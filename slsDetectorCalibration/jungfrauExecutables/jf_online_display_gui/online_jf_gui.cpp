@@ -14,6 +14,9 @@
 #include "online_jf.h"
 
 #include <QComboBox>
+#include <functional>
+#include <QDialog>
+#include <QDialogButtonBox>
 #include <QPointer>
 
 #include <csignal>
@@ -409,6 +412,25 @@ class FastImageView : public QWidget {
         update();
     }
 
+    // ---- ROI editor -------------------------------------------------------
+    // While active the yellow rectangle can be dragged (inside = move, edges
+    // and corners = resize, outside = draw a new one) instead of being captured
+    // from the current zoom.  onRoiEdited() reports the rectangle in DATA
+    // coordinates when the mouse button is released.
+    void beginRoiEdit(bool on) {
+        m_roiEdit = on;
+        m_roiGrab = 0;
+        setCursor(on ? Qt::CrossCursor : Qt::ArrowCursor);
+        update();
+    }
+    bool roiEditActive() const { return m_roiEdit; }
+    std::function<void(int x0, int y0, int x1, int y1)> onRoiEdited;
+    // widget pixel -> data coordinates (x right, y up, (0,0) bottom-left)
+    QPointF widgetToData(QPoint wpos) const {
+        const QPointF i = widgetToImage(wpos);
+        return QPointF(i.x(), double(m_ny) - i.y());
+    }
+
     // Red receiver-ROI box, in the same DATA coordinates as the gate ROI.
     void setReceiverRoiRect(double x0, double y0, double x1, double y1,
                             bool on) {
@@ -483,6 +505,13 @@ class FastImageView : public QWidget {
     bool m_ovOn = false;
     double m_ovX0 = 0, m_ovY0 = 0, m_ovX1 = 0, m_ovY1 = 0;
 
+    // ROI editor state
+    bool m_roiEdit = false;
+    int m_roiGrab = 0;    // 0 none, 1 move, 2 left, 3 right, 4 bottom, 5 top,
+                          // 6 bl, 7 br, 8 tl, 9 tr, 10 new rectangle
+    QPointF m_roiPress{0, 0};         // data coordinates at press
+    double m_roiStart[4] = {0, 0, 0, 0}; // x0,y0,x1,y1 at press
+
     // receiver ROI overlay (RED), same data coordinates
     bool m_rxOn = false;
     double m_rxX0 = 0, m_rxY0 = 0, m_rxX1 = 0, m_rxY1 = 0;
@@ -492,6 +521,14 @@ class FastImageView : public QWidget {
     double m_dragVpX, m_dragVpY;
     mutable QTransform m_widgetToImg;
     bool m_dragScale = false;
+
+  public:
+    // the Z-scale strip inside the image is being dragged: the panel must not
+    // re-fill its histogram until the button comes back up
+    bool isScaleDragging() const { return m_dragScale; }
+    std::function<void()> onScaleReleased;
+
+  private:
     bool m_dragMax = false; // true = dragging max, false = dragging min
     int m_dragScaleY = 0;
     double m_dragClo, m_dragChi;
@@ -541,6 +578,7 @@ void FastImageView::setColorRange(double lo, double hi) {
     m_chi = hi;
     m_defClo = lo;
     m_defChi = hi;
+    m_histMs = 0; // the bins follow the window: recompute on the next render
     m_dirty = true;
     update();
 }
@@ -695,15 +733,38 @@ void FastImageView::renderImage() {    if (!m_data || m_nx <= 0 || m_ny <= 0)
         m_histMs = now;
         if (first || dmax <= dmin)
             dmax = dmin + 1.0;
-        m_histLo = dmin;
-        m_histHi = dmax;
+        // Bin over the range the strip actually shows (the colour range plus
+        // half a range either side), not over the image's whole value range: a
+        // photon map accumulates to thousands of counts while its scale shows
+        // 0..12, so full-range binning put the entire visible window inside one
+        // bin - the "too big bins".  Pixels outside the window are skipped
+        // instead of being piled into the edge bins.
+        const double caspan = (m_chi > m_clo) ? (m_chi - m_clo) : 0.0;
+        double hlo = dmin, hhi = dmax;
+        if (caspan > 0.0 && std::isfinite(m_clo) && std::isfinite(m_chi)) {
+            hlo = m_clo - 0.5 * caspan;
+            hhi = m_chi + 0.5 * caspan;
+        }
+        if (m_logScale) {
+            hlo = std::log10(std::max(hlo, 1e-2));
+            hhi = std::log10(std::max(hhi, 1e-2));
+            if (hhi <= hlo)
+                hhi = hlo + 1.0;
+        }
+        if (!(hhi > hlo))
+            hhi = hlo + 1.0;
+        m_histLo = hlo;
+        m_histHi = hhi;
         m_hist.assign(256, 0);
-        const double sc = 255.0 / (dmax - dmin);
+        const double sc = 255.0 / (hhi - hlo);
         for (int p = 0; p < m_nx * m_ny; p++) {
-            const double v = m_data[p];
-            if (!std::isfinite(v))
+            const double raw = m_data[p];
+            if (!std::isfinite(raw))
                 continue;
-            int b = int((v - dmin) * sc);
+            const double v = m_logScale ? std::log10(std::max(raw, 1e-2)) : raw;
+            if (v < hlo || v > hhi)
+                continue; // outside the visible window
+            int b = int((v - hlo) * sc);
             if (b < 0)
                 b = 0;
             if (b > 255)
@@ -765,11 +826,25 @@ void FastImageView::paintEvent(QPaintEvent *) {
         const double dh = m_ovY1 - m_ovY0;
         const QRectF r = imgToWidget.mapRect(QRectF(dx, dy, dw, dh));
         QPen pen(Qt::yellow);
-        pen.setWidth(1);
+        pen.setWidth(m_roiEdit ? 2 : 1);
         pen.setCosmetic(true);
         p.setPen(pen);
         p.setBrush(Qt::NoBrush);
         p.drawRect(r);
+        if (m_roiEdit) { // corner and edge handles: what can be grabbed
+            const double hw = 3.0; // half handle size, in widget pixels
+            const double xs[3] = {r.left(), r.center().x(), r.right()};
+            const double ys[3] = {r.top(), r.center().y(), r.bottom()};
+            p.setBrush(QColor(255, 255, 80));
+            for (int iy = 0; iy < 3; iy++) {
+                for (int ix = 0; ix < 3; ix++) {
+                    if (ix == 1 && iy == 1)
+                        continue; // centre handle would only be confusing
+                    p.drawRect(QRectF(xs[ix] - hw, ys[iy] - hw, 2 * hw,
+                                      2 * hw));
+                }
+            }
+        }
     }
 
     // receiver ROI overlay (RED), from the "rx_roi" field of the stream
@@ -927,6 +1002,51 @@ void FastImageView::mousePressEvent(QMouseEvent *e) {
     if (e->button() != Qt::LeftButton)
         return;
     QPoint ip = e->pos();
+    if (m_roiEdit && hasImage()) {
+        // which part of the yellow rectangle was grabbed?
+        const QPointF d = widgetToData(ip);
+        const QPointF d2 = widgetToData(ip + QPoint(8, 0));
+        const double tol = std::max(1e-9, std::abs(d2.x() - d.x()));
+        const bool nearL = std::abs(d.x() - m_ovX0) <= tol;
+        const bool nearR = std::abs(d.x() - m_ovX1) <= tol;
+        const bool nearB = std::abs(d.y() - m_ovY0) <= tol;
+        const bool nearT = std::abs(d.y() - m_ovY1) <= tol;
+        const bool inX = d.x() >= m_ovX0 - tol && d.x() <= m_ovX1 + tol;
+        const bool inY = d.y() >= m_ovY0 - tol && d.y() <= m_ovY1 + tol;
+        m_roiGrab = 0;
+        if (nearL && nearB)
+            m_roiGrab = 6;
+        else if (nearR && nearB)
+            m_roiGrab = 7;
+        else if (nearL && nearT)
+            m_roiGrab = 8;
+        else if (nearR && nearT)
+            m_roiGrab = 9;
+        else if (nearL && inY)
+            m_roiGrab = 2;
+        else if (nearR && inY)
+            m_roiGrab = 3;
+        else if (nearB && inX)
+            m_roiGrab = 4;
+        else if (nearT && inX)
+            m_roiGrab = 5;
+        else if (inX && inY)
+            m_roiGrab = 1;
+        else
+            m_roiGrab = 10; // start a new rectangle at the cursor
+        m_roiPress = d;
+        m_roiStart[0] = m_ovX0;
+        m_roiStart[1] = m_ovY0;
+        m_roiStart[2] = m_ovX1;
+        m_roiStart[3] = m_ovY1;
+        if (m_roiGrab == 10) {
+            m_ovX0 = m_ovX1 = std::max(0.0, std::min(double(m_nx), d.x()));
+            m_ovY0 = m_ovY1 = std::max(0.0, std::min(double(m_ny), d.y()));
+            m_ovOn = true;
+        }
+        update();
+        return;
+    }
     QRect sr = scaleRect();
     if (sr.contains(ip)) {
         m_dragScale = true;
@@ -945,6 +1065,76 @@ void FastImageView::mousePressEvent(QMouseEvent *e) {
 }
 
 void FastImageView::mouseMoveEvent(QMouseEvent *e) {
+    if (m_roiEdit && hasImage()) {
+        const QPointF d = widgetToData(e->pos());
+        const double x = std::max(0.0, std::min(double(m_nx), d.x()));
+        const double y = std::max(0.0, std::min(double(m_ny), d.y()));
+        constexpr double kMin = 2.0; // a ROI smaller than this is unusable
+        if (m_roiGrab == 10) { // dragging out a new rectangle
+            m_ovX0 = std::min(m_roiPress.x(), x);
+            m_ovX1 = std::max(m_roiPress.x(), x);
+            m_ovY0 = std::min(m_roiPress.y(), y);
+            m_ovY1 = std::max(m_roiPress.y(), y);
+            m_ovOn = true;
+        } else if (m_roiGrab == 1) { // move the whole rectangle
+            const double dx = x - m_roiPress.x();
+            const double dy = y - m_roiPress.y();
+            double x0 = m_roiStart[0] + dx, x1 = m_roiStart[2] + dx;
+            double y0 = m_roiStart[1] + dy, y1 = m_roiStart[3] + dy;
+            if (x0 < 0) { x1 -= x0; x0 = 0; }
+            if (x1 > m_nx) { x0 -= (x1 - m_nx); x1 = m_nx; }
+            if (y0 < 0) { y1 -= y0; y0 = 0; }
+            if (y1 > m_ny) { y0 -= (y1 - m_ny); y1 = m_ny; }
+            m_ovX0 = x0;
+            m_ovX1 = x1;
+            m_ovY0 = y0;
+            m_ovY1 = y1;
+        } else if (m_roiGrab != 0) { // one edge or one corner
+            double x0 = m_roiStart[0], y0 = m_roiStart[1];
+            double x1 = m_roiStart[2], y1 = m_roiStart[3];
+            const bool left = (m_roiGrab == 2 || m_roiGrab == 6 || m_roiGrab == 8);
+            const bool right = (m_roiGrab == 3 || m_roiGrab == 7 || m_roiGrab == 9);
+            const bool bottom = (m_roiGrab == 4 || m_roiGrab == 6 || m_roiGrab == 7);
+            const bool top = (m_roiGrab == 5 || m_roiGrab == 8 || m_roiGrab == 9);
+            if (left && x <= x1 - kMin)
+                x0 = x;
+            if (right && x >= x0 + kMin)
+                x1 = x;
+            if (bottom && y <= y1 - kMin)
+                y0 = y;
+            if (top && y >= y0 + kMin)
+                y1 = y;
+            m_ovX0 = x0;
+            m_ovY0 = y0;
+            m_ovX1 = x1;
+            m_ovY1 = y1;
+        }
+        update();
+        if (m_roiGrab == 0) { // hovering: show what grabbing here would do
+            const QPointF dd = widgetToData(e->pos());
+            const QPointF dd2 = widgetToData(e->pos() + QPoint(8, 0));
+            const double tol = std::max(1e-9, std::abs(dd2.x() - dd.x()));
+            const bool nearL = std::abs(dd.x() - m_ovX0) <= tol;
+            const bool nearR = std::abs(dd.x() - m_ovX1) <= tol;
+            const bool nearB = std::abs(dd.y() - m_ovY0) <= tol;
+            const bool nearT = std::abs(dd.y() - m_ovY1) <= tol;
+            const bool inside = dd.x() >= m_ovX0 - tol &&
+                                dd.x() <= m_ovX1 + tol &&
+                                dd.y() >= m_ovY0 - tol &&
+                                dd.y() <= m_ovY1 + tol;
+            if ((nearL && nearT) || (nearR && nearB))
+                setCursor(Qt::SizeFDiagCursor);
+            else if ((nearL && nearB) || (nearR && nearT))
+                setCursor(Qt::SizeBDiagCursor);
+            else if (nearL || nearR)
+                setCursor(Qt::SizeHorCursor);
+            else if (nearT || nearB)
+                setCursor(Qt::SizeVerCursor);
+            else
+                setCursor(inside ? Qt::OpenHandCursor : Qt::CrossCursor);
+        }
+        return;
+    }
     if (m_dragScale) {
         QRect sr = scaleRect();
         double delta = double(e->y() - m_dragScaleY) / double(sr.height()) *
@@ -1003,12 +1193,22 @@ void FastImageView::mouseMoveEvent(QMouseEvent *e) {
 }
 
 void FastImageView::mouseReleaseEvent(QMouseEvent *e) {
+    if (e->button() == Qt::LeftButton && m_roiGrab != 0) {
+        m_roiGrab = 0;
+        if (onRoiEdited && m_ovX1 - m_ovX0 >= 2.0 && m_ovY1 - m_ovY0 >= 2.0)
+            onRoiEdited(int(std::lround(m_ovX0)), int(std::lround(m_ovY0)),
+                        int(std::lround(m_ovX1)), int(std::lround(m_ovY1)));
+        return;
+    }
     if (e->button() == Qt::LeftButton) {
         if (m_dragging && onZoomChanged)
             onZoomChanged(m_vpX, m_vpY, m_vpX + vpW(), m_vpY + vpH());
         m_dragging = false;
+        const bool wasScale = m_dragScale;
         m_dragScale = false;
         setCursor(Qt::ArrowCursor);
+        if (wasScale && onScaleReleased)
+            onScaleReleased(); // one histogram/scale refresh, after the drag
     }
 }
 
@@ -1112,13 +1312,17 @@ class ScaleHisto : public QWidget {
     // dlo/dhi: value range of the bins; clo/chi: the mapped range
     void setData(const std::vector<int> *h, double dlo, double dhi, double clo,
                  double chi, bool logX, bool logY) {
+        // Frozen while a marker is being dragged: re-filling the bars from the
+        // live image mid-drag fed the drag back into the histogram (the bars
+        // moved, which moved the marker, which moved the bars...).  The strip
+        // is refreshed once, when the button comes back up.
+        if (dragging_)
+            return;
         h_ = h;
         dlo_ = dlo;
         dhi_ = dhi;
-        if (!dragging_) { // while dragging the pending values win
-            clo_ = clo;
-            chi_ = chi;
-        }
+        clo_ = clo;
+        chi_ = chi;
         logX_ = logX;
         logY_ = logY;
         update();
@@ -1131,9 +1335,15 @@ class ScaleHisto : public QWidget {
         QPainter p(this);
         p.fillRect(rect(), QColor(28, 28, 28));
         const int W = width(), H = height();
+        // While a marker is dragged the axis stays exactly as it was when the
+        // drag started: the bars (and the two numbers) must not move with the
+        // cursor, only the dragged end is previewed as a line.  Releasing
+        // rebuilds the axis from the new range.
+        const double dclo = dragging_ ? preClo_ : clo_;
+        const double dchi = dragging_ ? preChi_ : chi_;
         // the shown window is the selected range +- half a range
-        const double span = (chi_ > clo_) ? (chi_ - clo_) : 1.0;
-        double wlo = clo_ - 0.5 * span, whi = chi_ + 0.5 * span;
+        const double span = (dchi > dclo) ? (dchi - dclo) : 1.0;
+        double wlo = dclo - 0.5 * span, whi = dchi + 0.5 * span;
         if (logX_) { // work in log space, capping <= 0 at 1e-2
             wlo = std::log10(std::max(wlo, 1e-2));
             whi = std::log10(std::max(whi, 1e-2));
@@ -1146,25 +1356,31 @@ class ScaleHisto : public QWidget {
         auto xof = [&](double v) {
             return (mapv(v) - wlo) / (whi - wlo) * W;
         };
-        if (h_ && !h_->empty() && dhi_ > dlo_) {
+        // The image keeps arriving while the marker is dragged and its
+        // histogram is recomputed on every repaint, so the bars themselves were
+        // still moving under the frozen axis.  While dragging, paint from the
+        // snapshot taken when the button went down.
+        const std::vector<int> *hv =
+            (dragging_ && !snap_.empty()) ? &snap_ : h_;
+        if (hv && !hv->empty() && dhi_ > dlo_) {
             int mx = 1;
-            for (int v : *h_)
+            for (int v : *hv)
                 if (v > mx)
                     mx = v;
             const double lmx = std::log10(double(mx) + 1.0);
-            const double binW = (dhi_ - dlo_) / double(h_->size());
+            const double binW = (dhi_ - dlo_) / double(hv->size());
             QBrush bar(QColor(120, 190, 255));
             p.setPen(Qt::NoPen);
             p.setBrush(bar);
-            for (size_t i = 0; i < h_->size(); i++) {
-                if ((*h_)[i] <= 0)
+            for (size_t i = 0; i < hv->size(); i++) {
+                if ((*hv)[i] <= 0)
                     continue;
                 // solid: the bar is as wide as the bin spacing on screen
                 const double x0 = xof(dlo_ + double(i) * binW);
                 const double x1 = xof(dlo_ + double(i + 1) * binW);
                 const double bh =
-                    logY_ ? (std::log10(double((*h_)[i]) + 1.0) / lmx)
-                          : (double((*h_)[i]) / double(mx));
+                    logY_ ? (std::log10(double((*hv)[i]) + 1.0) / lmx)
+                          : (double((*hv)[i]) / double(mx));
                 const double w = std::max(1.0, x1 - x0);
                 if (x0 > W || x0 + w < 0)
                     continue;
@@ -1174,6 +1390,14 @@ class ScaleHisto : public QWidget {
         }
         // the two markers at their fixed places (they are what the axis follows)
         const double xa = 0.25 * W, xb = 0.75 * W;
+        if (dragging_) { // the dragged end, previewed only
+            QPen pv(QColor(255, 205, 110, 180));
+            pv.setWidth(1);
+            pv.setStyle(Qt::DashLine);
+            p.setPen(pv);
+            const double x = std::max(0.0, std::min(double(W - 1), double(previewX_)));
+            p.drawLine(QPointF(x, 0), QPointF(x, H));
+        }
         p.fillRect(QRectF(xa, 0, xb - xa, H), QColor(255, 255, 255, 26));
         QPen mk(QColor(255, 205, 110));
         mk.setWidth(2);
@@ -1186,9 +1410,9 @@ class ScaleHisto : public QWidget {
         p.setFont(f);
         p.setPen(QColor(255, 225, 160));
         p.drawText(QRectF(xa + 3, 1, W - xa - 6, 11), Qt::AlignLeft | Qt::AlignTop,
-                   QString::number(clo_, 'g', 4));
+                   QString::number(dclo, 'g', 4));
         p.drawText(QRectF(3, 1, xb - 3, 11), Qt::AlignRight | Qt::AlignTop,
-                   QString::number(chi_, 'g', 4));
+                   QString::number(dchi, 'g', 4));
     }
     void mousePressEvent(QMouseEvent *e) override {
         const double xa = 0.25 * width(), xb = 0.75 * width();
@@ -1203,14 +1427,23 @@ class ScaleHisto : public QWidget {
         // every mouse move is what made it crawl, so the new range is applied
         // when the button comes back up (see mouseReleaseEvent).
         dragging_ = true;
+        if (h_)
+            snap_ = *h_; // the bars: frozen as well (the image keeps updating)
+        preClo_ = clo_; // the axis basis: frozen until the button is released
+        preChi_ = chi_;
+        previewX_ = e->pos().x();
         mouseMoveEvent(e);
     }
     void mouseMoveEvent(QMouseEvent *e) override {
         if (dragMin_ < 0)
             return;
         const int W = width();
-        const double span = (chi_ > clo_) ? (chi_ - clo_) : 1.0;
-        double wlo = clo_ - 0.5 * span, whi = chi_ + 0.5 * span;
+        // The cursor -> value mapping uses the axis FROZEN at press time.  Using
+        // the live clo_/chi_ here was the positive feedback: the move changed the
+        // range, the range changed the window, and the same cursor position then
+        // mapped to a different value, so the marker chased itself.
+        const double span = (preChi_ > preClo_) ? (preChi_ - preClo_) : 1.0;
+        double wlo = preClo_ - 0.5 * span, whi = preChi_ + 0.5 * span;
         if (logX_) {
             wlo = std::log10(std::max(wlo, 1e-2));
             whi = std::log10(std::max(whi, 1e-2));
@@ -1225,13 +1458,16 @@ class ScaleHisto : public QWidget {
             clo_ = std::min(v, chi_ - 1e-9);
         else
             chi_ = std::max(v, clo_ + 1e-9);
-        update(); // the strip follows the drag; the image waits for the release
+        previewX_ = e->pos().x();
+        update(); // only the preview line moves; bars and axis stay frozen
     }
     void mouseReleaseEvent(QMouseEvent *) override {
         if (dragMin_ >= 0 && dragging_) {
-            dragging_ = false;
+            dragging_ = false; // unfreeze first, so the refresh is applied
+            snap_.clear();     // back to the live histogram
             if (onRangeChanged)
                 onRangeChanged(clo_, chi_); // one update, as soon as released
+            update();
         }
         dragMin_ = -1;
     }
@@ -1242,6 +1478,9 @@ class ScaleHisto : public QWidget {
     bool logX_ = false, logY_ = false;
     int dragMin_ = -1;
     bool dragging_ = false; // a marker drag in progress: preview only
+    double preClo_ = 0.0, preChi_ = 1.0; // axis basis captured when the drag began
+    std::vector<int> snap_;              // bins captured at press (frozen bars)
+    int previewX_ = 0;                   // cursor x, for the dashed preview line
 };
 
 // What replaced the colour bar at the side of the image: a small panel with the
@@ -1354,8 +1593,15 @@ class ScalePanel : public QWidget {
         view_->setColorRange(a, b);
         refresh();
     }
+  public:
     void refresh() { // view -> controls
         if (!view_)
+            return;
+        // Dragging the Z scale on the image changes the range on every mouse
+        // move; re-filling the histogram from the image with that half-applied
+        // range fed the drag back into the bars.  Frozen until release, when
+        // onScaleReleased() calls this again.
+        if (view_->isScaleDragging())
             return;
         suppress_++;
         double a = 0.0, b = 1.0;
@@ -1374,6 +1620,7 @@ class ScalePanel : public QWidget {
                             hscale_ && hscale_->currentIndex() == 1);
         suppress_--;
     }
+  private:
     FastImageView *view_ = nullptr;
     ScaleHisto *histo_ = nullptr;
     QComboBox *pal_ = nullptr, *scale_ = nullptr, *hscale_ = nullptr;
@@ -1412,6 +1659,7 @@ class MainWindow : public QMainWindow {
     void bwPalette2();
     void colPal();
     void toggleGateRoi(bool on);
+    void setRoiEditMode(bool on);   // in-image ROI editor
     void saveRoi();
     void loadRoiDialog();
     // applies a gate ROI directly (no capture from the ADC view)
@@ -1525,6 +1773,12 @@ class MainWindow : public QMainWindow {
     QCheckBox *gateChk_ = nullptr;
     QLabel *thrLabel_ = nullptr; // says whether the gate threshold is on raw ADC
     QCheckBox *contigChk_ = nullptr;
+    QCheckBox *hotChk_ = nullptr;
+    QPushButton *btnGetHot_ = nullptr;
+    std::vector<float> adcScratch_;    // ADC image with hot pixels replaced
+    std::vector<float> photonScratch_; // photon map with hot pixels zeroed
+    QLabel *hotVal_ = nullptr;
+    QPushButton *btnResetHot_ = nullptr;
     QDoubleSpinBox *thrSpin_ = nullptr;
     QSpinBox *minPixSpin_ = nullptr;
     QPushButton *btnGateRoi = nullptr;
@@ -1910,6 +2164,27 @@ void MainWindow::setupUI() {
         gateForm->addRow(gateRow);
     }
     gateForm->addRow(contigChk_);
+    hotChk_ = new QCheckBox("Suppress hot pixels in the gate", sigGroup);
+    hotChk_->setChecked(g_cfg.hotSuppress);
+    hotChk_->setToolTip(
+        "Masked pixels (see Get hot pixels) are excluded from the gate: they\n"
+        "do not count towards min pixels and cannot form a contiguous cluster.");
+    hotVal_ = makeValueLabel("hot: 0 px", sigGroup);
+    btnGetHot_ = new QPushButton("Get hot pixels...", sigGroup);
+    btnGetHot_->setToolTip(
+        "Mark hot pixels from the current photon map: every pixel whose map\n"
+        "value is above the threshold you enter becomes a hot pixel.");
+    btnResetHot_ = new QPushButton("Clear hot pixels", sigGroup);
+    {
+        auto *hotRow = new QHBoxLayout();
+        hotRow->addWidget(hotChk_);
+        hotRow->addWidget(hotVal_);
+        gateForm->addRow("Hot pixels:", hotRow);
+        auto *hotBtnRow = new QHBoxLayout();
+        hotBtnRow->addWidget(btnGetHot_);
+        hotBtnRow->addWidget(btnResetHot_);
+        gateForm->addRow(hotBtnRow);
+    }
     thrLabel_ = new QLabel("Threshold (ADC, pede-subtracted):", sigGroup);
     gateForm->addRow(thrLabel_, thrSpin_);
     gateForm->addRow("Min pixels above threshold:", minPixSpin_);
@@ -2271,11 +2546,14 @@ void MainWindow::setupUI() {
         btnLoadRoi->setToolTip(
             "Pick a ROI from the list (most recently saved/loaded first) and\n"
             "apply it to the gate.  The list dialog can also delete entries.");
-        btnSelectRoi_ = new QPushButton("Select ROI (ADC zoom)", roiGroup_);
+        btnSelectRoi_ = new QPushButton("Select ROI", roiGroup_);
+        btnSelectRoi_->setCheckable(true);
         btnSelectRoi_->setToolTip(
-            "Make the region currently zoomed in the ADC image the current\n"
-            "ROI.  This only selects it: press \"ROI only\" next to the signal\n"
-            "gate to actually restrict the gate to it.");
+            "Toggle the ROI editor: a yellow rectangle appears in the ADC\n"
+            "image.  Drag inside it to move it, its edges/corners to resize it,\n"
+            "or drag on empty space to draw a new one.  Selecting a ROI only\n"
+            "stores it: press \"ROI only\" next to the signal gate to restrict\n"
+            "the gate to it.");
         roiCol->addWidget(btnSelectRoi_);
         btnUnsetRoi_ = new QPushButton("Unset ROI", roiGroup_);
         btnUnsetRoi_->setToolTip(
@@ -2345,6 +2623,52 @@ void MainWindow::setupUI() {
         pipeline_.gate().setContiguous(on);
         pipeline_.gate().resetCounters();
     });
+    connect(hotChk_, &QCheckBox::toggled, this, [this](bool on) {
+        if (!confirmGateChangeDuringRun(
+                QString("Hot pixel suppression -> %1").arg(on ? "on" : "off"))) {
+            const QSignalBlocker b(hotChk_);
+            hotChk_->setChecked(pipeline_.gate().hotSuppress());
+            return;
+        }
+        pipeline_.gate().setHotSuppress(on);
+        pipeline_.gate().resetCounters();
+    });
+    connect(btnGetHot_, &QPushButton::clicked, this, [this]() {
+        QDialog dlg(this);
+        dlg.setWindowTitle("Get hot pixels from the photon map");
+        auto *form = new QFormLayout(&dlg);
+        form->addRow(new QLabel(QString("Photon map filled with %1 frames.")
+                                    .arg(static_cast<qulonglong>(
+                                        pipeline_.pmapFrames())),
+                                &dlg));
+        auto *spin = new QDoubleSpinBox(&dlg);
+        spin->setRange(0.0, 1e9);
+        spin->setDecimals(1);
+        spin->setSingleStep(1.0);
+        // Default: a tenth of the frames the map was accumulated over, i.e. a
+        // pixel that fires in more than ~10 % of them.
+        const double def =
+            static_cast<double>(pipeline_.pmapFrames()) / 10.0;
+        spin->setValue(def < 1.0 ? 1.0 : def);
+        form->addRow("Marking pixels above:", spin);
+        auto *bb = new QDialogButtonBox(
+            QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dlg);
+        form->addRow(bb);
+        connect(bb, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
+        connect(bb, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
+        if (dlg.exec() != QDialog::Accepted)
+            return;
+        pipeline_.setHotMaskFromPmap(spin->value());
+        statusLabel->setText(
+            QString("Status: %1 hot pixels (photon map > %2)")
+                .arg(static_cast<qulonglong>(pipeline_.hotPixels()))
+                .arg(spin->value(), 0, 'f', 1));
+    });
+    connect(btnResetHot_, &QPushButton::clicked, this, [this]() {
+        hotClearMask();
+        pipeline_.gate().resetCounters();
+        statusLabel->setText("Status: hot pixel mask cleared");
+    });
     connect(btnResetCounters, &QPushButton::clicked, this,
             [this]() { pipeline_.gate().resetCounters(); });
     connect(scCombo_, QOverload<int>::of(&QComboBox::currentIndexChanged),
@@ -2392,8 +2716,8 @@ void MainWindow::setupUI() {
             [this]() { browseSaveDir(); });
     connect(btnSaveDest_, &QPushButton::clicked, this,
             [this]() { saveDestDialog(); });
-    connect(btnSelectRoi_, &QPushButton::clicked, this,
-            [this]() { captureRoi(); });
+    connect(btnSelectRoi_, &QPushButton::toggled, this,
+            [this](bool on) { setRoiEditMode(on); });
     connect(btnUnsetRoi_, &QPushButton::clicked, this,
             [this]() { unsetRoi(); });
     connect(btnSaveRoi, &QPushButton::clicked, this, [this]() { saveRoi(); });
@@ -2524,6 +2848,10 @@ void MainWindow::setupUI() {
     adcLay->setContentsMargins(0, 0, 0, 0);
     adcLay->addWidget(m_adcView, 1);
     m_adcScale_ = new ScalePanel(m_adcView, m_adcWin);
+    m_adcView->onScaleReleased = [this]() { m_adcScale_->refresh(); };
+    m_adcView->onRoiEdited = [this](int x0, int y0, int x1, int y1) {
+        applyRoi(x0, y0, x1 - x0, y1 - y0, "ADC image", false);
+    };
     adcLay->addWidget(m_adcScale_, 0);
     m_adcWin->show();
 
@@ -2554,6 +2882,7 @@ void MainWindow::setupUI() {
     m_photonView->setIntegerValues(true); // photon counts: whole numbers
     photonLay->addWidget(m_photonView, 1);
     m_photonScale_ = new ScalePanel(m_photonView, m_photonWin);
+    m_photonView->onScaleReleased = [this]() { m_photonScale_->refresh(); };
     photonLay->addWidget(m_photonScale_, 0);
     m_photonWin->show();
 
@@ -3264,14 +3593,65 @@ void MainWindow::processImages() {
         return;
     // ADC and gain are always the raw 1024x512 layout (ROI selection on them
     // stays in raw data coordinates, also in a JFSTRX build)
-    m_adcView->setImageCopy(pipeline_.images().adc.data(), kRawWidth,
-                            kRawHeight);
+    // Hot pixels: in the raw view they are replaced by the average pedestal of
+    // their 3x3 neighbourhood (so they look like background), in the
+    // pedestal-corrected view by 0 - they carry no signal.
+    const float *adcSrc = pipeline_.images().adc.data();
+    if (pipeline_.gate().hotPixels() > 0) {
+        const auto hmask = hotMaskSnapshot();
+        if (hmask && hmask->size() == static_cast<size_t>(NCH)) {
+            if (adcScratch_.size() != static_cast<size_t>(NCH))
+                adcScratch_.assign(static_cast<size_t>(NCH), 0.0f);
+            std::memcpy(adcScratch_.data(), adcSrc, NCH * sizeof(float));
+            const std::shared_ptr<const PedeSet> peds =
+                gNoPede.load() ? PedestalStore::instance().get() : nullptr;
+            for (size_t i = 0; i < static_cast<size_t>(NCH); i++) {
+                if (!(*hmask)[i])
+                    continue;
+                float rep = 0.0f;
+                if (peds && peds->g0.size() >= static_cast<size_t>(NCH)) {
+                    const int x = static_cast<int>(i % kRawWidth);
+                    const int y = static_cast<int>(i / kRawWidth);
+                    double sum = 0.0;
+                    int cnt = 0;
+                    for (int dy = -1; dy <= 1; dy++) {
+                        for (int dx = -1; dx <= 1; dx++) {
+                            const int xx = x + dx, yy = y + dy;
+                            if (xx < 0 || xx >= kRawWidth || yy < 0 ||
+                                yy >= kRawHeight)
+                                continue;
+                            sum += peds->g0[static_cast<size_t>(yy) * kRawWidth +
+                                            xx];
+                            cnt++;
+                        }
+                    }
+                    rep = cnt ? static_cast<float>(sum / cnt) : 0.0f;
+                }
+                adcScratch_[i] = rep;
+            }
+            adcSrc = adcScratch_.data();
+        }
+    }
+    m_adcView->setImageCopy(adcSrc, kRawWidth, kRawHeight);
     if (m_photonView && pipeline_.images().photonReady &&
         pipeline_.images().photonSeq != pmapSeq_ &&
         !pipeline_.images().photon.empty()) {
         pmapSeq_ = pipeline_.images().photonSeq;
-        m_photonView->setImageCopy(pipeline_.images().photon.data(), kRawWidth,
-                                   512);
+        const float *pmapSrc = pipeline_.images().photon.data();
+        if (pipeline_.gate().hotPixels() > 0) {
+            const auto hmask = hotMaskSnapshot();
+            if (hmask && hmask->size() == static_cast<size_t>(NCH)) {
+                if (photonScratch_.size() != static_cast<size_t>(NCH))
+                    photonScratch_.assign(static_cast<size_t>(NCH), 0.0f);
+                std::memcpy(photonScratch_.data(), pmapSrc,
+                            NCH * sizeof(float));
+                for (size_t i = 0; i < static_cast<size_t>(NCH); i++)
+                    if ((*hmask)[i])
+                        photonScratch_[i] = 0.0f;
+                pmapSrc = photonScratch_.data();
+            }
+        }
+        m_photonView->setImageCopy(pmapSrc, kRawWidth, 512);
         m_photonView->update();
     }
     m_gainView->setImageCopy(pipeline_.images().gain.data(), kRawWidth,
@@ -3405,15 +3785,23 @@ void MainWindow::updateStatus() {
     errVal_->setText(err.isEmpty() ? QString() : QString("Last error: %1").arg(err));
 
     framesInCumVal_->setText(loc.toString(static_cast<qulonglong>(s.framesIn)));
-    framesInCurVal_->setText(loc.toString(static_cast<qulonglong>(s.framesInCur)));
+    // "Current" used to show the cumulative counters (framesInCur was never
+    // reset), so both columns always agreed.  Derive the per-interval delta
+    // from consecutive snapshots instead.
+    static uint64_t pIn = 0, pPass = 0, pDrop = 0;
+    const uint64_t dIn = s.framesIn - pIn;
+    const uint64_t dPass = s.framesPass - pPass;
+    const uint64_t dDrop = s.framesDrop - pDrop;
+    pIn = s.framesIn;
+    pPass = s.framesPass;
+    pDrop = s.framesDrop;
+    framesInCurVal_->setText(loc.toString(static_cast<qulonglong>(dIn)));
     framesPassCumVal_->setText(
         loc.toString(static_cast<qulonglong>(s.framesPass)));
-    framesPassCurVal_->setText(
-        loc.toString(static_cast<qulonglong>(s.framesPassCur)));
+    framesPassCurVal_->setText(loc.toString(static_cast<qulonglong>(dPass)));
     framesDropCumVal_->setText(
         loc.toString(static_cast<qulonglong>(s.framesDrop)));
-    framesDropCurVal_->setText(
-        loc.toString(static_cast<qulonglong>(s.framesDropCur)));
+    framesDropCurVal_->setText(loc.toString(static_cast<qulonglong>(dDrop)));
     updateFlow(); // the pedestal/gain state may have changed since last time
 
     scDropCumVal_->setText(
@@ -3492,6 +3880,46 @@ void MainWindow::updateStatus() {
                      (unsigned long long)ss.dropped);
         else
             snprintf(saveTxt, sizeof(saveTxt), "off");
+    }
+
+    // dual-interface alignment audit: out-of-step flushes and the current
+    // load-shedding step (keep 1 in N pairs), once per second
+    if (hotVal_)
+        hotVal_->setText(
+            QString("hot: %1 px")
+                .arg(static_cast<qulonglong>(pipeline_.gate().hotPixels())));
+
+    if (g_cfg.printCounters && pipeline_.portCount() > 1) {
+        static int atick = 0;
+        if (++atick >= 2) {
+            atick = 0;
+            // Sustained-rate audit: what fraction of the last 120 seconds
+            // ran within 5 % of the best assembled rate seen, i.e. "2 kHz for
+            // 99 % of the time" expressed as a number.
+            static double best = 0.0;
+            static int good = 0, total = 0;
+            const double r = s.rateIn;
+            if (r > best)
+                best = r;
+            const bool ok = best > 0.0 && r >= 0.95 * best;
+            if (ok)
+                good++;
+            total++;
+            if (total > 120) {
+                total--; 
+                if (!ok) good--;
+            }
+            printf("[align] keep=1/%d shed=%llu rate=%.0f/s best=%.0f/s "
+                   "within95=%.0f%% (%d/%d s) hot=%llupx/%lluf\n",
+                   g_keepDiv.load(),
+                   static_cast<unsigned long long>(pipeline_.shedFrames()), r,
+                   best, total ? 100.0 * good / total : 0.0, good, total,
+                   static_cast<unsigned long long>(
+                       pipeline_.gate().hotPixels()),
+                   static_cast<unsigned long long>(
+                       pipeline_.pmapFrames()));
+            fflush(stdout);
+        }
     }
 
     // optional headless monitoring: the counter line the old CLI printed
@@ -3738,6 +4166,46 @@ void MainWindow::toggleGateRoi(bool on) {
     updateRoiLabel();
 }
 
+// Toggles the in-image ROI editor.  It is seeded from the current ROI when
+// there is one, otherwise from the ADC zoom (the old behaviour) so that the
+// rectangle always starts somewhere sensible.  Selection only: restricting the
+// gate stays the "ROI only" button's business.
+void MainWindow::setRoiEditMode(bool on) {
+    if (!m_adcView)
+        return;
+    if (!on) {
+        m_adcView->beginRoiEdit(false);
+        statusLabel->setText("Status: ROI editor closed");
+        return;
+    }
+    const int imgW = m_adcView->imageWidth() > 0 ? m_adcView->imageWidth()
+                                                 : kRawWidth;
+    const int imgH = m_adcView->imageHeight() > 0 ? m_adcView->imageHeight()
+                                                  : kRawHeight;
+    int x0 = 0, y0 = 0, x1 = imgW, y1 = imgH;
+    if (pipeline_.gate().roiSet()) {
+        pipeline_.gate().roiSnapshot(x0, y0, x1, y1);
+    } else if (m_adcView->hasImage()) {
+        double vx = 0, vy = 0, vw = 0, vh = 0;
+        m_adcView->viewport(vx, vy, vw, vh);
+        x0 = static_cast<int>(std::floor(vx));
+        x1 = static_cast<int>(std::ceil(vx + vw));
+        y0 = imgH - static_cast<int>(std::ceil(vy + vh));
+        y1 = imgH - static_cast<int>(std::floor(vy));
+        x0 = std::max(0, std::min(imgW - 2, x0));
+        y0 = std::max(0, std::min(imgH - 2, y0));
+        x1 = std::max(x0 + 2, std::min(imgW, x1));
+        y1 = std::max(y0 + 2, std::min(imgH, y1));
+    }
+    m_adcView->setOverlayRect(x0, y0, x1, y1, true);
+    m_adcView->beginRoiEdit(true);
+    m_adcView->setFocus();
+    statusLabel->setText(
+        "Status: ROI editor - drag the yellow rectangle to move it, its edges "
+        "or corners to resize, empty space to draw a new one; press \"Select "
+        "ROI\" again when done");
+}
+
 // Selects the ADC zoom as the current ROI.  Selection only: whether the gate
 // is restricted to it is the "ROI only" button's business.
 void MainWindow::captureRoi() {
@@ -3852,14 +4320,7 @@ void MainWindow::applyRoi(int x, int y, int w, int h, const QString &src,
 // List of saved ROIs, most recently saved/loaded first.
 void MainWindow::loadRoiDialog() {
     std::vector<RoiEntry> list = roiListLoad();
-    if (list.empty()) {
-        QMessageBox::information(
-            this, "Load ROI",
-            QString("The ROI list is empty.\n\nPress \"Save ROI\" with a "
-                    "gate ROI active; entries are kept in %1.")
-                .arg(QString::fromStdString(g_cfg.roiFile)));
-        return;
-    }
+    const bool listEmpty = list.empty();
 
     QDialog dialog(this);
     dialog.setWindowTitle("Load gate ROI");
@@ -3889,22 +4350,103 @@ void MainWindow::loadRoiDialog() {
     lay->addWidget(table);
     // the same convention as the ADC image and every ROOT plot
     auto *hint = new QLabel(
-        "X/Y are data coordinates: x grows to the right, y grows upwards and "
-        "(0,0) is the bottom-left pixel.",
+        listEmpty
+            ? QString("The list is empty.  Use \"Edit as new...\" to type a "
+                      "ROI, or \"Save ROI\" in the ROI panel to add the current "
+                      "one (entries are kept in %1).")
+                  .arg(QString::fromStdString(g_cfg.roiFile))
+            : QString("X/Y are data coordinates: x grows to the right, y grows "
+                      "upwards and (0,0) is the bottom-left pixel."),
         &dialog);
     hint->setWordWrap(true);
     lay->addWidget(hint);
 
     auto *btns = new QDialogButtonBox(&dialog);
-    btns->addButton("Apply", QDialogButtonBox::AcceptRole);
+    auto *applyBtn = btns->addButton("Apply", QDialogButtonBox::AcceptRole);
     auto *delBtn = btns->addButton("Delete", QDialogButtonBox::DestructiveRole);
+    auto *editBtn =
+        btns->addButton("Edit as new...", QDialogButtonBox::ActionRole);
+    editBtn->setToolTip(
+        "Type the four numbers of a ROI (prefilled from the selected entry, or\n"
+        "from the current ROI) and apply that rectangle as a new ROI.  The list\n"
+        "is not modified - press \"Save ROI\" in the ROI panel to add it.");
     btns->addButton(QDialogButtonBox::Cancel);
+    if (listEmpty) { // nothing to apply or delete, but editing still works
+        applyBtn->setEnabled(false);
+        delBtn->setEnabled(false);
+    }
     lay->addWidget(btns);
     connect(btns, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
     connect(btns, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
     connect(table, &QTableWidget::itemDoubleClicked, &dialog,
             [&dialog](QTableWidgetItem *) { dialog.accept(); });
 
+    bool editedChosen = false; // the numbers dialog applied the ROI itself
+    connect(editBtn, &QPushButton::clicked, &dialog, [&]() {
+        const int imgW = (m_adcView && m_adcView->imageWidth() > 0)
+                             ? m_adcView->imageWidth()
+                             : kRawWidth;
+        const int imgH = (m_adcView && m_adcView->imageHeight() > 0)
+                             ? m_adcView->imageHeight()
+                             : kRawHeight;
+        int x = 0, y = 0, w = imgW, h = imgH;
+        const int r = table->currentRow();
+        if (r >= 0 && r < static_cast<int>(list.size())) {
+            x = list[r].x;
+            y = list[r].y;
+            w = list[r].w;
+            h = list[r].h;
+        } else if (pipeline_.gate().roiSet()) {
+            int a = 0, b = 0, c = 0, d = 0;
+            pipeline_.gate().roiSnapshot(a, b, c, d);
+            x = a;
+            y = b;
+            w = c - a;
+            h = d - b;
+        }
+        QDialog ed(&dialog);
+        ed.setWindowTitle("Edit ROI (applied as a new ROI)");
+        auto *form = new QFormLayout(&ed);
+        auto mk = [&](int v, int lo, int hi) {
+            auto *sb = new QSpinBox(&ed);
+            sb->setRange(lo, hi);
+            sb->setValue(std::max(lo, std::min(hi, v)));
+            return sb;
+        };
+        auto *sx = mk(x, 0, imgW - 1);
+        auto *sy = mk(y, 0, imgH - 1);
+        auto *sw = mk(w, 1, imgW);
+        auto *sh = mk(h, 1, imgH);
+        form->addRow("X (data, from the left):", sx);
+        form->addRow("Y (data, from the bottom):", sy);
+        form->addRow("Width:", sw);
+        form->addRow("Height:", sh);
+        auto *eb = new QDialogButtonBox(
+            QDialogButtonBox::Apply | QDialogButtonBox::Cancel, &ed);
+        form->addRow(eb);
+        connect(eb, &QDialogButtonBox::accepted, &ed, &QDialog::accept);
+        connect(eb, &QDialogButtonBox::rejected, &ed, &QDialog::reject);
+        // keep the rectangle inside the image while the numbers are typed
+        connect(sx, QOverload<int>::of(&QSpinBox::valueChanged), &ed,
+                [=](int v) { sw->setMaximum(std::max(1, imgW - v)); });
+        connect(sy, QOverload<int>::of(&QSpinBox::valueChanged), &ed,
+                [=](int v) { sh->setMaximum(std::max(1, imgH - v)); });
+        sw->setMaximum(std::max(1, imgW - sx->value()));
+        sh->setMaximum(std::max(1, imgH - sy->value()));
+        if (ed.exec() != QDialog::Accepted)
+            return;
+        const int nx = sx->value(), ny = sy->value();
+        const int nw = std::min(sw->value(), imgW - nx);
+        const int nh = std::min(sh->value(), imgH - ny);
+        if (nw < 2 || nh < 2) {
+            QMessageBox::information(this, "Edit ROI",
+                                     "That rectangle is too small to use.");
+            return;
+        }
+        applyRoi(nx, ny, nw, nh, "edited numbers", false);
+        editedChosen = true;
+        dialog.accept();
+    });
     bool deleted = false;
     connect(delBtn, &QPushButton::clicked, &dialog, [&]() {
         const int r = table->currentRow();
@@ -3927,6 +4469,8 @@ void MainWindow::loadRoiDialog() {
             statusLabel->setText("Status: ROI entry deleted");
         return;
     }
+    if (editedChosen)
+        return; // already applied by the "Edit as new..." dialog
     const int row = table->currentRow();
     if (row < 0 || row >= static_cast<int>(list.size()))
         return;
@@ -4071,13 +4615,18 @@ void MainWindow::toggleRoiSave(bool on) {
         char buf[256];
         snprintf(buf, sizeof(buf),
                  "{\"enabled\":%s,\"threshold\":%.3f,\"min_pixels\":%llu,"
-                 "\"contiguous\":%s,\"storage_cell\":%d,\"no_pede\":%s}",
+                 "\"contiguous\":%s,\"storage_cell\":%d,\"no_pede\":%s,"
+                 "\"hot_suppress\":%s,\"hot_threshold\":%.2f,"
+                 "\"hot_pixels\":%llu}",
                  g_cfg.gateEnabled ? "true" : "false",
                  static_cast<double>(g_cfg.threshold),
                  static_cast<unsigned long long>(g_cfg.minPixels),
                  g_cfg.contiguous ? "true" : "false",
                  pipeline_.gate().scFilter(),
-                 gNoPede.load() ? "true" : "false");
+                 gNoPede.load() ? "true" : "false",
+                 pipeline_.gate().hotSuppress() ? "true" : "false",
+                 pipeline_.hotThreshold(),
+                 static_cast<unsigned long long>(pipeline_.gate().hotPixels()));
         info.gateJson = buf;
     }
     // exact end-of-run statistics, refreshed by the writer when it finishes
@@ -4649,6 +5198,8 @@ void MainWindow::unsetRoi() {
         btnGateRoi->setChecked(false);
     pipeline_.gate().clearRoi();
     pipeline_.gate().resetCounters();
+    if (btnSelectRoi_ && btnSelectRoi_->isChecked())
+        btnSelectRoi_->setChecked(false); // leaves the editor
     if (m_adcView)
         m_adcView->setOverlayRect(0, 0, 0, 0, false);
     if (gateRoiVal_)
@@ -4692,6 +5243,9 @@ void printUsage(const char *prog) {
            "\n"
            "  --pub PORT       additionally republish gated frames on PORT\n"
            "  --contig         enable the contiguity proxy (r = N/2+1)\n"
+           "  --hot-suppress   learn and suppress hot pixels in the gate\n"
+           "  --hot-frac P     a pixel is hot above P % of the frames\n"
+           "                   (default 10)\n"
            "  --gate           enable the gate (it is OFF by default)\n"
            "  --no-gate        disable the gate (same as the default)\n"
            "  --raw-map        show raw ADC in the main map instead of\n"
@@ -4714,6 +5268,11 @@ void printUsage(const char *prog) {
            "                   so the gate threshold applies to raw 14-bit ADC\n"
            "  --use-pede       start with pedestal subtraction enabled\n"
            "  --stats          print the counter line on stdout every second\n"
+           "  --decimate N     process 1 frame in N (N = 2, 4 or 8); the frames\n"
+           "                   are dropped by detector frame number, so both\n"
+           "                   interfaces drop the same ones\n"
+           "  --auto-decimate  let the pipeline decimate on a real analysis\n"
+           "                   backlog (off by default: --decimate is manual)\n"
            "  --acquire-pede   average --pede-frames frames into a live\n"
            "                   pedestal as soon as acquisition starts\n"
            "  --pede-frames N  frames averaged by \"Acquire Pede\" (default %d)\n"
@@ -4767,6 +5326,10 @@ bool parseCommandLine(int argc, char **argv, Config &cfg, bool &help,
             cfg.pubPort = std::atoi(argv[++i]);
         } else if (a == "--contig") {
             cfg.contiguous = true;
+        } else if (a == "--hot-suppress") {
+            cfg.hotSuppress = true;
+        } else if (a == "--hot-frac") {
+            cfg.hotFraction = std::atof(argv[++i]) / 100.0;
         } else if (a == "--pmap-every") {
             if (i + 1 >= argc) {
                 error = "--pmap-every needs a count";
@@ -4810,6 +5373,13 @@ bool parseCommandLine(int argc, char **argv, Config &cfg, bool &help,
             cfg.gateEnabled = false;
         } else if (a == "--gate") {
             cfg.gateEnabled = true; // the gate is off by default
+        } else if (a == "--decimate") {
+            const int v = std::atoi(argv[++i]);
+            cfg.decimate = (v == 2 || v == 4 || v == 8) ? v : 1;
+            g_keepDiv.store(cfg.decimate); // frames are dropped from now on
+        } else if (a == "--auto-decimate") {
+            cfg.autoDecimate = true;
+            g_autoDecimate.store(true);
         } else if (a == "--stats") {
             cfg.printCounters = true;
         } else if (a == "--acquire-pede") {

@@ -187,6 +187,8 @@ struct Config {
     float threshold = 100.0f;  // GATE threshold (pede-subtracted ADC)
     uint64_t minPixels = 5;    // GATE min pixels above threshold
     bool contiguous = false;   // GATE contiguity proxy
+    bool hotSuppress = false;  // GATE hot pixel suppression
+    double hotFraction = 0.10; // fraction of frames that makes a pixel hot
     bool gateEnabled = false;  // default: gate off (passthrough); --gate enables
     std::string pedeFile = "./current_pede.dat";
     // calibration for the PH spectra (keV axes); empty = ADU only
@@ -204,6 +206,8 @@ struct Config {
     int pubPort = 0;           // 0 -> no republish of gated frames
     int pedeFrames = DEFAULT_N_PEDE_FRAMES;
     bool printCounters = false; // print the old CLI counter line on stdout
+    int decimate = 1;           // keep 1 frame in N (1/2/4/8), operator choice
+    bool autoDecimate = false;  // let the ladder follow a real backlog
     bool acquirePede = false;   // start a live pedestal acquisition at boot
     bool startSave = false;     // press Save at startup (--start-save)
     bool applyGain = false;     // gain correction on at startup (--apply-gain)
@@ -339,6 +343,19 @@ extern std::atomic<bool> gPmapCumulative;
 // gPmapSaveEvery is their cadence in analysed frames (minimum 200).
 extern std::atomic<int> gSaveMode;
 extern std::atomic<int> gPmapSaveEvery;
+// ---- hot pixel mask -------------------------------------------------------
+// Pixels whose photon-map value is above a threshold, marked by the operator
+// from the GUI.  The mask is a shared immutable vector, so the GUI can swap a
+// new one in while the acquisition and analysis threads read the current one.
+// Masked pixels are dropped from the gate, the PH spectra, the photon map and
+// the display replacement happens in the ADC image.
+void hotSetMaskFromMap(const float *map, uint64_t n, double threshold);
+void hotClearMask();
+uint64_t hotPixelCount();
+// Shared snapshot: load once per frame, then index it (avoids a load per pixel).
+std::shared_ptr<const std::vector<uint8_t>> hotMaskSnapshot();
+bool hotMaskActive(); // a mask exists and gate suppression is on
+
 void pmapSaveReset();
 
 // One photon map on its way from the analysis (which counts the photons) to the
@@ -354,6 +371,11 @@ struct PmapSlot {
 // writing: the saved file keeps the criterion it started with, so its JSON has
 // to say that it was moved.
 extern std::atomic<bool> gGateChangedDuringSave;
+// Alignment load shedding (multi-interface): keep 1 frame out of g_keepDiv,
+// chosen by the frame number so the two interfaces drop the SAME frames.  1 =
+// keep everything (the default); 2, 4, 8 = drop 1/2, 3/4, 7/8.
+extern std::atomic<int> g_keepDiv;
+extern std::atomic<bool> g_autoDecimate; // ladder enabled (off: 1/N is manual)
 extern float g_pheneThreshold; // photon-map threshold in ADU (GUI, default 150)
 // Same control while the gain correction is on: the counting value is then
 // adcpedecorr / ADU-per-keV, so the threshold means keV (default 4).  Both are
@@ -616,6 +638,18 @@ class GateEngine {
     void setThreshold(float adc);
     void setMinPixels(uint64_t n);
     void setContiguous(bool on);
+    // ---- hot pixel suppression -------------------------------------------
+    // Pixels that are above the threshold in a large fraction of the frames
+    // (hot pixels, charged traps) are learned in a table and excluded from the
+    // gate, both from the count and from the contiguity search.
+    void setHotSuppress(bool on);
+    bool hotSuppress() const;
+    // The mask comes from the photon map: every pixel whose accumulated map
+    // value is above 'threshold' is marked hot.  Masked pixels are excluded
+    // from the gate count and from the contiguity search; the display replaces
+    // them (local pedestal average in the raw view, 0 in the corrected view
+    // and in the photon map) and the PH plots skip them.
+    uint64_t hotPixels() const; // delegated to the shared mask
     // Storage-cell selection: only frames acquired in cell 'sc' (0..15, from
     // bits 8-11 of the header's detSpec3) are passed to the display and the
     // analysis; -1 = all of them.  Checked before the pixel work, so filtered
@@ -666,8 +700,12 @@ class GateEngine {
     bool hitsClustered(const short *frame, uint64_t nPixels,
                        const PedeSet *peds, int g1off, int g2off) const;
 
+
     std::atomic<bool> enabled_{true};
     std::atomic<bool> contiguous_{false};
+    // hot pixel table (written on the acquisition thread only; the atomics are
+    // for the GUI)
+    std::atomic<bool> hotSuppress_{true};
     // storage-cell filter (-1 = all) and the cell of the last frame seen
     std::atomic<int> scFilter_{-1};
     std::atomic<int> lastSc_{-1};
@@ -911,11 +949,22 @@ class Pipeline {
     uint64_t resyncDrops() const;  // stale slabs discarded to restore alignment
     uint64_t behindDrops() const;  // frames discarded while catching up
     uint64_t incompleteFrames() const; // assembled while an interface was absent
+    uint64_t flushes() const;          // pairs dropped (halves were different frames)
+    uint64_t skippedPairs() const;     // pairs dropped by the load-shedding ladder
+    uint64_t shedFrames() const;       // frames deliberately dropped by the ladder
+    int decimation() const;            // 1 = keep all, 2 = keep half, ... 8
 
     uint64_t displayFrames() const;
     uint64_t displayDropped() const;
+    // hot pixel mask taken from the current photon map (GUI action)
+    void setHotMaskFromPmap(double threshold);
+    uint64_t pmapFrames() const; // frames the photon map has accumulated
+    uint64_t hotPixels() const { return gate_.hotPixels(); }
+    double hotThreshold() const { return hotThreshold_.load(); }
+
     PmapSlot &pmapSave() { return pmapSave_; }
     PmapSlot pmapSave_;
+    std::atomic<double> hotThreshold_{0.0}; // last "Get hot pixels" threshold
     // window bookkeeping for the photon-map save (acq thread)
     uint64_t pmapWinFirstFrame = 0, pmapWinFirstStamp = 0, pmapWinCount = 0;
     // route a gate-passed frame to the saver: the frame itself, or the photon
@@ -953,6 +1002,11 @@ class Pipeline {
         int64_t stampMs = 0;
         bool valid = false;
         bool logged = false;   // first-frame geometry already reported
+        std::vector<short> prevData; // payload of the previous frame (swap, no copy)
+        size_t prevLen = 0;
+        uint64_t prevKey = 0;
+        bool hasPrev = false;
+        bool usePrev = false;  // assemble this interface from prevData
     };
 
     // per-port connection tracking (atomics: fixed size, one per port)
@@ -1002,6 +1056,20 @@ class Pipeline {
     int64_t acqStartMs_ = 0;
     std::atomic<int> fullW_{0};
     std::atomic<int> fullH_{0};
+    // alignment: flushes = "a pair was dropped because its halves carried
+    // different detector frames", skewedPairs_ = "paired anyway after 500 ms
+    // without a match (structural offset)".  Old text follows: both
+    // slabs dropped"; decimate_ = keep 1 in N aligned pairs (1, 2, 4, 8)
+    std::atomic<uint64_t> flushes_{0}, skippedPairs_{0}, pairSeq_{0};
+    std::atomic<uint64_t> skewedPairs_{0}; // paired although the keys differed
+    int64_t lastAssembledMs_ = 0;          // last index-aligned assembly
+    bool allowSkewedPair_ = false;         // latched: keys offset for good
+    std::atomic<uint64_t> shedDrops_{0};
+    // acq-thread-only bookkeeping for the ladder
+    uint64_t shedLastTrouble_ = 0;
+    int shedCleanSeconds_ = 0;
+    std::atomic<int> decimate_{1};
+    std::atomic<int64_t> lastFlushMs_{0}, lastAlignWarnMs_{0};
     std::atomic<uint64_t> resyncDrops_{0};
     std::atomic<uint64_t> behindDrops_{0};
     std::atomic<uint64_t> incomplete_{0};

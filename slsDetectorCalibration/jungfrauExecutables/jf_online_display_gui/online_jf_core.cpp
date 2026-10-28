@@ -3365,10 +3365,12 @@ void Pipeline::analysisLoop() {
         }
 
         // ---- 5b) the photon map, on its own cadence ----------------------
-        // Every gPmapEvery analysed frames the window gets the map: the photons
+        // Every gPmapEvery ANALYSED frames the window gets the map: the photons
         // counted since the previous publish when it is not cumulative (the
-        // default), or the running total when it is.  Independent of the ADC
-        // image decimation above.
+        // default), or the running total when it is.  "Analysed" means frames
+        // that survived the gate and the decimation, so the cadence is not
+        // independent of them: rejecting or skipping frames stretches the
+        // wall-clock interval between two maps.
         {
             const int every = std::max(1, gPmapEvery.load());
             if (static_cast<uint64_t>(every) > 0 &&

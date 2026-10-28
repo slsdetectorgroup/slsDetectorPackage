@@ -1650,7 +1650,8 @@ int ClientInterface::set_all_threshold(Interface &socket) {
     LOG(logDEBUG) << "Threshold:" << ToString(eVs);
     if (detType != MYTHEN3)
         functionNotImplemented();
-    verifyIdle(socket);
+    // allow setting threshold metadata on the fly
+    // without checking for idle state
     impl()->setThresholdEnergy(eVs);
     return socket.Send(OK);
 }

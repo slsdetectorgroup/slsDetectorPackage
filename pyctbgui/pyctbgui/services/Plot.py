@@ -560,6 +560,10 @@ class PlotTab(QtWidgets.QWidget):
         self.view.radioButtonOverlay.setDisabled(True)
         self.view.radioButtonStripe.setDisabled(True)
 
+        self.showtransceiverImage = False
+        self.showanalogImage = False
+        self.showdigitalImage = False
+
         if self.mainWindow.romode.value in [0, 2]:
             if self.view.radioButtonWaveform.isChecked():
                 self.mainWindow.plotAnalogWaveform.show()

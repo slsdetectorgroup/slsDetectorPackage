@@ -6,6 +6,7 @@
 #include "xparameters.h"
 
 #include <fcntl.h>
+#include <stddef.h>
 #include <string.h>
 #include <sys/mman.h>
 #include <unistd.h>
@@ -14,19 +15,7 @@ extern int isControlServer;
 
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 
-struct LocalLinkInterface ll_beb_local, *ll_beb;
-
 struct udp_header_type udp_header;
-
-int Beb_send_ndata;
-unsigned int Beb_send_buffer_size;
-unsigned int *Beb_send_data_raw;
-unsigned int *Beb_send_data;
-
-int Beb_recv_ndata;
-unsigned int Beb_recv_buffer_size;
-unsigned int *Beb_recv_data_raw;
-unsigned int *Beb_recv_data;
 
 short Beb_bit_mode;
 int BEB_MMAP_SIZE = 0x1000;
@@ -47,28 +36,6 @@ int Beb_deactivated_right_datastream = 1;
 int Beb_deactivated_num_destinations = 1;
 
 int Beb_Beb() {
-    Beb_send_ndata = 0;
-    Beb_send_buffer_size = 1026;
-
-    Beb_send_data_raw =
-        malloc((Beb_send_buffer_size + 1) * sizeof(unsigned int));
-    if (Beb_send_data_raw == NULL) {
-        LOG(logERROR, ("Could not allocate memory for beb (send_data_raw)\n"));
-        return 0;
-    }
-    Beb_send_data = &Beb_send_data_raw[1];
-
-    Beb_recv_ndata = 0;
-    Beb_recv_buffer_size = 1026;
-
-    Beb_recv_data_raw =
-        malloc((Beb_recv_buffer_size + 1) * sizeof(unsigned int));
-    if (Beb_recv_data_raw == NULL) {
-        LOG(logERROR, ("Could not allocate memory for beb (recv_data_raw)\n"));
-        return 0;
-    }
-    Beb_recv_data = &Beb_recv_data_raw[1];
-
     udp_header = (struct udp_header_type){
         {0x00, 0x50, 0xc5, 0xb2, 0xcb, 0x46}, // DST MAC
         {0x00, 0x50, 0xc2, 0x46, 0xd9, 0x02}, // SRC MAC
@@ -157,19 +124,12 @@ int Beb_SetHeaderData(uint64_t src_mac, uint32_t src_ip, uint16_t src_port,
     memcpy(&(udp_header.dst_port[0]), &dst_port, sizeof(udp_header.dst_port));
 
     Beb_AdjustIPChecksum(&udp_header);
-
-    unsigned int *base_ptr = (unsigned int *)&udp_header;
-    unsigned int num_words = (sizeof(struct udp_header_type) + 3) / 4;
-    for (unsigned int i = 0; i < num_words; i++)
-        Beb_send_data[i + 2] = base_ptr[i];
-    for (unsigned int i = num_words; i < 16; i++)
-        Beb_send_data[i + 2] = 0;
-
     return 1;
 }
 
 void Beb_AdjustIPChecksum(struct udp_header_type *ip) {
-    unsigned char *cptr = (unsigned char *)ip->ver_headerlen;
+    unsigned char *cptr =
+        (unsigned char *)ip + offsetof(struct udp_header_type, ver_headerlen);
 
     ip->ip_header_checksum[0] = 0;
     ip->ip_header_checksum[1] = 0;
@@ -372,7 +332,7 @@ int Beb_SetTop(enum TOPINDEX ind) {
     }
 
     char *top_names[] = {TOP_NAMES};
-    int newval = Beb_Write32(csp0base, BEB_CONFIG_WR_OFST, value);
+    u_int32_t newval = Beb_Write32(csp0base, BEB_CONFIG_WR_OFST, value);
     if (newval != value) {
         LOG(logERROR,
             ("Could not set Top flag to %s in Beb\n", top_names[ind]));
@@ -417,7 +377,7 @@ int Beb_SetMaster(enum MASTERINDEX ind) {
     }
 
     char *master_names[] = {MASTER_NAMES};
-    int newval = Beb_Write32(csp0base, BEB_CONFIG_WR_OFST, value);
+    u_int32_t newval = Beb_Write32(csp0base, BEB_CONFIG_WR_OFST, value);
     if (newval != value) {
         LOG(logERROR,
             ("Could not set Master flag to %s in Beb\n", master_names[ind]));
@@ -1167,7 +1127,7 @@ int Beb_SetDetectorPosition(int pos[]) {
                     value | ((posval << UDP_HEADER_Y_OFST) & UDP_HEADER_Y_MSK));
         value = Beb_Read32(csp0base, UDP_HEADER_B_LEFT_OFST);
         if ((value & UDP_HEADER_Y_MSK) !=
-            ((posval << UDP_HEADER_Y_OFST) & UDP_HEADER_Y_MSK)) {
+            (uint32_t)((posval << UDP_HEADER_Y_OFST) & UDP_HEADER_Y_MSK)) {
             LOG(logERROR, ("Could not set column position for left port\n"));
             ret = FAIL;
         }
@@ -1180,7 +1140,7 @@ int Beb_SetDetectorPosition(int pos[]) {
                     value | ((posval << UDP_HEADER_Y_OFST) & UDP_HEADER_Y_MSK));
         value = Beb_Read32(csp0base, UDP_HEADER_B_RIGHT_OFST);
         if ((value & UDP_HEADER_Y_MSK) !=
-            ((posval << UDP_HEADER_Y_OFST) & UDP_HEADER_Y_MSK)) {
+            (uint32_t)((posval << UDP_HEADER_Y_OFST) & UDP_HEADER_Y_MSK)) {
             LOG(logERROR, ("Could not set column position for right port\n"));
             ret = FAIL;
         }
@@ -1379,9 +1339,7 @@ int Beb_open(u_int32_t **csp0base, u_int32_t offset) {
 }
 
 u_int32_t Beb_Read32(u_int32_t *baseaddr, u_int32_t offset) {
-    volatile u_int32_t value;
-    value = *(u_int32_t *)(baseaddr + offset / (sizeof(u_int32_t)));
-    return value;
+    return *(volatile u_int32_t *)(baseaddr + offset / sizeof(u_int32_t));
 }
 
 u_int32_t Beb_Write32(u_int32_t *baseaddr, u_int32_t offset, u_int32_t data) {

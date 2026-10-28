@@ -95,7 +95,7 @@ int Local_Write(struct LocalLinkInterface *ll, unsigned int buffer_len,
 
     LOG(logDEBUG1, ("LL Write - Len: %2d - If: %X - Data: ", buffer_len,
                     ll->ll_fifo_base));
-    for (int i = 0; i < buffer_len / 4; i++)
+    for (int i = 0; i < (int)buffer_len / 4; i++)
         LOG(logDEBUG1, ("%.8X ", *(((unsigned *)buffer) + i)));
 
     while (words_send <= last_word) {

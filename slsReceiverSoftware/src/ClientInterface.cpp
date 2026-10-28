@@ -1618,7 +1618,8 @@ int ClientInterface::set_threshold(Interface &socket) {
     LOG(logDEBUG) << "Threshold: " << arg << " eV";
     if (detType != EIGER)
         functionNotImplemented();
-    verifyIdle(socket);
+    // allow setting threshold metadata on the fly
+    // without checking for idle state
     impl()->setThresholdEnergy(arg);
     return socket.Send(OK);
 }

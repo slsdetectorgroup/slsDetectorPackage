@@ -11,6 +11,15 @@
 // palettes, the ROOT half of MainWindow::rootDrawLoop).
 // ===========================================================================
 #include "online_jf.h"
+#include <TCanvas.h>
+#include <utility>
+#include <map>
+#include <TCanvasImp.h>
+#include <TCollection.h>
+#include <TList.h>
+#include <TObject.h>
+#include <TROOT.h>
+#include <TVirtualX.h>
 
 
 // ---------------------------------------------------------------------------
@@ -309,6 +318,37 @@ void execRootCmd(const RootCmd &cmd) {
             zoomPhotonMap(cmd.a, cmd.c, cmd.b, cmd.d);
         }
         break;
+    case RootCmdType::ShowPlots: {
+        // TCanvas has no Hide() and unmapping its widget does not hide the
+        // TRootCanvas frame, so the frames are parked off-screen instead and
+        // their geometry is restored when they are shown again.  The canvases,
+        // their histograms and their contents stay alive either way.
+        static std::map<TCanvas *, std::pair<Int_t, Int_t>> parked;
+        TIter next(gROOT->GetListOfCanvases());
+        while (TObject *o = next()) {
+            TCanvas *c = static_cast<TCanvas *>(o);
+            if (!c || !c->GetCanvasImp())
+                continue;
+            if (cmd.a > 0.5) {
+                auto it = parked.find(c);
+                if (it != parked.end()) {
+                    c->GetCanvasImp()->SetWindowPosition(it->second.first,
+                                                         it->second.second);
+                    parked.erase(it);
+                }
+                c->Modified();
+                c->Update();
+            } else {
+                Int_t x = 0, y = 0;
+                UInt_t w = 0, h = 0;
+                c->GetCanvasImp()->GetWindowGeometry(x, y, w, h);
+                if (x > -1000) // only remember a real on-screen position
+                    parked[c] = std::make_pair(x, y);
+                c->GetCanvasImp()->SetWindowPosition(-4000, -4000);
+            }
+        }
+        break;
+    }
     case RootCmdType::SetMapRange:
         // colour scale of the ROOT 2D map: applied once, on the ROOT thread,
         // so a scale the operator drags on the canvas is NOT reset by the

@@ -470,8 +470,7 @@ class PlotTab(QtWidgets.QWidget):
         self.mainWindow.plotAnalogImage.setColorMap(cm)
         self.mainWindow.plotDigitalImage.setColorMap(cm)
         for i, showncounter in enumerate(self.shownCounterImages):
-            if showncounter:
-                self.transceiverTab.transceiverImageViews[i].setColorMap(cm)
+            self.transceiverTab.transceiverImageViews[i].setColorMap(cm)
 
     def getZMQHWM(self):
 

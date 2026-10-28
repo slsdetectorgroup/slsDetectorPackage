@@ -26,6 +26,22 @@ Config g_cfg;
 short *hchptr = nullptr;
 float factor = 1.84f;
 std::atomic<bool> gGateChangedDuringSave{false};
+std::atomic<int> g_keepDiv{1}; // 1 = keep all, 2/4/8 = drop 1/2, 3/4, 7/8
+std::atomic<bool> g_autoDecimate{false};
+namespace {
+// Acquisition-path profile: where the loop's time goes, printed once a second.
+double acqNow() {
+    return std::chrono::duration<double>(
+               std::chrono::steady_clock::now().time_since_epoch()).count();
+}
+struct AcqProf {
+    double poll = 0, read = 0, pair = 0; // seconds in each stage
+    double copy = 0;                     // of which: the assembly memcpy
+    double t0 = 0, t1 = 0, t2 = 0;
+    uint64_t n = 0;                      // loop iterations
+    uint64_t msgs = 0;                   // frames delivered by the receiver
+} g_acq;
+} // namespace // --auto-decimate enables the ladder
 float g_pheneThreshold = 0.0f;
 float g_pheneThresholdKev = 0.0f;
 
@@ -137,6 +153,7 @@ uint32_t g_roiKevAccum[kChipOverflowBins];
 uint32_t g_roiKevSynced[kChipOverflowBins];
 uint64_t g_roiKevSyncedTotal = 0;
 double g_pmapFills = 0;
+uint64_t g_pmapFrames = 0; // analysed frames in the map (hot-pixel default)
 double g_pmapFillsSynced = 0;
 int64_t g_lastAccumSyncMs = 0;
 bool g_accumReady = false;
@@ -171,6 +188,7 @@ void ensureAccumulators() {
     g_roiKevSyncedTotal = 0;
     g_pmapFills = 0;
     g_pmapFillsSynced = 0;
+    g_pmapFrames = 0;
     g_lastAccumSyncMs = 0;
     g_accumReady = true;
 }
@@ -303,6 +321,8 @@ constexpr int kMaxDrainPerCall = 256;
 // an interface whose frame number has not advanced for this long is stalled
 // (dead, or not in this acquisition) and must not block the display
 constexpr int64_t kStallMs = 500;
+// how long a mismatch may repeat before the newest slabs are paired anyway
+constexpr int64_t kNoPairFallbackMs = 500;
 
 int64_t nowMs() {
     return duration_cast<milliseconds>(steady_clock::now().time_since_epoch())
@@ -752,6 +772,45 @@ void GateEngine::setMinPixels(uint64_t n) { minPixels_.store(n); }
 
 void GateEngine::setContiguous(bool on) { contiguous_.store(on); }
 
+// ---- hot pixel mask ------------------------------------------------------
+// The mask is not learned from frames: the operator marks it from the photon
+// map ("Get hot pixels"), which integrates over many frames, so a hot pixel
+// stands out by orders of magnitude instead of by a fraction of frames.
+namespace {
+std::shared_ptr<const std::vector<uint8_t>> g_hotMask;
+std::atomic<uint64_t> g_hotCount{0};
+} // namespace
+
+void hotSetMaskFromMap(const float *map, uint64_t n, double threshold) {
+    auto m = std::make_shared<std::vector<uint8_t>>(
+        static_cast<size_t>(NCH), static_cast<uint8_t>(0));
+    uint64_t c = 0;
+    const uint64_t lim = std::min<uint64_t>(n, static_cast<uint64_t>(NCH));
+    for (uint64_t i = 0; map && i < lim; i++) {
+        if (static_cast<double>(map[i]) > threshold) {
+            (*m)[static_cast<size_t>(i)] = 1;
+            c++;
+        }
+    }
+    std::atomic_store(
+        &g_hotMask, std::shared_ptr<const std::vector<uint8_t>>(std::move(m)));
+    g_hotCount.store(c);
+}
+void hotClearMask() {
+    std::atomic_store(&g_hotMask,
+                      std::shared_ptr<const std::vector<uint8_t>>());
+    g_hotCount.store(0);
+}
+uint64_t hotPixelCount() { return g_hotCount.load(); }
+std::shared_ptr<const std::vector<uint8_t>> hotMaskSnapshot() {
+    return std::atomic_load(&g_hotMask);
+}
+bool hotMaskActive() { return g_hotCount.load() > 0; }
+
+void GateEngine::setHotSuppress(bool on) { hotSuppress_.store(on); }
+bool GateEngine::hotSuppress() const { return hotSuppress_.load(); }
+uint64_t GateEngine::hotPixels() const { return hotPixelCount(); }
+
 void GateEngine::setScFilter(int sc) {
     if (sc < 0 || sc > 15)
         sc = -1; // anything else means "all"
@@ -1062,8 +1121,12 @@ uint64_t GateEngine::countPixelsAbove(const short *frame, uint64_t nPixels,
     const float *p1 = gainAware ? peds->g1.data() : nullptr;
     const float *p2 = gainAware ? peds->g2.data() : nullptr;
 
+    const auto hmask = hotSuppress_.load() ? hotMaskSnapshot() : nullptr;
+    const bool hotOn = hmask && hmask->size() == static_cast<size_t>(NCH);
     uint64_t nAbove = 0;
     forEachGatePixel(nPixels, roiOn, x0, y0, x1, y1, [&](uint64_t i) {
+        if (hotOn && (*hmask)[i])
+            return true; // hot pixels never reach the criterion
         float v;
         if (!p0) { // no pedestals at all: raw 14-bit values
             v = static_cast<float>(frame[i] & 0x3fff);
@@ -1091,13 +1154,19 @@ uint64_t GateEngine::countPixelsAbove(const short *frame, uint64_t nPixels,
     return nAbove;
 }
 
-// Cheap contiguity proxy: every above-threshold pixel must lie within a
-// circle of radius (minPixels/2 + 1) around the above-threshold centroid.
+// Contiguity proxy: "N px within a circle".
+//
+// Pass when SOME circle of radius (minPixels/2 + 1) contains at least
+// minPixels above-threshold pixels.  The previous version required EVERY
+// above-threshold pixel to lie within that radius of the *centroid*, so two
+// well-separated clusters - each of which satisfies the requirement on its own
+// - put the centroid between them and the frame was always rejected.  That is
+// why the option blocked frames it should have passed.
 bool GateEngine::hitsClustered(const short *frame, uint64_t nPixels,
                                const PedeSet *peds, int g1off,
                                int g2off) const {
     const float thr = threshold_.load();
-    const uint64_t nReq = minPixels_.load();
+    const uint64_t nReq = std::max<uint64_t>(1, minPixels_.load());
     const double radius = static_cast<double>(nReq) / 2.0 + 1.0;
     const double r2 = radius * radius;
     const bool roiOn = roiOn_.load();
@@ -1109,7 +1178,6 @@ bool GateEngine::hitsClustered(const short *frame, uint64_t nPixels,
     const float *p1 = gainAware ? peds->g1.data() : nullptr;
     const float *p2 = gainAware ? peds->g2.data() : nullptr;
 
-    // value of one pixel, exactly as countPixelsAbove computes it
     auto valueAt = [&](uint64_t i) -> float {
         if (!p0)
             return static_cast<float>(frame[i] & 0x3fff);
@@ -1126,37 +1194,44 @@ bool GateEngine::hitsClustered(const short *frame, uint64_t nPixels,
         return static_cast<float>(raw) - p0[i];
     };
 
-    // pass 1: count + centroid of the above-threshold pixels
-    uint64_t n = 0;
-    double sx = 0.0, sy = 0.0;
+    // positions of the above-threshold pixels (reused buffer: this runs per
+    // frame on the acquisition path, so no allocation in the steady state)
+    static thread_local std::vector<int> hx, hy;
+    hx.clear();
+    hy.clear();
+    const auto hmask = hotSuppress_.load() ? hotMaskSnapshot() : nullptr;
+    const bool hotOn = hmask && hmask->size() == static_cast<size_t>(NCH);
     forEachGatePixel(nPixels, roiOn, x0, y0, x1, y1, [&](uint64_t i) {
+        if (hotOn && (*hmask)[i])
+            return true; // hot pixels must not form a cluster either
         if (valueAt(i) > thr) {
-            n++;
-            sx += static_cast<double>(i % 1024);
-            sy += static_cast<double>(i / 1024);
+            hx.push_back(static_cast<int>(i % kRawWidth));
+            hy.push_back(static_cast<int>(i / kRawWidth));
         }
         return true;
     });
+    const size_t n = hx.size();
     if (n < nReq)
         return false;
-
-    const double cx = sx / static_cast<double>(n);
-    const double cy = sy / static_cast<double>(n);
-
-    // pass 2: every above-threshold pixel within radius of the centroid
-    bool ok = true;
-    forEachGatePixel(nPixels, roiOn, x0, y0, x1, y1, [&](uint64_t i) {
-        if (valueAt(i) > thr) {
-            const double dx = static_cast<double>(i % 1024) - cx;
-            const double dy = static_cast<double>(i / 1024) - cy;
-            if (dx * dx + dy * dy > r2) {
-                ok = false;
-                return false; // stop early
-            }
-        }
+    // Enough hits that a cluster is guaranteed in practice; the pairwise scan
+    // below would only burn acquisition time on such a frame.
+    if (n > 4096)
         return true;
-    });
-    return ok;
+
+    for (size_t a = 0; a < n; a++) {
+        size_t cnt = 1;
+        for (size_t b = 0; b < n && cnt < nReq; b++) {
+            if (a == b)
+                continue;
+            const double dx = static_cast<double>(hx[a]) - hx[b];
+            const double dy = static_cast<double>(hy[a]) - hy[b];
+            if (dx * dx + dy * dy <= r2)
+                cnt++;
+        }
+        if (cnt >= nReq)
+            return true;
+    }
+    return false;
 }
 
 // ---------------------------------------------------------------------------
@@ -1232,6 +1307,16 @@ Pipeline::~Pipeline() {
 
 bool Pipeline::init(std::string &error) {
     zmqCtx_ = zmq_ctx_new();
+    // One ZMQ I/O thread per interface: a single I/O thread sat at ~90 %
+    // moving ~2 GB/s for both sockets and was a serialisation point.
+    {
+        int nio = 2;
+        if (const char *e = getenv("JF_ZMQ_IO_THREADS"))
+            nio = atoi(e);
+        if (nio > 0)
+            zmq_ctx_set(zmqCtx_, ZMQ_IO_THREADS, nio);
+    }
+
     if (!zmqCtx_) {
         error = "zmq_ctx_new failed";
         return false;
@@ -1323,6 +1408,7 @@ bool Pipeline::init(std::string &error) {
     gate_.setThreshold(g_cfg.threshold);
     gate_.setMinPixels(g_cfg.minPixels);
     gate_.setContiguous(g_cfg.contiguous);
+    gate_.setHotSuppress(g_cfg.hotSuppress);
     return true;
 }
 
@@ -1386,6 +1472,14 @@ uint64_t Pipeline::behindDrops() const { return behindDrops_.load(); }
 
 uint64_t Pipeline::incompleteFrames() const { return incomplete_.load(); }
 
+uint64_t Pipeline::flushes() const { return flushes_.load(); }
+
+uint64_t Pipeline::skippedPairs() const { return skippedPairs_.load(); }
+
+uint64_t Pipeline::shedFrames() const { return shedDrops_.load(); }
+
+int Pipeline::decimation() const { return decimate_.load(); }
+
 uint64_t Pipeline::displayFrames() const { return framesinstream.load(); }
 
 uint64_t Pipeline::displayDropped() const {
@@ -1443,6 +1537,19 @@ void Pipeline::offerToSaver(const short *frame, int w, int h,
     saver_.offerPhotonMap(map, frames, pmapWinFirstFrame, pmapWinFirstStamp);
     pmapWinCount = 0;
 }
+
+void Pipeline::setHotMaskFromPmap(double threshold) {
+    std::vector<float> copy;
+    {
+        std::lock_guard<std::mutex> lock(gHistoMtx);
+        copy = g_pmapAccum; // written per pixel by the workers, published here
+    }
+    hotSetMaskFromMap(copy.data(), copy.size(), threshold);
+    hotThreshold_.store(threshold);
+    gate_.resetCounters();
+}
+
+uint64_t Pipeline::pmapFrames() const { return g_pmapFrames; }
 
 void pmapSaveReset() {
     std::lock_guard<std::mutex> lock(gHistoMtx);
@@ -1891,6 +1998,7 @@ bool Pipeline::readOne(int portIdx) {
     if (sl.valid)
         behindDrops_.fetch_add(1);
 
+    g_acq.msgs++;
     sl.len = static_cast<size_t>(received) / sizeof(short);
     sl.w = w;
     sl.h = h;
@@ -1900,6 +2008,21 @@ bool Pipeline::readOne(int portIdx) {
                       ? d["frameNumber"].GetUint64()
                       : (d.HasMember("frameIndex") ? d["frameIndex"].GetUint64()
                                                    : 0);
+    // Load shedding, applied here so it costs nothing extra: the message is
+    // already in the slot buffer, what it saves is everything downstream
+    // (assembly, gate, analysis, display, save), which is what lets the sockets
+    // keep draining and slsReceiver's ring buffer stay empty.  The frame number
+    // is shared by both interfaces, so they drop exactly the same frames and
+    // stay in step.
+    {
+        const int keepDiv = g_keepDiv.load();
+        if (keepDiv > 1 &&
+            (sl.frameKey % static_cast<uint64_t>(keepDiv)) != 0) {
+            sl.valid = false; // read and forgotten, never assembled
+            shedDrops_.fetch_add(1);
+            return false;
+        }
+    }
     // header fields mirrored into the ROI-save parameter datasets
     {
         SavedFrameHeader &h = sl.hdr;
@@ -1988,14 +2111,21 @@ void Pipeline::drainTo(int portIdx, uint64_t targetKey) {
 // and offset by each interface's own first index, so it cannot be a shared
 // key).
 //
-// Alignment policy - an assembled frame is ALWAYS complete and index-aligned:
-//   * flow control - an interface holding an unpaired slab is not read again,
-//     so the frame the partner still has to match is kept;
-//   * a slab behind the leading frame number is discarded and counted in
-//     'resync' (it can never be paired any more);
-//   * an interface that has not produced a frame for kStallMs is treated as
-//     stalled: the pending slabs are discarded (counted in 'incomplete')
-//     rather than shown half-filled, so a dead stream cannot freeze the image.
+// Alignment policy - an assembled frame is complete and always as fresh as
+// the streams allow:
+//   * every socket is polled and drained at full speed, always - holding a
+//     slab makes slsReceiver's queue fill and the receiver then skips frames on
+//     that interface, which is what makes the two streams drift apart;
+//   * the newest slab of every interface is paired, whatever its frame number:
+//     after a per-interface skip the numbers stay offset for ever, so matching
+//     on equal keys would never pair again and holding a slab to let the mate
+//     "catch up" only shifts the problem into the receiver's buffer.  A skewed
+//     pair costs one frame with a one-frame-old half, counted in 'resync';
+//   * a frame number gap is reported, and a persistently silent interface is
+//     reported once in a while (counted in 'incomplete');
+//   * load shedding stays available for a real analysis backlog (see the
+//     ladder in the acquisition loop): 1/2, 1/4, 7/8 of the frames are dropped
+//     synchronously, keyed on the shared frame number.
 bool Pipeline::tryAssemble(bool force) {
     const size_t n = rxPorts_.size();
     if (n == 0)
@@ -2050,9 +2180,10 @@ bool Pipeline::tryAssemble(bool force) {
         return false; // nothing pending
 
     if (validCount < n) {
-        // An interface has nothing pending.  While it keeps producing frames
-        // we simply wait (flow control holds the others).  Only a stalled or
-        // never-arriving interface ends the wait.
+        // An interface has nothing pending.  Nothing is held back: the socket
+        // is drained continuously, so the pending slab is simply replaced by
+        // the next frame if the partner stays away.  Only a genuinely silent
+        // interface deserves a message.
         const int64_t now = nowMs();
         bool stalled = false;
         for (size_t i = 0; i < n; i++) {
@@ -2063,67 +2194,97 @@ bool Pipeline::tryAssemble(bool force) {
                 if (now - last > kStallMs)
                     stalled = true;
             } else if (now - acqStartMs_ > kInitialPairTimeoutMs) {
-                stalled = true; // never delivered anything at all
+                stalled = true;
             }
         }
-        if (!stalled)
-            return false;
-
-        // Stalled: discard the pending slabs (never show a half-filled frame)
-        // and report why, at most once per 5 s.
-        uint64_t dropped = 0;
-        for (size_t i = 0; i < n; i++) {
-            if (slots_[i].valid) {
-                slots_[i].valid = false;
-                dropped++;
-            }
-        }
-        if (dropped) {
+        if (stalled && now - lastPairWarnMs_.load() > 5000) {
+            lastPairWarnMs_.store(now);
             incomplete_.fetch_add(1);
-            const int64_t now2 = nowMs();
-            if (now2 - lastPairWarnMs_.load() > 5000) {
-                lastPairWarnMs_.store(now2);
-                printf("[frames] an interface has no data: dropping unpaired "
-                       "frames to stay aligned (check the interface states)\n");
-                fflush(stdout);
-            }
+            printf("[frames] an interface has no data: check the interface "
+                   "states\n");
+            fflush(stdout);
         }
         return false;
     }
 
     // ---- all interfaces have a slab --------------------------------------
+    // A skip on ONE interface (slsReceiver does that per interface) leaves the
+    // two frame numbers permanently offset: the interface that skipped keeps
+    // sending one number further on, for ever.  Matching on equal keys would
+    // therefore never succeed again, and holding the leader until the mate
+    // "catches up" is worse - it fills that socket, so the receiver skips even
+    // more.  So the two newest slabs are always paired; the frame numbers are
+    // used to *report* the skew, and a skew costs exactly one slightly
+    // mismatched frame instead of a stream that never assembles again.
     if (lo != hi) {
         const uint64_t gap = hi - lo;
-        // Discard the slabs that are behind the leading frame number; the
-        // leading one is kept (flow control) so the partner can still reach
-        // it.  A large gap is caught up in one burst.
-        if (gap > 8) {
+        const int64_t now3 = nowMs();
+        // Hard dropping: the halves are not the same detector frame, so the
+        // pair is discarded instead of being shown or saved.  Both sockets stay
+        // drained, nothing is held back, and every frame that *is* processed is
+        // index-aligned - which is what matters once frames are written to disk.
+        // One-frame lookahead: one interface already moved on, so pair its
+        // *previous* payload with the other one's current payload.  The keys
+        // then match and no frame is dropped.
+        bool handled = false;
+        // One-frame lookahead: the leading interface already consumed `lo`, so
+        // pair its previous payload with the lagging slab of the same frame.
+        if (gap == 1) {
+            bool ok = true;
             for (size_t i = 0; i < n; i++) {
+                slots_[i].usePrev = false;
+                if (slots_[i].frameKey == lo)
+                    continue;
+                if (slots_[i].hasPrev && slots_[i].prevKey == lo)
+                    slots_[i].usePrev = true;
+                else
+                    ok = false;
+            }
+            if (!ok) // never leave a half-selected pair behind
+                for (size_t i = 0; i < n; i++)
+                    slots_[i].usePrev = false;
+            handled = ok;
+        }
+        if (!handled && !allowSkewedPair_ && lastAssembledMs_ != 0 &&
+            now3 - lastAssembledMs_ < kNoPairFallbackMs) {
+            // Only the OLDER slabs are dropped: the leading slab is kept, so
+            // the very next frame from the lagging interface carries the same
+            // frame number and pairs.  Discarding both (what we did before)
+            // threw away a frame and left the two streams just as far apart.
+            resyncDrops_.fetch_add(1);
+            for (size_t i = 0; i < n; i++)
                 if (slots_[i].valid && slots_[i].frameKey < hi)
-                    drainTo(static_cast<int>(i), hi);
-            }
-        }
-        uint64_t dropped = 0;
-        for (size_t i = 0; i < n; i++) {
-            if (slots_[i].valid && slots_[i].frameKey < hi) {
-                slots_[i].valid = false;
-                dropped++;
-            }
-        }
-        resyncDrops_.fetch_add(dropped);
-        if (dropped) {
-            const int64_t now = nowMs();
-            if (now - lastPairWarnMs_.load() > 5000) {
-                lastPairWarnMs_.store(now);
-                printf("[frames] interfaces out of step by %llu frame(s); "
-                       "discarding the lagging slab to stay aligned\n",
+                    slots_[i].valid = false;
+            if (now3 - lastPairWarnMs_.load() > 5000) {
+                lastPairWarnMs_.store(now3);
+                printf("[frames] interfaces are %llu frame(s) apart; dropping "
+                       "the pair to keep every frame aligned\n",
                        static_cast<unsigned long long>(gap));
                 fflush(stdout);
             }
+            return false;
         }
-        return false;
+        if (handled) {
+            pairWaitStartMs_ = 0;
+            allowSkewedPair_ = false;
+        } else {
+        // Nothing has paired for kNoPairFallbackMs: the two frame numbers are
+        // offset for good (an interface that keeps skipping).  Pair the newest
+        // slabs anyway so the stream stays live, and report it.
+        allowSkewedPair_ = true; // stay in this mode until a pair matches again
+        skewedPairs_.fetch_add(1);
+        if (now3 - lastPairWarnMs_.load() > 5000) {
+            lastPairWarnMs_.store(now3);
+            printf("[frames] interfaces are %llu frame(s) apart and nothing has "
+                   "paired for %lld ms; pairing the newest slabs\n",
+                   static_cast<unsigned long long>(gap),
+                   static_cast<long long>(kNoPairFallbackMs));
+            fflush(stdout);
+        }
+        }
     }
 
+    const double tCopy0 = acqNow();
     // ---- index-aligned: assemble -----------------------------------------
     if (assembled_.size() != static_cast<size_t>(NCH))
         assembled_.assign(static_cast<size_t>(NCH), 0);
@@ -2137,17 +2298,20 @@ bool Pipeline::tryAssemble(bool force) {
         const size_t dstAvail = (dstOffset < assembled_.size())
                                     ? assembled_.size() - dstOffset
                                     : 0;
+        const short *srcPtr =
+            sl.usePrev ? sl.prevData.data() : sl.data.data();
+        const size_t srcLen = sl.usePrev ? sl.prevLen : sl.len;
         size_t srcOffset = 0;
         const size_t rows = static_cast<size_t>(sl.h > 0 ? sl.h : slabRows);
         if (sl.h == totalH && n > 1) // interface streams the whole module
             srcOffset = static_cast<size_t>(rowBase) * width;
         size_t count = rows * static_cast<size_t>(width);
-        if (srcOffset + count > sl.len)
-            count = (sl.len > srcOffset) ? sl.len - srcOffset : 0;
+        if (srcOffset + count > srcLen)
+            count = (srcLen > srcOffset) ? srcLen - srcOffset : 0;
         if (count > dstAvail)
             count = dstAvail;
         if (count)
-            memcpy(assembled_.data() + dstOffset, sl.data.data() + srcOffset,
+            memcpy(assembled_.data() + dstOffset, srcPtr + srcOffset,
                    count * sizeof(short));
         if (count < dstAvail)
             memset(reinterpret_cast<char *>(assembled_.data()) + dstOffset +
@@ -2156,12 +2320,29 @@ bool Pipeline::tryAssemble(bool force) {
     }
 
     uint64_t bytes = 0;
-    const uint64_t pairKey = slots_[0].frameKey;
+    const uint64_t pairKey = lo; // the frame that was actually assembled
     for (size_t i = 0; i < n; i++) {
         bytes += slots_[i].len * sizeof(short);
-        slots_[i].valid = false;
+        if (slots_[i].usePrev) {
+            // Contributed its PREVIOUS frame: the newer slab is still the
+            // leading frame, so keep it pending for the next pairing.
+            slots_[i].usePrev = false;
+            slots_[i].hasPrev = false;
+        } else {
+            slots_[i].valid = false;
+            // The frame just assembled becomes the lookahead candidate; the
+            // swap keeps a free buffer for the next read (no memory traffic).
+            std::swap(slots_[i].data, slots_[i].prevData);
+            slots_[i].prevKey = slots_[i].frameKey;
+            slots_[i].prevLen = slots_[i].len;
+            slots_[i].hasPrev = true;
+        }
     }
+    g_acq.copy += acqNow() - tCopy0; // just the per-interface memcpy/memset
     pairWaitStartMs_ = 0;
+    lastAssembledMs_ = nowMs();
+    if (lo == hi)
+        allowSkewedPair_ = false; // realigned, back to strict pairing
 
     if (bytes == 0)
         return false;
@@ -2283,6 +2464,66 @@ void Pipeline::acqLoop() {
                     inB > prevInB ? (inB - prevInB) / dt / 1e6 : 0.0);
                 gate_.r_.ratePassMBs.store(
                     outB > prevOutB ? (outB - prevOutB) / dt / 1e6 : 0.0);
+                // ---- alignment load-shedding ladder ----------------------
+                // "Trouble" is the interfaces having to drop slabs to stay in
+                // step (lagging resyncs, overwritten slabs, half frames).  While
+                // it keeps growing, deliberately drop a synchronised fraction of
+                // the frames (1/2, then 3/4, then 7/8) so the rest of the chain
+                // keeps up and the sockets stay drained; when it has been clean
+                // for a few seconds, step back up.
+                if (multiPort() && g_autoDecimate.load()) {
+                    // A resync or a replaced slab is the normal cost of pairing
+                    // the newest slabs (one frame, never a stall), so it must
+                    // not drive the ladder: only frames that the analysis has
+                    // accepted but not finished do.
+                    // Frames that entered the gate but have not been
+                    // classified yet.  Rejects and storage-cell drops are
+                    // finished frames, not a backlog - counting them pinned the
+                    // ladder at 1/8 whenever the gate rejected anything.
+                    const int64_t backlog =
+                        static_cast<int64_t>(s.framesIn) -
+                        static_cast<int64_t>(s.framesPass) -
+                        static_cast<int64_t>(s.framesDrop) -
+                        static_cast<int64_t>(s.framesScDrop);
+                    const uint64_t trouble =
+                        backlog > 50 ? static_cast<uint64_t>(backlog) : 0;
+                    const int d = g_keepDiv.load();
+                    if (trouble != shedLastTrouble_) {
+                        shedLastTrouble_ = trouble;
+                        shedCleanSeconds_ = 0;
+                        if (d < 8) {
+                            g_keepDiv.store(d * 2);
+                            printf("[align] analysis backlog (%llu frame(s)): "
+                                   "keeping 1/%d of the frames\n",
+                                   static_cast<unsigned long long>(trouble),
+                                   d * 2);
+                            fflush(stdout);
+                        }
+                    } else if (d > 1 && ++shedCleanSeconds_ >= 5) {
+                        shedCleanSeconds_ = 0;
+                        g_keepDiv.store(d / 2);
+                        printf("[align] streams clean: keeping 1/%d of the "
+                               "frames\n", d / 2);
+                        fflush(stdout);
+                    }
+                }
+                {
+                    const double tot = g_acq.poll + g_acq.read + g_acq.pair;
+                    const double other =
+                        tot < dt ? dt - tot : 0.0;
+                    const double inv = (dt > 0.0) ? 100.0 / dt : 0.0;
+                    printf("[perf] poll=%.0f%% read=%.0f%% pair=%.0f%% "
+                           "(copy=%.0f%%) other=%.0f%% loops=%llu "
+                           "offered=%.0f/s\n",
+                           g_acq.poll * inv, g_acq.read * inv,
+                           g_acq.pair * inv, g_acq.copy * inv, other * inv,
+                           (unsigned long long)g_acq.n,
+                           (dt > 0.0) ? g_acq.msgs / dt : 0.0);
+                    fflush(stdout);
+                    g_acq.poll = g_acq.read = g_acq.pair = g_acq.copy = 0.0;
+                    g_acq.n = 0;
+                    g_acq.msgs = 0;
+                }
                 prevIn = s.framesIn;
                 prevPass = s.framesPass;
                 prevInB = inB;
@@ -2291,12 +2532,15 @@ void Pipeline::acqLoop() {
             }
         }
 
-        // A held slab means "wait for the partner": stop asking about that
-        // socket, or the poll reports it readable forever and the acq thread
-        // busy-spins at 100 % while it waits.
+        // Every socket is polled and drained at full speed, always.  Holding a
+        // slab makes the *receiver* keep sending into our queue until it is
+        // full, and slsReceiver then skips frames on that interface - which is
+        // precisely how the two streams drift apart.  Draining keeps the queues
+        // shallow and lets the pairing resolve a gap in one frame instead.
         for (int i = 0; i < nSub; i++)
-            items[2 * i].events = slots_[i].valid ? 0 : ZMQ_POLLIN;
+            items[2 * i].events = ZMQ_POLLIN;
 
+        g_acq.t0 = acqNow();
         const int rc = zmq_poll(items.data(), static_cast<int>(items.size()),
                                 200 /* ms: also lets us poll running_ */);
         if (rc < 0) {
@@ -2311,17 +2555,81 @@ void Pipeline::acqLoop() {
             continue;
         }
 
+        g_acq.poll += acqNow() - g_acq.t0; // waiting in zmq_poll
+        g_acq.t1 = acqNow();
         for (int i = 0; i < nSub; i++) {
             if (items[2 * i + 1].revents & ZMQ_POLLIN)
                 drainMonitor(i);
-            if ((items[2 * i].revents & ZMQ_POLLIN) && !slots_[i].valid) {
-                // Flow control: never overwrite a slab still waiting to be
-                // paired.  The lagging interface catches up instead and the
-                // leading interface's socket queue buffers its newer frames.
-                readStream(i);
+            // Drain the socket down to its newest message.  Pairing the two
+            // newest slabs is what keeps the halves from the same instant, and
+            // an empty queue is what keeps slsReceiver from skipping on that
+            // interface.  Bounded per wake-up so the other sockets are not
+            // starved.
+            if (items[2 * i].revents & ZMQ_POLLIN) {
+                for (int k = 0; k < 32; k++) {
+                    if (!readOne(i))
+                        break;
+                    int ev = 0;
+                    size_t evs = sizeof(ev);
+                    if (zmq_getsockopt(zmqSubs_[i], ZMQ_EVENTS, &ev, &evs) != 0 ||
+                        !(ev & ZMQ_POLLIN))
+                        break;
+                }
             }
         }
+        g_acq.read += acqNow() - g_acq.t1; // recv + JSON + slab copies
+        g_acq.t2 = acqNow();
         refreshStreamState();
+
+        // Catch the slower interface up instead of discarding the leading
+        // frames: while the newest slabs disagree, take extra messages from the
+        // socket whose frame number is lower (about two reads for its one), so
+        // it reaches the same frame number.  Bounded, and it stops as soon as
+        // that socket has nothing queued - it is then at the live edge, and
+        // only a frame the receiver skipped can explain the remaining gap.
+        if (multiPort()) {
+            for (int round = 0; round < 4; round++) {
+                size_t vc = 0;
+                uint64_t lo2 = 0, hi2 = 0;
+                int behind = -1;
+                for (int i = 0; i < nSub; i++) {
+                    if (!slots_[i].valid)
+                        continue;
+                    if (vc == 0) {
+                        lo2 = hi2 = slots_[i].frameKey;
+                        behind = i;
+                    } else if (slots_[i].frameKey < lo2) {
+                        lo2 = slots_[i].frameKey;
+                        behind = i;
+                    } else {
+                        hi2 = slots_[i].frameKey;
+                    }
+                    vc++;
+                }
+                if (vc < 2 || lo2 == hi2 || behind < 0)
+                    break;
+                int got = 0;
+                for (int k = 0; k < 8; k++) {
+                    if (!readOne(behind))
+                        break;
+                    got++;
+                    // stop the moment it reaches the leader: one message too
+                    // many and it becomes the leader itself, which only flips
+                    // the mismatch around
+                    if (slots_[behind].valid &&
+                        slots_[behind].frameKey >= hi2)
+                        break;
+                    int ev = 0;
+                    size_t evs = sizeof(ev);
+                    if (zmq_getsockopt(zmqSubs_[behind], ZMQ_EVENTS, &ev,
+                                       &evs) != 0 ||
+                        !(ev & ZMQ_POLLIN))
+                        break;
+                }
+                if (!got)
+                    break;
+            }
+        }
 
         if (multiPort()) {
             // Pair the slabs; only index-aligned frames are processed.  The
@@ -2329,6 +2637,8 @@ void Pipeline::acqLoop() {
             // the stream is faster than this program the excess is discarded
             // by ZMQ, not copied and thrown away here.
             tryAssemble(false);
+            g_acq.pair += acqNow() - g_acq.t2; // pairing + assemble copy
+            g_acq.n++;
         } else {
             StreamSlot &sl = slots_[0];
             if (!sl.valid)
@@ -2468,6 +2778,8 @@ void analysisRange(int widx, int i0, int i1, const FrameJob &job) {
     uint32_t *roi = g_workerRoi[widx].c;
     uint32_t *roiKev = g_workerRoi[widx].k;
     double fills = 0.0;
+    // hot pixel mask for this frame (one atomic load, not one per pixel)
+    const auto hmask = hotMaskSnapshot();
 
     // ---- step 1: ADC / gain images --------------------------------------
     for (int i = i0; i < i1; i++) {
@@ -2485,6 +2797,10 @@ void analysisRange(int widx, int i0, int i1, const FrameJob &job) {
 
     // ---- step 2: photon counting + PH spectra + photon map ---------------
     for (int i = i0; i < i1; i++) {
+        // Masked pixels contribute nothing to the PH spectra, the chip spectra
+        // or the photon map - they are not part of the detector signal.
+        if (hmask && i < hmask->size() && (*hmask)[static_cast<size_t>(i)])
+            continue;
         const int adcvalue = img[i] & 0x3fff;
         const int gain = (img[i] & 0xc000) ? ((img[i] >> 14) & 0x3) : 0;
         float adcpedecorr = 0.0f;
@@ -2705,6 +3021,7 @@ void runAnalysisFrame(const FrameJob &job) {
             }
         }
         g_pmapFills += g_workerFills[k];
+        g_pmapFrames++;
         g_workerFills[k] = 0.0;
     }
 }

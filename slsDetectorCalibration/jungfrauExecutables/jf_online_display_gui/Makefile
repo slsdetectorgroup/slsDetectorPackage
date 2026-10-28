@@ -78,6 +78,9 @@ STRIXEL_HDR = $(CAL)/dataStructures/jungfrauLGADStrixelsData_new.h
 %.o: %.cpp online_jf.h
 	$(CXX) $(ALL_CXXFLAGS) -c $< -o $@
 
+gate_contig_test: test/gate_contig_test.cpp online_jf_core.o online_jf_root.o online_jf_h5.o
+	$(CXX) $(ALL_CXXFLAGS) -o $@ $^ $(LIBS)
+
 $(BIN): $(OBJS)
 	$(CXX) -o $@ $(OBJS) $(LIBS)
 

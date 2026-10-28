@@ -898,3 +898,53 @@ covers the second binary and the `.JFSTRX.o` files.
   can be inspected (the mapped panels are ~1000 x 1900).  The same constant
   guards `setViewport()` and `zoomTo()`, so a coordinated zoom propagates down
   to the new limit.
+
+### Dual-interface alignment: drain fast, pair index-aligned, shed on backlog
+
+Operator report: after the machine had been busy for a while the two interfaces
+stopped being aligned and never recovered, with the deltas fluctuating. There
+were two causes, one on each side.
+
+* **Holding a slab is back-pressure.** The old pairing stopped polling an
+  interface whose slab was waiting for its partner (`events = 0`) and accepted
+  only *equal* frame numbers. That fills slsReceiver's ZMQ ring, and the
+  receiver then skips frames **on its own side** - per interface, not per
+  frame - so the two frame numbers drift apart and, with exact matching, never
+  meet again. Waiting "until the partner catches up" made it worse.
+
+What the code does now (`Pipeline::tryAssemble()` in `online_jf_core.cpp`):
+
+* **Always drain.** Every socket is polled on every turn and drained down to
+  its newest message (bounded to 32 messages per socket and wake-up, so no
+  interface is starved). Nothing is ever held, so the receiver's buffer stays
+  empty - the whole point at 2 kHz.
+* **Pair index-aligned or not at all.** When the newest slabs carry different
+  frame numbers (one interface skipped), the pair is **dropped** (`resync`) and
+  the next one is tried, so every frame that is displayed or saved is stitched
+  from a single detector frame. No chasing, no unbounded wait, no half frames.
+* **Latch for a permanent offset.** If nothing pairs for 500 ms the offset is
+  structural (an interface that keeps skipping), so the newest slabs are paired
+  anyway (`skewedPairs_`, logged) to keep the stream alive; strict pairing
+  comes back by itself as soon as a pair matches again.
+* **Decimation is manual by default**, `--decimate 2|4|8` (1 frame in N, dropped
+  by detector frame number so both interfaces drop the same ones).  The automatic
+  ladder (1 -> 2 -> 4 -> 8, stepping back up after 5 s clean) only runs with
+  `--auto-decimate`: frames are queued in the *gate*, so the backlog is
+  `framesIn - framesPass - framesDrop - framesScDrop` - counting gate rejects as
+  backlog used to pin the ladder at 1/8 whenever the gate rejected anything.
+* **A silent interface is reported, not waited for**, so a dead stream cannot
+  freeze the pipeline.
+* Audit: `--stats` prints `resync` / `behind` / `incomplete` and the
+  per-second `[align] keep=1/<N> shed=<n>` line; ladder steps and "dropping the
+  pair" messages are rate-limited.
+
+Verified against the live receiver `10.1.1.106 30026+30027` at ~2000 frames/s:
+20 s runs alone and with eight CPU hogs (`yes`) both keep `drop=0`,
+`in == pass`, `keep=1/1`, `shed=0`, with no unpaired-interface message. The
+synthetic feeder with equal keys gives `resync=0`; with a permanent one-frame
+offset (`dual ... 1`) the latch keeps ~16 frames/s at 20 fps instead of
+stalling. At 2 kHz the interfaces are a frame apart often enough that roughly
+one pair in four is dropped by the strict rule - the intended trade (aligned
+frames only). A one-frame lookahead per interface (swap two buffers, no copy)
+would recover them; it is the obvious follow-up if the saved-frame rate ever
+matters.

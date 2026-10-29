@@ -184,6 +184,10 @@ struct Config {
     // ports, ordered BOTTOM -> TOP in the assembled image.  One entry is the
     // classic single-interface mode; "30001+30002" selects two interfaces.
     std::vector<int> rxPorts{DEFAULT_RX_PORT};
+    // Slab placement per interface: 0 = unknown (order of the '+' list),
+    // 1 = bottom half, 2 = top half.  Set by the ":bottom"/":top" suffix of a
+    // port, which is what makes a single interface placeable: "30027:top".
+    std::vector<int> rxSlab;
     float threshold = 100.0f;  // GATE threshold (pede-subtracted ADC)
     uint64_t minPixels = 5;    // GATE min pixels above threshold
     bool contiguous = false;   // GATE contiguity proxy
@@ -959,6 +963,9 @@ class Pipeline {
 
     uint64_t displayFrames() const;
     uint64_t displayDropped() const;
+    // placement of each interface's slab (see Config::rxSlab)
+    std::vector<int> rxSlab_;
+
     // hot pixel mask taken from the current photon map (GUI action)
     void setHotMaskFromPmap(double threshold);
     uint64_t pmapFrames() const; // frames the photon map has accumulated

@@ -1329,6 +1329,8 @@ bool Pipeline::init(std::string &error) {
     rxPorts_ = g_cfg.rxPorts;
     if (rxPorts_.empty())
         rxPorts_.push_back(DEFAULT_RX_PORT);
+    rxSlab_ = g_cfg.rxSlab;
+    rxSlab_.resize(rxPorts_.size(), 0); // placement per interface (0 = by order)
     if (rxPorts_.size() > JF_MAX_PORTS) {
         error = "too many rx ports (max " + std::to_string(JF_MAX_PORTS) + ")";
         return false;
@@ -2648,11 +2650,37 @@ void Pipeline::acqLoop() {
             const size_t fullBytes = static_cast<size_t>(NCH) * 2;
             const uint64_t bytes = sl.len * sizeof(short);
             const size_t copyBytes = std::min<size_t>(bytes, fullBytes);
+            // A single interface may carry the top half: "30027:top" puts the
+            // slab in the upper rows and zeroes the rest of the frame.  Without
+            // a suffix (or for a full-frame stream) it stays at offset 0.
+            size_t dstOffset = 0;
+            const int width = fullW_.load() > 0 ? fullW_.load() : kRawWidth;
+            const int height = fullH_.load() > 0 ? fullH_.load() : kRawHeight;
+            const int rows = (width > 0) ? static_cast<int>(copyBytes /
+                                                            (2 * width))
+                                         : 0;
+            if (rxSlab_.size() > 0 && rxSlab_[0] == 2 && height > 0 &&
+                rows > 0 && rows < height) {
+                dstOffset = static_cast<size_t>(height - rows) * width * 2;
+            }
+            memset(assembled_.data(), 0, fullBytes); // both halves start clean
             if (copyBytes)
-                memcpy(assembled_.data(), sl.data.data(), copyBytes);
-            if (copyBytes < fullBytes)
-                memset(reinterpret_cast<char *>(assembled_.data()) + copyBytes,
-                       0, fullBytes - copyBytes);
+                memcpy(reinterpret_cast<char *>(assembled_.data()) + dstOffset,
+                       sl.data.data(), copyBytes);
+            {   // say once where a single interface lands
+                static bool told = false;
+                if (!told && rows > 0) {
+                    told = true;
+                    printf("[frames] single interface %d: %dx%d at rows %d..%d"
+                           " (%s)%s\n",
+                           rxPorts_[0], width, rows,
+                           static_cast<int>(dstOffset / (2 * width)),
+                           static_cast<int>(dstOffset / (2 * width)) + rows,
+                           dstOffset ? "top" : "bottom",
+                           (rows == height) ? " [full frame]" : "");
+                    fflush(stdout);
+                }
+            }
             sl.valid = false;
 
             gate_.noteReceived(bytes, false);

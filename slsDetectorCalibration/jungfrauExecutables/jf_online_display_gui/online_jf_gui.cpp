@@ -4462,8 +4462,8 @@ void MainWindow::loadRoiDialog() {
         btns->addButton("Edit as new...", QDialogButtonBox::ActionRole);
     editBtn->setToolTip(
         "Type the four numbers of a ROI (prefilled from the selected entry, or\n"
-        "from the current ROI) and apply that rectangle as a new ROI.  The list\n"
-        "is not modified - press \"Save ROI\" in the ROI panel to add it.");
+        "from the current ROI), press Apply: the rectangle becomes the current\n"
+        "ROI and is added to the list as a new entry.");
     btns->addButton(QDialogButtonBox::Cancel);
     if (listEmpty) { // nothing to apply or delete, but editing still works
         applyBtn->setEnabled(false);
@@ -4515,10 +4515,14 @@ void MainWindow::loadRoiDialog() {
         form->addRow("Y (data, from the bottom):", sy);
         form->addRow("Width:", sw);
         form->addRow("Height:", sh);
-        auto *eb = new QDialogButtonBox(
-            QDialogButtonBox::Apply | QDialogButtonBox::Cancel, &ed);
+        auto *eb = new QDialogButtonBox(&ed);
+        // A QDialogButtonBox only emits accepted() for AcceptRole buttons, so an
+        // Apply (ApplyRole) button must be wired to accept() explicitly -
+        // otherwise clicking it did nothing at all.
+        auto *applyEd = eb->addButton("Apply", QDialogButtonBox::ApplyRole);
+        eb->addButton(QDialogButtonBox::Cancel);
         form->addRow(eb);
-        connect(eb, &QDialogButtonBox::accepted, &ed, &QDialog::accept);
+        connect(applyEd, &QPushButton::clicked, &ed, &QDialog::accept);
         connect(eb, &QDialogButtonBox::rejected, &ed, &QDialog::reject);
         // keep the rectangle inside the image while the numbers are typed
         connect(sx, QOverload<int>::of(&QSpinBox::valueChanged), &ed,
@@ -4538,6 +4542,14 @@ void MainWindow::loadRoiDialog() {
             return;
         }
         applyRoi(nx, ny, nw, nh, "edited numbers", false);
+        // it is a NEW entry: store it in the list (this also refreshes the
+        // timestamp, so it comes back first next time)
+        if (!roiListUpsert(nx, ny, nw, nh))
+            QMessageBox::warning(
+                this, "Edit ROI",
+                QString("The ROI was applied but could not be written to %1")
+                    .arg(QString::fromStdString(g_cfg.roiFile)));
+        updateRoiLabel();
         editedChosen = true;
         dialog.accept();
     });
@@ -5318,6 +5330,10 @@ void MainWindow::quitApp() {
 void printUsage(const char *prog) {
     printf("Usage: %s <rx_host> [rx_port] [gate_threshold] [min_pixels]\n"
            "          [pede_file] [--pub PORT] [--contig] [--no-gate]\n"
+           "          a port may carry its slab placement:\n"
+           "          30026+30027      order of the list = bottom, top\n"
+           "          30027:top        one interface, upper half\n"
+           "          30026:bottom     one interface, lower half\n"
            "          [--pede-frames N]\n"
            "\n"
            "  rx_host      slsReceiver host\n"
@@ -5607,12 +5623,31 @@ bool parseCommandLine(int argc, char **argv, Config &cfg, bool &help,
                 error = "bad rx_port list '" + spec + "'";
                 return false;
             }
-            const int port = std::atoi(tok.c_str());
+            // "30027:top" / "30026:bottom" place a single interface's slab
+            // inside the module without needing its partner.
+            std::string num = tok;
+            int slab = 0;
+            const size_t colon = tok.find(':');
+            if (colon != std::string::npos) {
+                num = tok.substr(0, colon);
+                const std::string where = tok.substr(colon + 1);
+                if (where == "top")
+                    slab = 2;
+                else if (where == "bottom")
+                    slab = 1;
+                else {
+                    error = "bad placement '" + where + "' in '" + spec +
+                            "' (use :top or :bottom)";
+                    return false;
+                }
+            }
+            const int port = std::atoi(num.c_str());
             if (port <= 0 || port > 65535) {
                 error = "bad rx_port '" + tok + "' in '" + spec + "'";
                 return false;
             }
             cfg.rxPorts.push_back(port);
+            cfg.rxSlab.push_back(slab);
             if (plus == std::string::npos)
                 break;
             start = plus + 1;

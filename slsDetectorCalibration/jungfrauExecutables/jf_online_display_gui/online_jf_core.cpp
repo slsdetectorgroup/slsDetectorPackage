@@ -1930,19 +1930,55 @@ bool Pipeline::readOne(int portIdx) {
         const int ymin = d["rx_roi"][2].GetInt();
         const int ymax = d["rx_roi"][3].GetInt();
         if (xmax > xmin && ymax > ymin) {
-            const bool changed = (xmin != rxRoiXmin.load() ||
-                                  xmax != rxRoiXmax.load() ||
-                                  ymin != rxRoiYmin.load() ||
-                                  ymax != rxRoiYmax.load());
-            rxRoiXmin.store(static_cast<uint16_t>(xmin));
-            rxRoiXmax.store(static_cast<uint16_t>(xmax));
-            rxRoiYmin.store(static_cast<uint16_t>(ymin));
-            rxRoiYmax.store(static_cast<uint16_t>(ymax));
-            rxRoiValid.store(true);
-            if (changed) {
-                printf("[rx] receiver ROI x=%d..%d y=%d..%d (raw port coords, "
+            // Each interface reports its own slice in RAW port coordinates, so
+            // a ROI crossing the interface boundary (e.g. y 28..356 on a 2x256
+            // module) arrives as 28..255 on the bottom port and 0..100 on the
+            // top one.  Translate each slice into assembled rows and draw the
+            // union, otherwise the box stopped at the interface boundary.
+            static std::atomic<int> px0[JF_MAX_PORTS], px1[JF_MAX_PORTS],
+                py0[JF_MAX_PORTS], py1[JF_MAX_PORTS];
+            static std::atomic<bool> seen[JF_MAX_PORTS];
+            int slabH = 0;
+            if (d.HasMember("shape") && d["shape"].IsArray() &&
+                d["shape"].Size() >= 2)
+                slabH = d["shape"][1].GetInt();
+            const int nIf = static_cast<int>(rxPorts_.size());
+            const int totalH = fullH_.load() > 0 ? fullH_.load() : kRawHeight;
+            // A single interface already reports the ROI in module rows (the
+            // receiver owns the whole module), so it is drawn exactly as it
+            // arrives: never shift it, or the box lands in the dead region.
+            // With several interfaces each one reports only its own slice,
+            // which is translated by its row offset and unioned below.
+            int rowBase = 0;
+            if (nIf > 1 && slabH > 0 && slabH < totalH && totalH % nIf == 0)
+                rowBase = portIdx * (totalH / nIf);
+            px0[portIdx].store(xmin);
+            px1[portIdx].store(xmax);
+            py0[portIdx].store(ymin + rowBase);
+            py1[portIdx].store(ymax + rowBase);
+            seen[portIdx].store(true);
+            int ux0 = 1 << 30, ux1 = -1, uy0 = 1 << 30, uy1 = -1;
+            for (int k = 0; k < nIf; k++) {
+                if (!seen[k].load())
+                    continue;
+                ux0 = std::min(ux0, px0[k].load());
+                ux1 = std::max(ux1, px1[k].load());
+                uy0 = std::min(uy0, py0[k].load());
+                uy1 = std::max(uy1, py1[k].load());
+            }
+            const bool changed = (ux0 != rxRoiXmin.load() ||
+                                  ux1 != rxRoiXmax.load() ||
+                                  uy0 != rxRoiYmin.load() ||
+                                  uy1 != rxRoiYmax.load());
+            rxRoiXmin.store(static_cast<uint16_t>(ux0));
+            rxRoiXmax.store(static_cast<uint16_t>(ux1));
+            rxRoiYmin.store(static_cast<uint16_t>(uy0));
+            rxRoiYmax.store(static_cast<uint16_t>(uy1));
+            rxRoiValid.store(ux1 > ux0 && uy1 > uy0);
+            if (changed && rxRoiValid.load()) {
+                printf("[rx] receiver ROI x=%d..%d y=%d..%d (assembled rows, "
                        "drawn as the red box)\n",
-                       xmin, xmax, ymin, ymax);
+                       ux0, ux1, uy0, uy1);
                 fflush(stdout);
             }
         } else {

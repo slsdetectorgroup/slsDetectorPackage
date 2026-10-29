@@ -9,7 +9,7 @@ If any changes to enums in slsDetectorDefs
 ```sh
 # to generate the dump.json file
 cd slsSupportLib/src
-clang++ -Xclang -ast-dump=json -Xclang -ast-dump-filter -Xclang StringTo -c ToString.cpp -I ../include/ -std=gnu++11 > ../../slsDetectorSoftware/generator/autocomplete/dump.json 
+clang++ -Xclang -ast-dump=json -Xclang -ast-dump-filter -Xclang StringTo -c ToString.cpp -I ../include/ -std=gnu++17 > ../../slsDetectorSoftware/generator/autocomplete/dump.json 
 cd ../../slsDetectorSoftware/generator/autocomplete
 python autocomplete.py -f
 ```

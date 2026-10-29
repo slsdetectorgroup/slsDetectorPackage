@@ -1,0 +1,16 @@
+# build outputs (make and cmake)
+cmake-build/
+jf_online_display_gui
+jf_online_display_gui_JFSTRX
+gate_contig_test
+*.o
+*.JFSTRX.o
+test/jf_feeder
+test/xclick
+# run artefacts
+current_pede.dat
+jfroi_*.json
+*.json.lock
+roi_list.dat
+save_dest_list.dat
+testPHmapsave/

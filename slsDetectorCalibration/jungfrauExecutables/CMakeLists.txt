@@ -55,6 +55,13 @@ target_compile_definitions(jungfrauRawDataProcessStrxOldAldo PRIVATE JFSTRXOLD A
 list(APPEND JUNGFRAU_EXECUTABLES jungfrauRawDataProcessStrxOldAldo)
 
 
+# jf_online_display_gui (Qt5 + ROOT online display / event finder).  Off by
+# default: it needs Qt5 and ROOT, which the rest of this directory does not.
+option(BUILD_JF_ONLINE_DISPLAY_GUI "build jf_online_display_gui" OFF)
+if(BUILD_JF_ONLINE_DISPLAY_GUI)
+    add_subdirectory(jf_online_display_gui)
+endif()
+
 # others to be added if needed (might already be there in Makefile.cluster_finder TO BE CHECKED)
 
 

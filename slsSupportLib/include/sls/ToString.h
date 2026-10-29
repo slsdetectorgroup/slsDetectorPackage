@@ -352,8 +352,7 @@ T StringTo(const std::string &f, const std::string &unit) {
     }
 }
 
-template <typename T,
-          std::enable_if_t<!is_container<T>::value, int> = 0>
+template <typename T, std::enable_if_t<!is_container<T>::value, int> = 0>
 T StringTo(const std::string &t) {
     std::string tmp{t};
     auto unit = RemoveUnit(tmp);

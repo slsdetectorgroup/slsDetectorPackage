@@ -9,6 +9,7 @@ pybind11_add_module(_slsdet
     src/pattern.cpp
     src/scan.cpp
     src/current.cpp
+    src/hdr.cpp
     src/duration.cpp
     src/DurationWrapper.cpp
     src/pedestal.cpp

@@ -3004,6 +3004,28 @@ class Detector(CppDetectorApi):
         ut.set_using_dict(self.setCollectionMode, value)
 
     @property
+    @element
+    def hdr(self):
+        """[Jungfrau] Enables the high dynamic range in detector.
+        Pass in a hdrParameters object. hdrParameters() disables HDR.
+        SYNCHROTRON is the default. FEL can only be used with chip version '1.2 HDR'.
+        Enum: operationMode
+
+        Example
+        -------
+        >>> d.hdr = hdrParameters(defs.SYNCHROTRON)
+        >>> d.hdr = hdrParameters(defs.FEL)
+        >>> d.hdr = hdrParameters()
+        >>> d.hdr
+        [disabled]
+        """
+        return self.getHDR()
+
+    @hdr.setter
+    def hdr(self, value):
+        ut.set_using_dict(self.setHDR, value)
+
+    @property
     def maxclkphaseshift(self):
         """
         [Gotthard2][Mythen3] Absolute maximum Phase shift of clocks.\n

@@ -18,6 +18,7 @@ void init_network(py::module &);
 void init_pattern(py::module &);
 void init_scan(py::module &);
 void init_source(py::module &);
+void init_hdr(py::module &);
 void init_duration(py::module &);
 void init_pedestal(py::module &);
 
@@ -38,6 +39,7 @@ PYBIND11_MODULE(_slsdet, m) {
     init_pattern(m);
     init_scan(m);
     init_source(m);
+    init_hdr(m);
     init_duration(m);
     init_pedestal(m);
     //  init_experimental(m);

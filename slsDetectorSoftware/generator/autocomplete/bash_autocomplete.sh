@@ -1174,6 +1174,11 @@ return 0
 }
 __hdr() {
 FCN_RETURN=""
+if [[ ${IS_GET} -eq 0 ]]; then
+if [[ "${cword}" == "2" ]]; then
+FCN_RETURN="fel synchrotron"
+fi
+fi
 return 0
 }
 __highvoltage() {

@@ -1522,8 +1522,18 @@ int InferAction::hardwareversion() {
 
 int InferAction::hdr() {
 
-    throw RuntimeError("sls_detector is disabled for command: hdr. Use "
-                       "sls_detector_get or sls_detector_put");
+    if (args.size() == 0) {
+        return slsDetectorDefs::GET_ACTION;
+    }
+
+    if (args.size() == 1) {
+        return slsDetectorDefs::PUT_ACTION;
+    }
+
+    else {
+
+        throw RuntimeError("Could not infer action: Wrong number of arguments");
+    }
 }
 
 int InferAction::highvoltage() {

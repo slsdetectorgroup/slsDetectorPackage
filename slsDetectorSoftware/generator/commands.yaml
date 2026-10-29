@@ -2781,7 +2781,11 @@ hdr:
         GET:
           argc: 0
         PUT:
-          argc: -1
+          args:
+            - argc: 1
+              arg_types: [ defs::operationMode ]
+            - argc: 1
+              arg_types: [ int ]
 
 ################# special commands ##########################
 

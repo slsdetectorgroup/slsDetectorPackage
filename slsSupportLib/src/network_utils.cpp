@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <arpa/inet.h>
 #include <cassert>
+#include <cerrno>
 #include <csignal>
 #include <cstdlib>
 #include <cstring>
@@ -14,6 +15,10 @@
 #include <limits>
 #include <net/if.h>
 #include <netdb.h>
+#ifdef __APPLE__
+#include <net/if_dl.h>
+#endif
+#include <pthread.h>
 #include <sstream>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
@@ -179,7 +184,33 @@ IpAddr InterfaceNameToIp(const std::string &ifn) {
 MacAddr InterfaceNameToMac(const std::string &inf) {
 
 #ifdef __APPLE__
-    throw RuntimeError("InterfaceNameToMac not implemented on macOS yet");
+    // No SIOCGIFHWADDR on macOS: the hardware address is the AF_LINK entry
+    // that getifaddrs() returns for the interface
+    struct ifaddrs *ifaddr = nullptr;
+    if (getifaddrs(&ifaddr) == -1) {
+        throw RuntimeError("getifaddrs failed [" +
+                           std::string(strerror(errno)) + ']');
+    }
+    MacAddr result{};
+    for (auto *ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next) {
+        if (ifa->ifa_addr == nullptr || ifa->ifa_addr->sa_family != AF_LINK ||
+            inf != ifa->ifa_name) {
+            continue;
+        }
+        auto *sdl = reinterpret_cast<struct sockaddr_dl *>(ifa->ifa_addr);
+        if (sdl->sdl_alen != 6) {
+            continue; // not an ethernet style address (e.g. utun, lo0)
+        }
+        auto *hw = reinterpret_cast<const unsigned char *>(LLADDR(sdl));
+        uint64_t addr = 0;
+        for (int j = 0; j < 6; ++j) {
+            addr = (addr << 8) | hw[j];
+        }
+        result = MacAddr(addr);
+        break;
+    }
+    freeifaddrs(ifaddr);
+    return result;
 #else
 
     // TODO! Copied from genericSocket needs to be refactored!
@@ -232,6 +263,31 @@ void setupSignalHandler(int signal, void (*handler)(int)) {
     if (sigaction(signal, &sa, nullptr) == -1) {
         throw RuntimeError("Could not set handler for " +
                            std::string(strsignal(signal)));
+    }
+}
+
+void blockSignal(int signal) {
+    sigset_t set;
+    sigemptyset(&set);
+    sigaddset(&set, signal);
+    if (pthread_sigmask(SIG_BLOCK, &set, nullptr) != 0) {
+        throw RuntimeError("Could not block " + std::string(strsignal(signal)));
+    }
+}
+
+void waitForSignal(int signal) {
+    sigset_t set;
+    sigemptyset(&set);
+    sigaddset(&set, signal);
+    int received = 0;
+    int ret = 0;
+    do {
+        ret = sigwait(&set, &received);
+    } while (ret == EINTR);
+    if (ret != 0) {
+        throw RuntimeError("Could not wait for " +
+                           std::string(strsignal(signal)) + ": " +
+                           strerror(ret));
     }
 }
 } // namespace sls

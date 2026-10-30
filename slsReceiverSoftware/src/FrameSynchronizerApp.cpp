@@ -20,7 +20,6 @@
 #include <cstring>
 #include <mutex>
 #include <ostream>
-#include <semaphore.h>
 #include <sys/socket.h>
 #include <sys/wait.h> //wait
 #include <thread>
@@ -489,19 +488,8 @@ void GetDataCallback(slsDetectorDefs::sls_receiver_header &header,
     stat->available.release();
 }
 
-std::vector<sem_t> semaphores;
-
-/**
- * Control+C Interrupt Handler
- * to let all the processes know to exit properly
- * Only the main thread will call this handler
- */
-void sigInterruptHandler(int p) {
-    (void)signal; // suppress unused warning if needed
-    for (auto &s : semaphores) {
-        sem_post(&s);
-    }
-}
+/** Released once per receiver thread by the main thread on Ctrl+C */
+sls::counting_semaphore<> stopSemaphore{0};
 
 int main(int argc, char *argv[]) {
     CommandLineOptions cli(AppType::FrameSynchronizer);
@@ -519,15 +507,11 @@ int main(int argc, char *argv[]) {
     LOG(sls::logINFOBLUE) << "Current Process [ Tid: " << sls::getThreadId()
                           << ']';
 
-    // close files on ctrl+c
-    sls::setupSignalHandler(SIGINT, sigInterruptHandler);
+    // close files on ctrl+c: SIGINT is blocked (before any thread is created,
+    // so they all inherit the mask) and waited for in the main thread
+    sls::blockSignal(SIGINT);
     // handle locally on socket crash
     sls::setupSignalHandler(SIGPIPE, SIG_IGN);
-
-    semaphores.resize(f.numReceivers);
-    for (auto &s : semaphores) {
-        sem_init(&s, 0, 0);
-    }
 
     FrameStatus stat{true, false, f.numReceivers};
     // store pointer for signal handler
@@ -540,9 +524,7 @@ int main(int argc, char *argv[]) {
     std::exception_ptr threadException = nullptr;
     for (int i = 0; i != f.numReceivers; ++i) {
         uint16_t port = f.port + i;
-        sem_t *semaphore = &semaphores[i];
-        threads.emplace_back([i, semaphore, port, user_data,
-                              &threadException]() {
+        threads.emplace_back([i, port, user_data, &threadException]() {
             LOG(sls::logINFOBLUE)
                 << "Thread " << i << " [ Tid: " << sls::getThreadId() << ']';
             try {
@@ -555,24 +537,27 @@ int main(int argc, char *argv[]) {
                                                       user_data);
 
                 /**	- as long as no Ctrl+C */
-                // each child shares the common semaphore
-                sem_wait(semaphore);
+                stopSemaphore.acquire();
             } catch (...) {
-                // capture exception and raise SIGINT to exit gracefully
+                // capture exception and send SIGINT to the process (not
+                // raise(), which would target this thread where it is
+                // blocked) so the main thread shuts everything down
                 threadException = std::current_exception();
-                raise(SIGINT);
+                kill(getpid(), SIGINT);
             }
             LOG(sls::logINFOBLUE) << "Exiting Thread " << i
                                   << " [ Tid: " << sls::getThreadId() << " ]";
         });
     }
 
+    LOG(sls::logINFO) << "[ Press \'Ctrl+c\' to exit ]";
+    sls::waitForSignal(SIGINT);
+    stopSemaphore.release(f.numReceivers);
+
     for (auto &t : threads) {
         t.join();
     }
 
-    for (auto &s : semaphores)
-        sem_destroy(&s);
     cleanup();
 
     {

@@ -9,6 +9,7 @@
 #include <iostream>
 #include <netdb.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -91,5 +92,35 @@ void UdpRxSocket::setBufferSize(int size) {
 void UdpRxSocket::Shutdown() {
     // not closing yet on purpose, but read gives -1
     shutdown(sockfd_, SHUT_RDWR);
+#ifdef __APPLE__
+    // On macOS shutdown() on an unconnected UDP socket fails with ENOTCONN
+    // and does not wake up a blocking recvfrom(). Send an empty datagram to
+    // our own port instead: it is read as 0 bytes, so ReceivePacket returns
+    // false and the listener thread sees that the socket is no longer alive.
+    sockaddr_storage addr{};
+    socklen_t addrlen = sizeof(addr);
+    if (getsockname(sockfd_, reinterpret_cast<sockaddr *>(&addr), &addrlen) ==
+        -1) {
+        return;
+    }
+    if (addr.ss_family == AF_INET) {
+        auto *a = reinterpret_cast<sockaddr_in *>(&addr);
+        if (a->sin_addr.s_addr == htonl(INADDR_ANY))
+            a->sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+    } else if (addr.ss_family == AF_INET6) {
+        auto *a = reinterpret_cast<sockaddr_in6 *>(&addr);
+        if (IN6_IS_ADDR_UNSPECIFIED(&a->sin6_addr))
+            a->sin6_addr = in6addr_loopback;
+    } else {
+        return;
+    }
+    int wakefd = socket(addr.ss_family, SOCK_DGRAM, 0);
+    if (wakefd == -1) {
+        return;
+    }
+    sendto(wakefd, nullptr, 0, 0, reinterpret_cast<sockaddr *>(&addr),
+           addrlen);
+    close(wakefd);
+#endif
 }
 } // namespace sls

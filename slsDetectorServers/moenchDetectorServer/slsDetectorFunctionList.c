@@ -548,7 +548,7 @@ int resetToDefaultDacs(int hardReset, char *mess) {
 
 int getDefaultDac(enum DACINDEX index, enum detectorSettings sett,
                   int *retval) {
-    if (index < 0 || index >= NDAC)
+    if (index >= NDAC)
         return FAIL;
     *retval = defaultDacValues[index];
     return OK;
@@ -556,7 +556,7 @@ int getDefaultDac(enum DACINDEX index, enum detectorSettings sett,
 
 int setDefaultDac(enum DACINDEX index, enum detectorSettings sett, int value) {
     char *dac_names[] = {DAC_NAMES};
-    if (index < 0 || index >= NDAC)
+    if (index >= NDAC)
         return FAIL;
     LOG(logINFO, ("Setting Default Dac [%d - %s]: %d\n", (int)index,
                   dac_names[index], value));
@@ -913,7 +913,7 @@ enum detectorSettings getSettings() {
 /* parameters - dac, adc, hv */
 /* parameters - dac, adc, hv */
 int validateDACIndex(enum DACINDEX ind, char *mess) {
-    if (ind < 0 || ind >= NDAC) {
+    if (ind >= NDAC) {
         sprintf(mess, "Could not set DAC. Invalid index %d\n", ind);
         LOG(logERROR, (mess));
         return FAIL;

@@ -94,16 +94,21 @@ int LTC2620_D_SetDacValue(int dacnum, int val, char *dacname, char *mess) {
     // fname to write to
     char fname[MAX_STR_LENGTH];
     memset(fname, 0, MAX_STR_LENGTH);
-    char fnameFormat[MAX_STR_LENGTH];
-    memset(fnameFormat, 0, MAX_STR_LENGTH);
-    strcpy(fnameFormat, LTC2620_D_DriverFileName);
-    sprintf(fname, "%s%d", fnameFormat, dacnum);
 #if defined(XILINX_CHIPTESTBOARDD)
+    // driver file names are printf formats with the dac number in the middle
+    // (CURRENT_BOARD_LINKS_FOLDER "/ao%d" and "/ao%d_pd"), so the format
+    // cannot be a string literal here
+    const char *fnameFormat = LTC2620_D_DriverFileName;
     if (val == LTC2620_D_PWR_DOWN_VAL) {
-        strcpy(fnameFormat, LTC2620_D_PowerDownDriverFileName);
+        fnameFormat = LTC2620_D_PowerDownDriverFileName;
         val = 1; //-100?:Invalid Argument
     }
-    sprintf(fname, fnameFormat, dacnum);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+    snprintf(fname, sizeof(fname), fnameFormat, dacnum);
+#pragma GCC diagnostic pop
+#else
+    snprintf(fname, sizeof(fname), "%s%d", LTC2620_D_DriverFileName, dacnum);
 #endif
     LOG(logDEBUG1, ("fname %s\n", fname));
 

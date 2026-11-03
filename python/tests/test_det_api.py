@@ -10,7 +10,7 @@ from utils_for_test import (
     Log,
     LogLevel,
 )
-from slsdet import Detector, hdrParameters
+from slsdet import Detector
 
 from slsdet._slsdet import slsDetectorDefs
 
@@ -81,6 +81,9 @@ def test_numinterfaces(session_simulator):
 
 def test_hdrParameters():
     """ Test hdrParameters struct."""
+
+    from slsdet import hdrParameters
+    
     # default is disabled
     p = hdrParameters()
     assert p.enable == 0
@@ -122,6 +125,8 @@ def test_hdr(session_simulator):
     det_type, num_interfaces, num_mods, d = session_simulator
     assert d is not None
 
+    from slsdet import hdrParameters
+    
     if d.type == detectorType.JUNGFRAU:
         prev_val = d.getHDR()
 

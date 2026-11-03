@@ -4,7 +4,7 @@
 #include "sls/sls_detector_defs.h"
 
 #define REQRD_FRMWRE_VRSN (0x241113)
-#define KERNEL_DATE_VRSN  "Mon May 10 18:00:21 CEST 2021"
+#define KERNEL_DATE_VRSN  "Mon Jan 18 14:24:30 CET 2021"
 #define ID_FILE           "detid_mythen3.txt"
 
 #define NUM_HARDWARE_VERSIONS    (2)

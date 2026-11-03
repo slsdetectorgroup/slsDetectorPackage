@@ -890,7 +890,7 @@ int getDefaultDac(enum DACINDEX index, enum detectorSettings sett,
     if (sett != UNDEFINED) {
         return FAIL;
     }
-    if (index < 0 || index >= NDAC)
+    if (index >= NDAC)
         return FAIL;
     *retval = defaultDacValues[index];
     return OK;
@@ -900,7 +900,7 @@ int setDefaultDac(enum DACINDEX index, enum detectorSettings sett, int value) {
     if (sett != UNDEFINED) {
         return FAIL;
     }
-    if (index < 0 || index >= NDAC)
+    if (index >= NDAC)
         return FAIL;
 
     char *dac_names[] = {DAC_NAMES};
@@ -1441,7 +1441,7 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
     }
 
     // validate index
-    if (ind < 0 || ind >= NDAC) {
+    if (ind >= NDAC) {
         LOG(logERROR,
             ("\tDac index %d is out of bounds (0 to %d)\n", ind, NDAC - 1));
         return;

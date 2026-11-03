@@ -4,6 +4,7 @@
 #include "Beb.h"
 #include "FebRegisterDefs.h"
 #include "clogger.h"
+#include "common.h"
 #include "sharedMemory.h"
 #include "slsDetectorServer_defs.h"
 
@@ -45,7 +46,6 @@ int64_t Feb_Control_RateTable_Tau_in_nsec = -1;
 int64_t Feb_Control_RateTable_Period_in_nsec = -1;
 unsigned int Feb_Control_rate_correction_table[1024] = {};
 double Feb_Control_rate_meas[16384] = {};
-double ratemax = -1;
 
 // setup
 void Feb_Control_activate(int activate) { Feb_Control_activated = activate; }
@@ -137,13 +137,6 @@ void Feb_Control_CloseSerialCommunication() {
 
 int Feb_Control_CheckSetup(int master) {
     LOG(logDEBUG1, ("Checking Set up\n"));
-
-    for (unsigned int j = 0; j < 4; j++) {
-        if (Feb_Control_idelay[j] < 0) {
-            LOG(logERROR, ("idelay chip %d not set.\n", j));
-            return 0;
-        }
-    }
     int value = 0;
     if ((Feb_Control_master) && (!Feb_Control_GetHighVoltage(&value))) {
         LOG(logERROR, ("high voltage not set.\n"));
@@ -403,13 +396,14 @@ int Feb_Control_ReceiveHighVoltage(unsigned int *value) {
 
     // normal
     if (Feb_Control_normal) {
+        int retval = 0;
         if (readParameterFromFile(NORMAL_HIGHVOLTAGE_INPUTPORT, "high voltage",
-                                  value) == FAIL) {
+                                  &retval) == FAIL) {
             LOG(logERROR, ("Could not get high voltage\n"));
             return 0;
         }
-        *value /= 10;
-        LOG(logINFO, ("High Voltage: %d\n", (*value)));
+        *value = retval / 10;
+        LOG(logINFO, ("High Voltage: %u\n", (*value)));
     }
 
     // 9m
@@ -490,7 +484,7 @@ float Feb_Control_DACToVoltage(unsigned int digital, unsigned int nsteps,
 
 int Feb_Control_SetDAC(unsigned int ch, int value) {
     unsigned int dst_num = Feb_Control_rightAddress;
-    if (ch < 0 || ch > 15) {
+    if (ch > 15) {
         LOG(logERROR, ("invalid ch for SetDAC.\n"));
         return 0;
     }
@@ -662,7 +656,7 @@ int Feb_Control_SetTrimbits(unsigned int *trimbits, int top) {
 
 int Feb_Control_SaveAllTrimbitsTo(int value, int top) {
     unsigned int chanregs[Feb_Control_trimbit_size];
-    for (int i = 0; i < Feb_Control_trimbit_size; i++)
+    for (int i = 0; i < (int)Feb_Control_trimbit_size; i++)
         chanregs[i] = value;
     return Feb_Control_SetTrimbits(chanregs, top);
 }
@@ -1980,6 +1974,7 @@ int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec) {
     unsigned int np = 16384; // max slope 16 * 1024
     double b0[1024];
     double m[1024];
+    double ratemax = -1;
 
     if (tau_in_sec < 0 || period_in_sec < 0) {
         if (dr == 32) {
@@ -1997,7 +1992,7 @@ int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec) {
     LOG(logINFO, ("Changing Rate Correction Table tau:%0.8f sec, period:%f sec",
                   tau_in_sec, period_in_sec));
     LOG(logINFO, ("\tCalculating table for tau of %lld ns.\n", tau_in_Nsec));
-    for (int i = 0; i < np; i++) {
+    for (int i = 0; i < (int)np; i++) {
         Feb_Control_rate_meas[i] = i * exp(-i / period_in_sec * tau_in_sec);
         if (Feb_Control_rate_meas[i] > ratemax)
             ratemax = Feb_Control_rate_meas[i];
@@ -2020,7 +2015,7 @@ int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec) {
      */
 
     int next_i = 0;
-    double beforemax;
+    double beforemax = 0;
     b0[0] = 0;
     m[0] = 1;
 
@@ -2030,8 +2025,9 @@ int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec) {
     for (int b = 1; b < 1024; b++) {
         if (m[b - 1] < 15) {
             double s = 0, sx = 0, sy = 0, sxx = 0, sxy = 0;
+            int filled = 0;
             for (;; next_i++) {
-                if (next_i >= np) {
+                if (next_i >= (int)np) {
                     for (; b < 1024; b++) {
                         if (beforemax > ratemax)
                             b0[b] = beforemax;
@@ -2042,7 +2038,7 @@ int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec) {
                             (((int)(m[b] + 0.5) & 0xf) << 14) |
                             ((int)(b0[b] + 0.5) & 0x3fff);
                     }
-                    b = 1024;
+                    filled = 1;
                     break;
                 }
 
@@ -2067,6 +2063,8 @@ int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec) {
             Feb_Control_rate_meas[next_i]: %f\n", x, y, s, sx, sy, sxx, sxy,
             next_i, b, Feb_Control_rate_meas[next_i]));*/
             }
+            if (filled)
+                break;
             double delta = s * sxx - sx * sx;
             b0[b] = (sxx * sy - sx * sxy) / delta;
             m[b] = (s * sxy - sx * sy) / delta;

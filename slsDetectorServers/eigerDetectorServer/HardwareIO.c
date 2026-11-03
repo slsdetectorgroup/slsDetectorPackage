@@ -8,7 +8,10 @@ xfs_u8 HWIO_xfs_in8(xfs_u32 InAddress) {
      */
 
     xfs_u8 IoContents;
-    __asm__ volatile("eieio; lbz %0,0(%1)" : "=r"(IoContents) : "b"(InAddress));
+    __asm__ volatile("eieio; lbz %0,0(%1)"
+                     : "=r"(IoContents)
+                     : "b"(InAddress)
+                     : "memory");
     return IoContents;
 }
 
@@ -20,7 +23,10 @@ xfs_u16 HWIO_xfs_in16(xfs_u32 InAddress) {
      */
 
     xfs_u16 IoContents;
-    __asm__ volatile("eieio; lhz %0,0(%1)" : "=r"(IoContents) : "b"(InAddress));
+    __asm__ volatile("eieio; lhz %0,0(%1)"
+                     : "=r"(IoContents)
+                     : "b"(InAddress)
+                     : "memory");
     return IoContents;
 }
 
@@ -32,7 +38,10 @@ xfs_u32 HWIO_xfs_in32(xfs_u32 InAddress) {
      */
 
     xfs_u32 IoContents;
-    __asm__ volatile("eieio; lwz %0,0(%1)" : "=r"(IoContents) : "b"(InAddress));
+    __asm__ volatile("eieio; lwz %0,0(%1)"
+                     : "=r"(IoContents)
+                     : "b"(InAddress)
+                     : "memory");
     return IoContents;
 }
 
@@ -43,7 +52,8 @@ void HWIO_xfs_out8(xfs_u32 OutAddress, xfs_u8 Value) {
      * such that the I/O operation completes before proceeding on
      */
 
-    __asm__ volatile("stb %0,0(%1); eieio" ::"r"(Value), "b"(OutAddress));
+    __asm__ volatile("stb %0,0(%1); eieio" ::"r"(Value), "b"(OutAddress)
+                     : "memory");
 }
 
 /*****************************************************************************/
@@ -52,7 +62,8 @@ void HWIO_xfs_out16(xfs_u32 OutAddress, xfs_u16 Value) {
      * such that the I/O operation completes before proceeding on
      */
 
-    __asm__ volatile("sth %0,0(%1); eieio" ::"r"(Value), "b"(OutAddress));
+    __asm__ volatile("sth %0,0(%1); eieio" ::"r"(Value), "b"(OutAddress)
+                     : "memory");
 }
 
 /*****************************************************************************/
@@ -62,5 +73,6 @@ void HWIO_xfs_out32(xfs_u32 OutAddress, xfs_u32 Value) {
      * such that the I/O operation completes before proceeding on
      */
 
-    __asm__ volatile("stw %0,0(%1); eieio" ::"r"(Value), "b"(OutAddress));
+    __asm__ volatile("stw %0,0(%1); eieio" ::"r"(Value), "b"(OutAddress)
+                     : "memory");
 }

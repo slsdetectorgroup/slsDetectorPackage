@@ -2013,7 +2013,7 @@ int validatePhaseinDegrees(enum CLKINDEX ind, int val, int retval) {
 }
 
 int setFrequency(enum CLKINDEX ind, int val) {
-    if (ind < 0 || ind >= NUM_CLOCKS) {
+    if (ind >= NUM_CLOCKS) {
         LOG(logERROR, ("Unknown clock index %d to set frequency\n", ind));
         return FAIL;
     }
@@ -2063,7 +2063,7 @@ int setFrequency(enum CLKINDEX ind, int val) {
 }
 
 int getFrequency(enum CLKINDEX ind) {
-    if (ind < 0 || ind >= NUM_CLOCKS) {
+    if (ind >= NUM_CLOCKS) {
         LOG(logERROR, ("Unknown clock index %d to get frequency\n", ind));
         return -1;
     }

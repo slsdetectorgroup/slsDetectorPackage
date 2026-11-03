@@ -143,7 +143,7 @@ void basictests() {
     }
 
     // check for API compatibility - old server
-    if (sw_fw_apiversion > requiredfwversion) {
+    if ((uint64_t)sw_fw_apiversion > requiredfwversion) {
         sprintf(initErrorMessage,
                 "This firmware-software api version (0x%lx) is incompatible "
                 "with the software's minimum required firmware version "
@@ -156,7 +156,7 @@ void basictests() {
     }
 
     // check for firmware compatibility - old firmware
-    if (requiredfwversion > fwversion) {
+    if (requiredfwversion > (uint64_t)fwversion) {
         sprintf(initErrorMessage,
                 "This firmware version (0x%lx) is incompatible.\n"
                 "Please update firmware (min. 0x%lx) to be compatible with "

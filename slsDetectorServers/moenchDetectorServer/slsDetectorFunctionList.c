@@ -1203,8 +1203,9 @@ void setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip,
                                    : RXR_ENDPOINT_OUTER_START_REG);
     // calculate rxr endpoint offset
     addr += (iRxEntry * RXR_ENDPOINT_OFST);
-    // get struct memory
-    udp_header *udp = (udp_header *)(Blackfin_getBaseAddress() + addr / 2);
+    // build udp header
+    udp_header header;
+    udp_header *udp = &header;
     memset(udp, 0, sizeof(udp_header));
 
     //  mac addresses
@@ -1235,6 +1236,16 @@ void setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip,
     // total length is redefined in firmware
 
     calcChecksum(udp);
+
+    // force FPGA writes to be aligned and in order
+    volatile uint32_t *dst =
+        (volatile uint32_t *)(Blackfin_getBaseAddress() + addr / 2);
+    uint32_t words[sizeof(udp_header) / sizeof(uint32_t)];
+    memcpy(words, udp, sizeof(udp_header));
+    for (size_t i = 0; i != sizeof(words) / sizeof(words[0]); ++i) {
+        dst[i] = words[i];
+    }
+
     if (iRxEntry < numUdpDestinations) {
         LOG(logINFO, ("\tIP checksum : 0x%lx\n\n", udp->ip_checksum));
     }

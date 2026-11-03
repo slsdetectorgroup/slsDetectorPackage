@@ -2225,9 +2225,9 @@ int configureMAC() {
         uint32_t addr = BASE_UDP_RAM;
         // calculate rxr endpoint offset
         addr += (iRxEntry * RXR_ENDPOINT_OFST); // TODO: is there round robin
-        // get struct memory
-        udp_header *udp =
-            (udp_header *)(Nios_getBaseAddress() + addr / (sizeof(u_int32_t)));
+        // build udp header
+        udp_header header;
+        udp_header *udp = &header;
         memset(udp, 0, sizeof(udp_header));
 
         //  mac addresses
@@ -2258,6 +2258,17 @@ int configureMAC() {
         // total length is redefined in firmware
 
         calcChecksum(udp);
+
+        // force FPGA writes to be aligned and in order
+        volatile uint32_t *dst = (volatile uint32_t *)(Nios_getBaseAddress() +
+                                                       addr /
+                                                           (sizeof(u_int32_t)));
+        uint32_t words[sizeof(udp_header) / sizeof(uint32_t)];
+        memcpy(words, udp, sizeof(udp_header));
+        for (size_t i = 0; i != sizeof(words) / sizeof(words[0]); ++i) {
+            dst[i] = words[i];
+        }
+
         if (iRxEntry < numUdpDestinations) {
             LOG(logINFO, ("\tIP checksum : 0x%lx\n\n", udp->ip_checksum));
         }

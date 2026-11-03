@@ -11451,7 +11451,7 @@ int set_voltage_limit(int file_des) {
     LOG(logDEBUG1, ("Setting voltage limit to %d mV\n", arg));
     if (Server_VerifyLock() == OK) {
         ret = setVLimit(arg, mess);
-            }
+    }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
 }

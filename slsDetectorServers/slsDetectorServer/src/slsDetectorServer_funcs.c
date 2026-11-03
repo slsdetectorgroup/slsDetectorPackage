@@ -540,7 +540,6 @@ void function_table() {
     flist[F_SET_COLLECTION_MODE] = &set_collection_mode;
     flist[F_GET_PATTERN_WAIT_INTERVAL] = &get_pattern_wait_interval;
     flist[F_SET_PATTERN_WAIT_INTERVAL] = &set_pattern_wait_interval;
-<<<<<<< HEAD
     flist[F_SPI_READ] = &spi_read;
     flist[F_SPI_WRITE] = &spi_write;
     flist[F_GET_POWER] = &get_power;
@@ -551,10 +550,8 @@ void function_table() {
     flist[F_GET_VOLTAGE_LIMIT] = &get_voltage_limit;
     flist[F_SET_VOLTAGE_LIMIT] = &set_voltage_limit;
 
-=======
     flist[F_SET_HDR] = &set_hdr;
     flist[F_GET_HDR] = &get_hdr;
->>>>>>> ddeab6f66 (server side upto imp)
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
         LOG(logERROR, ("The last detector function enum has reached its "

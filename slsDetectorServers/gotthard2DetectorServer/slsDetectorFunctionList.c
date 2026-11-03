@@ -1976,9 +1976,9 @@ void setupHeader(int iRxEntry, int vetoInterface, uint32_t destip,
         iRxEntry += RXR_ENDPOINTS_MAX;
     }
     addr += (iRxEntry * RXR_ENDPOINT_OFST);
-    // get struct memory
-    udp_header *udp =
-        (udp_header *)(Nios_getBaseAddress() + addr / (sizeof(u_int32_t)));
+    // build udp header
+    udp_header header;
+    udp_header *udp = &header;
     memset(udp, 0, sizeof(udp_header));
 
     //  mac addresses
@@ -2009,6 +2009,16 @@ void setupHeader(int iRxEntry, int vetoInterface, uint32_t destip,
     // total length is redefined in firmware
 
     calcChecksum(udp);
+
+    // force FPGA writes to be aligned and in order
+    volatile uint32_t *dst = (volatile uint32_t *)(Nios_getBaseAddress() +
+                                                   addr / (sizeof(u_int32_t)));
+    uint32_t words[sizeof(udp_header) / sizeof(uint32_t)];
+    memcpy(words, udp, sizeof(udp_header));
+    for (size_t i = 0; i != sizeof(words) / sizeof(words[0]); ++i) {
+        dst[i] = words[i];
+    }
+
     if (iRxEntry < numUdpDestinations) {
         LOG(logINFO, ("\tIP checksum : 0x%lx\n\n", udp->ip_checksum));
     }

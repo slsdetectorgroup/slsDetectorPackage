@@ -296,8 +296,8 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
               /*nr_strixel*/ 2 * g1_nrows + 2 * g2_nrows + 2 * g3_nrows,
               g1_ncols * (2 * g1_nrows + 2 * g2_nrows + 2 * g3_nrows) * 2 +
                   sizeof(header)) {
-        std::cout << "Jungfrau strixels 2X single chip with full module data "
-                  << std::endl;
+//         std::cout << "Jungfrau strixels 2X single chip with full module data "
+//                   << std::endl;
 
         // Fill all strixels with dummy values
         for (int ix = 0; ix != g1_ncols; ++ix) {
@@ -307,9 +307,9 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
             }
         }
 
-        std::cout << "sizeofheader = " << sizeof(header) << std::endl;
-        std::cout << "Jungfrau strixels 2X single chip with full module data "
-                  << std::endl;
+//         std::cout << "sizeofheader = " << sizeof(header) << std::endl;
+//         std::cout << "Jungfrau strixels 2X single chip with full module data "
+//                   << std::endl;
 
         if (xmin < xmax && ymin < ymax) {
 
@@ -331,7 +331,7 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
         }
 
         iframe = 0;
-        std::cout << "data struct created" << std::endl;
+        //  std::cout << "data struct created" << std::endl; // per frame: too noisy
     };
 
     /**

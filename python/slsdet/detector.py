@@ -3006,9 +3006,9 @@ class Detector(CppDetectorApi):
     @property
     @element
     def hdr(self):
-        """[Jungfrau] Enables the high dynamic range in detector.
-        Pass in a hdrParameters object. hdrParameters() disables HDR.
-        SYNCHROTRON is the default. FEL can only be used with chip version '1.2 HDR'.
+        """[Jungfrau] Enables the high dynamic range in detector in synchrotron or fel mode.
+        Pass in a hdrParameters object. hdrParameters() disables HDR and is the default.
+        FEL can only be used with chip version '1.2 HDR'.
         Enum: operationMode
 
         Example

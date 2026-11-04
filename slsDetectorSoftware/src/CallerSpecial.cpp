@@ -1442,8 +1442,8 @@ std::string Caller::hdr(int action) {
     std::ostringstream os;
     if (action == defs::HELP_ACTION) {
         os << "synchrotron|fel|0]\n\t[Jungfrau] Enables the high dynamic range "
-              "in detector. 0 disables HDR. Synchrontron is the default. FEL "
-              "can only be used with chip version '1.2 HDR'."
+              "in detector in synchrotron or fel mode. 0 disables HDR and is "
+              "the default. FEL can only be used with chip version '1.2 HDR'."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (args.size() != 0) {

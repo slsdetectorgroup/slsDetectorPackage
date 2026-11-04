@@ -1405,7 +1405,8 @@ class Detector {
     /** [Jungfrau] */
     Result<defs::hdrParameters> getHDR(Positions pos = {}) const;
 
-    /** [Jungfrau] */
+    /** [Jungfrau] Enabling with FEL mode can only be used with chip version
+     * '1.2 HDR'*/
     void setHDR(const defs::hdrParameters par, Positions pos = {});
 
     ///@}

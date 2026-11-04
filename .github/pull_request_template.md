@@ -39,7 +39,7 @@ See PR Automation & Validation below for details.
 
 **Select exactly one:**
 <!-- Selected: '[x]', Unselected: '[ ]' or Click when not in editing mode -->
-- [ ] Feature
+- [ ] Feature, Change or Bug fix to an unreleased feature
 - [ ] Bug Fix
 - [ ] Infrastructure
 

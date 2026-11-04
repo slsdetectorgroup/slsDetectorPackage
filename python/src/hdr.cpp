@@ -16,6 +16,6 @@ void init_hdr(py::module &m) {
             .def_readwrite("enable", &hdr::enable)
             .def_readwrite("opMode", &hdr::opMode)
             .def(pybind11::self == pybind11::self)
-            .def("__repr__", [](const hdr &a) { return sls::ToString(a); })
+            .def("__repr__", [](const hdr &a) { return sls::ToString(a); });
     }
 }

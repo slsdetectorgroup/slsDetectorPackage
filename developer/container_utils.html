@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ContainerUtils &mdash; slsDetectorPackage 0.0.0  documentation</title>
+  <title>ContainerUtils &mdash; slsDetectorPackage  documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/css/extra.css?v=2be88464" />
@@ -33,7 +33,7 @@
           
           
           <a href="index.html" class="icon icon-home">
-            slsDetectorPackage 0.0.0
+            slsDetectorPackage
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -68,11 +68,9 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="pygettingstarted.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pydetector.html">Detector</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pyctb.html">Ctb</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pyenums.html">Enums</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pypower.html">Power Supply</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pyexamples.html">Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pypatterngenerator.html">PatternGenerator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyPatternGenerator.html">PatternGenerator</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pattern.html">Pattern</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Command line</span></p>
@@ -99,7 +97,6 @@
 <li class="toctree-l3"><a class="reference internal" href="#_CPPv4I0EN3sls6SquashEN9Container10value_typeERK9ContainerN9Container10value_typeE"><code class="docutils literal notranslate"><span class="pre">Squash()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#_CPPv4I0EN3sls13hasDuplicatesEb9Container"><code class="docutils literal notranslate"><span class="pre">hasDuplicates()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#_CPPv4I0EN3sls16removeDuplicatesENSt9enable_ifIN12is_containerI1TE5valueEbE4typeER1T"><code class="docutils literal notranslate"><span class="pre">removeDuplicates()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#_CPPv4I0EN3sls22stableRemoveDuplicatesENSt9enable_ifIN12is_containerI1TE5valueEbE4typeER1T"><code class="docutils literal notranslate"><span class="pre">stableRemoveDuplicates()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -107,7 +104,6 @@
 <li class="toctree-l1"><a class="reference internal" href="type_traits.html">TypeTraits</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ToString.html">ToString</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Versioning.html">Package Versioning</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Testing.html">Testing</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Firmware</span></p>
 <ul>
@@ -155,7 +151,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">slsDetectorPackage 0.0.0</a>
+          <a href="index.html">slsDetectorPackage</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -185,13 +181,14 @@ this file.</p>
 <dl class="cpp type">
 <dt class="sig sig-object cpp" id="_CPPv43sls">
 <span id="_CPPv33sls"></span><span id="_CPPv23sls"></span><span id="sls"></span><span class="target" id="namespacesls"></span><span class="k"><span class="pre">namespace</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">sls</span></span></span><br /></dt>
-<dd><p>creates/destroys an ARPing child process to arping the interfaces slsReceiver is listening to. </p>
+<dd><p>functions basic implemenation of shared memory </p>
 <p>creates/destroys a thread</p>
 <p>creates &amp; manages a listener thread each</p>
 <p>abstract for setting/getting properties of detector data</p>
 <p>constructs the fifo structure</p>
 <p>creates &amp; manages a data streamer thread each</p>
-<p>creates &amp; manages a data processor thread each </p>
+<p>creates &amp; manages a data processor thread each</p>
+<p>creates/destroys an ARPing child process to arping the interfaces slsReceiver is listening to. </p>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-functions">Functions</p>
 <dl class="cpp function">
@@ -275,14 +272,7 @@ this file.</p>
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4I0EN3sls16removeDuplicatesENSt9enable_ifIN12is_containerI1TE5valueEbE4typeER1T">
 <span id="_CPPv3I0EN3sls16removeDuplicatesER1T"></span><span id="_CPPv2I0EN3sls16removeDuplicatesER1T"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">T</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="namespacesls_1aca810a746268958199091950038ac3e1"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">enable_if</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="type_traits.html#_CPPv4I00EN3sls12is_containerE" title="sls::is_container"><span class="n"><span class="pre">is_container</span></span></a><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I0EN3sls16removeDuplicatesENSt9enable_ifIN12is_containerI1TE5valueEbE4typeER1T" title="sls::removeDuplicates::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">type</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">removeDuplicates</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I0EN3sls16removeDuplicatesENSt9enable_ifIN12is_containerI1TE5valueEbE4typeER1T" title="sls::removeDuplicates::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">c</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0EN3sls16removeDuplicatesENSt9enable_ifIN12is_containerI1TE5valueEbE4typeER1T" title="Link to this definition"></a><br /></dt>
-<dd><p>Sorts the container and removes duplicated elements returns true if elements were removed otherwiese false. </p>
-</dd></dl>
-
-<dl class="cpp function">
-<dt class="sig sig-object cpp" id="_CPPv4I0EN3sls22stableRemoveDuplicatesENSt9enable_ifIN12is_containerI1TE5valueEbE4typeER1T">
-<span id="_CPPv3I0EN3sls22stableRemoveDuplicatesER1T"></span><span id="_CPPv2I0EN3sls22stableRemoveDuplicatesER1T"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">T</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="namespacesls_1a3f9d78afb0b9afbbb6c1a5286653ba38"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">enable_if</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="type_traits.html#_CPPv4I00EN3sls12is_containerE" title="sls::is_container"><span class="n"><span class="pre">is_container</span></span></a><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I0EN3sls22stableRemoveDuplicatesENSt9enable_ifIN12is_containerI1TE5valueEbE4typeER1T" title="sls::stableRemoveDuplicates::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">type</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">stableRemoveDuplicates</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I0EN3sls22stableRemoveDuplicatesENSt9enable_ifIN12is_containerI1TE5valueEbE4typeER1T" title="sls::stableRemoveDuplicates::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">c</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0EN3sls22stableRemoveDuplicatesENSt9enable_ifIN12is_containerI1TE5valueEbE4typeER1T" title="Link to this definition"></a><br /></dt>
-<dd><p>Removed duplicated entries while preserving the oder returns true if elements were removed otherwiese false. </p>
-</dd></dl>
+<dd></dd></dl>
 
 </div>
 </dd></dl>

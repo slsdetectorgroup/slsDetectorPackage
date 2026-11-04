@@ -16,7 +16,9 @@
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
-    <link rel="next" title="10.0.1" href="https://slsdetectorgroup.github.io/slsDetectorPackage/10.0.1/index.html" /> 
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="10.0.0" href="https://slsdetectorgroup.github.io/slsDetectorPackage/10.0.0/index.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -30,15 +32,18 @@
           <a href="#" class="icon icon-home">
             slsDetectorPackage
           </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Versions:</span></p>
 <ul>
 
-<li class="toctree-l1"><a class="reference external" href="https://slsdetectorgroup.github.io/slsDetectorPackage/10.0.1/index.html">10.0.1</a></li>
-
 <li class="toctree-l1"><a class="reference external" href="https://slsdetectorgroup.github.io/slsDetectorPackage/10.0.0/index.html">10.0.0</a></li>
-
-<li class="toctree-l1"><a class="reference external" href="https://slsdetectorgroup.github.io/slsDetectorPackage/9.2.1/index.html">9.2.1</a></li>
 
 <li class="toctree-l1"><a class="reference external" href="https://slsdetectorgroup.github.io/slsDetectorPackage/9.2.0/index.html">9.2.0</a></li>
 
@@ -105,21 +110,11 @@
 
 
 
+
 <tr class="row-odd">
-  <td><p><a class="reference external" href="https://github.com/slsdetectorgroup/slsDetectorPackage/releases/tag/10.0.1">10.0.1</a></p></td>
-  <td><p>Bug Fix</p></td>
-  <td><p>2026-10-07</p></td>
-  <td><p><a class="reference external" href="https://slsdetectorgroup.github.io/slsDetectorPackage/releases/RELEASE_v10.0.1.md">10.0.1 Release Notes</a></p></td>
-  <td><p><a class="reference external" href="https://slsdetectorgroup.github.io/slsDetectorPackage/10.0.1/index.html">10.0.1 Docs</a></p></td>
-</tr>
-
-
-
-
-<tr class="row-even">
   <td><p><a class="reference external" href="https://github.com/slsdetectorgroup/slsDetectorPackage/releases/tag/10.0.0">10.0.0</a></p></td>
   <td><p>Major</p></td>
-  <td><p>2025-09-10</p></td>
+  <td><p>10.09.2025</p></td>
   <td><p><a class="reference external" href="https://slsdetectorgroup.github.io/slsDetectorPackage/releases/RELEASE_v10.0.0.txt">10.0.0 Release Notes</a></p></td>
   <td><p><a class="reference external" href="https://slsdetectorgroup.github.io/slsDetectorPackage/10.0.0/index.html">10.0.0 Docs</a></p></td>
 </tr>
@@ -127,21 +122,11 @@
 
 
 
-<tr class="row-odd">
-  <td><p><a class="reference external" href="https://github.com/slsdetectorgroup/slsDetectorPackage/releases/tag/9.2.1">9.2.1</a></p></td>
-  <td><p>Bug Fix</p></td>
-  <td><p>2026-10-08</p></td>
-  <td><p><a class="reference external" href="https://slsdetectorgroup.github.io/slsDetectorPackage/releases/RELEASE_v9.2.1.txt">9.2.1 Release Notes</a></p></td>
-  <td><p><a class="reference external" href="https://slsdetectorgroup.github.io/slsDetectorPackage/9.2.1/index.html">9.2.1 Docs</a></p></td>
-</tr>
-
-
-
 
 <tr class="row-even">
   <td><p><a class="reference external" href="https://github.com/slsdetectorgroup/slsDetectorPackage/releases/tag/9.2.0">9.2.0</a></p></td>
   <td><p>Minor</p></td>
-  <td><p>2025-06-02</p></td>
+  <td><p>02.06.2025</p></td>
   <td><p><a class="reference external" href="https://slsdetectorgroup.github.io/slsDetectorPackage/releases/RELEASE_v9.2.0.txt">9.2.0 Release Notes</a></p></td>
   <td><p><a class="reference external" href="https://slsdetectorgroup.github.io/slsDetectorPackage/9.2.0/index.html">9.2.0 Docs</a></p></td>
 </tr>
@@ -149,10 +134,11 @@
 
 
 
+
 <tr class="row-odd">
   <td><p><a class="reference external" href="https://github.com/slsdetectorgroup/slsDetectorPackage/releases/tag/9.1.1">9.1.1</a></p></td>
   <td><p>Bug Fix</p></td>
-  <td><p>2025-05-22</p></td>
+  <td><p>22.05.2025</p></td>
   <td><p><a class="reference external" href="https://slsdetectorgroup.github.io/slsDetectorPackage/releases/RELEASE_v9.1.1.txt">9.1.1 Release Notes</a></p></td>
   <td><p><a class="reference external" href="https://slsdetectorgroup.github.io/slsDetectorPackage/9.1.1/index.html">9.1.1 Docs</a></p></td>
 </tr>
@@ -160,10 +146,11 @@
 
 
 
+
 <tr class="row-even">
   <td><p><a class="reference external" href="https://github.com/slsdetectorgroup/slsDetectorPackage/releases/tag/9.1.0">9.1.0</a></p></td>
   <td><p>Minor</p></td>
-  <td><p>2025-03-28</p></td>
+  <td><p>28.03.2025</p></td>
   <td><p><a class="reference external" href="https://slsdetectorgroup.github.io/slsDetectorPackage/releases/RELEASE_v9.1.0.txt">9.1.0 Release Notes</a></p></td>
   <td><p><a class="reference external" href="https://slsdetectorgroup.github.io/slsDetectorPackage/9.1.0/index.html">9.1.0 Docs</a></p></td>
 </tr>
@@ -171,10 +158,11 @@
 
 
 
+
 <tr class="row-odd">
   <td><p><a class="reference external" href="https://github.com/slsdetectorgroup/slsDetectorPackage/releases/tag/9.0.0">9.0.0</a></p></td>
   <td><p>Major</p></td>
-  <td><p>2024-11-26</p></td>
+  <td><p>26.11.2024</p></td>
   <td><p><a class="reference external" href="https://slsdetectorgroup.github.io/slsDetectorPackage/releases/RELEASE_v9.0.0.txt">9.0.0 Release Notes</a></p></td>
   <td><p><a class="reference external" href="https://slsdetectorgroup.github.io/slsDetectorPackage/9.0.0/index.html">9.0.0 Docs</a></p></td>
 </tr>
@@ -182,10 +170,11 @@
 
 
 
+
 <tr class="row-even">
   <td><p><a class="reference external" href="https://github.com/slsdetectorgroup/slsDetectorPackage/releases/tag/8.0.2">8.0.2</a></p></td>
   <td><p>Bug Fix</p></td>
-  <td><p>2024-09-18</p></td>
+  <td><p>18.09.2024</p></td>
   <td><p><a class="reference external" href="https://slsdetectorgroup.github.io/slsDetectorPackage/releases/RELEASE_v8.0.2.txt">8.0.2 Release Notes</a></p></td>
   <td><p>&nbsp;</p></td>
 </tr>
@@ -193,10 +182,11 @@
 
 
 
+
 <tr class="row-odd">
   <td><p><a class="reference external" href="https://github.com/slsdetectorgroup/slsDetectorPackage/releases/tag/8.0.1">8.0.1</a></p></td>
   <td><p>Bug Fix</p></td>
-  <td><p>2024-01-16</p></td>
+  <td><p>16.01.2024</p></td>
   <td><p><a class="reference external" href="https://slsdetectorgroup.github.io/slsDetectorPackage/releases/RELEASE_v8.0.1.txt">8.0.1 Release Notes</a></p></td>
   <td><p>&nbsp;</p></td>
 </tr>
@@ -204,10 +194,11 @@
 
 
 
+
 <tr class="row-even">
   <td><p><a class="reference external" href="https://github.com/slsdetectorgroup/slsDetectorPackage/releases/tag/8.0.0">8.0.0</a></p></td>
   <td><p>Major</p></td>
-  <td><p>2023-11-15</p></td>
+  <td><p>13.11.2023</p></td>
   <td><p><a class="reference external" href="https://slsdetectorgroup.github.io/slsDetectorPackage/releases/RELEASE_v8.0.0.txt">8.0.0 Release Notes</a></p></td>
   <td><p>&nbsp;</p></td>
 </tr>
@@ -215,10 +206,11 @@
 
 
 
+
 <tr class="row-odd">
   <td><p><a class="reference external" href="https://github.com/slsdetectorgroup/slsDetectorPackage/releases/tag/7.0.3">7.0.3</a></p></td>
   <td><p>Bug Fix</p></td>
-  <td><p>2023-11-15</p></td>
+  <td><p>14.11.2023</p></td>
   <td><p><a class="reference external" href="https://slsdetectorgroup.github.io/slsDetectorPackage/releases/RELEASE_v7.0.3.txt">7.0.3 Release Notes</a></p></td>
   <td><p>&nbsp;</p></td>
 </tr>
@@ -226,10 +218,11 @@
 
 
 
+
 <tr class="row-even">
   <td><p><a class="reference external" href="https://github.com/slsdetectorgroup/slsDetectorPackage/releases/tag/7.0.2">7.0.2</a></p></td>
   <td><p>Bug Fix</p></td>
-  <td><p>2023-07-12</p></td>
+  <td><p>12.07.2023</p></td>
   <td><p><a class="reference external" href="https://slsdetectorgroup.github.io/slsDetectorPackage/releases/RELEASE_v7.0.2.txt">7.0.2 Release Notes</a></p></td>
   <td><p>&nbsp;</p></td>
 </tr>
@@ -237,10 +230,11 @@
 
 
 
+
 <tr class="row-odd">
   <td><p><a class="reference external" href="https://github.com/slsdetectorgroup/slsDetectorPackage/releases/tag/7.0.1">7.0.1</a></p></td>
   <td><p>Bug Fix</p></td>
-  <td><p>2023-03-24</p></td>
+  <td><p>24.03.2023</p></td>
   <td><p><a class="reference external" href="https://slsdetectorgroup.github.io/slsDetectorPackage/releases/RELEASE_v7.0.1.txt">7.0.1 Release Notes</a></p></td>
   <td><p>&nbsp;</p></td>
 </tr>
@@ -248,10 +242,11 @@
 
 
 
+
 <tr class="row-even">
   <td><p><a class="reference external" href="https://github.com/slsdetectorgroup/slsDetectorPackage/releases/tag/7.0.0">7.0.0</a></p></td>
   <td><p>Major</p></td>
-  <td><p>2023-02-24</p></td>
+  <td><p>24.02.2023</p></td>
   <td><p><a class="reference external" href="https://slsdetectorgroup.github.io/slsDetectorPackage/releases/RELEASE_v7.0.0.txt">7.0.0 Release Notes</a></p></td>
   <td><p>&nbsp;</p></td>
 </tr>
@@ -259,10 +254,11 @@
 
 
 
+
 <tr class="row-odd">
   <td><p><a class="reference external" href="https://github.com/slsdetectorgroup/slsDetectorPackage/releases/tag/6.1.2">6.1.2</a></p></td>
   <td><p>Bug Fix</p></td>
-  <td><p>2022-11-25</p></td>
+  <td><p>25.11.2022</p></td>
   <td><p><a class="reference external" href="https://slsdetectorgroup.github.io/slsDetectorPackage/releases/RELEASE_v6.1.2.txt">6.1.2 Release Notes</a></p></td>
   <td><p>&nbsp;</p></td>
 </tr>
@@ -270,10 +266,11 @@
 
 
 
+
 <tr class="row-even">
   <td><p><a class="reference external" href="https://github.com/slsdetectorgroup/slsDetectorPackage/releases/tag/6.1.1">6.1.1</a></p></td>
   <td><p>Bug Fix</p></td>
-  <td><p>2022-01-04</p></td>
+  <td><p>04.01.2022</p></td>
   <td><p><a class="reference external" href="https://slsdetectorgroup.github.io/slsDetectorPackage/releases/RELEASE_v6.1.1.txt">6.1.1 Release Notes</a></p></td>
   <td><p>&nbsp;</p></td>
 </tr>
@@ -281,10 +278,11 @@
 
 
 
+
 <tr class="row-odd">
   <td><p><a class="reference external" href="https://github.com/slsdetectorgroup/slsDetectorPackage/releases/tag/6.1.0">6.1.0</a></p></td>
   <td><p>Minor</p></td>
-  <td><p>2021-11-26</p></td>
+  <td><p>25.11.2021</p></td>
   <td><p><a class="reference external" href="https://slsdetectorgroup.github.io/slsDetectorPackage/releases/RELEASE_v6.1.0.txt">6.1.0 Release Notes</a></p></td>
   <td><p>&nbsp;</p></td>
 </tr>
@@ -292,10 +290,11 @@
 
 
 
+
 <tr class="row-even">
   <td><p><a class="reference external" href="https://github.com/slsdetectorgroup/slsDetectorPackage/releases/tag/6.0.0">6.0.0</a></p></td>
   <td><p>Major</p></td>
-  <td><p>2021-10-21</p></td>
+  <td><p>20.10.2021</p></td>
   <td><p><a class="reference external" href="https://slsdetectorgroup.github.io/slsDetectorPackage/releases/RELEASE_v6.0.0.txt">6.0.0 Release Notes</a></p></td>
   <td><p>&nbsp;</p></td>
 </tr>
@@ -303,10 +302,11 @@
 
 
 
+
 <tr class="row-odd">
   <td><p><a class="reference external" href="https://github.com/slsdetectorgroup/slsDetectorPackage/releases/tag/5.1.0">5.1.0</a></p></td>
   <td><p>Minor</p></td>
-  <td><p>2021-03-22</p></td>
+  <td><p>22.03.2021</p></td>
   <td><p><a class="reference external" href="https://slsdetectorgroup.github.io/slsDetectorPackage/releases/RELEASE_v5.1.0.txt">5.1.0 Release Notes</a></p></td>
   <td><p>&nbsp;</p></td>
 </tr>
@@ -314,10 +314,11 @@
 
 
 
+
 <tr class="row-even">
   <td><p><a class="reference external" href="https://github.com/slsdetectorgroup/slsDetectorPackage/releases/tag/5.0.1">5.0.1</a></p></td>
   <td><p>Bug Fix</p></td>
-  <td><p>2020-12-01</p></td>
+  <td><p>25.11.2020</p></td>
   <td><p><a class="reference external" href="https://slsdetectorgroup.github.io/slsDetectorPackage/releases/RELEASE_v5.0.1.txt">5.0.1 Release Notes</a></p></td>
   <td><p>&nbsp;</p></td>
 </tr>
@@ -325,10 +326,11 @@
 
 
 
+
 <tr class="row-odd">
   <td><p><a class="reference external" href="https://github.com/slsdetectorgroup/slsDetectorPackage/releases/tag/5.0.0">5.0.0</a></p></td>
   <td><p>Major</p></td>
-  <td><p>2020-12-01</p></td>
+  <td><p>18.11.2020</p></td>
   <td><p><a class="reference external" href="https://slsdetectorgroup.github.io/slsDetectorPackage/releases/RELEASE_v5.0.0.txt">5.0.0 Release Notes</a></p></td>
   <td><p>&nbsp;</p></td>
 </tr>
@@ -354,7 +356,7 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="https://slsdetectorgroup.github.io/slsDetectorPackage/10.0.1/index.html" class="btn btn-neutral float-right" title="10.0.1" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="https://slsdetectorgroup.github.io/slsDetectorPackage/10.0.0/index.html" class="btn btn-neutral float-right" title="10.0.0" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
@@ -373,8 +375,10 @@
       </div>
   <script>
       jQuery(function () {
-          SphinxRtdTheme.Navigation.enable(true);
+          SphinxRtdTheme.Navigation.enable(true);ion>
       });
-  </script>
-</body>
+  </script> 
+ery(function () {
+</body>hinxRtdTheme.Navigation.enable(true);
+</html></body>
 </html>

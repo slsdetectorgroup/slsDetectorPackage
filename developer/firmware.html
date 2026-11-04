@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Firmware Upgrade &mdash; slsDetectorPackage 0.0.0  documentation</title>
+  <title>Firmware Upgrade &mdash; slsDetectorPackage  documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/css/extra.css?v=2be88464" />
@@ -21,7 +21,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Getting Started" href="servers.html" />
-    <link rel="prev" title="Testing" href="Testing.html" /> 
+    <link rel="prev" title="Package Versioning" href="Versioning.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -33,7 +33,7 @@
           
           
           <a href="index.html" class="icon icon-home">
-            slsDetectorPackage 0.0.0
+            slsDetectorPackage
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -68,11 +68,9 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="pygettingstarted.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pydetector.html">Detector</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pyctb.html">Ctb</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pyenums.html">Enums</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pypower.html">Power Supply</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pyexamples.html">Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pypatterngenerator.html">PatternGenerator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyPatternGenerator.html">PatternGenerator</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pattern.html">Pattern</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Command line</span></p>
@@ -85,7 +83,6 @@
 <li class="toctree-l1"><a class="reference internal" href="type_traits.html">TypeTraits</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ToString.html">ToString</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Versioning.html">Package Versioning</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Testing.html">Testing</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Firmware</span></p>
 <ul class="current">
@@ -169,7 +166,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">slsDetectorPackage 0.0.0</a>
+          <a href="index.html">slsDetectorPackage</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -203,7 +200,7 @@
 <h3>Upgrade<a class="headerlink" href="#upgrade" title="Link to this heading"></a></h3>
 <ol class="arabic">
 <li><p>Tftp must be already installed on your pc to use the bcp script.</p></li>
-<li><p>Copy new servers to the board. See <a class="reference internal" href="serverupgrade.html#detector-server-upgrade"><span class="std std-ref">how to upgrade detector servers</span></a> for more details. A reboot should have started the new linked servers automatically. For Eiger, do not reboot yet as we need to program the firmware via bit files.</p>
+<li><p>Copy new servers to the board. See <a class="reference internal" href="serverupgrade.html#detector-server-upgrade"><span class="std std-ref">how to upgrade detector servers</span></a> for more detals. A reboot should have started the new linked servers automatically. For Eiger, do not reboot yet as we need to program the firmware via bit files.</p>
 <blockquote>
 <div><ul class="simple">
 <li><p>This step is crucial when registers between firmwares change. Failure to do so will result in linux on boards to crash and boards can’t be pinged anymore.</p></li>
@@ -307,7 +304,7 @@ reconfig<span class="w"> </span>fw0
 <span class="c1"># Always ensure that the client and server software are of the same release.</span>
 
 <span class="c1"># copies server, links new server to jungfrauDetectorServer,</span>
-<span class="c1"># removes old server from respawn, sets up new linked server to respawn</span>
+<span class="c1"># removes old server from respawn, sets up new lnked server to respawn</span>
 <span class="c1"># programs fpga, reboots</span>
 
 <span class="c1">#  older versions: v5.0.0 - 6.0.0 using tftp from tftp folder of pc</span>
@@ -339,7 +336,7 @@ sls_detector_put<span class="w"> </span>programfpga<span class="w"> </span>xxx.p
 <dt>Program from console</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Always ensure that the client and server software are of the same release.</span>
 
 <span class="c1"># copies server, links new server to mythen3DetectorServer,</span>
-<span class="c1"># removes old server from respawn, sets up new linked server to respawn</span>
+<span class="c1"># removes old server from respawn, sets up new lnked server to respawn</span>
 <span class="c1"># programs fpga, reboots</span>
 
 <span class="c1">#  older versions: v5.0.0 - 6.0.0 using tftp from tftp folder of pc</span>
@@ -375,7 +372,7 @@ sls_detector_put<span class="w"> </span>programfpga<span class="w"> </span>xxx.r
 <dt>Program from console</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Always ensure that the client and server software are of the same release.</span>
 
 <span class="c1"># copies server, links new server to gotthard2DetectorServer,</span>
-<span class="c1"># removes old server from respawn, sets up new linked server to respawn</span>
+<span class="c1"># removes old server from respawn, sets up new lnked server to respawn</span>
 <span class="c1"># programs fpga, reboots</span>
 
 <span class="c1">#  older versions: v5.0.0 - 6.0.0 using tftp from tftp folder of pc</span>
@@ -421,7 +418,7 @@ sls_detector_put<span class="w"> </span>programfpga<span class="w"> </span>xxx.r
 <dt>Program from console</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Always ensure that the client and server software are of the same release.</span>
 
 <span class="c1"># copies server, links new server to moenchDetectorServer,</span>
-<span class="c1"># removes old server from respawn, sets up new linked server to respawn</span>
+<span class="c1"># removes old server from respawn, sets up new lnked server to respawn</span>
 <span class="c1"># programs fpga, reboots</span>
 
 <span class="c1">#  older versions: v5.0.0 - 6.0.0 using tftp from tftp folder of pc</span>
@@ -454,7 +451,7 @@ sls_detector_put<span class="w"> </span>programfpga<span class="w"> </span>xxx.p
 <dt>Program from console</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Always ensure that the client and server software are of the same release.</span>
 
 <span class="c1"># copies server, links new server to ctbDetectorServer,</span>
-<span class="c1"># removes old server from respawn, sets up new linked server to respawn</span>
+<span class="c1"># removes old server from respawn, sets up new lnked server to respawn</span>
 <span class="c1"># programs fpga, reboots</span>
 
 <span class="c1">#  older versions: v5.0.0 - 6.0.0 using tftp from tftp folder of pc</span>
@@ -476,7 +473,7 @@ sls_detector_put<span class="w"> </span>programfpga<span class="w"> </span>xxx.p
 <ol class="arabic simple">
 <li><p>v4.x.x client after programming will most likely reboot the blackfin processor, regardless of error.</p></li>
 <li><p>v5.x.x-rcx client after programming will not reboot the blackfin processor, if error occurred.</p></li>
-<li><p>If a reboot occurred with an incomplete firmware in flash, the blackfin will most likely not find the mtd3 drive. To see if this drive exists:</p></li>
+<li><p>If a reboot occured with an incomplete firmware in flash, the blackfin will most likely not find the mtd3 drive. To see if this drive exists:</p></li>
 </ol>
 <blockquote>
 <div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># connect to the board</span>
@@ -555,7 +552,7 @@ more<span class="w"> </span>/proc/mtd<span class="w"> </span><span class="c1"># 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="Testing.html" class="btn btn-neutral float-left" title="Testing" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Versioning.html" class="btn btn-neutral float-left" title="Package Versioning" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="servers.html" class="btn btn-neutral float-right" title="Getting Started" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

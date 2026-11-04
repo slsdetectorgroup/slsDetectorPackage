@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dependencies &mdash; slsDetectorPackage 0.0.0  documentation</title>
+  <title>Dependencies &mdash; slsDetectorPackage  documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/css/extra.css?v=2be88464" />
@@ -33,7 +33,7 @@
           
           
           <a href="index.html" class="icon icon-home">
-            slsDetectorPackage 0.0.0
+            slsDetectorPackage
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -48,11 +48,12 @@
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Dependencies</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#core">Core</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#dependencies-to-build-python-module">Dependencies to build Python module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#dependencies-to-build-documentation">Dependencies to build documentation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#dependencies-to-build-gui">Dependencies to build GUI</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#dependencies-to-build-moench-and-jungfrau-executables">Dependencies to build Moench and Jungfrau executables</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#dependencies-to-build-tests">Dependencies to build Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#python-bindings">Python bindings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#zeromq">ZeroMQ</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#gui">GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#moench-executables">Moench executables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#documentation">Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#packaged-in-libs">Packaged in libs/</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="consuming.html">Consuming slsDetectorPackage</a></li>
@@ -76,11 +77,9 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="pygettingstarted.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pydetector.html">Detector</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pyctb.html">Ctb</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pyenums.html">Enums</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pypower.html">Power Supply</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pyexamples.html">Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pypatterngenerator.html">PatternGenerator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyPatternGenerator.html">PatternGenerator</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pattern.html">Pattern</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Command line</span></p>
@@ -93,7 +92,6 @@
 <li class="toctree-l1"><a class="reference internal" href="type_traits.html">TypeTraits</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ToString.html">ToString</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Versioning.html">Package Versioning</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Testing.html">Testing</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Firmware</span></p>
 <ul>
@@ -141,7 +139,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">slsDetectorPackage 0.0.0</a>
+          <a href="index.html">slsDetectorPackage</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -180,26 +178,9 @@ the shared libraries these are needed:</p>
 <p class="admonition-title">Note</p>
 <p>For v9.x.x of slsDetectorPackage and older, C++11 compatible compiler.</p>
 </div>
-<p>Additionally the core requires the following dependencies:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>fmt 12.1.0 (packaged in libs)</p></li>
-<li><p>ZeroMQ 4.3.4 (packaged in libs)</p></li>
-<li><p>rapidjson 1.1.0 (packaged in libs)</p></li>
-</ul>
-</div></blockquote>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Fmt, ZeroMQ and rapidjson are bundled in libs. One does not need to pre-install them on the system. Alternatively, one can fetch fmt and ZeroMQ from GitHub by passing the cmake options <code class="docutils literal notranslate"><span class="pre">-DSLS_FETCH_FMT_FROM_GITHUB=ON</span></code> and <code class="docutils literal notranslate"><span class="pre">-DSLS_FETCH_ZEROMQ_FROM_GITHUB=ON</span></code> respectively.</p>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Refer <a class="reference internal" href="installation.html#zeromq-for-different-slsdetectorpackage-versions"><span class="std std-ref">zeromq notes.</span></a></p>
-</div>
 </section>
-<section id="dependencies-to-build-python-module">
-<h2>Dependencies to build Python module<a class="headerlink" href="#dependencies-to-build-python-module" title="Link to this heading"></a></h2>
-<p>To build the python module the following dependencies are needed:</p>
+<section id="python-bindings">
+<h2>Python bindings<a class="headerlink" href="#python-bindings" title="Link to this heading"></a></h2>
 <blockquote>
 <div><ul class="simple">
 <li><p>Python &gt;= 3.8</p></li>
@@ -208,16 +189,41 @@ the shared libraries these are needed:</p>
 </div></blockquote>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>pybind11 is bundled in libs. One does not need to pre-install it on the system. Alternatively, one can fetch pybind11 from GitHub by passing the cmake option <code class="docutils literal notranslate"><span class="pre">-DSLS_FETCH_PYBIND11_FROM_GITHUB=ON</span></code>.</p>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
 <p>Refer <a class="reference internal" href="installation.html#pybind-for-different-slsdetectorpackage-versions"><span class="std std-ref">pybind11 notes.</span></a></p>
 </div>
 </section>
-<section id="dependencies-to-build-documentation">
-<h2>Dependencies to build documentation<a class="headerlink" href="#dependencies-to-build-documentation" title="Link to this heading"></a></h2>
-<p>To build this documentation that you are reading now the following dependencies are needed:</p>
+<section id="zeromq">
+<h2>ZeroMQ<a class="headerlink" href="#zeromq" title="Link to this heading"></a></h2>
+<blockquote>
+<div><ul class="simple">
+<li><p>Zeromq 4.3.4 (packaged in libs)</p></li>
+</ul>
+</div></blockquote>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Refer <a class="reference internal" href="installation.html#zeromq-for-different-slsdetectorpackage-versions"><span class="std std-ref">zeromq notes.</span></a></p>
+</div>
+</section>
+<section id="gui">
+<h2>GUI<a class="headerlink" href="#gui" title="Link to this heading"></a></h2>
+<blockquote>
+<div><ul class="simple">
+<li><p>Qt 5.9</p></li>
+<li><p>Qwt 6.1.5 (packaged in libs)</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="moench-executables">
+<h2>Moench executables<a class="headerlink" href="#moench-executables" title="Link to this heading"></a></h2>
+<blockquote>
+<div><ul class="simple">
+<li><p>libtiff</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="documentation">
+<h2>Documentation<a class="headerlink" href="#documentation" title="Link to this heading"></a></h2>
+<p>The documentation that you are reading now is built with</p>
 <blockquote>
 <div><ul class="simple">
 <li><p>Doxygen (to extract C++ classes etc.)</p></li>
@@ -226,41 +232,17 @@ the shared libraries these are needed:</p>
 </ul>
 </div></blockquote>
 </section>
-<section id="dependencies-to-build-gui">
-<h2>Dependencies to build GUI<a class="headerlink" href="#dependencies-to-build-gui" title="Link to this heading"></a></h2>
-<p>To build the GUI the following dependencies are needed:</p>
+<section id="packaged-in-libs">
+<h2>Packaged in libs/<a class="headerlink" href="#packaged-in-libs" title="Link to this heading"></a></h2>
 <blockquote>
 <div><ul class="simple">
-<li><p>Qt 5.9</p></li>
-<li><p>Qwt 6.1.5 (packaged in libs)</p></li>
+<li><p>catch2 (unit testing)</p></li>
+<li><p>rapidjson (streaming from receiver)</p></li>
+<li><p>pybind11 (python bindings)</p></li>
+<li><p>qwt (gui plotting)</p></li>
+<li><p>libzmq (streaming to/from receiver)</p></li>
 </ul>
 </div></blockquote>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Qwt is bundled in libs. One does not need to pre-install it on the system.</p>
-</div>
-</section>
-<section id="dependencies-to-build-moench-and-jungfrau-executables">
-<h2>Dependencies to build Moench and Jungfrau executables<a class="headerlink" href="#dependencies-to-build-moench-and-jungfrau-executables" title="Link to this heading"></a></h2>
-<p>To build the Moench and Jungfrau executables for preprocessing and calibration the following dependencies are needed:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>libtiff</p></li>
-</ul>
-</div></blockquote>
-</section>
-<section id="dependencies-to-build-tests">
-<h2>Dependencies to build Tests<a class="headerlink" href="#dependencies-to-build-tests" title="Link to this heading"></a></h2>
-<p>To build the tests the following dependencies are needed:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>Catch2 2.13.8 (packaged in libs)</p></li>
-</ul>
-</div></blockquote>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Catch2 is bundled in libs. One does not need to pre-install it on the system.</p>
-</div>
 </section>
 </section>
 

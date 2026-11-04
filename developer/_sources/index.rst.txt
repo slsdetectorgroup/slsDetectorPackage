@@ -3,13 +3,13 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-slsDetectorPackage
+Welcome to slsDetectorPackage's documentation!
 ==============================================
 
 .. note :: 
 
     This is the documentation for the latest development version of slsDetectorPackage.
-    For further detector specific documentation, visit `this page <https://www.psi.ch/en/detectors/documentation>`__. 
+    For further documentation, visit the official page: https://www.psi.ch/en/detectors/documentation
 
 .. toctree::
     :maxdepth: 3
@@ -48,11 +48,9 @@ slsDetectorPackage
 
     pygettingstarted
     pydetector
-    pyctb
     pyenums
-    pypower
     pyexamples
-    pypatterngenerator
+    pyPatternGenerator
     pattern
 
 .. toctree::

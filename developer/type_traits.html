@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TypeTraits &mdash; slsDetectorPackage 0.0.0  documentation</title>
+  <title>TypeTraits &mdash; slsDetectorPackage  documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/css/extra.css?v=2be88464" />
@@ -33,7 +33,7 @@
           
           
           <a href="index.html" class="icon icon-home">
-            slsDetectorPackage 0.0.0
+            slsDetectorPackage
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -68,11 +68,9 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="pygettingstarted.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pydetector.html">Detector</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pyctb.html">Ctb</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pyenums.html">Enums</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pypower.html">Power Supply</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pyexamples.html">Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pypatterngenerator.html">PatternGenerator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyPatternGenerator.html">PatternGenerator</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pattern.html">Pattern</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Command line</span></p>
@@ -102,8 +100,6 @@
 <li class="toctree-l3"><a class="reference internal" href="#_CPPv4I00EN3sls11is_durationE"><code class="docutils literal notranslate"><span class="pre">sls::is_duration</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#_CPPv4I0EN3sls11is_durationI1TNSt11conditionalIXL0EE18is_duration_helperIN1T3repEN1T6periodEDTcldtclNSt7declvalI1TEEE3minEEDTcldtclNSt7declvalI1TEEE3maxEEDTcldtclNSt7declvalI1TEEE4zeroEEEvE4typeEEE"><code class="docutils literal notranslate"><span class="pre">sls::is_duration&lt;</span> <span class="pre">T,</span> <span class="pre">typename</span> <span class="pre">std::conditional&lt;</span> <span class="pre">false,</span> <span class="pre">is_duration_helper&lt;</span> <span class="pre">typename</span> <span class="pre">T::rep,</span> <span class="pre">typename</span> <span class="pre">T::period,</span> <span class="pre">decltype(std::declval&lt;</span> <span class="pre">T</span> <span class="pre">&gt;().min()),</span> <span class="pre">decltype(std::declval&lt;</span> <span class="pre">T</span> <span class="pre">&gt;().max()),</span> <span class="pre">decltype(std::declval&lt;</span> <span class="pre">T</span> <span class="pre">&gt;().zero())&gt;,</span> <span class="pre">void</span> <span class="pre">&gt;::type</span> <span class="pre">&gt;</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#_CPPv4IDpEN3sls18is_duration_helperE"><code class="docutils literal notranslate"><span class="pre">sls::is_duration_helper</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#_CPPv4I0EN3sls12is_frequencyE"><code class="docutils literal notranslate"><span class="pre">sls::is_frequency</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#_CPPv4IEN3sls12is_frequencyIN4defs2HzEEE"><code class="docutils literal notranslate"><span class="pre">sls::is_frequency&lt;</span> <span class="pre">defs::Hz</span> <span class="pre">&gt;</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#_CPPv4I00EN3sls18is_light_containerE"><code class="docutils literal notranslate"><span class="pre">sls::is_light_container</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#_CPPv4I0EN3sls18is_light_containerI1TNSt11conditionalIXL0EE19is_container_helperIN1T10value_typeEN1T9size_typeEN1T8iteratorEN1T14const_iteratorEDTcldtclNSt7declvalI1TEEE4sizeEEDTcldtclNSt7declvalI1TEEE5beginEEDTcldtclNSt7declvalI1TEEE3endEEEvE4typeEEE"><code class="docutils literal notranslate"><span class="pre">sls::is_light_container&lt;</span> <span class="pre">T,</span> <span class="pre">typename</span> <span class="pre">std::conditional&lt;</span> <span class="pre">false,</span> <span class="pre">is_container_helper&lt;</span> <span class="pre">typename</span> <span class="pre">T::value_type,</span> <span class="pre">typename</span> <span class="pre">T::size_type,</span> <span class="pre">typename</span> <span class="pre">T::iterator,</span> <span class="pre">typename</span> <span class="pre">T::const_iterator,</span> <span class="pre">decltype(std::declval&lt;</span> <span class="pre">T</span> <span class="pre">&gt;().size()),</span> <span class="pre">decltype(std::declval&lt;</span> <span class="pre">T</span> <span class="pre">&gt;().begin()),</span> <span class="pre">decltype(std::declval&lt;</span> <span class="pre">T</span> <span class="pre">&gt;().end())&gt;,</span> <span class="pre">void</span> <span class="pre">&gt;::type</span> <span class="pre">&gt;</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#_CPPv4IDpEN3sls25is_light_container_helperE"><code class="docutils literal notranslate"><span class="pre">sls::is_light_container_helper</span></code></a></li>
@@ -115,7 +111,6 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="ToString.html">ToString</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Versioning.html">Package Versioning</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Testing.html">Testing</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Firmware</span></p>
 <ul>
@@ -163,7 +158,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">slsDetectorPackage 0.0.0</a>
+          <a href="index.html">slsDetectorPackage</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -188,13 +183,14 @@ from the standard library.</p>
 <dl class="cpp type">
 <dt class="sig sig-object cpp" id="_CPPv43sls">
 <span id="_CPPv33sls"></span><span id="_CPPv23sls"></span><span id="sls"></span><span class="target" id="namespacesls"></span><span class="k"><span class="pre">namespace</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">sls</span></span></span><br /></dt>
-<dd><p>creates/destroys an ARPing child process to arping the interfaces slsReceiver is listening to. </p>
+<dd><p>functions basic implemenation of shared memory </p>
 <p>creates/destroys a thread</p>
 <p>creates &amp; manages a listener thread each</p>
 <p>abstract for setting/getting properties of detector data</p>
 <p>constructs the fifo structure</p>
 <p>creates &amp; manages a data streamer thread each</p>
-<p>creates &amp; manages a data processor thread each </p>
+<p>creates &amp; manages a data processor thread each</p>
+<p>creates/destroys an ARPing child process to arping the interfaces slsReceiver is listening to. </p>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-typedefs">Typedefs</p>
 <dl class="cpp type">
@@ -322,20 +318,6 @@ from the standard library.</p>
 <dl class="cpp struct">
 <dt class="sig sig-object cpp" id="_CPPv4IDpEN3sls18is_duration_helperE">
 <span id="_CPPv3IDpEN3sls18is_duration_helperE"></span><span id="_CPPv2IDpEN3sls18is_duration_helperE"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="sig-name descname"><span class="n"><span class="pre">Ts</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="structsls_1_1is__duration__helper"></span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">is_duration_helper</span></span></span><a class="headerlink" href="#_CPPv4IDpEN3sls18is_duration_helperE" title="Link to this definition"></a><br /></dt>
-<dd><div class="docutils container">
-<em>#include &lt;TypeTraits.h&gt;</em></div>
-</dd></dl>
-
-<dl class="cpp struct">
-<dt class="sig sig-object cpp" id="_CPPv4I0EN3sls12is_frequencyE">
-<span id="_CPPv3I0EN3sls12is_frequencyE"></span><span id="_CPPv2I0EN3sls12is_frequencyE"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">T</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="structsls_1_1is__frequency"></span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">is_frequency</span></span></span><span class="w"> </span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="k"><span class="pre">public</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">false_type</span></span><a class="headerlink" href="#_CPPv4I0EN3sls12is_frequencyE" title="Link to this definition"></a><br /></dt>
-<dd><div class="docutils container">
-<em>#include &lt;TypeTraits.h&gt;</em></div>
-</dd></dl>
-
-<dl class="cpp struct">
-<dt class="sig sig-object cpp" id="_CPPv4IEN3sls12is_frequencyIN4defs2HzEEE">
-<span id="_CPPv3IEN3sls12is_frequencyIN4defs2HzEEE"></span><span id="_CPPv2IEN3sls12is_frequencyIN4defs2HzEEE"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="structsls_1_1is__frequency_3_01defs_1_1Hz_01_4"></span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">is_frequency</span></span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">defs</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Hz</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="k"><span class="pre">public</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">true_type</span></span><a class="headerlink" href="#_CPPv4IEN3sls12is_frequencyIN4defs2HzEEE" title="Link to this definition"></a><br /></dt>
 <dd><div class="docutils container">
 <em>#include &lt;TypeTraits.h&gt;</em></div>
 </dd></dl>

@@ -51,6 +51,13 @@ void bus_w(u_int32_t offset, u_int32_t data);
 u_int32_t bus_r(u_int32_t offset);
 
 /**
+ * Force FPGA writes to be aligned and in order
+ * by writing 32 bit words to the bus
+ * @returns FAIL if size is not a non-zero multiple of sizeof(uint32_t), else OK
+ */
+int bus_w_block(u_int32_t offset, const void *src, size_t size);
+
+/**
  * Read from a 64 bit register
  * @param aLSB LSB offset address
  * @param aMSB MSB offset address

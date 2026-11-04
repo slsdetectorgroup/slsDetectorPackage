@@ -1479,11 +1479,10 @@ int configureMAC() {
     calcChecksum(udp);
 
     // force FPGA writes to be aligned and in order
-    volatile uint32_t *dst = (volatile uint32_t *)Arm_getUDPBaseAddress();
     uint32_t words[sizeof(udp_header) / sizeof(uint32_t)];
     memcpy(words, udp, sizeof(udp_header));
     for (size_t i = 0; i != sizeof(words) / sizeof(words[0]); ++i) {
-        dst[i] = words[i];
+        bus_w_csp1(i * sizeof(uint32_t), words[i]);
     }
 
     return OK;

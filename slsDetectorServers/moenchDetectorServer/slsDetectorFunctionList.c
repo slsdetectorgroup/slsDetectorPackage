@@ -1164,12 +1164,10 @@ void setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip,
     calcChecksum(udp);
 
     // force FPGA writes to be aligned and in order
-    volatile uint32_t *dst =
-        (volatile uint32_t *)(Blackfin_getBaseAddress() + addr / 2);
     uint32_t words[sizeof(udp_header) / sizeof(uint32_t)];
     memcpy(words, udp, sizeof(udp_header));
     for (size_t i = 0; i != sizeof(words) / sizeof(words[0]); ++i) {
-        dst[i] = words[i];
+        bus_w(addr + i * 2, words[i]);
     }
 
     if (iRxEntry < numUdpDestinations) {

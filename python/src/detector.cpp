@@ -942,7 +942,6 @@ void init_det(py::module &m) {
                        (void (Detector::*)(const std::vector<defs::ROI> &)) &
                            Detector::setRxROI,
                        py::arg());
-
     CppDetectorApi.def("clearRxROI",
                        (void (Detector::*)()) & Detector::clearRxROI);
     CppDetectorApi.def(
@@ -1306,6 +1305,16 @@ void init_det(py::module &m) {
         "setCollectionMode",
         (void (Detector::*)(defs::collectionMode, sls::Positions)) &
             Detector::setCollectionMode,
+        py::arg(), py::arg() = Positions{});
+    CppDetectorApi.def(
+        "getHDR",
+        (Result<defs::hdrParameters>(Detector::*)(sls::Positions) const) &
+            Detector::getHDR,
+        py::arg() = Positions{});
+    CppDetectorApi.def(
+        "setHDR",
+        (void (Detector::*)(const defs::hdrParameters, sls::Positions)) &
+            Detector::setHDR,
         py::arg(), py::arg() = Positions{});
     CppDetectorApi.def("getNumberOfBursts",
                        (Result<int64_t>(Detector::*)(sls::Positions) const) &

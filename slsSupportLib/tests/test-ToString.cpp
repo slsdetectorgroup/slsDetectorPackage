@@ -379,4 +379,15 @@ TEST_CASE("string to timingInfoDecoder") {
             defs::timingInfoDecoder::SHINE);
 }
 
+TEST_CASE("operationMode to string") {
+    REQUIRE(ToString(defs::operationMode::SYNCHROTRON) == "synchrotron");
+    REQUIRE(ToString(defs::operationMode::FEL) == "fel");
+}
+
+TEST_CASE("string to operationMode") {
+    REQUIRE(StringTo<defs::operationMode>("synchrotron") ==
+            defs::operationMode::SYNCHROTRON);
+    REQUIRE(StringTo<defs::operationMode>("fel") == defs::operationMode::FEL);
+}
+
 } // namespace sls

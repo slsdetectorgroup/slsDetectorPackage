@@ -1425,6 +1425,13 @@ class Detector {
     /** [Jungfrau] */
     void setCollectionMode(defs::collectionMode value, Positions pos = {});
 
+    /** [Jungfrau] */
+    Result<defs::hdrParameters> getHDR(Positions pos = {}) const;
+
+    /** [Jungfrau] Enabling with FEL mode can only be used with chip version
+     * '1.2 HDR'*/
+    void setHDR(const defs::hdrParameters par, Positions pos = {});
+
     ///@}
 
     /** @name Gotthard2 Specific */

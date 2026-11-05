@@ -349,3 +349,5 @@ int set_power_dac(int);
 int get_power_adc(int);
 int get_voltage_limit(int);
 int set_voltage_limit(int);
+int set_hdr(int);
+int get_hdr(int);

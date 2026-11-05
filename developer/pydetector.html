@@ -248,6 +248,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.getGapPixelsinCallback"><code class="docutils literal notranslate"><span class="pre">Detector.getGapPixelsinCallback()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.getGateDelay"><code class="docutils literal notranslate"><span class="pre">Detector.getGateDelay()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.getGateDelayForAllGates"><code class="docutils literal notranslate"><span class="pre">Detector.getGateDelayForAllGates()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.getHDR"><code class="docutils literal notranslate"><span class="pre">Detector.getHDR()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.getHardwareVersion"><code class="docutils literal notranslate"><span class="pre">Detector.getHardwareVersion()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.getHighVoltage"><code class="docutils literal notranslate"><span class="pre">Detector.getHighVoltage()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.getHostname"><code class="docutils literal notranslate"><span class="pre">Detector.getHostname()</span></code></a></li>
@@ -414,6 +415,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.hardwareversion"><code class="docutils literal notranslate"><span class="pre">Detector.hardwareversion</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.hasBitDefinition"><code class="docutils literal notranslate"><span class="pre">Detector.hasBitDefinition()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.hasRegisterDefinition"><code class="docutils literal notranslate"><span class="pre">Detector.hasRegisterDefinition()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.hdr"><code class="docutils literal notranslate"><span class="pre">Detector.hdr</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.highvoltage"><code class="docutils literal notranslate"><span class="pre">Detector.highvoltage</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.hostname"><code class="docutils literal notranslate"><span class="pre">Detector.hostname</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.im_a"><code class="docutils literal notranslate"><span class="pre">Detector.im_a</span></code></a></li>
@@ -623,6 +625,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.setGainMode"><code class="docutils literal notranslate"><span class="pre">Detector.setGainMode()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.setGapPixelsinCallback"><code class="docutils literal notranslate"><span class="pre">Detector.setGapPixelsinCallback()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.setGateDelay"><code class="docutils literal notranslate"><span class="pre">Detector.setGateDelay()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.setHDR"><code class="docutils literal notranslate"><span class="pre">Detector.setHDR()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.setHighVoltage"><code class="docutils literal notranslate"><span class="pre">Detector.setHighVoltage()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.setHostname"><code class="docutils literal notranslate"><span class="pre">Detector.setHostname()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#slsdet.Detector.setImageTestMode"><code class="docutils literal notranslate"><span class="pre">Detector.setImageTestMode()</span></code></a></li>
@@ -2409,6 +2412,11 @@ d.getBit(mybit)</p>
 <dd></dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="slsdet.Detector.getHDR">
+<span class="sig-name descname"><span class="pre">getHDR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">slsdet._slsdet.CppDetectorApi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list[slsDetectorDefs::hdrParameters]</span></span></span><a class="headerlink" href="#slsdet.Detector.getHDR" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="slsdet.Detector.getHardwareVersion">
 <span class="sig-name descname"><span class="pre">getHardwareVersion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">slsdet._slsdet.CppDetectorApi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#slsdet.Detector.getHardwareVersion" title="Link to this definition"></a></dt>
 <dd></dd></dl>
@@ -3248,6 +3256,25 @@ d.getBit(mybit)</p>
 <li><p>hasRegisterDefinition(self: slsdet._slsdet.CppDetectorApi, arg0: str) -&gt; bool</p></li>
 <li><p>hasRegisterDefinition(self: slsdet._slsdet.CppDetectorApi, arg0: sls::RegisterAddress) -&gt; bool</p></li>
 </ol>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="slsdet.Detector.hdr">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">hdr</span></span><a class="headerlink" href="#slsdet.Detector.hdr" title="Link to this definition"></a></dt>
+<dd><p>[Jungfrau] Enables the high dynamic range in detector in synchrotron or fel mode.
+Pass in an hdrParameters instance, optionally initialized with the desired operationMode (defs.operationMode.SYNCHOTRON or defs.operationMode.FEL). The default constructor hdrParameters() disables the HDR, which is the default mode of operation. FEL can only be used with chip version ‘1.2 HDR’.</p>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">hdr</span> <span class="o">=</span> <span class="n">hdrParameters</span><span class="p">(</span><span class="n">defs</span><span class="o">.</span><span class="n">SYNCHROTRON</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">hdr</span>
+<span class="go">[enabled synchotron]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">hdr</span> <span class="o">=</span> <span class="n">hdrParameters</span><span class="p">(</span><span class="n">defs</span><span class="o">.</span><span class="n">FEL</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;d.hdr</span>
+<span class="go">[enabled fel]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">hdr</span> <span class="o">=</span> <span class="n">hdrParameters</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">hdr</span>
+<span class="go">[disabled]</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py property">
@@ -5141,6 +5168,11 @@ d.setBit(mybit)</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="slsdet.Detector.setGateDelay">
 <span class="sig-name descname"><span class="pre">setGateDelay</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">slsdet._slsdet.CppDetectorApi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DurationWrapper</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#slsdet.Detector.setGateDelay" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slsdet.Detector.setHDR">
+<span class="sig-name descname"><span class="pre">setHDR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">slsdet._slsdet.CppDetectorApi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">slsDetectorDefs::hdrParameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#slsdet.Detector.setHDR" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">

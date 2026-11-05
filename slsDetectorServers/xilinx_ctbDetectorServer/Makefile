@@ -16,7 +16,7 @@ else
 endif
 CC    		= $(CROSS)gcc
 #TODO: allow these warnings and fix code
-CFLAGS		+=  -Wall -std=gnu99 -Wno-format-overflow -Wno-format-truncation -DXILINX_CHIPTESTBOARDD -DARMPROCESSOR -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(det_lib) -I$(current_dir)  #-DDEBUG1 #-DVERBOSEI #-DVERBOSE 
+CFLAGS		+=  -O2 -Wall -Wextra -Wno-unused-parameter -Wformat=2 -Wredundant-decls -Werror=return-type -std=gnu99 -Wno-format-overflow -Wno-format-truncation -DXILINX_CHIPTESTBOARDD -DARMPROCESSOR -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(det_lib) -I$(current_dir)  #-DDEBUG1 #-DVERBOSEI #-DVERBOSE 
 #CFLAGS		+=  -Wall -std=gnu99  -DXILINX_CHIPTESTBOARDD -DARMPROCESSOR -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(det_lib) -I$(current_dir)  #-DDEBUG1 #-DVERBOSEI #-DVERBOSE 
 LDLIBS		+= 	-lm -lrt -pthread 
 PROGS		= 	xilinx_ctbDetectorServer 

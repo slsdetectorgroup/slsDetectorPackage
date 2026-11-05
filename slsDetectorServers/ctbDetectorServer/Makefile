@@ -10,8 +10,10 @@ script_dir = ../../etc/
 
 CROSS  		= bfin-uclinux-
 CC    		= $(CROSS)gcc
-CFLAGS		+=  -Wall -std=gnu99 -DCHIPTESTBOARDD  -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(det_lib) -I$(current_dir) #-DDEBUG1 #-DVERBOSEI #-DVERBOSE 
+CFLAGS		+=  -O2 -Wall -Wextra -Wno-unused-parameter -Wformat=2 -Wredundant-decls -Werror=return-type -std=gnu99 -DCHIPTESTBOARDD  -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(det_lib) -I$(current_dir) #-DDEBUG1 #-DVERBOSEI #-DVERBOSE 
 LDLIBS		+= 	-lm -lrt -pthread
+# FLAT stack size: elf2flt defaults to 4 KB, the update and startup paths need more than 8 KB
+LDLIBS		+= 	-Wl,-elf2flt=-s262144
 PROGS		= 	ctbDetectorServer 
 DESTDIR		?= 	bin
 INSTMODE	= 	0777

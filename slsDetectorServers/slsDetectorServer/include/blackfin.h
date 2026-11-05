@@ -120,5 +120,14 @@ uint32_t *Blackfin_getBaseAddress();
  */
 int mapCSP0(void);
 
-/** sleep for only usecs */
-void usleep_bf(uint64_t i);
+/**
+ * Prepare the core cycle counter used by usleep_bf (called from mapCSP0)
+ */
+int initCycleCounter(void);
+
+/**
+ * busy-wait for usecs on the core cycle counter
+ * @returns 0, or -1 without sleeping if the wait does not fit the 32-bit
+ * cycle count (about 8 s at 525 MHz)
+ */
+int usleep_bf(uint32_t us);

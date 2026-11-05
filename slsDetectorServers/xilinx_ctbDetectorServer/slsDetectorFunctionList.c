@@ -145,7 +145,7 @@ void basictests() {
     }
 
     // check for API compatibility - old server
-    if (sw_fw_apiversion > requiredfwversion) {
+    if ((uint64_t)sw_fw_apiversion > requiredfwversion) {
         sprintf(initErrorMessage,
                 "This firmware-software api version (0x%lx) is incompatible "
                 "with the software's minimum required firmware version "
@@ -158,7 +158,7 @@ void basictests() {
     }
 
     // check for firmware compatibility - old firmware
-    if (requiredfwversion > fwversion) {
+    if (requiredfwversion > (uint64_t)fwversion) {
         sprintf(initErrorMessage,
                 "This firmware version (0x%lx) is incompatible.\n"
                 "Please update firmware (min. 0x%lx) to be compatible with "
@@ -1502,8 +1502,9 @@ int configureMAC() {
     }
 #endif
 
-    // get struct memory
-    udp_header *udp = (udp_header *)(Arm_getUDPBaseAddress());
+    // build udp header
+    udp_header header;
+    udp_header *udp = &header;
     memset(udp, 0, sizeof(udp_header));
 
     //  mac addresses
@@ -1534,6 +1535,13 @@ int configureMAC() {
     // total length is redefined in firmware
 
     calcChecksum(udp);
+
+    // force FPGA writes to be aligned and in order
+    uint32_t words[sizeof(udp_header) / sizeof(uint32_t)];
+    memcpy(words, udp, sizeof(udp_header));
+    for (size_t i = 0; i != sizeof(words) / sizeof(words[0]); ++i) {
+        bus_w_csp1(i * sizeof(uint32_t), words[i]);
+    }
 
     return OK;
 }

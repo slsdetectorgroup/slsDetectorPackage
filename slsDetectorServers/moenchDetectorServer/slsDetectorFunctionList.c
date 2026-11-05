@@ -548,7 +548,7 @@ int resetToDefaultDacs(int hardReset, char *mess) {
 
 int getDefaultDac(enum DACINDEX index, enum detectorSettings sett,
                   int *retval) {
-    if (index < 0 || index >= NDAC)
+    if (index >= NDAC)
         return FAIL;
     *retval = defaultDacValues[index];
     return OK;
@@ -556,7 +556,7 @@ int getDefaultDac(enum DACINDEX index, enum detectorSettings sett,
 
 int setDefaultDac(enum DACINDEX index, enum detectorSettings sett, int value) {
     char *dac_names[] = {DAC_NAMES};
-    if (index < 0 || index >= NDAC)
+    if (index >= NDAC)
         return FAIL;
     LOG(logINFO, ("Setting Default Dac [%d - %s]: %d\n", (int)index,
                   dac_names[index], value));
@@ -913,7 +913,7 @@ enum detectorSettings getSettings() {
 /* parameters - dac, adc, hv */
 /* parameters - dac, adc, hv */
 int validateDACIndex(enum DACINDEX ind, char *mess) {
-    if (ind < 0 || ind >= NDAC) {
+    if (ind >= NDAC) {
         sprintf(mess, "Could not set DAC. Invalid index %d\n", ind);
         LOG(logERROR, (mess));
         return FAIL;
@@ -1203,8 +1203,9 @@ void setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip,
                                    : RXR_ENDPOINT_OUTER_START_REG);
     // calculate rxr endpoint offset
     addr += (iRxEntry * RXR_ENDPOINT_OFST);
-    // get struct memory
-    udp_header *udp = (udp_header *)(Blackfin_getBaseAddress() + addr / 2);
+    // build udp header
+    udp_header header;
+    udp_header *udp = &header;
     memset(udp, 0, sizeof(udp_header));
 
     //  mac addresses
@@ -1235,6 +1236,14 @@ void setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip,
     // total length is redefined in firmware
 
     calcChecksum(udp);
+
+    // force FPGA writes to be aligned and in order
+    uint32_t words[sizeof(udp_header) / sizeof(uint32_t)];
+    memcpy(words, udp, sizeof(udp_header));
+    for (size_t i = 0; i != sizeof(words) / sizeof(words[0]); ++i) {
+        bus_w(addr + i * 2, words[i]);
+    }
+
     if (iRxEntry < numUdpDestinations) {
         LOG(logINFO, ("\tIP checksum : 0x%lx\n\n", udp->ip_checksum));
     }

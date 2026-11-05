@@ -9,6 +9,7 @@
 
 #include <fcntl.h>    // open
 #include <stdio.h>    // fopen
+#include <string.h>   //memcpy
 #include <sys/mman.h> // mmap
 #include <unistd.h>   // usleep
 
@@ -44,6 +45,22 @@ u_int32_t bus_r(u_int32_t offset) {
     volatile u_int32_t *ptr1;
     ptr1 = (u_int32_t *)(csp0base + offset / 2);
     return *ptr1;
+}
+
+int bus_w_block(u_int32_t offset, const void *src, size_t size) {
+    uint32_t step = 1 << MEM_MAP_SHIFT;
+    if (size == 0 || size % sizeof(uint32_t) != 0) {
+        LOG(logERROR, ("Could not write block: size %zu is not a non-zero "
+                       "multiple of %zu\n",
+                       size, sizeof(uint32_t)));
+        return FAIL;
+    }
+    uint32_t words[size / sizeof(uint32_t)];
+    memcpy(words, src, size);
+    for (size_t i = 0; i != sizeof(words) / sizeof(words[0]); ++i) {
+        bus_w(offset + i * step, words[i]);
+    }
+    return OK;
 }
 
 int64_t get64BitReg(int aLSB, int aMSB) {
@@ -133,8 +150,6 @@ int mapCSP0(void) {
         LOG(logINFO, ("Memory already mapped before\n"));
     return OK;
 }
-
-uint32_t *Blackfin_getBaseAddress() { return csp0base; }
 
 /* BF537 core clock; refined from /proc/cpuinfo in initCycleCounter() */
 #define BFIN_CCLK_HZ_DEFAULT 525000000UL

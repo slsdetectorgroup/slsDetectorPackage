@@ -9,6 +9,7 @@
 
 #include <fcntl.h>    // open
 #include <sys/mman.h> // mmap
+#include <string.h> // memcpy
 
 /* global variables */
 u_int32_t *csp0base = 0;
@@ -19,6 +20,18 @@ u_int32_t *csp0base = 0;
 
 u_int32_t *csp1base = 0;
 #define CSP1 0x18040000
+
+void bus_w(u_int32_t offset, u_int32_t data) {
+    volatile u_int32_t *ptr1;
+    ptr1 = (u_int32_t *)(csp0base + offset / (sizeof(u_int32_t)));
+    *ptr1 = data;
+}
+
+u_int32_t bus_r(u_int32_t offset) {
+    volatile u_int32_t *ptr1;
+    ptr1 = (u_int32_t *)(csp0base + offset / (sizeof(u_int32_t)));
+    return *ptr1;
+}
 
 void bus_w_csp1(u_int32_t offset, u_int32_t data) {
     volatile u_int32_t *ptr1;
@@ -32,16 +45,20 @@ u_int32_t bus_r_csp1(u_int32_t offset) {
     return *ptr1;
 }
 
-void bus_w(u_int32_t offset, u_int32_t data) {
-    volatile u_int32_t *ptr1;
-    ptr1 = (u_int32_t *)(csp0base + offset / (sizeof(u_int32_t)));
-    *ptr1 = data;
-}
-
-u_int32_t bus_r(u_int32_t offset) {
-    volatile u_int32_t *ptr1;
-    ptr1 = (u_int32_t *)(csp0base + offset / (sizeof(u_int32_t)));
-    return *ptr1;
+int bus_w_block(u_int32_t offset, const void *src, size_t size) {
+    uint32_t step = sizeof(uint32_t);
+    if (size == 0 || size % sizeof(uint32_t) != 0) {
+        LOG(logERROR, ("Could not write block: size %zu is not a non-zero "
+                       "multiple of %zu\n",
+                       size, sizeof(uint32_t)));
+        return FAIL;
+    }
+    uint32_t words[size / sizeof(uint32_t)];
+    memcpy(words, src, size);
+    for (size_t i = 0; i != sizeof(words) / sizeof(words[0]); ++i) {
+        bus_w(offset + i * step, words[i]);
+    }
+    return OK;
 }
 
 int64_t get64BitReg(int aLSB, int aMSB) {
@@ -125,5 +142,3 @@ int mapCSP0(void) {
     }
     return OK;
 }
-
-u_int32_t *Nios_getBaseAddress() { return csp0base; }

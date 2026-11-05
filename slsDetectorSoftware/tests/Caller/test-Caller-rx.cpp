@@ -861,8 +861,8 @@ TEST_CASE("rx_roi_port_disabled", "[.detectorintegration]") {
     if (det_type == defs::EIGER) {
         auto prev_roi = det.getRxROI();
         std::vector<defs::portPosition> ports = {defs::LEFT, defs::RIGHT};
-        auto prev_port0 = det.getDataStream(ports[0], {0})[0];
-        auto prev_port1 = det.getDataStream(ports[1], {0})[0];
+        auto prev_port0 = det.getDataStream(ports[0], {0}).squash();
+        auto prev_port1 = det.getDataStream(ports[1], {0}).squash();
         bool prev_tengiga = det.getTenGiga().squash(false);
 
         std::vector<defs::ROI> rois = {defs::ROI{0, 10, 0, 20},
@@ -873,22 +873,22 @@ TEST_CASE("rx_roi_port_disabled", "[.detectorintegration]") {
         det.setDataStream(ports[0], true, {0});
         det.setDataStream(ports[1], true, {0});
         det.setRxROI(rois);
-        REQUIRE_THROWS(det.setDataStream(ports[0], false));
-        REQUIRE_THROWS(det.setDataStream(ports[1], false));
+        REQUIRE_THROWS(det.setDataStream(ports[0], false, {0}));
+        REQUIRE_THROWS(det.setDataStream(ports[1], false, {0}));
 
         det.clearRxROI();
         det.setDataStream(ports[0], true, {0});
         det.setDataStream(ports[1], true, {0});
         det.setRxROI({rois[0]});
-        REQUIRE_THROWS(det.setDataStream(ports[0], false));
-        REQUIRE_NOTHROW(det.setDataStream(ports[1], false));
+        REQUIRE_THROWS(det.setDataStream(ports[0], false, {0}));
+        REQUIRE_NOTHROW(det.setDataStream(ports[1], false, {0}));
 
         det.clearRxROI();
         det.setDataStream(ports[0], true, {0});
         det.setDataStream(ports[1], true, {0});
         det.setRxROI({rois[1]});
-        REQUIRE_NOTHROW(det.setDataStream(ports[0], false));
-        REQUIRE_THROWS(det.setDataStream(ports[1], false));
+        REQUIRE_NOTHROW(det.setDataStream(ports[0], false, {0}));
+        REQUIRE_THROWS(det.setDataStream(ports[1], false, {0}));
 
         det.clearRxROI();
         det.setDataStream(ports[0], false, {0});

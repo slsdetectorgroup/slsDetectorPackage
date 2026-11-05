@@ -9,20 +9,30 @@
 
 #include <fcntl.h>    // open
 #include <sys/mman.h> // mmap
+#include <string.h> // memcpy
 
 /* global variables */
 #define CSP0          (0xB0080000)
 #define CSP1          (0xB0050000) // udp
-#define MEM_SIZE_CSP0 (0x10000)
+#define CSP2          (0xA0000000)
+#define MEM_SIZE_CSP0 (0x20000)
 #define MEM_SIZE_CSP1 (0x2000) // smaller size for udp
+#define MEM_SIZE_CSP2 (0x4000) // smaller size for udp
 
 u_int32_t *csp0base = 0;
 u_int32_t *csp1base = 0;
+u_int32_t *csp2base = 0;
 
 void bus_w(u_int32_t offset, u_int32_t data) {
     volatile u_int32_t *ptr1;
     ptr1 = (u_int32_t *)(csp0base + offset / (sizeof(u_int32_t)));
     *ptr1 = data;
+}
+
+u_int32_t bus_r(u_int32_t offset) {
+    volatile u_int32_t *ptr1;
+    ptr1 = (u_int32_t *)(csp0base + offset / (sizeof(u_int32_t)));
+    return *ptr1;
 }
 
 void bus_w_csp1(u_int32_t offset, u_int32_t data) {
@@ -37,10 +47,32 @@ u_int32_t bus_r_csp1(u_int32_t offset) {
     return *ptr1;
 }
 
-u_int32_t bus_r(u_int32_t offset) {
+void bus_w_csp2(u_int32_t offset, u_int32_t data) {
     volatile u_int32_t *ptr1;
-    ptr1 = (u_int32_t *)(csp0base + offset / (sizeof(u_int32_t)));
+    ptr1 = (u_int32_t *)(csp2base + offset / (sizeof(u_int32_t)));
+    *ptr1 = data;
+}
+
+u_int32_t bus_r_csp2(u_int32_t offset) {
+    volatile u_int32_t *ptr1;
+    ptr1 = (u_int32_t *)(csp2base + offset / (sizeof(u_int32_t)));
     return *ptr1;
+}
+
+int bus_w_csp1_block(const void *src, size_t size) {
+    uint32_t step = sizeof(uint32_t);
+    if (size == 0 || size % sizeof(uint32_t) != 0) {
+        LOG(logERROR, ("Could not write block: size %zu is not a non-zero "
+                       "multiple of %zu\n",
+                       size, sizeof(uint32_t)));
+        return FAIL;
+    }
+    uint32_t words[size / sizeof(uint32_t)];
+    memcpy(words, src, size);
+    for (size_t i = 0; i != sizeof(words) / sizeof(words[0]); ++i) {
+        bus_w_csp1(i * step, words[i]);
+    }
+    return OK;
 }
 
 uint64_t getU64BitReg(int aLSB, int aMSB) {
@@ -63,12 +95,12 @@ u_int32_t writeRegister(u_int32_t offset, u_int32_t data) {
 
 int mapCSP0(void) {
     LOG(logINFO, ("Mapping memory\n"));
-    u_int32_t csps[2] = {CSP0, CSP1};
-    u_int32_t **cspbases[2] = {&csp0base, &csp1base};
-    u_int32_t memsize[2] = {MEM_SIZE_CSP0, MEM_SIZE_CSP1};
-    char names[2][10] = {"csp0base", "csp1base"};
+    u_int32_t csps[3] = {CSP0, CSP1, CSP2};
+    u_int32_t **cspbases[3] = {&csp0base, &csp1base, &csp2base};
+    u_int32_t memsize[3] = {MEM_SIZE_CSP0, MEM_SIZE_CSP1, MEM_SIZE_CSP2};
+    char names[3][10] = {"csp0base", "csp1base", "csp2base"};
 
-    for (int i = 0; i < 2; ++i) {
+    for (int i = 0; i < 3; ++i) {
         // if not mapped
         if (*cspbases[i] == 0) {
             LOG(logINFO, ("\tMapping memory for %s\n", names[i]));
@@ -106,5 +138,3 @@ int mapCSP0(void) {
     }
     return OK;
 }
-
-u_int32_t *Arm_getUDPBaseAddress() { return csp1base; }

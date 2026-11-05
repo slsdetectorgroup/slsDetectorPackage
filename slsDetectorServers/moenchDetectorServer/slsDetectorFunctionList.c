@@ -1120,9 +1120,9 @@ int getPrimaryInterface() {
     return ((bus_r(CONFIG_REG) & CONFIG_INNR_PRIMRY_INTRFCE_MSK) ? 1 : 0);
 }
 
-void setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip,
-                 uint64_t destmac, uint16_t destport, uint64_t sourcemac,
-                 uint32_t sourceip, uint16_t sourceport) {
+int setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip,
+                uint64_t destmac, uint16_t destport, uint64_t sourcemac,
+                uint32_t sourceip, uint16_t sourceport) {
 
     // start addr
     uint32_t addr = (type == INNER ? RXR_ENDPOINT_INNER_START_REG
@@ -1164,15 +1164,15 @@ void setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip,
     calcChecksum(udp);
 
     // force FPGA writes to be aligned and in order
-    uint32_t words[sizeof(udp_header) / sizeof(uint32_t)];
-    memcpy(words, udp, sizeof(udp_header));
-    for (size_t i = 0; i != sizeof(words) / sizeof(words[0]); ++i) {
-        bus_w(addr + i * 2, words[i]);
+    if (bus_w_block(addr, udp, sizeof(udp_header)) == FAIL) {
+        LOG(logERROR, ("Failed to write UDP header\n"));
+        return FAIL;
     }
 
     if (iRxEntry < numUdpDestinations) {
         LOG(logINFO, ("\tIP checksum : 0x%lx\n\n", udp->ip_checksum));
     }
+    return OK;
 }
 
 void calcChecksum(udp_header *udp) {
@@ -1289,21 +1289,41 @@ int configureMAC() {
 #endif
         if (numInterfaces == 2) {
             // bottom
-            setupHeader(iRxEntry, OUTER, dstip, dstmac, dstport, srcmac, srcip,
-                        srcport);
+            if (setupHeader(iRxEntry, OUTER, dstip, dstmac, dstport, srcmac,
+                            srcip, srcport) == FAIL) {
+                LOG(logERROR, ("could not set udp header for outer interface "
+                               "[entry:%d]\n",
+                               iRxEntry));
+                return FAIL;
+            }
             // top
-            setupHeader(iRxEntry, INNER, dstip2, dstmac2, dstport2, srcmac2,
-                        srcip2, srcport2);
+            if (setupHeader(iRxEntry, INNER, dstip2, dstmac2, dstport2, srcmac2,
+                            srcip2, srcport2) == FAIL) {
+                LOG(logERROR, ("could not set udp header for inner interface "
+                               "[entry:%d]\n",
+                               iRxEntry));
+                return FAIL;
+            }
         }
         // single interface
         else {
             // default
             if (selInterface == 0) {
-                setupHeader(iRxEntry, OUTER, dstip, dstmac, dstport, srcmac,
-                            srcip, srcport);
+                if (setupHeader(iRxEntry, OUTER, dstip, dstmac, dstport, srcmac,
+                                srcip, srcport) == FAIL) {
+                    LOG(logERROR, ("could not set udp header for outer "
+                                   "interface [entry:%d]\n",
+                                   iRxEntry));
+                    return FAIL;
+                }
             } else {
-                setupHeader(iRxEntry, INNER, dstip, dstmac, dstport, srcmac,
-                            srcip, srcport2);
+                if (setupHeader(iRxEntry, INNER, dstip, dstmac, dstport, srcmac,
+                                srcip, srcport2) == FAIL) {
+                    LOG(logERROR, ("could not set udp header for inner "
+                                   "interface [entry:%d]\n",
+                                   iRxEntry));
+                    return FAIL;
+                }
             }
         }
     }

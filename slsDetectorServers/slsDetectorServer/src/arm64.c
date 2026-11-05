@@ -8,8 +8,8 @@
 #include "sls/sls_detector_defs.h"
 
 #include <fcntl.h>    // open
+#include <string.h>   // memcpy
 #include <sys/mman.h> // mmap
-#include <string.h> // memcpy
 
 /* global variables */
 #define CSP0          (0xB0080000)

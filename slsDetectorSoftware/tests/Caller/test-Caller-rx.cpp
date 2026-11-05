@@ -873,22 +873,22 @@ TEST_CASE("rx_roi_port_disabled", "[.detectorintegration]") {
         det.setDataStream(ports[0], true, {0});
         det.setDataStream(ports[1], true, {0});
         det.setRxROI(rois);
-        REQUIRE_THROWS(det.setUDPDataStream(ports[0], false, {0}));
-        REQUIRE_THROWS(det.setUDPDataStream(ports[1], false, {0}));
+        REQUIRE_THROWS(det.setDataStream(ports[0], false, {0}));
+        REQUIRE_THROWS(det.setDataStream(ports[1], false, {0}));
 
         det.clearRxROI();
         det.setDataStream(ports[0], true, {0});
         det.setDataStream(ports[1], true, {0});
         det.setRxROI({rois[0]});
-        REQUIRE_THROWS(det.setUDPDataStream(ports[0], false, {0}));
-        REQUIRE_NOTHROW(det.setUDPDataStream(ports[1], false, {0}));
+        REQUIRE_THROWS(det.setDataStream(ports[0], false, {0}));
+        REQUIRE_NOTHROW(det.setDataStream(ports[1], false, {0}));
 
         det.clearRxROI();
         det.setDataStream(ports[0], true, {0});
         det.setDataStream(ports[1], true, {0});
         det.setRxROI({rois[1]});
-        REQUIRE_NOTHROW(det.setUDPDataStream(ports[0], false, {0}));
-        REQUIRE_THROWS(det.setUDPDataStream(ports[1], false, {0}));
+        REQUIRE_NOTHROW(det.setDataStream(ports[0], false, {0}));
+        REQUIRE_THROWS(det.setDataStream(ports[1], false, {0}));
 
         det.clearRxROI();
         det.setDataStream(ports[0], false, {0});

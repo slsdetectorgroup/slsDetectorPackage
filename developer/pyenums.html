@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Enums &mdash; slsDetectorPackage  documentation</title>
+  <title>Enums &mdash; slsDetectorPackage 0.0.0  documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/css/extra.css?v=2be88464" />
@@ -20,8 +20,8 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Examples" href="pyexamples.html" />
-    <link rel="prev" title="Detector" href="pydetector.html" /> 
+    <link rel="next" title="Power Supply" href="pypower.html" />
+    <link rel="prev" title="Ctb" href="pyctb.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -33,7 +33,7 @@
           
           
           <a href="index.html" class="icon icon-home">
-            slsDetectorPackage
+            slsDetectorPackage 0.0.0
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -68,6 +68,7 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="pygettingstarted.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pydetector.html">Detector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyctb.html">Ctb</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Enums</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#slsdet.runStatus"><code class="docutils literal notranslate"><span class="pre">runStatus</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#slsdet.detectorType"><code class="docutils literal notranslate"><span class="pre">detectorType</span></code></a></li>
@@ -90,8 +91,9 @@
 <li class="toctree-l2"><a class="reference internal" href="#slsdet.gainMode"><code class="docutils literal notranslate"><span class="pre">gainMode</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="pypower.html">Power Supply</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pyexamples.html">Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pyPatternGenerator.html">PatternGenerator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pypatterngenerator.html">PatternGenerator</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pattern.html">Pattern</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Command line</span></p>
@@ -104,6 +106,7 @@
 <li class="toctree-l1"><a class="reference internal" href="type_traits.html">TypeTraits</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ToString.html">ToString</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Versioning.html">Package Versioning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Testing.html">Testing</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Firmware</span></p>
 <ul>
@@ -151,7 +154,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">slsDetectorPackage</a>
+          <a href="index.html">slsDetectorPackage 0.0.0</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -180,7 +183,7 @@ exposed to Python through pybind11.</p>
 <span class="n">d</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">()</span>
 <span class="n">d</span><span class="o">.</span><span class="n">fformat</span> <span class="o">=</span> <span class="n">fileFormat</span><span class="o">.</span><span class="n">BINARY</span>
 
-<span class="c1"># Altough not recommended for convenience all enums</span>
+<span class="c1"># Although not recommended for convenience all enums</span>
 <span class="c1"># and some other things can be impored using *</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">slsdet</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
@@ -190,7 +193,7 @@ exposed to Python through pybind11.</p>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">slsdet.enums</span>
 <span class="k">for</span> <span class="n">enum</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">slsdet</span><span class="o">.</span><span class="n">enums</span><span class="p">):</span>
-    <span class="c1"># filter out special memebers</span>
+    <span class="c1"># filter out special members</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">enum</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">'_'</span><span class="p">):</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">enum</span><span class="p">)</span>
 </pre></div>
@@ -221,6 +224,7 @@ exposed to Python through pybind11.</p>
 <p>MYTHEN3</p>
 <p>GOTTHARD2</p>
 <p>XILINX_CHIPTESTBOARD</p>
+<p>MATTERHORN</p>
 </dd></dl>
 
 <dl class="py class">
@@ -364,18 +368,6 @@ exposed to Python through pybind11.</p>
 <p>TEMPERATURE_FPGA2</p>
 <p>TEMPERATURE_FPGA3</p>
 <p>TRIMBIT_SCAN</p>
-<p>V_POWER_A</p>
-<p>V_POWER_B</p>
-<p>V_POWER_C</p>
-<p>V_POWER_D</p>
-<p>V_POWER_IO</p>
-<p>V_POWER_CHIP</p>
-<p>I_POWER_A</p>
-<p>I_POWER_B</p>
-<p>I_POWER_C</p>
-<p>I_POWER_D</p>
-<p>I_POWER_IO</p>
-<p>V_LIMIT</p>
 <p>SLOW_ADC0</p>
 <p>SLOW_ADC1</p>
 <p>SLOW_ADC2</p>
@@ -524,8 +516,8 @@ exposed to Python through pybind11.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="pydetector.html" class="btn btn-neutral float-left" title="Detector" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="pyexamples.html" class="btn btn-neutral float-right" title="Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="pyctb.html" class="btn btn-neutral float-left" title="Ctb" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pypower.html" class="btn btn-neutral float-right" title="Power Supply" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

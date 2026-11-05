@@ -11,8 +11,8 @@ Jungfrau
 Single Port Configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. image:: images/Jungfrau_module.png
-   :target: _images/Jungfrau_module.png
+.. image:: images/Jungfrau_module.svg
+   :target: _images/Jungfrau_module.svg
    :width: 650px
    :align: center
    :alt: Jungfrau Module Single Port Configuration
@@ -29,8 +29,8 @@ Total image size = 524,288 bytes
 Double Port Configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. image:: images/Jungfrau_two_port.png
-   :target: _images/Jungfrau_two_port.png
+.. image:: images/Jungfrau_two_port.svg
+   :target: _images/Jungfrau_two_port.svg
    :width: 500px
    :align: center
    :alt: Jungfrau Module Two Port Configuration
@@ -51,8 +51,8 @@ Image size per UDP port or File = 262,144 bytes
 Read Partial Rows
 ^^^^^^^^^^^^^^^^^^
 
-.. image:: images/Jungfrau_read_rows.png
-   :target: _images/Jungfrau_read_rows.png
+.. image:: images/Jungfrau_read_rows.svg
+   :target: _images/Jungfrau_read_rows.svg
    :width: 550px
    :align: center
    :alt: Jungfrau Module Read Partial Rows Configuration
@@ -74,8 +74,8 @@ Moench
 Single Port Configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. image:: images/Moench_module.png
-   :target: _images/Moench_module.png
+.. image:: images/Moench_module.svg
+   :target: _images/Moench_module.svg
    :width: 550px
    :align: center
    :alt: Moench Module Single Port Configuration
@@ -91,8 +91,8 @@ Total image size = 320,000 bytes
 Double Port Configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. image:: images/Moench_two_port.png
-   :target: _images/Moench_two_port.png
+.. image:: images/Moench_two_port.svg
+   :target: _images/Moench_two_port.svg
    :width: 400px
    :align: center
    :alt: Moench Module Two Port Configuration
@@ -113,8 +113,8 @@ Image size per UDP port or File = 160,000 bytes
 Read Partial Rows
 ^^^^^^^^^^^^^^^^^^
 
-.. image:: images/Moench_read_rows.png
-   :target: _images/Moench_read_rows.png
+.. image:: images/Moench_read_rows.svg
+   :target: _images/Moench_read_rows.svg
    :width: 400px
    :align: center
    :alt: Moench Module Read Partial Rows Configuration
@@ -135,8 +135,8 @@ Eiger
 Default Configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. image:: images/Eiger_module.png
-   :target: _images/Eiger_module.png
+.. image:: images/Eiger_module.svg
+   :target: _images/Eiger_module.svg
    :width: 350px
    :align: center
    :alt: Eiger Module Default Configuration
@@ -157,8 +157,8 @@ The myth, the legend, the bottom ports: Demystifying them
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-.. figure:: images/Eiger_bottom_1.png
-   :target: _images/Eiger_bottom_1.png
+.. figure:: images/Eiger_bottom_1.svg
+   :target: _images/Eiger_bottom_1.svg
    :width: 350px
    :align: center
    :alt: Eiger Bottom as Firmware gets it
@@ -166,8 +166,8 @@ The myth, the legend, the bottom ports: Demystifying them
    How the firmware gets the images
 
 
-.. figure:: images/Eiger_bottom_2.png
-   :target: _images/Eiger_bottom_2.png
+.. figure:: images/Eiger_bottom_2.svg
+   :target: _images/Eiger_bottom_2.svg
    :width: 350px
    :align: center
    :alt: Eiger Bottom after the firmware flips it horizontally
@@ -175,8 +175,8 @@ The myth, the legend, the bottom ports: Demystifying them
    After the firmware flips it horizontally
 
 
-.. figure:: images/Eiger_bottom_3.png
-   :target: _images/Eiger_bottom_3.png
+.. figure:: images/Eiger_bottom_3.svg
+   :target: _images/Eiger_bottom_3.svg
    :width: 350px
    :align: center
    :alt: After the software swaps the udp ports
@@ -184,8 +184,8 @@ The myth, the legend, the bottom ports: Demystifying them
    After the software swaps the udp ports
 
 
-.. figure:: images/Eiger_bottom_4.png
-   :target: _images/Eiger_bottom_4.png
+.. figure:: images/Eiger_bottom_4.svg
+   :target: _images/Eiger_bottom_4.svg
    :width: 400px
    :align: center
    :alt: After the gui has flipped the bottom vertically
@@ -204,7 +204,7 @@ The pixel width can be configured to 4, 8, 16 (default) or 32 bits using the com
 Flip rows
 ^^^^^^^^^^
 
-One can use the command `fliprows <commandline.html#term-fliprows-0-1>`_ to flip the rows vertically for the bottom or top half module. It is sent out to the reciever, but does not flip rows in the output file itself, but rather streams out this info via the json header and thus instructs the GUI to display them correctly.
+One can use the command `fliprows <commandline.html#term-fliprows-0-1>`_ to flip the rows vertically for the bottom or top half module. It is sent out to the receiver, but does not flip rows in the output file itself, but rather streams out this info via the json header and thus instructs the GUI to display them correctly.
 
 1GbE/ 10GbE Interfaces
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -223,8 +223,8 @@ Note: Only the activated ports will write data as it does not make sense to writ
 
 **Read Partial Rows**: The number of image rows per port can be adjusted using the `readnrows <commandline.html#term-readnrows>`_ command. By default, 256 rows are read, but a smaller value centers the readout vertically (e.g., 8 rows reads 4 above and 4 below the center). Increasing the value symmetrically expands the region toward the top and bottom. Permissible values depend on dynamic range and 10GbE enable.
 
-.. image:: images/Eiger_read_rows.png
-   :target: _images/Eiger_read_rows.png
+.. image:: images/Eiger_read_rows.svg
+   :target: _images/Eiger_read_rows.svg
    :width: 400px
    :align: center
    :alt: Eiger Module Read Partial Rows Configuration
@@ -247,8 +247,8 @@ As with any standard half-module, it includes one control TCP port (with a hostn
 
 In this configuration, the fliprows command cannot be used to flip the entire half-module. Instead, the receiver automatically includes row-flipping information only for the second UDP port in the JSON header, so the GUI can apply the correct orientation during display
 
-.. image:: images/Eiger_quad.png
-   :target: _images/Eiger_quad.png
+.. image:: images/Eiger_quad.svg
+   :target: _images/Eiger_quad.svg
    :width: 300px
    :align: center
    :alt: Eiger Quad Configuration
@@ -263,8 +263,8 @@ Mythen3
 Default Configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. image:: images/Mythen3_module.png
-   :target: _images/Mythen3_module.png
+.. image:: images/Mythen3_module.svg
+   :target: _images/Mythen3_module.svg
    :align: center
    :alt: Mythen3 Module Default Configuration
 
@@ -279,7 +279,7 @@ Image size = 15,360 bytes
 Counters
 ^^^^^^^^^^^
 
-If all 3 counters are enabeld, the frame size for each channel is multiplied by 3. The counters are stored consecutively per channel. One can disable one or more of the counters using the `counters <commandline.html#term-counters-i0-i1-i2-...>`_ command. The frame size will then be reduced accordingly.
+If all 3 counters are enabled, the frame size for each channel is multiplied by 3. The counters are stored consecutively per channel. One can disable one or more of the counters using the `counters <commandline.html#term-counters-i0-i1-i2-...>`_ command. The frame size will then be reduced accordingly.
 
 Image size = 10,240 bytes 
    - 10 chips (1 x 10 grid)
@@ -306,8 +306,8 @@ Gotthard2
 Default Configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. image:: images/Gotthard2_module.png
-   :target: _images/Gotthard2_module.png
+.. image:: images/Gotthard2_module.svg
+   :target: _images/Gotthard2_module.svg
    :align: center
    :alt: Gotthard2 Module Default Configuration
 

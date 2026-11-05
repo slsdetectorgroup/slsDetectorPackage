@@ -79,7 +79,7 @@ the shared memory segments would be:
 The main difference between the command line and the Python API is that you set the index
 when you create the detector object and you don't have to repeat it for every call.
 
-The C++ API works int the same way. 
+The C++ API works in the same way.
 
 .. code-block:: python
 

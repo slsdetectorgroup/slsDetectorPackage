@@ -19,11 +19,11 @@ Common
     * Check ethtool and find if Link Deteced:Yes and Speed is acceptable (>10k).
     * Check to see if the 10G link is up (blue or red LED on board, close to SFP+). If not:
 
-       * Check transeiver and fibers are compatible (all MMF 850nm or all SMF 1030nm)
+       * Check transceiver and fibers are compatible (all MMF 850nm or all SMF 1030nm)
        * Check fiber
        * Check fiber polarity (if short range, unplug the link anywhere, and look at the light/dark pattern: dark has to mate with light)
     * For Jungfrau, check if the blue sfp light is blinking rapidly (even when it is not sending data). If so, most likely the link is down and something is wrong with the board. If it connected to a switch, then you do not see it with the ethtool command if link is down. One option is to connect it directly to a pc to see if link is down.
-    * With nc, try "nc -u -p 50001 -l" in receiving pc, and from another pc try "echo hallo | nc -u 10.1.2.172 50001" to send something to the recieving pc interface to see if the link is up and see if the other nc console receives the hallo.
+    * With nc, try "nc -u -p 50001 -l" in receiving pc, and from another pc try "echo hallo | nc -u 10.1.2.172 50001" to send something to the receiving pc interface to see if the link is up and see if the other nc console receives the hallo.
 
 #. Detector is not acquiring (Not Eiger)
     * Take an acquisition with many images and using the following steps instead of acquire:
@@ -279,7 +279,7 @@ Receiver PC Tuning Options
             # enable or disable permanently
             sudo systemctl enable cpupower
 
-#. Give user speicific user scheduling privileges.
+#. Give user specific scheduling privileges.
     .. code-block:: bash
 
         # edit /etc/security/limits.conf
@@ -365,7 +365,7 @@ For errors due to access or size, use any of the following suggestions.
             # shared memory ending in jfxx
             export SLSDETNAME=jfxx
 
-    #. USe a different multi shared memory ID
+    #. Use a different multi shared memory ID
         .. code-block:: bash
     
             sls_detector_put 2-config xxxx.config
@@ -447,15 +447,15 @@ Check if the control board or the flat band cable is connected properly. If not,
 Jungfrau
 ---------
 
-Temperature event occured
-^^^^^^^^^^^^^^^^^^^^^^^^^
+Temperature event occurred
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 This will occur only if:
 * temp_threshold (threshold temperature) has been set to a value
 * temp_control (temperature control) set to 1
-* and the temperature overshooted the threshold temperature.
+* and the temperature overshot the threshold temperature.
 
 **Consequence**
-* sls_detector_get temp_event will give 1 # temperature event occured
+* sls_detector_get temp_event will give 1 # temperature event occurred
 * the chip will be powered off
 
 **Solution**
@@ -492,7 +492,7 @@ Cannot get multi module data
 Cannot stop slaves in sync mode
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-#. If cabling is accessible, ensure termination board and flatband cable between the masters and the slaves are connnected properly. Then try to stop.
+#. If cabling is accessible, ensure termination board and flatband cable between the masters and the slaves are connected properly. Then try to stop.
 #. If cabling is inaccessible, unsync first so that the slaves can get the stop directly from the client using the command. Then, don't use sync mode until the cabling is fixed.
 
     .. code-block:: bash

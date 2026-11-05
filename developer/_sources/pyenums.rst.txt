@@ -14,7 +14,7 @@ exposed to Python through pybind11.
     d = Detector()
     d.fformat = fileFormat.BINARY
 
-    # Altough not recommended for convenience all enums 
+    # Although not recommended for convenience all enums 
     # and some other things can be impored using *
 
     from slsdet import *
@@ -24,7 +24,7 @@ exposed to Python through pybind11.
 
     import slsdet.enums
     for enum in dir(slsdet.enums):
-        # filter out special memebers
+        # filter out special members
         if not enum.startswith('_'):
             print(enum)
 

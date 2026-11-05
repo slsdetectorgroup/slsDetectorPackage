@@ -11,7 +11,7 @@ Python installation. The examples in this documentation uses `conda
 <https://docs.conda.io/en/latest/miniconda.html>`_ since it provides good support
 also for non Python packages but there are also other alternatives like, pyenv. 
 
-Using something like conda also allows you to quickly switch beteen different Python 
+Using something like conda also allows you to quickly switch between different Python
 environments. 
 
 ---------------------

@@ -79,7 +79,7 @@ for communication over TCP. Most commands go on 1952 and only a few such as stop
 Using the return type sls::Result [e2]
 -----------------------------------------
 
-Since many our detectors have multiple modules we cannot return
+Since many of our detectors have multiple modules we cannot return
 a single value when reading from the Detector. Hostname, Ip and also
 for example exposure time can differ between modules. 
 

@@ -67,7 +67,7 @@ For a Single Module
         udp_dstport 50012
 
         # 1g data out
-        # source udp ips must be same subnet at destintaion udp ips
+        # source udp ips must be same subnet at destination udp ips
         # udp_srcip 192.168.1.112
         # destination udp ip picked up from rx_hostname (if auto)
         # udp_dstip auto
@@ -88,7 +88,7 @@ For a Single Module with custom Receiver (not slsReceiver)
         # sets destination udp ports (not needed, default is 50001)
         udp_dstport 50012
 
-        # source udp ips must be same subnet at destintaion udp ips
+        # source udp ips must be same subnet at destination udp ips
         udp_srcip 192.168.1.112
 
         # destination udp ip 
@@ -118,7 +118,7 @@ For Multiple Modules
         # increasing udp ports (multi detector command)
         udp_dstport 50012
 
-        # source udp ips must be same subnet at destintaion udp ips
+        # source udp ips must be same subnet at destination udp ips
         0:udp_srcip 192.168.1.112
         1:udp_srcip 192.168.1.114
 
@@ -164,7 +164,7 @@ Compile with SLS_USE_GUI=ON in cmake or -g option in cmk.sh script. One can also
 
 
 .. note ::
-    | The streaming high water mark (commmand: rx_zmqhwm) and the receiving high water mark (command: zmqhwm) is by default the lib zmq's default (currently 1000).
+    | The streaming high water mark (command: rx_zmqhwm) and the receiving high water mark (command: zmqhwm) is by default the lib zmq's default (currently 1000).
     | At Gui startup, these values are set to 2. Hence, for very fast detectors, many frames will be dropped to be able to view the latest in the gui.
     | One can still change this setting in the gui in the Plot tab (ZMQ Streaming), from the command line or API.
     | Both hwm's can be set to a -1 to use the lib's default.

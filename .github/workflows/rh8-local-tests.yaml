@@ -33,6 +33,13 @@ jobs:
           conda activate det
           cmake --build build -j4 --config Debug
 
+      - name: C++ unit tests
+        run: |
+          source /home/github_runner/.bashrc
+          conda activate det
+          cd build
+          ctest -j1  --rerun-failed --output-on-failure
+
       - name: Python unit tests with simulators
         run: |
           source /home/github_runner/.bashrc

@@ -1,7 +1,7 @@
 name: Run Simulator Tests on local RHEL9
 
 on:
-  push:
+  pull_request:
   workflow_dispatch:
 
 env:
@@ -30,6 +30,11 @@ jobs:
       - name: Build
           # Build your program with the given configuration
         run: cmake --build build -j4 --config Debug
+
+      - name: C++ unit tests
+        run: |
+          cd build
+          ctest -j1  --rerun-failed --output-on-failure
 
       - name: Python unit tests with simulators
         run: |

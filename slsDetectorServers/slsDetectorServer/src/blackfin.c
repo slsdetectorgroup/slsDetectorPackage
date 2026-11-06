@@ -45,18 +45,37 @@ u_int32_t bus_r(u_int32_t offset) {
     return *ptr1;
 }
 
-int bus_w_block(u_int32_t offset, const void *src, size_t size) {
-    uint32_t step = 1 << MEM_MAP_SHIFT;
+int bus_w_block(u_int32_t offset, const void *src, size_t size,
+                bool fixedAddress) {
     if (size == 0 || size % sizeof(uint32_t) != 0) {
         LOG(logERROR, ("Could not write block: size %zu is not a non-zero "
                        "multiple of %zu\n",
                        size, sizeof(uint32_t)));
         return FAIL;
     }
-    uint32_t words[size / sizeof(uint32_t)];
-    memcpy(words, src, size);
-    for (size_t i = 0; i != sizeof(words) / sizeof(words[0]); ++i) {
-        bus_w(offset + i * step, words[i]);
+    const uint32_t step = fixedAddress ? 0 : (1 << MEM_MAP_SHIFT);
+    // low memory on blackfin, so avoid array on stack
+    const char *p = src;
+    for (size_t i = 0; i != size; ++i) {
+        uint32_t word = 0;
+        memcpy(&word, p + i * sizeof(word), sizeof(word));
+        bus_w(offset + i * step, word);
+    }
+    return OK;
+}
+
+int bus_r_block(u_int32_t offset, void *dst, size_t size, bool fixedAddress) {
+    if (size == 0 || size % sizeof(uint32_t) != 0) {
+        LOG(logERROR, ("Could not read block: size %zu is not a non-zero "
+                       "multiple of %zu\n",
+                       size, sizeof(uint32_t)));
+        return FAIL;
+    }
+    const uint32_t step = fixedAddress ? 0 : (1 << MEM_MAP_SHIFT);
+    char *p = dst;
+    for (size_t i = 0; i != size / sizeof(uint32_t); ++i) {
+        uint32_t word = bus_r(offset + i * step);
+        memcpy(p + i * sizeof(word), &word, sizeof(word));
     }
     return OK;
 }

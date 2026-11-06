@@ -59,6 +59,39 @@ u_int32_t bus_r_csp2(u_int32_t offset) {
     return *ptr1;
 }
 
+int bus_w_block(u_int32_t offset, const void *src, size_t size,
+                bool fixedAddress) {
+    if (size == 0 || size % sizeof(uint32_t) != 0) {
+        LOG(logERROR, ("Could not write block: size %zu is not a non-zero "
+                       "multiple of %zu\n",
+                       size, sizeof(uint32_t)));
+        return FAIL;
+    }
+    const uint32_t step = fixedAddress ? 0 : sizeof(uint32_t);
+    uint32_t words[size / sizeof(uint32_t)];
+    memcpy(words, src, size);
+    for (size_t i = 0; i != sizeof(words) / sizeof(words[0]); ++i) {
+        bus_w(offset + i * step, words[i]);
+    }
+    return OK;
+}
+
+int bus_r_block(u_int32_t offset, void *dst, size_t size, bool fixedAddress) {
+    if (size == 0 || size % sizeof(uint32_t) != 0) {
+        LOG(logERROR, ("Could not read block: size %zu is not a non-zero "
+                       "multiple of %zu\n",
+                       size, sizeof(uint32_t)));
+        return FAIL;
+    }
+    const uint32_t step = fixedAddress ? 0 : sizeof(uint32_t);
+    uint32_t words[size / sizeof(uint32_t)];
+    for (size_t i = 0; i != sizeof(words) / sizeof(words[0]); ++i) {
+        words[i] = bus_r(offset + i * step);
+    }
+    memcpy(dst, words, size);
+    return OK;
+}
+
 int bus_w_csp1_block(const void *src, size_t size) {
     uint32_t step = sizeof(uint32_t);
     if (size == 0 || size % sizeof(uint32_t) != 0) {

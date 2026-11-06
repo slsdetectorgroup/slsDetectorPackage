@@ -497,9 +497,16 @@ void setFirstUDPDestination(int value);
 #if defined(JUNGFRAUD) || defined(MOENCHD)
 void selectPrimaryInterface(int val);
 int getPrimaryInterface();
-void setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip,
-                 uint64_t destmac, uint16_t destport, uint64_t sourcemac,
-                 uint32_t sourceip, uint16_t sourceport);
+#endif
+#if defined(JUNGFRAUD) || defined(MOENCHD)
+int setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip,
+                uint64_t destmac, uint16_t destport, uint64_t sourcemac,
+                uint32_t sourceip, uint16_t sourceport);
+#endif
+#ifdef GOTTHARD2D
+int setupHeader(int iRxEntry, int vetoInterface, uint32_t destip,
+                uint64_t destmac, uint16_t destport, uint64_t sourcemac,
+                uint32_t sourceip, uint16_t sourceport);
 #endif
 #if defined(JUNGFRAUD) || defined(MOENCHD) || defined(GOTTHARD2D) ||           \
     defined(MYTHEN3D) || defined(CHIPTESTBOARDD) ||                            \

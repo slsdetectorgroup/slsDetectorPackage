@@ -1903,7 +1903,7 @@ int setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip,
     calcChecksum(udp);
 
     // force FPGA writes to be aligned and in order
-    if (bus_w_block(addr, udp, sizeof(udp_header)) == FAIL) {
+    if (bus_w_block(addr, udp, sizeof(udp_header), false) == FAIL) {
         LOG(logERROR, ("Failed to write UDP header\n"));
         return FAIL;
     }

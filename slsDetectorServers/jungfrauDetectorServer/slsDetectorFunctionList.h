@@ -188,7 +188,6 @@ bool hasFilterResistorFeature();
 bool hasFilterCellsFeature();
 bool hasCurrentSourceNormalFeature();
 bool hasCurrentSource64BitSelectionFeature();
-bool hasCurrentSourceReverseBitsSelectionFeature();
 bool hasStorageCellStartInChipConfig();
 bool hasStepReductionFeature();
 bool isChipConfigured();
@@ -229,7 +228,9 @@ int setTimingInfoDecoder(enum timingInfoDecoder val);
 int getTimingInfoDecoder(enum timingInfoDecoder *retval);
 int getElectronCollectionMode();
 void setElectronCollectionMode(int enable);
-
+void updateHDRTimeout();
+int setHDR(bool enable, enum operationMode mode);
+void getHDR(bool *enable, enum operationMode *mode);
 int getTenGigaFlowControl();
 int setTenGigaFlowControl(int value);
 int getTransmissionDelayFrame();

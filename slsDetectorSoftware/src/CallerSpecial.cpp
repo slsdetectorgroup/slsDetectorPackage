@@ -1436,6 +1436,7 @@ std::string Caller::gaincaps(int action) {
     }
     return os.str();
 }
+
 std::string Caller::sleep(int action) {
     std::ostringstream os;
     if (action == defs::HELP_ACTION) {
@@ -2140,6 +2141,46 @@ defs::FrequencyUnit Caller::parseFrequencyUnit(const std::string &unit) {
         return defs::FrequencyUnit::MHz;
 
     throw std::runtime_error("Unknown frequency unit: " + unit);
+}
+
+std::string Caller::hdr(int action) {
+    std::ostringstream os;
+    if (action == defs::HELP_ACTION) {
+        os << "synchrotron|fel|0]\n\t[Jungfrau] Enables the high dynamic range "
+              "in detector in synchrotron or fel mode. 0 disables HDR and is "
+              "the default. FEL can only be used with chip version '1.2 HDR'."
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() != 0) {
+            WrongNumberOfParameters(0);
+        }
+        auto t = det->getHDR(std::vector<int>{det_id});
+        os << OutString(t) << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() != 1) {
+            WrongNumberOfParameters(1);
+        }
+        if (sls::is_int(args[0])) {
+            auto val = StringTo<int>(args[0]);
+            if (val == 0) {
+                auto disable = defs::hdrParameters();
+                det->setHDR(disable, std::vector<int>{det_id});
+                os << ToString(disable) << '\n';
+            } else {
+                throw RuntimeError("Did you mean to disable HDR? Then Please "
+                                   "use '0' to do so. Unknown argument: " +
+                                   args[0]);
+            }
+        } else {
+            auto mode = StringTo<defs::operationMode>(args[0]);
+            auto val = defs::hdrParameters(mode);
+            det->setHDR(val, std::vector<int>{det_id});
+            os << ToString(val) << '\n';
+        }
+    } else {
+        throw RuntimeError("Unknown action");
+    }
+    return os.str();
 }
 
 } // namespace sls

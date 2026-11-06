@@ -868,10 +868,8 @@ TEST_CASE("rx_roi_port_disabled", "[.detectorintegration]") {
     if (two_ports) {
         auto prev_roi = det.getRxROI();
         auto ports = det.getPortPositionList();
-
-        auto prev_port0 = det.getUDPDataStream(ports[0]);
-        auto prev_port1 = det.getUDPDataStream(ports[1]);
-
+        auto prev_port0 = det.getUDPDataStream(ports[0], {0}).squash();
+        auto prev_port1 = det.getUDPDataStream(ports[1], {0}).squash();
         bool prev_tengiga = false;
         if (det_type == defs::EIGER) {
             prev_tengiga = det.getTenGiga().squash(false);
@@ -901,22 +899,22 @@ TEST_CASE("rx_roi_port_disabled", "[.detectorintegration]") {
         det.setUDPDataStream(ports[0], true, {0});
         det.setUDPDataStream(ports[1], true, {0});
         det.setRxROI(rois);
-        REQUIRE_THROWS(det.setUDPDataStream(ports[0], false));
-        REQUIRE_THROWS(det.setUDPDataStream(ports[1], false));
+        REQUIRE_THROWS(det.setUDPDataStream(ports[0], false, {0}));
+        REQUIRE_THROWS(det.setUDPDataStream(ports[1], false, {0}));
 
         det.clearRxROI();
         det.setUDPDataStream(ports[0], true, {0});
         det.setUDPDataStream(ports[1], true, {0});
         det.setRxROI({rois[0]});
-        REQUIRE_THROWS(det.setUDPDataStream(ports[0], false));
-        REQUIRE_NOTHROW(det.setUDPDataStream(ports[1], false));
+        REQUIRE_THROWS(det.setUDPDataStream(ports[0], false, {0}));
+        REQUIRE_NOTHROW(det.setUDPDataStream(ports[1], false, {0}));
 
         det.clearRxROI();
         det.setUDPDataStream(ports[0], true, {0});
         det.setUDPDataStream(ports[1], true, {0});
         det.setRxROI({rois[1]});
-        REQUIRE_NOTHROW(det.setUDPDataStream(ports[0], false));
-        REQUIRE_THROWS(det.setUDPDataStream(ports[1], false));
+        REQUIRE_NOTHROW(det.setUDPDataStream(ports[0], false, {0}));
+        REQUIRE_THROWS(det.setUDPDataStream(ports[1], false, {0}));
 
         det.clearRxROI();
         det.setUDPDataStream(ports[0], false, {0});
@@ -937,14 +935,8 @@ TEST_CASE("rx_roi_port_disabled", "[.detectorintegration]") {
             det.clearRxROI();
         else
             det.setRxROI(prev_roi);
-
-        for (size_t i = 0; i != prev_port0.size(); ++i) {
-            det.setUDPDataStream(ports[0], prev_port0[i],
-                                 {static_cast<int>(i)});
-            det.setUDPDataStream(ports[1], prev_port1[i],
-                                 {static_cast<int>(i)});
-        }
-
+        det.setUDPDataStream(ports[0], prev_port0, {0});
+        det.setUDPDataStream(ports[1], prev_port1, {0});
         if (det_type == defs::EIGER) {
             det.setTenGiga(prev_tengiga);
         }

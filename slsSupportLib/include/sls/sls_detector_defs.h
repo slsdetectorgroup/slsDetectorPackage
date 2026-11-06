@@ -547,6 +547,7 @@ enum streamingInterface {
     enum polarity { POSITIVE, NEGATIVE };
     enum timingInfoDecoder { SWISSFEL, SHINE };
     enum collectionMode { HOLE, ELECTRON };
+    enum operationMode { SYNCHROTRON, FEL };
 
 #ifdef __cplusplus
 
@@ -579,6 +580,23 @@ enum streamingInterface {
                     (dacSettleTime_ns == other.dacSettleTime_ns));
         }
     } __attribute__((packed));
+
+    /** hdr structure */
+    struct hdrParameters {
+        int enable;
+        operationMode opMode;
+
+        /** disable hdr mode */
+        hdrParameters() : enable(0), opMode(SYNCHROTRON) {}
+        /** enable hdr mode */
+        hdrParameters(operationMode mode) : enable(1), opMode(mode) {}
+        constexpr bool operator==(const hdrParameters &other) const {
+            return ((enable == other.enable) && (opMode == other.opMode));
+        }
+    } __attribute__((packed));
+
+    static_assert(sizeof(hdrParameters) == 2 * sizeof(int),
+                  "hdrParameters TCP layout must remain two INT32 values");
 
     struct currentSrcParameters {
         int enable;

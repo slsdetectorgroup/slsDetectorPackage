@@ -32,6 +32,7 @@ BitAddress = _slsdet.BitAddress
 RegisterValue = _slsdet.RegisterValue
 scanParameters = _slsdet.scanParameters
 currentSrcParameters = _slsdet.currentSrcParameters
+hdrParameters = _slsdet.hdrParameters
 DurationWrapper = _slsdet.DurationWrapper
 pedestalParameters = _slsdet.pedestalParameters
 Hz = _slsdet.Hz

@@ -417,6 +417,8 @@ class Module : public virtual slsDetectorDefs {
     void setTimingInfoDecoder(const defs::timingInfoDecoder enable);
     defs::collectionMode getCollectionMode() const;
     void setCollectionMode(const defs::collectionMode enable);
+    defs::hdrParameters getHDR() const;
+    void setHDR(const defs::hdrParameters par);
 
     /**************************************************
      *                                                *

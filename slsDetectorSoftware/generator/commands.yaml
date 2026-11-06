@@ -2775,6 +2775,17 @@ sleep:
             - argc: 2
               arg_types: [ int, special::time_unit ]
 
+hdr:
+    is_description: true
+    actions:
+        GET:
+          argc: 0
+        PUT:
+          args:
+            - argc: 1
+              arg_types: [ defs::operationMode ]
+            - argc: 1
+              arg_types: [ int ]
 
 ################# special commands ##########################
 
@@ -3418,6 +3429,7 @@ scan:
             output: [ t, unit ]
           input: [ "defs::scanParameters(StringTo<defs::dacIndex>(args[0]), StringTo<int>(args[1]), StringTo<int>(args[2]), StringTo<int>(args[3]), t)" ]
           input_types: [ auto ]
+
 
 Trigger:
   template: true

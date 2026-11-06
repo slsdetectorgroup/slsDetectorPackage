@@ -3004,6 +3004,30 @@ class Detector(CppDetectorApi):
         ut.set_using_dict(self.setCollectionMode, value)
 
     @property
+    @element
+    def hdr(self):
+        """[Jungfrau] Enables the high dynamic range in detector in synchrotron or fel mode.
+        Pass in an hdrParameters instance, optionally initialized with the desired operationMode (defs.operationMode.SYNCHOTRON or defs.operationMode.FEL). The default constructor hdrParameters() disables the HDR, which is the default mode of operation. FEL can only be used with chip version '1.2 HDR'.
+
+        Example
+        -------
+        >>> d.hdr = hdrParameters(defs.SYNCHROTRON)
+        >>> d.hdr  
+        [enabled synchotron] 
+        >>> d.hdr = hdrParameters(defs.FEL)
+        >>>d.hdr  
+        [enabled fel] 
+        >>> d.hdr = hdrParameters()
+        >>> d.hdr
+        [disabled]
+        """
+        return self.getHDR()
+
+    @hdr.setter
+    def hdr(self, value):
+        ut.set_using_dict(self.setHDR, value)
+
+    @property
     def maxclkphaseshift(self):
         """
         [Gotthard2][Mythen3] Absolute maximum Phase shift of clocks.\n

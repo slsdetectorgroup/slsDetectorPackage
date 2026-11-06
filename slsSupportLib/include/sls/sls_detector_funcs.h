@@ -299,6 +299,8 @@ enum detFuncs {
     F_SET_COLLECTION_MODE,
     F_GET_PATTERN_WAIT_INTERVAL,
     F_SET_PATTERN_WAIT_INTERVAL,
+    F_SET_HDR,
+    F_GET_HDR,
 
     NUM_DET_FUNCTIONS,
     RECEIVER_ENUM_START = 512, /**< detector function should not exceed this
@@ -709,10 +711,11 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_SET_COLLECTION_MODE:             return "F_SET_COLLECTION_MODE";
     case F_GET_PATTERN_WAIT_INTERVAL:       return "F_GET_PATTERN_WAIT_INTERVAL";
     case F_SET_PATTERN_WAIT_INTERVAL:       return "F_SET_PATTERN_WAIT_INTERVAL";
+    case F_SET_HDR:                          return "F_SET_HDR";
+    case F_GET_HDR:                          return "F_GET_HDR";
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";
-
 
 	case F_EXEC_RECEIVER_COMMAND:			return "F_EXEC_RECEIVER_COMMAND";
 	case F_LOCK_RECEIVER: 					return "F_LOCK_RECEIVER";

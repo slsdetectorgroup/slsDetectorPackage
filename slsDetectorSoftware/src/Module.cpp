@@ -2053,6 +2053,14 @@ void Module::setCollectionMode(const defs::collectionMode value) {
     sendToDetector(F_SET_COLLECTION_MODE, static_cast<int>(value), nullptr);
 }
 
+defs::hdrParameters Module::getHDR() const {
+    return sendToDetector<defs::hdrParameters>(F_GET_HDR);
+}
+
+void Module::setHDR(const defs::hdrParameters par) {
+    sendToDetector(F_SET_HDR, par, nullptr);
+}
+
 // Gotthard2 Specific
 
 int64_t Module::getNumberOfBursts() const {

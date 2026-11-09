@@ -17,7 +17,7 @@ jobs:
 
       - name: Build library 
         run: |
-            source /home/gitea_runner/.bashrc
+            source /home/github_runner/.bashrc
             conda activate det
             mkdir build && cd build
             conda activate det
@@ -25,7 +25,7 @@ jobs:
             make -j 2 
 
       - name: Deploy to NFS update server
-        if: gitea.ref == 'refs/heads/developer'
+        if: github.ref == 'refs/heads/developer'
         run: |
             sftp -r gitea_runner@mpc2935:/slsDetectorSoftware/RH8 <<< $'put build/bin'
             sftp -r gitea_runner@mpc2935:/slsDetectorSoftware/RH8 <<< $'put pyctbgui'

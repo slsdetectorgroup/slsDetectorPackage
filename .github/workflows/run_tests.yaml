@@ -42,7 +42,16 @@ jobs:
         working-directory: ${{github.workspace}}/build/bin
         run: |
           python -m pytest ${{github.workspace}}/python/tests
+          python -m pytest -m detectorintegration ${{github.workspace}}/python/tests --detector-integration 
 
       - name: C++ unit tests
         working-directory: ${{github.workspace}}/build
         run: ctest -C ${{env.BUILD_TYPE}} -j1 --rerun-failed --output-on-failure
+
+
+      - name: Simulator unit tests
+        working-directory: ${{github.workspace}}/build/bin
+        run: |
+          python test_simulators.py --no-log-file --quiet --tests "[detectorintegration]~[disable_check_data_file]"
+          #remove --quiet to see more prints from simulator, receiver and tests
+          python test_frame_synchronizer.py

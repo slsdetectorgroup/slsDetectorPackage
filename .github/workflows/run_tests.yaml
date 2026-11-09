@@ -1,4 +1,4 @@
-name: Run Simulator Tests
+name: Run Unit Tests
 
 on:
   push:
@@ -11,7 +11,7 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -38,6 +38,17 @@ jobs:
       - name: Build
           # Build your program with the given configuration
         run: cmake --build ${{github.workspace}}/build -j4 --config ${{env.BUILD_TYPE}}
+        
+      - name: Python unit tests
+        working-directory: ${{github.workspace}}/build/bin
+        run: |
+          python -m pytest ${{github.workspace}}/python/tests
+          python -m pytest -m detectorintegration ${{github.workspace}}/python/tests --detector-integration 
+
+      - name: C++ unit tests
+        working-directory: ${{github.workspace}}/build
+        run: ctest -C ${{env.BUILD_TYPE}} -j1 --rerun-failed --output-on-failure
+
 
       - name: Simulator unit tests
         working-directory: ${{github.workspace}}/build/bin
@@ -45,14 +56,3 @@ jobs:
           python test_simulators.py --no-log-file --quiet --tests "[detectorintegration]~[disable_check_data_file]"
           #remove --quiet to see more prints from simulator, receiver and tests
           python test_frame_synchronizer.py
-        
-
-      - name: Python unit tests with simulators
-        working-directory: ${{github.workspace}}/build/bin
-        run: |
-          python -m pytest -m detectorintegration ${{github.workspace}}/python/tests --detector-integration 
-          python -m pytest ${{github.workspace}}/python/tests
-
-      - name: C++ unit tests
-        working-directory: ${{github.workspace}}/build
-        run: ctest -C ${{env.BUILD_TYPE}} -j1 --rerun-failed --output-on-failure

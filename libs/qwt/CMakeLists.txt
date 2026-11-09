@@ -38,7 +38,7 @@ find_package(Qt5 REQUIRED
 file(GLOB QWT_SOURCES ${QWTBASE}src/*.cpp)
 file(GLOB QWT_HEADERS ${QWTBASE}src/*.h)
 add_library(qwt STATIC ${QWT_SOURCES} ${QWT_HEADERS} )
-target_include_directories(qwt PUBLIC 
+target_include_directories(qwt SYSTEM PUBLIC 
 	$<BUILD_INTERFACE:${QWTBASE}/src>
 )
 

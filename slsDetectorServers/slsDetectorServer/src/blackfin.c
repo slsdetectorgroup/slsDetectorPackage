@@ -58,7 +58,7 @@ int bus_w_block(u_int32_t offset, const void *src, size_t size,
     const uint32_t step = fixedAddress ? 0 : (1 << MEM_MAP_SHIFT);
     // low memory on blackfin, so avoid array on stack
     const char *p = src;
-    for (size_t i = 0; i != size; ++i) {
+    for (size_t i = 0; i != size / sizeof(uint32_t); ++i) {
         uint32_t word = 0;
         memcpy(&word, p + i * sizeof(word), sizeof(word));
         bus_w(offset + i * step, word);

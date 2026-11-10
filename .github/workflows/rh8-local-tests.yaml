@@ -1,7 +1,7 @@
 name: Run Simulator Tests on local RHEL8
 
 on:
-  #pull_request:
+  pull_request:
   workflow_dispatch:
 
 # Cancel older runs of this workflow for the same PR/branch when a new push arrives

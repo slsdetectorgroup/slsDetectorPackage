@@ -2,8 +2,8 @@ name: Build and Deploy on local RHEL8
 
 on:
   push:
-    #branches:
-     # - developer
+    branches:
+      - developer
   workflow_dispatch:
 
 permissions:
@@ -25,8 +25,7 @@ jobs:
             make -j 2 
 
       - name: Deploy to NFS update server
-        #if
-        #: github.ref == 'refs/heads/developer'
+        if: github.ref == 'refs/heads/developer'
         run: |
             cp -r build/bin /home/github_runner/slsDetectorSoftware/RH8
             cp slsDetectorServers/ctbDetectorServer/bin/ctbDetectorServer_developer /home/github_runner/slsDetectorSoftware/RH8

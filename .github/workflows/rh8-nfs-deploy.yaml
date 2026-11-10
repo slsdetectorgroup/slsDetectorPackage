@@ -29,6 +29,6 @@ jobs:
       - name: Deploy to NFS update server
         if: github.ref == 'refs/heads/developer'
         run: |
-            sftp -r gitea_runner@mpc2935:/slsDetectorSoftware/RH8 <<< $'put build/bin'
-            sftp -r gitea_runner@mpc2935:/slsDetectorSoftware/RH8 <<< $'put pyctbgui'
-            sftp -r gitea_runner@mpc2935:/slsDetectorSoftware/RH8 <<< $'put slsDetectorServers/ctbDetectorServer/bin/ctbDetectorServer_developer'
+            cp -r build/bin /home/github_runner/slsDetectorSoftware/RH8
+            cp slsDetectorServers/ctbDetectorServer/bin/ctbDetectorServer_developer /home/github_runner/slsDetectorSoftware/RH8
+            cp -r pyctbgui /home/github_runner/slsDetectorSoftware/RH8

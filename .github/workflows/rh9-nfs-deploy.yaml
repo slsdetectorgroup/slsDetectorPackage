@@ -22,7 +22,8 @@ jobs:
             make -j 2 
 
       - name: Deploy to NFS update server
-        if: github.ref == 'refs/heads/developer'
+        #if
+        #:github.ref == 'refs/heads/developer'
         run: |
             sftp -r gitea_runner@mpc2935:/slsDetectorSoftware/RH9 <<< $'put build/bin'
             sftp -r gitea_runner@mpc2935:/slsDetectorSoftware/RH9 <<< $'put pyctbgui'

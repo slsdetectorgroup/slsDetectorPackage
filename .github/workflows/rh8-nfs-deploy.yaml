@@ -2,9 +2,8 @@ name: Build and Deploy on local RHEL8
 
 on:
   push:
-  push:
-    branches:
-      - developer
+    #branches:
+     # - developer
   workflow_dispatch:
 
 permissions:

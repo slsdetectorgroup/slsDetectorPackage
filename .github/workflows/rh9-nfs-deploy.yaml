@@ -1,6 +1,7 @@
 name: Build and Deploy on local RHEL9
 
 on:
+  pull-request: 
   push:
     branches:
       - developer

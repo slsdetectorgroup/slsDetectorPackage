@@ -1,7 +1,7 @@
 name: Build and Deploy on local RHEL8
 
 on:
-  pull-request:
+  push:
   push:
     branches:
       - developer

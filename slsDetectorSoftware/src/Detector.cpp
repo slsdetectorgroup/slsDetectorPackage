@@ -1335,6 +1335,7 @@ Result<bool> Detector::getUDPDataStream(const defs::portPosition port,
 
 void Detector::setUDPDataStream(const defs::portPosition port,
                                 const bool enable, Positions pos) {
+    pimpl->validatePortEnable(port, enable, pos);
     pimpl->setUDPDataStream(port, enable, pos);
 }
 
@@ -1484,6 +1485,8 @@ void Detector::setRxROI(const std::vector<defs::ROI> &args) {
 }
 
 void Detector::clearRxROI() { pimpl->clearRxROI(); }
+
+bool Detector::isCompleteRxRoi() const { return pimpl->isCompleteRxRoi(); }
 
 // File
 
@@ -1914,6 +1917,14 @@ Result<defs::collectionMode> Detector::getCollectionMode(Positions pos) const {
 
 void Detector::setCollectionMode(defs::collectionMode value, Positions pos) {
     pimpl->Parallel(&Module::setCollectionMode, pos, value);
+}
+
+Result<defs::hdrParameters> Detector::getHDR(Positions pos) const {
+    return pimpl->Parallel(&Module::getHDR, pos);
+}
+
+void Detector::setHDR(const defs::hdrParameters par, Positions pos) {
+    pimpl->Parallel(&Module::setHDR, pos, par);
 }
 
 // Gotthard2 Specific

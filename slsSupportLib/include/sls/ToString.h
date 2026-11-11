@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #pragma once
-
 /**
  * \file ToString.h
  *
@@ -49,6 +48,7 @@ std::string ToString(const defs::gainMode s);
 std::string ToString(const defs::polarity s);
 std::string ToString(const defs::timingInfoDecoder s);
 std::string ToString(const defs::collectionMode s);
+std::string ToString(const defs::operationMode s);
 
 std::string ToString(bool value);
 std::string ToString(bool value, defs::boolFormat format);
@@ -63,6 +63,9 @@ std::ostream &operator<<(std::ostream &os,
 std::string ToString(const slsDetectorDefs::scanParameters &r);
 std::ostream &operator<<(std::ostream &os,
                          const slsDetectorDefs::scanParameters &r);
+std::string ToString(const slsDetectorDefs::hdrParameters &r);
+std::ostream &operator<<(std::ostream &os,
+                         const slsDetectorDefs::hdrParameters &r);
 std::string ToString(const slsDetectorDefs::currentSrcParameters &r);
 std::ostream &operator<<(std::ostream &os,
                          const slsDetectorDefs::currentSrcParameters &r);
@@ -353,7 +356,8 @@ T StringTo(const std::string &f, const std::string &unit) {
     }
 }
 
-template <typename T> T StringTo(const std::string &t) {
+template <typename T, std::enable_if_t<!is_container<T>::value, int> = 0>
+T StringTo(const std::string &t) {
     std::string tmp{t};
     auto unit = RemoveUnit(tmp);
     return StringTo<T>(tmp, unit);
@@ -381,6 +385,7 @@ template <> defs::timingInfoDecoder StringTo(const std::string &s);
 template <> defs::collectionMode StringTo(const std::string &s);
 template <> RegisterAddress StringTo(const std::string &s);
 template <> RegisterValue StringTo(const std::string &s);
+template <> defs::operationMode StringTo(const std::string &s);
 
 template <> uint8_t StringTo(const std::string &s);
 template <> uint16_t StringTo(const std::string &s);
@@ -398,6 +403,7 @@ ToString(const T &obj) {
     return obj.str();
 }
 
+/** Convert vector of strings to vector of type T */
 template <typename T>
 std::vector<T> StringTo(const std::vector<std::string> &strings) {
     std::vector<T> result;
@@ -405,6 +411,55 @@ std::vector<T> StringTo(const std::vector<std::string> &strings) {
     for (const auto &s : strings)
         result.push_back(StringTo<T>(s));
     return result;
+}
+
+/** Parse comma-separated string into vector type T (e.g.,
+ * StringTo<std::vector<int>>()) */
+template <typename T, std::enable_if_t<is_container<T>::value &&
+                                           !std::is_same_v<T, std::string>,
+                                       int> = 0>
+T StringTo(const std::string &s) {
+    using ElementType = typename T::value_type;
+    // Enclosing brackets are optional but must match. Nested pairs are
+    // accepted since the caller may already have wrapped the list once.
+    std::string list = s;
+    auto strip = [](std::string &str) {
+        auto first = str.find_first_not_of(' ');
+        if (first == std::string::npos) {
+            str.clear();
+            return;
+        }
+        str = str.substr(first, str.find_last_not_of(' ') - first + 1);
+    };
+    strip(list);
+    while (list.size() >= 2 && list.front() == '[' && list.back() == ']') {
+        list = list.substr(1, list.size() - 2);
+        strip(list);
+    }
+    if (list.find_first_of("[]") != std::string::npos) {
+        throw RuntimeError("Mismatched brackets in list '" + s + "'");
+    }
+
+    T res;
+    std::istringstream ss(list);
+    std::string item;
+    while (std::getline(ss, item, ',')) {
+        item.erase(std::remove_if(item.begin(), item.end(),
+                                  [](char c) { return c == '"' || c == ' '; }),
+                   item.end());
+
+        try {
+            if (item.empty())
+                continue;
+            auto val = StringTo<ElementType>(item);
+            res.push_back(val);
+        } catch (const std::exception &e) {
+            throw RuntimeError("Could not convert '" + item +
+                               "' to the container element type. " +
+                               std::string(e.what()));
+        }
+    }
+    return res;
 }
 
 } // namespace sls

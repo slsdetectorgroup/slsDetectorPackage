@@ -37,6 +37,9 @@
 #define CONFIG_FILE         ("config_jungfrau.txt")
 
 /** Default Parameters */
+#define DEFAULT_AUTO_COMP_DISABLE        (0)
+#define DEFAULT_COMP_DISABLE_TIME_v1_0   (5 * 1000) // 5us
+#define DEFAULT_COMP_DISABLE_TIME        (2 * 1000) // 2us
 #define DEFAULT_NUM_FRAMES               (100 * 1000 * 1000)
 #define DEFAULT_STARTING_FRAME_NUMBER    (1)
 #define DEFAULT_NUM_CYCLES               (1)
@@ -55,7 +58,7 @@
 #define DEFAULT_STRG_CLL_STRT_CHIP11     (0x3)
 #define DEFAULT_STRG_CLL_DLY             (0)
 #define DEFAULT_FLIP_ROWS                (0)
-#define DEFAULT_FILTER_RESISTOR          (1) // higher resistor
+#define DEFAULT_FILTER_RESISTOR          (0) // lower resistor
 #define DEFAULT_FILTER_CELL              (0)
 #define DEFAULT_PEDESTAL_MODE            (0)
 #define DEFAULT_PEDESTAL_FRAMES          (1)
@@ -155,6 +158,11 @@
 #define ADC_OFST_HALF_SPEED_BOARD2_VAL    (0x10)
 #define ADC_OFST_QUARTER_SPEED_BOARD2_VAL (0x08)
 
+#define HDR_SYNC_TIMEOUT_PERCENT  (8)
+#define HDR_SYNC_ACT_TIME_CLK_VAL (1) // 25ns
+#define HDR_FEL_TIMEOUT_PERCENT   (0) // undefined
+#define HDR_FEL_ACT_TIME_CLK_VAL  (0) // undefined
+
 /* Struct Definitions */
 typedef struct udp_header_struct {
     uint32_t udp_destmac_msb;
@@ -236,6 +244,8 @@ enum MASTERINDEX { MASTER_HARDWARE, OW_MASTER, OW_SLAVE };
     { 1450, 480, 420 }
 #define SPECIAL_DEFAULT_DYNAMICHG0_GAIN_VALS                                   \
     { 1550, 450, 620 }
+#define SPECIAL_DEFAULT_V1_2_GAIN_VALS                                         \
+    { 1500, 480, 460 }
 
 enum NETWORKINDEX { TXN_FRAME, FLOWCTRL_10G };
 enum CLKINDEX { RUN_CLK, ADC_CLK, DBIT_CLK, NUM_CLOCKS };

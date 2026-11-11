@@ -301,7 +301,8 @@
 #define CONFIG_V12_STRG_CLL_OFST            (0) 
 #define CONFIG_V12_STRG_CLL_MSK             (0x0000FFFF << CONFIG_V12_STRG_CLL_OFST)
 
-
+#define CONFIG_V12_RST_STP_RDCTN_OFST       (18)
+#define CONFIG_V12_RST_STP_RDCTN_MSK        (0x00000001 << CONFIG_V12_RST_STP_RDCTN_OFST)
 // CSM mode = high current (100%), low current (16%)
 #define CONFIG_V11_CRRNT_SRC_LOW_OFST       (19) 
 #define CONFIG_V11_CRRNT_SRC_LOW_MSK        (0x00000001 << CONFIG_V11_CRRNT_SRC_LOW_OFST)
@@ -412,6 +413,10 @@
 #define DAQ_CRRNT_SRC_CLMN_SLCT_OFST        (20)
 #define DAQ_CRRNT_SRC_CLMN_SLCT_MSK         (0x0000003F << DAQ_CRRNT_SRC_CLMN_SLCT_OFST)
 #define DAQ_GAIN_MODE_MASK                  (DAQ_FRCE_SWTCH_GAIN_MSK | DAQ_FIX_GAIN_MSK | DAQ_CMP_RST_MSK)
+#define DAQ_CDS_BYPASS_OFST                  (28)
+#define DAQ_CDS_BYPASS_MSK                   (0x00000001 << DAQ_CDS_BYPASS_OFST)
+#define DAQ_CDS_RESET_OFST                   (29)
+#define DAQ_CDS_RESET_MSK                    (0x00000001 << DAQ_CDS_RESET_OFST)
 
 /** Chip Power Register */
 #define CHIP_POWER_REG                      (0x5E << MEM_MAP_SHIFT)
@@ -458,6 +463,20 @@
 Time before end of exposure when comparator is disabled */
 #define COMP_DSBLE_TIME_REG                  (0x6C << MEM_MAP_SHIFT)
 
+/* High Dynamic Range, timeout and activation time tT = T x 25 ns  */
+#define HDR_REG                             (0x6D << MEM_MAP_SHIFT)
+ 
+#define HDR_TIMOUT_OFST                     (0)
+#define HDR_MAX_TIMEOUT_VAL                 (0xFFFF)
+#define HDR_TIMOUT_MSK                      (HDR_MAX_TIMEOUT_VAL << HDR_TIMOUT_OFST)
+#define HDR_ACTIVATION_TIME_OFST            (16)
+#define HDR_MAX_ACTIVATION_TIME_VAL         (0xFF)
+#define HDR_ACTIVATION_TIME_MSK             (HDR_MAX_ACTIVATION_TIME_VAL << HDR_ACTIVATION_TIME_OFST)
+#define HDR_MODE_FEL_OFST                   (24)
+#define HDR_MODE_FEL_MSK                    (0x00000001 << HDR_MODE_FEL_OFST)
+#define HDR_ENABLE_OFST                     (31)
+#define HDR_ENABLE_MSK                      (0x00000001 << HDR_ENABLE_OFST)
+
 
 /* Trigger Delay 32 bit register */
 #define SET_TRIGGER_DELAY_LSB_REG           (0x70 << MEM_MAP_SHIFT)
@@ -494,8 +513,8 @@ Time before end of exposure when comparator is disabled */
 // tDS = (DST + 1) * 25ns
 #define ASIC_CTRL_DS_TMR_OFST               (8)
 #define ASIC_CTRL_DS_TMR_MSK                (0x000000FF << ASIC_CTRL_DS_TMR_OFST)
-#define ASIC_CTRL_DS_TMR_VAL                ((0x1F << ASIC_CTRL_DS_TMR_OFST) & ASIC_CTRL_DS_TMR_MSK)
-#define ASIC_CTRL_DS_TMR_CHIP1_1_VAL        ((0xFF << ASIC_CTRL_DS_TMR_OFST) & ASIC_CTRL_DS_TMR_MSK)
+#define ASIC_CTRL_DS_TMR_LOW_RES_VAL                ((0x1F << ASIC_CTRL_DS_TMR_OFST) & ASIC_CTRL_DS_TMR_MSK)
+#define ASIC_CTRL_DS_TMR_HIGH_RES_VAL        ((0x5F << ASIC_CTRL_DS_TMR_OFST) & ASIC_CTRL_DS_TMR_MSK)
 
 /* ADC 0 Deserializer Control */
 #define ADC_DSRLZR_0_REG                    (0xF0 << MEM_MAP_SHIFT)

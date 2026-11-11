@@ -1037,6 +1037,9 @@ class Detector {
 
     void clearRxROI();
 
+    /** Returns true if the current ROI covers the complete detector (default)*/
+    bool isCompleteRxRoi() const;
+
     ///@}
 
     /** @name File */
@@ -1421,6 +1424,13 @@ class Detector {
 
     /** [Jungfrau] */
     void setCollectionMode(defs::collectionMode value, Positions pos = {});
+
+    /** [Jungfrau] */
+    Result<defs::hdrParameters> getHDR(Positions pos = {}) const;
+
+    /** [Jungfrau] Enabling with FEL mode can only be used with chip version
+     * '1.2 HDR'*/
+    void setHDR(const defs::hdrParameters par, Positions pos = {});
 
     ///@}
 

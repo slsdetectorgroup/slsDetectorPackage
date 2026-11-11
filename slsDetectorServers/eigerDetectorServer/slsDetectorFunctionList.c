@@ -890,7 +890,7 @@ int getDefaultDac(enum DACINDEX index, enum detectorSettings sett,
     if (sett != UNDEFINED) {
         return FAIL;
     }
-    if (index < 0 || index >= NDAC)
+    if (index >= NDAC)
         return FAIL;
     *retval = defaultDacValues[index];
     return OK;
@@ -900,7 +900,7 @@ int setDefaultDac(enum DACINDEX index, enum detectorSettings sett, int value) {
     if (sett != UNDEFINED) {
         return FAIL;
     }
-    if (index < 0 || index >= NDAC)
+    if (index >= NDAC)
         return FAIL;
 
     char *dac_names[] = {DAC_NAMES};
@@ -1428,7 +1428,7 @@ int setThresholdEnergy(int ev) {
 /* parameters - dac, adc, hv */
 int validateDACIndex(enum DACINDEX ind, char *mess) {
     // including E_VTHRESHOLD
-    if (ind < 0 || ind >= NDAC + 1) {
+    if (ind >= NDAC + 1) {
         sprintf(mess, "Could not set DAC. Invalid index %d\n", ind);
         LOG(logERROR, (mess));
         return FAIL;
@@ -2783,8 +2783,11 @@ void *start_timer(void *arg) {
          npixelsx, databytes));
 
     // Generate data
-    char imageData[databytes * 2];
-    memset(imageData, 0, databytes * 2);
+    char *imageData = (char *)calloc(databytes * 2, 1);
+    if (imageData == NULL) {
+        LOG(logERROR, ("Could not allocate memory for virtual image\n"));
+        exit(EXIT_FAILURE);
+    }
     {
         int npixels = NCHAN * NCHIP;
         const int pixelsPerPacket = (double)datasize / bytesPerPixel;
@@ -3014,6 +3017,7 @@ void *start_timer(void *arg) {
         }
         setNextFrameNumber(frameNr + numFrames);
     }
+    free(imageData);
 
     closeUDPSocket(0);
     closeUDPSocket(1);

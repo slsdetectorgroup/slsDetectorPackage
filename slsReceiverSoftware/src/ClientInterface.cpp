@@ -7,6 +7,7 @@
 
 #include "sls/sls_detector_exceptions.h"
 #include "sls/string_utils.h"
+#include "sls/thread_utils.h"
 #include "sls/versionAPI.h"
 
 #include <array>
@@ -27,12 +28,6 @@ namespace sls {
 using ns = std::chrono::nanoseconds;
 using Interface = ServerInterface;
 
-// gettid added in glibc 2.30
-#if __GLIBC__ == 2 && __GLIBC_MINOR__ < 30
-#include <sys/syscall.h>
-#define gettid() syscall(SYS_gettid)
-#endif
-
 std::mutex ClientInterface::callbackMutex;
 
 ClientInterface::~ClientInterface() {
@@ -47,7 +42,7 @@ ClientInterface::ClientInterface(uint16_t portNumber)
     : detType(GENERIC), portNumber(portNumber), server(portNumber) {
     validatePortNumber(portNumber);
     functionTable();
-    parentThreadId = gettid();
+    parentThreadId = getThreadId();
     tcpThread =
         make_unique<std::thread>(&ClientInterface::startTCPServer, this);
 }
@@ -79,7 +74,7 @@ void ClientInterface::registerCallBackRawDataReady(
 }
 
 void ClientInterface::startTCPServer() {
-    tcpThreadId = gettid();
+    tcpThreadId = getThreadId();
     LOG(logINFOBLUE) << "Created [ TCP server Tid: " << tcpThreadId << "]";
     LOG(logINFO) << "SLS Receiver starting TCP Server on port " << portNumber
                  << '\n';
@@ -1623,7 +1618,8 @@ int ClientInterface::set_threshold(Interface &socket) {
     LOG(logDEBUG) << "Threshold: " << arg << " eV";
     if (detType != EIGER)
         functionNotImplemented();
-    verifyIdle(socket);
+    // allow setting threshold metadata on the fly
+    // without checking for idle state
     impl()->setThresholdEnergy(arg);
     return socket.Send(OK);
 }
@@ -1650,7 +1646,8 @@ int ClientInterface::set_all_threshold(Interface &socket) {
     LOG(logDEBUG) << "Threshold:" << ToString(eVs);
     if (detType != MYTHEN3)
         functionNotImplemented();
-    verifyIdle(socket);
+    // allow setting threshold metadata on the fly
+    // without checking for idle state
     impl()->setThresholdEnergy(eVs);
     return socket.Send(OK);
 }

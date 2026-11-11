@@ -415,4 +415,34 @@ TEST_CASE("string to timingInfoDecoder") {
             defs::timingInfoDecoder::SHINE);
 }
 
+TEST_CASE("Convert string to vector of ints") {
+    REQUIRE(StringTo<std::vector<int>>("1, 2, 3") == std::vector<int>{1, 2, 3});
+    REQUIRE(StringTo<std::vector<int>>(" 4 ,5,6 ") ==
+            std::vector<int>{4, 5, 6});
+    REQUIRE(StringTo<std::vector<int>>("[8]") == std::vector<int>{8});
+    REQUIRE(StringTo<std::vector<int>>("9, ") == std::vector<int>{9});
+    REQUIRE(StringTo<std::vector<int>>("") == std::vector<int>{});
+    REQUIRE(StringTo<std::vector<int>>("[]") == std::vector<int>{});
+    REQUIRE(StringTo<std::vector<int>>(" [ [1, 2] ] ") ==
+            std::vector<int>{1, 2});
+}
+
+TEST_CASE("Mismatched brackets in string to vector throws") {
+    REQUIRE_THROWS(StringTo<std::vector<int>>("[1, 2"));
+    REQUIRE_THROWS(StringTo<std::vector<int>>("1, 2]"));
+    REQUIRE_THROWS(StringTo<std::vector<int>>("[[1, 2]"));
+    REQUIRE_THROWS(StringTo<std::vector<int>>("1]2"));
+    REQUIRE_THROWS(StringTo<std::vector<int>>("[1], [2]"));
+}
+TEST_CASE("operationMode to string") {
+    REQUIRE(ToString(defs::operationMode::SYNCHROTRON) == "synchrotron");
+    REQUIRE(ToString(defs::operationMode::FEL) == "fel");
+}
+
+TEST_CASE("string to operationMode") {
+    REQUIRE(StringTo<defs::operationMode>("synchrotron") ==
+            defs::operationMode::SYNCHROTRON);
+    REQUIRE(StringTo<defs::operationMode>("fel") == defs::operationMode::FEL);
+}
+
 } // namespace sls

@@ -2,6 +2,7 @@
 # Copyright (C) 2021 Contributors to the SLS Detector Package
 """
 Script to update VERSION file with semantic versioning if provided as an argument, or with 0.0.0 if no argument is provided.
+Script also updates VERSION in RELEASE.md and adds the new version to version.yaml
 """
 
 import sys
@@ -32,7 +33,7 @@ def write_version_to_file(version):
     version_file_path = Path(SCRIPT_DIR / "VERSION")
     with open(version_file_path, "w") as version_file:
         version_file.write(version)
-    print(f"Version {version} written to VERSION file.")
+    print(f"✓ Version {version} written to VERSION file.")
 
 
 def extract_release_type(version: str) -> str: 
@@ -59,9 +60,11 @@ def get_previous_version(data_path: Path, version : str) -> str:
 
     return prev_version
 
+
 def main(): 
     parser = argparse.ArgumentParser(description='Update version release notes')
     parser.add_argument('--version', required=True, type=str, help='version to write to VERSION file')
+    parser.add_argument('--prev_version', required=False, type=str, help='previous version to write to RELEASE.md file')
     parser.add_argument('--update_version_only', action="store_true", help='Only update version in VERSION file, do not generate release notes')
     args = parser.parse_args()
 
@@ -69,8 +72,12 @@ def main():
     write_version_to_file(version)
 
     if not args.update_version_only:
+
+        if args.prev_version is None:
+            raise ValueError("Previous version must be provided when generating release notes. Use --prev_version to specify the previous version.")
+        
         release_type = extract_release_type(version)
-        prev_version = get_previous_version(ROOT_DIR / "docs/main_index/versions.yaml", version)
+        prev_version = args.prev_version 
 
         # Read template
         template = Path(ROOT_DIR / "RELEASE.md").read_text()
@@ -83,7 +90,7 @@ def main():
 
         # Write output
         Path(ROOT_DIR / "RELEASE.md").write_text(output)
-        print(f"Generated RELEASE.md for version {version}")
+        print(f"✓ Generated RELEASE.md for version {version}")
 
 # Main script
 if __name__ == "__main__":

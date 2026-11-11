@@ -308,6 +308,8 @@ enum detFuncs {
     F_GET_POWER_ADC,
     F_GET_VOLTAGE_LIMIT,
     F_SET_VOLTAGE_LIMIT,
+    F_SET_HDR,
+    F_GET_HDR,
 
     NUM_DET_FUNCTIONS,
     RECEIVER_ENUM_START = 512, /**< detector function should not exceed this
@@ -730,10 +732,11 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_GET_POWER_ADC:                   return "F_GET_POWER_ADC";
     case F_GET_VOLTAGE_LIMIT:               return "F_GET_VOLTAGE_LIMIT";
     case F_SET_VOLTAGE_LIMIT:               return "F_SET_VOLTAGE_LIMIT";
+    case F_SET_HDR:                          return "F_SET_HDR";
+    case F_GET_HDR:                          return "F_GET_HDR";
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";
-
 
 	case F_EXEC_RECEIVER_COMMAND:			return "F_EXEC_RECEIVER_COMMAND";
 	case F_LOCK_RECEIVER: 					return "F_LOCK_RECEIVER";

@@ -44,6 +44,4 @@ set_target_properties(ctbDetectorServer_virtual PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
-install(TARGETS ctbDetectorServer_virtual
-    RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
+sls_install_executable(ctbDetectorServer_virtual)

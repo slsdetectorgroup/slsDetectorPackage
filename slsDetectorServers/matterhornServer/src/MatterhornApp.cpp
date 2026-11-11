@@ -3,6 +3,7 @@
 #include "helpers/Helpers.hpp"
 #include "sls/logger.h"
 #include "sls/sls_detector_exceptions.h"
+#include "sls/thread_utils.h"
 #include "sls/versionAPI.h"
 #include <semaphore.h>
 
@@ -11,20 +12,6 @@
 #include <signal.h>
 #include <sys/wait.h>
 #include <unistd.h>
-
-// gettid added in glibc 2.30
-#if defined(__APPLE__)
-#include <cstdint>
-#include <pthread.h>
-static inline uint64_t gettid() {
-    uint64_t tid = 0;
-    pthread_threadid_np(nullptr, &tid);
-    return tid;
-}
-#elif __GLIBC__ == 2 && __GLIBC_MINOR__ < 30
-#include <sys/syscall.h>
-#define gettid() syscall(SYS_gettid)
-#endif
 
 using namespace sls;
 
@@ -90,7 +77,7 @@ int main(int argc, char *argv[]) {
                                      // also return EXIT_FAILURE
         }
         LOG(TLogLevel::logINFOBLUE)
-            << "Exiting Stop Server [ Tid: " << gettid() << " ]";
+            << "Exiting Stop Server [ Tid: " << getThreadId() << " ]";
         LOG(sls::logINFO) << "Exiting Stop Server";
     } else if (pid > 0) {
         // parent
@@ -108,7 +95,7 @@ int main(int argc, char *argv[]) {
         } catch (...) {
             LOG(logERROR) << "Some Error occured in Control Server, exiting";
             LOG(sls::logINFOBLUE)
-                << "Exiting Control Server [ Tid: " << gettid() << " ]";
+                << "Exiting Control Server [ Tid: " << getThreadId() << " ]";
             LOG(sls::logINFO) << "Exiting Detector Server";
             kill(pid, SIGINT);        // tell child to exit
             waitpid(pid, nullptr, 0); // wait for child to exit
@@ -116,7 +103,8 @@ int main(int argc, char *argv[]) {
         }
         waitpid(pid, nullptr, 0); // wait for child to exit
         LOG(sls::logINFOBLUE)
-            << "Exiting Detector Control Server [ Tid: " << gettid() << " ]";
+            << "Exiting Detector Control Server [ Tid: " << getThreadId()
+            << " ]";
         LOG(sls::logINFO) << "Exiting Detector Server";
     } else {
         LOG(sls::logERROR)

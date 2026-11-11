@@ -41,9 +41,8 @@ set_target_properties(jungfrauDetectorServer_virtual PROPERTIES
 #target_compile_options(jungfrauDetectorServer_virtual PRIVATE -m32)
 #target_link_options(jungfrauDetectorServer_virtual PRIVATE -m32)
 
-install(TARGETS jungfrauDetectorServer_virtual
+sls_install_executable(jungfrauDetectorServer_virtual
     EXPORT "${TARGETS_EXPORT_NAME}"
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
 configure_file(config_jungfrau.txt ${CMAKE_BINARY_DIR}/bin/config_jungfrau.txt COPYONLY)

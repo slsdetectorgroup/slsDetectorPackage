@@ -81,7 +81,10 @@ void Fifo::DestroyFifos() {
     fifoStream = nullptr;
 }
 
-void Fifo::FreeAddress(char *&address) { fifoFree->push(address); }
+void Fifo::FreeAddress(char *&address) {
+    std::lock_guard<std::mutex> lock(fifoFreeMutex);
+    fifoFree->push(address);
+}
 
 void Fifo::GetNewAddress(char *&address) {
     int temp = fifoFree->getDataValue();

@@ -10,7 +10,7 @@ script_dir = ../../etc/
 BLACKFIN_CC = bfin-uclinux-gcc
 CROSS		= powerpc-4xx-softfloat-
 CC    		= $(CROSS)gcc
-CFLAGS		+=  -Wall -std=gnu99 -DEIGERD  -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(current_dir)  #-DDEBUG1 #-DVERBOSEI #-DVERBOSE 
+CFLAGS		+=  -O2 -Wall -Wextra -Wno-unused-parameter -Wformat=2 -Wredundant-decls -Werror=return-type -std=gnu99 -DEIGERD  -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(current_dir)  #-DDEBUG1 #-DVERBOSEI #-DVERBOSE 
 LDLIBS		+= 	-lm -lrt -pthread
 PROGS		= 	eigerDetectorServer 
 DESTDIR		= 	bin

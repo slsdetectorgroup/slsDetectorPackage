@@ -277,8 +277,8 @@ TEST_CASE("extrastoragecells", "[.detectorintegration]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::JUNGFRAU) {
         auto chipVersion = chipVersionToX10(det.getChipVersion().squash());
-        // chip version 1.0 and 1.2
-        if (chipVersion == 10 || chipVersion == 12) {
+        // currently only chip version 1.0, later firmware for 1.2
+        if (chipVersion == 10) { //} || chipVersion == 12) {
             auto prev_val = det.getNumberOfAdditionalStorageCells().tsquash(
                 "inconsistent #additional storage cells to test");
             {
@@ -787,6 +787,47 @@ TEST_CASE("sync", "[.detectorintegration]") {
     } else {
         REQUIRE_THROWS(caller.call("sync", {}, -1, GET));
         REQUIRE_THROWS(caller.call("sync", {"0"}, -1, PUT));
+    }
+}
+
+TEST_CASE("hdr", "[.detectorintegration]") {
+    Detector det;
+    Caller caller(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU) {
+        // disable and args
+        REQUIRE_THROWS(caller.call("hdr", {"0", "synchrotron"}, -1, PUT));
+        // invalid enable
+        REQUIRE_THROWS(caller.call("hdr", {"2"}, -1, PUT));
+        // no operation mode
+        REQUIRE_THROWS(caller.call("hdr", {"1"}, -1, PUT));
+        // invalid operation mode
+        REQUIRE_THROWS(caller.call("hdr", {"invalid"}, -1, PUT));
+        // TODO: implement get chip type to get hdr, throw if !hdr and trying
+        // fel for oper mode and not throw if hdr
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(caller.call("hdr", {"synchrotron"}, -1, PUT, oss));
+            REQUIRE(oss.str() == "hdr [enabled synchrotron]\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(caller.call("hdr", {}, -1, GET, oss));
+            REQUIRE(oss.str() == "hdr [enabled synchrotron]\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(caller.call("hdr", {"0"}, -1, PUT, oss));
+            REQUIRE(oss.str() == "hdr [disabled]\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(caller.call("hdr", {}, -1, GET, oss));
+            REQUIRE(oss.str() == "hdr [disabled]\n");
+        }
+    } else {
+        REQUIRE_THROWS(caller.call("hdr", {}, -1, GET));
+        REQUIRE_THROWS(caller.call("hdr", {"0"}, -1, PUT));
     }
 }
 

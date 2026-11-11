@@ -63,6 +63,7 @@ int setChipVersionIntFromConfigFile(int val,
                                     char *mess); // for backward compatibility
 int setChipVersionStringFromConfigFile(char *cval, char *mess);
 int setChipIndex(enum CHIPINDEX ind, char *mess);
+enum CHIPINDEX getChipIndex();
 int validateChipIndex(enum CHIPINDEX ind, char *mess);
 void setChipIndexAllowedFeatures();
 int setChipVersionInFPGA(char *mess);
@@ -166,9 +167,9 @@ int getFirstUDPDestination();
 void setFirstUDPDestination(int value);
 void selectPrimaryInterface(int val);
 int getPrimaryInterface();
-void setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip,
-                 uint64_t destmac, uint16_t destport, uint64_t sourcemac,
-                 uint32_t sourceip, uint16_t sourceport);
+int setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip,
+                uint64_t destmac, uint16_t destport, uint64_t sourcemac,
+                uint32_t sourceip, uint16_t sourceport);
 void calcChecksum(udp_header *udp);
 
 int configureMAC();
@@ -187,14 +188,16 @@ bool hasFilterResistorFeature();
 bool hasFilterCellsFeature();
 bool hasCurrentSourceNormalFeature();
 bool hasCurrentSource64BitSelectionFeature();
-bool hasCurrentSourceReverseBitsSelectionFeature();
 bool hasStorageCellStartInChipConfig();
+bool hasStepReductionFeature();
 bool isChipConfigured();
 void configureChip();
 int autoCompDisable(int on);
 int setComparatorDisableTime(int64_t val);
 int64_t getComparatorDisableTime();
 void configureASICTimer();
+void configureAsicPrechargeTimer();
+void configureAsicDSTimer();
 int setReadoutSpeed(int val);
 int getReadoutSpeed(int *retval);
 int setPhase(enum CLKINDEX ind, int val, int degrees);
@@ -220,11 +223,14 @@ uint64_t getSelectCurrentSource();
 int getPedestalMode();
 void getPedestalParameters(uint8_t *frames, uint16_t *loops);
 void setPedestalMode(int enable, uint8_t frames, uint16_t loops);
+void enableStepReduction();
 int setTimingInfoDecoder(enum timingInfoDecoder val);
 int getTimingInfoDecoder(enum timingInfoDecoder *retval);
 int getElectronCollectionMode();
 void setElectronCollectionMode(int enable);
-
+void updateHDRTimeout();
+int setHDR(bool enable, enum operationMode mode);
+void getHDR(bool *enable, enum operationMode *mode);
 int getTenGigaFlowControl();
 int setTenGigaFlowControl(int value);
 int getTransmissionDelayFrame();

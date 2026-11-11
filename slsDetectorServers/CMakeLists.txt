@@ -8,12 +8,19 @@ install(TARGETS slsProjectCSettings
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
-add_subdirectory(ctbDetectorServer)
-add_subdirectory(xilinx_ctbDetectorServer)
-add_subdirectory(eigerDetectorServer)
-add_subdirectory(jungfrauDetectorServer)
-add_subdirectory(mythen3DetectorServer)
-add_subdirectory(gotthard2DetectorServer)
-add_subdirectory(moenchDetectorServer)
-add_subdirectory(matterhornServer)
 
+add_subdirectory(slsDetectorServer_cpp)
+
+if(SLS_USE_SIMULATOR)
+    add_subdirectory(ctbDetectorServer)
+    add_subdirectory(xilinx_ctbDetectorServer)
+    add_subdirectory(eigerDetectorServer)
+    add_subdirectory(jungfrauDetectorServer)
+    add_subdirectory(mythen3DetectorServer)
+    add_subdirectory(gotthard2DetectorServer)
+    add_subdirectory(moenchDetectorServer)
+endif()
+
+if(SLS_USE_MATTERHORN OR SLS_USE_SIMULATOR)
+    add_subdirectory(matterhornServer)
+endif()

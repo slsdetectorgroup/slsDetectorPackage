@@ -1,0 +1,7842 @@
+diff --git a/bash_autocomplete.sh b/bash_autocomplete.sh
+deleted file mode 120000
+index f79749d0d..000000000
+--- a/bash_autocomplete.sh
++++ /dev/null
+@@ -1 +0,0 @@
+-slsDetectorSoftware/generator/autocomplete/bash_autocomplete.sh
+\ No newline at end of file
+diff --git a/bash_autocomplete.sh b/bash_autocomplete.sh
+new file mode 100644
+index 000000000..5fe099a7d
+--- /dev/null
++++ b/bash_autocomplete.sh
+@@ -0,0 +1,3448 @@
++# GENERATED FILE - DO NOT EDIT
++# ANY CHANGES TO THIS FILE WILL BE OVERWRITTEN
++
++_sd() {
++
++  # Taken from https://github.com/scop/bash-completion/blob/15b74b1050333f425877a7cbd99af2998b95c476/bash_completion#L770C12-L770C12
++  # Reassemble command line words, excluding specified characters from the
++  # list of word completion separators (COMP_WORDBREAKS).
++  # @param $1 chars  Characters out of $COMP_WORDBREAKS which should
++  #     NOT be considered word breaks. This is useful for things like scp where
++  #     we want to return host:path and not only path, so we would pass the
++  #     colon (:) as $1 here.
++  # @param $2 words  Name of variable to return words to
++  # @param $3 cword  Name of variable to return cword to
++  #
++  _comp__reassemble_words()
++{
++    local exclude="" i j line ref
++    # Exclude word separator characters?
++    if [[ $1 ]]; then
++        # Yes, exclude word separator characters;
++        # Exclude only those characters, which were really included
++        exclude="[${1//[^$COMP_WORDBREAKS]/}]"
++    fi
++
++    # Default to cword unchanged
++    printf -v "$3" %s "$COMP_CWORD"
++    # Are characters excluded which were former included?
++    if [[ $exclude ]]; then
++        # Yes, list of word completion separators has shrunk;
++        line=$COMP_LINE
++        # Re-assemble words to complete
++        for ((i = 0, j = 0; i < ${#COMP_WORDS[@]}; i++, j++)); do
++            # Is current word not word 0 (the command itself) and is word not
++            # empty and is word made up of just word separator characters to
++            # be excluded and is current word not preceded by whitespace in
++            # original line?
++            while [[ $i -gt 0 && ${COMP_WORDS[i]} == +($exclude) ]]; do
++                # Is word separator not preceded by whitespace in original line
++                # and are we not going to append to word 0 (the command
++                # itself), then append to current word.
++                [[ $line != [[:blank:]]* ]] && ((j >= 2)) && ((j--))
++                # Append word separator to current or new word
++                ref="$2[$j]"
++                printf -v "$ref" %s "${!ref-}${COMP_WORDS[i]}"
++                # Indicate new cword
++                ((i == COMP_CWORD)) && printf -v "$3" %s "$j"
++                # Remove optional whitespace + word separator from line copy
++                line=${line#*"${COMP_WORDS[i]}"}
++                # Indicate next word if available, else end *both* while and
++                # for loop
++                if ((i < ${#COMP_WORDS[@]} - 1)); then
++                    ((i++))
++                else
++                    break 2
++                fi
++                # Start new word if word separator in original line is
++                # followed by whitespace.
++                [[ $line == [[:blank:]]* ]] && ((j++))
++            done
++            # Append word to current word
++            ref="$2[$j]"
++            printf -v "$ref" %s "${!ref-}${COMP_WORDS[i]}"
++            # Remove optional whitespace + word from line copy
++            line=${line#*"${COMP_WORDS[i]}"}
++            # Indicate new cword
++            ((i == COMP_CWORD)) && printf -v "$3" %s "$j"
++        done
++        ((i == COMP_CWORD)) && printf -v "$3" %s "$j"
++    else
++        # No, list of word completions separators hasn't changed;
++        for i in "${!COMP_WORDS[@]}"; do
++            printf -v "$2[i]" %s "${COMP_WORDS[i]}"
++        done
++    fi
++}
++
++
++  local FCN_RETURN=""
++  local IS_PATH=0
++
++
++local SLS_COMMANDS=" acquire activate adcclk adcenable adcenable10g adcindex adcinvert adclist adcname adcphase adcpipeline adcreg adcvpp apulse asamples autocompdisable badchannels blockingtrigger burstmode burstperiod bursts burstsl bustest cdsgain chipversion clearbit clearbusy clientversion clkdiv clkfreq clkphase collectionmode column compdisabletime confadc config configtransceiver counters currentsource dac dacindex daclist dacname dacvalues datastream dbitclk dbitphase dbitpipeline defaultdac defaultpattern delay delayl detectorserverversion detsize diodelay dpulse dr drlist dsamples execcommand exptime exptime1 exptime2 exptime3 extrastoragecells extsampling extsamplingsrc extsig fformat filtercells filterresistor findex firmwaretest firmwareversion fliprows flowcontrol10g fmaster fname foverwrite fpath framecounter frames framesl frametime free fwrite gaincaps gainmode gappixels gatedelay gatedelay1 gatedelay2 gatedelay3 gates getbit hardwareversion highvoltage hostname im_a im_b im_c im_d im_io imagetest initialchecks inj_ch interpolation interruptsubframe kernelversion lastclient led lock master maxadcphaseshift maxclkphaseshift maxdbitphaseshift measuredperiod measuredsubperiod moduleid nextframenumber nmod numinterfaces overflow packageversion parallel parameters partialreset patfname patioctrl patlimits patloop patloop0 patloop1 patloop2 patmask patnloop patnloop0 patnloop1 patnloop2 patsetbit pattern patternstart patwait patwait0 patwait1 patwait2 patwaittime patwaittime0 patwaittime1 patwaittime2 patword pedestalmode period periodl polarity port powerchip powerindex powerlist powername powervalues programfpga pulse pulsechip pulsenmove pumpprobe quad ratecorr readnrows readout readoutspeed readoutspeedlist rebootcontroller reg resetdacs resetfpga romode row runclk runtime rx_arping rx_clearroi rx_dbitlist rx_dbitoffset rx_dbitreorder rx_discardpolicy rx_fifodepth rx_frameindex rx_framescaught rx_framesperfile rx_hostname rx_jsonaddheader rx_jsonpara rx_lastclient rx_lock rx_missingpackets rx_padding rx_printconfig rx_realudpsocksize rx_roi rx_silent rx_start rx_status rx_stop rx_tcpport rx_threads rx_udpsocksize rx_version rx_zmqfreq rx_zmqhwm rx_zmqip rx_zmqport rx_zmqstartfnum rx_zmqstream samples savepattern scan scanerrmsg selinterface serialnumber setbit settings settingslist settingspath signalindex signallist signalname sleep slowadc slowadcindex slowadclist slowadcname slowadcvalues start status stop stopport storagecell_delay storagecell_start subdeadtime subexptime sync syncclk temp_10ge temp_adc temp_control temp_dcdc temp_event temp_fpga temp_fpgaext temp_fpgafl temp_fpgafr temp_slowadc temp_sodl temp_sodr temp_threshold templist tempvalues tengiga threshold thresholdnotb timing timing_info_decoder timinglist timingsource top transceiverenable trigger triggers triggersl trimbits trimen trimval tsamples txdelay txdelay_frame txdelay_left txdelay_right type udp_cleardst udp_dstip udp_dstip2 udp_dstlist udp_dstmac udp_dstmac2 udp_dstport udp_dstport2 udp_firstdst udp_numdst udp_reconfigure udp_srcip udp_srcip2 udp_srcmac udp_srcmac2 udp_validate update updatedetectorserver updatekernel updatemode user v_a v_b v_c v_chip v_d v_io v_limit vchip_comp_adc vchip_comp_fe vchip_cs vchip_opa_1st vchip_opa_fd vchip_ref_comp_fe versions veto vetoalg vetofile vetophoton vetoref vetostream virtual vm_a vm_b vm_c vm_d vm_io zmqhwm zmqip zmqport "
++__acquire() {
++FCN_RETURN=""
++return 0
++}
++__activate() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__adcclk() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__adcenable() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__adcenable10g() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__adcindex() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__adcinvert() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__adclist() {
++FCN_RETURN=""
++return 0
++}
++__adcname() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__adcphase() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="deg"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="deg"
++fi
++fi
++return 0
++}
++__adcpipeline() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__adcreg() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__adcvpp() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="mV mv"
++fi
++fi
++return 0
++}
++__apulse() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__asamples() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__autocompdisable() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__badchannels() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__blockingtrigger() {
++FCN_RETURN=""
++return 0
++}
++__burstmode() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="burst_external burst_internal cw_external cw_internal"
++fi
++fi
++return 0
++}
++__burstperiod() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++return 0
++}
++__bursts() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__burstsl() {
++FCN_RETURN=""
++return 0
++}
++__bustest() {
++FCN_RETURN=""
++return 0
++}
++__cdsgain() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__chipversion() {
++FCN_RETURN=""
++return 0
++}
++__clearbit() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN="--validate"
++fi
++fi
++return 0
++}
++__clearbusy() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN="--validate"
++fi
++fi
++return 0
++}
++__clientversion() {
++FCN_RETURN=""
++return 0
++}
++__clkdiv() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__clkfreq() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__clkphase() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="deg"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN="deg"
++fi
++fi
++return 0
++}
++__collectionmode() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="electron hole"
++fi
++fi
++return 0
++}
++__column() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__compdisabletime() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++return 0
++}
++__confadc() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__config() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++IS_PATH=1
++fi
++fi
++return 0
++}
++__configtransceiver() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++IS_PATH=1
++fi
++fi
++return 0
++}
++__counters() {
++FCN_RETURN=""
++return 0
++}
++__currentsource() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="fix nofix"
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "5" ]]; then
++FCN_RETURN="low normal"
++fi
++fi
++return 0
++}
++__dac() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="mV mv"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN="mV mv"
++fi
++fi
++return 0
++}
++__dacindex() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__daclist() {
++FCN_RETURN=""
++return 0
++}
++__dacname() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__dacvalues() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="mV mv"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="mV mv"
++fi
++fi
++return 0
++}
++__datastream() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="bottom left right top"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="bottom left right top"
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__dbitclk() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__dbitphase() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="deg"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="deg"
++fi
++fi
++return 0
++}
++__dbitpipeline() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__defaultdac() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
++fi
++fi
++return 0
++}
++__defaultpattern() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
++fi
++fi
++return 0
++}
++__delay() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++return 0
++}
++__delayl() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++return 0
++}
++__detectorserverversion() {
++FCN_RETURN=""
++return 0
++}
++__detsize() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__diodelay() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__dpulse() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__dr() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__drlist() {
++FCN_RETURN=""
++return 0
++}
++__dsamples() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__execcommand() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__exptime() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++return 0
++}
++__exptime1() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++return 0
++}
++__exptime2() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++return 0
++}
++__exptime3() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++return 0
++}
++__extrastoragecells() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__extsampling() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__extsamplingsrc() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__extsig() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="inversion_off inversion_on trigger_in_falling_edge trigger_in_rising_edge"
++fi
++fi
++return 0
++}
++__fformat() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="binary hdf5"
++fi
++fi
++return 0
++}
++__filtercells() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__filterresistor() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__findex() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__firmwaretest() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__firmwareversion() {
++FCN_RETURN=""
++return 0
++}
++__fliprows() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__flowcontrol10g() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__fmaster() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__fname() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__foverwrite() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__fpath() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++IS_PATH=1
++fi
++fi
++return 0
++}
++__framecounter() {
++FCN_RETURN=""
++return 0
++}
++__frames() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__framesl() {
++FCN_RETURN=""
++return 0
++}
++__frametime() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++return 0
++}
++__free() {
++FCN_RETURN=""
++return 0
++}
++__fwrite() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__gaincaps() {
++FCN_RETURN=""
++return 0
++}
++__gainmode() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="dynamic fixg0 fixg1 fixg2 forceswitchg1 forceswitchg2"
++fi
++fi
++return 0
++}
++__gappixels() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__gatedelay() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++return 0
++}
++__gatedelay1() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++return 0
++}
++__gatedelay2() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++return 0
++}
++__gatedelay3() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++return 0
++}
++__gates() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__getbit() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__hardwareversion() {
++FCN_RETURN=""
++return 0
++}
++__highvoltage() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__hostname() {
++FCN_RETURN=""
++return 0
++}
++__im_a() {
++FCN_RETURN=""
++return 0
++}
++__im_b() {
++FCN_RETURN=""
++return 0
++}
++__im_c() {
++FCN_RETURN=""
++return 0
++}
++__im_d() {
++FCN_RETURN=""
++return 0
++}
++__im_io() {
++FCN_RETURN=""
++return 0
++}
++__imagetest() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__initialchecks() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__inj_ch() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__interpolation() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__interruptsubframe() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__kernelversion() {
++FCN_RETURN=""
++return 0
++}
++__lastclient() {
++FCN_RETURN=""
++return 0
++}
++__led() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__lock() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__master() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__maxadcphaseshift() {
++FCN_RETURN=""
++return 0
++}
++__maxclkphaseshift() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__maxdbitphaseshift() {
++FCN_RETURN=""
++return 0
++}
++__measuredperiod() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++return 0
++}
++__measuredsubperiod() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++return 0
++}
++__moduleid() {
++FCN_RETURN=""
++return 0
++}
++__nextframenumber() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__nmod() {
++FCN_RETURN=""
++return 0
++}
++__numinterfaces() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__overflow() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__packageversion() {
++FCN_RETURN=""
++return 0
++}
++__parallel() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__parameters() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++IS_PATH=1
++fi
++fi
++return 0
++}
++__partialreset() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__patfname() {
++FCN_RETURN=""
++return 0
++}
++__patioctrl() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__patlimits() {
++FCN_RETURN=""
++return 0
++}
++__patloop() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__patloop0() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__patloop1() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__patloop2() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__patmask() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__patnloop() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__patnloop0() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__patnloop1() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__patnloop2() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__patsetbit() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__pattern() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++IS_PATH=1
++fi
++fi
++return 0
++}
++__patternstart() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++IS_PATH=1
++fi
++fi
++return 0
++}
++__patwait() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__patwait0() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__patwait1() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__patwait2() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__patwaittime() {
++FCN_RETURN=""
++return 0
++}
++__patwaittime0() {
++FCN_RETURN=""
++return 0
++}
++__patwaittime1() {
++FCN_RETURN=""
++return 0
++}
++__patwaittime2() {
++FCN_RETURN=""
++return 0
++}
++__patword() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__pedestalmode() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=" 0"
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__period() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++return 0
++}
++__periodl() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++return 0
++}
++__polarity() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="neg pos"
++fi
++fi
++return 0
++}
++__port() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__powerchip() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__powerindex() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__powerlist() {
++FCN_RETURN=""
++return 0
++}
++__powername() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__powervalues() {
++FCN_RETURN=""
++return 0
++}
++__programfpga() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++IS_PATH=1
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="--force-delete-normal-file"
++fi
++fi
++return 0
++}
++__pulse() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++IS_PATH=1
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="--force-delete-normal-file"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__pulsechip() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__pulsenmove() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__pumpprobe() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__quad() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__ratecorr() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__readnrows() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__readout() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__readoutspeed() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1 108 144 2 full_speed half_speed quarter_speed"
++fi
++fi
++return 0
++}
++__readoutspeedlist() {
++FCN_RETURN=""
++return 0
++}
++__rebootcontroller() {
++FCN_RETURN=""
++return 0
++}
++__reg() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN="--validate"
++fi
++fi
++return 0
++}
++__resetdacs() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN="--validate"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="hard"
++fi
++fi
++return 0
++}
++__resetfpga() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="hard"
++fi
++fi
++return 0
++}
++__romode() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="analog analog_digital digital digital_transceiver transceiver"
++fi
++fi
++return 0
++}
++__row() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__runclk() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__runtime() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++return 0
++}
++__rx_arping() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__rx_clearroi() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__rx_dbitlist() {
++FCN_RETURN=""
++return 0
++}
++__rx_dbitoffset() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__rx_dbitreorder() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__rx_discardpolicy() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="discardempty discardpartial nodiscard"
++fi
++fi
++return 0
++}
++__rx_fifodepth() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__rx_frameindex() {
++FCN_RETURN=""
++return 0
++}
++__rx_framescaught() {
++FCN_RETURN=""
++return 0
++}
++__rx_framesperfile() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__rx_hostname() {
++FCN_RETURN=""
++return 0
++}
++__rx_jsonaddheader() {
++FCN_RETURN=""
++return 0
++}
++__rx_jsonpara() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__rx_lastclient() {
++FCN_RETURN=""
++return 0
++}
++__rx_lock() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__rx_missingpackets() {
++FCN_RETURN=""
++return 0
++}
++__rx_padding() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__rx_printconfig() {
++FCN_RETURN=""
++return 0
++}
++__rx_realudpsocksize() {
++FCN_RETURN=""
++return 0
++}
++__rx_roi() {
++FCN_RETURN=""
++return 0
++}
++__rx_silent() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__rx_start() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__rx_status() {
++FCN_RETURN=""
++return 0
++}
++__rx_stop() {
++FCN_RETURN=""
++return 0
++}
++__rx_tcpport() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__rx_threads() {
++FCN_RETURN=""
++return 0
++}
++__rx_udpsocksize() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__rx_version() {
++FCN_RETURN=""
++return 0
++}
++__rx_zmqfreq() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__rx_zmqhwm() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__rx_zmqip() {
++FCN_RETURN=""
++return 0
++}
++__rx_zmqport() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__rx_zmqstartfnum() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__rx_zmqstream() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__samples() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__savepattern() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++IS_PATH=1
++fi
++fi
++return 0
++}
++__scan() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "5" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "6" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__scanerrmsg() {
++FCN_RETURN=""
++return 0
++}
++__selinterface() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__serialnumber() {
++FCN_RETURN=""
++return 0
++}
++__setbit() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN="--validate"
++fi
++fi
++return 0
++}
++__settings() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
++fi
++fi
++return 0
++}
++__settingslist() {
++FCN_RETURN=""
++return 0
++}
++__settingspath() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++IS_PATH=1
++fi
++fi
++return 0
++}
++__signalindex() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__signallist() {
++FCN_RETURN=""
++return 0
++}
++__signalname() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__sleep() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++return 0
++}
++__slowadc() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__slowadcindex() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__slowadclist() {
++FCN_RETURN=""
++return 0
++}
++__slowadcname() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__slowadcvalues() {
++FCN_RETURN=""
++return 0
++}
++__start() {
++FCN_RETURN=""
++return 0
++}
++__status() {
++FCN_RETURN=""
++return 0
++}
++__stop() {
++FCN_RETURN=""
++return 0
++}
++__stopport() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__storagecell_delay() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++return 0
++}
++__storagecell_start() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__subdeadtime() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++return 0
++}
++__subexptime() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++return 0
++}
++__sync() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__syncclk() {
++FCN_RETURN=""
++return 0
++}
++__temp_10ge() {
++FCN_RETURN=""
++return 0
++}
++__temp_adc() {
++FCN_RETURN=""
++return 0
++}
++__temp_control() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__temp_dcdc() {
++FCN_RETURN=""
++return 0
++}
++__temp_event() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__temp_fpga() {
++FCN_RETURN=""
++return 0
++}
++__temp_fpgaext() {
++FCN_RETURN=""
++return 0
++}
++__temp_fpgafl() {
++FCN_RETURN=""
++return 0
++}
++__temp_fpgafr() {
++FCN_RETURN=""
++return 0
++}
++__temp_slowadc() {
++FCN_RETURN=""
++return 0
++}
++__temp_sodl() {
++FCN_RETURN=""
++return 0
++}
++__temp_sodr() {
++FCN_RETURN=""
++return 0
++}
++__temp_threshold() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__templist() {
++FCN_RETURN=""
++return 0
++}
++__tempvalues() {
++FCN_RETURN=""
++return 0
++}
++__tengiga() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__threshold() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "5" ]]; then
++FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
++fi
++fi
++return 0
++}
++__thresholdnotb() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "5" ]]; then
++FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
++fi
++fi
++return 0
++}
++__timing() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="`sls_detector_get timinglist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
++fi
++fi
++return 0
++}
++__timing_info_decoder() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="shine swissfel"
++fi
++fi
++return 0
++}
++__timinglist() {
++FCN_RETURN=""
++return 0
++}
++__timingsource() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="external internal"
++fi
++fi
++return 0
++}
++__top() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__transceiverenable() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__trigger() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__triggers() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__triggersl() {
++FCN_RETURN=""
++return 0
++}
++__trimbits() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++IS_PATH=1
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++IS_PATH=1
++fi
++fi
++return 0
++}
++__trimen() {
++FCN_RETURN=""
++return 0
++}
++__trimval() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__tsamples() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__txdelay() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__txdelay_frame() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__txdelay_left() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__txdelay_right() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__type() {
++FCN_RETURN=""
++return 0
++}
++__udp_cleardst() {
++FCN_RETURN=""
++return 0
++}
++__udp_dstip() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__udp_dstip2() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__udp_dstlist() {
++FCN_RETURN=""
++return 0
++}
++__udp_dstmac() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__udp_dstmac2() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__udp_dstport() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__udp_dstport2() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__udp_firstdst() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__udp_numdst() {
++FCN_RETURN=""
++return 0
++}
++__udp_reconfigure() {
++FCN_RETURN=""
++return 0
++}
++__udp_srcip() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__udp_srcip2() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__udp_srcmac() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__udp_srcmac2() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__udp_validate() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__update() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++IS_PATH=1
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++IS_PATH=1
++fi
++fi
++return 0
++}
++__updatedetectorserver() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++IS_PATH=1
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++IS_PATH=1
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++IS_PATH=1
++fi
++fi
++return 0
++}
++__updatekernel() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++IS_PATH=1
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++IS_PATH=1
++fi
++fi
++return 0
++}
++__updatemode() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__user() {
++FCN_RETURN=""
++return 0
++}
++__v_a() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__v_b() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__v_c() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__v_chip() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__v_d() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__v_io() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__v_limit() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__vchip_comp_adc() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__vchip_comp_fe() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__vchip_cs() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__vchip_opa_1st() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__vchip_opa_fd() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__vchip_ref_comp_fe() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__versions() {
++FCN_RETURN=""
++return 0
++}
++__veto() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__vetoalg() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="10gbe lll none"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="hits raw"
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="10gbe lll none"
++fi
++fi
++return 0
++}
++__vetofile() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__vetophoton() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "5" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__vetoref() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__vetostream() {
++FCN_RETURN=""
++return 0
++}
++__virtual() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__vm_a() {
++FCN_RETURN=""
++return 0
++}
++__vm_b() {
++FCN_RETURN=""
++return 0
++}
++__vm_c() {
++FCN_RETURN=""
++return 0
++}
++__vm_d() {
++FCN_RETURN=""
++return 0
++}
++__vm_io() {
++FCN_RETURN=""
++return 0
++}
++__zmqhwm() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__zmqip() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__zmqport() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++
++
++  COMPREPLY=()
++  local OPTIONS_NEW=""
++
++  # check if bash or zsh
++  # _get_comp_words_by_ref is a bash built-in function, we check if it exists
++  declare -Ff _get_comp_words_by_ref > /dev/null && IS_BASH=1 || IS_BASH=0
++
++
++  # bash interprets the colon character : as a special character and splits the argument in two
++  # different than what zsh does
++  # https://stackoverflow.com/a/3224910
++  # https://stackoverflow.com/a/12495727
++  local cur
++  local cword words=()
++  _comp__reassemble_words ":" words cword
++  cur=${words[cword]}
++
++  #  check the action (get or put)
++  case "${words[0]}" in
++    "sls_detector_get" | "g" | "detg")
++      local IS_GET=1
++      ;;
++    *)
++      local IS_GET=0
++      ;;
++  esac
++
++  # if no command is written, autocomplete with the commands
++  if [[ ${cword} -eq 1 ]]; then
++#    local SLS_COMMANDS="trimbits exptime"
++    local SLS_COMMANDS_NEW=""
++
++    case "$cur" in
++    	[0-9]*:*)
++				local suggestions=($(compgen -W "${SLS_COMMANDS}" -- "${cur#*:}"))
++				COMPREPLY=( ${suggestions[*]} )
++        ;;
++      [0-9]*)
++        COMPREPLY=()
++        ;;
++      *)
++				COMPREPLY=( $( compgen -W "$SLS_COMMANDS -h" -- "$cur" ) );;
++
++		esac
++    return 0
++  fi
++
++  if [[ ${cword} -eq 2 ]] && [[ ${words[1]} == "-h" ]]; then
++    COMPREPLY=( $( compgen -W "$SLS_COMMANDS" -- "$cur" ) )
++    return 0
++  fi
++
++  # if a command is written, autocomplete with the options
++  # call the function for the command
++
++  if [[ "$SLS_COMMANDS" == *"${words[1]##*:}"* ]]; then
++      __"${words[1]##*:}"
++  fi
++
++  # if IS_PATH is activated, autocomplete with the path
++  if [[ ${IS_PATH} -eq 1 ]]; then
++    COMPREPLY=($(compgen -f -- "${cur}"))
++    return 0
++  fi
++
++  # autocomplete with the options
++  COMPREPLY=($(compgen -W "${FCN_RETURN}" -- "${cur}"))
++
++
++
++}
++
++complete -F _sd -o filenames sls_detector_get
++complete -F _sd -o filenames g
++complete -F _sd -o filenames detg
++
++complete -F _sd -o filenames sls_detector_put
++complete -F _sd -o filenames p
++complete -F _sd -o filenames detp
++
++complete -F _sd -o filenames sls_detector
++complete -F _sd -o filenames det
+diff --git a/slsDetectorCalibration/jungfrauExecutables/Makefile b/slsDetectorCalibration/jungfrauExecutables/Makefile
+deleted file mode 120000
+index bde0d5288..000000000
+--- a/slsDetectorCalibration/jungfrauExecutables/Makefile
++++ /dev/null
+@@ -1 +0,0 @@
+-Makefile.zmqrootdisp
+\ No newline at end of file
+diff --git a/slsDetectorCalibration/jungfrauExecutables/Makefile b/slsDetectorCalibration/jungfrauExecutables/Makefile
+new file mode 100644
+index 000000000..1ec21eac7
+--- /dev/null
++++ b/slsDetectorCalibration/jungfrauExecutables/Makefile
+@@ -0,0 +1,22 @@
++ROOTSYS=/opt/cern/v6/build
++
++LIBZMQDIR = $(PWD)
++LIBZMQ =  -L$(LIBZMQDIR) -lzmq
++SHLIB_PATH=/opt/cern/v6/root/lib
++CMAKE_PREFIX_PATH=/opt/cern/v6/root
++DYLD_LIBRARY_PATH=/opt/cern/v6/root/lib
++
++QT_CXXFLAGS = $(shell pkg-config --cflags Qt5Core Qt5Gui Qt5Widgets 2>/dev/null)
++QT_LIBS     = $(shell pkg-config --libs Qt5Core Qt5Gui Qt5Widgets 2>/dev/null)
++
++INCDIR=   -I. -I../dataStructures ../tiffio/src/tiffIO.cpp -I../ -I../interpolations/ -I../../slsSupportLib/include/ -I../../slsReceiverSoftware/include/ -I../../libs/rapidjson/ -I../tiffio/include
++LDFLAG= -L/usr/lib64/ -lpthread -lm  -lstdc++  -lzmq -pthread -lrt -ltiff   -O3  -std=c++17 -Wall -Wl,-rpath-link,$(ROOTSYS)/lib
++
++
++default: onlinedisp_zmq
++
++onlinedisp_zmq: onlinedisp_zmq.cpp onlinedisp_zmq.h ../dataStructures/jungfrauLGADStrixelsData_new.h
++	g++ -o onlinedisp_zmq onlinedisp_zmq.cpp $(QT_CXXFLAGS) $(QT_LIBS) -I. -I$(ROOTSYS)/include -Wall -g -lm -L. -lzmq -pthread -lrt -L$(ROOTSYS)/lib -lGui -lCore -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lThread -m64 -L../../build/bin/ -lSlsSupportStatic ../../build/_deps/libzmq-build/lib/libzmq.a -lstdc++ -lsodium $(LDFLAG) $(INCDIR)
++
++#-lCint
++
+diff --git a/slsDetectorCalibration/jungfrauExecutables/onlinedisp_zmq.cpp b/slsDetectorCalibration/jungfrauExecutables/onlinedisp_zmq.cpp
+index 4ddacd260..e1d3c7556 100644
+--- a/slsDetectorCalibration/jungfrauExecutables/onlinedisp_zmq.cpp
++++ b/slsDetectorCalibration/jungfrauExecutables/onlinedisp_zmq.cpp
+@@ -7,6 +7,121 @@ sls::zmqHeader zHeader;
+ #define NPRO 50
+ #define NPRI 50
+ 
++// ── ROOT thread safety ───────────────────────────────────────────────────────
++// The main thread FILLS the source accumulator histograms on every processed
++// frame. The ROOT redraw thread must never paint those (ROOT is not
++// thread-safe for concurrent Fill vs Paint - crashes in TH1::SetContour).
++// Instead the ROOT thread paints DISPLAY CLONES whose bin content is copied
++// from the sources once per redraw tick (copying while a fill runs only
++// yields a transiently torn pixel, never a crash).
++std::atomic<uint64_t> gFramesForRoot{0};
++std::atomic<bool> gResetPending{false};
++
++// display clones painted by the ROOT thread (single-owner objects)
++TH2F *disp3000 = nullptr;
++TH2F *disp4500 = nullptr;
++TH2F *dispLvsR = nullptr;
++TH1I *dispChip[8] = {nullptr, nullptr, nullptr, nullptr,
++                     nullptr, nullptr, nullptr, nullptr};
++#ifdef JFSTRX
++TH2F *disp1000 = nullptr; TH2F *disp1001 = nullptr; TH2F *disp1002 = nullptr;
++TH2F *disp1060 = nullptr; TH2F *disp1061 = nullptr; TH2F *disp1062 = nullptr;
++#endif
++
++// copies bin contents + entry count from a source accumulator to its
++// display clone (same geometry). ROOT-thread only.
++static void copyBins(TH1 *dst, TH1 *src) {
++    if (!dst || !src) return;
++    const int bx = dst->GetNbinsX();
++    const int by = dst->GetNbinsY();
++    dst->Reset();
++    if (by <= 1) {
++        for (int b = 1; b <= bx; b++)
++            dst->SetBinContent(b, src->GetBinContent(b));
++    } else {
++        for (int y = 1; y <= by; y++)
++            for (int x = 1; x <= bx; x++)
++                dst->SetBinContent(x, y, src->GetBinContent(x, y));
++    }
++    dst->SetEntries(src->GetEntries());
++}
++
++// ── ROOT GUI ownership ───────────────────────────────────────────────────────
++// ROOT canvas painting + gSystem->ProcessEvents() may ONLY run in the
++// dedicated ROOT thread (thread that drew them crashes otherwise, e.g. in
++// TGaxis/TPaletteAxis). The main thread never touches ROOT graphics; user
++// actions (reset, axes, palette, surf/colz, zoom...) are queued here and
++// executed by the ROOT thread.
++enum class RootCmdType {
++    None, ResetHis, ResetAxes, Surf, Colz,
++    PaletteFalse, PaletteBW1, PaletteBW2, Zoom, SetChipRange
++};
++struct RootCmd {
++    RootCmdType type = RootCmdType::None;
++    double a = 0, b = 0, c = 0, d = 0; // zoom coords / chip range
++};
++std::mutex gCmdMtx;
++std::vector<RootCmd> gCmds;
++
++static void pushRootCmd(RootCmd cmd) {
++    std::lock_guard<std::mutex> lock(gCmdMtx);
++    gCmds.push_back(cmd);
++}
++
++// Executes one queued ROOT command. Only ever called from the ROOT thread.
++static void execRootCmd(const RootCmd &cmd) {
++    switch (cmd.type) {
++    case RootCmdType::ResetHis:
++        historeset();
++        break;
++    case RootCmdType::ResetAxes:
++        axisreset();
++        break;
++    case RootCmdType::Surf:
++        his1000->SetOption("surf2z");
++#ifdef JFSTRX
++        disp1000->SetOption("surf2z");
++#endif
++        Plot2DHistos();
++        break;
++    case RootCmdType::Colz:
++        his1000->SetOption("colz");
++#ifdef JFSTRX
++        disp1000->SetOption("colz");
++#endif
++        if (bw_flag) { bw_flag = false; LoadPaletteFalse(); }
++        Plot2DHistos();
++        break;
++    case RootCmdType::PaletteFalse:
++        LoadPaletteFalse();
++        break;
++    case RootCmdType::PaletteBW1:
++        LoadPaletteBW(1.1111f); bw_flag = true;
++        break;
++    case RootCmdType::PaletteBW2:
++        LoadPaletteBW(0.9f); bw_flag = true;
++        break;
++    case RootCmdType::Zoom:
++        if (disp3000) {
++            disp3000->GetXaxis()->SetRangeUser(cmd.a, cmd.c);
++            disp3000->GetYaxis()->SetRangeUser(cmd.b, cmd.d);
++            A5->cd(); disp3000->Draw("colz");
++            box = new TBox(ROIxmin, ROIymin, ROIxmax, ROIymax);
++            box->SetLineColor(kRed); box->SetFillStyle(0);
++            box->SetLineWidth(2); box->Draw();
++            A5->Update();
++        }
++        break;
++    case RootCmdType::SetChipRange:
++        for (int ih = 0; ih < 8; ih++)
++            dispChip[ih]->GetXaxis()->SetRangeUser(cmd.a, cmd.b);
++        Plot1DHistos();
++        break;
++    default:
++        break;
++    }
++}
++
+ //#define JFSTRX
+ #ifdef JFSTRX
+ #include "jungfrauLGADStrixelsData_new.h"
+@@ -352,7 +467,7 @@ MainWindow::MainWindow(int argc, char* argv[])
+     his2000->GetZaxis()->SetRangeUser(0, 4);
+ 
+     if (dophotonmap)
+-        his3000 = new TH2F("his3000","photon map", 1024, -0.5, 1024-0.5, 512, -0.5, 512-0.5);
++        his3000 = new TH2F("his3000","photon map (cumulative)", 1024, -0.5, 1024-0.5, 512, -0.5, 512-0.5);
+     else
+         his3000 = new TH2F("his3000","raw adc", 1024, -0.5, 1024-0.5, 512, -0.5, 512-0.5);
+ 
+@@ -390,6 +505,25 @@ MainWindow::MainWindow(int argc, char* argv[])
+     if (A5 == NULL)  A5 = new TCanvas("A5","Plotting Canvas Photon Map", 750, 300, 1000, 600);
+     if (A6 == NULL)  A6 = new TCanvas("A6","Plotting Canvas LvsR", 650, 250, 650, 660);
+ 
++    // display clones painted by the ROOT thread (source histograms stay
++    // exclusive to the filling main thread)
++    disp3000 = (TH2F *)his3000->Clone("disp3000");
++    disp4500 = (TH2F *)his4500->Clone("disp4500");
++    dispLvsR = (TH2F *)hisLvsR->Clone("dispLvsR");
++    for (int ih = 0; ih < 8; ih++) {
++        char nm[64];
++        sprintf(nm, "dispChip%d", ih);
++        dispChip[ih] = (TH1I *)hchip[ih]->Clone(nm);
++    }
++#ifdef JFSTRX
++    disp1000 = (TH2F *)his1000->Clone("disp1000");
++    disp1001 = (TH2F *)his1001->Clone("disp1001");
++    disp1002 = (TH2F *)his1002->Clone("disp1002");
++    disp1060 = (TH2F *)his1060->Clone("disp1060");
++    disp1061 = (TH2F *)his1061->Clone("disp1061");
++    disp1062 = (TH2F *)his1062->Clone("disp1062");
++#endif
++
+     printhelp();
+ }
+ 
+@@ -407,7 +541,8 @@ void MainWindow::setupUI() {
+     auto *statusLayout = new QVBoxLayout(statusGroup);
+     frameLabel = new QLabel("Frame: --", statusGroup);
+     statusLabel = new QLabel("Status: idle", statusGroup);
+-    drawLabel = new QLabel("Draw every: 20 frames", statusGroup);
++    drawLabel = new QLabel(statusGroup);
++    drawLabel->setText(QString("Main: every %1 frames | ROOT: every %2 ms").arg(HDraw_every).arg(rootUpdateMs));
+     statusLayout->addWidget(frameLabel);
+     statusLayout->addWidget(statusLabel);
+     statusLayout->addWidget(drawLabel);
+@@ -488,12 +623,14 @@ void MainWindow::setupUI() {
+         HDraw_every = int(HDraw_every * 0.8f);
+         if (HDraw_every < 1) HDraw_every = 1;
+         cout << endl << "Drawing every " << HDraw_every << " frames" << endl;
+-        drawLabel->setText(QString("Draw every: %1 frames").arg(HDraw_every));
++        updateDrawLabel();
+     });
+     connect(btnSlower, &QPushButton::clicked, [this]() {
+-        HDraw_every = int(HDraw_every * 1.25f);
++        int newevery = int(HDraw_every * 1.25f);
++        if (newevery <= HDraw_every) newevery = HDraw_every + 1; // avoid 1->1
++        HDraw_every = newevery;
+         cout << endl << "Drawing every " << HDraw_every << " frames" << endl;
+-        drawLabel->setText(QString("Draw every: %1 frames").arg(HDraw_every));
++        updateDrawLabel();
+     });
+     connect(btnGainToggle, &QPushButton::clicked, [this]() {
+         gain_flag = !gain_flag;
+@@ -501,11 +638,11 @@ void MainWindow::setupUI() {
+         else { cout << "gain corr disab." << endl; statusLabel->setText("Gain: off"); }
+     });
+     connect(btnBWPalette, &QPushButton::clicked, [this]() {
+-        LoadPaletteBW(1.1111f); bw_flag = true;
++        RootCmd c; c.type = RootCmdType::PaletteBW1; pushRootCmd(c);
+         statusLabel->setText("Status: BW palette");
+     });
+     connect(btnBWPalette2, &QPushButton::clicked, [this]() {
+-        LoadPaletteBW(0.9f); bw_flag = true;
++        RootCmd c; c.type = RootCmdType::PaletteBW2; pushRootCmd(c);
+         statusLabel->setText("Status: BW palette 2");
+     });
+     connect(btnSetRanges, &QPushButton::clicked, [this]() { showRangeDialog(); });
+@@ -528,17 +665,18 @@ void MainWindow::setupUI() {
+         loadallpede();
+         statusLabel->setText("Status: all pede loaded");
+     });
+-    connect(btnResetHis, &QPushButton::clicked, [this]() { historeset(); });
+-    connect(btnResetAxis, &QPushButton::clicked, [this]() { axisreset(); });
++    connect(btnResetHis, &QPushButton::clicked, [this]() {
++        RootCmd c; c.type = RootCmdType::ResetHis; pushRootCmd(c);
++    });
++    connect(btnResetAxis, &QPushButton::clicked, [this]() {
++        RootCmd c; c.type = RootCmdType::ResetAxes; pushRootCmd(c);
++    });
+     connect(btnSurf2Z, &QPushButton::clicked, [this]() {
+-        his1000->SetOption("surf2z");
+-        Plot2DHistos();
++        RootCmd c; c.type = RootCmdType::Surf; pushRootCmd(c);
+         statusLabel->setText("Display: surf2z");
+     });
+     connect(btnColZ, &QPushButton::clicked, [this]() {
+-        his1000->SetOption("colz");
+-        if (bw_flag) { bw_flag = false; LoadPaletteFalse(); }
+-        Plot2DHistos();
++        RootCmd c; c.type = RootCmdType::Colz; pushRootCmd(c);
+         statusLabel->setText("Display: colz");
+     });
+     connect(btnG1OffsetDown, &QPushButton::clicked, [this]() {
+@@ -585,16 +723,11 @@ void MainWindow::setupUI() {
+     // Master-slave zoom: ADC master → gain slave + ROOT canvases
+     m_adcView->onZoomChanged = [this](double x1, double y1, double x2, double y2) {
+         m_gainView->setViewport(x1, y1, x2, y2);
+-        if (his3000) {
+-            his3000->GetXaxis()->SetRangeUser(x1, x2);
+-            his3000->GetYaxis()->SetRangeUser(y1, y2);
+-            A5->cd(); his3000->Draw("colz");
+-            box = new TBox(ROIxmin, ROIymin, ROIxmax, ROIymax);
+-            box->SetLineColor(kRed); box->SetFillStyle(0);
+-            box->SetLineWidth(2); box->Draw();
+-            A5->Update();
+-        }
+-        gSystem->ProcessEvents();
++        // ROOT canvas update is executed by the ROOT thread (command queue)
++        RootCmd c;
++        c.type = RootCmdType::Zoom;
++        c.a = x1; c.b = y1; c.c = x2; c.d = y2;
++        pushRootCmd(c);
+     };
+ }
+ 
+@@ -614,6 +747,11 @@ void MainWindow::start() {
+     connect(statusTimer, &QTimer::timeout, this, &MainWindow::updateStatusBar);
+     statusTimer->start(1000);
+ 
++    // ROOT redraw thread: plots on a configurable period (rootUpdateMs),
++    // only when at least one frame was processed in that period.
++    rootThreadRun.store(true);
++    rootDrawThread = new std::thread(&MainWindow::rootDrawLoop, this);
++
+     statusLabel->setText("Status: running");
+ }
+ 
+@@ -624,10 +762,74 @@ void MainWindow::stop() {
+         delete workerThread;
+         workerThread = nullptr;
+     }
++    rootThreadRun.store(false);
++    if (rootDrawThread && rootDrawThread->joinable()) {
++        rootDrawThread->join();
++        delete rootDrawThread;
++        rootDrawThread = nullptr;
++    }
+     if (processTimer) { processTimer->stop(); delete processTimer; processTimer = nullptr; }
+     if (statusTimer)  { statusTimer->stop();  delete statusTimer;  statusTimer = nullptr; }
+ }
+ 
++void MainWindow::rootDrawLoop() {
++    auto next = std::chrono::steady_clock::now();
++    while (rootThreadRun.load()) {
++        // service loop every ~20 ms: commands + ROOT GUI events, with
++        // periodic plotting on the rootUpdateMs cadence
++        while (rootThreadRun.load() &&
++               std::chrono::steady_clock::now() < next)
++            std::this_thread::sleep_for(std::chrono::milliseconds(20));
++        if (!rootThreadRun.load())
++            break;
++
++        // 1) execute any user ROOT commands (from the Qt thread)
++        for (;;) {
++            RootCmd cmd;
++            {
++                std::lock_guard<std::mutex> lock(gCmdMtx);
++                if (gCmds.empty()) break;
++                cmd = gCmds.front();
++                gCmds.erase(gCmds.begin());
++            }
++            execRootCmd(cmd);
++        }
++
++        // 2) ROOT GUI event processing lives HERE (single owner thread),
++        //    keeping ROOT canvases interactive (zoom etc.)
++        gSystem->ProcessEvents();
++
++        // 3) periodic plot
++        auto period = std::chrono::milliseconds(rootUpdateMs);
++        if (period.count() < 50)
++            period = std::chrono::milliseconds(50);
++        next = std::chrono::steady_clock::now() + period;
++
++        if (gFramesForRoot.exchange(0) == 0)
++            continue;
++
++        // snapshot the source accumulators into the display clones that the
++        // canvases actually paint (never paint the objects being filled)
++        copyBins(disp3000, his3000);
++        copyBins(disp4500, his4500);
++        copyBins(dispLvsR, hisLvsR);
++        for (int ih = 0; ih < 8; ih++)
++            copyBins(dispChip[ih], hchip[ih]);
++#ifdef JFSTRX
++        copyBins(disp1000, his1000); copyBins(disp1001, his1001);
++        copyBins(disp1002, his1002); copyBins(disp1060, his1060);
++        copyBins(disp1061, his1061); copyBins(disp1062, his1062);
++#endif
++
++        Plot2DHistos();
++        Plot1DHistos();
++        // keep the TvsB/LvsR scatter windows fresh: reset them on the main
++        // thread before the first fill of the next period (the photon map
++        // stays cumulative)
++        gResetPending.store(true);
++    }
++}
++
+ void MainWindow::processData() {
+     if (!threadData.data_ready.load()) return;
+ 
+@@ -635,181 +837,172 @@ void MainWindow::processData() {
+     memcpy(image_data, threadData.image_data_work, NCH*2*sizeof(short));
+     threadData.data_ready.store(false);
+ 
+-    if (goout == 0) {
+-        gSystem->ProcessEvents(); // keep ROOT canvases interactive while paused
+-        return;
+-    }
++    if (goout == 0)
++        return; // ROOT canvases stay interactive via the ROOT thread
+ 
+-    // Process frame (same logic as original main loop)
++
++    // Process frame
+     memcpy(&croi, &zHeader.detSpec1, 8);
+     ROIxmin = croi.xmin; ROIxmax = croi.xmax;
+     ROIymin = croi.ymin; ROIymax = croi.ymax;
+     framesinstream++;
+-
+     show2Ds = ((framesinstream % HDraw_every) == (HDraw_every - 1));
+-    fill1Ds = fillPerFrame || show2Ds;
+-    static int mainDrawCount = 0;
+-    bool doRootDraw = false;
+-    if (show2Ds) {
+-        mainDrawCount++;
+-        doRootDraw = ((mainDrawCount % rootDrawDivider) == 0);
++
++    processedf++;
++    gFramesForRoot.fetch_add(1);
++
++    // -----------------------------------------------------------------
++    // ROOT histogram FILLING happens on EVERY processed frame.
++    // Only the PLOTTING is periodic (dedicated thread, rootUpdateMs).
++    // Histograms are accumulated without locking; the rare transient
++    // read-during-fill overlap with the ROOT plot thread is acceptable
++    // for a realtime display (no GUI blocking ever).
++    // -----------------------------------------------------------------
++
++    // open a fresh accumulation window after each ROOT redraw
++    // Per-second ROOT redraw: keep the scatter correlations (TvsB/LvsR)
++    // windowed to the last second, but the PHOTON MAP (and hchptr, JFSTRX
++    // images) is CUMULATIVE: it accumulates until "Reset His" is pressed.
++    if (gResetPending.exchange(false)) {
++        his4500->Reset();
++        hisLvsR->Reset();
+     }
+-    bool doFill = fillPerFrame || show2Ds || dophotonmap;
+ 
+-    if (doRootDraw) {
+-#ifdef JFSTRX
+-        his1000->Reset(); his1001->Reset(); his1002->Reset();
+-        his1060->Reset(); his1061->Reset(); his1062->Reset();
+-#endif
+-        if (!dophotonmap) his3000->Reset();
++    // 1) per-frame ADC/gain image buffers (fed to fast widgets, TvsB/LvsR)
++    for (i = 0; i < NCH; i++) {
++        adcvalue = image_data[i] & 0x3fff;
++        gain = (image_data[i] & 0xc000) ? ((image_data[i] >> 14) & 0x3) : 0;
++        float disp = float(adcvalue) - fpeded[i];
++        if ((i % 256 == 0) || (i % 256 == 255)) disp = int(disp / factor);
++        if ((i / 1024 == 255) || (i / 1024 == 256) || (i / 1024 == 767) || (i / 1024 == 768))
++            disp = int(disp / factor);
++        adc_image[i] = disp;
++        gain_image[i] = gain;
+     }
+ 
+-    if (doFill) {
+-        processedf++;
+-        for (i = 0; i < NCH; i++) {
+-            adcvalue = image_data[i] & 0x3fff;
+-            gain = (image_data[i] & 0xc000) ? ((image_data[i] >> 14) & 0x3) : 0;
+-
+-            if (pede_flag) {
+-                if (gain_flag) {
+-                    if (gain == 0 || !hasallpede)
+-                        adcpedecorr = (adcvalue & 0x3fff) * fgaind[i] - fpeded[i] * fgaind[i];
+-                    if (gain == 1 && hasallpede)
+-                        adcpedecorr = (fpedeG1d[i] * fgaind[i] + G1Poffset - adcvalue * fgaind[i]) * 30.0;
+-                    if (gain == 3 && hasallpede)
+-                        adcpedecorr = (fpedeG2d[i] * fgaind[i] + G2Poffset - adcvalue * fgaind[i]) * 340.0;
+-                } else {
+-                    if (gain == 0 || !hasallpede)
+-                        adcpedecorr = (adcvalue & 0x3fff) - fpeded[i];
+-                    if (gain == 1 && hasallpede)
+-                        adcpedecorr = (fpedeG1d[i] + G1Poffset - adcvalue) * 30.0;
+-                    if (gain == 3 && hasallpede)
+-                        adcpedecorr = (fpedeG2d[i] + G2Poffset - adcvalue) * 340.0;
+-                }
++    // 2) photon counting + PH (hchip) fills + photon map, every frame
++    for (i = 0; i < NCH; i++) {
++        adcvalue = image_data[i] & 0x3fff;
++        gain = (image_data[i] & 0xc000) ? ((image_data[i] >> 14) & 0x3) : 0;
++
++        if (pede_flag) {
++            if (gain_flag) {
++                if (gain == 0 || !hasallpede)
++                    adcpedecorr = (adcvalue & 0x3fff) * fgaind[i] - fpeded[i] * fgaind[i];
++                if (gain == 1 && hasallpede)
++                    adcpedecorr = (fpedeG1d[i] * fgaind[i] + G1Poffset - adcvalue * fgaind[i]) * 30.0;
++                if (gain == 3 && hasallpede)
++                    adcpedecorr = (fpedeG2d[i] * fgaind[i] + G2Poffset - adcvalue * fgaind[i]) * 340.0;
+             } else {
+-                adcpedecorr = float(adcvalue);
++                if (gain == 0 || !hasallpede)
++                    adcpedecorr = (adcvalue & 0x3fff) - fpeded[i];
++                if (gain == 1 && hasallpede)
++                    adcpedecorr = (fpedeG1d[i] + G1Poffset - adcvalue) * 30.0;
++                if (gain == 3 && hasallpede)
++                    adcpedecorr = (fpedeG2d[i] + G2Poffset - adcvalue) * 340.0;
+             }
++        } else {
++            adcpedecorr = float(adcvalue);
++        }
+ 
+-            if (adcpedecorr > threshold && pede_flag)
+-                hchptr[i] = hchptr[i] + (int)((adcpedecorr + threshold) / phene);
++        if (adcpedecorr > threshold && pede_flag) {
++            int inc = (int)((adcpedecorr + threshold) / phene);
++            hchptr[i] = hchptr[i] + inc;
++            if (dophotonmap)
++                his3000->Fill(float(i % 1024), float(i / 1024), inc);
++        }
+ 
+-            if (fill1Ds) {
+-                if ((i % 1024) < 1004 && (i % 1024) > 20 && (i / 1024) > 20) {
+-                    ichip = i / (256 * 256 * 4) * 4 + ((i / 256) % 4);
++        if ((i % 1024) < 1004 && (i % 1024) > 20 && (i / 1024) > 20) {
++            ichip = i / (256 * 256 * 4) * 4 + ((i / 256) % 4);
+ #ifdef JFSTRX
+-                    int new_ichip = 0;
+-                    if (ichip == 1) {
+-                        if (i <= (1024*(64-2))) new_ichip = 0;
+-                        if (i > (1024*(64+6)) && i <= (1024*(64*2-4))) new_ichip = 1;
+-                        if (i > (1024*(64*2+5))) new_ichip = 2;
+-                    }
+-                    if (ichip == 6) {
+-                        if (i <= (1024*(256+2*64-5))) new_ichip = 7;
+-                        if (i > (1024*(256+2*64+4)) && i <= (1024*(256+64*3-6))) new_ichip = 6;
+-                        if (i > (1024*(256+64*3-4))) new_ichip = 5;
+-                    }
+-                    hchip[new_ichip]->Fill(adcpedecorr, 1);
++            int new_ichip = 0;
++            if (ichip == 1) {
++                if (i <= (1024*(64-2))) new_ichip = 0;
++                if (i > (1024*(64+6)) && i <= (1024*(64*2-4))) new_ichip = 1;
++                if (i > (1024*(64*2+5))) new_ichip = 2;
++            }
++            if (ichip == 6) {
++                if (i <= (1024*(256+2*64-5))) new_ichip = 7;
++                if (i > (1024*(256+2*64+4)) && i <= (1024*(256+64*3-6))) new_ichip = 6;
++                if (i > (1024*(256+64*3-4))) new_ichip = 5;
++            }
++            hchip[new_ichip]->Fill(adcpedecorr, 1);
+ #else
+-                    hchip[ichip]->Fill(adcpedecorr, 1);
++            hchip[ichip]->Fill(adcpedecorr, 1);
+ #endif
+-                    adcpedecorrold = adcpedecorr;
+-                }
++            adcpedecorrold = adcpedecorr;
++        }
++    }
++
++    // 3) T vs B / L vs R scatter, every frame (from the current frame)
++    for (ipx = 0; ipx < 1024; ipx++) {
++        his4500->Fill(adc_image[ipx + (512-21)*1024], adc_image[ipx + 20*1024]);
++    }
++    for (ipy = 0; ipy < 512; ipy++) {
++        hisLvsR->Fill(adc_image[20 + ipy*1024], adc_image[1024-21 + ipy*1024]);
++    }
++
++    // 4) raw-ADC photon map accumulation (kept on the display cadence:
++    //    one full-frame add per displayed frame is plenty for raw mode)
++    if (!dophotonmap && show2Ds) {
++        for (ipx = 0; ipx < 1024; ipx++) {
++            for (ipy = 0; ipy < 512; ipy++) {
++                his3000->Fill(float(ipx), float(ipy),
++                              adc_image[ipx + ipy * 1024]);
+             }
+         }
++    }
+ 
+-        if (show2Ds) {
+ #ifdef JFSTRX
+-            jungfrauLGADStrixelsData *decoder = new jungfrauLGADStrixelsData();
+-            int group;
+-            for (ipx = 0; ipx < nx; ipx++) {
+-                for (ipy = 0; ipy < ny; ipy++) {
+-                    i = int(((decoder->dataMap[ipy][ipx]) - sizeof(header)) / 2);
+-                    group = decoder->groupmap[ipy][ipx];
+-                    value = (image_data[i] & 0x3fff) - fpeded[i];
+-                    static const int mc1g1y_start = 0;
+-                    static const int mc1g2y_start = g1_nrows;
+-                    static const int mc1g3y_start = g1_nrows + g2_nrows;
+-                    static const int mc6g3y_start = g1_nrows + g2_nrows + g3_nrows;
+-                    static const int mc6g2y_start = mc6g3y_start + g3_nrows;
+-                    static const int mc6g1y_start = mc6g3y_start + g3_nrows + g2_nrows;
+-                    if (group == 0) {
+-                        if (ipy < 165) his1000->Fill(float(ipx), float(ipy - mc1g1y_start), value);
+-                        if (ipy >= mc6g1y_start) his1060->Fill(float(ipx), float(ipy - mc6g1y_start), value);
+-                    }
+-                    if (group == 1) {
+-                        if (ipy < (165+320))
+-                            his1001->Fill(float(ipx), float(ipy - mc1g2y_start), value);
+-                        if (ipy >= mc6g2y_start && ipy < mc6g1y_start) {
+-                            his4500->Fill(value, oldvalue, 1.0);
+-                            oldvalue = value;
+-                            his1061->Fill(float(ipx), float(ipy - mc6g2y_start), value);
+-                        }
+-                    }
+-                    if (group == 2) {
+-                        if (ipy < (165+320+476))
+-                            his1002->Fill(float(ipx), float(ipy - mc1g3y_start), value);
+-                        if (ipy >= mc6g3y_start && ipy < mc6g2y_start)
+-                            his1062->Fill(float(ipx), float(ipy - mc6g3y_start), value);
+-                    }
+-                    gain_image[ipx + ipy * nx] = gain;
+-                }
+-            }
+-            // T vs B / L vs R
+-            his4500->Reset();
+-            for (ipx = 0; ipx < nx; ipx++) {
+-                his4500->Fill(adc_image[ipx + (ny-21)*nx], adc_image[ipx + 20*nx]);
+-            }
+-            hisLvsR->Reset();
++    if (show2Ds) {
++        jungfrauLGADStrixelsData *decoder = new jungfrauLGADStrixelsData();
++        int group;
++        for (ipx = 0; ipx < nx; ipx++) {
+             for (ipy = 0; ipy < ny; ipy++) {
+-                hisLvsR->Fill(adc_image[20 + ipy*nx], adc_image[nx-21 + ipy*nx]);
+-            }
+-            m_adcView->setImage(adc_image, nx, ny);
+-            m_gainView->setImage(gain_image, nx, ny);
+-#else
+-            for (ipx = 0; ipx < nx; ipx++) {
+-                for (ipy = 0; ipy < ny; ipy++) {
+-                    i = ipx + ipy * 1024;
+-                    value = (image_data[i] & 0x3fff) - fpeded[i];
+-                    if ((i % 256 == 0) || (i % 256 == 255)) value = int(value / factor);
+-                    if ((i / 1024 == 255) || (i / 1024 == 256) || (i / 1024 == 767) || (i / 1024 == 768))
+-                        value = int(value / factor);
+-                    adc_image[ipx + ipy * 1024] = value;
+-                    gain_image[ipx + ipy * 1024] = gain;
++                i = int(((decoder->dataMap[ipy][ipx]) - sizeof(header)) / 2);
++                group = decoder->groupmap[ipy][ipx];
++                value = (image_data[i] & 0x3fff) - fpeded[i];
++                static const int mc1g1y_start = 0;
++                static const int mc1g2y_start = g1_nrows;
++                static const int mc1g3y_start = g1_nrows + g2_nrows;
++                static const int mc6g3y_start = g1_nrows + g2_nrows + g3_nrows;
++                static const int mc6g2y_start = mc6g3y_start + g3_nrows;
++                static const int mc6g1y_start = mc6g3y_start + g3_nrows + g2_nrows;
++                if (group == 0) {
++                    if (ipy < 165) his1000->Fill(float(ipx), float(ipy - mc1g1y_start), value);
++                    if (ipy >= mc6g1y_start) his1060->Fill(float(ipx), float(ipy - mc6g1y_start), value);
+                 }
+-            }
+-#endif
+-            for (ipx = 0; ipx < 1024; ipx++) {
+-                for (ipy = 0; ipy < 512; ipy++) {
+-                    i = ipx + ipy * 1024;
+-                    value = (image_data[i] & 0x3fff) - fpeded[i];
+-                    if (!dophotonmap) his3000->Fill(float(ipx), float(ipy), value);
+-                    if (dophotonmap) his3000->Fill(float(ipx), float(ipy), float(hchptr[i]));
++                if (group == 1) {
++                    if (ipy < (165+320))
++                        his1001->Fill(float(ipx), float(ipy - mc1g2y_start), value);
++                    if (ipy >= mc6g2y_start && ipy < mc6g1y_start) {
++                        his4500->Fill(value, oldvalue, 1.0);
++                        oldvalue = value;
++                        his1061->Fill(float(ipx), float(ipy - mc6g2y_start), value);
++                    }
+                 }
++                if (group == 2) {
++                    if (ipy < (165+320+476))
++                        his1002->Fill(float(ipx), float(ipy - mc1g3y_start), value);
++                    if (ipy >= mc6g3y_start && ipy < mc6g2y_start)
++                        his1062->Fill(float(ipx), float(ipy - mc6g3y_start), value);
++                }
++                gain_image[ipx + ipy * nx] = gain;
+             }
+-            // T vs B / L vs R
+-            his4500->Reset();
+-            for (ipx = 0; ipx < 1024; ipx++) {
+-                his4500->Fill(adc_image[ipx + (512-21)*1024], adc_image[ipx + 20*1024]);
+-            }
+-            hisLvsR->Reset();
+-            for (ipy = 0; ipy < 512; ipy++) {
+-                hisLvsR->Fill(adc_image[20 + ipy*1024], adc_image[1024-21 + ipy*1024]);
+-            }
+-            m_adcView->setImage(adc_image, nx, ny);
+-            m_gainView->setImage(gain_image, nx, ny);
+-        }
+-
+-        if (doRootDraw) {
+-            for (i = 0; i < NCH; i++) hchptr[i] = 0;
+-            Plot2DHistos();
+-            Plot1DHistos();
+         }
++        m_adcView->setImage(adc_image, nx, ny);
++        m_gainView->setImage(gain_image, nx, ny);
++    }
++#else
++    if (show2Ds) {
++        m_adcView->setImage(adc_image, nx, ny);
++        m_gainView->setImage(gain_image, nx, ny);
+     }
++#endif
+ 
+-    if ((framesinstream % NPRO) == NPRO - 1)
+-        gSystem->ProcessEvents();
+ }
+ 
++
+ void MainWindow::closeEvent(QCloseEvent *event) {
+     stop();
+     event->accept();
+@@ -852,9 +1045,10 @@ void MainWindow::setRanges(int amin, int amax, int pmin, int pmax, int cmin, int
+     fixranges = true;
+     cout << "Ranges set: ADC [" << adcmin << "," << adcmax << "] PM [" << pmmin << "," << pmmax
+          << "] ChipX [" << chipxmin << "," << chipxmax << "]" << endl;
+-    for (int ih = 0; ih < 8; ih++) {
+-        hchip[ih]->GetXaxis()->SetRangeUser(chipxmin, chipxmax);
+-    }
++    RootCmd c;
++    c.type = RootCmdType::SetChipRange;
++    c.a = chipxmin; c.b = chipxmax;
++    pushRootCmd(c);
+ }
+ 
+ void MainWindow::showRateDialog() {
+@@ -867,26 +1061,19 @@ void MainWindow::showRateDialog() {
+     mainRateSpin->setValue(HDraw_every);
+     form->addRow("Main image (frames):", mainRateSpin);
+ 
+-    auto *rootMulSpin = new QSpinBox(&dialog);
+-    rootMulSpin->setRange(1, 1000);
+-    rootMulSpin->setValue(rootDrawDivider);
+-    form->addRow("ROOT plots (x main draws):", rootMulSpin);
+-
+-    auto *effLabel = new QLabel(QString("= every %1 frames").arg(HDraw_every * rootDrawDivider), &dialog);
+-    form->addRow("Effective ROOT rate:", effLabel);
++    auto *rootMsSpin = new QSpinBox(&dialog);
++    rootMsSpin->setRange(50, 60000);
++    rootMsSpin->setSingleStep(100);
++    rootMsSpin->setValue(rootUpdateMs);
++    form->addRow("ROOT update (ms):", rootMsSpin);
+ 
+-    auto *fillChk = new QCheckBox("Fill histograms every received frame", &dialog);
+-    fillChk->setChecked(fillPerFrame);
+-    form->addRow(fillChk);
++    auto *effLabel = new QLabel(QString("ROOT redraws every %1 ms when frames arrived").arg(rootUpdateMs), &dialog);
++    effLabel->setWordWrap(true);
++    form->addRow(effLabel);
+ 
+-    // Update effective label when spin values change
+-    QObject::connect(mainRateSpin, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+-            [mainRateSpin, rootMulSpin, effLabel](int) {
+-        effLabel->setText(QString("= every %1 frames").arg(mainRateSpin->value() * rootMulSpin->value()));
+-    });
+-    QObject::connect(rootMulSpin, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+-            [mainRateSpin, rootMulSpin, effLabel](int) {
+-        effLabel->setText(QString("= every %1 frames").arg(mainRateSpin->value() * rootMulSpin->value()));
++    QObject::connect(rootMsSpin, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged),
++            [effLabel](int ms) {
++        effLabel->setText(QString("ROOT redraws every %1 ms when frames arrived").arg(ms));
+     });
+ 
+     auto *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
+@@ -896,12 +1083,9 @@ void MainWindow::showRateDialog() {
+ 
+     if (dialog.exec() == QDialog::Accepted) {
+         HDraw_every = mainRateSpin->value();
+-        rootDrawDivider = rootMulSpin->value();
+-        fillPerFrame = fillChk->isChecked();
+-        drawLabel->setText(QString("Draw every: %1  ROOT: %2x%1=%3")
+-            .arg(HDraw_every).arg(rootDrawDivider).arg(HDraw_every * rootDrawDivider));
+-        cout << "Rates: main=" << HDraw_every << " rootMul=" << rootDrawDivider
+-             << " fillPerFrame=" << fillPerFrame << endl;
++        rootUpdateMs = rootMsSpin->value();
++        updateDrawLabel();
++        cout << "Rates: main=" << HDraw_every << " rootMs=" << rootUpdateMs << endl;
+     }
+ }
+ 
+@@ -909,6 +1093,12 @@ void MainWindow::updateStatusBar() {
+     frameLabel->setText(QString("Frame: %1").arg(framesinstream));
+ }
+ 
++void MainWindow::updateDrawLabel() {
++    if (drawLabel)
++        drawLabel->setText(QString("Main: every %1 frames | ROOT: every %2 ms")
++                               .arg(HDraw_every).arg(rootUpdateMs));
++}
++
+ 
+ // ── Main ────────────────────────────────────────────────────────────────────
+ int main(int argc, char* argv[]) 
+@@ -956,59 +1146,61 @@ void printhelp(){
+   cout<< endl << "s=start/pause| p/n=getnewpede/raw | o/O=read/save pede | n=nopede(raw) | r/R=rst His/Axis | +/- = faster/slower ref. |q=exit | U/C sUrf2/Colz  " <<endl;
+ }
+ 
+-void historeset(){
+-  his4500->Reset();
+-  hisLvsR->Reset();
+-  his3000->Reset();
+-  for (i=0;i<8;i++) {
+-    hchip[i]->Reset();
+-  }
+-  Plot2DHistos();
+-  Plot1DHistos();
+-}
+-
+-void axisreset(){
+-  fixranges=false;
++ void historeset(){ // ROOT-thread only (executed via command queue)
++   his4500->Reset();
++   hisLvsR->Reset();
++   his3000->Reset();
++   for (i=0;i<8;i++) {
++     hchip[i]->Reset();
++   }
++   // keep display clones consistent
++   copyBins(disp3000, his3000);
++   copyBins(disp4500, his4500);
++   copyBins(dispLvsR, hisLvsR);
++   for (int ih = 0; ih < 8; ih++)
++       copyBins(dispChip[ih], hchip[ih]);
++   Plot2DHistos();
++   Plot1DHistos();
++ }
++
++ void axisreset(){ // ROOT-thread only (executed via command queue)
++   fixranges=false;
+ #ifdef JFSTRX
+-  his1000->GetXaxis()->UnZoom();
+-  his1000->GetYaxis()->UnZoom();
+-  his1000->GetZaxis()->UnZoom();
+-  his1001->GetXaxis()->UnZoom();
+-  his1001->GetYaxis()->UnZoom();
+-  his1001->GetZaxis()->UnZoom();
+-  his1002->GetXaxis()->UnZoom();
+-  his1002->GetYaxis()->UnZoom();
+-  his1002->GetZaxis()->UnZoom();
+-  his1060->GetXaxis()->UnZoom();
+-  his1060->GetYaxis()->UnZoom();
+-  his1060->GetZaxis()->UnZoom();
+-  his1061->GetXaxis()->UnZoom();
+-  his1061->GetYaxis()->UnZoom();
+-  his1061->GetZaxis()->UnZoom();
+-  his1062->GetXaxis()->UnZoom();
+-  his1062->GetYaxis()->UnZoom();
+-  his1062->GetZaxis()->UnZoom();
+-#else
+-  his1000->GetXaxis()->UnZoom();
+-  his1000->GetYaxis()->UnZoom();
+-  his1000->GetZaxis()->UnZoom();
++   disp1000->GetXaxis()->UnZoom();
++   disp1000->GetYaxis()->UnZoom();
++   disp1000->GetZaxis()->UnZoom();
++   disp1001->GetXaxis()->UnZoom();
++   disp1001->GetYaxis()->UnZoom();
++   disp1001->GetZaxis()->UnZoom();
++   disp1002->GetXaxis()->UnZoom();
++   disp1002->GetYaxis()->UnZoom();
++   disp1002->GetZaxis()->UnZoom();
++   disp1060->GetXaxis()->UnZoom();
++   disp1060->GetYaxis()->UnZoom();
++   disp1060->GetZaxis()->UnZoom();
++   disp1061->GetXaxis()->UnZoom();
++   disp1061->GetYaxis()->UnZoom();
++   disp1061->GetZaxis()->UnZoom();
++   disp1062->GetXaxis()->UnZoom();
++   disp1062->GetYaxis()->UnZoom();
++   disp1062->GetZaxis()->UnZoom();
+ #endif
+-  his2000->GetXaxis()->UnZoom();
+-  his2000->GetYaxis()->UnZoom();
+-  his3000->GetZaxis()->UnZoom();
+-  for (i=0;i<8;i++) {
+-    hchip[i]->GetXaxis()->UnZoom();
+-    hchip[i]->GetYaxis()->UnZoom();
+-  }
+-  his4500->GetXaxis()->UnZoom(); 
+-  his4500->GetYaxis()->UnZoom(); 
+-  his4500->GetZaxis()->UnZoom(); 
+-  hisLvsR->GetXaxis()->UnZoom(); 
+-  hisLvsR->GetYaxis()->UnZoom(); 
+-  hisLvsR->GetZaxis()->UnZoom(); 
+-  Plot2DHistos();
+-  Plot1DHistos();
+-}
++   disp3000->GetXaxis()->UnZoom();
++   disp3000->GetYaxis()->UnZoom();
++   disp3000->GetZaxis()->UnZoom();
++   for (i=0;i<8;i++) {
++     dispChip[i]->GetXaxis()->UnZoom();
++     dispChip[i]->GetYaxis()->UnZoom();
++   }
++   disp4500->GetXaxis()->UnZoom(); 
++   disp4500->GetYaxis()->UnZoom(); 
++   disp4500->GetZaxis()->UnZoom(); 
++   dispLvsR->GetXaxis()->UnZoom(); 
++   dispLvsR->GetYaxis()->UnZoom(); 
++   dispLvsR->GetZaxis()->UnZoom(); 
++   Plot2DHistos();
++   Plot1DHistos();
++ }
+ 
+ void LoadPaletteFalse(){
+   const Int_t NRGBs = 5;
+@@ -1043,43 +1235,43 @@ void LoadPaletteBW(float gammatune){
+ }
+ 
+ void Plot1DHistos(void){
+-  if (hchip[0]->GetXaxis()->GetLast()!=oldh0xlast){
+-    oldh0xlast=hchip[0]->GetXaxis()->GetLast();
+-    oldh0xfirst=hchip[0]->GetXaxis()->GetFirst();
+-    for (int ipad=1; ipad<8;ipad++) {
+-      hchip[ipad]->GetXaxis()->SetRange(oldh0xfirst,oldh0xlast);
+-    }
+-  }    
+-  for (int ipad=0; ipad<8;ipad++) {
+-    A4->cd(ipad+1);  
+-    gStyle->SetOptStat(1);    gPad->SetLogy();
+-     hchip[ipad%4+(1-int(ipad/4))*4]->Draw();
+-  }
+-  A4->cd();
+-  A4->Update();
+-}
++   if (dispChip[0]->GetXaxis()->GetLast()!=oldh0xlast){
++     oldh0xlast=dispChip[0]->GetXaxis()->GetLast();
++     oldh0xfirst=dispChip[0]->GetXaxis()->GetFirst();
++     for (int ipad=1; ipad<8;ipad++) {
++       dispChip[ipad]->GetXaxis()->SetRange(oldh0xfirst,oldh0xlast);
++     }
++   }    
++   for (int ipad=0; ipad<8;ipad++) {
++     A4->cd(ipad+1);  
++     gStyle->SetOptStat(1);    gPad->SetLogy();
++      dispChip[ipad%4+(1-int(ipad/4))*4]->Draw();
++   }
++   A4->cd();
++   A4->Update();
++ }
+ 
+ void Plot2DHistos(void){
+   gStyle->SetOptStat(0);
+   if (fixranges) {
+-    his3000->GetZaxis()->SetRangeUser(float(pmmin),float(pmmax));
++    disp3000->GetZaxis()->SetRangeUser(float(pmmin),float(pmmax));
+   }
+ #ifdef JFSTRX
+   p5->cd();
+-  his1000->Draw("colz");
++  disp1000->Draw("colz");
+   p3->cd();
+-  his1001->Draw("colz");
++  disp1001->Draw("colz");
+   p1->cd();
+-  his1002->Draw("colz");
++  disp1002->Draw("colz");
+   p2->cd();
+-  his1060->Draw("colz");
++  disp1060->Draw("colz");
+   p4->cd();
+-  his1061->Draw("colz");
++  disp1061->Draw("colz");
+   p6->cd();
+-  his1062->Draw("colz");
++  disp1062->Draw("colz");
+ #endif
+   A5->cd();
+-  his3000->Draw("colz");
++  disp3000->Draw("colz");
+   box = new TBox(ROIxmin,ROIymin,ROIxmax,ROIymax);
+   box->SetLineColor(kRed);
+   box->SetFillStyle(0);
+@@ -1090,8 +1282,8 @@ void Plot2DHistos(void){
+   if (!A6->GetListOfPrimitives() || !A6->GetListOfPrimitives()->GetSize()) {
+     A6->Divide(1,2);
+   }
+-  A6->cd(1); his4500->Draw("colz");
+-  A6->cd(2); hisLvsR->Draw("colz");
++  A6->cd(1); disp4500->Draw("colz");
++  A6->cd(2); dispLvsR->Draw("colz");
+   A6->Update();
+ }
+ 
+diff --git a/slsDetectorCalibration/jungfrauExecutables/onlinedisp_zmq.h b/slsDetectorCalibration/jungfrauExecutables/onlinedisp_zmq.h
+index 14c593e8b..082f9cdf0 100644
+--- a/slsDetectorCalibration/jungfrauExecutables/onlinedisp_zmq.h
++++ b/slsDetectorCalibration/jungfrauExecutables/onlinedisp_zmq.h
+@@ -173,7 +173,6 @@ bool gain_flag;
+ bool bw_flag;
+ bool fill2Ds;
+ bool show2Ds;
+-bool fill1Ds;
+ bool pede_flag;
+ bool dophotonmap;
+ 
+@@ -230,8 +229,7 @@ void readpede(void);
+ void tryconnect(void) ;
+ 
+ int HDraw_every;
+-int rootDrawDivider = 10;
+-bool fillPerFrame = false;
++int rootUpdateMs = 1000;
+ 
+ 
+ float  oldh0xfirst,oldh0xlast;
+@@ -317,15 +315,21 @@ private:
+     void processData();
+     void startWorker();
+     void stopWorker();
++    void rootDrawLoop();
+     void showRangeDialog();
+     void showRateDialog();
+     void updateStatusBar();
++    void updateDrawLabel();
+     void setRanges(int adcmin, int adcmax, int pmmin, int pmmax, int cmin = 0, int cmax = 8500);
+ 
+     // Worker thread
+     std::thread *workerThread = nullptr;
+     std::atomic<bool> workerRunning{false};
+ 
++    // ROOT plotting thread (periodic redraw off the Qt thread)
++    std::thread *rootDrawThread = nullptr;
++    std::atomic<bool> rootThreadRun{false};
++
+     // Thread-safe data
+     ThreadData threadData;
+ 
+diff --git a/zsh_autocomplete.sh b/zsh_autocomplete.sh
+deleted file mode 120000
+index 143520002..000000000
+--- a/zsh_autocomplete.sh
++++ /dev/null
+@@ -1 +0,0 @@
+-slsDetectorSoftware/generator/autocomplete/zsh_autocomplete.sh
+\ No newline at end of file
+diff --git a/zsh_autocomplete.sh b/zsh_autocomplete.sh
+new file mode 100644
+index 000000000..64598dd2b
+--- /dev/null
++++ b/zsh_autocomplete.sh
+@@ -0,0 +1,3358 @@
++# GENERATED FILE - DO NOT EDIT
++# ANY CHANGES TO THIS FILE WILL BE OVERWRITTEN
++
++_sd() {
++
++
++local SLS_COMMANDS=" acquire activate adcclk adcenable adcenable10g adcindex adcinvert adclist adcname adcphase adcpipeline adcreg adcvpp apulse asamples autocompdisable badchannels blockingtrigger burstmode burstperiod bursts burstsl bustest cdsgain chipversion clearbit clearbusy clientversion clkdiv clkfreq clkphase collectionmode column compdisabletime confadc config configtransceiver counters currentsource dac dacindex daclist dacname dacvalues datastream dbitclk dbitphase dbitpipeline defaultdac defaultpattern delay delayl detectorserverversion detsize diodelay dpulse dr drlist dsamples execcommand exptime exptime1 exptime2 exptime3 extrastoragecells extsampling extsamplingsrc extsig fformat filtercells filterresistor findex firmwaretest firmwareversion fliprows flowcontrol10g fmaster fname foverwrite fpath framecounter frames framesl frametime free fwrite gaincaps gainmode gappixels gatedelay gatedelay1 gatedelay2 gatedelay3 gates getbit hardwareversion highvoltage hostname im_a im_b im_c im_d im_io imagetest initialchecks inj_ch interpolation interruptsubframe kernelversion lastclient led lock master maxadcphaseshift maxclkphaseshift maxdbitphaseshift measuredperiod measuredsubperiod moduleid nextframenumber nmod numinterfaces overflow packageversion parallel parameters partialreset patfname patioctrl patlimits patloop patloop0 patloop1 patloop2 patmask patnloop patnloop0 patnloop1 patnloop2 patsetbit pattern patternstart patwait patwait0 patwait1 patwait2 patwaittime patwaittime0 patwaittime1 patwaittime2 patword pedestalmode period periodl polarity port powerchip powerindex powerlist powername powervalues programfpga pulse pulsechip pulsenmove pumpprobe quad ratecorr readnrows readout readoutspeed readoutspeedlist rebootcontroller reg resetdacs resetfpga romode row runclk runtime rx_arping rx_clearroi rx_dbitlist rx_dbitoffset rx_dbitreorder rx_discardpolicy rx_fifodepth rx_frameindex rx_framescaught rx_framesperfile rx_hostname rx_jsonaddheader rx_jsonpara rx_lastclient rx_lock rx_missingpackets rx_padding rx_printconfig rx_realudpsocksize rx_roi rx_silent rx_start rx_status rx_stop rx_tcpport rx_threads rx_udpsocksize rx_version rx_zmqfreq rx_zmqhwm rx_zmqip rx_zmqport rx_zmqstartfnum rx_zmqstream samples savepattern scan scanerrmsg selinterface serialnumber setbit settings settingslist settingspath signalindex signallist signalname sleep slowadc slowadcindex slowadclist slowadcname slowadcvalues start status stop stopport storagecell_delay storagecell_start subdeadtime subexptime sync syncclk temp_10ge temp_adc temp_control temp_dcdc temp_event temp_fpga temp_fpgaext temp_fpgafl temp_fpgafr temp_slowadc temp_sodl temp_sodr temp_threshold templist tempvalues tengiga threshold thresholdnotb timing timing_info_decoder timinglist timingsource top transceiverenable trigger triggers triggersl trimbits trimen trimval tsamples txdelay txdelay_frame txdelay_left txdelay_right type udp_cleardst udp_dstip udp_dstip2 udp_dstlist udp_dstmac udp_dstmac2 udp_dstport udp_dstport2 udp_firstdst udp_numdst udp_reconfigure udp_srcip udp_srcip2 udp_srcmac udp_srcmac2 udp_validate update updatedetectorserver updatekernel updatemode user v_a v_b v_c v_chip v_d v_io v_limit vchip_comp_adc vchip_comp_fe vchip_cs vchip_opa_1st vchip_opa_fd vchip_ref_comp_fe versions veto vetoalg vetofile vetophoton vetoref vetostream virtual vm_a vm_b vm_c vm_d vm_io zmqhwm zmqip zmqport "
++__acquire() {
++FCN_RETURN=""
++return 0
++}
++__activate() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__adcclk() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__adcenable() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__adcenable10g() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__adcindex() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__adcinvert() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__adclist() {
++FCN_RETURN=""
++return 0
++}
++__adcname() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__adcphase() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="deg"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="deg"
++fi
++fi
++return 0
++}
++__adcpipeline() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__adcreg() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__adcvpp() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="mV mv"
++fi
++fi
++return 0
++}
++__apulse() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__asamples() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__autocompdisable() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__badchannels() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__blockingtrigger() {
++FCN_RETURN=""
++return 0
++}
++__burstmode() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="burst_external burst_internal cw_external cw_internal"
++fi
++fi
++return 0
++}
++__burstperiod() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++return 0
++}
++__bursts() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__burstsl() {
++FCN_RETURN=""
++return 0
++}
++__bustest() {
++FCN_RETURN=""
++return 0
++}
++__cdsgain() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__chipversion() {
++FCN_RETURN=""
++return 0
++}
++__clearbit() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN="--validate"
++fi
++fi
++return 0
++}
++__clearbusy() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN="--validate"
++fi
++fi
++return 0
++}
++__clientversion() {
++FCN_RETURN=""
++return 0
++}
++__clkdiv() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__clkfreq() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__clkphase() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="deg"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN="deg"
++fi
++fi
++return 0
++}
++__collectionmode() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="electron hole"
++fi
++fi
++return 0
++}
++__column() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__compdisabletime() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++return 0
++}
++__confadc() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__config() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++IS_PATH=1
++fi
++fi
++return 0
++}
++__configtransceiver() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++IS_PATH=1
++fi
++fi
++return 0
++}
++__counters() {
++FCN_RETURN=""
++return 0
++}
++__currentsource() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="fix nofix"
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "5" ]]; then
++FCN_RETURN="low normal"
++fi
++fi
++return 0
++}
++__dac() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="mV mv"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN="mV mv"
++fi
++fi
++return 0
++}
++__dacindex() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__daclist() {
++FCN_RETURN=""
++return 0
++}
++__dacname() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__dacvalues() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="mV mv"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="mV mv"
++fi
++fi
++return 0
++}
++__datastream() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="bottom left right top"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="bottom left right top"
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__dbitclk() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__dbitphase() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="deg"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="deg"
++fi
++fi
++return 0
++}
++__dbitpipeline() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__defaultdac() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
++fi
++fi
++return 0
++}
++__defaultpattern() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
++fi
++fi
++return 0
++}
++__delay() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++return 0
++}
++__delayl() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++return 0
++}
++__detectorserverversion() {
++FCN_RETURN=""
++return 0
++}
++__detsize() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__diodelay() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__dpulse() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__dr() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__drlist() {
++FCN_RETURN=""
++return 0
++}
++__dsamples() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__execcommand() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__exptime() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++return 0
++}
++__exptime1() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++return 0
++}
++__exptime2() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++return 0
++}
++__exptime3() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++return 0
++}
++__extrastoragecells() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__extsampling() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__extsamplingsrc() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__extsig() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="inversion_off inversion_on trigger_in_falling_edge trigger_in_rising_edge"
++fi
++fi
++return 0
++}
++__fformat() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="binary hdf5"
++fi
++fi
++return 0
++}
++__filtercells() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__filterresistor() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__findex() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__firmwaretest() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__firmwareversion() {
++FCN_RETURN=""
++return 0
++}
++__fliprows() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__flowcontrol10g() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__fmaster() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__fname() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__foverwrite() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__fpath() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++IS_PATH=1
++fi
++fi
++return 0
++}
++__framecounter() {
++FCN_RETURN=""
++return 0
++}
++__frames() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__framesl() {
++FCN_RETURN=""
++return 0
++}
++__frametime() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++return 0
++}
++__free() {
++FCN_RETURN=""
++return 0
++}
++__fwrite() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__gaincaps() {
++FCN_RETURN=""
++return 0
++}
++__gainmode() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="dynamic fixg0 fixg1 fixg2 forceswitchg1 forceswitchg2"
++fi
++fi
++return 0
++}
++__gappixels() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__gatedelay() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++return 0
++}
++__gatedelay1() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++return 0
++}
++__gatedelay2() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++return 0
++}
++__gatedelay3() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++return 0
++}
++__gates() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__getbit() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__hardwareversion() {
++FCN_RETURN=""
++return 0
++}
++__highvoltage() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__hostname() {
++FCN_RETURN=""
++return 0
++}
++__im_a() {
++FCN_RETURN=""
++return 0
++}
++__im_b() {
++FCN_RETURN=""
++return 0
++}
++__im_c() {
++FCN_RETURN=""
++return 0
++}
++__im_d() {
++FCN_RETURN=""
++return 0
++}
++__im_io() {
++FCN_RETURN=""
++return 0
++}
++__imagetest() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__initialchecks() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__inj_ch() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__interpolation() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__interruptsubframe() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__kernelversion() {
++FCN_RETURN=""
++return 0
++}
++__lastclient() {
++FCN_RETURN=""
++return 0
++}
++__led() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__lock() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__master() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__maxadcphaseshift() {
++FCN_RETURN=""
++return 0
++}
++__maxclkphaseshift() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__maxdbitphaseshift() {
++FCN_RETURN=""
++return 0
++}
++__measuredperiod() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++return 0
++}
++__measuredsubperiod() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++return 0
++}
++__moduleid() {
++FCN_RETURN=""
++return 0
++}
++__nextframenumber() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__nmod() {
++FCN_RETURN=""
++return 0
++}
++__numinterfaces() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__overflow() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__packageversion() {
++FCN_RETURN=""
++return 0
++}
++__parallel() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__parameters() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++IS_PATH=1
++fi
++fi
++return 0
++}
++__partialreset() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__patfname() {
++FCN_RETURN=""
++return 0
++}
++__patioctrl() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__patlimits() {
++FCN_RETURN=""
++return 0
++}
++__patloop() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__patloop0() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__patloop1() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__patloop2() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__patmask() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__patnloop() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__patnloop0() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__patnloop1() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__patnloop2() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__patsetbit() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__pattern() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++IS_PATH=1
++fi
++fi
++return 0
++}
++__patternstart() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++IS_PATH=1
++fi
++fi
++return 0
++}
++__patwait() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__patwait0() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__patwait1() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__patwait2() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__patwaittime() {
++FCN_RETURN=""
++return 0
++}
++__patwaittime0() {
++FCN_RETURN=""
++return 0
++}
++__patwaittime1() {
++FCN_RETURN=""
++return 0
++}
++__patwaittime2() {
++FCN_RETURN=""
++return 0
++}
++__patword() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__pedestalmode() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=" 0"
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__period() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++return 0
++}
++__periodl() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++return 0
++}
++__polarity() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="neg pos"
++fi
++fi
++return 0
++}
++__port() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__powerchip() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__powerindex() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__powerlist() {
++FCN_RETURN=""
++return 0
++}
++__powername() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__powervalues() {
++FCN_RETURN=""
++return 0
++}
++__programfpga() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++IS_PATH=1
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="--force-delete-normal-file"
++fi
++fi
++return 0
++}
++__pulse() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++IS_PATH=1
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="--force-delete-normal-file"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__pulsechip() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__pulsenmove() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__pumpprobe() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__quad() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__ratecorr() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__readnrows() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__readout() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__readoutspeed() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1 108 144 2 full_speed half_speed quarter_speed"
++fi
++fi
++return 0
++}
++__readoutspeedlist() {
++FCN_RETURN=""
++return 0
++}
++__rebootcontroller() {
++FCN_RETURN=""
++return 0
++}
++__reg() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN="--validate"
++fi
++fi
++return 0
++}
++__resetdacs() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN="--validate"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="hard"
++fi
++fi
++return 0
++}
++__resetfpga() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="hard"
++fi
++fi
++return 0
++}
++__romode() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="analog analog_digital digital digital_transceiver transceiver"
++fi
++fi
++return 0
++}
++__row() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__runclk() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__runtime() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++return 0
++}
++__rx_arping() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__rx_clearroi() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__rx_dbitlist() {
++FCN_RETURN=""
++return 0
++}
++__rx_dbitoffset() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__rx_dbitreorder() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__rx_discardpolicy() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="discardempty discardpartial nodiscard"
++fi
++fi
++return 0
++}
++__rx_fifodepth() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__rx_frameindex() {
++FCN_RETURN=""
++return 0
++}
++__rx_framescaught() {
++FCN_RETURN=""
++return 0
++}
++__rx_framesperfile() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__rx_hostname() {
++FCN_RETURN=""
++return 0
++}
++__rx_jsonaddheader() {
++FCN_RETURN=""
++return 0
++}
++__rx_jsonpara() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__rx_lastclient() {
++FCN_RETURN=""
++return 0
++}
++__rx_lock() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__rx_missingpackets() {
++FCN_RETURN=""
++return 0
++}
++__rx_padding() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__rx_printconfig() {
++FCN_RETURN=""
++return 0
++}
++__rx_realudpsocksize() {
++FCN_RETURN=""
++return 0
++}
++__rx_roi() {
++FCN_RETURN=""
++return 0
++}
++__rx_silent() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__rx_start() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__rx_status() {
++FCN_RETURN=""
++return 0
++}
++__rx_stop() {
++FCN_RETURN=""
++return 0
++}
++__rx_tcpport() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__rx_threads() {
++FCN_RETURN=""
++return 0
++}
++__rx_udpsocksize() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__rx_version() {
++FCN_RETURN=""
++return 0
++}
++__rx_zmqfreq() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__rx_zmqhwm() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__rx_zmqip() {
++FCN_RETURN=""
++return 0
++}
++__rx_zmqport() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__rx_zmqstartfnum() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__rx_zmqstream() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__samples() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__savepattern() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++IS_PATH=1
++fi
++fi
++return 0
++}
++__scan() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "5" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "6" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__scanerrmsg() {
++FCN_RETURN=""
++return 0
++}
++__selinterface() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__serialnumber() {
++FCN_RETURN=""
++return 0
++}
++__setbit() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN="--validate"
++fi
++fi
++return 0
++}
++__settings() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
++fi
++fi
++return 0
++}
++__settingslist() {
++FCN_RETURN=""
++return 0
++}
++__settingspath() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++IS_PATH=1
++fi
++fi
++return 0
++}
++__signalindex() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__signallist() {
++FCN_RETURN=""
++return 0
++}
++__signalname() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__sleep() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++return 0
++}
++__slowadc() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__slowadcindex() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__slowadclist() {
++FCN_RETURN=""
++return 0
++}
++__slowadcname() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__slowadcvalues() {
++FCN_RETURN=""
++return 0
++}
++__start() {
++FCN_RETURN=""
++return 0
++}
++__status() {
++FCN_RETURN=""
++return 0
++}
++__stop() {
++FCN_RETURN=""
++return 0
++}
++__stopport() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__storagecell_delay() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++return 0
++}
++__storagecell_start() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__subdeadtime() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++return 0
++}
++__subexptime() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="ms ns s us"
++fi
++fi
++return 0
++}
++__sync() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__syncclk() {
++FCN_RETURN=""
++return 0
++}
++__temp_10ge() {
++FCN_RETURN=""
++return 0
++}
++__temp_adc() {
++FCN_RETURN=""
++return 0
++}
++__temp_control() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__temp_dcdc() {
++FCN_RETURN=""
++return 0
++}
++__temp_event() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__temp_fpga() {
++FCN_RETURN=""
++return 0
++}
++__temp_fpgaext() {
++FCN_RETURN=""
++return 0
++}
++__temp_fpgafl() {
++FCN_RETURN=""
++return 0
++}
++__temp_fpgafr() {
++FCN_RETURN=""
++return 0
++}
++__temp_slowadc() {
++FCN_RETURN=""
++return 0
++}
++__temp_sodl() {
++FCN_RETURN=""
++return 0
++}
++__temp_sodr() {
++FCN_RETURN=""
++return 0
++}
++__temp_threshold() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__templist() {
++FCN_RETURN=""
++return 0
++}
++__tempvalues() {
++FCN_RETURN=""
++return 0
++}
++__tengiga() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__threshold() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "5" ]]; then
++FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
++fi
++fi
++return 0
++}
++__thresholdnotb() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "5" ]]; then
++FCN_RETURN="`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
++fi
++fi
++return 0
++}
++__timing() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="`sls_detector_get timinglist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
++fi
++fi
++return 0
++}
++__timing_info_decoder() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="shine swissfel"
++fi
++fi
++return 0
++}
++__timinglist() {
++FCN_RETURN=""
++return 0
++}
++__timingsource() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="external internal"
++fi
++fi
++return 0
++}
++__top() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__transceiverenable() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__trigger() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__triggers() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__triggersl() {
++FCN_RETURN=""
++return 0
++}
++__trimbits() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++IS_PATH=1
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++IS_PATH=1
++fi
++fi
++return 0
++}
++__trimen() {
++FCN_RETURN=""
++return 0
++}
++__trimval() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__tsamples() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__txdelay() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__txdelay_frame() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__txdelay_left() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__txdelay_right() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__type() {
++FCN_RETURN=""
++return 0
++}
++__udp_cleardst() {
++FCN_RETURN=""
++return 0
++}
++__udp_dstip() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__udp_dstip2() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__udp_dstlist() {
++FCN_RETURN=""
++return 0
++}
++__udp_dstmac() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__udp_dstmac2() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__udp_dstport() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__udp_dstport2() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__udp_firstdst() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__udp_numdst() {
++FCN_RETURN=""
++return 0
++}
++__udp_reconfigure() {
++FCN_RETURN=""
++return 0
++}
++__udp_srcip() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__udp_srcip2() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__udp_srcmac() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__udp_srcmac2() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__udp_validate() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__update() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++IS_PATH=1
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++IS_PATH=1
++fi
++fi
++return 0
++}
++__updatedetectorserver() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++IS_PATH=1
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++IS_PATH=1
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++IS_PATH=1
++fi
++fi
++return 0
++}
++__updatekernel() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++IS_PATH=1
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++IS_PATH=1
++fi
++fi
++return 0
++}
++__updatemode() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__user() {
++FCN_RETURN=""
++return 0
++}
++__v_a() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__v_b() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__v_c() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__v_chip() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__v_d() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__v_io() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__v_limit() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__vchip_comp_adc() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__vchip_comp_fe() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__vchip_cs() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__vchip_opa_1st() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__vchip_opa_fd() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__vchip_ref_comp_fe() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__versions() {
++FCN_RETURN=""
++return 0
++}
++__veto() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="0 1"
++fi
++fi
++return 0
++}
++__vetoalg() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="10gbe lll none"
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN="hits raw"
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN="10gbe lll none"
++fi
++fi
++return 0
++}
++__vetofile() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__vetophoton() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 1 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "4" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "5" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__vetoref() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__vetostream() {
++FCN_RETURN=""
++return 0
++}
++__virtual() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++if [[ "${cword}" == "3" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__vm_a() {
++FCN_RETURN=""
++return 0
++}
++__vm_b() {
++FCN_RETURN=""
++return 0
++}
++__vm_c() {
++FCN_RETURN=""
++return 0
++}
++__vm_d() {
++FCN_RETURN=""
++return 0
++}
++__vm_io() {
++FCN_RETURN=""
++return 0
++}
++__zmqhwm() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__zmqip() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++__zmqport() {
++FCN_RETURN=""
++if [[ ${IS_GET} -eq 0 ]]; then
++if [[ "${cword}" == "2" ]]; then
++FCN_RETURN=""
++fi
++fi
++return 0
++}
++
++
++  local FCN_RETURN=""
++  local IS_PATH=0
++  COMPREPLY=()
++  local OPTIONS_NEW=""
++  words=("${COMP_WORDS[@]}")
++  cword=$COMP_CWORD
++
++  local cur=${words[cword]}
++  #  check the action (get or put)
++  case "${words[0]}" in
++    "sls_detector_get" | "g" | "detg")
++      local IS_GET=1
++      ;;
++    *)
++      local IS_GET=0
++      ;;
++  esac
++
++  # if no command is written, autocomplete with the commands
++  if [[ ${cword} -eq 1 ]]; then
++
++    case "$cur" in
++			[0-9]*)
++				for i in $SLS_COMMANDS; do
++					SLS_COMMANDS_NEW="${SLS_COMMANDS_NEW} ${cur%%:*}:$i"
++				done
++				COMPREPLY=( $( compgen -W "${SLS_COMMANDS_NEW}" -- "$cur" ) );;
++			*)
++				COMPREPLY=( $( compgen -W "$SLS_COMMANDS -h" -- "$cur" ) );;
++		esac
++    return 0
++  fi
++
++  if [[ ${cword} -eq 2 ]] && [[ ${words[1]} == "-h" ]]; then
++    COMPREPLY=( $( compgen -W "$SLS_COMMANDS" -- "$cur" ) )
++    return 0
++  fi
++
++  # if a command is written, autocomplete with the options
++  # call the function for the command
++
++  if [[ "$SLS_COMMANDS" == *"${words[1]##*:}"* ]]; then
++      __"${words[1]##*:}"
++  fi
++
++  # if IS_PATH is activated, autocomplete with the path
++  if [[ ${IS_PATH} -eq 1 ]]; then
++    COMPREPLY=($(compgen -f -- "${cur}"))
++    return 0
++  fi
++
++  # autocomplete with the options
++  COMPREPLY=($(compgen -W "${FCN_RETURN}" -- "${cur}"))
++
++
++
++}
++
++complete -F _sd -o filenames sls_detector_get
++complete -F _sd -o filenames g
++complete -F _sd -o filenames detg
++
++complete -F _sd -o filenames sls_detector_put
++complete -F _sd -o filenames p
++complete -F _sd -o filenames detp
++
++complete -F _sd -o filenames sls_detector
++complete -F _sd -o filenames det

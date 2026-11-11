@@ -8,10 +8,12 @@
 #include "sls/sls_detector_defs.h"
 
 #include <fcntl.h>    // open
+#include <stdio.h>    // fopen
+#include <string.h>   //memcpy
 #include <sys/mman.h> // mmap
+#include <unistd.h>   // usleep
 
 /* global variables */
-const uint64_t BFIN_CYCLES_1uSECOND = 20;
 u_int32_t *csp0base = 0;
 
 #define CSP0     0x20200000
@@ -43,6 +45,41 @@ u_int32_t bus_r(u_int32_t offset) {
     volatile u_int32_t *ptr1;
     ptr1 = (u_int32_t *)(csp0base + offset / 2);
     return *ptr1;
+}
+
+int bus_w_block(u_int32_t offset, const void *src, size_t size,
+                bool fixedAddress) {
+    if (size == 0 || size % sizeof(uint32_t) != 0) {
+        LOG(logERROR, ("Could not write block: size %zu is not a non-zero "
+                       "multiple of %zu\n",
+                       size, sizeof(uint32_t)));
+        return FAIL;
+    }
+    const uint32_t step = fixedAddress ? 0 : (1 << MEM_MAP_SHIFT);
+    // low memory on blackfin, so avoid array on stack
+    const char *p = src;
+    for (size_t i = 0; i != size / sizeof(uint32_t); ++i) {
+        uint32_t word = 0;
+        memcpy(&word, p + i * sizeof(word), sizeof(word));
+        bus_w(offset + i * step, word);
+    }
+    return OK;
+}
+
+int bus_r_block(u_int32_t offset, void *dst, size_t size, bool fixedAddress) {
+    if (size == 0 || size % sizeof(uint32_t) != 0) {
+        LOG(logERROR, ("Could not read block: size %zu is not a non-zero "
+                       "multiple of %zu\n",
+                       size, sizeof(uint32_t)));
+        return FAIL;
+    }
+    const uint32_t step = fixedAddress ? 0 : (1 << MEM_MAP_SHIFT);
+    char *p = dst;
+    for (size_t i = 0; i != size / sizeof(uint32_t); ++i) {
+        uint32_t word = bus_r(offset + i * step);
+        memcpy(p + i * sizeof(word), &word, sizeof(word));
+    }
+    return OK;
 }
 
 int64_t get64BitReg(int aLSB, int aMSB) {
@@ -125,18 +162,70 @@ int mapCSP0(void) {
 #endif
         LOG(logINFO, ("csp0base mapped from %p to %p\n", csp0base,
                       (csp0base + MEM_SIZE)));
+        if (initCycleCounter() == FAIL)
+            return FAIL;
         LOG(logINFO, ("Status Register: %08x\n", bus_r(STATUS_REG)));
     } else
         LOG(logINFO, ("Memory already mapped before\n"));
     return OK;
 }
 
-uint32_t *Blackfin_getBaseAddress() { return csp0base; }
+/* BF537 core clock; refined from /proc/cpuinfo in initCycleCounter() */
+#define BFIN_CCLK_HZ_DEFAULT 525000000UL
+static uint32_t bfinCyclesPerUs = BFIN_CCLK_HZ_DEFAULT / 1000000;
 
-// usleep is not viable on blackfin
-void usleep_bf(uint64_t i) {
-    uint64_t j = i * BFIN_CYCLES_1uSECOND;
-    while (--j) {
-        asm volatile("");
+#ifdef __bfin__
+static inline uint32_t get_cycles(void) {
+    uint32_t cycles;
+    __asm__ volatile("%0 = CYCLES;" : "=d"(cycles));
+    return cycles;
+}
+#endif
+
+int initCycleCounter(void) {
+#ifndef __bfin__
+    return OK; // virtual build: usleep_bf falls back to usleep
+#else
+    // kernel reports "cpu MHz : 525.000/131.250" (core/system)
+    FILE *fp = fopen("/proc/cpuinfo", "r");
+    if (fp != NULL) {
+        char line[128];
+        double mhz = 0;
+        while (fgets(line, sizeof(line), fp) != NULL) {
+            if (sscanf(line, "cpu MHz : %lf", &mhz) == 1 && mhz > 0) {
+                bfinCyclesPerUs = (uint32_t)mhz;
+                break;
+            }
+        }
+        fclose(fp);
     }
+    // CYCLES only counts if the kernel set SYSCFG.CCEN; refuse to run
+    // otherwise, because usleep_bf would spin forever
+    uint32_t c0 = get_cycles();
+    for (volatile int i = 0; i < 1000; ++i)
+        ;
+    if (get_cycles() == c0) {
+        LOG(logERROR, ("Blackfin cycle counter is not running\n"));
+        return FAIL;
+    }
+    LOG(logINFO, ("Cycle counter running at %u cycles/us\n", bfinCyclesPerUs));
+    return OK;
+#endif
+}
+
+// usleep is not viable on blackfin (10 ms tick); spin on the core cycle counter
+int usleep_bf(uint32_t us) {
+    // the wait is counted in core cycles in a uint32_t: about 8 s at 525 MHz
+    if (us > UINT32_MAX / bfinCyclesPerUs) {
+        return -1;
+    }
+#ifndef __bfin__
+    usleep(us);
+#else
+    uint32_t start = get_cycles();
+    uint32_t wait = us * bfinCyclesPerUs;
+    while ((uint32_t)(get_cycles() - start) < wait)
+        ;
+#endif
+    return 0;
 }

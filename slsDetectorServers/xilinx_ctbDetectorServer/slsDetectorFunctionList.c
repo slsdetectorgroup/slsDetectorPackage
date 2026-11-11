@@ -145,7 +145,7 @@ void basictests() {
     }
 
     // check for API compatibility - old server
-    if (sw_fw_apiversion > requiredfwversion) {
+    if ((uint64_t)sw_fw_apiversion > requiredfwversion) {
         sprintf(initErrorMessage,
                 "This firmware-software api version (0x%lx) is incompatible "
                 "with the software's minimum required firmware version "
@@ -158,7 +158,7 @@ void basictests() {
     }
 
     // check for firmware compatibility - old firmware
-    if (requiredfwversion > fwversion) {
+    if (requiredfwversion > (uint64_t)fwversion) {
         sprintf(initErrorMessage,
                 "This firmware version (0x%lx) is incompatible.\n"
                 "Please update firmware (min. 0x%lx) to be compatible with "
@@ -1502,8 +1502,9 @@ int configureMAC() {
     }
 #endif
 
-    // get struct memory
-    udp_header *udp = (udp_header *)(Arm_getUDPBaseAddress());
+    // build udp header
+    udp_header header;
+    udp_header *udp = &header;
     memset(udp, 0, sizeof(udp_header));
 
     //  mac addresses
@@ -1534,6 +1535,12 @@ int configureMAC() {
     // total length is redefined in firmware
 
     calcChecksum(udp);
+
+    // force FPGA writes to be aligned and in order
+    if (bus_w_csp1_block(udp, sizeof(udp_header)) == FAIL) {
+        LOG(logERROR, ("Failed to write UDP header\n"));
+        return FAIL;
+    }
 
     return OK;
 }
@@ -1601,11 +1608,10 @@ void *start_timer(void *arg) {
                     packetSize, packetsPerFrame));
 
     // Generate Data
-    char *imageData = (char *)malloc(imageSize);
-    memset(imageData, 0, imageSize);
+    char *imageData = (char *)calloc(imageSize, 1);
     if (imageData == NULL) {
-        LOG(logERROR, ("Can not allocate image.\n"));
-        return NULL;
+        LOG(logERROR, ("Could not allocate memory for virtual image\n"));
+        exit(EXIT_FAILURE);
     }
     for (int i = 0; i < imageSize; i += sizeof(uint16_t)) {
         *((uint16_t *)(imageData + i)) = i;
@@ -1672,6 +1678,8 @@ void *start_timer(void *arg) {
         }
     }
     setNextFrameNumber(frameNr + numFrames);
+    free(imageData);
+
     closeUDPSocket(0);
 
     sharedMemory_setStatus(IDLE);

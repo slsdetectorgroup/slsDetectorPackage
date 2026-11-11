@@ -183,8 +183,6 @@ endif()
 #Maybe have an option guarding this?
 set(SLS_INTERNAL_RAPIDJSON_DIR ${CMAKE_CURRENT_SOURCE_DIR}/libs/rapidjson)
 
-set(SLS_INTERNAL_QWT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/libs/qwt-6.1.5)
-
 set(ClangFormat_EXCLUDE_PATTERNS    "build/" 
                                     "libs/" 
                                     "slsDetectorCalibration/" 
@@ -320,8 +318,7 @@ if (SLS_USE_RECEIVER)
     add_subdirectory(slsReceiverSoftware) 
 endif (SLS_USE_RECEIVER)
 
-if (SLS_USE_GUI)   
-    add_subdirectory(libs/qwt)  
+if (SLS_USE_GUI)
     add_subdirectory(slsDetectorGui)
 endif (SLS_USE_GUI)
 
@@ -420,7 +417,7 @@ set(CPACK_RPM_COMPONENT_INSTALL ON)
 
 
 set(CPACK_RPM_GUI_PACKAGE_REQUIRES
-    "qt5-qtbase, qt5-qtbase-gui"
+    "qt6-qtbase, qt6-qtbase-gui"
 )
 
 #control which RPMs are generated

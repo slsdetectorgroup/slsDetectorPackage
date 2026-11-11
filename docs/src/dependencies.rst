@@ -46,8 +46,12 @@ ZeroMQ
 GUI
 -----------------------
 
- * Qt 5.9
- * Qwt 6.1.5 (packaged in libs)
+ * Qt 6 (>= 6.2, components Widgets, Gui, Core and Concurrent)
+ * libpng and zlib
+
+The GUI plotting (1D/2D plots, colour maps, scale panel) is implemented with
+plain Qt Widgets painting. Qwt, ROOT and OpenGL are not required and the
+bundled Qwt copy has been removed from the sources.
 
 -----------------------
 Moench executables
@@ -72,5 +76,4 @@ Packaged in libs/
  * catch2 (unit testing)
  * rapidjson (streaming from receiver)
  * pybind11 (python bindings)  
- * qwt (gui plotting)
  * libzmq (streaming to/from receiver)

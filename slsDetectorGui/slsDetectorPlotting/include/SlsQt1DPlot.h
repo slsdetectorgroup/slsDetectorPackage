@@ -1,30 +1,40 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
-// Copyright (C) 2021 Contributors to the SLS Detector Package
+// Copyright (C) 2026 Contributors to the SLS Detector Package
 #ifndef SLSQT1DPLOT_H
 #define SLSQT1DPLOT_H
 
-#include "SlsQt1DZoomer.h"
-#include "sls/ansi.h"
+// Qt6-only replacement for the qwt based 1D plotting layer of slsDetectorGui.
+//
+// SlsQt1DPlot is a plain QWidget that paints its own frame, ticks, grid,
+// clipped curves, legend, ROI boxes and tracker and implements the zoom / pan
+// interaction (rubber-band zoom, wheel zoom, middle-drag pan, right click zoom
+// out one level, Ctrl+right reset).  SlsQtH1D is a plain data container plus
+// curve description (no QwtPlotCurve base).  No qwt, ROOT or OpenGL.
+
+#include "SlsQtPlotCommon.h"
 #include "sls/sls_detector_defs.h"
 
-#include <array>
-#include <qwt_plot.h>
-#include <qwt_plot_curve.h>
-#include <qwt_plot_marker.h>
-#include <qwt_plot_shapeitem.h>
-#include <qwt_scale_div.h>
+#include <QColor>
+#include <QFont>
+#include <QPen>
+#include <QPointF>
+#include <QRectF>
+#include <QString>
+#include <QWidget>
 
-class QPen;
-class QwtSymbol;
+#include <vector>
 
 namespace sls {
 
 class SlsQt1DPlot;
 
-class SlsQtH1D : public QwtPlotCurve {
-
+// One 1D histogram/curve.  The public data API is the one the old
+// QwtPlotCurve derived class exposed, so qDrawPlot/qCloneWidget do not need
+// changes apart from the legend attribute (now setLegendVisible()).
+class SlsQtH1D {
   public:
-    SlsQtH1D(QString title, int n, double xmin, double xmax, double *data = 0);
+    SlsQtH1D(QString title, int n, double xmin, double xmax,
+             double *data = nullptr);
     SlsQtH1D(QString title, int n, double *data_x, double *data_y);
     ~SlsQtH1D();
 
@@ -37,12 +47,17 @@ class SlsQtH1D : public QwtPlotCurve {
     void setStyleLinesorDots(bool isLines);
     void setSymbolMarkers(bool isMarker);
 
-    void SetData(int n, double xmin, double xmax, double *d = 0);
+    // Replaces the old QwtPlotItem::Legend attribute: while false the plot
+    // draws no legend entry for this curve (used by the gain plots).
+    void setLegendVisible(bool visible) { m_legendVisible = visible; }
+    bool legendVisible() const { return m_legendVisible; }
+
+    void SetData(int n, double xmin, double xmax, double *d = nullptr);
     void SetData(int n, double *dx, double *dy);
 
-    double *GetX() { return x; }
-    double *GetY() { return y; }
-    int GetNBinsX() { return ndata; }
+    double *GetX() { return m_x.data(); }
+    double *GetY() { return m_y.data(); }
+    int GetNBinsX() const { return m_ndata; }
 
     double FillBin(int bx, double v = 1);
     double Fill(double x, double v = 1);
@@ -50,52 +65,55 @@ class SlsQtH1D : public QwtPlotCurve {
     double SetContent(double x, double v);
     int FindBinIndex(double px);
 
-    double GetXMin() { return x[0]; }
-    double GetFirstXgtZero() { return firstXgt0; }
-    double GetXMax() { return x[ndata - 1]; }
-    double GetYMin() { return ymin; }
-    double GetFirstYgtZero() { return firstYgt0; }
-    double GetYMax() { return ymax; }
+    double GetXMin() const { return m_ndata > 0 ? m_x.front() : 0.0; }
+    double GetFirstXgtZero() const { return m_firstXgt0; }
+    double GetXMax() const {
+        return m_ndata > 0 ? m_x[static_cast<size_t>(m_ndata - 1)] : 0.0;
+    }
+    double GetYMin() const { return m_ymin; }
+    double GetFirstYgtZero() const { return m_firstYgt0; }
+    double GetYMax() const { return m_ymax; }
 
     SlsQtH1D *Add(double v);
 
-  private:
-    int ndata;
-    int n_array;
-    double dx;
-    double *x{nullptr}, *y{nullptr};
-    double ymin, ymax;
-    double firstXgt0, firstYgt0;
-    void Initailize();
-    int SetUpArrays(int n);
-    int CheckIndex(int bx);
+    QString title() const { return m_title; }
+    void setTitle(const QString &title) { m_title = title; }
 
-    QPen *pen_ptr{nullptr};
-};
-
-class SlsQtH1DList {
-  public:
-    SlsQtH1DList(SlsQtH1D *hist = 0);
-    ~SlsQtH1DList();
-
-    SlsQtH1D *Add(SlsQtH1D *h);
-    void Remove(SlsQtH1D *h);
-    void Print();
-
-    SlsQtH1D *Hist() { return the_hist; } // if no hist returns 0
-    SlsQtH1DList *Next() { return the_next; }
+    // Read access for the painter only.
+    const QPen &pen() const { return m_pen; }
+    bool isLines() const { return m_linesMode; }
+    bool isMarkers() const { return m_markerMode; }
 
   private:
-    SlsQtH1DList *the_next;
-    SlsQtH1D *the_hist;
+    friend class SlsQt1DPlot;
+
+    void initialize();
+    void setUpArrays(int n);
+    int checkIndex(int bx);
+
+    QString m_title;
+    int m_ndata{0};
+    double m_dx{0.0};
+    std::vector<double> m_x;
+    std::vector<double> m_y;
+    double m_ymin{0.0};
+    double m_ymax{0.0};
+    double m_firstXgt0{-1.0};
+    double m_firstYgt0{-1.0};
+    bool m_linesMode{true};
+    bool m_markerMode{false};
+    bool m_legendVisible{true};
+    QPen m_pen;
+    SlsQt1DPlot *m_plot{nullptr};
 };
 
-class SlsQt1DPlot : public QwtPlot {
+// Custom painted 1D plot (replaces QwtPlot + QwtPlotZoomer + QwtPlotPanner).
+class SlsQt1DPlot : public QWidget {
     Q_OBJECT
 
   public:
-    SlsQt1DPlot(QWidget * = NULL, bool gain = false);
-    ~SlsQt1DPlot();
+    explicit SlsQt1DPlot(QWidget *parent = nullptr, bool gain = false);
+    ~SlsQt1DPlot() override;
 
     void SetTitle(QString title);
     void SetXTitle(QString title);
@@ -109,82 +127,157 @@ class SlsQt1DPlot : public QwtPlot {
     void InsertVLine(double v);
     void RemoveVLine();
 
-    /**	This group of functions have been added by Dhanya on 19.06.2012 to be
-       able to use zooming functionality without mouse control*/
+    // Disables every zoom/pan interaction (rubber band, wheel zoom, middle
+    // drag panning and the right-click zoom out), like the old zoomer/panner
+    // based implementation did.
     void DisableZoom(bool disable);
-    void EnableXAutoScaling() {
-        setAxisAutoScale(QwtPlot::xBottom, true);
-        Update();
-    };
-    void EnableYAutoScaling() {
-        setAxisAutoScale(QwtPlot::yLeft, true);
-        Update();
-    };
-    void SetYStep(int step) { ystep = step; };
-    void SetXMinMax(double min, double max) {
-        setAxisScale(QwtPlot::xBottom, min, max);
-    };
-    void SetYMinMax(double min, double max) {
-        setAxisScale(QwtPlot::yLeft, min, max);
-    };
-    double GetXMinimum() { return hist_list->Hist()->GetXMin(); };
-    double GetXMaximum() { return hist_list->Hist()->GetXMax(); };
-    double GetYMinimum() { return hist_list->Hist()->GetYMin(); };
-    double GetYMaximum() { return hist_list->Hist()->GetYMax(); };
-    /**---*/
+
+    void EnableXAutoScaling();
+    void EnableYAutoScaling();
+    void SetYStep(int step) { m_yStep = step; }
+    void SetXMinMax(double min, double max);
+    void SetYMinMax(double min, double max);
+    double GetXMinimum() const;
+    double GetXMaximum() const;
+    double GetYMinimum() const;
+    double GetYMaximum() const;
+
+    bool isGainPlot() const { return m_gainPlot; }
+    bool isZoomDisabled() const { return m_disableZoom; }
+    // Currently visible data range (x=left, y=bottom, width/height > 0).
+    QRectF viewRect() const;
+    int zoomLevel() const { return m_zoomIndex; }
 
     void SetZoom(double xmin, double ymin, double x_width, double y_width);
-    void SetZoomBase(double xmin, double ymin, double x_width, double y_width) {
-        zoomer->SetZoomBase(xmin, ymin, x_width, y_width);
-    }
+    void SetZoomBase(double xmin, double ymin, double x_width,
+                     double y_width);
 
     void alignScales();
 
-    void SetLogX(bool yes = 1);
-    void SetLogY(bool yes = 1);
+    void SetLogX(bool yes = true);
+    void SetLogY(bool yes = true);
 
     void EnableRoiBoxes(std::vector<slsDetectorDefs::ROI> roi, int ymin,
                         int ymax);
     void DisableRoiBoxes();
 
-  private:
-    bool gainPlot{false};
-
-    SlsQtH1DList *hist_list{nullptr};
-    SlsQt1DZoomer *zoomer{nullptr};
-    QwtPlotPanner *panner{nullptr};
-
-    QwtPlotMarker *hline{nullptr};
-    QwtPlotMarker *vline{nullptr};
-    bool disableZoom{false};
-    int ystep{0};
-
-    void SetupZoom();
-    void UnknownStuff();
-    // void alignScales();
-
-    void CalculateNResetZoomBase();
-    void NewHistogramAttached(SlsQtH1D *h);
-    void HistogramDetached(SlsQtH1D *h);
-
-    void SetLog(int axisId, bool yes);
-
-    friend void SlsQtH1D::Attach(SlsQt1DPlot *p);
-    friend void SlsQtH1D::Detach(SlsQt1DPlot *p);
-
-    std::vector<std::unique_ptr<QwtPlotShapeItem>> roiBoxes{};
-    QwtPlotShapeItem *roiBox{nullptr};
-
   signals:
-    void PlotZoomedSignal(const QRectF &);
+    void PlotZoomedSignal(const QRectF &rect);
 
   public slots:
     void SetZoomX(const QRectF &rect);
     void UnZoom();
     void Update();
 
-  private slots:
-    void GetPannedCoord(int, int);
+  protected:
+    void paintEvent(QPaintEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
+    void wheelEvent(QWheelEvent *event) override;
+    void leaveEvent(QEvent *event) override;
+
+  private:
+    friend class SlsQtH1D;
+
+    struct Geometry {
+        QRect plot; // plot rectangle in widget pixels
+        std::vector<double> xTicks;
+        std::vector<double> yTicks;
+        std::vector<QString> xLabels;
+        std::vector<QString> yLabels;
+        int titleH{0};
+        int xTitleH{0};
+        int yTitleW{0};
+        int legendH{0};
+    };
+
+    // histogram list
+    void addHistogram(SlsQtH1D *h);
+    void removeHistogram(SlsQtH1D *h);
+
+    // ranges / zoom
+    void recomputeBase();
+    void clampView();
+    void setView(double xLo, double xHi, double yLo, double yHi);
+    QRectF baseRect() const;
+    QRectF currentRect() const;
+    void resetZoom(bool emitSignal);
+    void zoomOutOneLevel();
+    void applyZoomRect(const QRectF &rect);
+    void pushZoomRect(const QRectF &rect, bool emitSignal);
+    void zoomAbout(const QPointF &pos, double factor, bool push);
+    bool zoomAllowed() const { return !m_disableZoom && !m_gainPlot; }
+    void emitZoomed();
+
+    // coordinate transforms
+    double tx(double v) const;
+    double ty(double v) const;
+    double itx(double t) const;
+    double ity(double t) const;
+    QPointF toWidget(double x, double y, const Geometry &g) const;
+    QPointF toData(const QPointF &pos, const Geometry &g) const;
+
+    // painting helpers
+    Geometry computeGeometry() const;
+    std::vector<double> tickValues(double lo, double hi, bool log,
+                                   int maxTicks) const;
+    std::vector<QString> tickLabels(const std::vector<double> &ticks,
+                                    double lo, double hi, bool log) const;
+    void paintGrid(QPainter &p, const Geometry &g) const;
+    void paintCurves(QPainter &p, const Geometry &g) const;
+    void paintDecorations(QPainter &p, const Geometry &g) const;
+    void paintFrame(QPainter &p, const Geometry &g) const;
+    void paintLegend(QPainter &p, const Geometry &g) const;
+    void paintTracker(QPainter &p, const Geometry &g) const;
+    void paintRubberBand(QPainter &p, const Geometry &g) const;
+
+    // state
+    bool m_gainPlot{false};
+    std::vector<SlsQtH1D *> m_hists;
+
+    QString m_title;
+    QString m_xTitle;
+    QString m_yTitle;
+    QFont m_titleFont;
+    QFont m_xTitleFont;
+    QFont m_yTitleFont;
+    QFont m_tickFont;
+    sls::plot::PlotTheme m_theme;
+
+    bool m_logX{false};
+    bool m_logY{false};
+    bool m_xAuto{true};
+    bool m_yAuto{true};
+    bool m_disableZoom{false};
+    int m_yStep{0};
+
+    double m_xLo{0.0}, m_xHi{1.0}, m_yLo{0.0}, m_yHi{1.0};
+    double m_bxLo{0.0}, m_bxHi{1.0}, m_byLo{0.0}, m_byHi{1.0};
+
+    std::vector<QRectF> m_zoomStack;
+    int m_zoomIndex{0};
+
+    bool m_rubberBand{false};
+    QPointF m_rubberStart;
+    QPointF m_rubberCur;
+
+    bool m_panning{false};
+    QPointF m_panStart;
+    double m_panXnLo{0.0}, m_panXnHi{1.0}, m_panYnLo{0.0}, m_panYnHi{1.0};
+
+    bool m_trackValid{false};
+    QPointF m_trackPos;
+
+    bool m_hasHLine{false};
+    double m_hLine{0.0};
+    bool m_hasVLine{false};
+    double m_vLine{0.0};
+
+    bool m_roiOn{false};
+    std::vector<slsDetectorDefs::ROI> m_rois;
+    int m_roiYMin{0};
+    int m_roiYMax{0};
 };
 
 } // namespace sls

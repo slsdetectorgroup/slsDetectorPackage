@@ -79,8 +79,8 @@ void qTabDataOutput::Initialization() {
     if (chkRate->isEnabled()) {
         connect(chkRate, SIGNAL(toggled(bool)), this,
                 SLOT(EnableRateCorrection()));
-        connect(btnGroupRate, SIGNAL(buttonClicked(int)), this,
-                SLOT(SetRateCorrection()));
+        connect(btnGroupRate, &QButtonGroup::idClicked, this,
+                &qTabDataOutput::SetRateCorrection);
         connect(spinCustomDeadTime, SIGNAL(valueChanged(int)), this,
                 SLOT(SetRateCorrection()));
     }
@@ -309,8 +309,8 @@ void qTabDataOutput::GetRateCorrection() {
     LOG(logDEBUG) << "Getting Rate Correction";
     disconnect(chkRate, SIGNAL(toggled(bool)), this,
                SLOT(EnableRateCorrection()));
-    disconnect(btnGroupRate, SIGNAL(buttonClicked(int)), this,
-               SLOT(SetRateCorrection()));
+    disconnect(btnGroupRate, &QButtonGroup::idClicked, this,
+               &qTabDataOutput::SetRateCorrection);
     disconnect(spinCustomDeadTime, SIGNAL(valueChanged(int)), this,
                SLOT(SetRateCorrection()));
     try {
@@ -326,8 +326,8 @@ void qTabDataOutput::GetRateCorrection() {
     CATCH_DISPLAY("Could not get rate correction.",
                   "qTabDataOutput::GetRateCorrection")
     connect(chkRate, SIGNAL(toggled(bool)), this, SLOT(EnableRateCorrection()));
-    connect(btnGroupRate, SIGNAL(buttonClicked(int)), this,
-            SLOT(SetRateCorrection()));
+    connect(btnGroupRate, &QButtonGroup::idClicked, this,
+            &qTabDataOutput::SetRateCorrection);
     connect(spinCustomDeadTime, SIGNAL(valueChanged(int)), this,
             SLOT(SetRateCorrection()));
 }

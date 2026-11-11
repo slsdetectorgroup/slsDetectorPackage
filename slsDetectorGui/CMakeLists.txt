@@ -5,17 +5,60 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
 
-find_package(Qt5 5.9 COMPONENTS Widgets Core Gui REQUIRED)
+# Qt6 only (Widgets/Gui/Core). Concurrent is needed for the acquisition
+# thread in qDrawPlot.cpp. No Qwt, no Qt5 compatibility modules.
+find_package(Qt6 6.2 REQUIRED COMPONENTS Widgets Gui Core Concurrent)
 
 find_package(PNG REQUIRED)
 find_package(ZLIB REQUIRED)
 
 
-set(SOURCES
+# The Qt-only plotting stack is built once as a static library and linked by
+# the GUI executable as well as by the plotting demo and the QtTest suite.
+set(PLOTTING_SOURCES
+    slsDetectorPlotting/src/SlsQtPlotCommon.cpp
+    slsDetectorPlotting/src/SlsQtFastImage.cpp
+    slsDetectorPlotting/src/SlsQtScalePanel.cpp
     slsDetectorPlotting/src/SlsQt1DPlot.cpp
-    slsDetectorPlotting/src/SlsQt1DZoomer.cpp
     slsDetectorPlotting/src/SlsQt2DHist.cpp
     slsDetectorPlotting/src/SlsQt2DPlot.cpp
+)
+set(PLOTTING_HEADERS
+    slsDetectorPlotting/include/SlsQtPlotCommon.h
+    slsDetectorPlotting/include/SlsQtFastImage.h
+    slsDetectorPlotting/include/SlsQtScalePanel.h
+    slsDetectorPlotting/include/SlsQt1DPlot.h
+    slsDetectorPlotting/include/SlsQt2DHist.h
+    slsDetectorPlotting/include/SlsQt2DPlot.h
+)
+
+add_library(slsDetectorPlotting STATIC
+    ${PLOTTING_SOURCES}
+    ${PLOTTING_HEADERS}
+)
+set_target_properties(slsDetectorPlotting PROPERTIES
+    # plotting widgets are Q_OBJECT classes; moc them in the library
+    AUTOMOC ON
+    AUTOUIC OFF
+)
+target_include_directories(slsDetectorPlotting PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/slsDetectorPlotting/include>"
+    "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+)
+target_link_libraries(slsDetectorPlotting
+    PUBLIC
+        slsProjectOptions
+        # sls/ansi.h, sls/sls_detector_defs.h and the logger symbols
+        slsSupportStatic
+        Qt6::Widgets
+        Qt6::Gui
+        Qt6::Core
+    PRIVATE
+        slsProjectWarnings
+)
+
+
+set(SOURCES
     src/qDetectorMain.cpp
     src/qDrawPlot.cpp
     src/qCloneWidget.cpp
@@ -46,14 +89,9 @@ set(FORMS
     forms/form_cloneplot.ui
 )
 
-qt5_wrap_ui(FORMS_H ${FORMS})
+qt6_wrap_ui(FORMS_H ${FORMS})
 
 set(HEADERS
-    slsDetectorPlotting/include/SlsQt1DPlot.h
-    slsDetectorPlotting/include/SlsQt1DZoomer.h
-    slsDetectorPlotting/include/SlsQt2DHist.h
-    slsDetectorPlotting/include/SlsQt2DPlot.h
-    slsDetectorPlotting/include/SlsQt2DZoomer.h
     include/qDefs.h
     include/qDetectorMain.h
     include/qDrawPlot.h
@@ -72,12 +110,8 @@ set(HEADERS
 set(RESOURCES
     include/icons.qrc
 )
-qt5_add_resources(RESOURCES_SRCS ${RESOURCES})
+qt6_add_resources(RESOURCES_SRCS ${RESOURCES})
 
-
-add_definitions(
-   ${Qt5Widgets_DEFINITIONS} -DPRINT_LOG #-DVERBOSE 
-)
 
 add_executable(slsDetectorGui
     ${SOURCES}
@@ -86,28 +120,27 @@ add_executable(slsDetectorGui
     ${RESOURCES_SRCS}
 )
 
+target_compile_definitions(slsDetectorGui PRIVATE PRINT_LOG)
+
 target_include_directories(slsDetectorGui PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/slsDetectorPlotting/include>"
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
-    "$<BUILD_INTERFACE:${QT5Widgets_INCLUDE_DIRS}>"
-    "$<BUILD_INTERFACE:${SLS_INTERNAL_QWT_DIR}/include>"
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
 )
 
 target_link_libraries(slsDetectorGui PUBLIC
     slsProjectOptions 
     slsDetectorStatic
+    slsDetectorPlotting
     PNG::PNG
     ZLIB::ZLIB
-    Qt5::Widgets
-    Qt5::Gui
-    Qt5::Core
-    expat
+    Qt6::Widgets
+    Qt6::Gui
+    Qt6::Core
+    Qt6::Concurrent
     
     PRIVATE
     slsProjectWarnings
-    qwt
 )
 
 set_target_properties(slsDetectorGui PROPERTIES
@@ -117,6 +150,16 @@ set_target_properties(slsDetectorGui PROPERTIES
 )
 if((CMAKE_BUILD_TYPE STREQUAL "Release") AND SLS_LTO_AVAILABLE)
     set_property(TARGET slsDetectorGui PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
+endif()
+
+# Demo application and QtTest based tests for the plotting widgets.
+# These are provided by the verification task; wire them in when present so
+# they do not have to touch this file. Both link slsDetectorPlotting.
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/CMakeLists.txt")
+    add_subdirectory(tests)
+endif()
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/demo/CMakeLists.txt")
+    add_subdirectory(demo)
 endif()
 
 sls_install_executable(slsDetectorGui COMPONENT gui)

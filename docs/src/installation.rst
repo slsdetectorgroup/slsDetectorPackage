@@ -311,8 +311,12 @@ using this compiler
 
 
 
-3.4. Build slsDetectorGui (Qt5)
+3.4. Build slsDetectorGui (Qt6)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The GUI needs Qt 6 (>= 6.2) with the Widgets, Gui, Core and Concurrent modules.
+Qwt, Qt5, expat and Qt6Svg are no longer needed; plotting is done with plain
+Qt Widgets painting.
 
 1. Using pre-built binary on conda
 
@@ -322,20 +326,17 @@ using this compiler
         conda activate myenv
 
 
-2. Using system installation on RHEL7
+2. Using system installation on RHEL8/RHEL9/Fedora
 
     .. code-block:: bash
 
-        yum install qt5-qtbase-devel.x86_64
-        yum install qt5-qtsvg-devel.x86_64 
+        dnf install qt6-qtbase-devel
 
-3. Using system installation on RHEL8
+3. Using system installation on Debian/Ubuntu
 
     .. code-block:: bash
 
-        yum install qt5-qtbase-devel.x86_64
-        yum install qt5-qtsvg-devel.x86_64 
-        yum install expat-devel.x86_64
+        apt install qt6-base-dev
 
 4. Using conda
 
@@ -346,20 +347,15 @@ using this compiler
         conda config --add channels slsdetectorgroup
         conda config --set channel_priority strict
 
-        # create environment to compile
-        # on rhel7
-        conda create -n slsgui gxx_linux-64 gxx_linux-64 mesa-libgl-devel-cos6-x86_64 qt
-        # on fedora or newer systems
-        conda create -n slsgui qt
-
-        # when using conda compilers, would also need libgl, but no need for it on fedora unless maybe using it with ROOT
+        # create environment to compile (qt6-main is the Qt6 base package on conda-forge)
+        conda create -n slsgui zeromq gxx_linux-64 qt6-main
 
         # activate environment
         conda activate slsgui
 
         # compile with cmake outside slsDetecorPackage folder
         mkdir build && cd build
-        cmake ../slsDetectorPackage -DSLS_USE_GUI=ON
+        cmake ../slsDetectorPackage -DSLS_USE_GUI=ON -DCMAKE_PREFIX_PATH=$CONDA_PREFIX
         make -j12
 
         # or compile with cmk.sh

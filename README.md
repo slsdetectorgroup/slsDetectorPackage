@@ -99,9 +99,13 @@ To use the basic building blocks, meaning sls_detector_get/put and the shared li
 
 #### GUI
 
-* Qt 5.9
+* Qt 6 (>= 6.2, components Widgets, Gui, Core and Concurrent)
 
-* Qwt 6.1.5 (packaged in libs)
+* libpng and zlib
+
+The GUI plotting (1D/2D plots, colour maps, scale panel) is implemented with
+plain Qt Widgets painting; Qwt, ROOT and OpenGL are no longer dependencies and
+the bundled Qwt copy has been removed.
 
 #### Moench executables
 
@@ -124,8 +128,6 @@ The documentation is built with
 * rapidjson (streaming from receiver)
 
 * pybind11 (python bindings)
-
-* qwt (gui plotting)
 
 * libzmq (streaming to/from receiver)
 
@@ -246,7 +248,11 @@ make -j12
 > **Note:** For v7.x.x of slsDetectorPackage and older, refer [zeromq notes for dependencies for conda](#4-pybind-and-zeromq).
 
 
-### 3.5. Build slsDetectorGui (Qt5)
+### 3.5. Build slsDetectorGui (Qt6)
+
+The GUI needs Qt 6 (>= 6.2) with the Widgets, Gui, Core and Concurrent modules.
+Qwt, Qt5, expat and Qt6Svg are no longer needed; the plotting is done with
+plain Qt Widgets painting.
 
 1. Using pre-built binary on conda
 ```
@@ -254,17 +260,14 @@ conda create -n myenv slsdetgui=7.0.0
 conda activate myenv
 ```
 
-2. Using system installation on RHEL7
+2. Using system installation on RHEL8/RHEL9/Fedora
 ```
-yum install qt5-qtbase-devel.x86_64
-yum install qt5-qtsvg-devel.x86_64 
+dnf install qt6-qtbase-devel
 ```
 
-3. Using system installation on RHEL8
+3. Using system installation on Debian/Ubuntu
 ```
-yum install qt5-qtbase-devel.x86_64
-yum install qt5-qtsvg-devel.x86_64 
-yum install expat-devel.x86_64
+apt install qt6-base-dev
 ```
 
 4. Using conda
@@ -274,20 +277,15 @@ conda config --add channels conda-forge
 conda config --add channels slsdetectorgroup
 conda config --set channel_priority strict
 
-# create environment to compile
-# on rhel7
-conda create -n slsgui zeromq gxx_linux-64 gxx_linux-64 mesa-libgl-devel-cos6-x86_64 qt
-# on fedora or newer systems
-conda create -n slsgui zeromq qt
-
-# when using conda compilers, would also need libgl, but no need for it on fedora unless maybe using it with ROOT
+# create environment to compile (qt6-main is the Qt6 base package on conda-forge)
+conda create -n slsgui zeromq gxx_linux-64 qt6-main
 
 # activate environment
 conda activate slsgui
 
 # compile with cmake outside slsDetecorPackage folder
 mkdir build && cd build
-cmake ../slsDetectorPackage -DSLS_USE_GUI=ON
+cmake ../slsDetectorPackage -DSLS_USE_GUI=ON -DCMAKE_PREFIX_PATH=$CONDA_PREFIX
 make -j12
 
 # or compile with cmk.sh

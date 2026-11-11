@@ -61,6 +61,12 @@ Welcome to slsDetectorPackage's documentation!
 
 
 .. toctree::
+    :caption: GUI
+    :maxdepth: 2
+
+    gui_plotting
+
+.. toctree::
     :caption: Developer
 
     container_utils

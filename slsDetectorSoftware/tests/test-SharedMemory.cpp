@@ -38,9 +38,14 @@ void freeShm(const int dindex, const int mIndex) {
 }
 
 constexpr int shm_id = 10;
+
+#ifndef __APPLE__
+
+const char *env_p = std::getenv(SHM_ENV_NAME);
+std::string env_name = env_p ? ("_" + std::string(env_p)) : "";
 const std::string file_path =
     std::string("/dev/shm/slsDetectorPackage_detector_") +
-    std::to_string(shm_id);
+    std::to_string(shm_id) + env_name;
 
 TEST_CASE("Free obsolete (without isValid)", "[detector][shm]") {
 
@@ -88,6 +93,8 @@ TEST_CASE("Free obsolete (without isValid)", "[detector][shm]") {
         REQUIRE(std::filesystem::exists(file_path) == false);
     }
 }
+
+#endif
 
 TEST_CASE("Create SharedMemory read and write", "[detector][shm]") {
     SharedMemory<Data> shm(shm_id, -1);

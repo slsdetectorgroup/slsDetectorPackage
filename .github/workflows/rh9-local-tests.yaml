@@ -1,8 +1,12 @@
 name: Run Simulator Tests on local RHEL9
 
 on:
-  push:
+  pull_request:
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
@@ -30,6 +34,11 @@ jobs:
       - name: Build
           # Build your program with the given configuration
         run: cmake --build build -j4 --config Debug
+
+      - name: C++ unit tests
+        run: |
+          cd build
+          ctest -j1  --rerun-failed --output-on-failure
 
       - name: Python unit tests with simulators
         run: |

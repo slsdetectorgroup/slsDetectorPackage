@@ -2044,10 +2044,9 @@ int configureMAC() {
         calcChecksum(udp);
 
         // force FPGA writes to be aligned and in order
-        uint32_t words[sizeof(udp_header) / sizeof(uint32_t)];
-        memcpy(words, udp, sizeof(udp_header));
-        for (size_t i = 0; i != sizeof(words) / sizeof(words[0]); ++i) {
-            bus_w(addr + i * sizeof(uint32_t), words[i]);
+        if (bus_w_block(addr, udp, sizeof(udp_header), false) == FAIL) {
+            LOG(logERROR, ("Failed to write UDP header\n"));
+            return FAIL;
         }
 
         if (iRxEntry < numUdpDestinations) {

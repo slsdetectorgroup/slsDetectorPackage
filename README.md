@@ -221,6 +221,9 @@ Usage: $0 [-b] [-c] [-d <HDF5 directory>] [-e] [-g] [-h] [-i]
 # new build, python and compile in parallel:
 ./cmk.sh -cbpj5
 
+# new build including the Qt6 GUI (see 3.5 for the Qt6 packages)
+./cmk.sh -cbgj9
+
 #For rebuilding only certain sections
 ./cmk.sh -tg #only text client and gui
 ./cmk.sh -r #only receiver

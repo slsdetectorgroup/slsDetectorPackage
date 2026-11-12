@@ -1,7 +1,13 @@
 #!/bin/bash
 # SPDX-License-Identifier: LGPL-3.0-or-other
 # Copyright (C) 2021 Contributors to the SLS Detector Package
-CMAKE="cmake3"
+# Prefer cmake3 when the distribution provides it (RHEL/CentOS), otherwise
+# use the default cmake.  -k <cmd> still overrides this.
+if command -v cmake3 >/dev/null 2>&1; then
+	CMAKE="cmake3"
+else
+	CMAKE="cmake"
+fi
 BUILDDIR="build"
 INSTALLDIR=""
 HDF5DIR="/opt/hdf5v1.10.0"
@@ -32,7 +38,7 @@ Usage: $0 [-b] [-c] [-d <HDF5 directory>] [-e] [-g] [-h] [-i] [-j <Number of thr
  -c: Clean
  -d: HDF5 Custom Directory
  -e: Debug mode
- -g: Build/Rebuilds gui
+ -g: Build/Rebuilds gui (requires Qt6)
  -h: Builds/Rebuilds Cmake files with HDF5 package
  -i: Builds tests
  -j: Number of threads to compile through
@@ -182,9 +188,8 @@ fi
 
 
 if [ $TEXTCLIENT -eq 0 ] && [ $RECEIVER -eq 0 ]  && [ $GUI -eq 0 ]; then
-	#CMAKE_POST+=" -DSLS_USE_TEXTCLIENT=ON -DSLS_USE_RECEIVER=ON -DSLS_USE_GUI=ON "
 	CMAKE_POST+=" -DSLS_USE_TEXTCLIENT=ON -DSLS_USE_RECEIVER=ON -DSLS_USE_GUI=OFF "
-    echo "Enabling Compile Option: TextClient, Receiver and GUI"
+    echo "Enabling Compile Option: TextClient and Receiver (GUI off; use -g)"
 else 
     if [ $TEXTCLIENT -eq 1 ]; then
         CMAKE_POST+=" -DSLS_USE_TEXTCLIENT=ON -DSLS_USE_RECEIVER=OFF "
@@ -264,6 +269,14 @@ else
 	CMAKE_POST+=" -DSLS_USE_HDF5=OFF "
 fi
 
+
+# Qt6 from conda-forge: cmake does not search $CONDA_PREFIX by itself when
+# the environment does not export CMAKE_PREFIX_PATH.  Only add the hint for
+# the GUI build so a plain `./cmk.sh -cbgjN` works in a conda environment.
+if [ $GUI -eq 1 ] && [ -n "${CONDA_PREFIX:-}" ] && [ -z "${CMAKE_PREFIX_PATH:-}" ]; then
+	CMAKE_POST+=" -DCMAKE_PREFIX_PATH=$CONDA_PREFIX"
+	echo "Using CMAKE_PREFIX_PATH from CONDA_PREFIX: $CONDA_PREFIX"
+fi
 
 #install
 if [ -n "$INSTALLDIR" ]; then

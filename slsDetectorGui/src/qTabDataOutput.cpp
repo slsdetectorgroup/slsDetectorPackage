@@ -231,6 +231,7 @@ void qTabDataOutput::GetFileFormat() {
         switch (retval) {
         case slsDetectorDefs::BINARY:
         case slsDetectorDefs::HDF5:
+        case slsDetectorDefs::ROOT:
             comboFileFormat->setCurrentIndex(static_cast<int>(retval));
             break;
         default:

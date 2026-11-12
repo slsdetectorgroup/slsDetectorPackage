@@ -1051,22 +1051,28 @@ class Detector {
      * ************************************************/
     Result<defs::fileFormat> getFileFormat(Positions pos = {}) const;
 
-    /** default binary, Options: BINARY, HDF5 (library must be compiled with
-     * this option). Changing the file format resets the file format options.
+    /** default binary, Options: BINARY, HDF5, ROOT (library must be compiled
+     * with the option for HDF5 or ROOT). Changing the file format resets the
+     * file format options.
      */
     void setFileFormat(defs::fileFormat f, Positions pos = {});
 
     Result<std::vector<std::vector<uint32_t>>>
     getFileFormatOptions(Positions pos = {}) const;
 
-    /** Options specific to the current file format. Default is no options.
-     * They are reset when the file format is changed. \n
+    /** Options specific to the current file format. No options sets the
+     * default of the file format. They are reset to the default when the
+     * file format is changed. \n
      * [HDF5] List of HDF5 filters (eg. compression) applied in the given
      * order to the image dataset. Each filter is a list with the HDF5 filter
      * id followed by its parameters (cd_values). eg. {{2}, {1, 6}} for
      * shuffle followed by gzip with compression level 6. Filters that are
      * not part of the HDF5 library must be available as plugins to the
-     * receiver (HDF5_PLUGIN_PATH). \n
+     * receiver (HDF5_PLUGIN_PATH). Default is no filters. \n
+     * [ROOT] A single option with a single value of defs::rootImageType,
+     * which is how the images are saved. eg. {{defs::ROOT_TH2I}}.
+     * ROOT_TTREE (default): every image is an entry in a tree. ROOT_TH2I:
+     * every image is a histogram. \n
      * [Binary] No options available. */
     void setFileFormatOptions(const std::vector<std::vector<uint32_t>> &options,
                               Positions pos = {});

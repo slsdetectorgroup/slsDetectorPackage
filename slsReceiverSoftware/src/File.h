@@ -69,6 +69,20 @@ class File : private virtual slsDetectorDefs {
                "should be overloaded by a derived class";
     };
 #endif
+#ifdef ROOTC
+    virtual void CreateFirstRootDataFile(
+        const std::filesystem::path &filePath,
+        const std::string &fileNamePrefix, const uint64_t fileIndex,
+        const bool overWriteEnable, const bool silentMode,
+        const uint16_t udpPortNumber, const uint32_t maxFramesPerFile,
+        const uint32_t nPixelsX, const uint32_t nPixelsY,
+        const uint32_t dynamicRange,
+        const std::vector<std::vector<uint32_t>> &options) {
+        LOG(logERROR)
+            << "This is a generic function CreateFirstRootDataFile that "
+               "should be overloaded by a derived class";
+    };
+#endif
     virtual void CreateFirstBinaryDataFile(
         const std::filesystem::path &filePath,
         const std::string &fileNamePrefix, const uint64_t fileIndex,

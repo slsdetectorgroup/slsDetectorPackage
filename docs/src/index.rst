@@ -113,6 +113,7 @@ slsDetectorPackage
     masterfileattributes
     binaryfileformat
     hdf5fileformat
+    rootfileformat
 
 .. toctree::
     :caption: Receiver ZMQ Stream

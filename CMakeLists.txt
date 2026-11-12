@@ -221,6 +221,7 @@ else()
 endif()
 
 option(SLS_USE_HDF5 "HDF5 File format" OFF)
+option(SLS_USE_ROOT "ROOT File format" OFF)
 option(SLS_BUILD_SHARED_LIBRARIES "Build shared libaries" OFF)
 option(SLS_USE_TEXTCLIENT "Text Client" ON)
 option(SLS_USE_DETECTOR "Detector libs" ON)

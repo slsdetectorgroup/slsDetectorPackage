@@ -16,6 +16,9 @@
 #ifdef HDF5C
 #include "HDF5DataFile.h"
 #endif
+#ifdef ROOTC
+#include "RootDataFile.h"
+#endif
 #include "DataStreamer.h"
 #include "sls/container_utils.h"
 #include "sls/sls_detector_exceptions.h"
@@ -139,11 +142,17 @@ void DataProcessor::SetupFileWriter(const bool filewriteEnable,
             dataFile = new HDF5DataFile(index, hdf5LibMutex);
             break;
 #endif
+#ifdef ROOTC
+        case ROOT:
+            dataFile = new RootDataFile(index);
+            break;
+#endif
         case BINARY:
             dataFile = new BinaryDataFile(index);
             break;
         default:
-            throw RuntimeError("Unknown file format (compile with hdf5 flags");
+            throw RuntimeError(
+                "Unknown file format (compile with hdf5 or root flags)");
         }
     }
 }
@@ -163,7 +172,7 @@ void DataProcessor::CreateFirstFiles(
         return;
     }
 
-#ifdef HDF5C
+#if defined(HDF5C) || defined(ROOTC)
     int nx = generalData->nPixelsX;
     int ny = generalData->nPixelsY;
     if (isPartiallyInRoi) {
@@ -183,13 +192,22 @@ void DataProcessor::CreateFirstFiles(
             generalData->dynamicRange, fileFormatOptions);
         break;
 #endif
+#ifdef ROOTC
+    case ROOT:
+        dataFile->CreateFirstRootDataFile(
+            filePath, fileNamePrefix, fileIndex, overWriteEnable, silentMode,
+            udpPortNumber, generalData->framesPerFile, nx, ny,
+            generalData->dynamicRange, fileFormatOptions);
+        break;
+#endif
     case BINARY:
         dataFile->CreateFirstBinaryDataFile(
             filePath, fileNamePrefix, fileIndex, overWriteEnable, silentMode,
             udpPortNumber, generalData->framesPerFile);
         break;
     default:
-        throw RuntimeError("Unknown file format (compile with hdf5 flags");
+        throw RuntimeError(
+            "Unknown file format (compile with hdf5 or root flags)");
     }
 }
 
@@ -262,12 +280,15 @@ std::string DataProcessor::CreateMasterFile(
             filePath, fileNamePrefix, fileIndex, overWriteEnable, silentMode,
             attr, hdf5LibMutex);
 #endif
+    // root data files have the same master file as binary data files (json)
+    case ROOT:
     case BINARY:
         return masterFileUtility::CreateMasterBinaryFile(
             filePath, fileNamePrefix, fileIndex, overWriteEnable, silentMode,
             attr);
     default:
-        throw RuntimeError("Unknown file format (compile with hdf5 flags");
+        throw RuntimeError(
+            "Unknown file format (compile with hdf5 or root flags)");
     }
 }
 

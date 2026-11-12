@@ -31,6 +31,17 @@ if (SLS_USE_HDF5)
 	    )
 endif (SLS_USE_HDF5)
 
+# ROOT file writing
+if (SLS_USE_ROOT)
+    find_package(ROOT REQUIRED COMPONENTS RIO Tree Hist)
+    add_definitions(
+        -DROOTC
+    )
+    list (APPEND SOURCES
+        src/RootDataFile.cpp
+    )
+endif (SLS_USE_ROOT)
+
 # Create an object library to avoid building the library twice
 # This is only used during the build phase
 add_library(slsReceiverObject OBJECT
@@ -66,6 +77,14 @@ if (SLS_USE_HDF5)
             ${CMAKE_INSTALL_PREFIX}/include)
     endif ()
 endif (SLS_USE_HDF5)
+
+# ROOT
+if (SLS_USE_ROOT)
+    target_link_libraries(slsReceiverObject PUBLIC
+        ${ROOT_LIBRARIES})
+    target_include_directories(slsReceiverObject SYSTEM PUBLIC
+        ${ROOT_INCLUDE_DIRS})
+endif (SLS_USE_ROOT)
 
 set(RECEIVER_LIBRARY_TARGETS slsReceiverObject)
 

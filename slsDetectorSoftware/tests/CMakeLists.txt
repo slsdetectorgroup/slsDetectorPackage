@@ -41,6 +41,14 @@ if (SLS_USE_HDF5)
     )
 endif (SLS_USE_HDF5)
 
+# ROOT file
+if (SLS_USE_ROOT)
+    target_compile_definitions(tests
+        PUBLIC
+            -DROOTC
+    )
+endif (SLS_USE_ROOT)
+
 target_compile_options(tests
     PRIVATE
     # Suppress warnings for deprecated functions in rapidjson

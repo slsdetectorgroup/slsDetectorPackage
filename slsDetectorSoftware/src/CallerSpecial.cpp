@@ -987,18 +987,49 @@ parseFileFormatOptions(const std::vector<std::string> &args) {
     return options;
 }
 
+/** true if it is the name of a file format option of root (eg. TTree) */
+bool isRootImageType(const std::string &s) {
+    try {
+        StringTo<defs::rootImageType>(s);
+    } catch (const std::exception &) {
+        return false;
+    }
+    return true;
+}
+
+/**
+ * File format options of root as text. The option of a module is a single
+ * value of rootImageType, which is printed as its name (eg. TTree).
+ */
+Result<std::string> rootFileFormatOptionsToString(
+    const Result<std::vector<std::vector<uint32_t>>> &options) {
+    Result<std::string> names;
+    for (const auto &it : options) {
+        if (it.size() == 1 && it[0].size() == 1) {
+            names.push_back(
+                ToString(static_cast<defs::rootImageType>(it[0][0])));
+        } else {
+            names.push_back(ToString(it));
+        }
+    }
+    return names;
+}
+
 } // namespace
 
 std::string Caller::fformatoptions(int action) {
     std::ostringstream os;
     std::string helpMessage =
-        std::string("[filter id] [param 1] [param 2]... or [none]\n") +
+        std::string("[filter id] [param 1] [param 2]... or [TTree|TH2I] or "
+                    "[none]\n") +
         "\tOptions specific to the file format (fformat) of the data files "
-        "written by the receiver. Default is none.\n"
-        "\tThey are reset to none when the file format is changed.\n\n"
+        "written by the receiver.\n"
+        "\tThey are reset to the default of the file format when the file "
+        "format is changed.\n"
+        "\tUse 'none' to set the default of the file format.\n\n"
 
         "\t[hdf5] List of HDF5 filters (eg. compression) applied in the "
-        "given order to the image dataset.\n"
+        "given order to the image dataset. Default is none (no filters).\n"
         "\tA filter is the HDF5 filter id followed by its parameters "
         "(cd_values), all unsigned integers.\n"
         "\tFor example, to set a single filter (gzip with compression level "
@@ -1019,6 +1050,15 @@ std::string Caller::fformatoptions(int action) {
         "HDF5_PLUGIN_PATH.\n"
         "\t- Use 'none' to remove all filters.\n\n"
 
+        "\t[root] [TTree|TH2I] How the images are saved. Default is TTree.\n"
+        "\tTTree: Every image is an entry in the tree 'frames'. The image is "
+        "in the branch 'data' and the header of the image in the other "
+        "branches.\n"
+        "\tTH2I: Every image is a histogram called 'frame_[frame number]'. "
+        "The headers of the images are in the tree 'frames'. The bins are "
+        "signed 32 bit integers, so larger values are saved as the maximum "
+        "of a signed 32 bit integer.\n\n"
+
         "\t[binary] No options available.\n";
 
     if (action == defs::HELP_ACTION) {
@@ -1028,25 +1068,53 @@ std::string Caller::fformatoptions(int action) {
             WrongNumberOfParameters(0);
         }
         auto t = det->getFileFormatOptions(std::vector<int>{det_id});
-        os << OutString(t) << '\n';
+        // the options depend on the file format
+        auto format = det->getFileFormat(std::vector<int>{det_id})
+                          .squash(defs::NUM_FILE_FORMATS);
+        if (format == defs::ROOT) {
+            os << OutString(rootFileFormatOptionsToString(t)) << '\n';
+        } else {
+            os << OutString(t) << '\n';
+        }
     } else if (action == defs::PUT_ACTION) {
         if (args.empty()) {
             WrongNumberOfParameters(1);
         }
+        // the options depend on the file format
+        auto format = det->getFileFormat(std::vector<int>{det_id})
+                          .squash(defs::NUM_FILE_FORMATS);
         std::vector<std::vector<uint32_t>> t;
         // 'none' option already covered as t is empty by default
         if (args.size() != 1 || args[0] != "none") {
-            try {
-                t = parseFileFormatOptions(args);
-            } catch (const std::exception &e) {
-                throw RuntimeError(
-                    "Could not parse file format options: " +
-                    std::string(e.what()) + ". Use sls_detector_help " + cmd +
-                    " to get the right syntax expected.");
+            if (format == defs::ROOT) {
+                if (args.size() != 1) {
+                    WrongNumberOfParameters(1);
+                }
+                auto type = StringTo<defs::rootImageType>(args[0]);
+                t.push_back({static_cast<uint32_t>(type)});
+            } else {
+                if (args.size() == 1 && isRootImageType(args[0])) {
+                    throw RuntimeError(args[0] + " is only available for " +
+                                       ToString(defs::ROOT) + " file format");
+                }
+                try {
+                    t = parseFileFormatOptions(args);
+                } catch (const std::exception &e) {
+                    throw RuntimeError(
+                        "Could not parse file format options: " +
+                        std::string(e.what()) + ". Use sls_detector_help " +
+                        cmd + " to get the right syntax expected.");
+                }
             }
         }
         det->setFileFormatOptions(t, std::vector<int>{det_id});
-        os << ToString(t) << '\n';
+        if (format == defs::ROOT) {
+            // 'none' sets the default
+            auto r = det->getFileFormatOptions(std::vector<int>{det_id});
+            os << OutString(rootFileFormatOptionsToString(r)) << '\n';
+        } else {
+            os << ToString(t) << '\n';
+        }
     } else {
         throw RuntimeError("Unknown action");
     }

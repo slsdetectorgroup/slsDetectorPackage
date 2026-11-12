@@ -3,7 +3,7 @@
 Binary File Format
 ====================
 
-This is the default file format that can be configured using command `fformat <commandline.html#term-fformat-binary-hdf5>`_.
+This is the default file format that can be configured using command `fformat <commandline.html#term-fformat-binary-hdf5-root>`_.
 
     .. code-block:: bash
 

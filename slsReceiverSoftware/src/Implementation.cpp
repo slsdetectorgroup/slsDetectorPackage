@@ -10,6 +10,9 @@
 #endif
 #include "Listener.h"
 #include "MasterAttributes.h"
+#ifdef ROOTC
+#include "RootDataFile.h"
+#endif
 #include "sls/ToString.h"
 #include "sls/ZmqSocket.h" //just for the zmq port define
 #include "sls/file_utils.h"
@@ -470,6 +473,21 @@ std::vector<slsDetectorDefs::ROI> Implementation::getMultiROIMetadata() const {
  *   File Parameters                               *
  *                                                 *
  * ************************************************/
+namespace {
+
+/** file format options of a file format when none are set */
+std::vector<std::vector<uint32_t>>
+GetDefaultFileFormatOptions(const slsDetectorDefs::fileFormat f) {
+    std::vector<std::vector<uint32_t>> options;
+    if (f == slsDetectorDefs::ROOT) {
+        options.push_back(
+            {static_cast<uint32_t>(slsDetectorDefs::ROOT_TTREE)});
+    }
+    return options;
+}
+
+} // namespace
+
 slsDetectorDefs::fileFormat Implementation::getFileFormat() const {
     return fileFormatType;
 }
@@ -482,6 +500,11 @@ void Implementation::setFileFormat(const fileFormat f) {
             fileFormatType = HDF5;
             break;
 #endif
+#ifdef ROOTC
+        case ROOT:
+            fileFormatType = ROOT;
+            break;
+#endif
         case BINARY:
             fileFormatType = BINARY;
             break;
@@ -491,10 +514,9 @@ void Implementation::setFileFormat(const fileFormat f) {
         for (const auto &it : dataProcessor)
             it->SetupFileWriter(fileWriteEnable, fileFormatType, &hdf5LibMutex);
         // options belong to the previous file format
-        if (!fileFormatOptions.empty()) {
-            fileFormatOptions.clear();
-            LOG(logINFO) << "File Format Options reset";
-        }
+        fileFormatOptions = GetDefaultFileFormatOptions(fileFormatType);
+        LOG(logINFO) << "File Format Options reset to "
+                     << ToString(fileFormatOptions);
     }
 
     LOG(logINFO) << "File Format: " << ToString(fileFormatType);
@@ -514,6 +536,11 @@ void Implementation::setFileFormatOptions(
         HDF5DataFile::ValidateFilters(options);
     } break;
 #endif
+#ifdef ROOTC
+    case ROOT:
+        RootDataFile::ValidateOptions(options);
+        break;
+#endif
     default:
         if (!options.empty()) {
             throw RuntimeError("No file format options available for " +
@@ -521,7 +548,10 @@ void Implementation::setFileFormatOptions(
         }
         break;
     }
-    fileFormatOptions = options;
+    // no options sets the default of the file format
+    fileFormatOptions = options.empty()
+                            ? GetDefaultFileFormatOptions(fileFormatType)
+                            : options;
     LOG(logINFO) << "File Format Options: " << ToString(fileFormatOptions);
 }
 

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2026 Contributors to the SLS Detector Package
 //
-// Qt6::Test suite for the Qt6-only plotting stack (verification task).
+// QtTest suite for the Qt5/Qt6 plotting stack (verification task).
 //
 // Everything is checked through the public API or through rendered pixels; the
 // widgets are shown on the offscreen QPA platform and rendered synchronously
@@ -92,9 +92,16 @@ void sendMouse(QWidget &w, QEvent::Type type, const QPointF &pos,
 }
 
 void sendWheel(QWidget &w, const QPointF &pos, int deltaY) {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
     QWheelEvent e(pos, QPointF(w.mapToGlobal(pos.toPoint())), QPoint(),
                   QPoint(0, deltaY), Qt::NoButton, Qt::NoModifier,
                   Qt::NoScrollPhase, false);
+#else
+    // Qt 5.9 (RHEL 7): the scroll-phase constructor does not exist yet.
+    QWheelEvent e(pos, QPointF(w.mapToGlobal(pos.toPoint())), QPoint(),
+                  QPoint(0, deltaY), 0, Qt::Vertical, Qt::NoButton,
+                  Qt::NoModifier);
+#endif
     QCoreApplication::sendEvent(&w, &e);
 }
 
@@ -908,7 +915,9 @@ void PlottingTest::scalePanelReentrancy() {
     QVERIFY(!panel.isDragging());
 
     // view -> controls -> view must not recurse (sympass guard): one change,
-    // one spin-box update, no push-back loop.
+    // one control update, no push-back loop.  The min/max spin boxes were
+    // removed from the plot window; the range is owned by the Plot tab, so
+    // the panel only keeps the last range it read from/wrote to the view.
     int rangeCalls = 0;
     view.onColorRangeChanged = [&](double, double) { rangeCalls++; };
     panel.setColorRange(1.0, 5.0);
@@ -916,13 +925,8 @@ void PlottingTest::scalePanelReentrancy() {
     double a = 0.0, b = 0.0;
     view.colorRange(a, b);
     QVERIFY(near(a, 1.0) && near(b, 5.0));
-    const QList<QDoubleSpinBox *> spins = panel.findChildren<QDoubleSpinBox *>();
-    QCOMPARE(int(spins.size()), 2);
-    QStringList spinValues;
-    for (QDoubleSpinBox *s : spins)
-        spinValues << QString::number(s->value(), 'f', 1);
-    QVERIFY(spinValues.contains(QStringLiteral("1.0")));
-    QVERIFY(spinValues.contains(QStringLiteral("5.0")));
+    panel.controlRange(a, b);
+    QVERIFY(near(a, 1.0) && near(b, 5.0));
 
     // refresh()/push() round trip is stable (idempotent, no re-entrancy).
     panel.refresh();

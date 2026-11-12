@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: LGPL-3.0-or-other
 # Copyright (C) 2026 Contributors to the SLS Detector Package
 #
-# Qt6::Test suite for the Qt6-only plotting stack.
+# QtTest suite for the Qt5/Qt6 plotting stack.
 #
 # Wired in from slsDetectorGui/CMakeLists.txt by an EXISTS guard; the plotting
 # sources are compiled once into the slsDetectorPlotting static library there
@@ -12,7 +12,13 @@
 #         (or "ctest -R plotting" when the project is configured with
 #          -DSLS_USE_TESTS=ON)
 
-find_package(Qt6 6.2 REQUIRED COMPONENTS Test)
+if(SLS_GUI_QT_MAJOR STREQUAL "5")
+    find_package(Qt5 5.9 REQUIRED COMPONENTS Test)
+    set(SLS_QT_TEST Qt5::Test)
+else()
+    find_package(Qt6 6.2 REQUIRED COMPONENTS Test)
+    set(SLS_QT_TEST Qt6::Test)
+endif()
 
 if(NOT TARGET slsDetectorPlotting)
     message(FATAL_ERROR
@@ -25,7 +31,7 @@ add_executable(plotting_test
 )
 target_link_libraries(plotting_test PRIVATE
     slsDetectorPlotting
-    Qt6::Test
+    ${SLS_QT_TEST}
 )
 set_target_properties(plotting_test PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"

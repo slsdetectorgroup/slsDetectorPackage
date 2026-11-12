@@ -5,9 +5,20 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
 
-# Qt6 only (Widgets/Gui/Core). Concurrent is needed for the acquisition
-# thread in qDrawPlot.cpp. No Qwt, no Qt5 compatibility modules.
-find_package(Qt6 6.2 REQUIRED COMPONENTS Widgets Gui Core Concurrent)
+# Qt 5 or 6 (Widgets/Gui/Core). Concurrent is needed for the acquisition
+# thread in qDrawPlot.cpp. No Qwt.  SLS_GUI_QT_MAJOR selects the Qt major
+# version; Qt 5 is needed on older distributions such as RHEL 7.
+if(SLS_GUI_QT_MAJOR STREQUAL "6")
+    find_package(Qt6 6.2 REQUIRED COMPONENTS Widgets Gui Core Concurrent)
+    set(SLS_QT_LIBS Qt6::Widgets Qt6::Gui Qt6::Core)
+    set(SLS_QT_CONCURRENT Qt6::Concurrent)
+elseif(SLS_GUI_QT_MAJOR STREQUAL "5")
+    find_package(Qt5 5.9 REQUIRED COMPONENTS Widgets Gui Core Concurrent)
+    set(SLS_QT_LIBS Qt5::Widgets Qt5::Gui Qt5::Core)
+    set(SLS_QT_CONCURRENT Qt5::Concurrent)
+else()
+    message(FATAL_ERROR "SLS_GUI_QT_MAJOR must be 5 or 6 (got ${SLS_GUI_QT_MAJOR})")
+endif()
 
 find_package(PNG REQUIRED)
 find_package(ZLIB REQUIRED)
@@ -50,9 +61,7 @@ target_link_libraries(slsDetectorPlotting
         slsProjectOptions
         # sls/ansi.h, sls/sls_detector_defs.h and the logger symbols
         slsSupportStatic
-        Qt6::Widgets
-        Qt6::Gui
-        Qt6::Core
+        ${SLS_QT_LIBS}
     PRIVATE
         slsProjectWarnings
 )
@@ -89,7 +98,11 @@ set(FORMS
     forms/form_cloneplot.ui
 )
 
-qt6_wrap_ui(FORMS_H ${FORMS})
+if(SLS_GUI_QT_MAJOR STREQUAL "6")
+    qt6_wrap_ui(FORMS_H ${FORMS})
+else()
+    qt5_wrap_ui(FORMS_H ${FORMS})
+endif()
 
 set(HEADERS
     include/qDefs.h
@@ -110,7 +123,11 @@ set(HEADERS
 set(RESOURCES
     include/icons.qrc
 )
-qt6_add_resources(RESOURCES_SRCS ${RESOURCES})
+if(SLS_GUI_QT_MAJOR STREQUAL "6")
+    qt6_add_resources(RESOURCES_SRCS ${RESOURCES})
+else()
+    qt5_add_resources(RESOURCES_SRCS ${RESOURCES})
+endif()
 
 
 add_executable(slsDetectorGui
@@ -134,10 +151,8 @@ target_link_libraries(slsDetectorGui PUBLIC
     slsDetectorPlotting
     PNG::PNG
     ZLIB::ZLIB
-    Qt6::Widgets
-    Qt6::Gui
-    Qt6::Core
-    Qt6::Concurrent
+    ${SLS_QT_LIBS}
+    ${SLS_QT_CONCURRENT}
     
     PRIVATE
     slsProjectWarnings

@@ -1,12 +1,14 @@
-Plotting in slsDetectorGui (Qt6)
-================================
+Plotting in slsDetectorGui (Qt 5 / Qt 6)
+=======================================
 
 The detector GUI used to draw every plot with the bundled **Qwt 6.1.5**
 library.  That dependency has been removed together with its build rules and
 sources.  All plots in `slsDetectorGui` are now painted by a small,
-self-contained stack that only needs **Qt 6 Widgets / Gui / Core** (plus
-`Qt6::Concurrent` for the acquisition thread).  There is no ROOT, Qwt,
-Qt Charts or OpenGL dependency and no Qt5 compatibility layer.
+self-contained stack that needs only **Qt Widgets / Gui / Core** (plus the
+Qt `Concurrent` module for the acquisition thread).  It builds against **Qt 5
+(>= 5.9) or Qt 6 (>= 6.2)**; Qt 6 is the default, while Qt 5 keeps older
+distributions such as RHEL 7 usable.  There is no ROOT, Qwt, Qt Charts or
+OpenGL dependency.
 
 The stack lives in `slsDetectorGui/slsDetectorPlotting` and is compiled once
 into the static library `slsDetectorPlotting`, which is linked by the GUI
@@ -32,8 +34,9 @@ Components
    * - `SlsQtScaleHisto`
      - Thin 256-bin histogram strip with two draggable range markers.
    * - `SlsQtScalePanel`
-     - The strip plus palette chooser, image/histogram lin-log switches and
-       min/max spin boxes, kept in sync with the image view in both directions.
+     - The strip plus palette chooser and image/histogram lin-log switches.
+       The colour min/max are edited in the Plot tab; the panel synchronises
+       its range with the image view in both directions.
    * - `SlsQt2DPlot` / `SlsQt2DHist`
      - The GUI 2D detector plot and its plain data container: z range, lin/log
        z, bilinear interpolation, contour lines and ROI boxes.  The z-axis
@@ -117,6 +120,8 @@ Removing Qwt
 
 `libs/qwt` is gone from the source tree and the build; `slsDetectorGui` no
 longer finds or links Qwt, and no source under `slsDetectorPlotting` includes
-a `qwt_*` header.  The package metadata and documentation refer to the Qt6
-runtime packages instead (`qt6-qtbase` on RPM based systems, `qt6-base-dev`
-on Debian/Ubuntu, `qt6-main` in conda).
+a `qwt_*` header.  The package metadata and documentation refer to the Qt
+runtime packages instead (`qt6-qtbase`/`qt5-qtbase` on RPM based systems,
+`qt6-base-dev`/`qtbase5-dev` on Debian/Ubuntu, `qt6-main`/`qt-main` in
+conda), selected by `SLS_GUI_QT_MAJOR` (or `cmk.sh -G` for Qt 6 and `-g` for
+Qt 5).

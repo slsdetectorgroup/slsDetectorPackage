@@ -99,13 +99,17 @@ To use the basic building blocks, meaning sls_detector_get/put and the shared li
 
 #### GUI
 
-* Qt 6 (>= 6.2, components Widgets, Gui, Core and Concurrent)
+* Qt 5 (>= 5.9) **or** Qt 6 (>= 6.2), components Widgets, Gui, Core and
+  Concurrent.  Qt 6 is the default; Qt 5 keeps older distributions such as
+  RHEL 7 buildable.
 
 * libpng and zlib
 
 The GUI plotting (1D/2D plots, colour maps, scale panel) is implemented with
 plain Qt Widgets painting; Qwt, ROOT and OpenGL are no longer dependencies and
-the bundled Qwt copy has been removed.
+the bundled Qwt copy has been removed. The Plot settings tab can be detached
+with **View -> Detach Plot Settings**, so the configuration stays reachable
+while an acquisition is started/stopped.
 
 #### Moench executables
 
@@ -188,7 +192,7 @@ ccmake ..
 ```
 The binaries are generated in slsDetectorPackage/build/bin directory.
 
-Usage: $0 [-b] [-c] [-d <HDF5 directory>] [-e] [-g] [-h] [-i]
+Usage: $0 [-b] [-c] [-d <HDF5 directory>] [-e] [-g] [-G] [-h] [-i]
 [-j <Number of threads>] [-k <CMake command>] [-l <Install directory>]
 [-m] [-n] [-p] [-r] [-s] [-t] [-u] [-z]
 -[no option]: only make
@@ -196,7 +200,8 @@ Usage: $0 [-b] [-c] [-d <HDF5 directory>] [-e] [-g] [-h] [-i]
 -c: Clean
 -d: HDF5 Custom Directory
 -e: Debug mode
--g: Build/Rebuilds gui
+-g: Build/Rebuilds gui with Qt5
+-G: Build/Rebuilds gui with Qt6
 -h: Builds/Rebuilds Cmake files with HDF5 package
 -i: Builds tests
 -j: Number of threads to compile through
@@ -221,11 +226,13 @@ Usage: $0 [-b] [-c] [-d <HDF5 directory>] [-e] [-g] [-h] [-i]
 # new build, python and compile in parallel:
 ./cmk.sh -cbpj5
 
-# new build including the Qt6 GUI (see 3.5 for the Qt6 packages)
-./cmk.sh -cbgj9
+# new build including the GUI (see 3.5 for the Qt packages)
+./cmk.sh -cbgj9  # Qt 5 GUI (RHEL 7/older)
+./cmk.sh -cbGj9  # Qt 6 GUI
 
 #For rebuilding only certain sections
-./cmk.sh -tg #only text client and gui
+./cmk.sh -tg #text client and Qt5 gui
+./cmk.sh -tG #text client and Qt6 gui
 ./cmk.sh -r #only receiver
 ```
 
@@ -251,11 +258,18 @@ make -j12
 > **Note:** For v7.x.x of slsDetectorPackage and older, refer [zeromq notes for dependencies for conda](#4-pybind-and-zeromq).
 
 
-### 3.5. Build slsDetectorGui (Qt6)
+### 3.5. Build slsDetectorGui (Qt 5 or Qt 6)
 
-The GUI needs Qt 6 (>= 6.2) with the Widgets, Gui, Core and Concurrent modules.
-Qwt, Qt5, expat and Qt6Svg are no longer needed; the plotting is done with
-plain Qt Widgets painting.
+The GUI builds against Qt 5 (>= 5.9) or Qt 6 (>= 6.2), selected with
+`-DSLS_GUI_QT_MAJOR=5|6` (default 6).  Use Qt 5 on older distributions such as
+RHEL 7; Qt 6 is the default elsewhere.  Qwt, expat and Qt6Svg are no longer
+needed; the plotting is done with plain Qt Widgets painting.
+
+With cmk.sh, use `-g` for Qt 5 and `-G` for Qt 6:
+```
+./cmk.sh -cbgj9     # Qt 5 GUI
+./cmk.sh -cbGj9     # Qt 6 GUI
+```
 
 1. Using pre-built binary on conda
 ```
@@ -263,14 +277,19 @@ conda create -n myenv slsdetgui=7.0.0
 conda activate myenv
 ```
 
-2. Using system installation on RHEL8/RHEL9/Fedora
+2. Using system installation on RHEL 7 / RHEL 8 / RHEL 9 / Fedora
 ```
+# Qt 6 (RHEL 8/9, Fedora)
 dnf install qt6-qtbase-devel
+
+# Qt 5 (RHEL 7 and older)
+dnf install qt5-qtbase-devel
 ```
 
 3. Using system installation on Debian/Ubuntu
 ```
-apt install qt6-base-dev
+apt install qt6-base-dev   # Qt 6
+apt install qtbase5-dev    # Qt 5
 ```
 
 4. Using conda
@@ -280,7 +299,7 @@ conda config --add channels conda-forge
 conda config --add channels slsdetectorgroup
 conda config --set channel_priority strict
 
-# create environment to compile (qt6-main is the Qt6 base package on conda-forge)
+# create environment to compile (qt6-main is the Qt 6 base package on conda-forge; use qt-main for Qt 5)
 conda create -n slsgui zeromq gxx_linux-64 qt6-main
 
 # activate environment
@@ -288,12 +307,12 @@ conda activate slsgui
 
 # compile with cmake outside slsDetecorPackage folder
 mkdir build && cd build
-cmake ../slsDetectorPackage -DSLS_USE_GUI=ON -DCMAKE_PREFIX_PATH=$CONDA_PREFIX
+cmake ../slsDetectorPackage -DSLS_USE_GUI=ON -DSLS_GUI_QT_MAJOR=6 -DCMAKE_PREFIX_PATH=$CONDA_PREFIX
 make -j12
 
-# or compile with cmk.sh
+# or compile with cmk.sh (Qt 6; use -g instead of -G for Qt 5)
 cd slsDetectorPackage
-./cmk.sh -cbgj9
+./cmk.sh -cbGj9
 ```
 
 > **Note:** For v7.x.x of slsDetectorPackage and older, refer [zeromq notes for dependencies for conda](#4-pybind-and-zeromq).

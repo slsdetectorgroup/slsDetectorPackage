@@ -5,6 +5,8 @@
 #include "sls/Detector.h"
 #include "ui_form_detectormain.h"
 class QResizeEvent;
+class QAction;
+class QDockWidget;
 
 namespace sls {
 
@@ -38,6 +40,7 @@ class qDetectorMain : public QMainWindow, private Ui::DetectorMainObject {
     void ResizeMainWindow(bool b);
     void EnableTabs(bool enable);
     void SetZoomToolTip(bool disable);
+    void SetPlotSettingsDetached(bool detached);
 
   protected:
     void resizeEvent(QResizeEvent *event);
@@ -71,6 +74,8 @@ class qDetectorMain : public QMainWindow, private Ui::DetectorMainObject {
     qTabDebugging *tabDebugging;
     qTabDeveloper *tabDeveloper;
     qTabMessages *tabMessages;
+    QDockWidget *dockWidgetPlotSettings{nullptr};
+    QAction *actionDetachPlotSettings{nullptr};
     int isDeveloper{false};
     QString zoomToolTip;
     QColor defaultTabColor;

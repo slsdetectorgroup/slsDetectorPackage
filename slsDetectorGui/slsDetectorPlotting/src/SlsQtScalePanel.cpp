@@ -5,7 +5,6 @@
 #include "SlsQtFastImage.h"
 
 #include <QComboBox>
-#include <QDoubleSpinBox>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QMouseEvent>
@@ -181,8 +180,8 @@ void SlsQtScaleHisto::paintEvent(QPaintEvent *) {
 
 void SlsQtScaleHisto::mousePressEvent(QMouseEvent *e) {
     const double xa = 0.25 * width(), xb = 0.75 * width();
-    const double d = std::abs(e->position().x() - xa);
-    const double d2 = std::abs(e->position().x() - xb);
+    const double d = std::abs(sls::plot::eventPosition(e).x() - xa);
+    const double d2 = std::abs(sls::plot::eventPosition(e).x() - xb);
     if (std::min(d, d2) > 10) {
         m_dragMin = -1; // too far from either marker: ignore
         return;
@@ -197,7 +196,7 @@ void SlsQtScaleHisto::mousePressEvent(QMouseEvent *e) {
         m_snap = *m_hist; // the bars: frozen as well (the image keeps updating)
     m_preClo = m_clo;     // the axis basis: frozen until the button is released
     m_preChi = m_chi;
-    m_previewX = e->position().toPoint().x();
+    m_previewX = sls::plot::eventPosition(e).toPoint().x();
     mouseMoveEvent(e);
 }
 
@@ -213,14 +212,14 @@ void SlsQtScaleHisto::mouseMoveEvent(QMouseEvent *e) {
     // mapped to a different value, so the marker chased itself.
     double wlo = 0.0, whi = 1.0;
     windowFor(m_preClo, m_preChi, wlo, whi);
-    const double t = std::max(0.0, std::min(1.0, double(e->position().x()) / W));
+    const double t = std::max(0.0, std::min(1.0, double(sls::plot::eventPosition(e).x()) / W));
     const double vBin = wlo + t * (whi - wlo);
     const double v = m_logX ? std::pow(10.0, vBin) : vBin;
     if (m_dragMin == 1)
         m_clo = std::min(v, m_chi - 1e-9);
     else
         m_chi = std::max(v, m_clo + 1e-9);
-    m_previewX = e->position().toPoint().x();
+    m_previewX = sls::plot::eventPosition(e).toPoint().x();
     update(); // only the preview line moves; bars and axis stay frozen
 }
 
@@ -266,15 +265,6 @@ SlsQtScalePanel::SlsQtScalePanel(SlsQtFastImage *view, QWidget *parent)
         QStringLiteral("histogram bars: linear counts, or log10(count+1).\n"
                        "The histogram's value axis always follows the image\n"
                        "mapping above."));
-    m_loSpin = new QDoubleSpinBox(this);
-    m_hiSpin = new QDoubleSpinBox(this);
-    for (QDoubleSpinBox *b : {m_loSpin, m_hiSpin}) {
-        b->setRange(-1e9, 1e9);
-        b->setDecimals(1);
-        b->setSingleStep(1.0);
-        b->setKeyboardTracking(false);
-        b->setFixedWidth(84);
-    }
     m_paletteCombo->setMinimumContentsLength(12);
 
     row->addWidget(new QLabel(QStringLiteral("palette:"), this));
@@ -283,10 +273,6 @@ SlsQtScalePanel::SlsQtScalePanel(SlsQtFastImage *view, QWidget *parent)
     row->addWidget(m_imageLogCombo);
     row->addWidget(new QLabel(QStringLiteral("histo"), this));
     row->addWidget(m_histoLogCombo);
-    row->addWidget(new QLabel(QStringLiteral("min"), this));
-    row->addWidget(m_loSpin);
-    row->addWidget(new QLabel(QStringLiteral("max"), this));
-    row->addWidget(m_hiSpin);
     row->addStretch(1);
     col->addLayout(row);
 
@@ -303,28 +289,12 @@ SlsQtScalePanel::SlsQtScalePanel(SlsQtFastImage *view, QWidget *parent)
     connect(m_histoLogCombo,
             QOverload<int>::of(&QComboBox::currentIndexChanged), this,
             [this](int) { updateHisto(); });
-    // Only a real edit of the spin boxes may push the colour range; values set
-    // by refresh() happen under m_suppress and never mark an edit (R2).
-    connect(m_loSpin, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this,
-            [this](double) {
-                if (!m_suppress)
-                    m_rangeEdited = true;
-                push();
-            });
-    connect(m_hiSpin, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this,
-            [this](double) {
-                if (!m_suppress)
-                    m_rangeEdited = true;
-                push();
-            });
     m_histo->onRangeChanged = [this](double a, double b) {
         if (m_suppress || !m_view)
             return;
         m_view->setColorRange(a, b);
-        m_suppress++;
-        m_loSpin->setValue(a);
-        m_hiSpin->setValue(b);
-        m_suppress--;
+        m_controlLo = a;
+        m_controlHi = b;
         refresh();
     };
 
@@ -415,18 +385,16 @@ void SlsQtScalePanel::refresh() {
     // range fed the drag back into the bars.  Frozen until release, when
     // onScaleReleased() calls this again.
     // R1: the same holds while one of the strip's own markers is dragged -
-    // otherwise the incoming frames keep moving the min/max spin boxes (and
-    // the strip labels) under the frozen marker.
+    // otherwise the incoming frames keep moving the control range (and the
+    // strip labels) under the frozen marker.
     if (m_view->isScaleDragging() ||
         (m_histo && m_histo->isDragging()))
         return;
     m_suppress++;
     double a = 0.0, b = 1.0;
     m_view->colorRange(a, b);
-    if (m_loSpin)
-        m_loSpin->setValue(a);
-    if (m_hiSpin)
-        m_hiSpin->setValue(b);
+    m_controlLo = a;
+    m_controlHi = b;
     if (m_imageLogCombo)
         m_imageLogCombo->setCurrentIndex(m_view->logScale() ? 1 : 0);
     const int pi = m_view->paletteIndex();
@@ -446,22 +414,17 @@ void SlsQtScalePanel::push() { // controls -> view
     if (pi >= 0)
         m_view->setPaletteLut(
             sls::plot::paletteLut(static_cast<sls::plot::Palette>(pi)));
-    // R2: only push the colour range when the min/max spin boxes were really
-    // edited.  The spins show 1-decimal values, while the automatic z range
-    // computed by SlsQt2DPlot is not rounded; pushing the spins on a palette or
-    // log change would perturb that range and (via onColorRangeChanged) pin
-    // the 2D panel override forever.  A strip-marker drag applies its range
-    // directly in the onRangeChanged handler, not here.
+    // R2: only push the colour range on an explicit control edit (the Plot
+    // tab owns min/max; the panel only synchronises it).  Palette/log changes
+    // must not perturb the automatic z range.  A strip-marker drag applies its
+    // range directly in the onRangeChanged handler, not here.
     if (m_rangeEdited) {
         m_rangeEdited = false;
-        double a = m_loSpin ? m_loSpin->value() : 0.0;
-        double b = m_hiSpin ? m_hiSpin->value() : 1.0;
+        double a = m_controlLo;
+        double b = m_controlHi;
         if (!(b > a)) {
             b = a + 1.0;
-            m_suppress++;
-            if (m_hiSpin)
-                m_hiSpin->setValue(b);
-            m_suppress--;
+            m_controlHi = b;
         }
         m_lastPushedValid = true;
         m_lastPushedLo = a;
@@ -472,19 +435,14 @@ void SlsQtScalePanel::push() { // controls -> view
 }
 
 void SlsQtScalePanel::controlRange(double &lo, double &hi) const {
-    lo = m_loSpin ? m_loSpin->value() : 0.0;
-    hi = m_hiSpin ? m_hiSpin->value() : 1.0;
+    lo = m_controlLo;
+    hi = m_controlHi;
 }
 
 void SlsQtScalePanel::setControlRange(double lo, double hi) {
-    // Mimic the operator typing both ends: programmatic setValue() calls are
-    // suppressed (so they do not push individually), then one edit is pushed.
-    m_suppress++;
-    if (m_loSpin)
-        m_loSpin->setValue(lo);
-    if (m_hiSpin)
-        m_hiSpin->setValue(hi);
-    m_suppress--;
+    // Mimic the operator applying both ends from the Plot tab.
+    m_controlLo = lo;
+    m_controlHi = hi;
     m_rangeEdited = true;
     push();
 }

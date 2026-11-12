@@ -3,6 +3,15 @@
 #include "qTabDataOutput.h"
 #include "qDefs.h"
 
+// QButtonGroup::idClicked arrived in Qt 5.15; older Qt5 releases (RHEL 7 has
+// Qt 5.9) only provide the deprecated buttonClicked(int) overload, and Qt6
+// removed that overload.  Keep the three connect/disconnect sites in sync.
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+#define SLS_RATE_GROUP_SIGNAL &QButtonGroup::idClicked
+#else
+#define SLS_RATE_GROUP_SIGNAL QOverload<int>::of(&QButtonGroup::buttonClicked)
+#endif
+
 #include <QButtonGroup>
 #include <QFileDialog>
 #include <QStandardItemModel>
@@ -79,7 +88,7 @@ void qTabDataOutput::Initialization() {
     if (chkRate->isEnabled()) {
         connect(chkRate, SIGNAL(toggled(bool)), this,
                 SLOT(EnableRateCorrection()));
-        connect(btnGroupRate, &QButtonGroup::idClicked, this,
+        connect(btnGroupRate, SLS_RATE_GROUP_SIGNAL, this,
                 &qTabDataOutput::SetRateCorrection);
         connect(spinCustomDeadTime, SIGNAL(valueChanged(int)), this,
                 SLOT(SetRateCorrection()));
@@ -309,7 +318,7 @@ void qTabDataOutput::GetRateCorrection() {
     LOG(logDEBUG) << "Getting Rate Correction";
     disconnect(chkRate, SIGNAL(toggled(bool)), this,
                SLOT(EnableRateCorrection()));
-    disconnect(btnGroupRate, &QButtonGroup::idClicked, this,
+    disconnect(btnGroupRate, SLS_RATE_GROUP_SIGNAL, this,
                &qTabDataOutput::SetRateCorrection);
     disconnect(spinCustomDeadTime, SIGNAL(valueChanged(int)), this,
                SLOT(SetRateCorrection()));
@@ -326,7 +335,7 @@ void qTabDataOutput::GetRateCorrection() {
     CATCH_DISPLAY("Could not get rate correction.",
                   "qTabDataOutput::GetRateCorrection")
     connect(chkRate, SIGNAL(toggled(bool)), this, SLOT(EnableRateCorrection()));
-    connect(btnGroupRate, &QButtonGroup::idClicked, this,
+    connect(btnGroupRate, SLS_RATE_GROUP_SIGNAL, this,
             &qTabDataOutput::SetRateCorrection);
     connect(spinCustomDeadTime, SIGNAL(valueChanged(int)), this,
             SLOT(SetRateCorrection()));

@@ -1,6 +1,9 @@
 #!/bin/bash
 # SPDX-License-Identifier: LGPL-3.0-or-other
 # Copyright (C) 2021 Contributors to the SLS Detector Package
+# Stop at the first failing configure/build step so a failed GUI build is not
+# reported as success by the final (possibly skipped) install step.
+set -e
 # Prefer cmake3 when the distribution provides it (RHEL/CentOS), otherwise
 # use the default cmake.  -k <cmd> still overrides this.
 if command -v cmake3 >/dev/null 2>&1; then
@@ -16,6 +19,8 @@ COMPILERTHREADS=0
 TEXTCLIENT=0
 RECEIVER=0
 GUI=0
+QT5=0
+QT6=0
 DEBUG=0
 PYTHON=0
 TESTS=0
@@ -32,13 +37,14 @@ CMAKE_PRE=""
 CMAKE_POST=""
 
 usage() { echo -e "
-Usage: $0 [-b] [-c] [-d <HDF5 directory>] [-e] [-g] [-h] [-i] [-j <Number of threads>] [-k <CMake command>] [-l <Install directory>] [-m] [-n] [-p] [-r] [-s] [-t] [-u] [-z]  
+Usage: $0 [-b] [-c] [-d <HDF5 directory>] [-e] [-g] [-G] [-h] [-i] [-j <Number of threads>] [-k <CMake command>] [-l <Install directory>] [-m] [-n] [-p] [-r] [-s] [-t] [-u] [-z]  
  -[no option]: only make
  -b: Builds/Rebuilds CMake files normal mode
  -c: Clean
  -d: HDF5 Custom Directory
  -e: Debug mode
- -g: Build/Rebuilds gui (requires Qt6)
+ -g: Build/Rebuilds gui with Qt5
+ -G: Build/Rebuilds gui with Qt6
  -h: Builds/Rebuilds Cmake files with HDF5 package
  -i: Builds tests
  -j: Number of threads to compile through
@@ -82,12 +88,13 @@ For using multiple cores to compile faster:
 ./cmk.sh -j9 -h #with hdf
 
 For rebuilding only certain sections
-./cmk.sh -tg #only text client and gui
+./cmk.sh -tg #text client and Qt5 gui
+./cmk.sh -tG #text client and Qt6 gui
 ./cmk.sh -r #only receiver
  
  " ; exit 1; }
 
-while getopts ":bcd:eghij:k:l:mnpq:rstuz" opt ; do
+while getopts ":bcd:eghij:k:l:mnpGq:rstuz" opt ; do
 	case $opt in
 	b) 
 		echo "Building of CMake files Required"
@@ -106,8 +113,15 @@ while getopts ":bcd:eghij:k:l:mnpq:rstuz" opt ; do
 		DEBUG=1
 		;;  
 	g) 
-		echo "Compiling Options: GUI" 
+		echo "Compiling Options: GUI (Qt5)" 
 		GUI=1
+		QT5=1
+		REBUILD=1
+		;; 
+	G) 
+		echo "Compiling Options: GUI (Qt6)" 
+		GUI=1
+		QT6=1
 		REBUILD=1
 		;; 
 	h) 
@@ -180,6 +194,11 @@ while getopts ":bcd:eghij:k:l:mnpq:rstuz" opt ; do
 done
 
 
+if [ $QT5 -eq 1 ] && [ $QT6 -eq 1 ]; then
+	echo "Invalid options: -g (Qt5 GUI) and -G (Qt6 GUI) are mutually exclusive" >&2
+	exit 1
+fi
+
 #python
 if [ $PYTHON -eq 1 ]; then
 	CMAKE_POST+=" -DSLS_USE_PYTHON=ON "
@@ -200,8 +219,13 @@ else
         echo "Enabling Compile Option: Receiver"
     fi              
     if [ $GUI -eq 1 ]; then
-        CMAKE_POST+=" -DSLS_USE_GUI=ON "
-        echo "Enabling Compile Option: GUI"
+        if [ $QT6 -eq 1 ]; then
+            CMAKE_POST+=" -DSLS_USE_GUI=ON -DSLS_GUI_QT_MAJOR=6 "
+            echo "Enabling Compile Option: GUI (Qt6)"
+        else
+            CMAKE_POST+=" -DSLS_USE_GUI=ON -DSLS_GUI_QT_MAJOR=5 "
+            echo "Enabling Compile Option: GUI (Qt5)"
+        fi
     fi
 fi
 

@@ -2,11 +2,12 @@
 // Copyright (C) 2026 Contributors to the SLS Detector Package
 #pragma once
 
-// Thin histogram strip + scale panel of the Qt6 plotting stack: the strip
-// shows the distribution of the last frame over the window the colour mapping
-// currently shows and carries the two draggable range ends; the panel owns the
-// palette chooser, the image/histogram lin-log switches and the min/max spin
-// boxes.  See AGENT_INSTRUCTIONS.md: "the three-way freeze rule".
+// Thin histogram strip + scale panel of the Qt5/Qt6 plotting stack: the
+// strip shows the distribution of the last frame over the window the colour
+// mapping currently shows and carries the two draggable range ends; the panel
+// owns the palette chooser and the image/histogram lin-log switches.  The
+// colour min/max live in the Plot tab, not here.  See AGENT_INSTRUCTIONS.md:
+// "the three-way freeze rule".
 
 #include "SlsQtPlotCommon.h"
 
@@ -18,7 +19,6 @@
 #include <vector>
 
 class QComboBox;
-class QDoubleSpinBox;
 
 namespace sls {
 
@@ -91,10 +91,10 @@ class SlsQtScaleHisto : public QWidget {
     int m_previewX = 0;
 };
 
-// Histogram strip + palette combo + image lin/log + histogram lin/log + min/max
-// spin boxes.  push() = controls -> view, refresh() = view -> controls, with a
+// Histogram strip + palette combo + image lin/log + histogram lin/log.
+// push() = controls -> view, refresh() = view -> controls, with a
 // re-entrancy guard; refresh() is skipped while the strip is being dragged and
-// the range is applied on release.
+// the range is applied on release.  The z min/max are edited in the Plot tab.
 class SlsQtScalePanel : public QWidget {
     Q_OBJECT
 
@@ -127,14 +127,14 @@ class SlsQtScalePanel : public QWidget {
     bool isDragging() const; // strip drag in progress
 
     // ---- test / programmatic hooks ---------------------------------------
-    // The values currently shown in the min/max spin boxes (1-decimal
-    // rounded).  Stays frozen while the strip marker is dragged (R1).
+    // The colour range last read from / written to the view.  Stays frozen
+    // while the strip marker is dragged (R1).
     void controlRange(double &lo, double &hi) const;
-    // Sets both spin boxes as if the user had typed them: this is the only
-    // path that pushes the colour range from the controls, so a test can
-    // trigger a "user edit" without synthesising spin-box events.
+    // Applies a colour range as a user edit would: this is the only path that
+    // pushes the colour range from the panel controls, so a test can trigger
+    // one without synthesising events.
     void setControlRange(double lo, double hi);
-    // Range last pushed to the view by a spin-box edit; false if no edit was
+    // Range last pushed to the view by a control edit; false if no edit was
     // pushed yet.  Palette/log changes never update this (R2).
     bool lastPushedRange(double &lo, double &hi) const;
 
@@ -148,13 +148,14 @@ class SlsQtScalePanel : public QWidget {
     QComboBox *m_paletteCombo = nullptr;
     QComboBox *m_imageLogCombo = nullptr;
     QComboBox *m_histoLogCombo = nullptr;
-    QDoubleSpinBox *m_loSpin = nullptr;
-    QDoubleSpinBox *m_hiSpin = nullptr;
+    // The colour range last read from the view (kept for the R1 freeze rule
+    // and for programmatic/test edits; there are no min/max spin boxes here).
+    double m_controlLo = 0.0;
+    double m_controlHi = 1.0;
     int m_suppress = 0;
 
-    // R2: only a real edit of the min/max spin boxes may push the colour
-    // range.  Refreshes (automatic z range) and palette/log changes only
-    // update the controls.
+    // R2: only an explicit control edit may push the colour range.  Refreshes
+    // (automatic z range) and palette/log changes only update the controls.
     bool m_rangeEdited = false;
     bool m_lastPushedValid = false;
     double m_lastPushedLo = 0.0;

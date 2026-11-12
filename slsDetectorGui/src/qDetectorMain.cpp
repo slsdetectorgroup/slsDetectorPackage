@@ -15,9 +15,14 @@
 #include "sls/ToString.h"
 #include "sls/versionAPI.h"
 
+#include <QAction>
+#include <QDockWidget>
 #include <QFileDialog>
+#include <QMenu>
+#include <QLayout>
 #include <QResizeEvent>
 #include <QSizePolicy>
+#include <QVBoxLayout>
 
 #include "sls/Version.h"
 #include <getopt.h>
@@ -148,6 +153,26 @@ void qDetectorMain::SetUpWidgetWindow() {
     scrollMeasurement->setWidget(tabMeasurement);
     scrollDataOutput->setWidget(tabDataOutput);
     scrollPlot->setWidget(tabPlot);
+
+    // The Plot settings can be detached into a dock (or floated) so the
+    // operator can change them while an acquisition is being started/stopped
+    // without switching tabs in the main window.
+    dockWidgetPlotSettings = new QDockWidget(tr("Plot Settings"), this);
+    dockWidgetPlotSettings->setObjectName(
+        QStringLiteral("dockWidgetPlotSettings"));
+    dockWidgetPlotSettings->setAllowedAreas(Qt::LeftDockWidgetArea |
+                                             Qt::RightDockWidgetArea |
+                                             Qt::BottomDockWidgetArea);
+    dockWidgetPlotSettings->setFeatures(QDockWidget::DockWidgetMovable |
+                                        QDockWidget::DockWidgetFloatable);
+    auto *plotSettingsDockPage = new QWidget(dockWidgetPlotSettings);
+    auto *plotSettingsDockLayout = new QVBoxLayout(plotSettingsDockPage);
+    plotSettingsDockLayout->setContentsMargins(0, 0, 0, 0);
+    plotSettingsDockLayout->addStretch(1);
+    dockWidgetPlotSettings->setWidget(plotSettingsDockPage);
+    addDockWidget(Qt::RightDockWidgetArea, dockWidgetPlotSettings);
+    dockWidgetPlotSettings->hide();
+
     scrollSettings->setWidget(tabSettings);
     scrollAdvanced->setWidget(tabAdvanced);
     scrollDebugging->setWidget(tabDebugging);
@@ -244,6 +269,15 @@ void qDetectorMain::Initialization() {
     // Help Menu
     connect(menuHelp, SIGNAL(triggered(QAction *)), this,
             SLOT(ExecuteHelp(QAction *)));
+
+    // View Menu: detach the Plot settings so they stay usable while the
+    // acquisition is starting/stopping.
+    QMenu *menuView = menuBar()->addMenu(tr("&View"));
+    actionDetachPlotSettings = new QAction(tr("Detach Plot Settings"), this);
+    actionDetachPlotSettings->setCheckable(true);
+    menuView->addAction(actionDetachPlotSettings);
+    connect(actionDetachPlotSettings, &QAction::toggled, this,
+            &qDetectorMain::SetPlotSettingsDetached);
 }
 
 void qDetectorMain::LoadConfigFile(const std::string &config_file) {
@@ -546,6 +580,30 @@ void qDetectorMain::EnableTabs(bool enable) {
         // to start adc timer
         if (tabDeveloper->isEnabled())
             tabDeveloper->Refresh();
+    }
+}
+
+void qDetectorMain::SetPlotSettingsDetached(bool detached) {
+    if (!dockWidgetPlotSettings || !scrollPlot || !tabPlot)
+        return;
+    auto *dockPage = dockWidgetPlotSettings->widget();
+    auto *dockLayout =
+        dockPage ? qobject_cast<QVBoxLayout *>(dockPage->layout()) : nullptr;
+    if (!dockLayout)
+        return;
+    if (detached) {
+        QWidget *page = scrollPlot->takeWidget();
+        if (!page)
+            return;
+        dockLayout->insertWidget(0, page);
+        dockWidgetPlotSettings->show();
+        dockWidgetPlotSettings->raise();
+        tabs->setTabText(PLOT, tr("Plot (detached)"));
+    } else {
+        dockLayout->removeWidget(tabPlot);
+        scrollPlot->setWidget(tabPlot);
+        dockWidgetPlotSettings->hide();
+        tabs->setTabText(PLOT, tr("Plot"));
     }
 }
 

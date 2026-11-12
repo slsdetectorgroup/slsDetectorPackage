@@ -46,7 +46,9 @@ ZeroMQ
 GUI
 -----------------------
 
- * Qt 6 (>= 6.2, components Widgets, Gui, Core and Concurrent)
+ * Qt 5 (>= 5.9) **or** Qt 6 (>= 6.2), components Widgets, Gui, Core and
+   Concurrent.  Qt 6 is the default; Qt 5 is kept for older distributions
+   such as RHEL 7.
  * libpng and zlib
 
 The GUI plotting (1D/2D plots, colour maps, scale panel) is implemented with

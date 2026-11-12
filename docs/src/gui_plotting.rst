@@ -134,4 +134,5 @@ a `qwt_*` header.  The package metadata and documentation refer to the Qt
 runtime packages instead (`qt6-qtbase`/`qt5-qtbase` on RPM based systems,
 `qt6-base-dev`/`qtbase5-dev` on Debian/Ubuntu, `qt6-main`/`qt-main` in
 conda), selected by `SLS_GUI_QT_MAJOR` (or `cmk.sh -G` for Qt 6 and `-g` for
-Qt 5).
+Qt 5).  Switching between the two cmk flags removes the build tree
+automatically, so no extra `-c` is needed.

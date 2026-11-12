@@ -91,6 +91,9 @@ For rebuilding only certain sections
 ./cmk.sh -tg #text client and Qt5 gui
 ./cmk.sh -tG #text client and Qt6 gui
 ./cmk.sh -r #only receiver
+
+Switching between -g and -G removes the build tree automatically
+(no extra -c needed).
  
  " ; exit 1; }
 
@@ -232,6 +235,26 @@ fi
 
 
 
+
+# Switching the GUI between Qt5 and Qt6 in an existing build tree leaves
+# generated Qt/moc/ui files and objects from the other major behind; even
+# make clean after a reconfigure can race with stale targets, so remove the
+# whole build tree.  Read the cache before -b removes it.
+if [ $GUI -eq 1 ] && [ -f "$BUILDDIR/CMakeCache.txt" ]; then
+	requested_qt=5
+	[ $QT6 -eq 1 ] && requested_qt=6
+	cached_gui=$(grep -E '^SLS_USE_GUI:BOOL=' "$BUILDDIR/CMakeCache.txt" | head -1 | cut -d= -f2 || true)
+	cached_qt=$(grep -E '^SLS_GUI_QT_MAJOR:STRING=' "$BUILDDIR/CMakeCache.txt" | head -1 | cut -d= -f2 || true)
+	# Cache from before SLS_GUI_QT_MAJOR existed: that build was Qt6.
+	if [ "$cached_gui" = "ON" ] && [ -z "$cached_qt" ]; then
+		cached_qt=6
+	fi
+	if [ "$cached_gui" = "ON" ] && [ -n "$cached_qt" ] && [ "$cached_qt" != "$requested_qt" ]; then
+		echo "Qt major changed from $cached_qt to $requested_qt: removing the build directory"
+		rm -rf -- "$BUILDDIR"
+		CLEAN=0
+	fi
+fi
 
 #build dir doesnt exist
 if [ ! -d "$BUILDDIR" ] ; then

@@ -231,6 +231,9 @@ Usage: $0 [-b] [-c] [-d <HDF5 directory>] [-e] [-g] [-G] [-h] [-i]
 ./cmk.sh -cbgj9  # Qt 5 GUI (RHEL 7/older)
 ./cmk.sh -cbGj9  # Qt 6 GUI
 
+# Switching between -g (Qt5) and -G (Qt6) removes the build directory
+# automatically, so no separate -c is needed.
+
 #For rebuilding only certain sections
 ./cmk.sh -tg #text client and Qt5 gui
 ./cmk.sh -tG #text client and Qt6 gui

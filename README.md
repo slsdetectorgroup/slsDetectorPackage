@@ -102,6 +102,8 @@ To use the basic building blocks, meaning sls_detector_get/put and the shared li
 * Qt 5 (>= 5.9) **or** Qt 6 (>= 6.2), components Widgets, Gui, Core and
   Concurrent.  Qt 6 is the default; Qt 5 keeps older distributions such as
   RHEL 7 buildable.
+  compile with qt5 with -g flag, or qt6 with -G flag
+
 
 * libpng and zlib
 

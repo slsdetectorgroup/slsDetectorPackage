@@ -1570,6 +1570,24 @@ void Module::setFileFormat(fileFormat f) {
     sendToReceiver(F_SET_RECEIVER_FILE_FORMAT, f, nullptr);
 }
 
+std::vector<std::vector<uint32_t>> Module::getFileFormatOptions() const {
+    // sent as a single list with every option preceded by its size
+    return unflattenSizePrefixed(
+        sendToReceiverVarVector<uint32_t>(F_GET_RECEIVER_FILE_FORMAT_OPTIONS));
+}
+
+void Module::setFileFormatOptions(
+    const std::vector<std::vector<uint32_t>> &options) {
+    for (const auto &option : options) {
+        if (option.empty()) {
+            throw RuntimeError("File format option cannot be empty");
+        }
+    }
+    // sent as a single list with every option preceded by its size
+    sendToReceiverVarVector(F_SET_RECEIVER_FILE_FORMAT_OPTIONS,
+                            flattenSizePrefixed(options));
+}
+
 std::string Module::getFilePath() const {
     char ret[MAX_STR_LENGTH]{};
     sendToReceiver(F_GET_RECEIVER_FILE_PATH, nullptr, ret);

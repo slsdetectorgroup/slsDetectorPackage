@@ -3,19 +3,23 @@
 #pragma once
 
 #include "File.h"
-#include <array>
 #include <mutex>
 
 namespace sls {
-
-constexpr std::array<unsigned int, SLS_NUM_FILTER_PARAMS> hdf5FilterParameters{
-    SLS_HDF5_FILTER_PARAMS};
 
 class HDF5DataFile : private virtual slsDetectorDefs, public File {
 
   public:
     HDF5DataFile(const int index, std::mutex *hdf5Lib);
     ~HDF5DataFile();
+
+    /**
+     * Throws if a filter id is invalid, used more than once or not available.
+     * Each filter is a list with the HDF5 filter id followed by its
+     * parameters (cd_values). The caller must hold the hdf5 library mutex.
+     */
+    static void
+    ValidateFilters(const std::vector<std::vector<uint32_t>> &filters);
 
     fileFormat GetFileFormat() const override;
     std::string GetFileName() const override;
@@ -32,7 +36,9 @@ class HDF5DataFile : private virtual slsDetectorDefs, public File {
                                  const bool sMode, const uint16_t uPortNumber,
                                  const uint32_t mFramesPerFile,
                                  const uint64_t nImages, const uint32_t nX,
-                                 const uint32_t nY, const uint32_t dr) override;
+                                 const uint32_t nY, const uint32_t dr,
+                                 const std::vector<std::vector<uint32_t>>
+                                     &hdf5Filters) override;
 
     void WriteToFile(char *imageData, sls_receiver_header &header,
                      const int imageSize, const uint64_t currentFrameNumber,
@@ -68,6 +74,7 @@ class HDF5DataFile : private virtual slsDetectorDefs, public File {
     uint32_t nPixelsX{0};
     uint32_t nPixelsY{0};
     uint32_t dynamicRange{0};
+    std::vector<std::vector<uint32_t>> filters;
 
     std::filesystem::path m_filePath{};
     std::string fileNamePrefix{};

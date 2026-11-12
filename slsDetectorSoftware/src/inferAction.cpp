@@ -1160,6 +1160,12 @@ int InferAction::fformat() {
     }
 }
 
+int InferAction::fformatoptions() {
+
+    throw RuntimeError("sls_detector is disabled for command: fformatoptions. "
+                       "Use sls_detector_get or sls_detector_put");
+}
+
 int InferAction::filtercells() {
 
     if (args.size() == 0) {

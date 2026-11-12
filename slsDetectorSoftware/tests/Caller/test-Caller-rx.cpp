@@ -135,7 +135,8 @@ TEST_CASE("rx_missingpackets",
     det.setFileWrite(false); // avoid writing or error on file creation
     auto prev_frames =
         det.getNumberOfFrames().tsquash("inconsistent #frames in test");
-    det.setNumberOfFrames(100);
+    int64_t num_frames = 100;
+    det.setNumberOfFrames(num_frames);
     {
         // some missing packets
         det.startReceiver();
@@ -165,6 +166,33 @@ TEST_CASE("rx_missingpackets",
             REQUIRE(oss.str() == "rx_missingpackets [0]\n");
         } else {
             REQUIRE(oss.str() == "rx_missingpackets [0, 0]\n");
+        }
+
+        // readnrows
+        if (det_type == defs::EIGER || det_type == defs::JUNGFRAU ||
+            det_type == defs::MOENCH) {
+            auto prev_readnrows = det.getReadNRows().squash();
+            det.setReadNRows(16);
+
+            // without discard partial policy
+            det.startReceiver();
+            det.startDetector();
+            acq::wait_until_idle(det);
+            det.stopReceiver();
+            auto res =
+                det.getFramesCaught().tsquash("inconsistent frames caught");
+            CHECK(res == std::vector<int64_t>(res.size(), num_frames));
+
+            // with discard partial policy
+            det.setRxFrameDiscardPolicy(defs::DISCARD_PARTIAL_FRAMES);
+            det.startReceiver();
+            det.startDetector();
+            acq::wait_until_idle(det);
+            det.stopReceiver();
+            res = det.getFramesCaught().tsquash("inconsistent frames caught");
+            CHECK(res == std::vector<int64_t>(res.size(), num_frames));
+
+            det.setReadNRows(prev_readnrows);
         }
     }
     for (int i = 0; i != det.size(); ++i) {

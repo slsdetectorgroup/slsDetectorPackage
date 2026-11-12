@@ -190,6 +190,7 @@ void Implementation::SetupListener(int i) {
     listener[i]->SetIsOutsideRoi(portRois[i].noRoi());
     listener[i]->SetDetectorDatastream(detectorDataStream[i]);
     listener[i]->SetSilentMode(silentMode);
+    listener[i]->SetReadNRows(readNRows);
 }
 
 void Implementation::SetupDataProcessor(int i) {
@@ -618,14 +619,8 @@ double Implementation::getProgress() const {
 std::vector<int64_t> Implementation::getNumMissingPackets() const {
     std::vector<int64_t> mp(generalData->numUDPInterfaces);
     for (int i = 0; i < generalData->numUDPInterfaces; ++i) {
-        int np = generalData->packetsPerFrame;
-        uint64_t totnp = np;
-        // ReadNRows
-        if (readNRows != (int)generalData->maxRowsPerReadout) {
-            totnp = ((readNRows * np) / generalData->maxRowsPerReadout);
-        }
-        totnp *= numberOfTotalFrames;
-        mp[i] = listener[i]->GetNumMissingPacket(stoppedFlag, totnp);
+        mp[i] =
+            listener[i]->GetNumMissingPacket(stoppedFlag, numberOfTotalFrames);
     }
     return mp;
 }
@@ -1725,6 +1720,8 @@ int Implementation::getReadNRows() const { return readNRows; }
 
 void Implementation::setReadNRows(const int value) {
     readNRows = value;
+    for (const auto &it : listener)
+        it->SetReadNRows(readNRows);
     LOG(logINFO) << "Number of rows: " << readNRows;
 }
 

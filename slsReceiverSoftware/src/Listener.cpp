@@ -44,19 +44,29 @@ uint64_t Listener::GetLastFrameIndexCaught() const {
 }
 
 int64_t Listener::GetNumMissingPacket(bool stoppedFlag,
-                                      uint64_t numPackets) const {
+                                      uint64_t numFrames) const {
     if (disabledPort) {
         return 0;
     }
+    uint64_t pperFrame = GetNumPacketsPerFrameExpected();
     if (!stoppedFlag) {
-        return (numPackets - numPacketsCaught);
+        return (numFrames * pperFrame - numPacketsCaught);
     }
     if (numPacketsCaught == 0) {
         return numPacketsCaught;
     }
-    return (lastCaughtFrameIndex - firstIndex + 1) *
-               generalData->packetsPerFrame -
+    return (lastCaughtFrameIndex - firstIndex + 1) * pperFrame -
            numPacketsCaught;
+}
+
+uint32_t Listener::GetNumPacketsPerFrameExpected() const {
+    uint32_t pperFrame = generalData->packetsPerFrame;
+    uint32_t maxRows = generalData->maxRowsPerReadout;
+    // partial readout (readnrows)
+    if (maxRows != 0 && readNRows > 0 && readNRows < (int)maxRows) {
+        pperFrame = (readNRows * pperFrame) / maxRows;
+    }
+    return pperFrame;
 }
 
 bool Listener::GetStartedFlag() const { return startedFlag; }
@@ -99,6 +109,8 @@ void Listener::SetIsOutsideRoi(bool enable) {
 }
 
 void Listener::SetSilentMode(bool enable) { silentMode = enable; }
+
+void Listener::SetReadNRows(int value) { readNRows = value; }
 
 void Listener::ResetParametersforNewAcquisition() {
     StopRunning();
@@ -321,6 +333,8 @@ uint32_t Listener::ListenToAnImage(sls_receiver_header &dstHeader,
         standardHeader = false;
     }
     uint32_t pperFrame = generalData->packetsPerFrame;
+    // fewer packets in partial readout (only center rows sent)
+    uint32_t pperFrameExpected = GetNumPacketsPerFrameExpected();
     bool isHeaderEmpty = true;
     uint32_t corrected_dsize = dsize - ((pperFrame * dsize) - imageSize);
     sls_detector_header *srcDetHeader = nullptr;
@@ -350,7 +364,7 @@ uint32_t Listener::ListenToAnImage(sls_receiver_header &dstHeader,
         carryOverFlag = false;
     }
 
-    while (numpackets < pperFrame) {
+    while (numpackets < pperFrameExpected) {
         // listen to new packet
         if (!udpSocketAlive || !udpSocket->ReceivePacket(&listeningPacket[0])) {
             // end of acquisition
@@ -404,7 +418,7 @@ uint32_t Listener::ListenToAnImage(sls_receiver_header &dstHeader,
 
     // complete image
     dstHeader.detHeader.packetNumber = numpackets;
-    if (numpackets == pperFrame) {
+    if (numpackets == pperFrameExpected) {
         ++numCompleteFramesCaught;
     }
     ++currentFrameIndex;
@@ -513,10 +527,10 @@ void Listener::GetPacketIndices(uint64_t &fnum, uint32_t &pnum, uint64_t &bnum,
 void Listener::PrintFifoStatistics() {
     LOG(logDEBUG1) << "numFramesStatistic:" << numFramesStatistic
                    << " numPacketsStatistic:" << numPacketsStatistic
-                   << " packetsperframe:" << generalData->packetsPerFrame;
+                   << " packetsperframe:" << GetNumPacketsPerFrameExpected();
 
     // calculate packet loss
-    int64_t totalP = numFramesStatistic * (generalData->packetsPerFrame);
+    int64_t totalP = numFramesStatistic * GetNumPacketsPerFrameExpected();
     int64_t loss = totalP - numPacketsStatistic;
     int lossPercent = ((double)loss / (double)totalP) * 100.00;
     numPacketsStatistic = 0;

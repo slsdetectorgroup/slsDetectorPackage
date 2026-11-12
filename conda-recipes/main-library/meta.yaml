@@ -28,7 +28,6 @@ requirements:
     - libgl-devel  # [linux]
     - libtiff
     - zlib
-    - expat
     - zeromq
     - fmt
   

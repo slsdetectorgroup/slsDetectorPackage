@@ -82,6 +82,21 @@ echo "  PATH                += ${THIS_PATH}"
 echo "  LD_LIBRARY_PATH     += ${THIS_PATH}"
 echo "  PYTHONPATH          += ${THIS_PATH}"
 
+# The command-line clients are separate targets; a GUI-only build may not have
+# them.  Remind the user instead of silently leaving put/get unavailable.
+_sls_missing=""
+for _sls_tool in sls_detector_put sls_detector_get; do
+    if ! command -v "${_sls_tool}" >/dev/null 2>&1; then
+        _sls_missing="${_sls_missing} ${_sls_tool}"
+    fi
+done
+if [ -n "${_sls_missing}" ]; then
+    echo "note: not found in the selected build bin:${_sls_missing}" >&2
+    echo "      build them with:" >&2
+    echo "      cmake --build <build-dir> --target${_sls_missing} -j\$(nproc)" >&2
+fi
+unset _sls_missing _sls_tool
+
 # When executed rather than sourced the exports disappear with the shell.
 if [ "${BASH_SOURCE[0]:-}" = "$0" ]; then
     echo "NOTE: this script must be sourced to keep the environment:" >&2

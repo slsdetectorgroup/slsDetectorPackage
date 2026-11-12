@@ -97,7 +97,8 @@ The demo application and the QtTest suite are built automatically by the GUI
 CMake file (they are enabled by the presence of `slsDetectorGui/demo` and
 `slsDetectorGui/tests`)::
 
-    cmake -S slsDetectorPackage -B build -DSLS_USE_GUI=ON -DCMAKE_BUILD_TYPE=Release
+    cmake -S slsDetectorPackage -B build -DSLS_USE_GUI=ON \
+          -DSLS_GUI_QT_MAJOR=6 -DCMAKE_BUILD_TYPE=Release
     cmake --build build --target plot_demo plotting_test -j
 
     # standalone demo / offline benchmark (1024x512 synthetic frame, 20 Hz)

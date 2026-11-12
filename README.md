@@ -182,6 +182,7 @@ ccmake ..
 | -DSLS_USE_PYTHON=ON            | Python                                 |   
 | -DPython_FIND_VIRTUALENV=ONLY  | Python from only the conda env         | 
 | -DSLS_USE_GUI=ON               | GUI                                    |
+| -DSLS_GUI_QT_MAJOR=5           | GUI with Qt5 instead of the Qt6 default|
 | -DSLS_USE_HDF5=ON              | HDF5                                   |
 | -DSLS_USE_SIMULATOR=ON         | Simulator                              |
 

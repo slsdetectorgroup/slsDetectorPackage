@@ -133,7 +133,7 @@ One can either build using cmake or use the in-built cmk.sh script.
     # (alternately use ccmake described below)
     # cmake3 instead of cmake for some systems
     
-    # eg. enable gui option (without conda)
+    # eg. enable gui option (without conda; Qt6 in the example, add -DSLS_GUI_QT_MAJOR=5 for Qt5)
     cmake ../slsDetectorPacakge -DSLS_USE_GUI=ON
     # eg. enable python from virtual env, hdf5 and simulator options
     cmake ../slsDetectorPackage -DSLS_USE_PYTHON=ON -DPython_FIND_VIRTUALENV=ONLY -DSLS_USE_HDF5=ON -DSLS_USE_SIMULATOR=ON
@@ -180,7 +180,8 @@ Example cmake options               Comment
 ===============================     ===============================
 -DSLS_USE_PYTHON=ON                 Python
 -DPython_FIND_VIRTUALENV=ONLY       Python from the conda env 
--DSLS_USE_GUI=ON                    GUI
+-DSLS_USE_GUI=ON                    GUI (Qt6 by default)
+-DSLS_GUI_QT_MAJOR=5                GUI with Qt5 (RHEL 7/older)
 -DSLS_USE_HDF5=ON                   HDF5
 -DSLS_USE_SIMULATOR=ON              Simulator
 ===============================     ===============================

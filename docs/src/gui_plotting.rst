@@ -90,6 +90,15 @@ moment (the producer keeps feeding new frames), and the cursor-to-value mapping
 uses the pressed-time window so the marker cannot chase itself.  The new range
 is applied once, on release, and the strip is refreshed afterwards.
 
+Detachable Plot settings
+------------------------
+
+The Plot settings tab can be detached into a movable/floating dock with
+**View -> Detach Plot Settings**.  The tab contents are reparented between two
+``QScrollArea`` widgets (the tab and the dock), so the same ``qTabPlot``
+instance keeps working while the rest of the main window is busy starting or
+stopping an acquisition.  Selecting the action again reattaches the tab.
+
 Demo and tests
 --------------
 

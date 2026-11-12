@@ -367,7 +367,8 @@ With cmk.sh, use ``-g`` for Qt 5 and ``-G`` for Qt 6:
         conda config --add channels slsdetectorgroup
         conda config --set channel_priority strict
 
-        # create environment to compile (qt6-main is the Qt 6 base package on conda-forge; use qt-main for Qt 5)
+        # create environment to compile (qt6-main is the Qt 6 base package on conda-forge)
+        # The packaged conda recipe builds the Qt 6 GUI; for Qt 5 use the system Qt 5 packages.
         conda create -n slsgui zeromq gxx_linux-64 qt6-main
 
         # activate environment

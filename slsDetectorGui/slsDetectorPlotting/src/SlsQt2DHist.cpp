@@ -125,7 +125,7 @@ void SlsQt2DHist::SetMinMax(double zmin, double zmax) {
     }
     if (!haveFinite) {
         // No usable value at all: keep a valid, harmless range so the colour
-        // mapping and the scale-panel spin boxes stay finite.
+        // mapping and the scale-panel control range stay finite.
         z_min = 0.0;
         z_max = 1.0;
         z_mean = 0.0;

@@ -18,7 +18,6 @@
 
 #include <QApplication>
 #include <QCoreApplication>
-#include <QDoubleSpinBox>
 #include <QElapsedTimer>
 #include <QHash>
 #include <QSet>
@@ -917,7 +916,8 @@ void PlottingTest::scalePanelReentrancy() {
     // view -> controls -> view must not recurse (sympass guard): one change,
     // one control update, no push-back loop.  The min/max spin boxes were
     // removed from the plot window; the range is owned by the Plot tab, so
-    // the panel only keeps the last range it read from/wrote to the view.
+    // the panel only keeps the last range it read from/wrote to the view
+    // (controlRange(), not spin-box widgets).
     int rangeCalls = 0;
     view.onColorRangeChanged = [&](double, double) { rangeCalls++; };
     panel.setColorRange(1.0, 5.0);
@@ -1037,12 +1037,12 @@ void PlottingTest::scalePanelFreezeAndPushRules() {
     panel.refresh();
     panel.controlRange(lo, hi);
     QVERIFY2(near(lo, 1.0) && near(hi, 5.0),
-             "spin boxes frozen while the strip marker is dragged (R1)");
+             "control range frozen while the strip marker is dragged (R1)");
     view.setColorRange(3.0, 9.0);
     panel.refresh();
     panel.controlRange(lo, hi);
     QVERIFY2(near(lo, 1.0) && near(hi, 5.0),
-             "spin boxes still frozen after a second live range change (R1)");
+             "control range still frozen after a second live range change (R1)");
     double dw0 = 0.0, dw1 = 0.0;
     strip->displayedWindow(dw0, dw1);
     QVERIFY(near(dw0, frozenW0) && near(dw1, frozenW1));
@@ -1067,9 +1067,9 @@ void PlottingTest::scalePanelFreezeAndPushRules() {
     QVERIFY(std::abs(lo - vlo) <= 0.051);
     QVERIFY(std::abs(hi - vhi) <= 0.051);
 
-    // R2: palette/log changes must NOT push the 1-decimal-rounded spin boxes
-    // into the view (that would fire onColorRangeChanged and pin the 2D
-    // panel override).  Only a real min/max edit may change the range.
+    // R2: palette/log changes must NOT push the control range into the view
+    // (that would fire onColorRangeChanged and pin the 2D panel override).
+    // Only an explicit control-range edit may change the range.
     view.setColorRange(0.408939, 40.8); // e.g. SlsQt2DPlot's auto z range
     view.repaint();
     const int callsBefore = rangeCalls;

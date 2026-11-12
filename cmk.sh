@@ -294,9 +294,9 @@ else
 fi
 
 
-# Qt6 from conda-forge: cmake does not search $CONDA_PREFIX by itself when
+# Qt from conda-forge: cmake does not search $CONDA_PREFIX by itself when
 # the environment does not export CMAKE_PREFIX_PATH.  Only add the hint for
-# the GUI build so a plain `./cmk.sh -cbgjN` works in a conda environment.
+# the GUI build so a plain `./cmk.sh -cbgjN` / `-cbGjN` works in a conda env.
 if [ $GUI -eq 1 ] && [ -n "${CONDA_PREFIX:-}" ] && [ -z "${CMAKE_PREFIX_PATH:-}" ]; then
 	CMAKE_POST+=" -DCMAKE_PREFIX_PATH=$CONDA_PREFIX"
 	echo "Using CMAKE_PREFIX_PATH from CONDA_PREFIX: $CONDA_PREFIX"

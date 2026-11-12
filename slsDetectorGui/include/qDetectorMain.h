@@ -7,6 +7,7 @@
 class QResizeEvent;
 class QAction;
 class QDockWidget;
+class QScrollArea;
 
 namespace sls {
 
@@ -75,6 +76,7 @@ class qDetectorMain : public QMainWindow, private Ui::DetectorMainObject {
     qTabDeveloper *tabDeveloper;
     qTabMessages *tabMessages;
     QDockWidget *dockWidgetPlotSettings{nullptr};
+    QScrollArea *dockScrollPlotSettings{nullptr};
     QAction *actionDetachPlotSettings{nullptr};
     int isDeveloper{false};
     QString zoomToolTip;

@@ -19,10 +19,9 @@
 #include <QDockWidget>
 #include <QFileDialog>
 #include <QMenu>
-#include <QLayout>
 #include <QResizeEvent>
+#include <QScrollArea>
 #include <QSizePolicy>
-#include <QVBoxLayout>
 
 #include "sls/Version.h"
 #include <getopt.h>
@@ -165,11 +164,10 @@ void qDetectorMain::SetUpWidgetWindow() {
                                              Qt::BottomDockWidgetArea);
     dockWidgetPlotSettings->setFeatures(QDockWidget::DockWidgetMovable |
                                         QDockWidget::DockWidgetFloatable);
-    auto *plotSettingsDockPage = new QWidget(dockWidgetPlotSettings);
-    auto *plotSettingsDockLayout = new QVBoxLayout(plotSettingsDockPage);
-    plotSettingsDockLayout->setContentsMargins(0, 0, 0, 0);
-    plotSettingsDockLayout->addStretch(1);
-    dockWidgetPlotSettings->setWidget(plotSettingsDockPage);
+    dockScrollPlotSettings = new QScrollArea(dockWidgetPlotSettings);
+    dockScrollPlotSettings->setWidgetResizable(true);
+    dockScrollPlotSettings->setFrameShape(QFrame::NoFrame);
+    dockWidgetPlotSettings->setWidget(dockScrollPlotSettings);
     addDockWidget(Qt::RightDockWidgetArea, dockWidgetPlotSettings);
     dockWidgetPlotSettings->hide();
 
@@ -584,24 +582,21 @@ void qDetectorMain::EnableTabs(bool enable) {
 }
 
 void qDetectorMain::SetPlotSettingsDetached(bool detached) {
-    if (!dockWidgetPlotSettings || !scrollPlot || !tabPlot)
-        return;
-    auto *dockPage = dockWidgetPlotSettings->widget();
-    auto *dockLayout =
-        dockPage ? qobject_cast<QVBoxLayout *>(dockPage->layout()) : nullptr;
-    if (!dockLayout)
+    if (!dockWidgetPlotSettings || !dockScrollPlotSettings || !scrollPlot ||
+        !tabPlot)
         return;
     if (detached) {
         QWidget *page = scrollPlot->takeWidget();
         if (!page)
             return;
-        dockLayout->insertWidget(0, page);
+        dockScrollPlotSettings->setWidget(page);
         dockWidgetPlotSettings->show();
         dockWidgetPlotSettings->raise();
         tabs->setTabText(PLOT, tr("Plot (detached)"));
     } else {
-        dockLayout->removeWidget(tabPlot);
-        scrollPlot->setWidget(tabPlot);
+        QWidget *page = dockScrollPlotSettings->takeWidget();
+        if (page)
+            scrollPlot->setWidget(page);
         dockWidgetPlotSettings->hide();
         tabs->setTabText(PLOT, tr("Plot"));
     }

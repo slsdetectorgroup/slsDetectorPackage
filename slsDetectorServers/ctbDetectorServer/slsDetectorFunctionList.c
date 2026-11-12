@@ -1355,7 +1355,7 @@ int setVLimit(int val, char *mess) {
 }
 
 int validateDACIndex(enum DACINDEX ind, char *mess) {
-    if (ind < 0 || ind >= NDAC_ONLY) {
+    if (ind >= NDAC_ONLY) {
         sprintf(mess, "Could not set/get DAC. Invalid index %d\n", ind);
         LOG(logERROR, (mess));
         return FAIL;
@@ -1464,7 +1464,7 @@ int setDAC(enum DACINDEX ind, int val, bool mV, char *mess) {
 }
 
 int validatePowerDACIndex(enum powerIndex ind, char *mess) {
-    if (ind < 0 || ind > V_POWER_IO) {
+    if (ind > V_POWER_IO) {
         sprintf(mess, "Could not set/get Power DAC. Invalid index %d\n", ind);
         LOG(logERROR, (mess));
         return FAIL;
@@ -2158,8 +2158,9 @@ int configureMAC() {
 
     // start addr
     uint32_t addr = RXR_ENDPOINT_START_REG;
-    // get struct memory
-    udp_header *udp = (udp_header *)(Blackfin_getBaseAddress() + addr / 2);
+    // build udp header
+    udp_header header;
+    udp_header *udp = &header;
     memset(udp, 0, sizeof(udp_header));
 
     //  mac addresses
@@ -2190,6 +2191,12 @@ int configureMAC() {
     // total length is redefined in firmware
 
     calcChecksum(udp);
+
+    // force FPGA writes to be aligned and in order
+    if (bus_w_block(addr, udp, sizeof(udp_header), false) == FAIL) {
+        LOG(logERROR, ("Failed to write UDP header\n"));
+        return FAIL;
+    }
 
     cleanFifos(); // FIXME: resetPerpheral() for ctb?
     resetPeripheral();
@@ -2330,7 +2337,7 @@ int validatePhaseinDegrees(enum CLKINDEX ind, int val, int retval) {
 }
 
 int setFrequency(enum CLKINDEX ind, int val) {
-    if (ind < 0 || ind >= NUM_CLOCKS) {
+    if (ind >= NUM_CLOCKS) {
         LOG(logERROR, ("Unknown clock index %d to set frequency\n", ind));
         return FAIL;
     }
@@ -2380,7 +2387,7 @@ int setFrequency(enum CLKINDEX ind, int val) {
 }
 
 int getFrequency(enum CLKINDEX ind) {
-    if (ind < 0 || ind >= NUM_CLOCKS) {
+    if (ind >= NUM_CLOCKS) {
         LOG(logERROR, ("Unknown clock index %d to get frequency\n", ind));
         return -1;
     }

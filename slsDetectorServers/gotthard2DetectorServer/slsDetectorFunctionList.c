@@ -2041,9 +2041,9 @@ void setFirstUDPDestination(int value) {
                                    PKT_CONFIG_RXR_START_ID_MSK));
 }
 
-void setupHeader(int iRxEntry, int vetoInterface, uint32_t destip,
-                 uint64_t destmac, uint16_t destport, uint64_t sourcemac,
-                 uint32_t sourceip, uint16_t sourceport) {
+int setupHeader(int iRxEntry, int vetoInterface, uint32_t destip,
+                uint64_t destmac, uint16_t destport, uint64_t sourcemac,
+                uint32_t sourceip, uint16_t sourceport) {
 
     // start addr
     uint32_t addr = BASE_UDP_RAM;
@@ -2052,9 +2052,9 @@ void setupHeader(int iRxEntry, int vetoInterface, uint32_t destip,
         iRxEntry += RXR_ENDPOINTS_MAX;
     }
     addr += (iRxEntry * RXR_ENDPOINT_OFST);
-    // get struct memory
-    udp_header *udp =
-        (udp_header *)(Nios_getBaseAddress() + addr / (sizeof(u_int32_t)));
+    // build udp header
+    udp_header header;
+    udp_header *udp = &header;
     memset(udp, 0, sizeof(udp_header));
 
     //  mac addresses
@@ -2085,9 +2085,17 @@ void setupHeader(int iRxEntry, int vetoInterface, uint32_t destip,
     // total length is redefined in firmware
 
     calcChecksum(udp);
+
+    // force FPGA writes to be aligned and in order
+    if (bus_w_block(addr, udp, sizeof(udp_header), false) == FAIL) {
+        LOG(logERROR, ("Failed to write UDP header\n"));
+        return FAIL;
+    }
+
     if (iRxEntry < numUdpDestinations) {
         LOG(logINFO, ("\tIP checksum : 0x%lx\n\n", udp->ip_checksum));
     }
+    return OK;
 }
 
 void calcChecksum(udp_header *udp) {
@@ -2201,13 +2209,23 @@ int configureMAC() {
         }
 #endif
         // data
-        setupHeader(iRxEntry, 0, dstip, dstmac, dstport, srcmac, srcip,
-                    srcport);
+        if (setupHeader(iRxEntry, 0, dstip, dstmac, dstport, srcmac, srcip,
+                        srcport) == FAIL) {
+            LOG(logERROR, ("could not set udp destination IP and port for "
+                           "data interface [entry:%d] \n",
+                           iRxEntry));
+            return FAIL;
+        }
 
         // veto
         if (i10gbe) {
-            setupHeader(iRxEntry, 1, dstip2, dstmac2, dstport2, srcmac2, srcip2,
-                        srcport2);
+            if (setupHeader(iRxEntry, 1, dstip2, dstmac2, dstport2, srcmac2,
+                            srcip2, srcport2) == FAIL) {
+                LOG(logERROR, ("could not set udp destination IP and port for "
+                               "veto interface [entry:%d] \n",
+                               iRxEntry));
+                return FAIL;
+            }
         }
     }
     cleanFifos();

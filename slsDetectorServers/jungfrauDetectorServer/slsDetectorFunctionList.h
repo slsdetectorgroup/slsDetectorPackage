@@ -167,9 +167,9 @@ int getFirstUDPDestination();
 void setFirstUDPDestination(int value);
 void selectPrimaryInterface(int val);
 int getPrimaryInterface();
-void setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip,
-                 uint64_t destmac, uint16_t destport, uint64_t sourcemac,
-                 uint32_t sourceip, uint16_t sourceport);
+int setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip,
+                uint64_t destmac, uint16_t destport, uint64_t sourcemac,
+                uint32_t sourceip, uint16_t sourceport);
 void calcChecksum(udp_header *udp);
 
 int configureMAC();
@@ -188,7 +188,6 @@ bool hasFilterResistorFeature();
 bool hasFilterCellsFeature();
 bool hasCurrentSourceNormalFeature();
 bool hasCurrentSource64BitSelectionFeature();
-bool hasCurrentSourceReverseBitsSelectionFeature();
 bool hasStorageCellStartInChipConfig();
 bool hasStepReductionFeature();
 bool isChipConfigured();
@@ -229,7 +228,9 @@ int setTimingInfoDecoder(enum timingInfoDecoder val);
 int getTimingInfoDecoder(enum timingInfoDecoder *retval);
 int getElectronCollectionMode();
 void setElectronCollectionMode(int enable);
-
+void updateHDRTimeout();
+int setHDR(bool enable, enum operationMode mode);
+void getHDR(bool *enable, enum operationMode *mode);
 int getTenGigaFlowControl();
 int setTenGigaFlowControl(int value);
 int getTransmissionDelayFrame();

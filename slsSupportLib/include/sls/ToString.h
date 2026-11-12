@@ -48,6 +48,7 @@ std::string ToString(const defs::gainMode s);
 std::string ToString(const defs::polarity s);
 std::string ToString(const defs::timingInfoDecoder s);
 std::string ToString(const defs::collectionMode s);
+std::string ToString(const defs::operationMode s);
 
 std::string ToString(bool value);
 std::string ToString(bool value, defs::boolFormat format);
@@ -62,6 +63,9 @@ std::ostream &operator<<(std::ostream &os,
 std::string ToString(const slsDetectorDefs::scanParameters &r);
 std::ostream &operator<<(std::ostream &os,
                          const slsDetectorDefs::scanParameters &r);
+std::string ToString(const slsDetectorDefs::hdrParameters &r);
+std::ostream &operator<<(std::ostream &os,
+                         const slsDetectorDefs::hdrParameters &r);
 std::string ToString(const slsDetectorDefs::currentSrcParameters &r);
 std::ostream &operator<<(std::ostream &os,
                          const slsDetectorDefs::currentSrcParameters &r);
@@ -352,8 +356,7 @@ T StringTo(const std::string &f, const std::string &unit) {
     }
 }
 
-template <typename T,
-          std::enable_if_t<!is_container<T>::value, int> = 0>
+template <typename T, std::enable_if_t<!is_container<T>::value, int> = 0>
 T StringTo(const std::string &t) {
     std::string tmp{t};
     auto unit = RemoveUnit(tmp);
@@ -382,6 +385,7 @@ template <> defs::timingInfoDecoder StringTo(const std::string &s);
 template <> defs::collectionMode StringTo(const std::string &s);
 template <> RegisterAddress StringTo(const std::string &s);
 template <> RegisterValue StringTo(const std::string &s);
+template <> defs::operationMode StringTo(const std::string &s);
 
 template <> uint8_t StringTo(const std::string &s);
 template <> uint16_t StringTo(const std::string &s);

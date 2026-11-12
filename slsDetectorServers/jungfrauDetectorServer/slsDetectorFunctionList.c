@@ -71,7 +71,6 @@ bool has_filter_resistor = false;
 bool has_filter_cells = false;
 bool has_current_src_normal = false;
 bool has_current_src_64bit_selection = false;
-bool has_current_src_reverse_bits_selection = false;
 bool has_storage_start_in_chip_config = false;
 bool has_step_reduction = false;
 
@@ -416,7 +415,7 @@ int setChipIndex(enum CHIPINDEX ind, char *mess) {
 enum CHIPINDEX getChipIndex() { return chipIndex; }
 
 int validateChipIndex(enum CHIPINDEX ind, char *mess) {
-    if (ind < 0 || ind >= NUM_CHIP_INDICES) {
+    if (ind >= NUM_CHIP_INDICES) {
         sprintf(mess, "Invalid chip index %d. Options: %s\n", (int)ind,
                 CHIP_VALS_HELP);
         LOG(logERROR, (mess));
@@ -444,7 +443,6 @@ void setChipIndexAllowedFeatures() {
         has_filter_cells = false;
         has_current_src_normal = false;
         has_current_src_64bit_selection = false;
-        has_current_src_reverse_bits_selection = false;
         has_storage_start_in_chip_config = false;
         has_step_reduction = false;
         defaultDacValue_G0 = defaultDacList_G0;
@@ -457,7 +455,6 @@ void setChipIndexAllowedFeatures() {
         has_filter_cells = true;
         has_current_src_normal = true;
         has_current_src_64bit_selection = true;
-        has_current_src_reverse_bits_selection = true;
         has_storage_start_in_chip_config = true;
         has_step_reduction = false;
         defaultDacValue_G0 = defaultDacList_G0;
@@ -472,7 +469,6 @@ void setChipIndexAllowedFeatures() {
         has_filter_cells = false;
         has_current_src_normal = true;
         has_current_src_64bit_selection = true;
-        has_current_src_reverse_bits_selection = false;
         has_storage_start_in_chip_config = true;
         has_step_reduction = true;
         defaultDacValue_G0 = defaultDacList_v1_2;
@@ -846,7 +842,7 @@ int getDefaultDac(enum DACINDEX index, enum detectorSettings sett,
         return FAIL;
     }
 
-    if (index < 0 || index >= NDAC)
+    if (index >= NDAC)
         return FAIL;
     *retval = defaultDacValues[index];
     return OK;
@@ -882,7 +878,7 @@ int setDefaultDac(enum DACINDEX index, enum detectorSettings sett, int value) {
         // not a special dac
         return FAIL;
     }
-    if (index < 0 || index >= NDAC)
+    if (index >= NDAC)
         return FAIL;
     LOG(logINFO, ("Setting Default Dac [%d - %s]: %d\n", (int)index,
                   dac_names[index], value));
@@ -1260,6 +1256,8 @@ int setExpTime(int64_t val) {
     }
     set64BitReg(val, SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG);
 
+    updateHDRTimeout();
+
     // validate for tolerance
     val += ACQ_TIME_MIN_CLOCK;
     int64_t retval = getExpTime();
@@ -1564,7 +1562,7 @@ void setGainMode(enum gainMode mode) {
 
 /* parameters - dac, adc, hv */
 int validateDACIndex(enum DACINDEX ind, char *mess) {
-    if (ind < 0 || ind >= NDAC) {
+    if (ind >= NDAC) {
         sprintf(mess, "Could not set DAC. Invalid index %d\n", ind);
         LOG(logERROR, (mess));
         return FAIL;
@@ -1861,17 +1859,18 @@ int getPrimaryInterface() {
     return ((bus_r(CONFIG_REG) & CONFIG_INNR_PRIMRY_INTRFCE_MSK) ? 1 : 0);
 }
 
-void setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip,
-                 uint64_t destmac, uint16_t destport, uint64_t sourcemac,
-                 uint32_t sourceip, uint16_t sourceport) {
+int setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip,
+                uint64_t destmac, uint16_t destport, uint64_t sourcemac,
+                uint32_t sourceip, uint16_t sourceport) {
 
     // start addr
     uint32_t addr = (type == INNER ? RXR_ENDPOINT_INNER_START_REG
                                    : RXR_ENDPOINT_OUTER_START_REG);
     // calculate rxr endpoint offset
     addr += (iRxEntry * RXR_ENDPOINT_OFST);
-    // get struct memory
-    udp_header *udp = (udp_header *)(Blackfin_getBaseAddress() + addr / 2);
+    // build udp header
+    udp_header header;
+    udp_header *udp = &header;
     memset(udp, 0, sizeof(udp_header));
 
     //  mac addresses
@@ -1902,9 +1901,17 @@ void setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip,
     // total length is redefined in firmware
 
     calcChecksum(udp);
+
+    // force FPGA writes to be aligned and in order
+    if (bus_w_block(addr, udp, sizeof(udp_header), false) == FAIL) {
+        LOG(logERROR, ("Failed to write UDP header\n"));
+        return FAIL;
+    }
+
     if (iRxEntry < numUdpDestinations) {
         LOG(logINFO, ("\tIP checksum : 0x%lx\n\n", udp->ip_checksum));
     }
+    return OK;
 }
 
 void calcChecksum(udp_header *udp) {
@@ -2021,21 +2028,41 @@ int configureMAC() {
 #endif
         if (numInterfaces == 2) {
             // bottom
-            setupHeader(iRxEntry, OUTER, dstip, dstmac, dstport, srcmac, srcip,
-                        srcport);
+            if (setupHeader(iRxEntry, OUTER, dstip, dstmac, dstport, srcmac,
+                            srcip, srcport) == FAIL) {
+                LOG(logERROR, ("could not set udp header for outer interface "
+                               "[entry:%d]\n",
+                               iRxEntry));
+                return FAIL;
+            }
             // top
-            setupHeader(iRxEntry, INNER, dstip2, dstmac2, dstport2, srcmac2,
-                        srcip2, srcport2);
+            if (setupHeader(iRxEntry, INNER, dstip2, dstmac2, dstport2, srcmac2,
+                            srcip2, srcport2) == FAIL) {
+                LOG(logERROR, ("could not set udp header for inner interface "
+                               "[entry:%d]\n",
+                               iRxEntry));
+                return FAIL;
+            }
         }
         // single interface
         else {
             // default
             if (selInterface == 0) {
-                setupHeader(iRxEntry, OUTER, dstip, dstmac, dstport, srcmac,
-                            srcip, srcport);
+                if (setupHeader(iRxEntry, OUTER, dstip, dstmac, dstport, srcmac,
+                                srcip, srcport) == FAIL) {
+                    LOG(logERROR, ("could not set udp header for outer "
+                                   "interface [entry:%d]\n",
+                                   iRxEntry));
+                    return FAIL;
+                }
             } else {
-                setupHeader(iRxEntry, INNER, dstip, dstmac, dstport, srcmac,
-                            srcip, srcport2);
+                if (setupHeader(iRxEntry, INNER, dstip, dstmac, dstport, srcmac,
+                                srcip, srcport2) == FAIL) {
+                    LOG(logERROR, ("could not set udp header for inner "
+                                   "interface [entry:%d]\n",
+                                   iRxEntry));
+                    return FAIL;
+                }
             }
         }
     }
@@ -2242,10 +2269,6 @@ bool hasCurrentSourceNormalFeature() { return has_current_src_normal; }
 
 bool hasCurrentSource64BitSelectionFeature() {
     return has_current_src_64bit_selection;
-}
-
-bool hasCurrentSourceReverseBitsSelectionFeature() {
-    return has_current_src_reverse_bits_selection;
 }
 
 bool hasStorageCellStartInChipConfig() {
@@ -2797,23 +2820,9 @@ void enableCurrentSource(int fix, uint64_t select, int normal) {
 
     // select (64 bits)
     else {
-        uint64_t retval = 0;
-        // reverse bits select first
-        if (hasCurrentSourceReverseBitsSelectionFeature()) {
-            uint64_t tmp = select;
-            for (int i = 0; i != 64; ++i) {
-                // get each bit from LSB side
-                uint64_t bit = (tmp >> i) & 0x1;
-                // push the bit into MSB side
-                retval |= (bit << (63 - i));
-            }
-        } else {
-            retval = select;
-        }
-
         LOG(logINFO, ("\tSetting selection to 0x%lx (inverted from 0x%lx)\n",
-                      (long unsigned int)retval, (long unsigned int)select));
-        set64BitReg(retval, CRRNT_SRC_COL_LSB_REG, CRRNT_SRC_COL_MSB_REG);
+                      (long unsigned int)select, (long unsigned int)select));
+        set64BitReg(select, CRRNT_SRC_COL_LSB_REG, CRRNT_SRC_COL_MSB_REG);
     }
 
     if (hasCurrentSourceNormalFeature()) {
@@ -2870,23 +2879,7 @@ uint64_t getSelectCurrentSource() {
         return ((bus_r(DAQ_REG) & DAQ_CRRNT_SRC_CLMN_SLCT_MSK) >>
                 DAQ_CRRNT_SRC_CLMN_SLCT_OFST);
     } else {
-        // invert the select
-        uint64_t regval =
-            get64BitReg(CRRNT_SRC_COL_LSB_REG, CRRNT_SRC_COL_MSB_REG);
-
-        uint64_t retval = regval;
-        if (hasCurrentSourceReverseBitsSelectionFeature()) {
-            uint64_t tmp = regval;
-            uint64_t inverted = 0;
-            for (int i = 0; i != 64; ++i) {
-                // get each bit from LSB side
-                uint64_t bit = (tmp >> i) & 0x1;
-                // push the bit into MSB side
-                inverted |= (bit << (63 - i));
-            }
-            retval = inverted;
-        }
-        return retval;
+        return get64BitReg(CRRNT_SRC_COL_LSB_REG, CRRNT_SRC_COL_MSB_REG);
     }
 }
 
@@ -3027,6 +3020,84 @@ void setElectronCollectionMode(int enable) {
     }
     bus_w(DAQ_REG, val);
     configureChip();
+}
+
+void updateHDRTimeout() {
+    uint32_t addr = HDR_REG;
+    uint32_t regval = bus_r(addr);
+
+    uint64_t expTimeInClks =
+        get64BitReg(SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG) +
+        ACQ_TIME_MIN_CLOCK;
+    bool isFel = (regval & HDR_MODE_FEL_MSK);
+
+    double percentage =
+        (isFel ? HDR_FEL_TIMEOUT_PERCENT : HDR_SYNC_TIMEOUT_PERCENT) / 100.0;
+    int timeout = expTimeInClks * percentage;
+
+    // cap to max
+    if (timeout > HDR_MAX_TIMEOUT_VAL) {
+        LOG(logWARNING, ("HDR Timeout (%u clocks) exceeds maximum "
+                         "value. Capping to %d clocks\n",
+                         timeout, HDR_MAX_TIMEOUT_VAL));
+        timeout = HDR_MAX_TIMEOUT_VAL;
+    }
+
+    uint16_t timeoutInClks = (uint16_t)(timeout);
+    LOG(logINFO, ("Updating HDR Timeout to %d clocks (%d%% of exptime)\n",
+                  timeoutInClks, (int)(percentage * 100.00)));
+    regval &= ~HDR_TIMOUT_MSK;
+    regval |= ((timeoutInClks << HDR_TIMOUT_OFST) & HDR_TIMOUT_MSK);
+    bus_w(addr, regval);
+}
+
+int setHDR(bool enable, enum operationMode mode) {
+    LOG(logINFO, ("%s HDR\n", (enable ? "Enabling" : "Disabling")));
+
+    // disable hdr first
+    uint32_t addr = HDR_REG;
+    uint32_t regval = bus_r(addr);
+    bus_w(addr, regval & ~HDR_ENABLE_MSK);
+    if (!enable) {
+        return OK;
+    }
+    // mode
+    uint16_t actTime = 0;
+    switch (mode) {
+    case SYNCHROTRON:
+        LOG(logINFO, ("\tmode: synchrotron\n"));
+        actTime = HDR_SYNC_ACT_TIME_CLK_VAL;
+        regval &= ~HDR_MODE_FEL_MSK;
+        break;
+    case FEL:
+        LOG(logINFO, ("\tmode: FEL\n"));
+        actTime = HDR_FEL_ACT_TIME_CLK_VAL;
+        regval |= HDR_MODE_FEL_MSK;
+        break;
+    default:
+        LOG(logERROR, ("Unknown HDR mode %d\n", mode));
+        return FAIL;
+    }
+    // timeout
+    regval &= ~HDR_ACTIVATION_TIME_MSK;
+    regval |= ((actTime << HDR_ACTIVATION_TIME_OFST) & HDR_ACTIVATION_TIME_MSK);
+    bus_w(addr, regval);
+
+    updateHDRTimeout();
+
+    // enable HDR
+    regval = bus_r(addr) | HDR_ENABLE_MSK;
+    bus_w(addr, regval);
+
+    LOG(logDEBUG, ("\tHDR Register: 0x%08x\n", bus_r(addr)));
+    return OK;
+}
+
+void getHDR(bool *enable, enum operationMode *mode) {
+    uint32_t addr = HDR_REG;
+    uint32_t regval = bus_r(addr);
+    *enable = (regval & HDR_ENABLE_MSK) ? true : false;
+    *mode = (regval & HDR_MODE_FEL_MSK) ? FEL : SYNCHROTRON;
 }
 
 int getTenGigaFlowControl() {

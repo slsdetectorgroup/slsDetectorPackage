@@ -8,17 +8,24 @@ set(PROJECT_VERSION 6.1.5)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-# Extract qwt sources from the supplied source file
-set(INTERNALQWTDIR "qwt-source/")
-set(QWTBASE ${CMAKE_CURRENT_BINARY_DIR}/${INTERNALQWTDIR})
-file(MAKE_DIRECTORY ${QWTBASE})
-execute_process(
-	COMMAND tar -xf ${CMAKE_CURRENT_SOURCE_DIR}/qwt-6.1.5.tar.bz2 -C ${QWTBASE} --strip-components=1
-	RESULT_VARIABLE ret
-)
-if(ret AND NOT ret EQUAL 0)
-    message( FATAL_ERROR "Could not unpack qwt")
+# cmake_minimum_required above resets the policies set in the top level file
+if (${CMAKE_VERSION} VERSION_GREATER "3.24")
+    cmake_policy(SET CMP0135 NEW) #Fetch content download timestamp
 endif()
+
+# Extract qwt sources from the supplied source file. FetchContent unpacks
+# with the archive support built into CMake, so neither tar nor bzip2 has
+# to be installed. The archive has no top level CMakeLists.txt, so nothing
+# is added to the build here.
+include(FetchContent)
+FetchContent_Declare(
+    qwt_source
+    URL ${CMAKE_CURRENT_SOURCE_DIR}/qwt-6.1.5.tar.bz2
+    # Compute hash: md5sum qwt-6.1.5.tar.bz2
+    URL_HASH MD5=d65582f99312796ed42c3be3208ed3db
+)
+FetchContent_MakeAvailable(qwt_source)
+set(QWTBASE ${qwt_source_SOURCE_DIR})
 
 # Without this define moc files are not included and linking of examples fails.
 add_definitions(-DQWT_MOC_INCLUDE)
@@ -35,8 +42,8 @@ find_package(Qt5 REQUIRED
 )
 
 
-file(GLOB QWT_SOURCES ${QWTBASE}src/*.cpp)
-file(GLOB QWT_HEADERS ${QWTBASE}src/*.h)
+file(GLOB QWT_SOURCES ${QWTBASE}/src/*.cpp)
+file(GLOB QWT_HEADERS ${QWTBASE}/src/*.h)
 add_library(qwt STATIC ${QWT_SOURCES} ${QWT_HEADERS} )
 target_include_directories(qwt SYSTEM PUBLIC 
 	$<BUILD_INTERFACE:${QWTBASE}/src>

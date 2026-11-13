@@ -160,6 +160,7 @@ class Caller {
     std::string gates(int action);
     std::string getbit(int action);
     std::string hardwareversion(int action);
+    std::string hdr(int action);
     std::string highvoltage(int action);
     std::string hostname(int action);
     std::string im_a(int action);
@@ -529,6 +530,7 @@ class Caller {
         {"gates", &Caller::gates},
         {"getbit", &Caller::getbit},
         {"hardwareversion", &Caller::hardwareversion},
+        {"hdr", &Caller::hdr},
         {"highvoltage", &Caller::highvoltage},
         {"hostname", &Caller::hostname},
         {"im_a", &Caller::im_a},

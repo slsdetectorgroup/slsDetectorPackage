@@ -135,7 +135,8 @@ TEST_CASE("rx_missingpackets",
     det.setFileWrite(false); // avoid writing or error on file creation
     auto prev_frames =
         det.getNumberOfFrames().tsquash("inconsistent #frames in test");
-    det.setNumberOfFrames(100);
+    int64_t num_frames = 100;
+    det.setNumberOfFrames(num_frames);
     {
         // some missing packets
         det.startReceiver();
@@ -165,6 +166,33 @@ TEST_CASE("rx_missingpackets",
             REQUIRE(oss.str() == "rx_missingpackets [0]\n");
         } else {
             REQUIRE(oss.str() == "rx_missingpackets [0, 0]\n");
+        }
+
+        // readnrows
+        if (det_type == defs::EIGER || det_type == defs::JUNGFRAU ||
+            det_type == defs::MOENCH) {
+            auto prev_readnrows = det.getReadNRows().squash();
+            det.setReadNRows(16);
+
+            // without discard partial policy
+            det.startReceiver();
+            det.startDetector();
+            acq::wait_until_idle(det);
+            det.stopReceiver();
+            auto res =
+                det.getFramesCaught().tsquash("inconsistent frames caught");
+            CHECK(res == std::vector<int64_t>(res.size(), num_frames));
+
+            // with discard partial policy
+            det.setRxFrameDiscardPolicy(defs::DISCARD_PARTIAL_FRAMES);
+            det.startReceiver();
+            det.startDetector();
+            acq::wait_until_idle(det);
+            det.stopReceiver();
+            res = det.getFramesCaught().tsquash("inconsistent frames caught");
+            CHECK(res == std::vector<int64_t>(res.size(), num_frames));
+
+            det.setReadNRows(prev_readnrows);
         }
     }
     for (int i = 0; i != det.size(); ++i) {
@@ -868,8 +896,8 @@ TEST_CASE("rx_roi_port_disabled", "[.detectorintegration]") {
     if (two_ports) {
         auto prev_roi = det.getRxROI();
         auto ports = det.getPortPositionList();
-        auto prev_port0 = det.getUDPDataStream(ports[0], {0})[0];
-        auto prev_port1 = det.getUDPDataStream(ports[1], {0})[0];
+        auto prev_port0 = det.getUDPDataStream(ports[0], {0}).squash();
+        auto prev_port1 = det.getUDPDataStream(ports[1], {0}).squash();
         bool prev_tengiga = false;
         if (det_type == defs::EIGER) {
             prev_tengiga = det.getTenGiga().squash(false);
@@ -899,22 +927,22 @@ TEST_CASE("rx_roi_port_disabled", "[.detectorintegration]") {
         det.setUDPDataStream(ports[0], true, {0});
         det.setUDPDataStream(ports[1], true, {0});
         det.setRxROI(rois);
-        REQUIRE_THROWS(det.setUDPDataStream(ports[0], false));
-        REQUIRE_THROWS(det.setUDPDataStream(ports[1], false));
+        REQUIRE_THROWS(det.setUDPDataStream(ports[0], false, {0}));
+        REQUIRE_THROWS(det.setUDPDataStream(ports[1], false, {0}));
 
         det.clearRxROI();
         det.setUDPDataStream(ports[0], true, {0});
         det.setUDPDataStream(ports[1], true, {0});
         det.setRxROI({rois[0]});
-        REQUIRE_THROWS(det.setUDPDataStream(ports[0], false));
-        REQUIRE_NOTHROW(det.setUDPDataStream(ports[1], false));
+        REQUIRE_THROWS(det.setUDPDataStream(ports[0], false, {0}));
+        REQUIRE_NOTHROW(det.setUDPDataStream(ports[1], false, {0}));
 
         det.clearRxROI();
         det.setUDPDataStream(ports[0], true, {0});
         det.setUDPDataStream(ports[1], true, {0});
         det.setRxROI({rois[1]});
-        REQUIRE_NOTHROW(det.setUDPDataStream(ports[0], false));
-        REQUIRE_THROWS(det.setUDPDataStream(ports[1], false));
+        REQUIRE_NOTHROW(det.setUDPDataStream(ports[0], false, {0}));
+        REQUIRE_THROWS(det.setUDPDataStream(ports[1], false, {0}));
 
         det.clearRxROI();
         det.setUDPDataStream(ports[0], false, {0});

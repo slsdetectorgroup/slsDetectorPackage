@@ -434,5 +434,15 @@ TEST_CASE("Mismatched brackets in string to vector throws") {
     REQUIRE_THROWS(StringTo<std::vector<int>>("1]2"));
     REQUIRE_THROWS(StringTo<std::vector<int>>("[1], [2]"));
 }
+TEST_CASE("operationMode to string") {
+    REQUIRE(ToString(defs::operationMode::SYNCHROTRON) == "synchrotron");
+    REQUIRE(ToString(defs::operationMode::FEL) == "fel");
+}
+
+TEST_CASE("string to operationMode") {
+    REQUIRE(StringTo<defs::operationMode>("synchrotron") ==
+            defs::operationMode::SYNCHROTRON);
+    REQUIRE(StringTo<defs::operationMode>("fel") == defs::operationMode::FEL);
+}
 
 } // namespace sls

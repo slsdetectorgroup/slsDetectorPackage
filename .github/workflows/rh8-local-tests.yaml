@@ -1,11 +1,16 @@
 name: Run Simulator Tests on local RHEL8
 
 on:
-  push:
+  pull_request:
   workflow_dispatch:
 
+# Cancel older runs of this workflow for the same PR/branch when a new push arrives
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 env:
-  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.) 
   BUILD_TYPE: Debug  
 
 
@@ -17,7 +22,7 @@ jobs:
 
       - name: Configure CMake
         run: |
-          source /home/gitea_runner/.bashrc
+          source /home/github_runner/.bashrc
           conda activate det
           cmake -B build \
           -DCMAKE_BUILD_TYPE=Debug \
@@ -29,30 +34,39 @@ jobs:
       - name: Build
           # Build your program with the given configuration
         run: |
-          source /home/gitea_runner/.bashrc
+          source /home/github_runner/.bashrc 
           conda activate det
           cmake --build build -j4 --config Debug
 
+      - name: C++ unit tests
+        run: |
+          source /home/github_runner/.bashrc
+          conda activate det
+          cd build
+          ctest -j1  --rerun-failed --output-on-failure
+
       - name: Python unit tests with simulators
         run: |
-          source /home/gitea_runner/.bashrc
+          source /home/github_runner/.bashrc
           conda activate det
           export PYTHONPATH=$PWD/build/bin:$PYTHONPATH
-          export SLSDETNAME=gitea_runner_tests
+          export SLSDETNAME=github_runner_tests
           python -m pytest -m detectorintegration python/tests --detector-integration 
           python -m pytest python/tests
 
 
       - name: Simulator unit tests
         run: |
-          source /home/gitea_runner/.bashrc
+          source /home/github_runner/.bashrc
           conda activate det
           cd build/bin
+          export SLSDETNAME=github_runner_tests
           python test_simulators.py -g
 
       - name: Run frame synchronizer tests
         run: |
-          source /home/gitea_runner/.bashrc
+          source /home/github_runner/.bashrc
           conda activate det
           cd build/bin
+          export SLSDETNAME=github_runner_tests
           python test_frame_synchronizer.py 

@@ -5,8 +5,23 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
 
+# Qt6 when it is there, Qt 5.15 otherwise (RHEL8 has no Qt6 packages). To build
+# with Qt5 where both are installed: -DCMAKE_DISABLE_FIND_PACKAGE_Qt6=ON
 # Concurrent is needed for the acquisition thread in qDrawPlot.cpp
-find_package(Qt6 6.2 REQUIRED COMPONENTS Widgets Gui Core Concurrent)
+set(SLS_QT_COMPONENTS Widgets Gui Core Concurrent)
+if(SLS_USE_TESTS)
+    list(APPEND SLS_QT_COMPONENTS Test)
+endif()
+find_package(Qt6 6.2 QUIET COMPONENTS ${SLS_QT_COMPONENTS})
+if(Qt6_FOUND)
+    set(SLS_QT Qt6)
+else()
+    find_package(Qt5 5.15 REQUIRED COMPONENTS ${SLS_QT_COMPONENTS})
+    set(SLS_QT Qt5)
+endif()
+message(STATUS "slsDetectorGui: using ${SLS_QT} ${${SLS_QT}_VERSION}")
+# the gui RPM depends on the same Qt
+set(SLS_QT ${SLS_QT} PARENT_SCOPE)
 
 find_package(PNG REQUIRED)
 find_package(ZLIB REQUIRED)
@@ -43,9 +58,9 @@ target_link_libraries(slsDetectorPlotting
     PUBLIC
         slsProjectOptions
         slsSupportStatic
-        Qt6::Widgets
-        Qt6::Gui
-        Qt6::Core
+        ${SLS_QT}::Widgets
+        ${SLS_QT}::Gui
+        ${SLS_QT}::Core
     PRIVATE
         slsProjectWarnings
 )
@@ -125,7 +140,7 @@ target_link_libraries(slsDetectorGui PUBLIC
     slsDetectorPlotting
     PNG::PNG
     ZLIB::ZLIB
-    Qt6::Concurrent
+    ${SLS_QT}::Concurrent
 
     PRIVATE
     slsProjectWarnings

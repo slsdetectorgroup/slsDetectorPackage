@@ -8,16 +8,28 @@
 #include <QColor>
 #include <QFont>
 #include <QPalette>
+#include <QPointF>
 #include <QRect>
 #include <QRgb>
 #include <QSize>
 #include <QString>
+#include <QtGlobal>
 
 #include <cmath>
 #include <vector>
 
 namespace sls {
 namespace plot {
+
+// Position of a mouse or gesture event in the widget. Qt5 has another name for
+// it. Not for wheel events, they have position() in both.
+template <class Event> QPointF eventPos(const Event *e) {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    return e->position();
+#else
+    return e->localPos();
+#endif
+}
 
 // Palettes offered by the image scale panel.  Color / BW1 / BW2 are the
 // original three and stay first (the b / B / c shortcuts use those indices).

@@ -632,7 +632,7 @@ void SlsQtFastImage::mousePressEvent(QMouseEvent *e) {
     if (e->button() != Qt::LeftButton || !m_zoomEnabled || !hasImage())
         return;
     m_panning = true;
-    m_panStart = e->position();
+    m_panStart = plot::eventPos(e);
     m_panStartArea = visibleArea();
     setCursor(Qt::ClosedHandCursor);
 }
@@ -642,12 +642,12 @@ void SlsQtFastImage::mouseMoveEvent(QMouseEvent *e) {
         return;
     const Mapping m = mapping();
     if (m_panning) {
-        const QPointF delta = (e->position() - m_panStart) / m.scale;
+        const QPointF delta = (plot::eventPos(e) - m_panStart) / m.scale;
         showArea(m_panStartArea.translated(-delta.x(), delta.y()));
         return;
     }
 
-    updateHover(e->position());
+    updateHover(plot::eventPos(e));
 }
 
 // Finds the pixel under the cursor, for the readout
@@ -703,8 +703,8 @@ bool SlsQtFastImage::event(QEvent *e) {
         const auto *gesture = static_cast<QNativeGestureEvent *>(e);
         if (gesture->gestureType() == Qt::ZoomNativeGesture) {
             // value() is the change of size since the previous event
-            zoomAt(gesture->position(), std::max(0.1, 1 + gesture->value()));
-            updateHover(gesture->position());
+            zoomAt(plot::eventPos(gesture), std::max(0.1, 1 + gesture->value()));
+            updateHover(plot::eventPos(gesture));
             return true;
         }
     }

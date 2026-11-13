@@ -132,7 +132,7 @@ void SlsQtScaleHisto::paintEvent(QPaintEvent *) {
 void SlsQtScaleHisto::mousePressEvent(QMouseEvent *e) {
     if (e->button() != Qt::LeftButton)
         return;
-    const double x = e->position().x();
+    const double x = plot::eventPos(e).x();
     const double toLo = std::abs(x - kLoMarker * width());
     const double toHi = std::abs(x - kHiMarker * width());
     if (std::min(toLo, toHi) > kGrabDistance)
@@ -145,7 +145,7 @@ void SlsQtScaleHisto::mousePressEvent(QMouseEvent *e) {
 void SlsQtScaleHisto::mouseMoveEvent(QMouseEvent *e) {
     if (!isDragging())
         return;
-    m_dragX = std::clamp(e->position().x(), 0.0, double(width()));
+    m_dragX = std::clamp(plot::eventPos(e).x(), 0.0, double(width()));
     update();
 }
 
@@ -210,11 +210,11 @@ SlsQtScalePanel::SlsQtScalePanel(SlsQtFastImage *view, QWidget *parent)
     setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 
     connect(
-        m_paletteCombo, &QComboBox::currentIndexChanged, this,
+        m_paletteCombo, qOverload<int>(&QComboBox::currentIndexChanged), this,
         [this](int i) { m_view->setPalette(static_cast<plot::Palette>(i)); });
-    connect(m_imageLogCombo, &QComboBox::currentIndexChanged, this,
+    connect(m_imageLogCombo, qOverload<int>(&QComboBox::currentIndexChanged), this,
             [this](int i) { m_view->setLogScale(i == 1); });
-    connect(m_histoLogCombo, &QComboBox::currentIndexChanged, this,
+    connect(m_histoLogCombo, qOverload<int>(&QComboBox::currentIndexChanged), this,
             &SlsQtScalePanel::refresh);
     connect(m_histo, &SlsQtScaleHisto::rangeChanged, this,
             [this](double lo, double hi) {

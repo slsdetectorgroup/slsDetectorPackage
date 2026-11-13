@@ -108,6 +108,11 @@ int main(int argc, char **argv) {
         }
     }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    // Qt6 always scales with the screen, Qt5 has to be asked
+    QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+#endif
     QApplication app(argc, argv);
     // Use the same (platform independent) widget style everywhere so that the
     // gui looks the same on linux and macOS. Fusion is built into Qt.

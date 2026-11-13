@@ -625,9 +625,14 @@ void PlottingTest::imageTouchpadZoom() {
     // a pinch magnifies by 1 + value
     view.resetView();
     for (int i = 0; i < 4; i++) {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
         QNativeGestureEvent pinch(Qt::ZoomNativeGesture,
                                   QPointingDevice::primaryPointingDevice(), 2,
                                   cursor, cursor, cursor, 0.18, QPointF());
+#else
+        QNativeGestureEvent pinch(Qt::ZoomNativeGesture, cursor, cursor, cursor,
+                                  0.18, 0, 0);
+#endif
         QCoreApplication::sendEvent(&view, &pinch);
     }
     QVERIFY(nearRect(view.visibleArea(), wheel));

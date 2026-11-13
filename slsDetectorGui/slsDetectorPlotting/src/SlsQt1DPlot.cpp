@@ -1453,7 +1453,7 @@ void SlsQt1DPlot::paintEvent(QPaintEvent *event) {
 // ---------------------------------------------------------------------------
 
 void SlsQt1DPlot::mousePressEvent(QMouseEvent *event) {
-    const QPointF pos = event->position();
+    const QPointF pos = sls::plot::eventPos(event);
     const Geometry g = computeGeometry();
     if (zoomAllowed()) {
         if (event->button() == Qt::LeftButton &&
@@ -1490,7 +1490,7 @@ void SlsQt1DPlot::mousePressEvent(QMouseEvent *event) {
 }
 
 void SlsQt1DPlot::mouseMoveEvent(QMouseEvent *event) {
-    const QPointF pos = event->position();
+    const QPointF pos = sls::plot::eventPos(event);
     const Geometry g = computeGeometry();
     const bool inside = g.plot.contains(pos.toPoint());
     if (inside != m_trackValid || pos != m_trackPos) {

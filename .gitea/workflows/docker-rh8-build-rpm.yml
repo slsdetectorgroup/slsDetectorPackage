@@ -25,6 +25,7 @@ jobs:
 
       - name: Install build dependencies
         run: |
+          # RHEL8 has no Qt6, the gui is built with Qt5
           dnf -y install rpm-build qt5-qtbase-devel qt5-qtsvg-devel \
             libpng-devel zlib-devel expat-devel libtiff-devel
 
@@ -33,8 +34,10 @@ jobs:
           cmake -S . -B build \
             -DCMAKE_BUILD_TYPE=Release \
             -DSLS_USE_GUI=ON \
+            -DCMAKE_DISABLE_FIND_PACKAGE_Qt6=ON \
             -DSLS_USE_MOENCH=ON \
             -DSLS_INSTALL_VERSIONED_BINARIES=ON
+          grep -q '^Qt5_DIR:PATH=/' build/CMakeCache.txt
           cmake --build build -j 2
 
       - name: Build RPMs

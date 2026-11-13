@@ -538,9 +538,12 @@ set(CPACK_RPM_PACKAGE_RELEASE_DIST ON)
 set(CPACK_RPM_COMPONENT_INSTALL ON)
 
 
-set(CPACK_RPM_GUI_PACKAGE_REQUIRES
-    "qt6-qtbase, qt6-qtbase-gui"
-)
+# The Qt the gui was built with, Qt5 on RHEL8 and Qt6 on RHEL9
+if(SLS_QT STREQUAL "Qt5")
+    set(CPACK_RPM_GUI_PACKAGE_REQUIRES "qt5-qtbase, qt5-qtbase-gui")
+else()
+    set(CPACK_RPM_GUI_PACKAGE_REQUIRES "qt6-qtbase, qt6-qtbase-gui")
+endif()
 
 #control which RPMs are generated
 set(CPACK_COMPONENTS_ALL cli receiver zmq gui)

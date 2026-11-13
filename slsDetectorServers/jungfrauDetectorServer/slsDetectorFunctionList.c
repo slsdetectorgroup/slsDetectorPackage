@@ -20,6 +20,11 @@
 #ifdef VIRTUAL
 #include <pthread.h>
 #include <time.h>
+// PLAYBACK (temporary, gui development)
+#include <fcntl.h>
+#include <stdlib.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
 #endif
 extern int portno;
 // Global variable from slsDetectorServer_funcs
@@ -3245,6 +3250,54 @@ void *start_timer(void *arg) {
         }
     }
 
+    // PLAYBACK (temporary, gui development): replay a JungfrauDataFile
+    // (per frame: 16 byte header {framenum, bunchid} + 512x1024 uint16)
+    // SLS_PLAYBACK_FILE: path to the .dat file
+    // SLS_PLAYBACK_FLIP: 1 flips the rows of the first half, 2 of the second
+    // half, 3 of both
+    const size_t playbackHeaderBytes = 2 * sizeof(uint64_t);
+    const size_t playbackFrameBytes = playbackHeaderBytes + DATA_BYTES;
+    char *playbackData = MAP_FAILED;
+    size_t playbackSize = 0;
+    uint64_t playbackNFrames = 0;
+    int playbackFlip = 0;
+    {
+        const char *fname = getenv("SLS_PLAYBACK_FILE");
+        const char *flip = getenv("SLS_PLAYBACK_FLIP");
+        if (flip != NULL) {
+            playbackFlip = atoi(flip);
+        }
+        if (fname != NULL && !virtual_image_test_mode) {
+            int fd = open(fname, O_RDONLY);
+            struct stat st;
+            if (fd < 0 || fstat(fd, &st) != 0) {
+                LOG(logERROR, ("Playback: could not open %s\n", fname));
+            } else if (st.st_size == 0 ||
+                       (st.st_size % playbackFrameBytes) != 0) {
+                LOG(logERROR,
+                    ("Playback: size of %s is not a multiple of a full "
+                     "module frame (%zu bytes)\n",
+                     fname, playbackFrameBytes));
+            } else {
+                playbackSize = st.st_size;
+                playbackData =
+                    mmap(NULL, playbackSize, PROT_READ, MAP_PRIVATE, fd, 0);
+                if (playbackData == MAP_FAILED) {
+                    LOG(logERROR, ("Playback: could not map %s\n", fname));
+                } else {
+                    playbackNFrames = playbackSize / playbackFrameBytes;
+                    LOG(logINFOBLUE,
+                        ("Playback: %s [%llu frames, flip:%d]\n", fname,
+                         (long long unsigned int)playbackNFrames,
+                         playbackFlip));
+                }
+            }
+            if (fd >= 0) {
+                close(fd);
+            }
+        }
+    }
+
     // Send data
     {
         uint64_t frameNr = 0;
@@ -3299,6 +3352,31 @@ void *start_timer(void *arg) {
                 }
             }
 #endif
+            // PLAYBACK: next file frame, starting at the first one when the
+            // server starts and looping over the file
+            uint64_t bunchId = 0;
+            if (playbackNFrames > 0) {
+                static uint64_t playbackCounter = 0;
+                uint64_t index = playbackCounter++ % playbackNFrames;
+                const char *src = playbackData + index * playbackFrameBytes;
+                memcpy(&bunchId, src + sizeof(uint64_t), sizeof(bunchId));
+                src += playbackHeaderBytes;
+                const int rowBytes = 1024 * NUM_BYTES_PER_PIXEL;
+                const int nRows = DATA_BYTES / rowBytes;
+                for (int half = 0; half != 2; ++half) {
+                    const int first = half * (nRows / 2);
+                    if (playbackFlip & (1 << half)) {
+                        for (int r = 0; r != nRows / 2; ++r) {
+                            memcpy(imageData + (first + r) * rowBytes,
+                                   src + (first + nRows / 2 - 1 - r) * rowBytes,
+                                   rowBytes);
+                        }
+                    } else {
+                        memcpy(imageData + first * rowBytes,
+                               src + first * rowBytes, DATA_BYTES / 2);
+                    }
+                }
+            }
             int srcOffset = 0;
             int srcOffset2 = DATA_BYTES / 2;
             int row0 = (numInterfaces == 1 ? detPos[1] : detPos[3]);
@@ -3324,6 +3402,7 @@ void *start_timer(void *arg) {
                     header->frameNumber = frameNr + iframes;
                     header->packetNumber = pnum;
                     header->modId = virtual_moduleid;
+                    header->detSpec1 = bunchId;
                     header->row = row0;
                     header->column = col0;
 
@@ -3351,6 +3430,7 @@ void *start_timer(void *arg) {
                     header->frameNumber = frameNr + iframes;
                     header->packetNumber = pnum;
                     header->modId = virtual_moduleid;
+                    header->detSpec1 = bunchId;
                     header->row = row1;
                     header->column = col1;
 
@@ -3386,6 +3466,9 @@ void *start_timer(void *arg) {
         setNextFrameNumber(frameNr + numFrames);
     }
     free(imageData);
+    if (playbackData != MAP_FAILED) {
+        munmap(playbackData, playbackSize);
+    }
 
     closeUDPSocket(0);
     if (numInterfaces == 2) {

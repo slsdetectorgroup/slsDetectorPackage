@@ -109,6 +109,8 @@ void SlsQt2DPlot::SetData(int nbinsx, double xmin, double xmax, int nbinsy,
     }
     m_view->setImage(m_hist.GetDataPtr(), m_hist.GetNBinsX(),
                      m_hist.GetNBinsY());
+    m_view->setAxisRange(m_hist.GetXMin(), m_hist.GetXMax(), m_hist.GetYMin(),
+                         m_hist.GetYMax());
     m_contourDirty = true;
     Update();
 }

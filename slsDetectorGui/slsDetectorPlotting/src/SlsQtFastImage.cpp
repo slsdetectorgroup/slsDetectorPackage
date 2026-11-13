@@ -21,11 +21,22 @@ constexpr int kMaxTicks = 8;
 constexpr double kWheelZoomFactor = 1.18;
 // widget pixels per image pixel from which the pixels are outlined / labelled
 constexpr double kOutlineMinScale = 16.0;
-constexpr double kLabelMinScale = 50.0;
+constexpr double kLabelMinScale = 24.0;
+// font size of the pixel labels, in widget pixels
+constexpr int kLabelMinFont = 8;
+constexpr int kLabelMaxFont = 20;
+// part of the width and of the height of a pixel that a label may fill
+constexpr double kLabelWidth = 0.75;
+constexpr double kLabelHeight = 0.3;
+// significant digits of values that are not integers
+constexpr int kLabelDigits = 5;
+constexpr int kReadoutDigits = 8;
 
-QString formatValue(double v) {
-    const bool integer = (v == std::round(v));
-    return QString::number(v, 'f', integer ? 0 : 1);
+// Integers are written out in full so that counts can be read exactly
+QString formatValue(double v, int digits) {
+    if (v == std::round(v) && std::abs(v) < 1e15)
+        return QString::number(v, 'f', 0);
+    return QString::number(v, 'g', digits);
 }
 
 } // namespace
@@ -52,6 +63,7 @@ void SlsQtFastImage::setImage(const double *data, int nx, int ny) {
         m_ny = ny;
         m_viewport = QRectF(0, 0, nx, ny);
         m_fillPlot = true;
+        m_hasHover = false;
         m_histogramAge.invalidate();
     }
     m_imageDirty = true;
@@ -314,6 +326,26 @@ QPointF SlsQtFastImage::dataToWidget(const QPointF &dataPos) const {
                       : QPointF();
 }
 
+void SlsQtFastImage::setAxisRange(double xmin, double xmax, double ymin,
+                                  double ymax) {
+    if (!(xmax > xmin) || !(ymax > ymin))
+        return;
+    m_axisRange = QRectF(xmin, ymin, xmax - xmin, ymax - ymin);
+    update();
+}
+
+SlsQtFastImage::Axis SlsQtFastImage::xAxis() const {
+    if (m_axisRange.isNull())
+        return {-0.5, 1.0};
+    return {m_axisRange.x(), m_axisRange.width() / m_nx};
+}
+
+SlsQtFastImage::Axis SlsQtFastImage::yAxis() const {
+    if (m_axisRange.isNull())
+        return {-0.5, 1.0};
+    return {m_axisRange.y(), m_axisRange.height() / m_ny};
+}
+
 void SlsQtFastImage::setZoomEnabled(bool on) {
     m_zoomEnabled = on;
     if (!on)
@@ -398,6 +430,7 @@ void SlsQtFastImage::paintEvent(QPaintEvent *) {
     drawPixelDetail(p, m);
     drawOverlays(p, m);
     drawTitles(p, m);
+    drawReadout(p, m);
 }
 
 void SlsQtFastImage::drawImage(QPainter &p, const Mapping &m) const {
@@ -415,40 +448,46 @@ void SlsQtFastImage::drawAxes(QPainter &p, const Mapping &m) const {
     if (!m_axesVisible)
         return;
     const QRect plot = m.plot;
-    const double x0 = m.area.x();
-    const double x1 = x0 + m.area.width();
-    const double y0 = m.area.y();
-    const double y1 = y0 + m.area.height();
+    const Axis xAxis = this->xAxis();
+    const Axis yAxis = this->yAxis();
+    const double x0 = xAxis.value(m.area.x());
+    const double x1 = xAxis.value(m.area.x() + m.area.width());
+    const double y0 = yAxis.value(m.area.y());
+    const double y1 = yAxis.value(m.area.y() + m.area.height());
     const auto ticksX = plot::computeLinearTicks(x0, x1, kMaxTicks);
     const auto ticksY = plot::computeLinearTicks(y0, y1, kMaxTicks);
     const double stepX = plot::niceStep(x1 - x0, kMaxTicks);
     const double stepY = plot::niceStep(y1 - y0, kMaxTicks);
+    const auto widgetX = [&](double x) {
+        return m.toWidget(xAxis.pixel(x), 0).x();
+    };
+    const auto widgetY = [&](double y) {
+        return m.toWidget(0, yAxis.pixel(y)).y();
+    };
 
     p.save();
     p.setFont(m_theme.tickFont);
 
     p.setClipRect(plot);
     p.setPen(QPen(m_theme.grid, 1, Qt::DotLine));
-    for (const double x : ticksX) {
-        const double wx = m.toWidget(x, 0).x();
-        p.drawLine(QPointF(wx, plot.top()), QPointF(wx, plot.bottom()));
-    }
-    for (const double y : ticksY) {
-        const double wy = m.toWidget(0, y).y();
-        p.drawLine(QPointF(plot.left(), wy), QPointF(plot.right(), wy));
-    }
+    for (const double x : ticksX)
+        p.drawLine(QPointF(widgetX(x), plot.top()),
+                   QPointF(widgetX(x), plot.bottom()));
+    for (const double y : ticksY)
+        p.drawLine(QPointF(plot.left(), widgetY(y)),
+                   QPointF(plot.right(), widgetY(y)));
     p.setClipping(false);
 
     p.setPen(m_theme.tick);
     for (const double x : ticksX) {
-        const double wx = m.toWidget(x, 0).x();
+        const double wx = widgetX(x);
         p.drawLine(QPointF(wx, plot.bottom() + 1),
                    QPointF(wx, plot.bottom() + 4));
         p.drawText(QRectF(wx - 30, plot.bottom() + 5, 60, 14),
                    Qt::AlignHCenter | Qt::AlignTop, plot::formatTick(x, stepX));
     }
     for (const double y : ticksY) {
-        const double wy = m.toWidget(0, y).y();
+        const double wy = widgetY(y);
         p.drawLine(QPointF(plot.left() - 4, wy), QPointF(plot.left() - 1, wy));
         p.drawText(QRectF(plot.left() - 50, wy - 7, 44, 14),
                    Qt::AlignRight | Qt::AlignVCenter,
@@ -459,48 +498,87 @@ void SlsQtFastImage::drawAxes(QPainter &p, const Mapping &m) const {
     p.restore();
 }
 
+// Outlines the pixels and writes their values into them
 void SlsQtFastImage::drawPixelDetail(QPainter &p, const Mapping &m) const {
     if (m.scale < kOutlineMinScale)
         return;
-    const QRect plot = m.plot;
-    const double right = m.area.x() + m.area.width();
-    const double top = m.area.y() + m.area.height();
-    const int ix0 = std::max(0, static_cast<int>(std::floor(m.area.x())));
-    const int iy0 = std::max(0, static_cast<int>(std::floor(m.area.y())));
-    const int ix1 = std::min(m_nx, static_cast<int>(std::ceil(right)));
-    const int iy1 = std::min(m_ny, static_cast<int>(std::ceil(top)));
+    const QRectF clip = m.areaRect();
+    const int ix0 = static_cast<int>(std::floor(m.area.x()));
+    const int iy0 = static_cast<int>(std::floor(m.area.y()));
+    const int ix1 = static_cast<int>(std::ceil(m.area.x() + m.area.width()));
+    const int iy1 = static_cast<int>(std::ceil(m.area.y() + m.area.height()));
 
     p.save();
-    p.setClipRect(m.areaRect());
+    p.setClipRect(clip);
     p.setPen(QColor(55, 55, 55));
     for (int ix = ix0; ix <= ix1; ++ix) {
         const double wx = m.toWidget(ix, 0).x();
-        p.drawLine(QPointF(wx, plot.top()), QPointF(wx, plot.bottom()));
+        p.drawLine(QPointF(wx, clip.top()), QPointF(wx, clip.bottom()));
     }
     for (int iy = iy0; iy <= iy1; ++iy) {
         const double wy = m.toWidget(0, iy).y();
-        p.drawLine(QPointF(plot.left(), wy), QPointF(plot.right(), wy));
+        p.drawLine(QPointF(clip.left(), wy), QPointF(clip.right(), wy));
     }
 
     if (m.scale >= kLabelMinScale) {
-        QFont f = m_theme.tickFont;
-        f.setPixelSize(std::clamp(static_cast<int>(m.scale * 0.25), 7, 20));
-        p.setFont(f);
+        // One font size for all labels: as large as the longest one allows
+        QString longest;
         for (int iy = iy0; iy < iy1; ++iy) {
             for (int ix = ix0; ix < ix1; ++ix) {
-                const double v = value(ix, iy);
-                if (!std::isfinite(v))
-                    continue;
-                // dark text on bright pixels and the other way round
-                const QRgb c = m_image.pixel(ix, m_ny - 1 - iy);
-                p.setPen(qGray(c) > 140 ? QColor(15, 15, 15)
-                                        : QColor(245, 245, 245));
-                const QRectF cell(m.toWidget(ix, iy + 1),
-                                  QSizeF(m.scale, m.scale));
-                p.drawText(cell, Qt::AlignCenter, formatValue(v));
+                const QString text = formatValue(value(ix, iy), kLabelDigits);
+                if (text.size() > longest.size())
+                    longest = text;
+            }
+        }
+        QFont f = m_theme.tickFont;
+        f.setPixelSize(kLabelMaxFont);
+        const double width = QFontMetricsF(f).horizontalAdvance(longest);
+        const double byWidth =
+            kLabelMaxFont * kLabelWidth * m.scale / std::max(width, 1.0);
+        const double byHeight = kLabelHeight * m.scale;
+        const int fontSize = static_cast<int>(
+            std::min({double(kLabelMaxFont), byWidth, byHeight}));
+        if (fontSize >= kLabelMinFont) {
+            f.setPixelSize(fontSize);
+            p.setFont(f);
+            for (int iy = iy0; iy < iy1; ++iy) {
+                for (int ix = ix0; ix < ix1; ++ix) {
+                    // dark text on bright pixels and the other way round
+                    const QRgb c = m_image.pixel(ix, m_ny - 1 - iy);
+                    p.setPen(qGray(c) > 140 ? QColor(15, 15, 15)
+                                            : QColor(245, 245, 245));
+                    const QRectF cell(m.toWidget(ix, iy + 1),
+                                      QSizeF(m.scale, m.scale));
+                    p.drawText(cell, Qt::AlignCenter,
+                               formatValue(value(ix, iy), kLabelDigits));
+                }
             }
         }
     }
+    p.restore();
+}
+
+// Position and value of the pixel under the cursor, in a corner of the plot
+// area that the cursor is not in
+void SlsQtFastImage::drawReadout(QPainter &p, const Mapping &m) const {
+    if (!m_hasHover)
+        return;
+    const QString text =
+        QStringLiteral("x %1   y %2   %3")
+            .arg(formatValue(xAxis().value(m_hover.x() + 0.5), kReadoutDigits),
+                 formatValue(yAxis().value(m_hover.y() + 0.5), kReadoutDigits),
+                 formatValue(value(m_hover.x(), m_hover.y()), kReadoutDigits));
+    p.save();
+    QFont f = m_theme.tickFont;
+    f.setPixelSize(12);
+    p.setFont(f);
+    QRectF box(QPointF(), p.fontMetrics().size(0, text) + QSize(12, 6));
+    box.moveTopRight(m.plot.topRight() + QPointF(-4, 5));
+    if (box.adjusted(-20, -20, 20, 20).contains(m_cursor))
+        box.moveLeft(m.plot.left() + 5);
+    p.fillRect(box, QColor(0, 0, 0, 170));
+    p.setPen(m_theme.text);
+    p.drawText(box, Qt::AlignCenter, text);
     p.restore();
 }
 
@@ -569,17 +647,33 @@ void SlsQtFastImage::mouseMoveEvent(QMouseEvent *e) {
         return;
     }
 
-    const QPointF d = m.toData(e->position());
-    const int ix = static_cast<int>(std::floor(d.x()));
-    const int iy = static_cast<int>(std::floor(d.y()));
-    const bool onImage = m.plot.contains(e->position().toPoint()) && ix >= 0 &&
-                         ix < m_nx && iy >= 0 && iy < m_ny;
-    setCursor(onImage && m_zoomEnabled ? Qt::OpenHandCursor : Qt::ArrowCursor);
-    setToolTip(onImage ? QStringLiteral("(x=%1, y=%2) = %3")
-                             .arg(ix)
-                             .arg(iy)
-                             .arg(formatValue(value(ix, iy)))
-                       : QString());
+    updateHover(e->position());
+}
+
+// Finds the pixel under the cursor, for the readout
+void SlsQtFastImage::updateHover(const QPointF &cursor) {
+    const Mapping m = mapping();
+    const QPointF d = m.toData(cursor);
+    const QPoint pixel(static_cast<int>(std::floor(d.x())),
+                       static_cast<int>(std::floor(d.y())));
+    const bool onImage = m.areaRect().contains(cursor) &&
+                         QRect(0, 0, m_nx, m_ny).contains(pixel);
+    if (!m_panning)
+        setCursor(onImage && m_zoomEnabled ? Qt::OpenHandCursor
+                                           : Qt::ArrowCursor);
+    m_cursor = cursor;
+    if (onImage != m_hasHover || pixel != m_hover) {
+        m_hasHover = onImage;
+        m_hover = pixel;
+        update();
+    }
+}
+
+void SlsQtFastImage::leaveEvent(QEvent *) {
+    if (m_hasHover) {
+        m_hasHover = false;
+        update();
+    }
 }
 
 void SlsQtFastImage::mouseReleaseEvent(QMouseEvent *e) {
@@ -600,6 +694,7 @@ void SlsQtFastImage::wheelEvent(QWheelEvent *e) {
         return;
     // A mouse wheel sends 120 per notch, a touchpad many small steps
     zoomAt(e->position(), std::pow(kWheelZoomFactor, delta / 120.0));
+    updateHover(e->position());
 }
 
 // Pinch on a touchpad
@@ -609,6 +704,7 @@ bool SlsQtFastImage::event(QEvent *e) {
         if (gesture->gestureType() == Qt::ZoomNativeGesture) {
             // value() is the change of size since the previous event
             zoomAt(gesture->position(), std::max(0.1, 1 + gesture->value()));
+            updateHover(gesture->position());
             return true;
         }
     }

@@ -28,7 +28,8 @@ namespace sls {
  *
  * The wheel or a pinch zooms around the cursor, dragging pans and a double
  * click shows the whole image again. Once the pixels are large enough they
- * are outlined and labelled with their value.
+ * are outlined and labelled with their value. Position and value of the
+ * pixel under the cursor are shown in a corner.
  */
 class SlsQtFastImage : public QWidget {
     Q_OBJECT
@@ -76,6 +77,10 @@ class SlsQtFastImage : public QWidget {
     QPointF widgetToData(const QPointF &widgetPos) const;
     QPointF dataToWidget(const QPointF &dataPos) const;
 
+    /** Values on the axes at the edges of the image. Without it the axes
+     * show the pixel index, at the centre of each pixel. */
+    void setAxisRange(double xmin, double xmax, double ymin, double ymax);
+
     void setZoomEnabled(bool on);
     bool zoomEnabled() const;
     void setAxesVisible(bool on);
@@ -113,6 +118,7 @@ class SlsQtFastImage : public QWidget {
     void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
     void mouseDoubleClickEvent(QMouseEvent *event) override;
+    void leaveEvent(QEvent *event) override;
     void wheelEvent(QWheelEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
 
@@ -138,11 +144,22 @@ class SlsQtFastImage : public QWidget {
         }
     };
 
+    /** Value on an axis for an image coordinate */
+    struct Axis {
+        double origin;
+        double perPixel;
+        double value(double pixel) const { return origin + pixel * perPixel; }
+        double pixel(double value) const { return (value - origin) / perPixel; }
+    };
+
     QRect plotRect() const;
     Mapping mapping() const;
+    Axis xAxis() const;
+    Axis yAxis() const;
     void clampViewport();
     void showArea(const QRectF &area);
     void zoomAt(const QPointF &widgetPos, double factor);
+    void updateHover(const QPointF &cursor);
     void renderImage();
     void updateHistogram();
     void drawImage(QPainter &p, const Mapping &m) const;
@@ -150,6 +167,7 @@ class SlsQtFastImage : public QWidget {
     void drawPixelDetail(QPainter &p, const Mapping &m) const;
     void drawOverlays(QPainter &p, const Mapping &m) const;
     void drawTitles(QPainter &p, const Mapping &m) const;
+    void drawReadout(QPainter &p, const Mapping &m) const;
     double value(int ix, int iy) const;
 
     std::vector<double> m_data;
@@ -171,8 +189,12 @@ class SlsQtFastImage : public QWidget {
 
     QRectF m_viewport;      // (x, y) is the lower left corner
     bool m_fillPlot = true; // show more than m_viewport to fill the plot area
+    QRectF m_axisRange;     // null: pixel index
     bool m_zoomEnabled = true;
     bool m_axesVisible = true;
+    bool m_hasHover = false; // the cursor is on a pixel
+    QPoint m_hover;          // that pixel
+    QPointF m_cursor;        // widget position of the cursor
     bool m_panning = false;
     QPointF m_panStart;    // widget position of the press
     QRectF m_panStartArea; // visibleArea() at the press

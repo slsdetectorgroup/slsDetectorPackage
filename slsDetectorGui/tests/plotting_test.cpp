@@ -220,6 +220,9 @@ class PlottingTest : public QObject {
     void imageOverlays();
     void imageInterpolation();
     void imageTitles();
+    void imagePixelLabels();
+    void imageReadout();
+    void imageAxisValues();
 
     void scaleHistoDrag();
     void scaleHistoLogAxis();
@@ -770,6 +773,125 @@ void PlottingTest::imageTitles() {
     view.setAxesVisible(false);
     QVERIFY(!view.axesVisible());
     QCOMPARE(widgetPos(view, 0.0, 0.0).x(), 0.0);
+}
+
+void PlottingTest::imagePixelLabels() {
+    sls::SlsQtFastImage view;
+    view.resize(400, 300);
+    view.show();
+    view.setPalette(Palette::Gray);
+    view.setColorRange(0.0, 1e9);
+    std::vector<double> f(64 * 64, 0.0);
+    view.setImage(f.data(), 64, 64);
+
+    // what is drawn on the black pixels of the lower left size x size pixels,
+    // without the frame of the plot area around them
+    int outlines = 0, labels = 0;
+    const auto show = [&](double size) {
+        view.setViewport(0.0, 0.0, size, size);
+        const QRectF shown(widgetPos(view, 0.0, size),
+                           widgetPos(view, size, 0.0));
+        const QImage img =
+            render(view).copy(shown.toRect().adjusted(2, 2, -2, -2));
+        outlines =
+            countPixels(img, [](QRgb c) { return c == qRgb(55, 55, 55); });
+        labels = countPixels(img, isBright);
+    };
+
+    // the plot area is 268 pixels high
+    show(20); // 13 widget pixels per pixel
+    QCOMPARE(outlines, 0);
+    QCOMPARE(labels, 0);
+    show(12); // 22
+    QVERIFY(outlines > 0);
+    QCOMPARE(labels, 0);
+    show(8); // 33
+    QVERIFY(outlines > 0);
+    QVERIFY(labels > 0);
+
+    // longer labels need larger pixels: 1.2346e+06
+    std::fill(f.begin(), f.end(), 1234567.5);
+    view.setImage(f.data(), 64, 64);
+    show(8);
+    QCOMPARE(labels, 0);
+    show(4); // 67
+    QVERIFY(labels > 0);
+
+    // integers are written out: 1234567
+    std::fill(f.begin(), f.end(), 1234567.0);
+    view.setImage(f.data(), 64, 64);
+    show(5); // 53
+    QVERIFY(labels > 0);
+}
+
+void PlottingTest::imageReadout() {
+    sls::SlsQtFastImage view;
+    view.resize(400, 300);
+    view.show();
+    const std::vector<double> ramp = xRamp(64, 64);
+    view.setImage(ramp.data(), 64, 64);
+    const QPointF center(200.0, 150.0);
+    for (int i = 0; i < 4; i++)
+        sendWheel(view, center, 120); // the image fills the plot area
+    const QRect plot = plotArea(view);
+    QEvent leave(QEvent::Leave);
+    QCoreApplication::sendEvent(&view, &leave);
+    const QImage plain = render(view);
+
+    // in the upper right corner of the plot area
+    sendMouse(view, QEvent::MouseMove, center, Qt::NoButton, Qt::NoButton);
+    QRect box = differingArea(plain, render(view));
+    QVERIFY(plot.contains(box));
+    QVERIFY(box.right() > plot.right() - 10 && box.top() < plot.top() + 10);
+    QVERIFY(box.width() > 50 && box.width() < 200 && box.height() < 30);
+
+    // or in the left one if the cursor is there
+    sendMouse(view, QEvent::MouseMove, plot.topRight() + QPointF(-20, 15),
+              Qt::NoButton, Qt::NoButton);
+    box = differingArea(plain, render(view));
+    QVERIFY(plot.contains(box));
+    QVERIFY(box.left() < plot.left() + 10 && box.top() < plot.top() + 10);
+
+    // gone with the cursor
+    QCoreApplication::sendEvent(&view, &leave);
+    QCOMPARE(render(view), plain);
+    sendMouse(view, QEvent::MouseMove, QPointF(5.0, 150.0), Qt::NoButton,
+              Qt::NoButton);
+    QCOMPARE(render(view), plain);
+}
+
+void PlottingTest::imageAxisValues() {
+    sls::SlsQtFastImage view;
+    view.resize(400, 300);
+    view.show();
+    const std::vector<double> ramp = xRamp(8, 8);
+    view.setImage(ramp.data(), 8, 8);
+    const QRect plot = plotArea(view);
+    // is there a tick below the plot area at this image coordinate
+    const auto tickAt = [&](double x) {
+        const QImage img = render(view);
+        const int wx = int(widgetPos(view, x, 0.0).x());
+        for (int dx = -1; dx <= 1; dx++)
+            if (img.pixel(wx + dx, plot.bottom() + 2) != kBackground)
+                return true;
+        return false;
+    };
+
+    // the pixel index, at the centre of the pixels
+    QVERIFY(tickAt(0.5) && tickAt(3.5) && tickAt(7.5));
+    QVERIFY(!tickAt(1.0) && !tickAt(4.0) && !tickAt(7.0));
+
+    // or the values given for the edges of the image
+    view.setAxisRange(0.0, 8.0, 0.0, 8.0);
+    QVERIFY(tickAt(1.0) && tickAt(4.0) && tickAt(7.0));
+    QVERIFY(!tickAt(0.5) && !tickAt(3.5) && !tickAt(7.5));
+    view.setAxisRange(100.0, 500.0, 0.0, 8.0); // ticks every 50
+    QVERIFY(tickAt(1.0) && tickAt(4.0) && tickAt(7.0));
+    QVERIFY(!tickAt(0.5) && !tickAt(3.5) && !tickAt(7.5));
+
+    // an empty range is ignored
+    view.setAxisRange(5.0, 5.0, 0.0, 8.0);
+    QVERIFY(tickAt(1.0) && !tickAt(0.5));
 }
 
 // ---------------------------------------------------------------------------

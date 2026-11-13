@@ -24,10 +24,8 @@ constexpr int kTickLen = 4;
 constexpr double kMinSpan = 1e-9;
 constexpr double kPixelClamp = 1.0e6;
 
-// Colours of SlsQtH1D::SetLineColor().  The original qwt plot had a white
-// canvas; the new plotting stack uses the shared dark theme, so the first
-// colour (black in the qwt version) and the dark variants are mapped to
-// bright equivalents so that a curve is never invisible on the background.
+// Colours of SlsQtH1D::SetLineColor(), bright enough for the dark
+// background.
 QColor lineColorForIndex(int c) {
     switch (c) {
     case 0:
@@ -159,8 +157,8 @@ void SlsQtH1D::SetData(int n, double xmin, double xmax, double *data) {
     m_ndata = n;
     if (xmin > xmax)
         std::swap(xmin, xmax);
-    // Deliberately divided by n (not n-1): the old qwt code defined the bins
-    // this way and the GUI/ROI mapping depends on it.
+    // Deliberately divided by n (not n-1): the GUI/ROI mapping depends on
+    // the bins being defined this way.
     m_dx = (xmax - xmin) / n;
     m_ymin = m_ymax = data ? data[0] : 0.0;
     m_firstXgt0 = -1.0;
@@ -422,7 +420,7 @@ void SlsQt1DPlot::recomputeBase() {
     }
     clampView();
     // Keep the bottom of the zoom stack (the "full view") in sync with the
-    // data range; qwt's zoomer did this through setZoomBase() as well.
+    // data range.
     if (!m_zoomStack.empty())
         m_zoomStack.front() = baseRect();
 }
@@ -731,11 +729,6 @@ void SlsQt1DPlot::SetZoomBase(double xmin, double ymin, double x_width,
     update();
 }
 
-void SlsQt1DPlot::alignScales() {
-    // Kept for API compatibility.  The custom painter aligns the frame and the
-    // tick labels itself; there are no qwt scale widgets to align.
-}
-
 void SlsQt1DPlot::SetLogX(bool yes) {
     if (m_logX == yes)
         return;
@@ -1004,9 +997,8 @@ SlsQt1DPlot::Geometry SlsQt1DPlot::computeGeometry() const {
     }
 
     if (m_gainPlot) {
-        // The old qwt gain plot forced divideScale(0, 3, 3, 0, 1): exactly the
-        // ticks 0, 1, 2, 3 regardless of the widget height.  The generic 1/2/5
-        // chooser would yield 0, 0.5, 1, ... in a taller window.
+        // Exactly the ticks 0, 1, 2, 3 regardless of the widget height.  The
+        // generic 1/2/5 chooser would yield 0, 0.5, 1, ... in a taller window.
         g.yTicks = {0.0, 1.0, 2.0, 3.0};
         g.yLabels = {QStringLiteral("0"), QStringLiteral("1"),
                      QStringLiteral("2"), QStringLiteral("3")};

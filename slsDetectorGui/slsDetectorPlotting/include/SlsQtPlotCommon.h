@@ -2,24 +2,15 @@
 // Copyright (C) 2026 Contributors to the SLS Detector Package
 #pragma once
 
-// Shared plotting primitives for the plotting stack used by
-// slsDetectorGui.  Nothing here depends on qwt, ROOT or OpenGL.
-//
-// The palettes and the 1/2/5 tick rules are the ones the previous
-// FastImageView/ScalePanel implementation used (see notes/plot-foundation.md);
-// keeping them in one place guarantees that the 1D plot, the 2D plot and the
-// scale panel draw the same axes with the same colours.
+// Palettes, axis ticks and colours shared by the 1D plot, the 2D plot and the
+// scale panel, so that they all draw the same axes with the same colours.
 
 #include <QColor>
 #include <QFont>
-#include <QFontMetrics>
-#include <QMouseEvent>
 #include <QRect>
 #include <QRgb>
 #include <QSize>
 #include <QString>
-#include <QWheelEvent>
-#include <QtGlobal>
 
 #include <cmath>
 #include <vector>

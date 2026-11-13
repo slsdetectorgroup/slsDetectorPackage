@@ -2,21 +2,18 @@
 // Copyright (C) 2026 Contributors to the SLS Detector Package
 #pragma once
 
-// Plain 2D data container used by SlsQt2DPlot.  Unlike the previous
-// QwtRasterData-derived class it has no qwt (or any other plotting) base: the
-// widget composites the image itself through sls::SlsQtFastImage, so all it
-// needs from here is the bin geometry, the data, the z range and box/bilinear
-// sampling.
+// 2D data container used by SlsQt2DPlot: the bin geometry, the data, the z
+// range and box/bilinear sampling.
 //
 // Data layout: the values are stored x fastest (index = bx + by * nbinsx),
 // which is the layout qDrawPlot fills (data2d[py * nPixelsX + px]) and the one
-// SlsQtFastImage::setImageCopy() expects (image data[x + y*nx], row 0 = y 0).
+// SlsQtFastImage::setImage() expects.
 //
 // Data coordinates: bin (bx, by) covers
 //   [xmin + bx*xwidth, xmin + (bx+1)*xwidth) x
 //   [ymin + by*ywidth, ymin + (by+1)*ywidth)
 // and its centre is at (xmin + (bx+0.5)*xwidth, ...).  y is up (row 0 is the
-// bottom row), matching the FastImageView and the ROI list convention.
+// bottom row), like in SlsQtFastImage and in the ROI list.
 
 #include <vector>
 
@@ -26,7 +23,7 @@ class SlsQt2DHist {
   public:
     SlsQt2DHist(int nbinsx = 10, double xmin = 0, double xmax = 10,
                 int nbinsy = 10, double ymin = 0, double ymax = 10,
-                double *d = nullptr, double zmin = 0, double zmax = -1);
+                const double *d = nullptr, double zmin = 0, double zmax = -1);
     ~SlsQt2DHist() = default;
 
     // ---- bin geometry (data coordinates) ---------------------------------
@@ -47,7 +44,7 @@ class SlsQt2DHist {
     void SetMinimum(double zmin) { z_min = zmin; }
     void SetMaximum(double zmax) { z_max = zmax; }
     // zmax < 0: compute the auto range from the data (+/-2% padding); a zmin
-    // is ignored in that case, exactly like the previous implementation.
+    // is ignored in that case.
     void SetMinMax(double zmin = 0, double zmax = -1);
     // Smallest positive value, used as the lower end of a log z scale.
     // Returns z_min; when there is no positive bin it keeps the previous
@@ -79,7 +76,7 @@ class SlsQt2DHist {
     // are kept (nullptr does not clear the frame).  Invalid (non-positive) bin
     // counts are ignored and the previous data is kept.
     void SetData(int nbinsx, double xmin, double xmax, int nbinsy, double ymin,
-                 double ymax, double *d, double zmin = 0, double zmax = -1);
+                 double ymax, const double *d, double zmin = 0, double zmax = -1);
 
   private:
     double x_min{0.0}, x_max{0.0}, y_min{0.0}, y_max{0.0};

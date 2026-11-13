@@ -1,12 +1,8 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2026 Contributors to the SLS Detector Package
-//
-// QtTest suite for the plotting stack (verification task).
-//
-// Everything is checked through the public API or through rendered pixels; the
-// widgets are shown on the offscreen QPA platform and rendered synchronously
-// with QWidget::grab(), so the assertions exercise the same paint path the GUI
-// uses.  The performance slot is the acceptance benchmark for 1024x512 frames.
+
+// Tests of the plotting widgets, through their public interface and through
+// the pixels they paint. Run with QT_QPA_PLATFORM=offscreen.
 
 #include "SlsQt1DPlot.h"
 #include "SlsQt2DHist.h"
@@ -17,23 +13,28 @@
 #include "sls/sls_detector_defs.h"
 
 #include <QApplication>
+#include <QComboBox>
 #include <QCoreApplication>
 #include <QElapsedTimer>
 #include <QHash>
-#include <QSet>
 #include <QImage>
 #include <QLabel>
 #include <QMouseEvent>
+#include <QSet>
 #include <QSignalSpy>
 #include <QTest>
+#include <QVBoxLayout>
 #include <QWheelEvent>
 #include <QWidget>
 
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <numeric>
 #include <utility>
 #include <vector>
+
+using sls::plot::Palette;
 
 namespace {
 
@@ -49,8 +50,7 @@ QImage render(QWidget &w) {
     return w.grab().toImage();
 }
 
-QPointF widgetPos(const sls::SlsQtFastImage &view, double dataX,
-                  double dataY) {
+QPointF widgetPos(const sls::SlsQtFastImage &view, double dataX, double dataY) {
     return view.dataToWidget(QPointF(dataX, dataY));
 }
 
@@ -141,16 +141,55 @@ bool is125Step(double step) {
            near(norm, 5.0, 1e-6);
 }
 
-// A 1024x512 acceptance frame: sin(x/40) + cos(y/30).
-std::vector<float> acceptanceFrame(double phase = 0.0) {
-    std::vector<float> f(size_t(1024) * 512);
-    for (int y = 0; y < 512; y++) {
-        for (int x = 0; x < 1024; x++) {
-            f[size_t(y) * 1024 + x] =
-                float(std::sin(x / 40.0 + phase) + std::cos(y / 30.0));
+// 1024 x 512 pixels of sin(x/40) + cos(y/30)
+std::vector<double> testFrame() {
+    std::vector<double> f(size_t(1024) * 512);
+    for (int y = 0; y < 512; y++)
+        for (int x = 0; x < 1024; x++)
+            f[size_t(y) * 1024 + x] = std::sin(x / 40.0) + std::cos(y / 30.0);
+    return f;
+}
+
+// Every pixel has the value of its x index
+std::vector<double> xRamp(int nx, int ny) {
+    std::vector<double> f(size_t(nx) * ny);
+    for (int y = 0; y < ny; y++)
+        for (int x = 0; x < nx; x++)
+            f[size_t(y) * nx + x] = x;
+    return f;
+}
+
+int sum(const std::vector<int> &v) {
+    return std::accumulate(v.begin(), v.end(), 0);
+}
+
+// Plot area of an image view without titles
+QRect plotArea(const sls::SlsQtFastImage &view) {
+    return sls::plot::plotRectFor(view.size(), sls::plot::PlotTheme());
+}
+
+// Number of matching pixels above and to the right of the plot area
+int countOutside(const QImage &img, const QRect &plot, bool (*pred)(QRgb)) {
+    int n = 0;
+    for (int y = 0; y < img.height(); y++) {
+        for (int x = 0; x < img.width(); x++) {
+            if ((x > plot.right() || y < plot.top()) && pred(img.pixel(x, y)))
+                n++;
         }
     }
-    return f;
+    return n;
+}
+
+// Bounding box of the pixels that differ
+QRect differingArea(const QImage &a, const QImage &b) {
+    QRect area;
+    for (int y = 0; y < a.height(); y++) {
+        for (int x = 0; x < a.width(); x++) {
+            if (a.pixel(x, y) != b.pixel(x, y))
+                area |= QRect(x, y, 1, 1);
+        }
+    }
+    return area;
 }
 
 } // namespace
@@ -159,45 +198,39 @@ class PlottingTest : public QObject {
     Q_OBJECT
 
   private slots:
-    // ---- foundation: palettes / ticks / formatting ------------------------
     void palettesAndLuts();
     void paletteLogClamp();
     void tickMath();
     void tickFormatting();
 
-    // ---- FastImageView ----------------------------------------------------
-    void fastImageOwnsFrame();
-    void fastImageYUp();
-    void fastImageHistogramWindow();
-    void fastImageHistogramLogWindow();
-    void fastImageLogClamp();
-    void fastImageZeroWhite();
-    void fastImageZoomCursorInvariance();
-    void fastImageViewportClamping();
-    void fastImageClipsToPlotRect();
-    void fastImageOverlaysInDataCoordinates();
-    void fastImageTitlesAndAspect();
+    void imageIsCopied();
+    void imageYUp();
+    void imageLogScale();
+    void imageHistogram();
+    void imageViewport();
+    void imageWheelZoom();
+    void imagePan();
+    void imageIsClippedToPlotArea();
+    void imageOverlays();
+    void imageInterpolation();
+    void imageTitles();
 
-    // ---- ScaleHisto / ScalePanel -----------------------------------------
-    void scaleHistoThreeWayFreeze();
-    void scaleHistoMaxMarker();
-    void scalePanelReentrancy();
-    void scalePanelFreezeAndPushRules();
-    void scalePanelDetachLifetime();
+    void scaleHistoDrag();
+    void scaleHistoLogAxis();
+    void scalePanel();
 
-    // ---- 1D plot ----------------------------------------------------------
     void h1dDataApi();
     void oneDimensionalRangeZoomLogAndGain();
     void oneDimensionalRoiBoxes();
 
-    // ---- 2D plot ----------------------------------------------------------
     void twoDHistogramContainer();
-    void twoDimensionalDataZRangeAndPanel();
-    void twoDimensionalLogInterpolateAndContour();
-    void twoDimensionalRoiAndClipping();
-    void twoDimensionalGainMode();
+    void plot2dTitles();
+    void plot2dZRange();
+    void plot2dLogZ();
+    void plot2dContours();
+    void plot2dRoiAndZoom();
+    void plot2dGain();
 
-    // ---- acceptance benchmark --------------------------------------------
     void performance1024x512();
 };
 
@@ -254,8 +287,8 @@ void PlottingTest::palettesAndLuts() {
     const QRgb *gain = sls::plot::paletteLut(sls::plot::Palette::Gain4);
     QVERIFY(gain != nullptr);
     QVERIFY(gain[0] != sls::plot::paletteLut(sls::plot::Palette::Color)[0]);
-    QString gainName = QString::fromLatin1(
-        sls::plot::paletteName(sls::plot::Palette::Gain4));
+    QString gainName =
+        QString::fromLatin1(sls::plot::paletteName(sls::plot::Palette::Gain4));
     QVERIFY(gainName.contains(QStringLiteral("gain"), Qt::CaseInsensitive));
 }
 
@@ -280,8 +313,8 @@ void PlottingTest::tickMath() {
     }
     QCOMPARE(sls::plot::niceStep(1000.0, 8), 200.0);
     QVERIFY(near(sls::plot::niceStep(0.9, 8), 0.2));
-    QCOMPARE(sls::plot::niceStep(0.0, 8), 1.0);   // degenerate
-    QCOMPARE(sls::plot::niceStep(-5.0, 8), 1.0);  // degenerate
+    QCOMPARE(sls::plot::niceStep(0.0, 8), 1.0);  // degenerate
+    QCOMPARE(sls::plot::niceStep(-5.0, 8), 1.0); // degenerate
 
     // Ticks cover the visible range, never exceed the requested density and
     // are uniformly spaced.
@@ -332,9 +365,9 @@ void PlottingTest::tickFormatting() {
     QCOMPARE(sls::plot::formatTick(-0.0, 0.5), QStringLiteral("0"));
     QCOMPARE(sls::plot::formatTick(-200.0, 200.0), QStringLiteral("-200"));
     QVERIFY(sls::plot::formatTick(2.5e7, 1e7).contains(QLatin1Char('e')));
-    QCOMPARE(sls::plot::formatTick(
-                 std::numeric_limits<double>::infinity(), 1.0),
-             QStringLiteral("?"));
+    QCOMPARE(
+        sls::plot::formatTick(std::numeric_limits<double>::infinity(), 1.0),
+        QStringLiteral("?"));
     // No trailing zeros anywhere, and labels stay short.
     for (double v : {0.0, 1.0, 2.0, 5.0, 10.0, 100.0, -100.0, 0.5, 2.5}) {
         const QString s = sls::plot::formatTick(v, 1.0);
@@ -344,809 +377,466 @@ void PlottingTest::tickFormatting() {
 }
 
 // ---------------------------------------------------------------------------
-// FastImageView: buffer ownership, orientation, histogram, colour mapping
+// SlsQtFastImage: data and colour mapping
 // ---------------------------------------------------------------------------
-void PlottingTest::fastImageOwnsFrame() {
+void PlottingTest::imageIsCopied() {
     sls::SlsQtFastImage view;
-    view.resize(200, 200); // sx ~ 35 px => no in-pixel text over cell centres
+    view.resize(200, 200); // pixels are outlined but not labelled
     view.show();
-    QTest::qWait(5);
-
-    view.setPaletteLut(sls::plot::paletteLut(sls::plot::Palette::Color));
     view.setColorRange(0.0, 2.0);
-    std::vector<float> src(16, 1.0f);
-    view.setImageCopy(src.data(), 4, 4);
-    const QRgb expected = sls::plot::paletteLut(sls::plot::Palette::Color)[127];
-    QCOMPARE(dominantPixelAtData(view, render(view), 0.5, 0.5), expected);
+    std::vector<double> src(16, 1.0);
+    view.setImage(src.data(), 4, 4);
+    QCOMPARE(dominantPixelAtData(view, render(view), 0.5, 0.5),
+             sls::plot::paletteLut(Palette::Color)[127]);
 
-    // The producer owns and recycles its buffer: the view must have copied it.
-    std::fill(src.begin(), src.end(), 2.0f);
-    // Force a recomposition from the widget-owned data (no new frame pushed).
-    view.setColorRange(0.0, 2.0);
-    const QImage after = render(view);
-    QCOMPARE(dominantPixelAtData(view, after, 0.5, 0.5), expected);
+    // the caller may reuse its buffer: a new palette still shows 1.0
+    std::fill(src.begin(), src.end(), 2.0);
+    view.setPalette(Palette::Gray);
+    QCOMPARE(dominantPixelAtData(view, render(view), 0.5, 0.5),
+             sls::plot::paletteLut(Palette::Gray)[127]);
 
-    // Same for the double overload (the GUI feeds double frames).
-    std::vector<double> dsrc(16, 1.0);
-    view.setImageCopy(dsrc.data(), 4, 4);
-    QCOMPARE(dominantPixelAtData(view, render(view), 1.5, 1.5), expected);
-    std::fill(dsrc.begin(), dsrc.end(), 2.0);
-    view.setColorRange(0.0, 2.0);
-    QCOMPARE(dominantPixelAtData(view, render(view), 1.5, 1.5), expected);
-
-    // Invalid input is ignored, the previous frame stays valid.
-    view.setImageCopy(static_cast<const float *>(nullptr), 4, 4);
-    view.setImageCopy(src.data(), 0, 4);
+    // invalid input is ignored
+    view.setImage(nullptr, 4, 4);
+    view.setImage(src.data(), 0, 4);
     QCOMPARE(view.imageWidth(), 4);
     QCOMPARE(view.imageHeight(), 4);
 }
 
-void PlottingTest::fastImageYUp() {
+void PlottingTest::imageYUp() {
     sls::SlsQtFastImage view;
     view.resize(200, 200);
     view.show();
-    QTest::qWait(5);
-    view.setPaletteLut(sls::plot::paletteLut(sls::plot::Palette::Gray));
+    view.setPalette(Palette::Gray);
     view.setColorRange(0.0, 4.0);
-    // row 0 = bottom = 0, row 1 = top = 3
-    std::vector<float> f{0, 0, 0, 0, 3, 3, 3, 3};
-    view.setImageCopy(f.data(), 4, 2);
+    // row 0 is the bottom row
+    const std::vector<double> f{0, 0, 0, 0, 3, 3, 3, 3};
+    view.setImage(f.data(), 4, 2);
     const QImage img = render(view);
 
-    // Data y is up: y=0.5 (bottom row) is drawn below y=1.5 (top row).
     QVERIFY(widgetPos(view, 0.5, 0.5).y() > widgetPos(view, 0.5, 1.5).y());
-    const QRgb *lut = sls::plot::paletteLut(sls::plot::Palette::Gray);
+    const QRgb *lut = sls::plot::paletteLut(Palette::Gray);
     QCOMPARE(dominantPixelAtData(view, img, 0.5, 0.5), lut[0]);
-    QCOMPARE(dominantPixelAtData(view, img, 0.5, 1.5),
-             lut[int((3.0 - 0.0) * 255.0 / 4.0)]);
-    // Exactly one flip: both quarters of the top row match, no mirrored mix.
-    QCOMPARE(dominantPixelAtData(view, img, 2.5, 1.5),
-             dominantPixelAtData(view, img, 0.5, 1.5));
+    QCOMPARE(dominantPixelAtData(view, img, 0.5, 1.5), lut[3 * 255 / 4]);
+    QCOMPARE(dominantPixelAtData(view, img, 2.5, 1.5), lut[3 * 255 / 4]);
 }
 
-void PlottingTest::fastImageHistogramWindow() {
+void PlottingTest::imageLogScale() {
     sls::SlsQtFastImage view;
     view.resize(200, 200);
     view.show();
-    QTest::qWait(5);
-    view.setLogScale(false);
+    view.setLogScale(true);
+    view.setColorRange(0.01, 100.0);
+    const double nan = std::numeric_limits<double>::quiet_NaN();
+    const std::vector<double> f{-100.0, 0.0, 0.01, 0.02, 1000.0, nan, 1.0, 1.0};
+    view.setImage(f.data(), 4, 2);
+    const QImage img = render(view);
+    const QRgb *lut = sls::plot::paletteLut(Palette::Color);
 
-    // 64x32 ramp, value == x: only x in [0,4] is inside the 1..3 window.
+    // everything <= 0 is shown like 1e-2, the lower end of this range
+    QCOMPARE(dominantPixelAtData(view, img, 0.5, 0.5), lut[0]);
+    QCOMPARE(dominantPixelAtData(view, img, 1.5, 0.5), lut[0]);
+    QCOMPARE(dominantPixelAtData(view, img, 2.5, 0.5), lut[0]);
+    QVERIFY(dominantPixelAtData(view, img, 3.5, 0.5) != lut[0]);
+    // above the range and not finite
+    QCOMPARE(dominantPixelAtData(view, img, 0.5, 1.5), lut[255]);
+    QCOMPARE(dominantPixelAtData(view, img, 1.5, 1.5), lut[0]);
+    // 1 is halfway between 1e-2 and 1e2
+    QCOMPARE(dominantPixelAtData(view, img, 2.5, 1.5), lut[127]);
+}
+
+void PlottingTest::imageHistogram() {
+    sls::SlsQtFastImage view;
+    view.resize(200, 200);
+    view.show();
     const int nx = 64, ny = 32;
-    std::vector<float> ramp(size_t(nx) * ny);
-    for (int y = 0; y < ny; y++)
-        for (int x = 0; x < nx; x++)
-            ramp[size_t(y) * nx + x] = float(x);
+    const std::vector<double> ramp = xRamp(nx, ny);
     view.setColorRange(1.0, 3.0);
-    view.setImageCopy(ramp.data(), nx, ny);
+    view.setImage(ramp.data(), nx, ny);
+    QSignalSpy spy(&view, &sls::SlsQtFastImage::histogramChanged);
     render(view);
+    QCOMPARE(spy.count(), 1);
 
+    // the colour range widened by half its width on both sides
     double lo = 0.0, hi = 0.0;
     view.histogramRange(lo, hi);
     QVERIFY(near(lo, 0.0) && near(hi, 4.0));
     QCOMPARE(int(view.histogram().size()), 256);
-    long long sum = 0;
-    for (int v : view.histogram())
-        sum += v;
-    QCOMPARE(sum, 5LL * ny); // 0,1,2,3,4 in-window; 5..63 skipped
+    QCOMPARE(sum(view.histogram()), 5 * ny); // x = 0..4
 
-    // The histogram follows a colour-range change (invalidated, not stale).
-    // Range 10.2..19.8 -> window 5.1..24.9 (not aligned with the integer ramp).
+    // follows the colour range, values outside are not counted
     view.setColorRange(10.2, 19.8);
     render(view);
     view.histogramRange(lo, hi);
     QVERIFY(near(lo, 5.4) && near(hi, 24.6));
-    sum = 0;
-    for (int v : view.histogram())
-        sum += v;
-    QCOMPARE(sum, 19LL * ny); // x = 6..24
-
-    // Outside values are skipped instead of piling into the edge bins.
+    QCOMPARE(sum(view.histogram()), 19 * ny); // x = 6..24
     QCOMPARE(view.histogram().front(), 0);
     QCOMPARE(view.histogram().back(), 0);
-}
 
-void PlottingTest::fastImageHistogramLogWindow() {
-    sls::SlsQtFastImage view;
-    view.resize(200, 200);
-    view.show();
-    QTest::qWait(5);
-    const int nx = 64, ny = 32;
-    std::vector<float> ramp(size_t(nx) * ny);
-    for (int y = 0; y < ny; y++)
-        for (int x = 0; x < nx; x++)
-            ramp[size_t(y) * nx + x] = float(x);
-
+    // in log10 of the values with a log scale
     view.setLogScale(true);
-    QVERIFY(view.logScale());
     view.setColorRange(1.0, 100.0);
-    view.setImageCopy(ramp.data(), nx, ny);
     render(view);
-
-    double lo = 0.0, hi = 0.0;
     view.histogramRange(lo, hi);
-    // log10(1) - 1 .. log10(100) + 1
     QVERIFY(near(lo, -1.0) && near(hi, 3.0));
-    long long sum = 0;
-    for (int v : view.histogram())
-        sum += v;
-    // x=0 is clamped to 1e-2 (log -2) and is outside; x=1..63 are inside.
-    QCOMPARE(sum, 63LL * ny);
-}
-
-void PlottingTest::fastImageLogClamp() {
-    sls::SlsQtFastImage view;
-    view.resize(200, 200);
-    view.show();
-    QTest::qWait(5);
-    view.setPaletteLut(sls::plot::paletteLut(sls::plot::Palette::Color));
-    view.setLogScale(true);
-    // Lower end is exactly the 1e-2 log clamp, so everything <= 0 maps to the
-    // first LUT entry while 0.02 (just above the clamp) does not.
-    view.setColorRange(0.01, 100.0);
-    std::vector<float> f{-100.0f, 0.0f, 0.01f, 0.02f, 1000.0f, 1000.0f, 1.0f,
-                         1.0f};
-    view.setImageCopy(f.data(), 4, 2);
-    const QImage img = render(view);
-    const QRgb *lut = sls::plot::paletteLut(sls::plot::Palette::Color);
-
-    const QRgb clamped0 = dominantPixelAtData(view, img, 0.5, 0.5);
-    QCOMPARE(clamped0, lut[0]);
-    QCOMPARE(dominantPixelAtData(view, img, 1.5, 0.5), clamped0);
-    QCOMPARE(dominantPixelAtData(view, img, 2.5, 0.5), clamped0);
-    // 0.02 is > 1e-2, so it is not clamped to the bottom colour.
-    QVERIFY(dominantPixelAtData(view, img, 3.5, 0.5) != clamped0);
-    // Above the range: top colour, no wraparound.
-    QCOMPARE(dominantPixelAtData(view, img, 0.5, 1.5), lut[255]);
-}
-
-void PlottingTest::fastImageZeroWhite() {
-    sls::SlsQtFastImage view;
-    view.resize(200, 200);
-    view.show();
-    QTest::qWait(5);
-    view.setPaletteLut(sls::plot::paletteLut(sls::plot::Palette::Color));
-    view.setColorRange(0.0, 2.0);
-
-    std::vector<float> f(16, 1.0f);
-    f[0] = 0.0f; // data pixel (0,0), bottom-left
-    view.setImageCopy(f.data(), 4, 4);
-    const QRgb *lut = sls::plot::paletteLut(sls::plot::Palette::Color);
-
-    QVERIFY(!view.zeroWhite());
-    QCOMPARE(dominantPixelAtData(view, render(view), 0.5, 0.5), lut[0]);
-
-    view.setZeroWhite(true);
-    QVERIFY(view.zeroWhite());
-    QCOMPARE(dominantPixelAtData(view, render(view), 0.5, 0.5), qRgb(255, 255, 255));
-    // A real value is not affected.
-    QCOMPARE(dominantPixelAtData(view, render(view), 1.5, 1.5), lut[127]);
-
-    // Non-finite pixels use the lowest colour, even with zero-white on.
-    f[0] = std::numeric_limits<float>::quiet_NaN();
-    view.setImageCopy(f.data(), 4, 4);
-    QCOMPARE(dominantPixelAtData(view, render(view), 0.5, 0.5), lut[0]);
-
-    view.setIntegerValues(true);
-    QVERIFY(view.integerValues());
-    view.setIntegerValues(false);
-    QVERIFY(!view.integerValues());
+    QCOMPARE(sum(view.histogram()), 63 * ny); // x = 0 counts as 1e-2
 }
 
 // ---------------------------------------------------------------------------
-// FastImageView: zoom / viewport / clipping
+// SlsQtFastImage: viewport, zoom and pan
 // ---------------------------------------------------------------------------
-void PlottingTest::fastImageZoomCursorInvariance() {
+void PlottingTest::imageViewport() {
     sls::SlsQtFastImage view;
     view.resize(400, 300);
     view.show();
-    QTest::qWait(5);
-    // Square image: the whole-image fit is height-limited with a constant
-    // horizontal letterbox, so the cursor-fixed rule can hold exactly even when
-    // the viewport is clamped at the minimum size during deep zoom.
-    const int nx = 64, ny = 64;
-    std::vector<float> ramp(size_t(nx) * ny, 1.0f);
-    view.setColorRange(0.0, 2.0);
-    view.setImageCopy(ramp.data(), nx, ny);
-    view.resetView();
-
-    int zoomCalls = 0;
-    view.onZoomChanged = [&](double, double, double, double) { zoomCalls++; };
-    view.setViewport(10.0, 5.0, 30.0, 15.0); // programmatic: no callback
-    QCOMPARE(zoomCalls, 0);
-    view.resetView();
-    QCOMPARE(zoomCalls, 1);
-
-    const QPointF cursor(200.0, 150.0);
-    for (int i = 0; i < 5; i++) {
-        const QPointF before = view.widgetToData(cursor);
-        sendWheel(view, cursor, 120); // zoom in, factor 1/1.18
-        const QPointF after = view.widgetToData(cursor);
-        QVERIFY2(near(before.x(), after.x(), 1e-6),
-                 "wheel zoom must keep the cursor x fixed");
-        QVERIFY2(near(before.y(), after.y(), 1e-6),
-                 "wheel zoom must keep the cursor y fixed");
-    }
-    double vx, vy, vw, vh;
-    view.viewport(vx, vy, vw, vh);
-    QVERIFY(vw < nx && vh < ny);
-    QVERIFY(zoomCalls >= 6); // 1 reset + 5 wheels
-
-    // Deep zoom clamps to the minimum viewport instead of collapsing.
-    for (int i = 0; i < 40; i++)
-        sendWheel(view, cursor, 120);
-    view.viewport(vx, vy, vw, vh);
-    QVERIFY2(vw >= sls::SlsQtFastImage::kMinimumViewport - 1e-9,
-             "viewport clamps to the minimum width");
-    QVERIFY2(vh >= sls::SlsQtFastImage::kMinimumViewport - 1e-9,
-             "viewport clamps to the minimum height");
-
-    // Zooming back out stops at the full frame and keeps the cursor point.
-    for (int i = 0; i < 60; i++) {
-        const QPointF before = view.widgetToData(cursor);
-        sendWheel(view, cursor, -120);
-        const QPointF after = view.widgetToData(cursor);
-        QVERIFY(near(before.x(), after.x(), 1e-6));
-        QVERIFY(near(before.y(), after.y(), 1e-6));
-    }
-    view.viewport(vx, vy, vw, vh);
-    QVERIFY(near(vw, nx) && near(vh, ny));
-    QVERIFY(near(vx, 0.0) && near(vy, 0.0));
-}
-
-void PlottingTest::fastImageViewportClamping() {
-    sls::SlsQtFastImage view;
-    view.resize(400, 300);
-    view.show();
-    QTest::qWait(5);
     const int nx = 64, ny = 32;
-    std::vector<float> ramp(size_t(nx) * ny, 1.0f);
-    view.setImageCopy(ramp.data(), nx, ny);
-    view.resetView();
+    const std::vector<double> ramp = xRamp(nx, ny);
+    view.setImage(ramp.data(), nx, ny);
+    QSignalSpy spy(&view, &sls::SlsQtFastImage::viewportChanged);
     double x, y, w, h;
 
-    // Requested viewports are clamped to the image bounds.
-    view.setViewport(-100.0, -100.0, 5000.0, 5000.0);
-    view.viewport(x, y, w, h);
-    QVERIFY(near(x, 0.0) && near(y, 0.0));
-    QVERIFY(near(w, nx) && near(h, ny));
-
-    // A viewport smaller than the minimum is rejected (state unchanged).
-    view.setViewport(10.0, 10.0, 10.5, 10.5);
-    view.viewport(x, y, w, h);
-    QVERIFY(near(w, nx) && near(h, ny));
-
-    // A viewport that would stick out on the right/top is slid back inside.
-    view.setViewport(60.0, 28.0, 70.0, 38.0);
-    view.viewport(x, y, w, h);
-    QVERIFY(near(w, 10.0) && near(h, 10.0));
-    QVERIFY(x >= 0.0 && x + w <= nx + 1e-9);
-    QVERIFY(y >= 0.0 && y + h <= ny + 1e-9);
-
-    // Non-finite values are ignored.
-    const double nan = std::numeric_limits<double>::quiet_NaN();
-    view.setViewport(nan, 0.0, 10.0, 10.0);
-    view.viewport(x, y, w, h);
-    QVERIFY(near(w, 10.0) && near(h, 10.0));
-
-    view.resetView();
+    // the whole image to start with
     view.viewport(x, y, w, h);
     QVERIFY(near(x, 0.0) && near(y, 0.0) && near(w, nx) && near(h, ny));
 
-    // Pixel aspect stretches x only and is validated.
-    view.setPixelAspectX(2.0);
-    QCOMPARE(view.pixelAspectX(), 2.0);
-    view.setPixelAspectX(-1.0);
-    QCOMPARE(view.pixelAspectX(), 1.0);
+    // clamped to the image
+    view.setViewport(-100.0, -100.0, 5000.0, 5000.0);
+    view.viewport(x, y, w, h);
+    QVERIFY(near(x, 0.0) && near(y, 0.0) && near(w, nx) && near(h, ny));
+
+    // moved back inside
+    view.setViewport(60.0, 28.0, 70.0, 38.0);
+    view.viewport(x, y, w, h);
+    QVERIFY(near(x, 54.0) && near(y, 22.0) && near(w, 10.0) && near(h, 10.0));
+
+    // too small or not finite: ignored
+    view.setViewport(10.0, 10.0, 10.5, 10.5);
+    view.setViewport(std::numeric_limits<double>::quiet_NaN(), 0.0, 9.0, 9.0);
+    view.viewport(x, y, w, h);
+    QVERIFY(near(x, 54.0) && near(y, 22.0) && near(w, 10.0) && near(h, 10.0));
+
+    // only the user and resetView() are reported
+    QCOMPARE(spy.count(), 0);
+    view.resetView();
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.at(0).at(0).toRectF(), QRectF(0, 0, nx, ny));
+
+    // a new image size shows the whole image again
+    view.setViewport(10.0, 10.0, 20.0, 20.0);
+    view.setImage(ramp.data(), ny, nx);
+    view.viewport(x, y, w, h);
+    QVERIFY(near(x, 0.0) && near(y, 0.0) && near(w, ny) && near(h, nx));
 }
 
-void PlottingTest::fastImageClipsToPlotRect() {
+void PlottingTest::imageWheelZoom() {
     sls::SlsQtFastImage view;
     view.resize(400, 300);
     view.show();
-    QTest::qWait(5);
-    const int nx = 1024, ny = 512;
-    std::vector<float> frame = acceptanceFrame();
+    const int n = 64;
+    const std::vector<double> ramp = xRamp(n, n);
+    view.setImage(ramp.data(), n, n);
+    QSignalSpy spy(&view, &sls::SlsQtFastImage::viewportChanged);
+
+    // zooming in keeps the point under the cursor
+    const QPointF cursor(200.0, 150.0);
+    for (int i = 0; i < 5; i++) {
+        const QPointF before = view.widgetToData(cursor);
+        sendWheel(view, cursor, 120);
+        const QPointF after = view.widgetToData(cursor);
+        QVERIFY(near(before.x(), after.x()) && near(before.y(), after.y()));
+    }
+    QCOMPARE(spy.count(), 5);
+    double x, y, w, h;
+    view.viewport(x, y, w, h);
+    QVERIFY(w < n && h < n);
+
+    // down to the minimum viewport
+    for (int i = 0; i < 40; i++)
+        sendWheel(view, cursor, 120);
+    view.viewport(x, y, w, h);
+    QVERIFY(near(w, sls::SlsQtFastImage::kMinimumViewport));
+    QVERIFY(near(h, sls::SlsQtFastImage::kMinimumViewport));
+
+    // and back out to the whole image
+    for (int i = 0; i < 60; i++)
+        sendWheel(view, cursor, -120);
+    view.viewport(x, y, w, h);
+    QVERIFY(near(x, 0.0) && near(y, 0.0) && near(w, n) && near(h, n));
+
+    // not when zooming is disabled
+    view.setZoomEnabled(false);
+    sendWheel(view, cursor, 120);
+    view.viewport(x, y, w, h);
+    QVERIFY(near(w, n) && near(h, n));
+}
+
+void PlottingTest::imagePan() {
+    sls::SlsQtFastImage view;
+    view.resize(400, 300);
+    view.show();
+    const int n = 64;
+    const std::vector<double> ramp = xRamp(n, n);
+    view.setImage(ramp.data(), n, n);
+    view.setViewport(20.0, 20.0, 40.0, 40.0);
+    QSignalSpy spy(&view, &sls::SlsQtFastImage::viewportChanged);
+
+    // the grabbed point follows the cursor
+    const QPointF from(200.0, 150.0), to(230.0, 130.0);
+    const QPointF grabbed = view.widgetToData(from);
+    sendMouse(view, QEvent::MouseButtonPress, from, Qt::LeftButton,
+              Qt::LeftButton);
+    sendMouse(view, QEvent::MouseMove, to, Qt::NoButton, Qt::LeftButton);
+    sendMouse(view, QEvent::MouseButtonRelease, to, Qt::LeftButton,
+              Qt::NoButton);
+    const QPointF dropped = view.widgetToData(to);
+    QVERIFY(near(grabbed.x(), dropped.x()) && near(grabbed.y(), dropped.y()));
+    QVERIFY(spy.count() >= 1);
+    double x, y, w, h;
+    view.viewport(x, y, w, h);
+    QVERIFY(x < 20.0 && y < 20.0 && near(w, 20.0) && near(h, 20.0));
+
+    // a double click shows the whole image
+    sendMouse(view, QEvent::MouseButtonDblClick, to, Qt::LeftButton,
+              Qt::LeftButton);
+    view.viewport(x, y, w, h);
+    QVERIFY(near(x, 0.0) && near(y, 0.0) && near(w, n) && near(h, n));
+}
+
+// ---------------------------------------------------------------------------
+// SlsQtFastImage: painting
+// ---------------------------------------------------------------------------
+void PlottingTest::imageIsClippedToPlotArea() {
+    sls::SlsQtFastImage view;
+    view.resize(400, 300);
+    view.show();
+    const std::vector<double> frame = testFrame();
     view.setColorRange(-2.0, 2.0);
-    view.setImageCopy(frame.data(), nx, ny);
-    view.resetView();
+    view.setImage(frame.data(), 1024, 512);
 
-    // Margins of the widget: the plot rect is QRect(52, 6, w-58, h-32).
-    const QRect ir = sls::plot::plotRectFor(view.size(), sls::plot::PlotTheme());
-    QCOMPARE(ir, QRect(52, 6, 400 - 58, 300 - 32));
-
-    // Zoom so the scaled image is much larger than the plot area; without the
-    // clip it would paint over the right/top margins.
+    // zoomed in, the scaled image is much larger than the plot area
     view.setViewport(100.0, 100.0, 164.0, 132.0);
     const QImage img = render(view);
-    QVERIFY(img.width() == 400 && img.height() == 300);
-
-    for (int y = ir.top(); y <= ir.bottom(); y++) {
-        for (int x = ir.right() + 1; x < img.width(); x++) {
-            QVERIFY2(img.pixel(x, y) == kBackground,
-                     "zoomed image must be clipped to the plot rect (right "
-                     "margin)");
-        }
-    }
-    for (int x = ir.left(); x <= img.width() - 1; x++) {
-        for (int y = 0; y < ir.top(); y++) {
-            QVERIFY2(img.pixel(x, y) == kBackground,
-                     "zoomed image must be clipped to the plot rect (top "
-                     "margin)");
-        }
-    }
-    // ... while the image itself is definitely painted inside.
-    QVERIFY(img.pixel(ir.center()) != kBackground);
+    const QRect plot = plotArea(view);
+    QCOMPARE(plot, QRect(52, 6, 400 - 58, 300 - 32));
+    QVERIFY(img.pixel(plot.center()) != kBackground);
+    QCOMPARE(countOutside(img, plot, [](QRgb c) { return c != kBackground; }),
+             0);
 }
 
-void PlottingTest::fastImageOverlaysInDataCoordinates() {
+void PlottingTest::imageOverlays() {
     sls::SlsQtFastImage view;
     view.resize(400, 300);
     view.show();
-    QTest::qWait(5);
-    const int nx = 1024, ny = 512;
-    std::vector<float> frame = acceptanceFrame();
+    const std::vector<double> frame = testFrame();
     view.setColorRange(-2.0, 2.0);
-    view.setImageCopy(frame.data(), nx, ny);
-    view.resetView();
+    view.setImage(frame.data(), 1024, 512);
+    const QImage plain = render(view);
 
-    // (120,110) lower-left + 20x10, entirely inside the view.
+    // lower left corner (120, 110), 20 x 10 pixels
     view.setOverlayRects({QRectF(120.0, 110.0, 20.0, 10.0)});
     QCOMPARE(int(view.overlayRects().size()), 1);
     QImage img = render(view);
-    const QPointF topLeft = view.dataToWidget(QPointF(120.0, 120.0));
-    QVERIFY2(yellowNear(img, topLeft.toPoint(), 2),
-             "overlay must be drawn at its data coordinates (yellow)");
-    const QPointF bottomRight = view.dataToWidget(QPointF(140.0, 110.0));
-    QVERIFY(yellowNear(img, bottomRight.toPoint(), 2));
+    QVERIFY(yellowNear(img, widgetPos(view, 120.0, 120.0).toPoint()));
+    QVERIFY(yellowNear(img, widgetPos(view, 140.0, 110.0).toPoint()));
+    QVERIFY(!yellowNear(img, widgetPos(view, 130.0, 115.0).toPoint(), 0));
 
-    // A rectangle crossing the plot edge is clipped: no yellow outside.
+    // sticking out of the image: clipped
     view.setOverlayRects({QRectF(1000.0, 400.0, 400.0, 400.0)});
     img = render(view);
-    const QRect ir = sls::plot::plotRectFor(view.size(), sls::plot::PlotTheme());
-    for (int x = ir.right() + 1; x < img.width(); x++) {
-        for (int y = 0; y < img.height(); y++) {
-            const QRgb c = img.pixel(x, y);
-            QVERIFY2(!(qRed(c) > 180 && qGreen(c) > 180 && qBlue(c) < 90),
-                     "overlays must be clipped to the plot rect");
-        }
-    }
-    view.clearOverlayRects();
-    QVERIFY(view.overlayRects().empty());
+    QVERIFY(countPixels(img, isYellow) > 0);
+    QCOMPARE(countOutside(img, plotArea(view), isYellow), 0);
+    view.setOverlayRects({});
+    QCOMPARE(render(view), plain);
 
-    // Editable gate ROI and receiver ROI are reported back in data coords.
-    view.setRoiRect(10.0, 20.0, 110.0, 220.0);
-    double x0, y0, x1, y1;
-    QVERIFY(view.roiRect(x0, y0, x1, y1));
-    QVERIFY(near(x0, 10.0) && near(y1, 220.0));
-    view.setRoiRectVisible(false);
-    QVERIFY(!view.roiRect(x0, y0, x1, y1));
-    view.setReceiverRoiRect(5.0, 6.0, 7.0, 8.0);
-    view.clearReceiverRoiRect();
+    // from corner to corner and beyond
+    view.setOverlayLines({QLineF(0.0, 0.0, 2048.0, 1024.0)});
+    img = render(view);
+    QVERIFY(isBright(img.pixel(widgetPos(view, 512.0, 256.0).toPoint())));
+    const QRect changed = differingArea(plain, img);
+    QVERIFY(changed.width() > 300 && plotArea(view).contains(changed));
+    view.setOverlayLines({});
+    QCOMPARE(render(view), plain);
 }
 
-void PlottingTest::fastImageTitlesAndAspect() {
+void PlottingTest::imageInterpolation() {
     sls::SlsQtFastImage view;
     view.resize(400, 300);
     view.show();
-    QTest::qWait(5);
-    std::vector<float> ramp(64 * 32, 1.0f);
-    view.setImageCopy(ramp.data(), 64, 32);
+    // one bright pixel, shown at about 8 widget pixels per image pixel
+    std::vector<double> f(32 * 32, 0.0);
+    f[16 * 32 + 16] = 1.0;
+    view.setPalette(Palette::Gray);
+    view.setColorRange(0.0, 1.0);
+    view.setImage(f.data(), 32, 32);
+    const QPoint neighbour = widgetPos(view, 15.9, 16.5).toPoint();
 
-    QVERIFY(view.title().isEmpty());
+    QCOMPARE(render(view).pixel(neighbour), qRgb(0, 0, 0));
+    view.setInterpolate(true);
+    QVERIFY(qGray(render(view).pixel(neighbour)) > 0);
+
+    // not once the pixels are outlined
+    view.setViewport(12.0, 12.0, 20.0, 20.0);
+    QCOMPARE(dominantPixelAtData(view, render(view), 15.5, 16.5),
+             qRgb(0, 0, 0));
+}
+
+void PlottingTest::imageTitles() {
+    sls::SlsQtFastImage view;
+    view.resize(400, 300);
+    view.show();
+    const std::vector<double> ramp = xRamp(64, 32);
+    view.setImage(ramp.data(), 64, 32);
+    const QPointF before = widgetPos(view, 0.0, 32.0);
+
     view.setTitle(QStringLiteral("Detector 0"));
     view.setXAxisTitle(QStringLiteral("x [px]"));
     view.setYAxisTitle(QStringLiteral("y [px]"));
     QCOMPARE(view.title(), QStringLiteral("Detector 0"));
     QCOMPARE(view.xAxisTitle(), QStringLiteral("x [px]"));
     QCOMPARE(view.yAxisTitle(), QStringLiteral("y [px]"));
-    // A title consumes a row at the top; the image must still render.
-    const QImage img = render(view);
-    const QRect ir = sls::plot::plotRectFor(view.size(), sls::plot::PlotTheme());
-    QVERIFY(img.pixel(ir.center()) != kBackground);
 
-    QFont f;
-    f.setPixelSize(17);
-    view.setTitleFont(f);
-    QCOMPARE(view.titleFont().pixelSize(), 17);
-    view.setAxisTitleFont(f);
-    QCOMPARE(view.axisTitleFont().pixelSize(), 17);
-    view.setTickFont(f);
-    QCOMPARE(view.tickFont().pixelSize(), 17);
+    // the titles take their space from the image
+    const QPointF after = widgetPos(view, 0.0, 32.0);
+    QVERIFY(after.x() > before.x() && after.y() > before.y());
+    render(view);
+
+    // nothing but the image without axes
+    view.setTitle(QString());
+    view.setXAxisTitle(QString());
+    view.setYAxisTitle(QString());
+    view.setAxesVisible(false);
+    QVERIFY(!view.axesVisible());
+    QCOMPARE(widgetPos(view, 0.0, 0.0).x(), 0.0);
 }
 
 // ---------------------------------------------------------------------------
-// ScaleHisto: three-way freeze rule
+// SlsQtScaleHisto and SlsQtScalePanel
 // ---------------------------------------------------------------------------
-void PlottingTest::scaleHistoThreeWayFreeze() {
+void PlottingTest::scaleHistoDrag() {
     sls::SlsQtScaleHisto histo;
     histo.resize(400, 38);
     histo.show();
-    QTest::qWait(5);
+    // colour range 10..20: the axis shows 5..25, markers at x = 100 and 300
+    histo.setData(std::vector<int>(256, 5), 5.0, 25.0, 10.0, 20.0, false,
+                  false);
+    QSignalSpy spy(&histo, &sls::SlsQtScaleHisto::rangeChanged);
+    const QImage before = render(histo);
 
-    std::vector<int> bins(256, 0);
-    bins[100] = 10;
-    bins[200] = 300;
-    histo.setData(&bins, 0.0, 1.0, 0.2, 0.8, false, false);
-    double dw0 = 0.0, dw1 = 0.0;
-    histo.displayedWindow(dw0, dw1);
-    QVERIFY(near(dw0, -0.1, 1e-9) && near(dw1, 1.1, 1e-9));
-    double cw0 = 0.0, cw1 = 0.0;
-    histo.currentWindow(cw0, cw1);
-    QVERIFY(near(cw0, 0.2) && near(cw1, 0.8));
-
-    int rangeCalls = 0;
-    double newLo = 0.0, newHi = 0.0;
-    histo.onRangeChanged = [&](double a, double b) {
-        rangeCalls++;
-        newLo = a;
-        newHi = b;
-    };
-
-    const int W = histo.width();
-    const QPointF marker(W * 0.25, 19.0);
-    sendMouse(histo, QEvent::MouseButtonPress, marker, Qt::LeftButton,
+    sendMouse(histo, QEvent::MouseButtonPress, QPointF(100, 19), Qt::LeftButton,
               Qt::LeftButton);
     QVERIFY(histo.isDragging());
+    sendMouse(histo, QEvent::MouseMove, QPointF(160, 19), Qt::NoButton,
+              Qt::LeftButton);
 
-    // Freeze #1 (bars): a live histogram update must be ignored.
-    const std::vector<int> *frozen = histo.displayedHistogram();
-    QVERIFY(frozen != nullptr);
-    QVERIFY(frozen != &bins);
-    QCOMPARE(int(frozen->size()), 256);
-    QCOMPARE((*frozen)[100], 10);
-    std::vector<int> live2(256, 0);
-    live2[50] = 999;
-    histo.setData(&live2, 0.0, 1.0, 0.0, 1.0, false, false);
-    QVERIFY2(histo.displayedHistogram() == frozen,
-             "histogram bars must be frozen while dragging");
-    QCOMPARE((*histo.displayedHistogram())[100], 10);
-    QCOMPARE((*histo.displayedHistogram())[200], 300);
+    // only a preview line moves and new data has to wait
+    std::vector<int> other(256, 1);
+    other[60] = 100;
+    histo.setData(other, 0.0, 100.0, 50.0, 60.0, false, false);
+    const QImage during = render(histo);
+    QCOMPARE(spy.count(), 0);
+    QVERIFY(during != before);
+    for (const int x : {50, 100, 250, 300, 350})
+        QCOMPARE(during.copy(x, 0, 1, 38), before.copy(x, 0, 1, 38));
 
-    // Freeze #2 (axis window): still the press-time window after a move.
-    const int previewAtPress = histo.previewX();
-    sendMouse(histo, QEvent::MouseMove, QPointF(W * 0.40, 19.0),
-              Qt::NoButton, Qt::LeftButton);
-    QVERIFY(histo.isDragging());
-    double fw0 = 0.0, fw1 = 0.0;
-    histo.displayedWindow(fw0, fw1);
-    QVERIFY2(near(fw0, dw0) && near(fw1, dw1),
-             "axis window must stay frozen while dragging");
-
-    // Freeze #3 (cursor mapping): the pre-move range is used, so these must be
-    // stable no matter how often the mouse moves.
-    double l0 = 0.0, l1 = 0.0;
-    histo.currentWindow(l0, l1);
-    QVERIFY(l0 > 0.2); // preview moved the low end
-    for (int i = 0; i < 3; i++)
-        sendMouse(histo, QEvent::MouseMove, QPointF(W * 0.40, 19.0),
-                  Qt::NoButton, Qt::LeftButton);
-    double l2 = 0.0, l3 = 0.0;
-    histo.currentWindow(l2, l3);
-    QVERIFY(near(l0, l2) && near(l1, l3));
-    QVERIFY2(histo.previewX() != previewAtPress,
-             "only the dashed preview line moves");
-    QCOMPARE(rangeCalls, 0); // nothing applied before release
-
-    // Painting mid-drag must not mutate the frozen state either.
-    (void)histo.grab();
-    histo.displayedWindow(fw0, fw1);
-    QVERIFY(near(fw0, dw0) && near(fw1, dw1));
-    QVERIFY(histo.displayedHistogram() == frozen);
-
-    sendMouse(histo, QEvent::MouseButtonRelease, QPointF(W * 0.40, 19.0),
+    // x = 160 is at 40% of the axis 5..25
+    sendMouse(histo, QEvent::MouseButtonRelease, QPointF(160, 19),
               Qt::LeftButton, Qt::NoButton);
     QVERIFY(!histo.isDragging());
-    QCOMPARE(rangeCalls, 1); // applied exactly once, on release
-    QVERIFY(near(newLo, l2) && near(newHi, l3));
-    QVERIFY2(histo.displayedHistogram() == &bins,
-             "live histogram is restored after release");
-    double nw0 = 0.0, nw1 = 0.0;
-    histo.displayedWindow(nw0, nw1);
-    QVERIFY2(!near(nw0, dw0) || !near(nw1, dw1),
-             "the axis rebuilds from the new range after release");
+    QCOMPARE(spy.count(), 1);
+    QVERIFY(near(spy.at(0).at(0).toDouble(), 13.0));
+    QVERIFY(near(spy.at(0).at(1).toDouble(), 20.0));
 
-    // A press far away from both markers is ignored.
-    sendMouse(histo, QEvent::MouseButtonPress, QPointF(W * 0.5, 19.0),
-              Qt::LeftButton, Qt::LeftButton);
+    // a click away from the markers does nothing
+    sendMouse(histo, QEvent::MouseButtonPress, QPointF(200, 19), Qt::LeftButton,
+              Qt::LeftButton);
     QVERIFY(!histo.isDragging());
-    sendMouse(histo, QEvent::MouseButtonRelease, QPointF(W * 0.5, 19.0),
+    sendMouse(histo, QEvent::MouseButtonRelease, QPointF(200, 19),
               Qt::LeftButton, Qt::NoButton);
-    QCOMPARE(rangeCalls, 1);
+    QCOMPARE(spy.count(), 1);
 }
 
-void PlottingTest::scaleHistoMaxMarker() {
+void PlottingTest::scaleHistoLogAxis() {
     sls::SlsQtScaleHisto histo;
     histo.resize(400, 38);
     histo.show();
-    QTest::qWait(5);
-    std::vector<int> bins(256, 1);
-    histo.setData(&bins, 0.0, 1.0, 0.2, 0.8, false, false);
-
-    int rangeCalls = 0;
-    double newLo = 0.0, newHi = 0.0;
-    histo.onRangeChanged = [&](double a, double b) {
-        rangeCalls++;
-        newLo = a;
-        newHi = b;
+    // colour range 1..100: the axis shows 1e-1..1e3
+    histo.setData(std::vector<int>(256, 5), -1.0, 3.0, 1.0, 100.0, true, true);
+    QSignalSpy spy(&histo, &sls::SlsQtScaleHisto::rangeChanged);
+    const auto drag = [&histo](double from, double to) {
+        sendMouse(histo, QEvent::MouseButtonPress, QPointF(from, 19),
+                  Qt::LeftButton, Qt::LeftButton);
+        sendMouse(histo, QEvent::MouseMove, QPointF(to, 19), Qt::NoButton,
+                  Qt::LeftButton);
+        sendMouse(histo, QEvent::MouseButtonRelease, QPointF(to, 19),
+                  Qt::LeftButton, Qt::NoButton);
     };
-    const int W = histo.width();
-    sendMouse(histo, QEvent::MouseButtonPress, QPointF(W * 0.75, 19.0),
-              Qt::LeftButton, Qt::LeftButton);
-    QVERIFY(histo.isDragging());
-    sendMouse(histo, QEvent::MouseMove, QPointF(W * 0.60, 19.0),
-              Qt::NoButton, Qt::LeftButton);
-    sendMouse(histo, QEvent::MouseButtonRelease, QPointF(W * 0.60, 19.0),
-              Qt::LeftButton, Qt::NoButton);
-    QCOMPARE(rangeCalls, 1);
-    QVERIFY(newLo < newHi);
-    QVERIFY(newHi < 0.8); // max marker dragged down
+
+    // upper marker to the middle of the axis
+    drag(300, 200);
+    QCOMPARE(spy.count(), 1);
+    QVERIFY(near(spy.at(0).at(0).toDouble(), 1.0));
+    QVERIFY(near(spy.at(0).at(1).toDouble(), 10.0));
+
+    // the lower marker cannot pass the upper one
+    drag(100, 390);
+    QCOMPARE(spy.count(), 2);
+    QVERIFY(spy.at(1).at(0).toDouble() < 100.0);
+    QVERIFY(near(spy.at(1).at(0).toDouble(), 100.0));
+    QVERIFY(near(spy.at(1).at(1).toDouble(), 100.0));
 }
 
-// ---------------------------------------------------------------------------
-// ScalePanel: re-entrancy, control synchronisation, strip freeze
-// ---------------------------------------------------------------------------
-void PlottingTest::scalePanelReentrancy() {
-    sls::SlsQtFastImage view;
-    view.resize(300, 300);
-    view.show();
-    QTest::qWait(5);
-    std::vector<float> ramp(64 * 32);
-    for (int i = 0; i < 64 * 32; i++)
-        ramp[i] = float(i % 100) / 10.0f;
-    view.setColorRange(0.0, 10.0);
-    view.setImageCopy(ramp.data(), 64, 32);
-    view.repaint();
+void PlottingTest::scalePanel() {
+    QWidget window;
+    auto *view = new sls::SlsQtFastImage(&window);
+    auto *panel = new sls::SlsQtScalePanel(view, &window);
+    auto *layout = new QVBoxLayout(&window);
+    layout->addWidget(view);
+    layout->addWidget(panel);
+    window.resize(500, 500);
+    window.show();
+    std::vector<double> ramp = xRamp(64, 32);
+    std::fill_n(ramp.begin(), 64 * 8, 12.0); // not the same count per bin
+    view->setColorRange(10.0, 20.0);
+    view->setImage(ramp.data(), 64, 32);
+    render(window);
 
-    sls::SlsQtScalePanel panel(&view);
-    panel.resize(760, 78);
-    panel.show();
-    QTest::qWait(5);
-    QVERIFY(panel.histogramWidget() != nullptr);
-    QVERIFY(panel.view() == &view);
-    QVERIFY(!panel.isDragging());
+    // in the order they are created: palette, image lin/log, histogram lin/log
+    const QList<QComboBox *> combos = panel->findChildren<QComboBox *>();
+    QCOMPARE(combos.size(), 3);
+    QCOMPARE(combos[0]->count(), sls::plot::paletteCount());
 
-    // view -> controls -> view must not recurse (sympass guard): one change,
-    // one control update, no push-back loop.  The min/max spin boxes were
-    // removed from the plot window; the range is owned by the Plot tab, so
-    // the panel only keeps the last range it read from/wrote to the view
-    // (controlRange(), not spin-box widgets).
-    int rangeCalls = 0;
-    view.onColorRangeChanged = [&](double, double) { rangeCalls++; };
-    panel.setColorRange(1.0, 5.0);
-    QCOMPARE(rangeCalls, 1);
-    double a = 0.0, b = 0.0;
-    view.colorRange(a, b);
-    QVERIFY(near(a, 1.0) && near(b, 5.0));
-    panel.controlRange(a, b);
-    QVERIFY(near(a, 1.0) && near(b, 5.0));
+    // the controls show the view
+    view->setPalette(Palette::Viridis);
+    view->setLogScale(true);
+    QCOMPARE(combos[0]->currentIndex(), int(Palette::Viridis));
+    QCOMPARE(combos[1]->currentIndex(), 1);
 
-    // refresh()/push() round trip is stable (idempotent, no re-entrancy).
-    panel.refresh();
-    panel.push();
-    view.colorRange(a, b);
-    QVERIFY(near(a, 1.0) && near(b, 5.0));
-    panel.refresh();
-    panel.refresh();
-    view.colorRange(a, b);
-    QVERIFY(near(a, 1.0) && near(b, 5.0));
+    // and change it
+    combos[0]->setCurrentIndex(int(Palette::Gray));
+    combos[1]->setCurrentIndex(0);
+    QCOMPARE(view->palette(), Palette::Gray);
+    QVERIFY(!view->logScale());
 
-    // Palette and image-log controls stay in sync with the view.
-    panel.setPaletteChoice(3);
-    QCOMPARE(view.paletteIndex(), 3);
-    QCOMPARE(view.paletteIndex(), int(sls::plot::Palette::Turbo));
-    QCOMPARE(panel.paletteChoice(), 3);
-    panel.setImageLog(true);
-    QVERIFY(view.logScale());
-    QVERIFY(!view.isScaleDragging());
-    panel.setImageLog(false);
-    QVERIFY(!view.logScale());
-    panel.setHistoLog(true);
-    QVERIFY(panel.histoLog());
+    const QImage linear = render(*panel->histogramWidget());
+    combos[2]->setCurrentIndex(1);
+    QVERIFY(render(*panel->histogramWidget()) != linear);
 
-    // A strip drag freezes the strip; refresh() during the drag (the image
-    // keeps arriving in the real GUI) must not feed back into it.
-    sls::SlsQtScaleHisto *strip = panel.histogramWidget();
-    double sw0 = 0.0, sw1 = 0.0;
-    strip->displayedWindow(sw0, sw1);
-    const std::vector<int> *live = strip->displayedHistogram();
-    QVERIFY(live != nullptr);
-    const int W = strip->width();
-    sendMouse(*strip, QEvent::MouseButtonPress, QPointF(W * 0.25, 10.0),
-              Qt::LeftButton, Qt::LeftButton);
-    QVERIFY(strip->isDragging());
-    QVERIFY(panel.isDragging());
-    const std::vector<int> *frozen = strip->displayedHistogram();
-    QVERIFY2(frozen != live, "drag paints a snapshot, not the live bars");
-    panel.refresh();
-    sendMouse(*strip, QEvent::MouseMove, QPointF(W * 0.40, 10.0),
-              Qt::NoButton, Qt::LeftButton);
-    panel.refresh();
-    double dw0 = 0.0, dw1 = 0.0;
-    strip->displayedWindow(dw0, dw1);
-    QVERIFY2(near(dw0, sw0) && near(dw1, sw1),
-             "panel refresh must not move the frozen strip");
-    QVERIFY2(strip->displayedHistogram() == frozen,
-             "panel refresh must not replace the frozen bars");
-
-    sendMouse(*strip, QEvent::MouseButtonRelease, QPointF(W * 0.40, 10.0),
-              Qt::LeftButton, Qt::NoButton);
-    QVERIFY(!strip->isDragging());
-    QVERIFY(!panel.isDragging());
-    // Release applied the previewed range to the view.
-    view.colorRange(a, b);
-    QVERIFY(b > a);
-    QVERIFY(!near(a, 1.0) || !near(b, 5.0));
-
-    // Detach/reattach keeps working and preserves the view callbacks.
-    panel.setView(nullptr);
-    QVERIFY(panel.view() == nullptr);
-    panel.setView(&view);
-    QVERIFY(panel.view() == &view);
-    panel.refresh(); // must not crash with a fresh attachment
-}
-
-// ---------------------------------------------------------------------------
-// ScalePanel R1/R2 (task-11): strip freeze and the controls->view push rules
-// ---------------------------------------------------------------------------
-void PlottingTest::scalePanelFreezeAndPushRules() {
-    sls::SlsQtFastImage view;
-    view.resize(400, 400);
-    view.show();
-    QTest::qWait(5);
-    std::vector<float> data(64 * 64);
-    for (int i = 0; i < 64 * 64; i++)
-        data[size_t(i)] = float(i % 100) / 10.0f;
-    view.setColorRange(1.0, 5.0);
-    view.setImageCopy(data.data(), 64, 64);
-    view.repaint();
-
-    sls::SlsQtScalePanel panel(&view);
-    panel.resize(760, 78);
-    panel.show();
-    QTest::qWait(5);
-
+    // dragging the lower marker from 25% to 40% of the strip
+    QSignalSpy spy(panel, &sls::SlsQtScalePanel::colorRangeEdited);
+    sls::SlsQtScaleHisto *histo = panel->histogramWidget();
+    const QPointF from(0.25 * histo->width(), 19), to(0.4 * histo->width(), 19);
+    sendMouse(*histo, QEvent::MouseButtonPress, from, Qt::LeftButton,
+              Qt::LeftButton);
+    sendMouse(*histo, QEvent::MouseMove, to, Qt::NoButton, Qt::LeftButton);
+    sendMouse(*histo, QEvent::MouseButtonRelease, to, Qt::LeftButton,
+              Qt::NoButton);
     double lo = 0.0, hi = 0.0;
-    panel.controlRange(lo, hi);
-    QVERIFY(near(lo, 1.0) && near(hi, 5.0));
-    int rangeCalls = 0;
-    view.onColorRangeChanged = [&](double, double) { rangeCalls++; };
+    view->colorRange(lo, hi);
+    QVERIFY(near(lo, 13.0) && near(hi, 20.0));
+    QCOMPARE(spy.count(), 1);
 
-    // R1: while a strip marker is dragged, incoming frames may change the
-    // view's colour range, but refresh() must keep the controls frozen at the
-    // press-time values (and the strip axis/bars frozen as well).
-    auto *strip = panel.histogramWidget();
-    double frozenW0 = 0.0, frozenW1 = 0.0;
-    strip->displayedWindow(frozenW0, frozenW1);
-    const std::vector<int> *liveBars = strip->displayedHistogram();
-    sendMouse(*strip, QEvent::MouseButtonPress,
-              QPointF(strip->width() * 0.25, strip->height() / 2.0),
-              Qt::LeftButton, Qt::LeftButton);
-    QVERIFY(strip->isDragging());
-    const std::vector<int> *frozenBars = strip->displayedHistogram();
-    QVERIFY2(frozenBars != nullptr && frozenBars != liveBars,
-             "drag paints a press-time histogram snapshot");
-    view.setColorRange(2.0, 7.0);
-    panel.refresh();
-    panel.controlRange(lo, hi);
-    QVERIFY2(near(lo, 1.0) && near(hi, 5.0),
-             "control range frozen while the strip marker is dragged (R1)");
-    view.setColorRange(3.0, 9.0);
-    panel.refresh();
-    panel.controlRange(lo, hi);
-    QVERIFY2(near(lo, 1.0) && near(hi, 5.0),
-             "control range still frozen after a second live range change (R1)");
-    double dw0 = 0.0, dw1 = 0.0;
-    strip->displayedWindow(dw0, dw1);
-    QVERIFY(near(dw0, frozenW0) && near(dw1, frozenW1));
-    QVERIFY(strip->displayedHistogram() == frozenBars);
-    // Move the low marker from its 1/4 place towards 2/5 (the preview value).
-    sendMouse(*strip, QEvent::MouseMove,
-              QPointF(strip->width() * 0.40, strip->height() / 2.0),
-              Qt::NoButton, Qt::LeftButton);
-    double cw0 = 0.0, cw1 = 0.0;
-    strip->currentWindow(cw0, cw1);
-    QVERIFY(cw0 > 2.0);
-    sendMouse(*strip, QEvent::MouseButtonRelease,
-              QPointF(strip->width() * 0.40, strip->height() / 2.0),
-              Qt::LeftButton, Qt::NoButton);
-    QVERIFY(!strip->isDragging());
-    // On release the strip range is applied and the controls follow it.
-    double vlo = 0.0, vhi = 0.0;
-    view.colorRange(vlo, vhi);
-    QVERIFY2(near(vlo, cw0) && near(vhi, cw1),
-             "strip range applied to the view on release (R1)");
-    panel.controlRange(lo, hi);
-    QVERIFY(std::abs(lo - vlo) <= 0.051);
-    QVERIFY(std::abs(hi - vhi) <= 0.051);
-
-    // R2: palette/log changes must NOT push the control range into the view
-    // (that would fire onColorRangeChanged and pin the 2D panel override).
-    // Only an explicit control-range edit may change the range.
-    view.setColorRange(0.408939, 40.8); // e.g. SlsQt2DPlot's auto z range
-    view.repaint();
-    const int callsBefore = rangeCalls;
-    panel.setPaletteChoice(3);
-    QCOMPARE(rangeCalls, callsBefore);
-    double a = 0.0, b = 0.0;
-    view.colorRange(a, b);
-    QVERIFY2(near(a, 0.408939) && near(b, 40.8),
-             "palette change leaves the auto z range bit-exact (R2)");
-    double plo = 0.0, phi = 0.0;
-    QVERIFY(!panel.lastPushedRange(plo, phi));
-    panel.setImageLog(true);
-    panel.setImageLog(false);
-    QCOMPARE(rangeCalls, callsBefore);
-    view.colorRange(a, b);
-    QVERIFY(near(a, 0.408939) && near(b, 40.8));
-    QVERIFY(!panel.lastPushedRange(plo, phi));
-    panel.controlRange(lo, hi);
-    QVERIFY(near(lo, 0.4, 0.051) && near(hi, 40.8, 0.051));
-
-    // A real operator edit is the only path that pushes a range, exactly once.
-    panel.setControlRange(2.5, 8.0);
-    QCOMPARE(rangeCalls, callsBefore + 1);
-    view.colorRange(a, b);
-    QVERIFY(near(a, 2.5) && near(b, 8.0));
-    QVERIFY(panel.lastPushedRange(plo, phi));
-    QVERIFY(near(plo, 2.5) && near(phi, 8.0));
-    // A later palette change still does not push the (now edited) range.
-    panel.setPaletteChoice(5);
-    QCOMPARE(rangeCalls, callsBefore + 1);
-    view.colorRange(a, b);
-    QVERIFY(near(a, 2.5) && near(b, 8.0));
-}
-
-// ---------------------------------------------------------------------------
-// ScalePanel R6 (task-11): the strip never keeps a pointer to a dead histogram
-// ---------------------------------------------------------------------------
-void PlottingTest::scalePanelDetachLifetime() {
-    std::vector<float> ramp(64 * 32, 1.0f);
-
-    // Detaching the panel clears the strip's raw histogram pointer, and the
-    // orphaned strip can still be repainted/grab'ed safely.
-    auto *view = new sls::SlsQtFastImage;
-    view->resize(300, 300);
-    view->show();
-    QTest::qWait(5);
-    view->setImageCopy(ramp.data(), 64, 32);
-    view->repaint();
-    auto *panel = new sls::SlsQtScalePanel(view);
-    panel->resize(600, 78);
-    panel->show();
-    QTest::qWait(5);
-    panel->histogramWidget()->repaint();
-    QVERIFY(panel->histogramWidget()->displayedHistogram() != nullptr);
-    panel->setView(nullptr);
-    QVERIFY(panel->view() == nullptr);
-    QVERIFY2(panel->histogramWidget()->displayedHistogram() == nullptr,
-             "detach drops the live histogram pointer (R6)");
-    (void)panel->histogramWidget()->grab(); // must not read freed memory
-    panel->refresh();
-    delete panel;
-
-    // Destroying the view clears the strip through the destroyed connection;
-    // repainting the orphaned panel afterwards is safe.
-    auto *view2 = new sls::SlsQtFastImage;
-    view2->resize(300, 300);
-    view2->show();
-    QTest::qWait(5);
-    view2->setImageCopy(ramp.data(), 64, 32);
-    view2->repaint();
-    auto *panel2 = new sls::SlsQtScalePanel(view2);
-    panel2->resize(600, 78);
-    panel2->show();
-    QTest::qWait(5);
-    panel2->histogramWidget()->repaint();
-    QVERIFY(panel2->histogramWidget()->displayedHistogram() != nullptr);
-    delete view2;
-    QVERIFY(panel2->view() == nullptr);
-    QVERIFY2(panel2->histogramWidget()->displayedHistogram() == nullptr,
-             "destroyed view drops the live histogram pointer (R6)");
-    (void)panel2->histogramWidget()->grab();
-    panel2->refresh();
-    delete panel2;
-    delete view;
+    // a range set by the program is not an edit
+    view->setColorRange(0.0, 5.0);
+    QCOMPARE(spy.count(), 1);
 }
 
 // ---------------------------------------------------------------------------
@@ -1167,7 +857,6 @@ void PlottingTest::h1dDataApi() {
     QCOMPARE(h.GetFirstXgtZero(), 1.0);
     QCOMPARE(h.GetFirstYgtZero(), 1.0);
 
-    // Fill/FillBin/SetContent/SetBinContent follow the old qwt data contract.
     QCOMPARE(h.FillBin(0, 5.0), 6.0);
     QCOMPARE(h.GetY()[0], 6.0);
     QCOMPARE(h.Fill(5.0, 2.0), 8.0); // y[5] was 6, FindBinIndex(5) == 5
@@ -1292,12 +981,11 @@ void PlottingTest::oneDimensionalRangeZoomLogAndGain() {
     plot.EnableXAutoScaling();
     QVERIFY(plot.viewRect().width() > 15.0);
 
-    // G/H marker lines, SetYStep and alignScales (API compatibility).
+    // G/H marker lines and SetYStep.
     plot.SetYMinMax(0.0, 300.0);
     plot.InsertHLine(150.0);
     plot.InsertVLine(50.0);
     plot.SetYStep(2);
-    plot.alignScales();
     img = render(plot);
     QVERIFY2(countPixels(img, isYellow) > 20,
              "H/V marker lines are painted in the plot");
@@ -1305,7 +993,7 @@ void PlottingTest::oneDimensionalRangeZoomLogAndGain() {
     plot.RemoveVLine();
     plot.EnableYAutoScaling();
 
-    // O1 (task-10): on a log-y axis the auto-range padding is applied in
+    // On a log-y axis the auto-range padding is applied in
     // log10 space (2 % of the decade span on each side), not to the linear
     // value, so the top point is not glued to the frame.
     plot.SetLogY(true);
@@ -1339,7 +1027,7 @@ void PlottingTest::oneDimensionalRangeZoomLogAndGain() {
     QVERIFY(near(gain.viewRect().bottom(), 3.0));
     const QImage gshort = render(gain);
     QVERIFY(countPixels(gshort, [](QRgb c) { return c != kBackground; }) > 100);
-    // O2/task-14: the topmost gain tick label ("3") must be fully inside the
+    // The topmost gain tick label ("3") must be fully inside the
     // widget in both a short and a tall gain plot.  The top-left label area
     // (x < plot.left) contains no frame/grid pixels, so it isolates the label.
     auto topLabelVisible = [](const QImage &img) {
@@ -1377,7 +1065,7 @@ void PlottingTest::oneDimensionalRoiBoxes() {
     plot.Update();
 
     std::vector<slsDetectorDefs::ROI> rois{slsDetectorDefs::ROI(10, 30),
-                                          slsDetectorDefs::ROI(50, 70)};
+                                           slsDetectorDefs::ROI(50, 70)};
     plot.EnableRoiBoxes(rois, 0, 100);
     QVERIFY(countPixels(render(plot), isYellow) > 100);
 
@@ -1454,13 +1142,13 @@ void PlottingTest::twoDHistogramContainer() {
     hist.SetData(0, 0.0, 4.0, 3, 0.0, 3.0, nullptr);
     QCOMPARE(hist.GetNBinsX(), 5); // invalid geometry ignored
 
-    // R3 (task-12): NaN/Inf bins are skipped by the automatic z range/mean.
+    // NaN/Inf bins are skipped by the automatic z range/mean.
     std::vector<double> nf(12);
     for (int i = 0; i < 12; i++)
-        nf[size_t(i)] = double(i + 1); // 1..12
-    nf[0] = std::numeric_limits<double>::quiet_NaN();  // 1
-    nf[5] = std::numeric_limits<double>::infinity();   // 6
-    nf[7] = -std::numeric_limits<double>::infinity();  // 8
+        nf[size_t(i)] = double(i + 1);                // 1..12
+    nf[0] = std::numeric_limits<double>::quiet_NaN(); // 1
+    nf[5] = std::numeric_limits<double>::infinity();  // 6
+    nf[7] = -std::numeric_limits<double>::infinity(); // 8
     hist.SetData(4, 0.0, 4.0, 3, 0.0, 3.0, nf.data());
     QVERIFY(std::isfinite(hist.GetMinimum()));
     QVERIFY(std::isfinite(hist.GetMaximum()));
@@ -1476,7 +1164,7 @@ void PlottingTest::twoDHistogramContainer() {
     QCOMPARE(hist.GetMaximum(), 1.0);
     QCOMPARE(hist.GetMean(), 0.0);
 
-    // R5 (task-12): all-negative data is padded OUTWARD on both ends; the
+    // All-negative data is padded OUTWARD on both ends; the
     // high end must stay above the data maximum (the brightest bin must not be
     // clipped - multiplying a negative max by 1.02 would move it below).
     std::vector<double> neg(12);
@@ -1490,385 +1178,291 @@ void PlottingTest::twoDHistogramContainer() {
 }
 
 // ---------------------------------------------------------------------------
-// 2D: SetData / z range / scale panel integration
+// SlsQt2DPlot
 // ---------------------------------------------------------------------------
-void PlottingTest::twoDimensionalDataZRangeAndPanel() {
+void PlottingTest::plot2dTitles() {
     sls::SlsQt2DPlot plot;
     plot.resize(700, 600);
     plot.show();
-    QTest::qWait(5);
-    QVERIFY(!plot.isGainPlot());
-    QVERIFY(plot.imageView() != nullptr);
-    QVERIFY(plot.scalePanel() != nullptr);
 
-    plot.SetTitle(QStringLiteral("2D detector"));
-    QCOMPARE(plot.title(), QStringLiteral("2D detector"));
-    plot.SetXTitle(QStringLiteral("x"));
-    plot.SetYTitle(QStringLiteral("y"));
-    // The colour-scale title is a compact caption row above the scale panel.
-    plot.SetZTitle(QStringLiteral("counts [a.u.]"));
-    QVERIFY(plot.zTitleLabel() != nullptr);
-    QTest::qWait(5);
-    QVERIFY2(plot.zTitleLabel()->isVisible(),
-             "SetZTitle() shows the z-axis caption");
-    QCOMPARE(plot.zTitleLabel()->text(), QStringLiteral("counts [a.u.]"));
-    plot.SetZTitle(QString());
-    QTest::qWait(5);
-    QVERIFY2(!plot.zTitleLabel()->isVisible(),
-             "an empty z title hides the caption row again");
-
-    plot.FillTestPlot();
+    // a test image is shown until the first data arrives
     QCOMPARE(plot.GetXMinimum(), 200.0);
     QCOMPARE(plot.GetXMaximum(), 822.0);
     QCOMPARE(plot.GetYMinimum(), -0.5);
     QCOMPARE(plot.GetYMaximum(), 49.5);
-    QVERIFY(plot.GetZMaximum() > plot.GetZMinimum());
-    QVERIFY(plot.imageView()->hasImage());
     QCOMPARE(plot.imageView()->imageWidth(), 50);
     QCOMPARE(plot.imageView()->imageHeight(), 50);
-    QVERIFY(plot.imageView()->hasImage());
 
-    // Z range is pushed to the canvas and the scale panel stays in sync.
-    plot.SetZMinMax(2.0, 8.0);
-    QCOMPARE(plot.GetZMinimum(), 2.0);
-    QCOMPARE(plot.GetZMaximum(), 8.0);
-    double lo = 0.0, hi = 0.0;
-    plot.imageView()->colorRange(lo, hi);
-    QVERIFY(near(lo, 2.0) && near(hi, 8.0));
-    QVERIFY(plot.scalePanel()->view() == plot.imageView());
+    plot.SetTitle(QStringLiteral("2D detector"));
+    plot.SetXTitle(QStringLiteral("x"));
+    plot.SetYTitle(QStringLiteral("y"));
+    QCOMPARE(plot.title(), QStringLiteral("2D detector"));
+    QCOMPARE(plot.imageView()->xAxisTitle(), QStringLiteral("x"));
+    QCOMPARE(plot.imageView()->yAxisTitle(), QStringLiteral("y"));
 
-    // Panel -> plot direction.
-    plot.scalePanel()->setColorRange(3.0, 6.0);
-    plot.imageView()->colorRange(lo, hi);
-    QVERIFY(near(lo, 3.0) && near(hi, 6.0));
-
-    // Fresh data with an explicit z range.
-    std::vector<double> d(4 * 3);
-    for (int i = 0; i < 12; i++)
-        d[size_t(i)] = double(i);
-    plot.SetData(4, 0.0, 4.0, 3, 0.0, 3.0, d.data(), 1.0, 9.0);
-    QCOMPARE(plot.imageView()->imageWidth(), 4);
-    QCOMPARE(plot.imageView()->imageHeight(), 3);
-    QCOMPARE(plot.GetZMinimum(), 1.0);
-    QCOMPARE(plot.GetZMaximum(), 9.0);
-    QCOMPARE(plot.GetBinValue(1, 1), 5.0);
-    QCOMPARE(plot.GetBinIndex(1, 1), 5);
-    QCOMPARE(plot.FindBinIndex(0.5, 0.5), 0);
-
-    plot.SetBinValue(1, 1, 42.0);
-    QCOMPARE(plot.GetBinValue(1, 1), 42.0);
-    QCOMPARE(*(plot.GetDataPtr() + 1 + 1 * 4), 42.0);
-
-    // Whole-image fit: no paint outside the plot rectangle of the canvas.
-    plot.UnZoom();
-    QImage img = render(*plot.imageView());
-    const QRect ir =
-        sls::plot::plotRectFor(plot.imageView()->size(), sls::plot::PlotTheme());
-    for (int x = ir.right() + 1; x < img.width(); x++) {
-        for (int y = 0; y < img.height(); y++) {
-            QVERIFY2(img.pixel(x, y) == kBackground,
-                     "2D canvas must not paint in the right margin");
-        }
-    }
-    QVERIFY(img.pixel(ir.center()) != kBackground);
-
-    plot.EnableXAutoScaling();
-    plot.EnableYAutoScaling();
-    plot.SetXMinMax(1.0, 3.0);
-    plot.SetYMinMax(0.5, 2.5);
-    QVERIFY(plot.imageView()->hasImage());
-    plot.UnZoom(false);
+    // the z title has its own row above the scale panel
+    const QList<QLabel *> labels =
+        plot.findChildren<QLabel *>(Qt::FindDirectChildrenOnly);
+    QCOMPARE(labels.size(), 1);
+    QVERIFY(!labels[0]->isVisible());
+    plot.SetZTitle(QStringLiteral("counts"));
+    QVERIFY(labels[0]->isVisible());
+    QCOMPARE(labels[0]->text(), QStringLiteral("counts"));
+    plot.SetZTitle(QString());
+    QVERIFY(!labels[0]->isVisible());
 }
 
-// ---------------------------------------------------------------------------
-// 2D: log z, interpolation, contours
-// ---------------------------------------------------------------------------
-void PlottingTest::twoDimensionalLogInterpolateAndContour() {
-    sls::SlsQt2DPlot plot;
-    plot.resize(800, 600);
-    plot.show();
-    QTest::qWait(5);
-    plot.FillTestPlot();
-    plot.UnZoom();
-
-    // Log z reaches the canvas and the panel chooser.
-    plot.LogZ(true);
-    QVERIFY(plot.imageView()->logScale());
-    plot.LogZ(false);
-    QVERIFY(!plot.imageView()->logScale());
-
-    // SetLogz(enable, isMin, isMax, min, max) sets the range and the scale.
-    // An explicit Plot-tab / SetLogz() range is honoured in log mode too (the
-    // old qwt behaviour): the requested zmin/zmax reach the data and the
-    // canvas.
-    plot.SetLogz(true, true, true, 0.1, 9.0);
-    QVERIFY(plot.imageView()->logScale());
-    QVERIFY(near(plot.GetZMinimum(), 0.1));
-    QVERIFY(near(plot.GetZMaximum(), 9.0));
-    double zlo = 0.0, zhi = 0.0;
-    plot.imageView()->colorRange(zlo, zhi);
-    QVERIFY(near(zlo, 0.1) && near(zhi, 9.0));
-
-    // The explicit range survives the Update() calls of streaming frames ...
-    plot.Update();
-    QVERIFY(near(plot.GetZMinimum(), 0.1));
-    QVERIFY(near(plot.GetZMaximum(), 9.0));
-    plot.imageView()->colorRange(zlo, zhi);
-    QVERIFY(near(zlo, 0.1) && near(zhi, 9.0));
-
-    // ... while SetZRange(false, false) (qDrawPlot's per-frame call while the
-    // z-range check boxes are off) drops the explicit pin and returns to the
-    // automatic log range.
-    plot.SetZRange(false, false, 0.0, 0.0);
-    QVERIFY(plot.GetZMinimum() > 0.0);
-    QVERIFY(!(near(plot.GetZMinimum(), 0.1) && near(plot.GetZMaximum(), 9.0)));
-    plot.imageView()->colorRange(zlo, zhi);
-    QVERIFY(near(zlo, plot.GetZMinimum()) && near(zhi, plot.GetZMaximum()));
-
-    // Contours are painted through the clipped overlay hook.
-    const QImage blocky = render(*plot.imageView());
-    plot.SetContour(true);
-    const QImage contours = render(*plot.imageView());
-    QVERIFY2(blocky != contours, "SetContour(true) changes the rendered image");
-    const QRect ir =
-        sls::plot::plotRectFor(plot.imageView()->size(), sls::plot::PlotTheme());
-    for (int x = ir.right() + 1; x < contours.width(); x++) {
-        for (int y = 0; y < contours.height(); y++) {
-            QVERIFY2(contours.pixel(x, y) == kBackground,
-                     "contours must be clipped to the plot rect");
-        }
-    }
-    plot.SetContour(false);
-    QVERIFY(render(*plot.imageView()) == blocky);
-
-    // Bilinear interpolation overlay.
-    plot.SetInterpolate(true);
-    const QImage smooth = render(*plot.imageView());
-    QVERIFY2(smooth != blocky, "SetInterpolate(true) changes the rendered image");
-    plot.SetInterpolate(false);
-    QVERIFY(render(*plot.imageView()) == blocky);
-
-    // Spectrogram image can be hidden without losing contours/ROI paint.
-    plot.showSpectrogram(false);
-    QVERIFY(render(*plot.imageView()) != blocky);
-    plot.showSpectrogram(true);
-    QVERIFY(render(*plot.imageView()) == blocky);
-
-    // R8 (task-12): on a >256-wide frame the marching-squares grid is
-    // subsampled; the last row/column must be included so the contours reach
-    // the image edges (pre-fix an outer band up to step-1 bins wide was empty).
-    plot.LogZ(false);
-    {
-        std::vector<double> big(size_t(1024) * 1024);
-        for (int y = 0; y < 1024; y++)
-            for (int x = 0; x < 1024; x++)
-                big[size_t(y) * 1024 + size_t(x)] = double(x + y);
-        plot.SetData(1024, -0.5, 1023.5, 1024, -0.5, 1023.5, big.data());
-        plot.UnZoom();
-        plot.SetContour(true);
-        plot.showSpectrogram(false); // contour-only render on the dark canvas
-        const QImage edgeImg = render(*plot.imageView());
-        const QPointF imgRight =
-            plot.imageView()->dataToWidget(QPointF(1024.0, 0.0));
-        const QPointF imgTop =
-            plot.imageView()->dataToWidget(QPointF(0.0, 1024.0));
-        int maxX = -1;
-        int minY = std::numeric_limits<int>::max();
-        for (int y = ir.top(); y <= ir.bottom(); y++) {
-            for (int x = ir.left(); x <= ir.right(); x++) {
-                if (!isBright(edgeImg.pixel(x, y)))
-                    continue;
-                maxX = std::max(maxX, x);
-                minY = std::min(minY, y);
-            }
-        }
-        QVERIFY2(maxX >= int(std::lround(imgRight.x())) - 1,
-                 "contours reach the image right edge (R8)");
-        QVERIFY2(minY <= int(std::lround(imgTop.y())) + 1,
-                 "contours reach the image top edge (R8)");
-        plot.showSpectrogram(true);
-        plot.SetContour(false);
-        plot.FillTestPlot(); // restore the small test frame
-    }
-
-    // R3 (task-12): a frame with NaN/Inf bins keeps the z range and the canvas
-    // colour range finite (auto range skips the non-finite bins).
-    plot.SetZRange(false, false, 0.0, 0.0);
-    {
-        std::vector<double> nf(50 * 50);
-        for (int i = 0; i < 50 * 50; i++)
-            nf[size_t(i)] = double(i % 100);
-        nf[0] = std::numeric_limits<double>::quiet_NaN();
-        nf[1] = std::numeric_limits<double>::infinity();
-        nf[2] = -std::numeric_limits<double>::infinity();
-        plot.SetData(50, -0.5, 49.5, 50, -0.5, 49.5, nf.data());
-        double qlo = 0.0, qhi = 0.0;
-        plot.imageView()->colorRange(qlo, qhi);
-        QVERIFY(std::isfinite(qlo) && std::isfinite(qhi));
-        QVERIFY(qhi > qlo);
-        QVERIFY(std::isfinite(plot.GetZMinimum()));
-        QVERIFY(std::isfinite(plot.GetZMaximum()));
-        QVERIFY(std::isfinite(plot.GetZMean()));
-        (void)render(*plot.imageView());
-
-        std::vector<double> allnf(50 * 50,
-                                  std::numeric_limits<double>::quiet_NaN());
-        plot.SetData(50, -0.5, 49.5, 50, -0.5, 49.5, allnf.data());
-        plot.imageView()->colorRange(qlo, qhi);
-        QVERIFY(near(qlo, 0.0) && near(qhi, 1.0));
-    }
-
-    plot.LogZ(false);
-}
-
-// ---------------------------------------------------------------------------
-// 2D: ROI boxes, viewport/zoom, no paint outside the plot rect
-// ---------------------------------------------------------------------------
-void PlottingTest::twoDimensionalRoiAndClipping() {
+void PlottingTest::plot2dZRange() {
     sls::SlsQt2DPlot plot;
     plot.resize(700, 600);
     plot.show();
-    QTest::qWait(5);
-    std::vector<double> d(100 * 80);
-    for (int y = 0; y < 80; y++)
-        for (int x = 0; x < 100; x++)
-            d[size_t(y) * 100 + x] = double(x + y);
-    plot.SetData(100, 0.0, 100.0, 80, 0.0, 80.0, d.data());
-    plot.UnZoom();
+    sls::SlsQtFastImage *view = plot.imageView();
+    std::vector<double> d(64 * 32);
+    for (size_t i = 0; i < d.size(); i++)
+        d[i] = double(i % 12);
+    double lo = 0.0, hi = 0.0;
 
-    std::vector<slsDetectorDefs::ROI> rois{slsDetectorDefs::ROI(10, 29, 20, 39)};
-    plot.EnableRoiBoxes(rois);
-    const std::vector<QRectF> &ov = plot.imageView()->overlayRects();
-    QCOMPARE(int(ov.size()), 1);
-    QVERIFY(near(ov[0].left(), 10.0) && near(ov[0].top(), 20.0));
-    QVERIFY(near(ov[0].width(), 20.0) && near(ov[0].height(), 20.0));
-    QImage img = render(*plot.imageView());
-    const QPointF roiCorner = plot.imageView()->dataToWidget(QPointF(10.0, 20.0));
-    QVERIFY2(yellowNear(img, roiCorner.toPoint(), 3),
-             "ROI box is painted in data coordinates");
-    plot.DisableRoiBoxes();
-    QVERIFY(plot.imageView()->overlayRects().empty());
+    // follows the data
+    plot.SetData(64, 0.0, 64.0, 32, 0.0, 32.0, d.data());
+    view->colorRange(lo, hi);
+    QVERIFY(lo <= 0.0 && lo > -1.0 && hi >= 11.0 && hi < 12.0);
 
-    // Programmatic zoom: data rect -> image pixel-edge viewport.
-    plot.SetZoom(QRectF(20.0, 20.0, 20.0, 20.0));
-    double x = 0.0, y = 0.0, w = 0.0, h = 0.0;
-    plot.imageView()->viewport(x, y, w, h);
-    QVERIFY(near(x, 20.0) && near(y, 20.0));
-    QVERIFY(near(w, 20.0) && near(h, 20.0));
-    QVERIFY(plot.imageView()->hasImage());
+    // fixed ends stay for the following frames
+    plot.SetZRange(true, true, 2.0, 8.0);
+    plot.SetData(64, 0.0, 64.0, 32, 0.0, 32.0, d.data());
+    view->colorRange(lo, hi);
+    QVERIFY(near(lo, 2.0) && near(hi, 8.0));
 
-    // Deep zoom: the canvas must still be clipped to its plot rect.
-    img = render(*plot.imageView());
-    const QRect ir =
-        sls::plot::plotRectFor(plot.imageView()->size(), sls::plot::PlotTheme());
-    for (int xx = ir.right() + 1; xx < img.width(); xx++) {
-        for (int yy = 0; yy < img.height(); yy++) {
-            QVERIFY2(img.pixel(xx, yy) == kBackground,
-                     "zoomed 2D image must be clipped to the plot rect");
-        }
-    }
+    // one end fixed, the other from the data
+    plot.SetZRange(true, false, 2.0, 0.0);
+    view->colorRange(lo, hi);
+    QVERIFY(near(lo, 2.0) && hi >= 11.0 && hi < 12.0);
 
-    // User zoom emits the data-coordinate viewport for the gain-plot sync.
-    QSignalSpy spy(&plot, &sls::SlsQt2DPlot::PlotZoomedSignal);
-    sendWheel(*plot.imageView(),
-              QPointF(plot.imageView()->width() / 2.0,
-                      plot.imageView()->height() / 2.0),
-              120);
-    QVERIFY(spy.count() >= 1);
-    const QRectF zr = spy.takeLast().at(0).toRectF();
-    QVERIFY(zr.width() > 0.0 && zr.height() > 0.0);
-    QVERIFY(zr.width() <= 100.0 && zr.height() <= 80.0);
-    plot.UnZoom();
+    plot.SetZRange(false, false, 0.0, 0.0);
+    view->colorRange(lo, hi);
+    QVERIFY(lo <= 0.0 && hi >= 11.0);
+
+    // a range picked on the scale panel stays as well, qDrawPlot calls
+    // SetZRange() without fixed ends for every frame
+    sls::SlsQtScaleHisto *histo = plot.scalePanel()->histogramWidget();
+    const QPointF from(0.75 * histo->width(), 19), to(0.5 * histo->width(), 19);
+    sendMouse(*histo, QEvent::MouseButtonPress, from, Qt::LeftButton,
+              Qt::LeftButton);
+    sendMouse(*histo, QEvent::MouseMove, to, Qt::NoButton, Qt::LeftButton);
+    sendMouse(*histo, QEvent::MouseButtonRelease, to, Qt::LeftButton,
+              Qt::NoButton);
+    double pickedLo = 0.0, pickedHi = 0.0;
+    view->colorRange(pickedLo, pickedHi);
+    QVERIFY(near(pickedLo, lo) && pickedHi < hi - 1.0);
+    plot.SetData(64, 0.0, 64.0, 32, 0.0, 32.0, d.data());
+    plot.SetZRange(false, false, 0.0, 0.0);
+    view->colorRange(lo, hi);
+    QVERIFY(near(lo, pickedLo) && near(hi, pickedHi));
+
+    // until an end is fixed
+    plot.SetZRange(false, true, 0.0, 5.0);
+    view->colorRange(lo, hi);
+    QVERIFY(lo <= 0.0 && near(hi, 5.0));
+    plot.SetZRange(false, false, 0.0, 0.0);
+    view->colorRange(lo, hi);
+    QVERIFY(lo <= 0.0 && hi >= 11.0);
+
+    // or the image size changes
+    sendMouse(*histo, QEvent::MouseButtonPress, from, Qt::LeftButton,
+              Qt::LeftButton);
+    sendMouse(*histo, QEvent::MouseButtonRelease, to, Qt::LeftButton,
+              Qt::NoButton);
+    plot.SetData(32, 0.0, 32.0, 64, 0.0, 64.0, d.data());
+    view->colorRange(lo, hi);
+    QVERIFY(lo <= 0.0 && hi >= 11.0);
 }
 
-// ---------------------------------------------------------------------------
-// 2D: gain mode
-// ---------------------------------------------------------------------------
-void PlottingTest::twoDimensionalGainMode() {
+void PlottingTest::plot2dLogZ() {
+    sls::SlsQt2DPlot plot;
+    plot.resize(700, 600);
+    plot.show();
+    sls::SlsQtFastImage *view = plot.imageView();
+    std::vector<double> d(64 * 32);
+    for (size_t i = 0; i < d.size(); i++)
+        d[i] = double(i % 12) * 0.5;
+    plot.SetData(64, 0.0, 64.0, 32, 0.0, 32.0, d.data());
+    double lo = 0.0, hi = 0.0;
+
+    // starts at the smallest value above zero
+    plot.SetLogz(true, false, false, 0.0, 0.0);
+    QVERIFY(view->logScale());
+    view->colorRange(lo, hi);
+    QVERIFY(near(lo, 0.5) && hi >= 5.5);
+
+    plot.SetLogz(true, true, true, 0.1, 9.0);
+    view->colorRange(lo, hi);
+    QVERIFY(near(lo, 0.1) && near(hi, 9.0));
+
+    plot.SetLogz(false, false, false, 0.0, 0.0);
+    QVERIFY(!view->logScale());
+
+    // values that are not finite do not end up in the range
+    d[0] = std::numeric_limits<double>::quiet_NaN();
+    d[1] = std::numeric_limits<double>::infinity();
+    d[2] = -std::numeric_limits<double>::infinity();
+    plot.SetData(64, 0.0, 64.0, 32, 0.0, 32.0, d.data());
+    view->colorRange(lo, hi);
+    QVERIFY(lo <= 0.0 && lo > -1.0 && hi >= 5.5 && hi < 6.5);
+    std::fill(d.begin(), d.end(), std::numeric_limits<double>::quiet_NaN());
+    plot.SetData(64, 0.0, 64.0, 32, 0.0, 32.0, d.data());
+    view->colorRange(lo, hi);
+    QVERIFY(near(lo, 0.0) && near(hi, 1.0));
+    render(plot);
+}
+
+void PlottingTest::plot2dContours() {
+    sls::SlsQt2DPlot plot;
+    plot.resize(800, 600);
+    plot.show();
+    sls::SlsQtFastImage *view = plot.imageView();
+    const int n = 1024; // more pixels than the contour grid has cells
+    std::vector<double> d(size_t(n) * n);
+    for (int y = 0; y < n; y++)
+        for (int x = 0; x < n; x++)
+            d[size_t(y) * n + x] = double(x + y);
+    plot.SetData(n, -0.5, n - 0.5, n, -0.5, n - 0.5, d.data());
+    const QImage plain = render(*view);
+
+    // the diagonal lines reach the right and the upper edge of the image
+    plot.SetContour(true);
+    const QRect changed = differingArea(plain, render(*view));
+    QVERIFY(plotArea(*view).contains(changed));
+    QVERIFY(changed.right() >= int(widgetPos(*view, n, 0).x()) - 2);
+    QVERIFY(changed.top() <= int(widgetPos(*view, 0, n).y()) + 2);
+    plot.SetContour(false);
+    QCOMPARE(render(*view), plain);
+
+    // the levels follow the colour range: x + y stays below 500
+    plot.SetZRange(true, true, 0.0, 500.0);
+    const QImage plainLow = render(*view);
+    plot.SetContour(true);
+    const QRect low = differingArea(plainLow, render(*view));
+    QVERIFY(low.right() < int(widgetPos(*view, 500, 0).x()));
+    QVERIFY(low.top() > int(widgetPos(*view, 0, 500).y()));
+    plot.SetContour(false);
+
+    plot.SetInterpolate(true);
+    QVERIFY(view->interpolate());
+    plot.SetInterpolate(false);
+    QVERIFY(!view->interpolate());
+}
+
+void PlottingTest::plot2dRoiAndZoom() {
+    sls::SlsQt2DPlot plot;
+    plot.resize(700, 600);
+    plot.show();
+    sls::SlsQtFastImage *view = plot.imageView();
+    const std::vector<double> d = xRamp(100, 80);
+    // the data coordinates are the pixels shifted by 1000 and 2000
+    plot.SetData(100, 1000.0, 1100.0, 80, 2000.0, 2080.0, d.data());
+    double x = 0.0, y = 0.0, w = 0.0, h = 0.0;
+
+    // pixels 10..29 x 20..39
+    plot.EnableRoiBoxes({slsDetectorDefs::ROI(10, 29, 20, 39)});
+    QCOMPARE(int(view->overlayRects().size()), 1);
+    QCOMPARE(view->overlayRects()[0], QRectF(10.0, 20.0, 20.0, 20.0));
+    QVERIFY(yellowNear(render(*view), widgetPos(*view, 10.0, 20.0).toPoint()));
+    plot.DisableRoiBoxes();
+    QVERIFY(view->overlayRects().empty());
+
+    plot.SetZoom(QRectF(1020.0, 2020.0, 20.0, 20.0));
+    view->viewport(x, y, w, h);
+    QVERIFY(near(x, 20.0) && near(y, 20.0) && near(w, 20.0) && near(h, 20.0));
+
+    // the user zooming is reported in data coordinates
+    QSignalSpy spy(&plot, &sls::SlsQt2DPlot::PlotZoomedSignal);
+    sendWheel(*view, widgetPos(*view, 30.0, 30.0), 120);
+    QCOMPARE(spy.count(), 1);
+    const QRectF zoomed = spy.at(0).at(0).toRectF();
+    QVERIFY(zoomed.width() < 20.0 && zoomed.height() < 20.0);
+    QVERIFY(QRectF(1020.0, 2020.0, 20.0, 20.0).contains(zoomed));
+
+    // axis ranges from the plot tab
+    plot.SetXMinMax(1040.0, 1060.0);
+    view->viewport(x, y, w, h);
+    QVERIFY(near(x, 40.0) && near(w, 20.0) && near(y, 0.0) && near(h, 80.0));
+    plot.SetYMinMax(2030.0, 2010.0);
+    view->viewport(x, y, w, h);
+    QVERIFY(near(x, 40.0) && near(w, 20.0) && near(y, 10.0) && near(h, 20.0));
+    plot.EnableXAutoScaling();
+    plot.EnableYAutoScaling();
+    view->viewport(x, y, w, h);
+    QVERIFY(near(x, 0.0) && near(y, 0.0) && near(w, 100.0) && near(h, 80.0));
+
+    plot.DisableZoom(true);
+    QVERIFY(!view->zoomEnabled());
+    plot.DisableZoom(false);
+    QVERIFY(view->zoomEnabled());
+}
+
+void PlottingTest::plot2dGain() {
     sls::SlsQt2DPlot gain(nullptr, true);
     gain.resize(200, 200);
     gain.show();
-    QTest::qWait(5);
-    QVERIFY(gain.isGainPlot());
+    sls::SlsQtFastImage *view = gain.imageView();
     QVERIFY(gain.scalePanel() == nullptr);
-    QVERIFY(gain.zTitleLabel() == nullptr);
-    QVERIFY(!gain.imageView()->axesVisible());
-    QVERIFY(!gain.imageView()->zoomEnabled());
-    QCOMPARE(gain.imageView()->paletteIndex(),
-             int(sls::plot::Palette::Gain4));
-    double lo = 0.0, hi = 0.0;
-    gain.imageView()->colorRange(lo, hi);
-    QVERIFY(near(lo, 0.0) && near(hi, 3.0));
+    QVERIFY(!view->axesVisible());
+    QVERIFY(!view->zoomEnabled());
+    QCOMPARE(view->palette(), Palette::Gain4);
 
-    // Four quadrants, one per gain bit (data layout: x fastest, y up).
+    // one quadrant per gain: 0 1 above 2 3
     std::vector<double> d(8 * 8);
-    for (int by = 0; by < 8; by++)
-        for (int bx = 0; bx < 8; bx++) {
-            const int g = (bx < 4 ? 0 : 1) + (by < 4 ? 2 : 0);
-            d[size_t(bx) + size_t(by) * 8] = double(g);
-        }
+    for (int y = 0; y < 8; y++)
+        for (int x = 0; x < 8; x++)
+            d[size_t(y) * 8 + x] = (x < 4 ? 0 : 1) + (y < 4 ? 2 : 0);
     gain.SetData(8, 0.0, 8.0, 8, 0.0, 8.0, d.data());
-    QCOMPARE(gain.imageView()->imageWidth(), 8);
-    QCOMPARE(gain.imageView()->imageHeight(), 8);
-    const QImage img = render(*gain.imageView());
-    const QRgb c0 = img.pixel(int(gain.imageView()->dataToWidget(QPointF(1.5, 1.5)).x()),
-                              int(gain.imageView()->dataToWidget(QPointF(1.5, 1.5)).y()));
-    const QRgb c1 = img.pixel(int(gain.imageView()->dataToWidget(QPointF(5.5, 1.5)).x()),
-                              int(gain.imageView()->dataToWidget(QPointF(5.5, 1.5)).y()));
-    const QRgb c2 = img.pixel(int(gain.imageView()->dataToWidget(QPointF(1.5, 5.5)).x()),
-                              int(gain.imageView()->dataToWidget(QPointF(1.5, 5.5)).y()));
-    const QRgb c3 = img.pixel(int(gain.imageView()->dataToWidget(QPointF(5.5, 5.5)).x()),
-                              int(gain.imageView()->dataToWidget(QPointF(5.5, 5.5)).y()));
-    // Data value = (x>=4 ? 1 : 0) + (y>=4 ? 2 : 0); the bottom half (small y)
-    // adds 2, so the bottom-left cell is gain bit 2.
-    const QRgb *gainLut = sls::plot::paletteLut(sls::plot::Palette::Gain4);
-    QCOMPARE(c0, gainLut[170]); // value 2
-    QCOMPARE(c1, gainLut[255]); // value 3
-    QCOMPARE(c2, gainLut[0]);   // value 0
-    QCOMPARE(c3, gainLut[85]);  // value 1
-    // All four categorical colours are actually painted somewhere.
-    QSet<QRgb> present;
-    for (int yy = 0; yy < img.height(); yy++)
-        for (int xx = 0; xx < img.width(); xx++)
-            present.insert(img.pixel(xx, yy));
-    for (int k : {0, 85, 170, 255})
-        QVERIFY2(present.contains(gainLut[k]),
-                 "all four gain categories are painted");
+    const QImage img = render(*view);
+    const QRgb *lut = sls::plot::paletteLut(Palette::Gain4);
+    QCOMPARE(dominantPixelAtData(*view, img, 2.0, 6.0), lut[0]);
+    QCOMPARE(dominantPixelAtData(*view, img, 6.0, 6.0), lut[85]);
+    QCOMPARE(dominantPixelAtData(*view, img, 2.0, 2.0), lut[170]);
+    QCOMPARE(dominantPixelAtData(*view, img, 6.0, 2.0), lut[255]);
+
+    // the range is fixed and the plot only follows the zoom of the data plot
+    gain.SetZRange(true, true, 0.0, 100.0);
+    gain.SetLogz(true, false, false, 0.0, 0.0);
+    double lo = 0.0, hi = 0.0;
+    view->colorRange(lo, hi);
+    QVERIFY(near(lo, 0.0) && near(hi, 3.0));
+    QVERIFY(!view->logScale());
+    gain.SetZoom(QRectF(2.0, 2.0, 4.0, 4.0));
+    double x = 0.0, y = 0.0, w = 0.0, h = 0.0;
+    view->viewport(x, y, w, h);
+    QVERIFY(near(x, 2.0) && near(y, 2.0) && near(w, 4.0) && near(h, 4.0));
 }
 
 // ---------------------------------------------------------------------------
-// acceptance benchmark: 1024x512 float frames at >= 20 Hz
+// the gui has to keep up with 1024 x 512 pixels at 20 Hz
 // ---------------------------------------------------------------------------
 void PlottingTest::performance1024x512() {
     sls::SlsQtFastImage view;
     view.resize(1100, 600);
     view.show();
-    QTest::qWait(20);
-    std::vector<float> frame = acceptanceFrame();
+    QVERIFY(QTest::qWaitForWindowExposed(&view)); // or repaint() does nothing
+    std::vector<double> frame = testFrame();
     view.setColorRange(-2.0, 2.0);
-    view.setImageCopy(frame.data(), 1024, 512);
-    view.repaint();
-
-    // Warm up: first paints allocate the cached QImage and font paths.
-    for (int i = 0; i < 5; i++) {
-        frame[0] = float(i);
-        view.setImageCopy(frame.data(), 1024, 512);
+    const auto showFrame = [&](int i) {
+        frame[0] = i;
+        view.setImage(frame.data(), 1024, 512);
         view.repaint();
-    }
+    };
+    for (int i = 0; i < 5; i++)
+        showFrame(i);
 
     const int frames = 60;
     QElapsedTimer timer;
     timer.start();
-    for (int i = 0; i < frames; i++) {
-        frame[0] = float(i);
-        view.setImageCopy(frame.data(), 1024, 512);
-        view.repaint(); // synchronous: copy + compose + paint
-    }
-    const double seconds = double(timer.nsecsElapsed()) / 1e9;
-    const double fps = double(frames) / seconds;
-    qInfo("1024x512 benchmark: %.1f fps (%.2f ms/frame)", fps,
+    for (int i = 0; i < frames; i++)
+        showFrame(i);
+    const double seconds = timer.nsecsElapsed() / 1e9;
+    qInfo("1024x512: %.1f fps (%.2f ms/frame)", frames / seconds,
           1000.0 * seconds / frames);
-    QVERIFY2(fps >= 20.0, "1024x512 frames must render at >= 20 fps");
+    QVERIFY(frames / seconds >= 20.0);
 }
 
 QTEST_MAIN(PlottingTest)

@@ -182,7 +182,7 @@ void qDrawPlot::SetupPlots() {
     plot2d = new SlsQt2DPlot(boxPlot);
     plot2d->SetData(nPixelsX, -0.5, nPixelsX - 0.5, nPixelsY, -0.5,
                     nPixelsY - 0.5, data2d);
-    plot2d->setTitle("");
+    plot2d->SetTitle("");
     plot2d->SetXTitle(xTitle2d);
     plot2d->SetYTitle(yTitle2d);
     plot2d->SetZTitle(zTitle2d);
@@ -512,7 +512,7 @@ void qDrawPlot::ClonePlot() {
     } else {
         LOG(logDEBUG) << "Cloning 2D Image";
         cloneplot2D = new SlsQt2DPlot();
-        cloneplot2D->setTitle(plot2d->title());
+        cloneplot2D->SetTitle(plot2d->title());
         cloneplot2D->SetXTitle(xTitle2d);
         cloneplot2D->SetYTitle(yTitle2d);
         cloneplot2D->SetZTitle(zTitle2d);

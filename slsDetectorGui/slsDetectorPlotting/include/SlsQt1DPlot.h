@@ -3,13 +3,10 @@
 #ifndef SLSQT1DPLOT_H
 #define SLSQT1DPLOT_H
 
-// Replacement for the qwt based 1D plotting layer of slsDetectorGui.
-//
-// SlsQt1DPlot is a plain QWidget that paints its own frame, ticks, grid,
-// clipped curves, legend, ROI boxes and tracker and implements the zoom / pan
-// interaction (rubber-band zoom, wheel zoom, middle-drag pan, right click zoom
-// out one level, Ctrl+right reset).  SlsQtH1D is a plain data container plus
-// curve description (no QwtPlotCurve base).  No qwt, ROOT or OpenGL.
+// SlsQt1DPlot paints its own frame, ticks, grid, curves, legend, ROI boxes
+// and tracker and implements the zoom / pan interaction (rubber-band zoom,
+// wheel zoom, middle-drag pan, right click zoom out one level, Ctrl+right
+// reset).  SlsQtH1D holds the data and the look of one curve.
 
 #include "SlsQtPlotCommon.h"
 #include "sls/sls_detector_defs.h"
@@ -28,9 +25,7 @@ namespace sls {
 
 class SlsQt1DPlot;
 
-// One 1D histogram/curve.  The public data API is the one the old
-// QwtPlotCurve derived class exposed, so qDrawPlot/qCloneWidget do not need
-// changes apart from the legend attribute (now setLegendVisible()).
+// One 1D histogram/curve.
 class SlsQtH1D {
   public:
     SlsQtH1D(QString title, int n, double xmin, double xmax,
@@ -47,8 +42,8 @@ class SlsQtH1D {
     void setStyleLinesorDots(bool isLines);
     void setSymbolMarkers(bool isMarker);
 
-    // Replaces the old QwtPlotItem::Legend attribute: while false the plot
-    // draws no legend entry for this curve (used by the gain plots).
+    // While false the plot draws no legend entry for this curve (used by the
+    // gain plots).
     void setLegendVisible(bool visible) { m_legendVisible = visible; }
     bool legendVisible() const { return m_legendVisible; }
 
@@ -107,7 +102,7 @@ class SlsQtH1D {
     SlsQt1DPlot *m_plot{nullptr};
 };
 
-// Custom painted 1D plot (replaces QwtPlot + QwtPlotZoomer + QwtPlotPanner).
+// 1D plot of any number of SlsQtH1D curves.
 class SlsQt1DPlot : public QWidget {
     Q_OBJECT
 
@@ -152,7 +147,6 @@ class SlsQt1DPlot : public QWidget {
     void SetZoomBase(double xmin, double ymin, double x_width,
                      double y_width);
 
-    void alignScales();
 
     void SetLogX(bool yes = true);
     void SetLogY(bool yes = true);

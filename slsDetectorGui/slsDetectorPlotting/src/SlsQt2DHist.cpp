@@ -9,7 +9,7 @@
 namespace sls {
 
 SlsQt2DHist::SlsQt2DHist(int nbinsx, double xmin, double xmax, int nbinsy,
-                         double ymin, double ymax, double *d, double zmin,
+                         double ymin, double ymax, const double *d, double zmin,
                          double zmax) {
     SetData(nbinsx, xmin, xmax, nbinsy, ymin, ymax, d, zmin, zmax);
 }
@@ -29,7 +29,7 @@ double safeBinWidth(int nbins, double lo, double hi) {
 } // namespace
 
 void SlsQt2DHist::SetData(int nbinsx, double xmin, double xmax, int nbinsy,
-                          double ymin, double ymax, double *d, double zmin,
+                          double ymin, double ymax, const double *d, double zmin,
                           double zmax) {
     if (nbinsx < 1 || nbinsy < 1)
         return; // invalid geometry: keep the previous data
@@ -139,8 +139,7 @@ void SlsQt2DHist::SetMinMax(double zmin, double zmax) {
     //  - high end: multiply a positive value / add 2% of the magnitude to a
     //    negative one, i.e. move it up towards zero.  (Multiplying a negative
     //    z_max by 1.02 would move it BELOW the data maximum and clip the
-    //    brightest bin - that was the direction bug reported as R5.)
-    // Positive-value padding is unchanged (the old qwt formulas).
+    //    brightest bin.)
     if (z_min > 0)
         z_min /= 1.02;
     else

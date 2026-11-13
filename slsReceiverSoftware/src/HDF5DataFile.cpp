@@ -207,9 +207,11 @@ void HDF5DataFile::CreateFile() {
         }
     } catch (const H5::Exception &error) {
         error.printErrorStack();
-        lock.unlock(); // CloseFile() also wants the mutex --> need to unlock here
+        lock.unlock(); // CloseFile() also wants the mutex --> need to unlock
+                       // here
         CloseFile();
-        throw RuntimeError("Could not create HDF5 handles in object " + std::to_string(index));
+        throw RuntimeError("Could not create HDF5 handles in object " +
+                           std::to_string(index));
     }
     if (!silentMode) {
         LOG(logINFO) << "[" << udpPortNumber

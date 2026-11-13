@@ -1,16 +1,34 @@
 Plotting in slsDetectorGui
 ==========================
 
-The detector GUI used to draw every plot with the bundled **Qwt 6.1.5**
-library.  That dependency has been removed together with its build rules and
-sources.  All plots in `slsDetectorGui` are now painted by a small,
-self-contained stack that needs only **Qt Widgets / Gui / Core** (plus the
-Qt `Concurrent` module for the acquisition thread).  It needs **Qt 6
-(>= 6.2)**.  There is no ROOT, Qwt, Qt Charts or OpenGL dependency.
+The plots of `slsDetectorGui` are painted with plain Qt widgets. The code is
+in `slsDetectorGui/slsDetectorPlotting` and needs only the Widgets, Gui and
+Core modules of **Qt 6 (>= 6.2)**. It is built as the static library
+`slsDetectorPlotting`, which the GUI, the tests and the demo link.
 
-The stack lives in `slsDetectorGui/slsDetectorPlotting` and is compiled once
-into the static library `slsDetectorPlotting`, which is linked by the GUI
-executable, by the QtTest suite and by the demo application.
+Using the 2D image
+------------------
+
+* The wheel, or a pinch on a touchpad, zooms around the cursor. Dragging
+  moves the image and a double click shows all of it again.
+* Zoomed in far enough, the pixels are outlined and their values are written
+  into them. Integers are written out in full, other values with five
+  significant digits.
+* Position and value of the pixel under the cursor are shown in a corner of
+  the image.
+* The strip below the image is a histogram of the image. The band between the
+  two markers is the range of the colour scale, drag a marker to change it.
+  A range picked this way is kept until a z range is set in the Plot tab or
+  the size of the image changes.
+* The boxes below the strip select the palette and switch the colour scale
+  and the height of the histogram bars between linear and logarithmic.
+
+The 1D plot zooms in on a rectangle drawn with the left button, zooms out one
+step with a right click and to the full range with Ctrl + right click, and is
+moved with the middle button.
+
+The Plot settings tab can be detached with **View -> Detach Plot Settings**,
+so that it stays at hand while the other tabs are used.
 
 Components
 ----------
@@ -22,111 +40,46 @@ Components
    * - Component
      - Responsibility
    * - `sls::plot` (SlsQtPlotCommon)
-     - Shared data: the 256-entry colour lookup tables of all palettes, the
-       1/2/5 tick and label formatting helpers, `logClamp()` and the dark
-       `PlotTheme` used by the 1D, 2D and histogram painting.
+     - Palettes, axis ticks and colours shared by all plots.
    * - `SlsQtFastImage`
-     - Fast 2D image view with its own axes, grid, tick labels, pixel outlines
-       and value labels, ROI overlays and wheel/pan zoom.  Also the canvas of
-       `SlsQt2DPlot`.
-   * - `SlsQtScaleHisto`
-     - Thin 256-bin histogram strip with two draggable range markers.
-   * - `SlsQtScalePanel`
-     - The strip plus palette chooser and image/histogram lin-log switches.
-       The colour min/max are edited in the Plot tab; the panel synchronises
-       its range with the image view in both directions.
-   * - `SlsQt2DPlot` / `SlsQt2DHist`
-     - The GUI 2D detector plot and its plain data container: z range, lin/log
-       z, bilinear interpolation, contour lines and ROI boxes.  The z-axis
-       (colour scale) title is shown as a compact caption row directly above the
-       scale panel, where the old qwt colour bar used to have it.
-   * - `SlsQt1DPlot` / `SlsQtH1D`
-     - The GUI 1D plot widget and histogram/curve data class: auto range,
-       lin/log axes, zoom/pan, legend, ROI boxes and gain plots.
+     - The image with its axes, zoom, pixel labels, cursor readout and
+       overlays (ROI boxes and contour lines).
+   * - `SlsQtScaleHisto`, `SlsQtScalePanel`
+     - The histogram strip with the two markers, and the strip together with
+       the palette and lin/log boxes.
+   * - `SlsQt2DPlot`, `SlsQt2DHist`
+     - The 2D plot of the GUI: an image with a scale panel, and the data with
+       its automatic z range. Also draws the gain plot.
+   * - `SlsQt1DPlot`, `SlsQtH1D`
+     - The 1D plot of the GUI and one curve of it.
 
-Rendering rules
----------------
+How the image is drawn
+----------------------
 
-These rules are what make the image look like the old detector display while
-staying fast enough for online frames:
+* Pixel `(ix, iy)` covers `[ix, ix+1) x [iy, iy+1)`, y points up and row 0 is
+  at the bottom. The rows are flipped once, when the data is turned into a
+  `QImage`.
+* The data goes through a 256 entry colour table into one `QImage` per frame,
+  which is scaled when painting. Zooming and panning do not touch the data.
+* With a logarithmic colour scale, values `<= 0` are shown as `1e-2`, so that
+  empty or negative (pedestal corrected) pixels do not disappear.
+* The histogram covers the range of the colour scale plus half of it on both
+  sides and is updated a few times per second.
+* A view chosen with the mouse always fills the plot area. Axis ranges from
+  the Plot tab are shown exactly, with empty borders where their shape differs
+  from the plot area. The pixels are always square.
 
-* Data coordinates are **image pixel edge coordinates**: `x` to the right,
-  `y` up, row 0 at the bottom, pixel `(ix, iy)` covering
-  `[ix, ix+1) x [iy, iy+1)`.  The frame is flipped exactly once when the
-  `QImage` is composed, never anywhere else.
-* One cached `Format_RGB32` image is composed per update by writing whole
-  scanlines through the 256-entry palette LUT; there is no `setPixel` in the
-  hot loop and the image is only reallocated when the frame geometry changes.
-  Repaints of the same frame reuse the cache.
-* Log palettes clamp values `<= 0` to `1e-2` before `log10`, so empty or
-  negative (pedestal corrected) pixels stay visible instead of becoming
-  `-inf`.
-* The histogram of the scale panel is binned over the window the strip
-  actually displays - the colour range widened by half a range on either side,
-  in log space when the image is logarithmic - and values outside that window
-  are skipped instead of piling up in the edge bins.  It is recomputed at most
-  every ~300 ms.
-* The image, the overlays and the contours are clipped to the plot rectangle,
-  so a zoomed frame never paints over the axes or the margins.
-* Axis ticks are 1/2/5 x 10^n steps chosen for at most ~8 grid lines; labels
-  drop trailing zeros and adapt their decimals to the step.  Pixel outlines
-  appear when one data pixel is at least ~16 screen pixels wide, in-pixel
-  values only when they fit (~50 screen pixels) and use the integer format for
-  photon/gain maps.
-* Wheel zoom keeps the data point under the cursor fixed (factor 1.18) and the
-  viewport is clamped to the frame and to a minimum size.
-* Overlays (gate ROI, receiver ROIs, contour lines) are specified in data
-  coordinates and follow zoom and pan.
-
-Scale panel freeze rule
------------------------
-
-Dragging one of the two range markers of the histogram strip must not change
-anything except the dashed preview line: the axis window is the one captured
-when the button went down, the painted bars are a snapshot taken at the same
-moment (the producer keeps feeding new frames), and the cursor-to-value mapping
-uses the pressed-time window so the marker cannot chase itself.  The new range
-is applied once, on release, and the strip is refreshed afterwards.
-
-Detachable Plot settings
-------------------------
-
-The Plot settings tab can be detached into a movable/floating dock with
-**View -> Detach Plot Settings**.  The tab contents are reparented between two
-``QScrollArea`` widgets (the tab and the dock), so the same ``qTabPlot``
-instance keeps working while the rest of the main window is busy starting or
-stopping an acquisition.  Selecting the action again reattaches the tab.
-
-Demo and tests
+Tests and demo
 --------------
 
-The demo application and the QtTest suite are built together with the GUI
-when the tests are enabled::
+Both are built together with the GUI when the tests are enabled::
 
-    cmake -S slsDetectorPackage -B build -DSLS_USE_GUI=ON \
-          -DSLS_USE_TESTS=ON -DCMAKE_BUILD_TYPE=Release
-    cmake --build build --target plot_demo plotting_test -j
+    cmake -S slsDetectorPackage -B build -DSLS_USE_GUI=ON -DSLS_USE_TESTS=ON
+    cmake --build build --target plotting_test plot_demo -j
 
-    # standalone demo / offline benchmark (1024x512 synthetic frame, 20 Hz)
-    QT_QPA_PLATFORM=offscreen ./build/bin/plot_demo --frames 100
-    QT_QPA_PLATFORM=offscreen ./build/bin/plot_demo --shot 2d-zoom-roi --png shot.png
-
-    # QtTest suite (also registered with CTest)
+    # tests of the plotting widgets, also run by ctest
     QT_QPA_PLATFORM=offscreen ./build/bin/plotting_test
 
-`plot_demo` prints the unthrottled render throughput and the measured timer
-frame rate; `plotting_test` covers the palettes and LUTs, tick/label helpers,
-the FastImageView histogram window, log clamping, zero-white, cursor-fixed
-zoom, viewport clamping, clipping (checked on rendered pixels), buffer
-ownership, ROI overlays, the three-way histogram freeze rule, the scale panel
-re-entrancy, 1D and 2D behaviour and the 1024x512 >= 20 Hz acceptance
-benchmark.
-
-Removing Qwt
-------------
-
-`libs/qwt` is gone from the source tree and the build; `slsDetectorGui` no
-longer finds or links Qwt, and no source under `slsDetectorPlotting` includes
-a `qwt_*` header.  The package metadata and documentation refer to the Qt
-runtime packages instead (`qt6-qtbase` on RPM based systems, `qt6-base-dev`
-on Debian/Ubuntu, `qt6-main` in conda).
+    # the plots of the GUI with synthetic frames, no detector needed
+    ./build/bin/plot_demo
+    ./build/bin/plot_demo --help

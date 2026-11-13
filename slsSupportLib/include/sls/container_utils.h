@@ -14,6 +14,7 @@
 // #include <utility> //support pair in vectors
 
 #include "sls/TypeTraits.h"
+#include "sls/sls_detector_exceptions.h"
 
 namespace sls {
 
@@ -191,6 +192,42 @@ stableRemoveDuplicates(T &c) {
         return true;
     }
     return false;
+}
+
+/**
+ * @brief Flattens a list of lists into a single list, where every inner list
+ * is preceded by its size. Used to send a list of variable sized lists over
+ * the socket. Reversed by unflattenSizePrefixed.
+ * eg. {{2}, {1, 6}} becomes {1, 2, 2, 1, 6}
+ */
+template <typename T>
+std::vector<T> flattenSizePrefixed(const std::vector<std::vector<T>> &lists) {
+    std::vector<T> flat;
+    for (const auto &list : lists) {
+        flat.push_back(static_cast<T>(list.size()));
+        flat.insert(flat.end(), list.begin(), list.end());
+    }
+    return flat;
+}
+
+/**
+ * @brief Reverses flattenSizePrefixed.
+ * Throws if the sizes in the flat list do not match its length.
+ */
+template <typename T>
+std::vector<std::vector<T>> unflattenSizePrefixed(const std::vector<T> &flat) {
+    std::vector<std::vector<T>> lists;
+    size_t pos = 0;
+    while (pos < flat.size()) {
+        const auto size = static_cast<size_t>(flat[pos++]);
+        if (size > flat.size() - pos) {
+            throw RuntimeError("Could not unflatten list: size of inner list "
+                               "exceeds the remaining number of elements");
+        }
+        lists.emplace_back(flat.begin() + pos, flat.begin() + pos + size);
+        pos += size;
+    }
+    return lists;
 }
 
 } // namespace sls

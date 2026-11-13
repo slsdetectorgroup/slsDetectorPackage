@@ -84,6 +84,7 @@ class InferAction {
     int extsamplingsrc();
     int extsig();
     int fformat();
+    int fformatoptions();
     int filtercells();
     int filterresistor();
     int findex();
@@ -419,6 +420,7 @@ class InferAction {
         {"extsamplingsrc", &InferAction::extsamplingsrc},
         {"extsig", &InferAction::extsig},
         {"fformat", &InferAction::fformat},
+        {"fformatoptions", &InferAction::fformatoptions},
         {"filtercells", &InferAction::filtercells},
         {"filterresistor", &InferAction::filterresistor},
         {"findex", &InferAction::findex},

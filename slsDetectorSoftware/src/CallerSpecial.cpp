@@ -5,7 +5,9 @@
 #include "sls/logger.h"
 #include "sls/string_utils.h"
 
+#include <cctype>
 #include <iostream>
+#include <limits>
 #include <thread>
 
 namespace sls {
@@ -881,6 +883,174 @@ defs::ROI Caller::parseRoi(const std::vector<std::string> &parts) {
         roi.ymax = StringTo<int>(parts[3]);
     }
     return roi;
+}
+
+namespace {
+
+bool isListSeparator(char c) {
+    return std::isspace(static_cast<unsigned char>(c)) || c == ',';
+}
+
+/** Strict conversion, as std::stoul accepts signs and trailing characters */
+uint32_t parseUnsignedInt(const std::string &s) {
+    const std::string error =
+        "Could not convert '" + s + "' to a 32 bit unsigned integer";
+    if (s.empty() || !std::isdigit(static_cast<unsigned char>(s[0]))) {
+        throw RuntimeError(error);
+    }
+    const int base = s.find("0x") != std::string::npos ? 16 : 10;
+    size_t pos = 0;
+    unsigned long long value = 0;
+    try {
+        value = std::stoull(s, &pos, base);
+    } catch (const std::exception &) {
+        throw RuntimeError(error);
+    }
+    if (pos != s.size() || value > std::numeric_limits<uint32_t>::max()) {
+        throw RuntimeError(error);
+    }
+    return static_cast<uint32_t>(value);
+}
+
+/** Space or comma separated list of unsigned integers */
+std::vector<uint32_t> parseUnsignedIntList(const std::string &list) {
+    std::vector<uint32_t> values;
+    std::string item;
+    for (char c : list) {
+        if (!isListSeparator(c)) {
+            item += c;
+        } else if (!item.empty()) {
+            values.push_back(parseUnsignedInt(item));
+            item.clear();
+        }
+    }
+    if (!item.empty()) {
+        values.push_back(parseUnsignedInt(item));
+    }
+    return values;
+}
+
+/**
+ * Parses the arguments of fformatoptions to a list of options, where each
+ * option is a list of unsigned integers.
+ * Without brackets all the arguments are a single option: 1 6
+ * With brackets every bracket pair is an option: [2] [1,6]
+ * The format printed by the get is accepted as well: [[2], [1, 6]]
+ */
+std::vector<std::vector<uint32_t>>
+parseFileFormatOptions(const std::vector<std::string> &args) {
+    const std::string input = join(args, ' ');
+    std::vector<std::vector<uint32_t>> options;
+    if (input.find_first_of("[]") == std::string::npos) {
+        options.push_back(parseUnsignedIntList(input));
+        return options;
+    }
+
+    std::string list;
+    bool inList = false;
+    int depth = 0;
+    for (char c : input) {
+        // only separators allowed between the bracket pairs of the options
+        const bool separator = isListSeparator(c) || c == ';';
+        if (c == '[') {
+            if (++depth > 2) {
+                throw RuntimeError("Too many nested brackets");
+            }
+            if (!list.empty()) {
+                throw RuntimeError("Found '" + list +
+                                   "' in front of a nested bracket");
+            }
+            inList = true;
+        } else if (c == ']') {
+            if (--depth < 0) {
+                throw RuntimeError("Mismatched brackets");
+            }
+            if (inList) {
+                options.push_back(parseUnsignedIntList(list));
+                list.clear();
+                inList = false;
+            }
+        } else if (inList && (!separator || !list.empty())) {
+            list += c;
+        } else if (!separator) {
+            throw RuntimeError(std::string("Found '") + c +
+                               "' outside of brackets");
+        }
+    }
+    if (depth != 0) {
+        throw RuntimeError("Mismatched brackets");
+    }
+    // [] or [[]] is an empty list of options
+    if (options.size() == 1 && options[0].empty()) {
+        options.clear();
+    }
+    return options;
+}
+
+} // namespace
+
+std::string Caller::fformatoptions(int action) {
+    std::ostringstream os;
+    std::string helpMessage =
+        std::string("[filter id] [param 1] [param 2]... or [none]\n") +
+        "\tOptions specific to the file format (fformat) of the data files "
+        "written by the receiver. Default is none.\n"
+        "\tThey are reset to none when the file format is changed.\n\n"
+
+        "\t[hdf5] List of HDF5 filters (eg. compression) applied in the "
+        "given order to the image dataset.\n"
+        "\tA filter is the HDF5 filter id followed by its parameters "
+        "(cd_values), all unsigned integers.\n"
+        "\tFor example, to set a single filter (gzip with compression level "
+        "6): 1 6\n\n"
+
+        "\tTo specify multiple filters, use square brackets between filters "
+        "and commas inside for each filter. \n"
+        "\tInside each bracket, no spaces allowed.\n"
+        "\tIf you use semicolon (along with '['and ']' to separate filters), \n"
+        "\tenclose the entire list in quotes.\n"
+        "\tExamples (shuffle followed by gzip):\n"
+        "\t  [2] [1,6]\n"
+        "\t  \"[2];[1,6]\"\n\n"
+
+        "\tNotes:\n"
+        "\t- Filters that are not part of the HDF5 library (eg. 32008 for "
+        "bitshuffle) must be available to the receiver as plugins found in "
+        "HDF5_PLUGIN_PATH.\n"
+        "\t- Use 'none' to remove all filters.\n\n"
+
+        "\t[binary] No options available.\n";
+
+    if (action == defs::HELP_ACTION) {
+        os << helpMessage;
+    } else if (action == defs::GET_ACTION) {
+        if (!args.empty()) {
+            WrongNumberOfParameters(0);
+        }
+        auto t = det->getFileFormatOptions(std::vector<int>{det_id});
+        os << OutString(t) << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        if (args.empty()) {
+            WrongNumberOfParameters(1);
+        }
+        std::vector<std::vector<uint32_t>> t;
+        // 'none' option already covered as t is empty by default
+        if (args.size() != 1 || args[0] != "none") {
+            try {
+                t = parseFileFormatOptions(args);
+            } catch (const std::exception &e) {
+                throw RuntimeError(
+                    "Could not parse file format options: " +
+                    std::string(e.what()) + ". Use sls_detector_help " + cmd +
+                    " to get the right syntax expected.");
+            }
+        }
+        det->setFileFormatOptions(t, std::vector<int>{det_id});
+        os << ToString(t) << '\n';
+    } else {
+        throw RuntimeError("Unknown action");
+    }
+    return os.str();
 }
 
 std::string Caller::ratecorr(int action) {

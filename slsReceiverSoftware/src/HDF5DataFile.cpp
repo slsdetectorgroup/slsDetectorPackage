@@ -2,8 +2,10 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "HDF5DataFile.h"
 #include "receiver_defs.h"
+#include "sls/ToString.h"
 
 #include <iomanip>
+#include <sstream>
 
 namespace sls {
 
@@ -56,6 +58,40 @@ std::vector<H5::DataType> HDF5DataFile::GetParameterDataTypes() const {
 
 slsDetectorDefs::fileFormat HDF5DataFile::GetFileFormat() const { return HDF5; }
 
+void HDF5DataFile::ValidateFilters(
+    const std::vector<std::vector<uint32_t>> &filters) {
+    if (filters.size() > static_cast<size_t>(H5Z_MAX_NFILTERS)) {
+        throw RuntimeError("Too many HDF5 filters (" +
+                           std::to_string(filters.size()) + "). Maximum is " +
+                           std::to_string(H5Z_MAX_NFILTERS));
+    }
+    std::vector<uint32_t> ids;
+    for (const auto &filter : filters) {
+        if (filter.empty()) {
+            throw RuntimeError("HDF5 filter must start with the filter id");
+        }
+        const auto id = filter[0];
+        if (id == static_cast<uint32_t>(H5Z_FILTER_NONE) ||
+            id > static_cast<uint32_t>(H5Z_FILTER_MAX)) {
+            throw RuntimeError("Invalid HDF5 filter id " + std::to_string(id) +
+                               ". Must be between 1 and " +
+                               std::to_string(H5Z_FILTER_MAX));
+        }
+        if (std::find(ids.begin(), ids.end(), id) != ids.end()) {
+            throw RuntimeError("HDF5 filter id " + std::to_string(id) +
+                               " is used more than once");
+        }
+        ids.push_back(id);
+        // filters that are not part of the hdf5 library are loaded as plugins
+        if (H5Zfilter_avail(static_cast<H5Z_filter_t>(id)) <= 0) {
+            throw RuntimeError(
+                "HDF5 filter id " + std::to_string(id) +
+                " is not available in the receiver. Filters that are not "
+                "part of the HDF5 library must be found in HDF5_PLUGIN_PATH");
+        }
+    }
+}
+
 void HDF5DataFile::CloseFile() {
     std::lock_guard<std::mutex> lock(*hdf5Lib);
     try {
@@ -91,7 +127,7 @@ void HDF5DataFile::CreateFirstHDF5DataFile(
     const uint64_t fIndex, const bool owEnable, const bool sMode,
     const uint16_t uPortNumber, const uint32_t mFramesPerFile,
     const uint64_t nImages, const uint32_t nX, const uint32_t nY,
-    const uint32_t dr) {
+    const uint32_t dr, const std::vector<std::vector<uint32_t>> &hdf5Filters) {
 
     subFileIndex = 0;
     numFramesInFile = 0;
@@ -103,6 +139,7 @@ void HDF5DataFile::CreateFirstHDF5DataFile(
     nPixelsX = nX;
     nPixelsY = nY;
     dynamicRange = dr;
+    filters = hdf5Filters;
 
     m_filePath = filePath;
     fileNamePrefix = fNamePrefix;
@@ -136,7 +173,7 @@ void HDF5DataFile::CreateFile() {
                       '_' + std::to_string(fileIndex) + ".h5");
     fileName = p.string();
 
-    std::lock_guard<std::mutex> lock(*hdf5Lib);
+    std::unique_lock<std::mutex> lock(*hdf5Lib);
 
     uint64_t framestosave =
         ((maxFramesPerFile == 0) ? numImages : // infinite images
@@ -193,6 +230,16 @@ void HDF5DataFile::CreateFile() {
         plist.setFillValue(dataType, &fill_value);
         // plistPara.setFillValue(dataType, &fill_value);
         plist.setChunk(DATA_RANK, dimsChunk);
+
+        // filters of the image dataset, applied in the given order
+        // (set with the file format options, validated when set)
+        for (const auto &filter : filters) {
+            // filter id followed by its parameters
+            const auto filterId = static_cast<H5Z_filter_t>(filter[0]);
+            const size_t numParams = filter.size() - 1;
+            plist.setFilter(filterId, H5Z_FLAG_MANDATORY, numParams,
+                            numParams == 0 ? nullptr : filter.data() + 1);
+        }
         plistPara.setChunk(PARA_RANK, dimsChunkPara);
 
         // dataset
@@ -207,8 +254,16 @@ void HDF5DataFile::CreateFile() {
         }
     } catch (const H5::Exception &error) {
         error.printErrorStack();
+        // CloseFile() wants the same mutex --> have to unlock here
+        lock.unlock();
         CloseFile();
-        throw RuntimeError("Could not create HDF5 handles in object " + index);
+        std::string msg =
+            "Could not create HDF5 handles in object " + std::to_string(index);
+        if (!filters.empty()) {
+            msg += ". Check the file format options (HDF5 filters " +
+                   ToString(filters) + ")";
+        }
+        throw RuntimeError(msg);
     }
     if (!silentMode) {
         LOG(logINFO) << "[" << udpPortNumber

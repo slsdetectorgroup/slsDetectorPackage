@@ -133,6 +133,7 @@ class Caller {
     std::string extsamplingsrc(int action);
     std::string extsig(int action);
     std::string fformat(int action);
+    std::string fformatoptions(int action);
     std::string filtercells(int action);
     std::string filterresistor(int action);
     std::string findex(int action);
@@ -503,6 +504,7 @@ class Caller {
         {"extsamplingsrc", &Caller::extsamplingsrc},
         {"extsig", &Caller::extsig},
         {"fformat", &Caller::fformat},
+        {"fformatoptions", &Caller::fformatoptions},
         {"filtercells", &Caller::filtercells},
         {"filterresistor", &Caller::filterresistor},
         {"findex", &Caller::findex},

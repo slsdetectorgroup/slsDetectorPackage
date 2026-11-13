@@ -27,6 +27,38 @@ Setup
         sls_detector_put fformat hdf5
 
 
+Filters (Compression)
+----------------------
+
+HDF5 filters (eg. compression) for the image dataset in the data files are set using command `fformatoptions <commandline.html#term-fformatoptions-filter-id-param-1-param-2-...-or-none>`_ after setting the file format to hdf5. The default is no filters.
+
+* Each filter is the HDF5 filter id followed by its parameters (cd_values), all unsigned integers.
+
+* Multiple filters are applied in the given order.
+
+* Filters that are not part of the HDF5 library (eg. 32008 for bitshuffle) must be available to the receiver as plugins found in **HDF5_PLUGIN_PATH**. Setting a filter that is not available to the receiver will throw an error.
+
+* The same filter plugins must be available to the application reading the data files.
+
+* Changing the file format resets the filters.
+
+* List of existing filter plugins and information on writing custom filters: `HDF5 Link <https://github.com/HDFGroup/hdf5_plugins/blob/master/docs/RegisteredFilterPlugins.md>`_.
+
+.. code-block:: bash
+
+    # gzip (filter id 1) with compression level 6
+    sls_detector_put fformatoptions 1 6
+
+    # shuffle (filter id 2) followed by gzip
+    sls_detector_put fformatoptions [2] [1,6]
+
+    # no filters
+    sls_detector_put fformatoptions none
+
+    # get filters
+    sls_detector_get fformatoptions
+
+
 Master File
 -------------
 

@@ -1498,6 +1498,16 @@ void Detector::setFileFormat(defs::fileFormat f, Positions pos) {
     pimpl->Parallel(&Module::setFileFormat, pos, f);
 }
 
+Result<std::vector<std::vector<uint32_t>>>
+Detector::getFileFormatOptions(Positions pos) const {
+    return pimpl->Parallel(&Module::getFileFormatOptions, pos);
+}
+
+void Detector::setFileFormatOptions(
+    const std::vector<std::vector<uint32_t>> &options, Positions pos) {
+    pimpl->Parallel(&Module::setFileFormatOptions, pos, options);
+}
+
 Result<std::string> Detector::getFilePath(Positions pos) const {
     return pimpl->Parallel(&Module::getFilePath, pos);
 }

@@ -119,10 +119,8 @@ To build this documentation that you are reading now the following dependencies 
 
 To build the GUI the following dependencies are needed:
 
- * Qt 5.9
- * Qwt 6.1.5 (packaged in libs)
-
-> **Note:** Qwt is bundled in libs. One does not need to pre-install it on the system.
+ * Qt 6.2 or newer (Widgets, Gui, Core and Concurrent)
+ * libpng and zlib
 
 
 #### Dependencies to build Moench and Jungfrau executables
@@ -257,7 +255,7 @@ make -j12
 > **Note:** For v7.x.x of slsDetectorPackage and older, refer [zeromq notes for dependencies for conda](#4-pybind-and-zeromq).
 
 
-### 3.5. Build slsDetectorGui (Qt5)
+### 3.5. Build slsDetectorGui (Qt6)
 
 1. Using pre-built binary on conda
 ```
@@ -265,20 +263,21 @@ conda create -n myenv slsdetgui=7.0.0
 conda activate myenv
 ```
 
-2. Using system installation on RHEL7
+2. Using system installation of Qt6
 ```
-yum install qt5-qtbase-devel.x86_64
-yum install qt5-qtsvg-devel.x86_64 
+# Fedora, and RHEL9 with EPEL enabled
+dnf install qt6-qtbase-devel
+
+# Ubuntu, Debian
+apt install qt6-base-dev
+
+# macOS with Homebrew
+brew install qt
 ```
 
-3. Using system installation on RHEL8
-```
-yum install qt5-qtbase-devel.x86_64
-yum install qt5-qtsvg-devel.x86_64 
-yum install expat-devel.x86_64
-```
+> **Note:** Qt6 is not packaged for RHEL8, neither in the distribution nor in EPEL. Use conda there.
 
-4. Using conda
+3. Using conda
 ```
 #Add channels for dependencies and our library
 conda config --add channels conda-forge
@@ -286,12 +285,7 @@ conda config --add channels slsdetectorgroup
 conda config --set channel_priority strict
 
 # create environment to compile
-# on rhel7
-conda create -n slsgui zeromq gxx_linux-64 gxx_linux-64 mesa-libgl-devel-cos6-x86_64 qt
-# on fedora or newer systems
-conda create -n slsgui zeromq qt
-
-# when using conda compilers, would also need libgl, but no need for it on fedora unless maybe using it with ROOT
+conda create -n slsgui zeromq qt6-main
 
 # activate environment
 conda activate slsgui

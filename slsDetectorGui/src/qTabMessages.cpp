@@ -60,6 +60,11 @@ void qTabMessages::PrintNextLine() {
                     QString("</font>"));
 }
 
+QString qTabMessages::CommandFontTag() const {
+    return QString("<font color = \"%1\">")
+        .arg(palette().color(QPalette::Link).name());
+}
+
 void qTabMessages::GetLastCommand() {
     dispCommand->setText(lastCommand.join(" "));
 }
@@ -73,8 +78,8 @@ void qTabMessages::ExecuteCommand() {
     dispCommand->clear();
     // appending command to log without newline
     dispLog->moveCursor(QTextCursor::End);
-    dispLog->insertHtml(QString("<font color = \"DarkBlue\">") +
-                        param.join(" ") + QString("</font>"));
+    dispLog->insertHtml(CommandFontTag() + param.join(" ") +
+                        QString("</font>"));
 
     QString command = param.at(0);
     param.removeFirst();
@@ -94,8 +99,7 @@ void qTabMessages::ExecuteCommand() {
 void qTabMessages::AppendOutput() {
     QByteArray result = process->readAll();
     result.replace("\n", "<br>");
-    dispLog->append(QString("<font color = \"DarkBlue\">") + result +
-                    QString("</font>"));
+    dispLog->append(CommandFontTag() + result + QString("</font>"));
     LOG(logDEBUG) << "Command executed successfully";
     PrintNextLine();
 }

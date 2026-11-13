@@ -21,8 +21,9 @@ jobs:
 
       - name: Install build dependencies
         run: |
-          dnf -y install rpm-build qt5-qtbase-devel qt5-qtsvg-devel \
-            libpng-devel zlib-devel expat-devel libtiff-devel
+          # Qt6 comes from EPEL
+          dnf -y install rpm-build qt6-qtbase-devel \
+            libpng-devel zlib-devel libtiff-devel
 
       - name: Build with versioned binaries
         run: |
@@ -31,6 +32,8 @@ jobs:
             -DSLS_USE_GUI=ON \
             -DSLS_USE_MOENCH=ON \
             -DSLS_INSTALL_VERSIONED_BINARIES=ON
+          # Qt6, not a fallback to Qt5
+          grep -q '^Qt6_DIR:PATH=/' build/CMakeCache.txt
           cmake --build build -j 2
 
       - name: Build RPMs

@@ -1,109 +1,110 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
-// Copyright (C) 2021 Contributors to the SLS Detector Package
+// Copyright (C) 2026 Contributors to the SLS Detector Package
 #pragma once
+
 #include "SlsQt2DHist.h"
-#include "SlsQt2DZoomer.h"
 #include "sls/sls_detector_defs.h"
 
-#include <array>
-#include <qlist.h>
-#include <qwt_plot.h>
-#include <qwt_plot_shapeitem.h>
-#include <qwt_plot_spectrogram.h>
+#include <QRectF>
+#include <QString>
+#include <QWidget>
 
-class QwtPlotPanner;
-class QwtScaleWidget;
-class QwtLinearColorMap;
+#include <vector>
+
+class QLabel;
 
 namespace sls {
 
-class SlsQt2DPlot : public QwtPlot {
+class SlsQtFastImage;
+class SlsQtScalePanel;
+
+/**
+ * 2D detector image: an SlsQtFastImage with an SlsQtScalePanel below it.
+ *
+ * Positions and ranges are in the coordinates given to SetData(), while the
+ * image view itself works in pixels.
+ *
+ * With gain = true the plot shows the gain bits (0..3) in a fixed palette,
+ * without axes, zoom and scale panel.
+ */
+class SlsQt2DPlot : public QWidget {
     Q_OBJECT
 
   public:
-    SlsQt2DPlot(QWidget * = NULL, bool gain = false);
-    ~SlsQt2DPlot();
-    void SetTitle(QString title);
-    void SetXTitle(QString title);
-    void SetYTitle(QString title);
-    void SetZTitle(QString title);
-    void SetTitleFont(const QFont &f);
-    void SetXFont(const QFont &f);
-    void SetYFont(const QFont &f);
-    void SetZFont(const QFont &f);
+    explicit SlsQt2DPlot(QWidget *parent = nullptr, bool gain = false);
 
-    void UnZoom(bool replot = true);
-    void SetZoom(double xmin, double ymin, double x_width, double y_width);
-    void DisableZoom(bool disable);
-    void EnableXAutoScaling() { setAxisAutoScale(QwtPlot::xBottom, true); };
-    void EnableYAutoScaling() { setAxisAutoScale(QwtPlot::yLeft, true); };
-    void SetXMinMax(double min, double max) {
-        setAxisScale(QwtPlot::xBottom, min, max);
-    };
-    void SetYMinMax(double min, double max) {
-        setAxisScale(QwtPlot::yLeft, min, max);
-    };
-    double GetXMinimum() { return hist->GetXMin(); };
-    double GetXMaximum() { return hist->GetXMax(); };
-    double GetYMinimum() { return hist->GetYMin(); };
-    double GetYMaximum() { return hist->GetYMax(); };
-    double GetZMinimum() { return hist->GetMinimum(); }
-    double GetZMaximum() { return hist->GetMaximum(); }
-    void SetZMinMax(double zmin = 0, double zmax = -1);
-    void SetZMinimumToFirstGreaterThanZero() {
-        hist->SetMinimumToFirstGreaterThanZero();
-    }
-    double GetZMean() { return hist->GetMean(); }
+    void SetTitle(const QString &title);
+    QString title() const;
+    void SetXTitle(const QString &title);
+    void SetYTitle(const QString &title);
+    void SetZTitle(const QString &title);
 
+    /** Copies nbinsx * nbinsy values from d, x fastest */
     void SetData(int nbinsx, double xmin, double xmax, int nbinsy, double ymin,
-                 double ymax, double *d, double zmin = 0, double zmax = -1) {
-        hist->SetData(nbinsx, xmin, xmax, nbinsy, ymin, ymax, d, zmin, zmax);
-    }
-
-    double *GetDataPtr() { return hist->GetDataPtr(); }
-    int GetBinIndex(int bx, int by) { return hist->GetBinIndex(bx, by); }
-    int FindBinIndex(double x, double y) { return hist->FindBinIndex(x, y); }
-    void SetBinValue(int bx, int by, double v) { hist->SetBinValue(bx, by, v); }
-    double GetBinValue(int bx, int by) { return hist->GetBinValue(bx, by); }
-    void FillTestPlot(int i = 0);
+                 double ymax, const double *d);
+    /** Applies pending axis and z ranges and repaints */
     void Update();
+
+    /** Range of the data, not of the visible part */
+    double GetXMinimum() const { return m_hist.GetXMin(); }
+    double GetXMaximum() const { return m_hist.GetXMax(); }
+    double GetYMinimum() const { return m_hist.GetYMin(); }
+    double GetYMaximum() const { return m_hist.GetYMax(); }
+
+    void DisableZoom(bool disable);
+    void EnableXAutoScaling();
+    void EnableYAutoScaling();
+    void SetXMinMax(double min, double max);
+    void SetYMinMax(double min, double max);
 
     void SetInterpolate(bool enable);
     void SetContour(bool enable);
     void SetLogz(bool enable, bool isMin, bool isMax, double min, double max);
+    /** Fixes the enabled ends of the z range, the other ends follow the
+     * data. A range picked on the scale panel is kept until an end is
+     * fixed here or the image size changes. */
     void SetZRange(bool isMin, bool isMax, double min, double max);
-    void LogZ(bool on = 1);
-    void EnableRoiBoxes(std::vector<slsDetectorDefs::ROI> roi);
+
+    void EnableRoiBoxes(const std::vector<slsDetectorDefs::ROI> &roi);
     void DisableRoiBoxes();
 
+    SlsQtFastImage *imageView() const { return m_view; }
+    /** nullptr for a gain plot */
+    SlsQtScalePanel *scalePanel() const { return m_panel; }
+
   public slots:
-    void showSpectrogram(bool on);
     void SetZoom(const QRectF &rect);
 
-  private slots:
-    void GetPannedCoord(int, int);
-
   signals:
+    /** The user zoomed or panned */
     void PlotZoomedSignal(const QRectF &);
 
   private:
-    void SetupZoom();
-    void SetupColorMap();
-    bool gainPlot{false};
+    void fillTestPlot();
+    void applyPendingView();
+    void updateContours();
 
-    QwtLinearColorMap *myColourMap(QVector<double> colourStops);
-    QwtLinearColorMap *myColourMap(int log = 0);
+    double dataXToImage(double x) const;
+    double dataYToImage(double y) const;
 
-    QwtPlotSpectrogram *d_spectrogram{nullptr};
-    SlsQt2DHist *hist{nullptr};
-    SlsQt2DZoomer *zoomer{nullptr};
-    QwtPlotPanner *panner{nullptr};
-    QwtScaleWidget *rightAxis{nullptr};
-    QList<double> contourLevelsLinear;
-    QList<double> contourLevelsLog;
-    bool disableZoom{false};
-    int isLog;
-    std::vector<std::unique_ptr<QwtPlotShapeItem>> roiBoxes{};
+    const bool m_gain;
+    SlsQt2DHist m_hist;
+    SlsQtFastImage *m_view{nullptr};
+    SlsQtScalePanel *m_panel{nullptr};
+    QLabel *m_zTitleLabel{nullptr};
+
+    bool m_contourOn{false};
+    bool m_contourDirty{false};
+
+    // axis ranges requested through SetXMinMax() etc.
+    bool m_autoX{true};
+    bool m_autoY{true};
+    bool m_applyViewPending{true};
+    double m_reqX0{0.0}, m_reqX1{1.0}, m_reqY0{0.0}, m_reqY1{1.0};
+
+    // who decides the z range, if not the data
+    bool m_panelZOverride{false}; // picked on the scale panel
+    bool m_userZOverride{false};  // fixed with SetZRange()
 };
 
 } // namespace sls

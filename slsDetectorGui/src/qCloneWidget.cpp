@@ -9,7 +9,6 @@
 #include <QFileDialog>
 #include <QImage>
 #include <QPainter>
-#include <qwt_text.h>
 
 namespace sls {
 

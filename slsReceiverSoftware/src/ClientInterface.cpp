@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "ClientInterface.h"
+#include "sls/ClientSocket.h"
 #include "sls/ServerSocket.h"
 #include "sls/StaticVector.h"
 #include "sls/ToString.h"
@@ -34,6 +35,16 @@ ClientInterface::~ClientInterface() {
     killTcpThread = true;
     LOG(logINFO) << "Shutting down TCP Socket on port " << portNumber;
     server.shutdown();
+#ifdef __APPLE__
+    // On macOS shutdown() on a listening socket fails with ENOTCONN and does
+    // not wake up the blocking accept() in the tcp thread. Connect to our own
+    // port so that accept() returns and the thread sees killTcpThread.
+    try {
+        ReceiverSocket wakeup("localhost", portNumber);
+    } catch (const RuntimeError &e) {
+        LOG(logWARNING) << "Could not wake up TCP server thread: " << e.what();
+    }
+#endif
     LOG(logDEBUG) << "TCP Socket closed on port " << portNumber;
     tcpThread->join();
 }
@@ -82,6 +93,9 @@ void ClientInterface::startTCPServer() {
     while (!killTcpThread) {
         try {
             auto socket = server.accept();
+            if (killTcpThread) {
+                break;
+            }
             try {
                 verifyLock(); // lock should be checked only for set (not get),
                               // Move it back?

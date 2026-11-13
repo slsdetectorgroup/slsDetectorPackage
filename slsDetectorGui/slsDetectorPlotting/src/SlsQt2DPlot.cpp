@@ -1,374 +1,406 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
-// Copyright (C) 2021 Contributors to the SLS Detector Package
+// Copyright (C) 2026 Contributors to the SLS Detector Package
 #include "SlsQt2DPlot.h"
-#include "qDefs.h"
-#include "qVersionResolve.h"
-#include "sls/logger.h"
 
-// Suppressing warning until qwt has a fix, avoid
-// patching and should be backwards compatible
-// https://doc.qt.io/qt-5/qflags-obsolete.html
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#include <qlist.h>
-#include <qtoolbutton.h>
-#include <qwt_color_map.h>
-#include <qwt_plot_layout.h>
-#include <qwt_plot_panner.h>
-#include <qwt_plot_spectrogram.h>
-#include <qwt_plot_zoomer.h>
-#include <qwt_scale_draw.h>
-#include <qwt_scale_engine.h>
-#include <qwt_scale_widget.h>
-#pragma GCC diagnostic pop
+#include "SlsQtFastImage.h"
+#include "SlsQtPlotCommon.h"
+#include "SlsQtScalePanel.h"
 
+#include <QLabel>
+#include <QLineF>
+#include <QVBoxLayout>
+
+#include <algorithm>
 #include <cmath>
-#include <iostream>
 
 namespace sls {
 
+namespace {
+
+constexpr int kContourLevels = 9;
+// the contours are computed on a grid of at most this many cells per axis
+constexpr int kContourGrid = 256;
+constexpr size_t kMaxContourLines = 120000;
+
+} // namespace
+
 SlsQt2DPlot::SlsQt2DPlot(QWidget *parent, bool gain)
-    : QwtPlot(parent), gainPlot(gain) {
-    isLog = 0;
-    axisScaleEngine(QwtPlot::yLeft)->setAttribute(QwtScaleEngine::Floating);
-    axisScaleEngine(QwtPlot::xBottom)->setAttribute(QwtScaleEngine::Floating);
-    d_spectrogram = new QwtPlotSpectrogram();
-    hist = new SlsQt2DHist();
-    SetupZoom();
-    SetupColorMap();
-    d_spectrogram->setData(hist);
-    d_spectrogram->attach(this);
-    plotLayout()->setAlignCanvasToScales(true);
-    FillTestPlot();
-    setFont(qDefs::GetDefaultFont());
-    SetTitleFont(qDefs::GetDefaultFont());
-    SetXFont(qDefs::GetDefaultFont());
-    SetYFont(qDefs::GetDefaultFont());
-    SetZFont(qDefs::GetDefaultFont());
+    : QWidget(parent), m_gain(gain) {
+    auto *layout = new QVBoxLayout(this);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(0);
+
+    m_view = new SlsQtFastImage(this);
+    layout->addWidget(m_view, 1);
+    connect(m_view, &SlsQtFastImage::visibleAreaChanged, this,
+            [this](const QRectF &v) {
+                emit PlotZoomedSignal(
+                    QRectF(m_hist.GetXMin() + v.x() * m_hist.GetXBinWidth(),
+                           m_hist.GetYMin() + v.y() * m_hist.GetYBinWidth(),
+                           v.width() * m_hist.GetXBinWidth(),
+                           v.height() * m_hist.GetYBinWidth()));
+            });
+
+    if (m_gain) {
+        m_view->setAxesVisible(false);
+        m_view->setZoomEnabled(false);
+        m_view->setPalette(plot::Palette::Gain4);
+        m_view->setColorRange(0.0, 3.0);
+        m_view->setTitle(QStringLiteral("Gain"));
+    } else {
+        const plot::PlotTheme theme;
+        m_zTitleLabel = new QLabel(this);
+        m_zTitleLabel->setAlignment(Qt::AlignCenter);
+        m_zTitleLabel->setStyleSheet(
+            QStringLiteral("background-color: %1; color: %2;")
+                .arg(theme.background.name(), theme.text.name()));
+        m_zTitleLabel->hide();
+        layout->addWidget(m_zTitleLabel);
+
+        m_panel = new SlsQtScalePanel(m_view, this);
+        layout->addWidget(m_panel);
+        connect(m_panel, &SlsQtScalePanel::colorRangeEdited, this,
+                [this] { m_panelZOverride = true; });
+        // the contour levels follow the colour range
+        connect(m_view, &SlsQtFastImage::colorMapChanged, this, [this] {
+            if (m_contourOn)
+                updateContours();
+        });
+    }
+
+    fillTestPlot();
+}
+
+// ---------------------------------------------------------------------------
+// titles
+// ---------------------------------------------------------------------------
+void SlsQt2DPlot::SetTitle(const QString &title) { m_view->setTitle(title); }
+
+QString SlsQt2DPlot::title() const { return m_view->title(); }
+
+void SlsQt2DPlot::SetXTitle(const QString &title) {
+    m_view->setXAxisTitle(title);
+}
+
+void SlsQt2DPlot::SetYTitle(const QString &title) {
+    m_view->setYAxisTitle(title);
+}
+
+void SlsQt2DPlot::SetZTitle(const QString &title) {
+    if (!m_zTitleLabel)
+        return;
+    m_zTitleLabel->setText(title);
+    m_zTitleLabel->setVisible(!title.isEmpty());
+}
+
+// ---------------------------------------------------------------------------
+// data
+// ---------------------------------------------------------------------------
+void SlsQt2DPlot::SetData(int nbinsx, double xmin, double xmax, int nbinsy,
+                          double ymin, double ymax, const double *d) {
+    const int oldNx = m_hist.GetNBinsX();
+    const int oldNy = m_hist.GetNBinsY();
+    m_hist.SetData(nbinsx, xmin, xmax, nbinsy, ymin, ymax, d);
+    if (m_hist.GetNBinsX() != oldNx || m_hist.GetNBinsY() != oldNy) {
+        // a zoom or a range picked on the scale panel belonged to the old
+        // image, a range fixed with SetZRange() is still wanted
+        m_panelZOverride = false;
+        m_applyViewPending = true;
+    }
+    m_view->setImage(m_hist.GetDataPtr(), m_hist.GetNBinsX(),
+                     m_hist.GetNBinsY());
+    m_view->setAxisRange(m_hist.GetXMin(), m_hist.GetXMax(), m_hist.GetYMin(),
+                         m_hist.GetYMax());
+    m_contourDirty = true;
     Update();
-
-    if (gainPlot) {
-        setTitle("Gain");
-        SetZTitle("");
-        enableAxis(QwtPlot::yLeft, false);
-        enableAxis(QwtPlot::xBottom, false);
-        DisableZoom(true);
-        // set only major ticks from 0 to 3
-        auto div = axisScaleEngine(QwtPlot::yRight)->divideScale(0, 3, 3, 0, 1);
-        setAxisScaleDiv(QwtPlot::yRight, div);
-    }
 }
 
-SlsQt2DPlot::~SlsQt2DPlot() = default;
-
-void SlsQt2DPlot::SetTitle(QString title) { setTitle(title); }
-
-void SlsQt2DPlot::SetXTitle(QString title) {
-    setAxisTitle(QwtPlot::xBottom, title);
-}
-
-void SlsQt2DPlot::SetYTitle(QString title) {
-    setAxisTitle(QwtPlot::yLeft, title);
-}
-
-void SlsQt2DPlot::SetZTitle(QString title) {
-    setAxisTitle(QwtPlot::yRight, title);
-}
-
-void SlsQt2DPlot::SetTitleFont(const QFont &f) {
-    QwtText t("");
-    t.setFont(f);
-    t.setRenderFlags(Qt::AlignLeft | Qt::AlignVCenter);
-    setTitle(t);
-}
-
-void SlsQt2DPlot::SetXFont(const QFont &f) {
-    QwtText t("");
-    t.setFont(f);
-    setAxisTitle(QwtPlot::xBottom, t);
-}
-
-void SlsQt2DPlot::SetYFont(const QFont &f) {
-    QwtText t("");
-    t.setFont(f);
-    setAxisTitle(QwtPlot::yLeft, t);
-}
-
-void SlsQt2DPlot::SetZFont(const QFont &f) {
-    QwtText t("");
-    t.setFont(f);
-    setAxisTitle(QwtPlot::yRight, t);
-}
-
-void SlsQt2DPlot::SetupColorMap() {
-    d_spectrogram->setColorMap(myColourMap(0));
-    for (double level = 0.5; level < 10.0; level += 1.0)
-        (contourLevelsLinear) += level;
-    d_spectrogram->setContourLevels(contourLevelsLinear);
-
-    for (double level = 0.5; level < 10.0; level += 1.0)
-        (contourLevelsLog) += (pow(10, 2 * level / 10.0) - 1) / 99.0 * 10;
-
-    // A color bar on the right axis
-    rightAxis = axisWidget(QwtPlot::yRight);
-
-    rightAxis->setTitle("Intensity");
-    rightAxis->setColorBarEnabled(true);
-    enableAxis(QwtPlot::yRight);
-}
-
-void SlsQt2DPlot::FillTestPlot(int mode) {
-    static int nx = 50;
-    static int ny = 50;
-    static double *the_data = nullptr;
-    if (the_data == nullptr)
-        the_data = new double[nx * ny];
-
-    double dmax = sqrt(pow(nx / 2.0 - 0.5, 2) + pow(ny / 2.0 - 0.5, 2));
-    for (int i = 0; i < nx; i++) {
-        for (int j = 0; j < ny; j++) {
-            double d = sqrt(pow(nx / 2.0 - (i + 0.5), 2) +
-                            pow(ny / 2.0 - (j + 0.5), 2));
-
-            if (mode % 3)
-                the_data[i + j * nx] = 10 * d / dmax;
-            else
-                the_data[i + j * nx] = 10 * (1 - d / dmax);
+// Shown until the first image arrives
+void SlsQt2DPlot::fillTestPlot() {
+    const int n = 50;
+    const double center = n / 2.0;
+    const double maxDistance = std::hypot(center - 0.5, center - 0.5);
+    std::vector<double> data(static_cast<size_t>(n) * n);
+    for (int iy = 0; iy < n; ++iy) {
+        for (int ix = 0; ix < n; ++ix) {
+            const double distance =
+                std::hypot(center - (ix + 0.5), center - (iy + 0.5));
+            data[static_cast<size_t>(iy) * n + ix] =
+                10 * (1 - distance / maxDistance);
         }
     }
-
-    hist->SetData(nx, 200, 822, ny, -0.5, ny - 0.5, the_data);
-}
-
-void SlsQt2DPlot::SetupZoom() {
-    // LeftButton for the zooming
-    // MiddleButton for the panning
-    // RightButton: zoom out by 1
-    // Ctrl+RighButton: zoom out to full size
-
-    zoomer = new SlsQt2DZoomer(canvas());
-    zoomer->SetHist(hist);
-    zoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::RightButton,
-                            Qt::ControlModifier);
-    zoomer->setMousePattern(QwtEventPattern::MouseSelect3, Qt::RightButton);
-    panner = new QwtPlotPanner(canvas());
-    panner->setAxisEnabled(QwtPlot::yRight, false);
-    panner->setMouseButton(Qt::MiddleButton);
-
-    // Avoid jumping when labels with more/less digits
-    // appear/disappear when scrolling vertically
-
-    const QFontMetrics fm(axisWidget(QwtPlot::yLeft)->font());
-    QwtScaleDraw *sd = axisScaleDraw(QwtPlot::yLeft);
-    sd->setMinimumExtent(qResolve_GetQFontWidth(fm, "100.00"));
-    const QColor c(Qt::darkBlue);
-    zoomer->setRubberBandPen(c);
-    zoomer->setTrackerPen(c);
-
-    connect(zoomer, SIGNAL(zoomed(const QRectF &)), this,
-            SIGNAL(PlotZoomedSignal(const QRectF &)));
-
-    connect(panner, SIGNAL(panned(int, int)), this,
-            SLOT(GetPannedCoord(int, int)));
-}
-
-void SlsQt2DPlot::UnZoom(bool replot) {
-
-    zoomer->setZoomBase(QRectF(hist->GetXMin(), hist->GetYMin(),
-                               hist->GetXMax() - hist->GetXMin(),
-                               hist->GetYMax() - hist->GetYMin()));
-    zoomer->setZoomBase(replot); // Call replot for the attached plot before
-                                 // initializing the zoomer with its scales.
-                                 // zoomer->zoom(0);
-}
-
-void SlsQt2DPlot::GetPannedCoord(int, int) {
-    double xmin = invTransform(QwtPlot::xBottom, 0);
-    double xmax = invTransform(QwtPlot::xBottom, canvas()->rect().width());
-    double ymax = invTransform(QwtPlot::yLeft, 0);
-    double ymin = invTransform(QwtPlot::yLeft, canvas()->rect().height());
-    LOG(logDEBUG1) << "Rect1  " << xmin << "\t" << xmax << "\t" << ymin << "\t"
-                   << ymax;
-    QPointF topLeft = QPointF(xmin, ymin);
-    QPointF bottomRight = QPointF(xmax, ymax);
-    const QRectF rectf = QRectF(topLeft, bottomRight);
-    rectf.getCoords(&xmin, &ymin, &xmax, &ymax);
-    LOG(logDEBUG1) << "RectF  " << xmin << "\t" << xmax << "\t" << ymin << "\t"
-                   << ymax;
-    emit PlotZoomedSignal(rectf);
-}
-
-void SlsQt2DPlot::SetZoom(const QRectF &rect) {
-    double xmin = 0, xmax = 0, ymin = 0, ymax = 0;
-    rect.getCoords(&xmin, &ymin, &xmax, &ymax);
-    LOG(logDEBUG1) << "Plot zooming in to " << xmin << " " << xmax << " "
-                   << ymin << " " << ymax;
-    SetXMinMax(xmin, xmax);
-    SetYMinMax(ymin, ymax);
-    replot();
-}
-
-void SlsQt2DPlot::SetZoom(double xmin, double ymin, double x_width,
-                          double y_width) {
-    zoomer->setZoomBase(QRectF(xmin, ymin, x_width, y_width));
-}
-
-void SlsQt2DPlot::DisableZoom(bool disable) {
-    if (disableZoom != disable) {
-        disableZoom = disable;
-
-#ifdef VERBOSE
-        if (disable)
-            std::cout << "Disabling zoom\n";
-        else
-            std::cout << "Enabling zoom\n";
-#endif
-        if (disable) {
-            if (zoomer) {
-                zoomer->setMousePattern(QwtEventPattern::MouseSelect1,
-                                        Qt::NoButton);
-                zoomer->setMousePattern(QwtEventPattern::MouseSelect2,
-                                        Qt::NoButton, Qt::ControlModifier);
-                zoomer->setMousePattern(QwtEventPattern::MouseSelect3,
-                                        Qt::NoButton);
-            }
-            if (panner)
-                panner->setMouseButton(Qt::NoButton);
-        } else {
-            if (zoomer) {
-                zoomer->setMousePattern(QwtEventPattern::MouseSelect1,
-                                        Qt::LeftButton);
-                zoomer->setMousePattern(QwtEventPattern::MouseSelect2,
-                                        Qt::RightButton, Qt::ControlModifier);
-                zoomer->setMousePattern(QwtEventPattern::MouseSelect3,
-                                        Qt::RightButton);
-            }
-            if (panner)
-                panner->setMouseButton(Qt::MiddleButton);
-        }
-    }
-}
-
-void SlsQt2DPlot::SetZMinMax(double zmin, double zmax) {
-    hist->SetMinMax(zmin, zmax);
-}
-
-QwtLinearColorMap *SlsQt2DPlot::myColourMap(QVector<double> colourStops) {
-
-    int ns = 5;
-
-    double r[] = {0.00, 0.00, 0.87, 1.00, 0.51};
-    double g[] = {0.00, 0.81, 1.00, 0.20, 0.00};
-    double b[] = {0.51, 1.00, 0.12, 0.00, 0.00};
-
-    // QColor c1, c2, c;
-    QColor c2, c;
-    c2.setRgbF(r[ns - 1], g[ns - 1], b[ns - 1]);
-    QwtLinearColorMap *copyMap = new QwtLinearColorMap(Qt::lightGray, c2);
-
-    for (int is = 0; is < ns - 1; is++) {
-        c.setRgbF(r[is], g[is], b[is]);
-        copyMap->addColorStop(colourStops[is], c);
-    }
-
-    return copyMap;
-}
-
-QwtLinearColorMap *SlsQt2DPlot::myColourMap(int log) {
-    QVector<double> cs{0.0, 0.34, 0.61, 0.84, 1.0};
-    if (log) {
-        for (int i = 0; i < cs.size(); ++i)
-            cs[i] = (pow(10, 2 * cs[i]) - 1) / 99.0;
-    }
-    return myColourMap(cs);
+    SetData(n, 200, 822, n, -0.5, n - 0.5, data.data());
 }
 
 void SlsQt2DPlot::Update() {
-    if (isLog)
-        hist->SetMinimumToFirstGreaterThanZero();
-    const QwtInterval zInterval = d_spectrogram->data()->interval(Qt::ZAxis);
-    rightAxis->setColorMap(zInterval, myColourMap(isLog));
-    if (!zoomer->zoomRectIndex())
-        UnZoom();
-    if (!gainPlot) {
-        setAxisScale(QwtPlot::yRight, zInterval.minValue(),
-                     zInterval.maxValue());
+    if (!m_gain) {
+        if (m_applyViewPending)
+            applyPendingView();
+        if (!m_panelZOverride && !m_userZOverride) {
+            if (m_view->logScale())
+                m_hist.SetMinimumToFirstGreaterThanZero();
+            m_view->setColorRange(m_hist.GetMinimum(), m_hist.GetMaximum());
+        }
+        if (m_contourOn && m_contourDirty)
+            updateContours();
     }
-    plotLayout()->setAlignCanvasToScales(true);
-    replot();
+    m_view->update();
 }
 
-void SlsQt2DPlot::SetInterpolate(bool enable) {
-    hist->Interpolate(enable);
-    Update();
+// ---------------------------------------------------------------------------
+// axis ranges and zoom
+// ---------------------------------------------------------------------------
+double SlsQt2DPlot::dataXToImage(double x) const {
+    return (x - m_hist.GetXMin()) / m_hist.GetXBinWidth();
 }
 
-void SlsQt2DPlot::SetContour(bool enable) {
-    d_spectrogram->setDisplayMode(QwtPlotSpectrogram::ContourMode, enable);
-    Update();
+double SlsQt2DPlot::dataYToImage(double y) const {
+    return (y - m_hist.GetYMin()) / m_hist.GetYBinWidth();
 }
 
+void SlsQt2DPlot::SetZoom(const QRectF &rect) {
+    const QRectF r = rect.normalized();
+    if (r.isEmpty())
+        return;
+    m_applyViewPending = false;
+    m_view->setViewport(dataXToImage(r.left()), dataYToImage(r.top()),
+                        dataXToImage(r.right()), dataYToImage(r.bottom()));
+}
+
+void SlsQt2DPlot::DisableZoom(bool disable) {
+    if (!m_gain)
+        m_view->setZoomEnabled(!disable);
+}
+
+void SlsQt2DPlot::EnableXAutoScaling() {
+    m_autoX = true;
+    applyPendingView();
+}
+
+void SlsQt2DPlot::EnableYAutoScaling() {
+    m_autoY = true;
+    applyPendingView();
+}
+
+void SlsQt2DPlot::SetXMinMax(double min, double max) {
+    m_autoX = false;
+    m_reqX0 = min;
+    m_reqX1 = max;
+    applyPendingView();
+}
+
+void SlsQt2DPlot::SetYMinMax(double min, double max) {
+    m_autoY = false;
+    m_reqY0 = min;
+    m_reqY1 = max;
+    applyPendingView();
+}
+
+void SlsQt2DPlot::applyPendingView() {
+    m_applyViewPending = false;
+    if (m_gain)
+        return;
+    double x0 = 0.0, x1 = m_hist.GetNBinsX();
+    double y0 = 0.0, y1 = m_hist.GetNBinsY();
+    if (!m_autoX) {
+        x0 = dataXToImage(std::min(m_reqX0, m_reqX1));
+        x1 = dataXToImage(std::max(m_reqX0, m_reqX1));
+    }
+    if (!m_autoY) {
+        y0 = dataYToImage(std::min(m_reqY0, m_reqY1));
+        y1 = dataYToImage(std::max(m_reqY0, m_reqY1));
+    }
+    // the view ignores a viewport below its minimum size, so widen the
+    // request around its centre instead
+    const auto widen = [](double &lo, double &hi) {
+        const double missing = SlsQtFastImage::kMinimumViewport - (hi - lo);
+        if (missing > 0) {
+            lo -= missing / 2;
+            hi += missing / 2;
+        }
+    };
+    widen(x0, x1);
+    widen(y0, y1);
+    m_view->setViewport(x0, y0, x1, y1);
+}
+
+// ---------------------------------------------------------------------------
+// z range
+// ---------------------------------------------------------------------------
 void SlsQt2DPlot::SetLogz(bool enable, bool isMin, bool isMax, double min,
                           double max) {
-    LogZ(enable);
+    if (m_gain)
+        return;
+    m_view->setLogScale(enable);
     SetZRange(isMin, isMax, min, max);
 }
 
 void SlsQt2DPlot::SetZRange(bool isMin, bool isMax, double min, double max) {
-    if (isLog) {
-        SetZMinimumToFirstGreaterThanZero();
-    }
-
-    // set zmin and zmax
-    if (isMin || isMax) {
-        double zmin = (isMin ? min : GetZMinimum());
-        double zmax = (isMax ? max : GetZMaximum());
-        SetZMinMax(zmin, zmax);
-    }
-
-    Update();
-}
-
-void SlsQt2DPlot::LogZ(bool on) {
-    if (on) {
-        isLog = 1;
-        d_spectrogram->setColorMap(myColourMap(isLog));
-        setAxisScaleEngine(QwtPlot::yRight, new QwtLogScaleEngine);
-        d_spectrogram->setContourLevels(contourLevelsLog);
-    } else {
-        isLog = 0;
-        d_spectrogram->setColorMap(myColourMap(isLog));
-        setAxisScaleEngine(QwtPlot::yRight, new QwtLinearScaleEngine);
-        d_spectrogram->setContourLevels(contourLevelsLinear);
+    if (m_gain)
+        return;
+    m_userZOverride = isMin || isMax;
+    if (m_userZOverride) {
+        if (m_view->logScale())
+            m_hist.SetMinimumToFirstGreaterThanZero();
+        const double zmin = isMin ? min : m_hist.GetMinimum();
+        double zmax = isMax ? max : m_hist.GetMaximum();
+        if (!(zmax > zmin))
+            zmax = zmin + 1.0;
+        m_panelZOverride = false;
+        m_view->setColorRange(zmin, zmax);
     }
     Update();
 }
 
-void SlsQt2DPlot::showSpectrogram(bool on) {
-    d_spectrogram->setDisplayMode(QwtPlotSpectrogram::ImageMode, on);
-    d_spectrogram->setDefaultContourPen(on ? QPen() : QPen(Qt::NoPen));
-    Update();
+// ---------------------------------------------------------------------------
+// drawing options
+// ---------------------------------------------------------------------------
+void SlsQt2DPlot::SetInterpolate(bool enable) {
+    m_view->setInterpolate(enable);
 }
 
-void SlsQt2DPlot::EnableRoiBoxes(std::vector<slsDetectorDefs::ROI> roi) {
-    roiBoxes.clear();
-    for (auto &r : roi) {
-        auto box = std::make_unique<QwtPlotShapeItem>();
-        box->setPen(QColor(Qt::yellow), 2.0, Qt::SolidLine);
-        // TopLeft - BottomRight (max points are +1 on graph)
-        QRectF myRect(QPointF(r.xmin, r.ymin), QPointF(r.xmax - 1, r.ymax - 1));
-        box->setRect(myRect);
-        box->attach(this);
-        roiBoxes.push_back(std::move(box));
-    }
-    replot();
+void SlsQt2DPlot::SetContour(bool enable) {
+    m_contourOn = enable;
+    updateContours();
 }
 
-void SlsQt2DPlot::DisableRoiBoxes() {
-    for (auto &r : roiBoxes) {
-        r->detach();
+// The ROIs are in pixels with inclusive limits
+void SlsQt2DPlot::EnableRoiBoxes(const std::vector<slsDetectorDefs::ROI> &roi) {
+    std::vector<QRectF> rects;
+    rects.reserve(roi.size());
+    for (const auto &r : roi) {
+        if (r.xmax >= r.xmin && r.ymax >= r.ymin)
+            rects.emplace_back(r.xmin, r.ymin, r.xmax - r.xmin + 1,
+                               r.ymax - r.ymin + 1);
     }
-    replot();
+    m_view->setOverlayRects(rects);
+}
+
+void SlsQt2DPlot::DisableRoiBoxes() { m_view->setOverlayRects({}); }
+
+// Marching squares for kContourLevels levels spread evenly over the colour
+// range. Lines are in pixel coordinates, the value of a pixel sits at its
+// centre.
+void SlsQt2DPlot::updateContours() {
+    m_contourDirty = false;
+    std::vector<QLineF> lines;
+    const int nx = m_hist.GetNBinsX();
+    const int ny = m_hist.GetNBinsY();
+    const bool log = m_view->logScale();
+    double lo = 0.0, hi = 1.0;
+    m_view->colorRange(lo, hi);
+    if (log) {
+        lo = plot::logClamp(lo);
+        hi = plot::logClamp(hi);
+    }
+    if (!m_contourOn || nx < 2 || ny < 2 || !std::isfinite(lo) ||
+        !std::isfinite(hi) || !(hi > lo)) {
+        m_view->setOverlayLines(lines);
+        return;
+    }
+
+    std::vector<double> levels;
+    for (int k = 1; k <= kContourLevels; ++k) {
+        const double level = lo + (hi - lo) * k / (kContourLevels + 1);
+        levels.push_back(log ? std::pow(10.0, level) : level);
+    }
+
+    // every step-th pixel, and always the last one so that the contours
+    // reach the edge of the image
+    const int step = (std::max(nx, ny) + kContourGrid - 1) / kContourGrid;
+    const auto gridPoints = [step](int n) {
+        std::vector<int> points;
+        for (int i = 0; i < n; i += step)
+            points.push_back(i);
+        if (points.back() != n - 1)
+            points.push_back(n - 1);
+        return points;
+    };
+    const std::vector<int> gridX = gridPoints(nx);
+    const std::vector<int> gridY = gridPoints(ny);
+
+    // where the level is crossed between p and q
+    const auto crossing = [](QPointF p, QPointF q, double pValue, double qValue,
+                             double level) {
+        const double diff = qValue - pValue;
+        const double t = std::abs(diff) > 1e-12
+                             ? std::clamp((level - pValue) / diff, 0.0, 1.0)
+                             : 0.5;
+        return p + (q - p) * t;
+    };
+
+    for (size_t gy = 0; gy + 1 < gridY.size(); ++gy) {
+        for (size_t gx = 0; gx + 1 < gridX.size(); ++gx) {
+            // corners of the cell: a b on the lower edge, d c on the upper
+            const int i0 = gridX[gx], i1 = gridX[gx + 1];
+            const int j0 = gridY[gy], j1 = gridY[gy + 1];
+            const double va = m_hist.GetBinValue(i0, j0);
+            const double vb = m_hist.GetBinValue(i1, j0);
+            const double vc = m_hist.GetBinValue(i1, j1);
+            const double vd = m_hist.GetBinValue(i0, j1);
+            if (!std::isfinite(va) || !std::isfinite(vb) ||
+                !std::isfinite(vc) || !std::isfinite(vd))
+                continue;
+            const QPointF a(i0 + 0.5, j0 + 0.5), b(i1 + 0.5, j0 + 0.5);
+            const QPointF c(i1 + 0.5, j1 + 0.5), d(i0 + 0.5, j1 + 0.5);
+
+            for (const double level : levels) {
+                const int corners = (va > level ? 1 : 0) |
+                                    (vb > level ? 2 : 0) |
+                                    (vc > level ? 4 : 0) | (vd > level ? 8 : 0);
+                if (corners == 0 || corners == 15)
+                    continue;
+                const QPointF bottom = crossing(a, b, va, vb, level);
+                const QPointF right = crossing(b, c, vb, vc, level);
+                const QPointF top = crossing(d, c, vd, vc, level);
+                const QPointF left = crossing(a, d, va, vd, level);
+                // two opposite corners above the level: the centre decides
+                // which pairs of edges are connected
+                const bool centerAbove = (va + vb + vc + vd) / 4 > level;
+                switch (corners) {
+                case 1:
+                case 14:
+                    lines.emplace_back(left, bottom);
+                    break;
+                case 2:
+                case 13:
+                    lines.emplace_back(bottom, right);
+                    break;
+                case 3:
+                case 12:
+                    lines.emplace_back(left, right);
+                    break;
+                case 4:
+                case 11:
+                    lines.emplace_back(right, top);
+                    break;
+                case 6:
+                case 9:
+                    lines.emplace_back(bottom, top);
+                    break;
+                case 7:
+                case 8:
+                    lines.emplace_back(top, left);
+                    break;
+                case 5:
+                case 10:
+                    if (centerAbove == (corners == 5)) {
+                        lines.emplace_back(bottom, right);
+                        lines.emplace_back(top, left);
+                    } else {
+                        lines.emplace_back(left, bottom);
+                        lines.emplace_back(right, top);
+                    }
+                    break;
+                }
+                if (lines.size() >= kMaxContourLines) {
+                    m_view->setOverlayLines(lines);
+                    return;
+                }
+            }
+        }
+    }
+    m_view->setOverlayLines(lines);
 }
 
 } // namespace sls

@@ -19,7 +19,7 @@ void qDacWidget::SetupWidgetWindow(std::string name) {
     if (isDac) {
         spinDac->setDecimals(0);
     } else {
-        spinDac->setSuffix(0x00b0 + QString("C"));
+        spinDac->setSuffix(QString(QChar(0x00B0)) + QString("C"));
         spinDac->setReadOnly(true);
         lblDacmV->setMinimumWidth(0);
         lblDacmV->setMaximumWidth(0);

@@ -12,12 +12,21 @@
 #include "qTabPlot.h"
 #include "qTabSettings.h"
 
+#include "SlsQtPlotCommon.h"
+
 #include "sls/ToString.h"
 #include "sls/versionAPI.h"
 
+#include <QAction>
+#include <QDockWidget>
 #include <QFileDialog>
+#include <QMenu>
 #include <QResizeEvent>
+#include <QScrollArea>
 #include <QSizePolicy>
+#include <QStyleFactory>
+#include <QStyleHints>
+#include <QToolTip>
 
 #include "sls/Version.h"
 #include <getopt.h>
@@ -99,7 +108,28 @@ int main(int argc, char **argv) {
         }
     }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    // Qt6 always scales with the screen, Qt5 has to be asked
+    QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+#endif
     QApplication app(argc, argv);
+    // Use the same (platform independent) widget style everywhere so that the
+    // gui looks the same on linux and macOS. Fusion is built into Qt.
+    // Can still be overridden with -style <name> or QT_STYLE_OVERRIDE.
+    if (QStyleFactory::keys().contains("Fusion", Qt::CaseInsensitive)) {
+        app.setStyle(QStyleFactory::create("Fusion"));
+    }
+    // The plots are dark, and so is everything around them. Tool tips take
+    // their palette from the platform, they have to be told separately.
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+    // Asks the platform for dark window decorations (the title bar on macOS
+    // and Windows). Before the palette, as it resets the palette.
+    QGuiApplication::styleHints()->setColorScheme(Qt::ColorScheme::Dark);
+#endif
+    const QPalette darkPalette = sls::plot::darkPalette();
+    app.setPalette(darkPalette);
+    QToolTip::setPalette(darkPalette);
     try {
         sls::qDetectorMain det(multiId, fname, isDeveloper);
         det.show();
@@ -148,6 +178,25 @@ void qDetectorMain::SetUpWidgetWindow() {
     scrollMeasurement->setWidget(tabMeasurement);
     scrollDataOutput->setWidget(tabDataOutput);
     scrollPlot->setWidget(tabPlot);
+
+    // The Plot settings can be detached into a dock (or floated) so the
+    // operator can change them while an acquisition is being started/stopped
+    // without switching tabs in the main window.
+    dockWidgetPlotSettings = new QDockWidget(tr("Plot Settings"), this);
+    dockWidgetPlotSettings->setObjectName(
+        QStringLiteral("dockWidgetPlotSettings"));
+    dockWidgetPlotSettings->setAllowedAreas(Qt::LeftDockWidgetArea |
+                                             Qt::RightDockWidgetArea |
+                                             Qt::BottomDockWidgetArea);
+    dockWidgetPlotSettings->setFeatures(QDockWidget::DockWidgetMovable |
+                                        QDockWidget::DockWidgetFloatable);
+    dockScrollPlotSettings = new QScrollArea(dockWidgetPlotSettings);
+    dockScrollPlotSettings->setWidgetResizable(true);
+    dockScrollPlotSettings->setFrameShape(QFrame::NoFrame);
+    dockWidgetPlotSettings->setWidget(dockScrollPlotSettings);
+    addDockWidget(Qt::RightDockWidgetArea, dockWidgetPlotSettings);
+    dockWidgetPlotSettings->hide();
+
     scrollSettings->setWidget(tabSettings);
     scrollAdvanced->setWidget(tabAdvanced);
     scrollDebugging->setWidget(tabDebugging);
@@ -156,8 +205,8 @@ void qDetectorMain::SetUpWidgetWindow() {
 
     tabs->setCurrentIndex(MEASUREMENT);
     defaultTabColor = tabs->tabBar()->tabTextColor(DATAOUTPUT);
-    // set current tab to blue
-    tabs->tabBar()->setTabTextColor(0, QColor(0, 0, 200, 255));
+    // highlight the current tab
+    tabs->tabBar()->setTabTextColor(0, palette().color(QPalette::Link));
     tabs->setTabEnabled(DEBUGGING, false);
     tabs->setTabEnabled(ADVANCED, false);
     tabs->setTabEnabled(DEVELOPER, isDeveloper);
@@ -244,6 +293,15 @@ void qDetectorMain::Initialization() {
     // Help Menu
     connect(menuHelp, SIGNAL(triggered(QAction *)), this,
             SLOT(ExecuteHelp(QAction *)));
+
+    // View Menu: detach the Plot settings so they stay usable while the
+    // acquisition is starting/stopping.
+    QMenu *menuView = menuBar()->addMenu(tr("&View"));
+    actionDetachPlotSettings = new QAction(tr("Detach Plot Settings"), this);
+    actionDetachPlotSettings->setCheckable(true);
+    menuView->addAction(actionDetachPlotSettings);
+    connect(actionDetachPlotSettings, &QAction::toggled, this,
+            &qDetectorMain::SetPlotSettingsDetached);
 }
 
 void qDetectorMain::LoadConfigFile(const std::string &config_file) {
@@ -481,7 +539,7 @@ void qDetectorMain::Refresh(int index) {
     }
     for (int i = 0; i < NumberOfTabs; ++i)
         tabs->tabBar()->setTabTextColor(i, defaultTabColor);
-    tabs->tabBar()->setTabTextColor(index, QColor(0, 0, 200, 255));
+    tabs->tabBar()->setTabTextColor(index, palette().color(QPalette::Link));
 }
 
 void qDetectorMain::ResizeMainWindow(bool b) {
@@ -549,11 +607,34 @@ void qDetectorMain::EnableTabs(bool enable) {
     }
 }
 
+void qDetectorMain::SetPlotSettingsDetached(bool detached) {
+    if (!dockWidgetPlotSettings || !dockScrollPlotSettings || !scrollPlot ||
+        !tabPlot)
+        return;
+    if (detached) {
+        QWidget *page = scrollPlot->takeWidget();
+        if (!page)
+            return;
+        dockScrollPlotSettings->setWidget(page);
+        dockWidgetPlotSettings->show();
+        dockWidgetPlotSettings->raise();
+        tabs->setTabText(PLOT, tr("Plot (detached)"));
+    } else {
+        QWidget *page = dockScrollPlotSettings->takeWidget();
+        if (page)
+            scrollPlot->setWidget(page);
+        dockWidgetPlotSettings->hide();
+        tabs->setTabText(PLOT, tr("Plot"));
+    }
+}
+
 void qDetectorMain::SetZoomToolTip(bool disable) {
     if (disable)
         dockWidgetPlot->setToolTip(
-            "<span style=\" color:#00007f;\">To Enable mouse-controlled "
-            "zooming capabilities,\ndisable min and max for all axes.<span> ");
+            QString("<span style=\" color:%1;\">To Enable mouse-controlled "
+                    "zooming capabilities,\ndisable min and max for all "
+                    "axes.<span> ")
+                .arg(palette().color(QPalette::Link).name()));
     else
         dockWidgetPlot->setToolTip(zoomToolTip);
 }

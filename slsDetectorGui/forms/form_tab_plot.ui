@@ -1075,70 +1075,6 @@
           <height>25</height>
          </size>
         </property>
-        <property name="palette">
-         <palette>
-          <active>
-           <colorrole role="ButtonText">
-            <brush brushstyle="SolidPattern">
-             <color alpha="255">
-              <red>11</red>
-              <green>11</green>
-              <blue>11</blue>
-             </color>
-            </brush>
-           </colorrole>
-           <colorrole role="Shadow">
-            <brush brushstyle="SolidPattern">
-             <color alpha="255">
-              <red>20</red>
-              <green>20</green>
-              <blue>20</blue>
-             </color>
-            </brush>
-           </colorrole>
-          </active>
-          <inactive>
-           <colorrole role="ButtonText">
-            <brush brushstyle="SolidPattern">
-             <color alpha="255">
-              <red>11</red>
-              <green>11</green>
-              <blue>11</blue>
-             </color>
-            </brush>
-           </colorrole>
-           <colorrole role="Shadow">
-            <brush brushstyle="SolidPattern">
-             <color alpha="255">
-              <red>20</red>
-              <green>20</green>
-              <blue>20</blue>
-             </color>
-            </brush>
-           </colorrole>
-          </inactive>
-          <disabled>
-           <colorrole role="ButtonText">
-            <brush brushstyle="SolidPattern">
-             <color alpha="255">
-              <red>119</red>
-              <green>119</green>
-              <blue>119</blue>
-             </color>
-            </brush>
-           </colorrole>
-           <colorrole role="Shadow">
-            <brush brushstyle="SolidPattern">
-             <color alpha="255">
-              <red>20</red>
-              <green>20</green>
-              <blue>20</blue>
-             </color>
-            </brush>
-           </colorrole>
-          </disabled>
-         </palette>
-        </property>
         <property name="font">
          <font>
           <family>Cantarell</family>
@@ -1182,70 +1118,6 @@
           <width>160</width>
           <height>25</height>
          </size>
-        </property>
-        <property name="palette">
-         <palette>
-          <active>
-           <colorrole role="ButtonText">
-            <brush brushstyle="SolidPattern">
-             <color alpha="255">
-              <red>11</red>
-              <green>11</green>
-              <blue>11</blue>
-             </color>
-            </brush>
-           </colorrole>
-           <colorrole role="Shadow">
-            <brush brushstyle="SolidPattern">
-             <color alpha="255">
-              <red>20</red>
-              <green>20</green>
-              <blue>20</blue>
-             </color>
-            </brush>
-           </colorrole>
-          </active>
-          <inactive>
-           <colorrole role="ButtonText">
-            <brush brushstyle="SolidPattern">
-             <color alpha="255">
-              <red>11</red>
-              <green>11</green>
-              <blue>11</blue>
-             </color>
-            </brush>
-           </colorrole>
-           <colorrole role="Shadow">
-            <brush brushstyle="SolidPattern">
-             <color alpha="255">
-              <red>20</red>
-              <green>20</green>
-              <blue>20</blue>
-             </color>
-            </brush>
-           </colorrole>
-          </inactive>
-          <disabled>
-           <colorrole role="ButtonText">
-            <brush brushstyle="SolidPattern">
-             <color alpha="255">
-              <red>119</red>
-              <green>119</green>
-              <blue>119</blue>
-             </color>
-            </brush>
-           </colorrole>
-           <colorrole role="Shadow">
-            <brush brushstyle="SolidPattern">
-             <color alpha="255">
-              <red>20</red>
-              <green>20</green>
-              <blue>20</blue>
-             </color>
-            </brush>
-           </colorrole>
-          </disabled>
-         </palette>
         </property>
         <property name="font">
          <font>
@@ -1757,43 +1629,6 @@
                   <height>35</height>
                  </size>
                 </property>
-                <property name="palette">
-                 <palette>
-                  <active>
-                   <colorrole role="Shadow">
-                    <brush brushstyle="SolidPattern">
-                     <color alpha="255">
-                      <red>20</red>
-                      <green>20</green>
-                      <blue>20</blue>
-                     </color>
-                    </brush>
-                   </colorrole>
-                  </active>
-                  <inactive>
-                   <colorrole role="Shadow">
-                    <brush brushstyle="SolidPattern">
-                     <color alpha="255">
-                      <red>20</red>
-                      <green>20</green>
-                      <blue>20</blue>
-                     </color>
-                    </brush>
-                   </colorrole>
-                  </inactive>
-                  <disabled>
-                   <colorrole role="Shadow">
-                    <brush brushstyle="SolidPattern">
-                     <color alpha="255">
-                      <red>20</red>
-                      <green>20</green>
-                      <blue>20</blue>
-                     </color>
-                    </brush>
-                   </colorrole>
-                  </disabled>
-                 </palette>
-                </property>
                 <property name="font">
                  <font>
                   <family>Cantarell</family>
@@ -1878,43 +1713,6 @@
                   <width>16777215</width>
                   <height>35</height>
                  </size>
-                </property>
-                <property name="palette">
-                 <palette>
-                  <active>
-                   <colorrole role="Shadow">
-                    <brush brushstyle="SolidPattern">
-                     <color alpha="255">
-                      <red>20</red>
-                      <green>20</green>
-                      <blue>20</blue>
-                     </color>
-                    </brush>
-                   </colorrole>
-                  </active>
-                  <inactive>
-                   <colorrole role="Shadow">
-                    <brush brushstyle="SolidPattern">
-                     <color alpha="255">
-                      <red>20</red>
-                      <green>20</green>
-                      <blue>20</blue>
-                     </color>
-                    </brush>
-                   </colorrole>
-                  </inactive>
-                  <disabled>
-                   <colorrole role="Shadow">
-                    <brush brushstyle="SolidPattern">
-                     <color alpha="255">
-                      <red>20</red>
-                      <green>20</green>
-                      <blue>20</blue>
-                     </color>
-                    </brush>
-                   </colorrole>
-                  </disabled>
-                 </palette>
                 </property>
                 <property name="font">
                  <font>
@@ -2500,43 +2298,6 @@ Displays minimum, maximum and sum of values for each plot.
                   <height>35</height>
                  </size>
                 </property>
-                <property name="palette">
-                 <palette>
-                  <active>
-                   <colorrole role="Shadow">
-                    <brush brushstyle="SolidPattern">
-                     <color alpha="255">
-                      <red>20</red>
-                      <green>20</green>
-                      <blue>20</blue>
-                     </color>
-                    </brush>
-                   </colorrole>
-                  </active>
-                  <inactive>
-                   <colorrole role="Shadow">
-                    <brush brushstyle="SolidPattern">
-                     <color alpha="255">
-                      <red>20</red>
-                      <green>20</green>
-                      <blue>20</blue>
-                     </color>
-                    </brush>
-                   </colorrole>
-                  </inactive>
-                  <disabled>
-                   <colorrole role="Shadow">
-                    <brush brushstyle="SolidPattern">
-                     <color alpha="255">
-                      <red>20</red>
-                      <green>20</green>
-                      <blue>20</blue>
-                     </color>
-                    </brush>
-                   </colorrole>
-                  </disabled>
-                 </palette>
-                </property>
                 <property name="font">
                  <font>
                   <family>Cantarell</family>
@@ -2621,43 +2382,6 @@ Displays minimum, maximum and sum of values for each plot.
                   <width>16777215</width>
                   <height>35</height>
                  </size>
-                </property>
-                <property name="palette">
-                 <palette>
-                  <active>
-                   <colorrole role="Shadow">
-                    <brush brushstyle="SolidPattern">
-                     <color alpha="255">
-                      <red>20</red>
-                      <green>20</green>
-                      <blue>20</blue>
-                     </color>
-                    </brush>
-                   </colorrole>
-                  </active>
-                  <inactive>
-                   <colorrole role="Shadow">
-                    <brush brushstyle="SolidPattern">
-                     <color alpha="255">
-                      <red>20</red>
-                      <green>20</green>
-                      <blue>20</blue>
-                     </color>
-                    </brush>
-                   </colorrole>
-                  </inactive>
-                  <disabled>
-                   <colorrole role="Shadow">
-                    <brush brushstyle="SolidPattern">
-                     <color alpha="255">
-                      <red>20</red>
-                      <green>20</green>
-                      <blue>20</blue>
-                     </color>
-                    </brush>
-                   </colorrole>
-                  </disabled>
-                 </palette>
                 </property>
                 <property name="font">
                  <font>
@@ -3056,43 +2780,6 @@ Displays statistics, ie. minimum, maximum and sum of values for each plot.
          <height>35</height>
         </size>
        </property>
-       <property name="palette">
-        <palette>
-         <active>
-          <colorrole role="Shadow">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>20</red>
-             <green>20</green>
-             <blue>20</blue>
-            </color>
-           </brush>
-          </colorrole>
-         </active>
-         <inactive>
-          <colorrole role="Shadow">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>20</red>
-             <green>20</green>
-             <blue>20</blue>
-            </color>
-           </brush>
-          </colorrole>
-         </inactive>
-         <disabled>
-          <colorrole role="Shadow">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>20</red>
-             <green>20</green>
-             <blue>20</blue>
-            </color>
-           </brush>
-          </colorrole>
-         </disabled>
-        </palette>
-       </property>
        <property name="font">
         <font>
          <family>Cantarell</family>
@@ -3152,43 +2839,6 @@ Displays statistics, ie. minimum, maximum and sum of values for each plot.
          <width>16777215</width>
          <height>35</height>
         </size>
-       </property>
-       <property name="palette">
-        <palette>
-         <active>
-          <colorrole role="Shadow">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>20</red>
-             <green>20</green>
-             <blue>20</blue>
-            </color>
-           </brush>
-          </colorrole>
-         </active>
-         <inactive>
-          <colorrole role="Shadow">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>20</red>
-             <green>20</green>
-             <blue>20</blue>
-            </color>
-           </brush>
-          </colorrole>
-         </inactive>
-         <disabled>
-          <colorrole role="Shadow">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>20</red>
-             <green>20</green>
-             <blue>20</blue>
-            </color>
-           </brush>
-          </colorrole>
-         </disabled>
-        </palette>
        </property>
        <property name="font">
         <font>

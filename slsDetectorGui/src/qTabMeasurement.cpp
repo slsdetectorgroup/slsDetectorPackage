@@ -23,13 +23,14 @@ void qTabMeasurement::SetupWidgetWindow() {
     setFont(QFont("Carlito", 9, QFont::Normal));
     // palette
     red = QPalette();
-    red.setColor(QPalette::Active, QPalette::WindowText, Qt::red);
+    red.setColor(QPalette::Active, QPalette::WindowText,
+                 QColor(255, 95, 95)); // readable on the dark window
     acqPeriodTip = spinPeriod->toolTip();
     errPeriodTip =
         QString("<nobr>Frame period between exposures.</nobr><br>"
                 "<nobr> #period#</nobr><br><br>") +
         QString(
-            "<nobr><font color=\"red\"><b>Acquisition Period</b> should be"
+            "<nobr><font color=\"#ff5f5f\"><b>Acquisition Period</b> should be"
             " greater than or equal to <b>Exposure Time</b>.</font></nobr>");
 
     // timer to update the progress bar

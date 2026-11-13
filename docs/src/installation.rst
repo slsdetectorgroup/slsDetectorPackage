@@ -246,7 +246,8 @@ Example cmake options               Comment
 CPack builds separate RPMs for the command line tools (``cli``), receiver
 executables (``receiver``), Moench processing tools (``zmq``), and GUI (``gui``).
 Install ``rpm-build`` and the dependencies for the selected features, and build
-on the target distribution or a matching container.
+on the target distribution or a matching container. The GUI RPM requires the
+``qt6-qtbase`` packages, which come from EPEL on RHEL9.
 
 For example, to package the command line tools, receiver and GUI:
 
@@ -311,7 +312,7 @@ using this compiler
 
 
 
-3.4. Build slsDetectorGui (Qt5)
+3.4. Build slsDetectorGui (Qt6)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 1. Using pre-built binary on conda
@@ -322,22 +323,25 @@ using this compiler
         conda activate myenv
 
 
-2. Using system installation on RHEL7
+2. Using system installation of Qt6
 
     .. code-block:: bash
 
-        yum install qt5-qtbase-devel.x86_64
-        yum install qt5-qtsvg-devel.x86_64 
+        # Fedora, and RHEL9 with EPEL enabled
+        dnf install qt6-qtbase-devel
 
-3. Using system installation on RHEL8
+        # Ubuntu, Debian
+        apt install qt6-base-dev
 
-    .. code-block:: bash
+        # macOS with Homebrew
+        brew install qt
 
-        yum install qt5-qtbase-devel.x86_64
-        yum install qt5-qtsvg-devel.x86_64 
-        yum install expat-devel.x86_64
+    .. note ::
 
-4. Using conda
+        Qt6 is not packaged for RHEL8, neither in the distribution nor in
+        EPEL. Use conda there.
+
+3. Using conda
 
     .. code-block:: bash
 
@@ -347,12 +351,7 @@ using this compiler
         conda config --set channel_priority strict
 
         # create environment to compile
-        # on rhel7
-        conda create -n slsgui gxx_linux-64 gxx_linux-64 mesa-libgl-devel-cos6-x86_64 qt
-        # on fedora or newer systems
-        conda create -n slsgui qt
-
-        # when using conda compilers, would also need libgl, but no need for it on fedora unless maybe using it with ROOT
+        conda create -n slsgui qt6-main
 
         # activate environment
         conda activate slsgui

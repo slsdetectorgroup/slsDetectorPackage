@@ -25,6 +25,7 @@
 #include <QScrollArea>
 #include <QSizePolicy>
 #include <QStyleFactory>
+#include <QStyleHints>
 #include <QToolTip>
 
 #include "sls/Version.h"
@@ -116,6 +117,11 @@ int main(int argc, char **argv) {
     }
     // The plots are dark, and so is everything around them. Tool tips take
     // their palette from the platform, they have to be told separately.
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+    // Asks the platform for dark window decorations (the title bar on macOS
+    // and Windows). Before the palette, as it resets the palette.
+    QGuiApplication::styleHints()->setColorScheme(Qt::ColorScheme::Dark);
+#endif
     const QPalette darkPalette = sls::plot::darkPalette();
     app.setPalette(darkPalette);
     QToolTip::setPalette(darkPalette);

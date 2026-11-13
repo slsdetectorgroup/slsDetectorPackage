@@ -28,6 +28,7 @@ class qTabMessages : public QWidget, private Ui::TabMessagesObject {
     void SetupWidgetWindow();
     void Initialization();
     void PrintNextLine();
+    QString CommandFontTag() const;
     void GetLastCommand();
     void ClearCommand();
     void AppendOutput();

@@ -582,43 +582,6 @@
        <height>35</height>
       </size>
      </property>
-     <property name="palette">
-      <palette>
-       <active>
-        <colorrole role="Shadow">
-         <brush brushstyle="SolidPattern">
-          <color alpha="255">
-           <red>20</red>
-           <green>20</green>
-           <blue>20</blue>
-          </color>
-         </brush>
-        </colorrole>
-       </active>
-       <inactive>
-        <colorrole role="Shadow">
-         <brush brushstyle="SolidPattern">
-          <color alpha="255">
-           <red>20</red>
-           <green>20</green>
-           <blue>20</blue>
-          </color>
-         </brush>
-        </colorrole>
-       </inactive>
-       <disabled>
-        <colorrole role="Shadow">
-         <brush brushstyle="SolidPattern">
-          <color alpha="255">
-           <red>20</red>
-           <green>20</green>
-           <blue>20</blue>
-          </color>
-         </brush>
-        </colorrole>
-       </disabled>
-      </palette>
-     </property>
      <property name="font">
       <font>
        <family>Cantarell</family>

@@ -105,7 +105,8 @@ class SlsQtFastImage : public QWidget {
     QFont axisTitleFont() const;
 
   signals:
-    /** The user zoomed or panned, or the widget was resized */
+    /** The user zoomed or panned, or a resize changed what is visible. A
+     * resize is reported from the event loop, not from within the resize. */
     void visibleAreaChanged(const QRectF &area);
     /** Palette, log scale or colour range changed */
     void colorMapChanged();
@@ -189,6 +190,7 @@ class SlsQtFastImage : public QWidget {
 
     QRectF m_viewport;      // (x, y) is the lower left corner
     bool m_fillPlot = true; // show more than m_viewport to fill the plot area
+    bool m_resizeReportPending = false;
     QRectF m_axisRange;     // null: pixel index
     bool m_zoomEnabled = true;
     bool m_axesVisible = true;

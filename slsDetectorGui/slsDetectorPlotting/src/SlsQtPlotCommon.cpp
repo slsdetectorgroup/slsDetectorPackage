@@ -496,5 +496,42 @@ QRect plotRectFor(const QSize &widgetSize, const PlotTheme &theme) {
     return QRect(x0, y0, x1 - x0, y1 - y0);
 }
 
+QPalette darkPalette() {
+    const PlotTheme theme;
+    const QColor window(45, 45, 45);
+    const QColor button(60, 60, 60);
+    const QColor disabledText(125, 125, 125);
+    const QColor accent(110, 160, 255);
+
+    QPalette p;
+    p.setColor(QPalette::Window, window);
+    p.setColor(QPalette::WindowText, theme.text);
+    p.setColor(QPalette::Base, theme.background);
+    p.setColor(QPalette::AlternateBase, QColor(38, 38, 38));
+    p.setColor(QPalette::Text, theme.text);
+    p.setColor(QPalette::PlaceholderText, disabledText);
+    p.setColor(QPalette::Button, button);
+    p.setColor(QPalette::ButtonText, theme.text);
+    p.setColor(QPalette::BrightText, Qt::white);
+    p.setColor(QPalette::ToolTipBase, button);
+    p.setColor(QPalette::ToolTipText, theme.text);
+    p.setColor(QPalette::Light, QColor(85, 85, 85));
+    p.setColor(QPalette::Midlight, QColor(70, 70, 70));
+    p.setColor(QPalette::Mid, QColor(38, 38, 38));
+    p.setColor(QPalette::Dark, QColor(24, 24, 24));
+    p.setColor(QPalette::Shadow, QColor(12, 12, 12));
+    p.setColor(QPalette::Highlight, QColor(50, 100, 180));
+    p.setColor(QPalette::HighlightedText, Qt::white);
+    p.setColor(QPalette::Link, accent);
+    p.setColor(QPalette::LinkVisited, QColor(180, 150, 255));
+
+    for (auto role : {QPalette::WindowText, QPalette::Text,
+                      QPalette::ButtonText, QPalette::HighlightedText})
+        p.setColor(QPalette::Disabled, role, disabledText);
+    p.setColor(QPalette::Disabled, QPalette::Base, window);
+    p.setColor(QPalette::Disabled, QPalette::Highlight, QColor(75, 75, 75));
+    return p;
+}
+
 } // namespace plot
 } // namespace sls

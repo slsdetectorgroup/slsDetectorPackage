@@ -44,7 +44,7 @@ QString formatValue(double v, int digits) {
 SlsQtFastImage::SlsQtFastImage(QWidget *parent) : QWidget(parent) {
     setMouseTracking(true);
     setFocusPolicy(Qt::StrongFocus);
-    setMinimumSize(200, 200);
+    setMinimumSize(50, 50); // the gain plot of the gui is small
     setAttribute(Qt::WA_OpaquePaintEvent, true);
 
     m_titleFont = font();
@@ -711,9 +711,22 @@ bool SlsQtFastImage::event(QEvent *e) {
     return QWidget::event(e);
 }
 
+// A layout resizes the widget from within other calls, for example when a
+// neighbour is shown. Whoever made that call does not expect a signal in the
+// middle of it (qDrawPlot holds a mutex there that its slot takes as well), so
+// the new visible area is reported from the event loop.
 void SlsQtFastImage::resizeEvent(QResizeEvent *) {
-    if (hasImage())
-        emit visibleAreaChanged(visibleArea());
+    if (!hasImage() || !m_fillPlot || m_resizeReportPending)
+        return;
+    m_resizeReportPending = true;
+    QMetaObject::invokeMethod(
+        this,
+        [this] {
+            m_resizeReportPending = false;
+            if (hasImage())
+                emit visibleAreaChanged(visibleArea());
+        },
+        Qt::QueuedConnection);
 }
 
 } // namespace sls

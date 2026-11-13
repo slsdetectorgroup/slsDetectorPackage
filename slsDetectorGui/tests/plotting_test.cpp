@@ -16,6 +16,7 @@
 #include <QComboBox>
 #include <QCoreApplication>
 #include <QElapsedTimer>
+#include <QHBoxLayout>
 #include <QHash>
 #include <QImage>
 #include <QLabel>
@@ -229,6 +230,8 @@ class PlottingTest : public QObject {
     void imageReadout();
     void imageAxisValues();
 
+    void darkPaletteGoesWithThePlots();
+
     void scaleHistoDrag();
     void scaleHistoLogAxis();
     void scalePanel();
@@ -243,6 +246,7 @@ class PlottingTest : public QObject {
     void plot2dLogZ();
     void plot2dContours();
     void plot2dRoiAndZoom();
+    void plot2dResizeIsReportedLater();
     void plot2dGain();
 
     void performance1024x512();
@@ -1586,6 +1590,88 @@ void PlottingTest::plot2dRoiAndZoom() {
     QVERIFY(!view->zoomEnabled());
     plot.DisableZoom(false);
     QVERIFY(view->zoomEnabled());
+}
+
+// qDrawPlot shows the gain plot next to the data plot while it holds a mutex,
+// and its slot for PlotZoomedSignal takes the same mutex. Showing a widget
+// resizes its neighbours on the spot, so the plot may not report its new
+// visible area from within that resize.
+void PlottingTest::plot2dResizeIsReportedLater() {
+    QWidget window;
+    auto *plot = new sls::SlsQt2DPlot(&window);
+    auto *gain = new sls::SlsQt2DPlot(&window, true);
+    gain->setFixedSize(180, 120);
+    gain->hide();
+    auto *layout = new QHBoxLayout(&window);
+    layout->addWidget(plot);
+    layout->addWidget(gain);
+    window.resize(900, 600);
+    window.show();
+    for (int i = 0; i < 3; i++) // the visible area now depends on the size
+        sendWheel(*plot->imageView(), QPointF(300.0, 250.0), 120);
+    const QSize before = plot->size();
+    const QRectF areaBefore = plot->imageView()->visibleArea();
+
+    bool showing = false;
+    int reportedWhileShowing = 0;
+    QSignalSpy spy(plot, &sls::SlsQt2DPlot::PlotZoomedSignal);
+    connect(plot, &sls::SlsQt2DPlot::PlotZoomedSignal, &window, [&] {
+        if (showing)
+            reportedWhileShowing++;
+    });
+    showing = true;
+    gain->show();
+    showing = false;
+    QVERIFY(plot->width() < before.width()); // resized inside show()
+    QVERIFY(plot->imageView()->visibleArea() != areaBefore);
+    QCOMPARE(reportedWhileShowing, 0);
+
+    // but once that is over, for the gain plot to follow
+    QCoreApplication::processEvents();
+    QCOMPARE(spy.count(), 1);
+
+    // the gain plot is small, all of it has to be visible
+    QVERIFY(gain->rect().contains(gain->imageView()->geometry()));
+    if (!qEnvironmentVariableIsEmpty("PLOTTING_TEST_IMAGES"))
+        window.grab().save(qEnvironmentVariable("PLOTTING_TEST_IMAGES") +
+                           QStringLiteral("/gain-next-to-data.png"));
+}
+
+// The widgets around the plots use the plot colours, and every text colour is
+// readable on the background it is drawn on.
+void PlottingTest::darkPaletteGoesWithThePlots() {
+    const sls::plot::PlotTheme theme;
+    const QPalette p = sls::plot::darkPalette();
+    QCOMPARE(p.color(QPalette::Base), theme.background);
+    QCOMPARE(p.color(QPalette::Text), theme.text);
+    QCOMPARE(p.color(QPalette::WindowText), theme.text);
+
+    auto luminance = [](const QColor &c) {
+        auto lin = [](double v) {
+            return v <= 0.03928 ? v / 12.92
+                                : std::pow((v + 0.055) / 1.055, 2.4);
+        };
+        return 0.2126 * lin(c.redF()) + 0.7152 * lin(c.greenF()) +
+               0.0722 * lin(c.blueF());
+    };
+    auto contrast = [&](QPalette::ColorRole fg, QPalette::ColorRole bg) {
+        const double a = luminance(p.color(fg));
+        const double b = luminance(p.color(bg));
+        return (std::max(a, b) + 0.05) / (std::min(a, b) + 0.05);
+    };
+    QVERIFY(contrast(QPalette::WindowText, QPalette::Window) > 7.0);
+    QVERIFY(contrast(QPalette::Text, QPalette::Base) > 7.0);
+    QVERIFY(contrast(QPalette::ButtonText, QPalette::Button) > 7.0);
+    QVERIFY(contrast(QPalette::ToolTipText, QPalette::ToolTipBase) > 7.0);
+    QVERIFY(contrast(QPalette::Link, QPalette::Window) > 4.5);
+    QVERIFY(contrast(QPalette::Link, QPalette::Base) > 4.5);
+    QVERIFY(contrast(QPalette::HighlightedText, QPalette::Highlight) > 4.5);
+
+    // disabled text is dimmer, but still there
+    QVERIFY(p.color(QPalette::Disabled, QPalette::WindowText) !=
+            p.color(QPalette::Active, QPalette::WindowText));
+    QVERIFY(luminance(p.color(QPalette::Disabled, QPalette::WindowText)) >
+            2.0 * luminance(p.color(QPalette::Window)));
 }
 
 void PlottingTest::plot2dGain() {

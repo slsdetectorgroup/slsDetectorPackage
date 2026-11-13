@@ -12,6 +12,8 @@
 #include "qTabPlot.h"
 #include "qTabSettings.h"
 
+#include "SlsQtPlotCommon.h"
+
 #include "sls/ToString.h"
 #include "sls/versionAPI.h"
 
@@ -23,6 +25,7 @@
 #include <QScrollArea>
 #include <QSizePolicy>
 #include <QStyleFactory>
+#include <QToolTip>
 
 #include "sls/Version.h"
 #include <getopt.h>
@@ -111,6 +114,11 @@ int main(int argc, char **argv) {
     if (QStyleFactory::keys().contains("Fusion", Qt::CaseInsensitive)) {
         app.setStyle(QStyleFactory::create("Fusion"));
     }
+    // The plots are dark, and so is everything around them. Tool tips take
+    // their palette from the platform, they have to be told separately.
+    const QPalette darkPalette = sls::plot::darkPalette();
+    app.setPalette(darkPalette);
+    QToolTip::setPalette(darkPalette);
     try {
         sls::qDetectorMain det(multiId, fname, isDeveloper);
         det.show();
@@ -186,8 +194,8 @@ void qDetectorMain::SetUpWidgetWindow() {
 
     tabs->setCurrentIndex(MEASUREMENT);
     defaultTabColor = tabs->tabBar()->tabTextColor(DATAOUTPUT);
-    // set current tab to blue
-    tabs->tabBar()->setTabTextColor(0, QColor(0, 0, 200, 255));
+    // highlight the current tab
+    tabs->tabBar()->setTabTextColor(0, palette().color(QPalette::Link));
     tabs->setTabEnabled(DEBUGGING, false);
     tabs->setTabEnabled(ADVANCED, false);
     tabs->setTabEnabled(DEVELOPER, isDeveloper);
@@ -520,7 +528,7 @@ void qDetectorMain::Refresh(int index) {
     }
     for (int i = 0; i < NumberOfTabs; ++i)
         tabs->tabBar()->setTabTextColor(i, defaultTabColor);
-    tabs->tabBar()->setTabTextColor(index, QColor(0, 0, 200, 255));
+    tabs->tabBar()->setTabTextColor(index, palette().color(QPalette::Link));
 }
 
 void qDetectorMain::ResizeMainWindow(bool b) {
@@ -612,8 +620,10 @@ void qDetectorMain::SetPlotSettingsDetached(bool detached) {
 void qDetectorMain::SetZoomToolTip(bool disable) {
     if (disable)
         dockWidgetPlot->setToolTip(
-            "<span style=\" color:#00007f;\">To Enable mouse-controlled "
-            "zooming capabilities,\ndisable min and max for all axes.<span> ");
+            QString("<span style=\" color:%1;\">To Enable mouse-controlled "
+                    "zooming capabilities,\ndisable min and max for all "
+                    "axes.<span> ")
+                .arg(palette().color(QPalette::Link).name()));
     else
         dockWidgetPlot->setToolTip(zoomToolTip);
 }

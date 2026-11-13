@@ -7,6 +7,7 @@
 
 #include <QColor>
 #include <QFont>
+#include <QPalette>
 #include <QRect>
 #include <QRgb>
 #include <QSize>
@@ -93,6 +94,12 @@ struct PlotTheme {
 // Inner plot rectangle of a widget, after the theme margins have been
 // subtracted.  Never smaller than 10x10 so a tiny widget still paints.
 QRect plotRectFor(const QSize &widgetSize, const PlotTheme &theme);
+
+// Widget palette of the gui, made from the colours of PlotTheme so that the
+// tabs, docks and dialogs around the plots are as dark as the plots. Text
+// entry fields get the plot background, the windows are a little lighter.
+// QPalette::Link is the accent colour, for text that has to stand out.
+QPalette darkPalette();
 
 } // namespace plot
 } // namespace sls

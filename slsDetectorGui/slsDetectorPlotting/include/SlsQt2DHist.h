@@ -1,132 +1,96 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
-// Copyright (C) 2021 Contributors to the SLS Detector Package
+// Copyright (C) 2026 Contributors to the SLS Detector Package
+#pragma once
 
-#ifndef SLSQT2DHIST_H
-#define SLSQT2DHIST_H
+// Plain 2D data container used by SlsQt2DPlot.  Unlike the previous
+// QwtRasterData-derived class it has no qwt (or any other plotting) base: the
+// widget composites the image itself through sls::SlsQtFastImage, so all it
+// needs from here is the bin geometry, the data, the z range and box/bilinear
+// sampling.
+//
+// Data layout: the values are stored x fastest (index = bx + by * nbinsx),
+// which is the layout qDrawPlot fills (data2d[py * nPixelsX + px]) and the one
+// SlsQtFastImage::setImageCopy() expects (image data[x + y*nx], row 0 = y 0).
+//
+// Data coordinates: bin (bx, by) covers
+//   [xmin + bx*xwidth, xmin + (bx+1)*xwidth) x
+//   [ymin + by*ywidth, ymin + (by+1)*ywidth)
+// and its centre is at (xmin + (bx+0.5)*xwidth, ...).  y is up (row 0 is the
+// bottom row), matching the FastImageView and the ROI list convention.
 
-#include <qwt_color_map.h>
-#include <qwt_plot_spectrogram.h>
-#include <qwt_scale_draw.h>
-#include <qwt_scale_widget.h>
+#include <vector>
 
 namespace sls {
 
-class SlsQt2DHist : public QwtRasterData {
-
-  private:
-    double x_min, x_max, y_min, y_max;
-    double x_width, y_width;
-
-    int nx, ny, nb;
-    double *data{nullptr};
-    double z_min, z_mean, z_max;
-    bool z_mean_has_been_calculated;
-
-    int nx_array, ny_array;
-
-    bool interp;
-
-    static double value_between_points(double p1, double v1, double p2,
-                                       double v2, double p) { // linear extrap
-        return (v2 - v1) / (p2 - p1) * (p - p1) + v1;
-    }
-
+class SlsQt2DHist {
   public:
     SlsQt2DHist(int nbinsx = 10, double xmin = 0, double xmax = 10,
                 int nbinsy = 10, double ymin = 0, double ymax = 10,
-                double *d = 0, double zmin = 0, double zmax = -1);
-    virtual ~SlsQt2DHist();
+                double *d = nullptr, double zmin = 0, double zmax = -1);
+    ~SlsQt2DHist() = default;
 
-    double GetXMin() { return x_min; }
-    double GetXMax() { return x_max; }
-    double GetXBinWidth() { return x_width; }
-    double GetYMin() { return y_min; }
-    double GetYMax() { return y_max; }
-    double GetYBinWidth() { return y_width; }
-    double GetMinimum() { return z_min; }
-    double GetMaximum() { return z_max; }
+    // ---- bin geometry (data coordinates) ---------------------------------
+    double GetXMin() const { return x_min; }
+    double GetXMax() const { return x_max; }
+    double GetXBinWidth() const { return x_width; }
+    double GetYMin() const { return y_min; }
+    double GetYMax() const { return y_max; }
+    double GetYBinWidth() const { return y_width; }
+    int GetNBinsX() const { return nx; }
+    int GetNBinsY() const { return ny; }
+
+    // ---- z range ----------------------------------------------------------
+    double GetMinimum() const { return z_min; }
+    double GetMaximum() const { return z_max; }
+    // Mean of all bins (lazily computed; invalidated by the setters).
     double GetMean();
+    void SetMinimum(double zmin) { z_min = zmin; }
+    void SetMaximum(double zmax) { z_max = zmax; }
+    // zmax < 0: compute the auto range from the data (+/-2% padding); a zmin
+    // is ignored in that case, exactly like the previous implementation.
+    void SetMinMax(double zmin = 0, double zmax = -1);
+    // Smallest positive value, used as the lower end of a log z scale.
+    // Returns z_min; when there is no positive bin it keeps the previous
+    // (larger than z_max) fallback so the log mapping stays valid.
+    double SetMinimumToFirstGreaterThanZero();
 
-    int GetNBinsX() { return nx; }
-    int GetNBinsY() { return ny; }
-    double GetBinValue(int bx, int by);
-    int GetBinIndex(int bx, int by);
-    double *GetDataPtr() { return data; }
-
-    void Interpolate(bool on = 1) { interp = on; }
+    // ---- data access ------------------------------------------------------
+    int GetBinIndex(int bx, int by) const;
+    int FindBinIndex(double x, double y) const;
+    double GetBinValue(int bx, int by) const;
     void SetBinValue(int bx, int by, double v);
+    double *GetDataPtr() { return data.data(); }
+    const double *GetDataPtr() const { return data.data(); }
+
+    // ---- sampling ---------------------------------------------------------
+    void Interpolate(bool on = true) { interp = on; }
+    bool IsInterpolated() const { return interp; }
+
+    // Box sampling (containing bin) or, when Interpolate(true) is set,
+    // bilinear interpolation between the four surrounding bin centres.
+    // Points outside the data sample the under/overflow bin (which SetData
+    // keeps at 0).
+    double value(double x, double y) const;
+
+    // ---- bulk input -------------------------------------------------------
+    // Copies nbinsx*nbinsy values from d (x fastest).  d may be nullptr: the
+    // call then only re-allocates the buffer when the geometry changed, and a
+    // new allocation is zeroed; with an unchanged geometry the previous values
+    // are kept (nullptr does not clear the frame).  Invalid (non-positive) bin
+    // counts are ignored and the previous data is kept.
     void SetData(int nbinsx, double xmin, double xmax, int nbinsy, double ymin,
                  double ymax, double *d, double zmin = 0, double zmax = -1);
 
-    double SetMinimumToFirstGreaterThanZero();
-    void SetMinimum(double zmin) { z_min = zmin; }
-    void SetMaximum(double zmax) { z_max = zmax; }
-    void SetMinMax(double zmin = 0, double zmax = -1);
-
-    int FindBinIndex(double x, double y);
-
-    virtual QwtRasterData *copy() const {
-        // this function does not create a new SlsQt2DHistData instance,
-        // just passes a pointer so that data is common to both the copy and the
-        // original instance
-        return (QwtRasterData *)this;
-    }
-
-    virtual QwtInterval range() const { return QwtInterval(z_min, z_max); }
-    virtual QwtInterval interval(Qt::Axis axis) const {
-        switch (axis) {
-        case Qt::ZAxis:
-            return QwtInterval(z_min, z_max);
-        case Qt::XAxis:
-            return QwtInterval(x_min, x_max);
-        case Qt::YAxis:
-            return QwtInterval(y_min, y_max);
-        default:
-            return QwtInterval(z_min, z_max);
-        };
-    };
-
-    virtual double value(double x, double y) const {
-        // if(!interp){ //default is box like plot
-        int index =
-            int((x - x_min) / x_width) + int((y - y_min) / y_width) * nx;
-        if (index < 0 || index > nb)
-            index = nb;
-        if (!interp)
-            return data[index];
-        //}
-
-        int x_int = int((x - x_min) / x_width - 0.5);
-        if (x_int < 0)
-            x_int = 0;
-        else if (x_int > nx - 2)
-            x_int = nx - 2;
-        int y_int = int((y - y_min) / y_width - 0.5);
-        if (y_int < 0)
-            y_int = 0;
-        else if (y_int > ny - 2)
-            y_int = ny - 2;
-
-        int b00 = x_int * ny + y_int;
-        int b01 = x_int * ny + y_int + 1;
-        int b10 = (x_int + 1) * ny + y_int;
-        int b11 = (x_int + 1) * ny + y_int + 1;
-
-        // vertical extrap
-        double y0 = y_min + (y_int + 0.5) * y_width;
-        double y1 = y_min + (y_int + 1.5) * y_width;
-        double left_v = value_between_points(y0, data[b00], y1, data[b01], y);
-        double right_v = value_between_points(y0, data[b10], y1, data[b11], y);
-        // horazontal extrap
-
-        return 0.5;
-
-        return value_between_points(x_min + (x_int + 0.5) * x_width, left_v,
-                                    x_min + (x_int + 1.5) * x_width, right_v,
-                                    x);
-    }
+  private:
+    double x_min{0.0}, x_max{0.0}, y_min{0.0}, y_max{0.0};
+    double x_width{1.0}, y_width{1.0};
+    int nx{0}, ny{0}, nb{0};
+    // nb + 1 values: the last entry is the under/overflow bin (kept at 0), so
+    // an out-of-range GetBinIndex() still returns a valid index.
+    std::vector<double> data;
+    double z_min{0.0}, z_mean{0.0}, z_max{0.0};
+    bool z_mean_has_been_calculated{false};
+    bool interp{false};
 };
 
 } // namespace sls
-
-#endif

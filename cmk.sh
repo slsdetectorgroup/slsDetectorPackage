@@ -1,7 +1,16 @@
 #!/bin/bash
 # SPDX-License-Identifier: LGPL-3.0-or-other
 # Copyright (C) 2021 Contributors to the SLS Detector Package
-CMAKE="cmake3"
+# Stop at the first failing configure/build step so a failed GUI build is not
+# reported as success by the final (possibly skipped) install step.
+set -e
+# Prefer cmake3 when the distribution provides it (RHEL/CentOS), otherwise
+# use the default cmake.  -k <cmd> still overrides this.
+if command -v cmake3 >/dev/null 2>&1; then
+	CMAKE="cmake3"
+else
+	CMAKE="cmake"
+fi
 BUILDDIR="build"
 INSTALLDIR=""
 HDF5DIR="/opt/hdf5v1.10.0"
@@ -10,6 +19,8 @@ COMPILERTHREADS=0
 TEXTCLIENT=0
 RECEIVER=0
 GUI=0
+QT5=0
+QT6=0
 DEBUG=0
 PYTHON=0
 TESTS=0
@@ -26,13 +37,14 @@ CMAKE_PRE=""
 CMAKE_POST=""
 
 usage() { echo -e "
-Usage: $0 [-b] [-c] [-d <HDF5 directory>] [-e] [-g] [-h] [-i] [-j <Number of threads>] [-k <CMake command>] [-l <Install directory>] [-m] [-n] [-p] [-r] [-s] [-t] [-u] [-z]  
+Usage: $0 [-b] [-c] [-d <HDF5 directory>] [-e] [-g] [-G] [-h] [-i] [-j <Number of threads>] [-k <CMake command>] [-l <Install directory>] [-m] [-n] [-p] [-r] [-s] [-t] [-u] [-z]  
  -[no option]: only make
  -b: Builds/Rebuilds CMake files normal mode
  -c: Clean
  -d: HDF5 Custom Directory
  -e: Debug mode
- -g: Build/Rebuilds gui
+ -g: Build/Rebuilds gui with Qt5
+ -G: Build/Rebuilds gui with Qt6
  -h: Builds/Rebuilds Cmake files with HDF5 package
  -i: Builds tests
  -j: Number of threads to compile through
@@ -76,12 +88,16 @@ For using multiple cores to compile faster:
 ./cmk.sh -j9 -h #with hdf
 
 For rebuilding only certain sections
-./cmk.sh -tg #only text client and gui
+./cmk.sh -tg #text client and Qt5 gui
+./cmk.sh -tG #text client and Qt6 gui
 ./cmk.sh -r #only receiver
+
+Switching between -g and -G removes the build tree automatically
+(no extra -c needed).
  
  " ; exit 1; }
 
-while getopts ":bcd:eghij:k:l:mnpq:rstuz" opt ; do
+while getopts ":bcd:eghij:k:l:mnpGq:rstuz" opt ; do
 	case $opt in
 	b) 
 		echo "Building of CMake files Required"
@@ -100,8 +116,15 @@ while getopts ":bcd:eghij:k:l:mnpq:rstuz" opt ; do
 		DEBUG=1
 		;;  
 	g) 
-		echo "Compiling Options: GUI" 
+		echo "Compiling Options: GUI (Qt5)" 
 		GUI=1
+		QT5=1
+		REBUILD=1
+		;; 
+	G) 
+		echo "Compiling Options: GUI (Qt6)" 
+		GUI=1
+		QT6=1
 		REBUILD=1
 		;; 
 	h) 
@@ -174,6 +197,11 @@ while getopts ":bcd:eghij:k:l:mnpq:rstuz" opt ; do
 done
 
 
+if [ $QT5 -eq 1 ] && [ $QT6 -eq 1 ]; then
+	echo "Invalid options: -g (Qt5 GUI) and -G (Qt6 GUI) are mutually exclusive" >&2
+	exit 1
+fi
+
 #python
 if [ $PYTHON -eq 1 ]; then
 	CMAKE_POST+=" -DSLS_USE_PYTHON=ON "
@@ -182,9 +210,8 @@ fi
 
 
 if [ $TEXTCLIENT -eq 0 ] && [ $RECEIVER -eq 0 ]  && [ $GUI -eq 0 ]; then
-	#CMAKE_POST+=" -DSLS_USE_TEXTCLIENT=ON -DSLS_USE_RECEIVER=ON -DSLS_USE_GUI=ON "
 	CMAKE_POST+=" -DSLS_USE_TEXTCLIENT=ON -DSLS_USE_RECEIVER=ON -DSLS_USE_GUI=OFF "
-    echo "Enabling Compile Option: TextClient, Receiver and GUI"
+    echo "Enabling Compile Option: TextClient and Receiver (GUI off; use -g)"
 else 
     if [ $TEXTCLIENT -eq 1 ]; then
         CMAKE_POST+=" -DSLS_USE_TEXTCLIENT=ON -DSLS_USE_RECEIVER=OFF "
@@ -195,14 +222,39 @@ else
         echo "Enabling Compile Option: Receiver"
     fi              
     if [ $GUI -eq 1 ]; then
-        CMAKE_POST+=" -DSLS_USE_GUI=ON "
-        echo "Enabling Compile Option: GUI"
+        if [ $QT6 -eq 1 ]; then
+            CMAKE_POST+=" -DSLS_USE_GUI=ON -DSLS_GUI_QT_MAJOR=6 "
+            echo "Enabling Compile Option: GUI (Qt6)"
+        else
+            CMAKE_POST+=" -DSLS_USE_GUI=ON -DSLS_GUI_QT_MAJOR=5 "
+            echo "Enabling Compile Option: GUI (Qt5)"
+        fi
     fi
 fi
 
 
 
 
+
+# Switching the GUI between Qt5 and Qt6 in an existing build tree leaves
+# generated Qt/moc/ui files and objects from the other major behind; even
+# make clean after a reconfigure can race with stale targets, so remove the
+# whole build tree.  Read the cache before -b removes it.
+if [ $GUI -eq 1 ] && [ -f "$BUILDDIR/CMakeCache.txt" ]; then
+	requested_qt=5
+	[ $QT6 -eq 1 ] && requested_qt=6
+	cached_gui=$(grep -E '^SLS_USE_GUI:BOOL=' "$BUILDDIR/CMakeCache.txt" | head -1 | cut -d= -f2 || true)
+	cached_qt=$(grep -E '^SLS_GUI_QT_MAJOR:STRING=' "$BUILDDIR/CMakeCache.txt" | head -1 | cut -d= -f2 || true)
+	# Cache from before SLS_GUI_QT_MAJOR existed: that build was Qt6.
+	if [ "$cached_gui" = "ON" ] && [ -z "$cached_qt" ]; then
+		cached_qt=6
+	fi
+	if [ "$cached_gui" = "ON" ] && [ -n "$cached_qt" ] && [ "$cached_qt" != "$requested_qt" ]; then
+		echo "Qt major changed from $cached_qt to $requested_qt: removing the build directory"
+		rm -rf -- "$BUILDDIR"
+		CLEAN=0
+	fi
+fi
 
 #build dir doesnt exist
 if [ ! -d "$BUILDDIR" ] ; then
@@ -264,6 +316,14 @@ else
 	CMAKE_POST+=" -DSLS_USE_HDF5=OFF "
 fi
 
+
+# Qt from conda-forge: cmake does not search $CONDA_PREFIX by itself when
+# the environment does not export CMAKE_PREFIX_PATH.  Only add the hint for
+# the GUI build so a plain `./cmk.sh -cbgjN` / `-cbGjN` works in a conda env.
+if [ $GUI -eq 1 ] && [ -n "${CONDA_PREFIX:-}" ] && [ -z "${CMAKE_PREFIX_PATH:-}" ]; then
+	CMAKE_POST+=" -DCMAKE_PREFIX_PATH=$CONDA_PREFIX"
+	echo "Using CMAKE_PREFIX_PATH from CONDA_PREFIX: $CONDA_PREFIX"
+fi
 
 #install
 if [ -n "$INSTALLDIR" ]; then

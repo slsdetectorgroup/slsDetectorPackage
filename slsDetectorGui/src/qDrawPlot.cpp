@@ -13,7 +13,6 @@
 #include <QPainter>
 #include <QResizeEvent>
 #include <QtConcurrent/QtConcurrentRun>
-#include <qwt_scale_engine.h>
 
 namespace sls {
 
@@ -150,13 +149,13 @@ void qDrawPlot::SetupPlots() {
     gainhist1d->SetLineColor(0);
     gainhist1d->setStyleLinesorDots(isLines);
     gainhist1d->setSymbolMarkers(isMarkers);
-    gainhist1d->setItemAttribute(QwtPlotItem::Legend, false);
+    gainhist1d->setLegendVisible(false);
     // setup 1d gain plot
     gainplot1d = new SlsQt1DPlot(boxPlot, true);
     gainhist1d->Attach(gainplot1d);
     gainplot1d->hide();
-    connect(plot1d, SIGNAL(PlotZoomedSignal(const QRectF &)), this,
-            SLOT(Zoom1DGainPlot(const QRectF &)));
+    connect(plot1d, &SlsQt1DPlot::PlotZoomedSignal, this,
+            &qDrawPlot::Zoom1DGainPlot);
 
     // setup 2d data
 
@@ -193,8 +192,8 @@ void qDrawPlot::SetupPlots() {
                         nPixelsY - 0.5, gainData);
     gainplot2d->Update();
     gainplot2d->hide();
-    connect(plot2d, SIGNAL(PlotZoomedSignal(const QRectF &)), this,
-            SLOT(Zoom2DGainPlot(const QRectF &)));
+    connect(plot2d, &SlsQt2DPlot::PlotZoomedSignal, this,
+            &qDrawPlot::Zoom2DGainPlot);
 
     // layout of plots
     int ratio = qDefs::DATA_GAIN_PLOT_RATIO - 1;
@@ -486,7 +485,7 @@ void qDrawPlot::ClonePlot() {
     if (is1d) {
         LOG(logDEBUG) << "Cloning 1D Image";
         cloneplot1D = new SlsQt1DPlot();
-        cloneplot1D->SetTitle(plot1d->title().text());
+        cloneplot1D->SetTitle(indexTitle);
         cloneplot1D->SetXTitle(xTitle1d);
         cloneplot1D->SetYTitle(yTitle1d);
         QVector<SlsQtH1D *> cloneplotHists1D;
@@ -495,7 +494,7 @@ void qDrawPlot::ClonePlot() {
             h->SetLineColor(iHist);
             h->setStyleLinesorDots(isLines);
             h->setSymbolMarkers(isMarkers);
-            h->setItemAttribute(QwtPlotItem::Legend, false);
+            h->setLegendVisible(false);
             cloneplotHists1D.append(h);
             h->Attach(cloneplot1D);
         }
@@ -504,16 +503,16 @@ void qDrawPlot::ClonePlot() {
             h->SetLineColor(0);
             h->setStyleLinesorDots(isLines);
             h->setSymbolMarkers(isMarkers);
-            h->setItemAttribute(QwtPlotItem::Legend, false);
+            h->setLegendVisible(false);
             clonegainplot1D = new SlsQt1DPlot(NULL, true);
             h->Attach(clonegainplot1D);
-            connect(cloneplot1D, SIGNAL(PlotZoomedSignal(const QRectF &)),
-                    clonegainplot1D, SLOT(SetZoomX(const QRectF &)));
+            connect(cloneplot1D, &SlsQt1DPlot::PlotZoomedSignal,
+                    clonegainplot1D, &SlsQt1DPlot::SetZoomX);
         }
     } else {
         LOG(logDEBUG) << "Cloning 2D Image";
         cloneplot2D = new SlsQt2DPlot();
-        cloneplot2D->setTitle(plot2d->title().text());
+        cloneplot2D->setTitle(plot2d->title());
         cloneplot2D->SetXTitle(xTitle2d);
         cloneplot2D->SetYTitle(yTitle2d);
         cloneplot2D->SetZTitle(zTitle2d);
@@ -525,8 +524,9 @@ void qDrawPlot::ClonePlot() {
             clonegainplot2D = new SlsQt2DPlot(NULL, true);
             clonegainplot2D->SetData(nPixelsX, -0.5, nPixelsX - 0.5, nPixelsY,
                                      -0.5, nPixelsY - 0.5, gainData);
-            connect(cloneplot2D, SIGNAL(PlotZoomedSignal(const QRectF &)),
-                    clonegainplot2D, SLOT(SetZoom(const QRectF &)));
+            connect(cloneplot2D, &SlsQt2DPlot::PlotZoomedSignal,
+                    clonegainplot2D,
+                    qOverload<const QRectF &>(&SlsQt2DPlot::SetZoom));
         }
     }
 
@@ -545,7 +545,7 @@ void qDrawPlot::SavePlot() {
     render(&painter);
 
     QString fName = fileSavePath + QString('/') + fileSaveName + QString('_') +
-                    (is1d ? plot1d->title().text() : plot2d->title().text()) +
+                    (is1d ? indexTitle : plot2d->title()) +
                     QString('_') + QString("%1").arg(currentAcqIndex) +
                     QString(".png");
 
@@ -620,7 +620,7 @@ void qDrawPlot::StartAcquisition() {
                       "qDrawPlot::StartAcquisition");
     }
 
-    QtConcurrent::run(this, &qDrawPlot::AcquireThread);
+    (void)QtConcurrent::run([this] { AcquireThread(); });
 
     LOG(logDEBUG) << "End of Starting Acquisition in qDrawPlot";
 }

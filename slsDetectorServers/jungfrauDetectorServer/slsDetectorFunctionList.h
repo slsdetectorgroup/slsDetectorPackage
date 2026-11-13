@@ -167,9 +167,9 @@ int getFirstUDPDestination();
 void setFirstUDPDestination(int value);
 void selectPrimaryInterface(int val);
 int getPrimaryInterface();
-void setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip,
-                 uint64_t destmac, uint16_t destport, uint64_t sourcemac,
-                 uint32_t sourceip, uint16_t sourceport);
+int setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip,
+                uint64_t destmac, uint16_t destport, uint64_t sourcemac,
+                uint32_t sourceip, uint16_t sourceport);
 void calcChecksum(udp_header *udp);
 
 int configureMAC();

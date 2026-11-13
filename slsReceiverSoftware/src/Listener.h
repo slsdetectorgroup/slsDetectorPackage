@@ -32,7 +32,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
     uint64_t GetNumCompleteFramesCaught() const;
     uint64_t GetLastFrameIndexCaught() const;
     /**  negative values in case of extra packets */
-    int64_t GetNumMissingPacket(bool stoppedFlag, uint64_t numPackets) const;
+    int64_t GetNumMissingPacket(bool stoppedFlag, uint64_t numFrames) const;
     bool GetStartedFlag() const;
     uint64_t GetCurrentFrameIndex() const;
     uint64_t GetListenedIndex() const;
@@ -45,6 +45,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
     void SetUDPDatastream(bool enable);
     void SetIsOutsideRoi(bool enable);
     void SetSilentMode(bool enable);
+    void SetReadNRows(int value);
 
     void ResetParametersforNewAcquisition();
     void CreateUDPSocket(int &actualSize);
@@ -104,6 +105,10 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 
     void PrintFifoStatistics();
 
+    /** packets per frame expected from detector (fewer than
+     * packetsPerFrame in partial readout, as only center rows are sent) */
+    uint32_t GetNumPacketsPerFrameExpected() const;
+
     static const std::string TypeName;
     GeneralData *generalData{nullptr};
     Fifo *fifo;
@@ -119,6 +124,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
     bool isOutsideRoi{false};
     bool silentMode;
     bool disabledPort{false};
+    int readNRows{0};
 
     /** row hardcoded as 1D or 2d,
      * if detector does not send them yet or

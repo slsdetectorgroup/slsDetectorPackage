@@ -146,6 +146,9 @@ int getNumberofDestinations(int *retval);
 int setNumberofDestinations(int value);
 int getFirstUDPDestination();
 void setFirstUDPDestination(int value);
+int setupHeader(int iRxEntry, int vetoInterface, uint32_t destip,
+                uint64_t destmac, uint16_t destport, uint64_t sourcemac,
+                uint32_t sourceip, uint16_t sourceport);
 void calcChecksum(udp_header *udp);
 int configureMAC();
 int setDetectorPosition(int pos[]);

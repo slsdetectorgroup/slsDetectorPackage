@@ -173,12 +173,17 @@ QRect plotArea(const sls::SlsQtFastImage &view) {
     return sls::plot::plotRectFor(view.size(), sls::plot::PlotTheme());
 }
 
-// Number of matching pixels above and to the right of the plot area
+// Number of matching pixels to the right of the plot area and above it, where
+// an image view without titles draws nothing. The corners below and to the
+// left are left out: how far the last tick labels reach into them depends on
+// the font.
 int countOutside(const QImage &img, const QRect &plot, bool (*pred)(QRgb)) {
     int n = 0;
     for (int y = 0; y < img.height(); y++) {
         for (int x = 0; x < img.width(); x++) {
-            if ((x > plot.right() || y < plot.top()) && pred(img.pixel(x, y)))
+            const bool right = x > plot.right() && y <= plot.bottom();
+            const bool above = y < plot.top() && x >= plot.left();
+            if ((right || above) && pred(img.pixel(x, y)))
                 n++;
         }
     }
@@ -809,18 +814,19 @@ void PlottingTest::imagePixelLabels() {
     QVERIFY(outlines > 0);
     QVERIFY(labels > 0);
 
-    // longer labels need larger pixels: 1.2346e+06
+    // longer labels need larger pixels: 1.2346e+06. The sizes leave room for
+    // fonts of different width.
     std::fill(f.begin(), f.end(), 1234567.5);
     view.setImage(f.data(), 64, 64);
     show(8);
     QCOMPARE(labels, 0);
-    show(4); // 67
+    show(3); // 89
     QVERIFY(labels > 0);
 
     // integers are written out: 1234567
     std::fill(f.begin(), f.end(), 1234567.0);
     view.setImage(f.data(), 64, 64);
-    show(5); // 53
+    show(4); // 67
     QVERIFY(labels > 0);
 }
 
@@ -1388,7 +1394,7 @@ void PlottingTest::plot2dTitles() {
 
     // the z title has its own row above the scale panel
     const QList<QLabel *> labels =
-        plot.findChildren<QLabel *>(Qt::FindDirectChildrenOnly);
+        plot.findChildren<QLabel *>(QString(), Qt::FindDirectChildrenOnly);
     QCOMPARE(labels.size(), 1);
     QVERIFY(!labels[0]->isVisible());
     plot.SetZTitle(QStringLiteral("counts"));

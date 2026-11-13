@@ -4,6 +4,7 @@
 
 #include <QFontMetrics>
 #include <QMouseEvent>
+#include <QNativeGestureEvent>
 #include <QPainter>
 #include <QWheelEvent>
 
@@ -50,6 +51,7 @@ void SlsQtFastImage::setImage(const double *data, int nx, int ny) {
         m_nx = nx;
         m_ny = ny;
         m_viewport = QRectF(0, 0, nx, ny);
+        m_fillPlot = true;
         m_histogramAge.invalidate();
     }
     m_imageDirty = true;
@@ -196,24 +198,40 @@ void SlsQtFastImage::setViewport(double x1, double y1, double x2, double y2) {
     if (x2 - x1 < kMinimumViewport || y2 - y1 < kMinimumViewport)
         return;
     m_viewport = QRectF(x1, y1, x2 - x1, y2 - y1);
+    m_fillPlot = false;
     clampViewport();
     update();
 }
 
-void SlsQtFastImage::viewport(double &x, double &y, double &w,
-                              double &h) const {
-    x = m_viewport.x();
-    y = m_viewport.y();
-    w = m_viewport.width();
-    h = m_viewport.height();
+// A viewport chosen by the user is grown to the shape of the plot area, as far
+// as the image goes, so that it still fills the plot area after a resize.
+QRectF SlsQtFastImage::visibleArea() const {
+    if (!hasImage())
+        return {};
+    if (!m_fillPlot)
+        return m_viewport;
+    const QRect plot = plotRect();
+    const double scale = std::min(plot.width() / m_viewport.width(),
+                                  plot.height() / m_viewport.height());
+    const double w = std::min<double>(m_nx, plot.width() / scale);
+    const double h = std::min<double>(m_ny, plot.height() / scale);
+    const QPointF center = m_viewport.center();
+    return QRectF(std::clamp(center.x() - w / 2, 0.0, m_nx - w),
+                  std::clamp(center.y() - h / 2, 0.0, m_ny - h), w, h);
 }
 
 void SlsQtFastImage::resetView() {
-    if (!hasImage())
-        return;
-    m_viewport = QRectF(0, 0, m_nx, m_ny);
+    if (hasImage())
+        showArea(QRectF(0, 0, m_nx, m_ny));
+}
+
+// A change made by the user
+void SlsQtFastImage::showArea(const QRectF &area) {
+    m_viewport = area;
+    m_fillPlot = true;
+    clampViewport();
     update();
-    emit viewportChanged(m_viewport);
+    emit visibleAreaChanged(visibleArea());
 }
 
 void SlsQtFastImage::clampViewport() {
@@ -230,47 +248,24 @@ void SlsQtFastImage::clampViewport() {
     m_viewport = QRectF(x, y, w, h);
 }
 
-// A zoomed viewport takes the shape of the plot area so the image fills it;
-// the whole image is shown with empty borders instead.
-void SlsQtFastImage::matchViewportToWindow() {
-    if (!hasImage())
-        return;
-    double w = m_viewport.width();
-    double h = m_viewport.height();
-    if (w >= m_nx - 0.5 && h >= m_ny - 0.5)
-        return;
-    const QRect plot = plotRect();
-    const double aspect = double(plot.width()) / plot.height();
-    if (w / h > aspect)
-        h = w / aspect;
-    else
-        w = h * aspect;
-    if (w > m_nx) {
-        h *= m_nx / w;
-        w = m_nx;
-    }
-    if (h > m_ny) {
-        w *= m_ny / h;
-        h = m_ny;
-    }
-    const QPointF center = m_viewport.center();
-    m_viewport = QRectF(center.x() - w / 2, center.y() - h / 2, w, h);
-    clampViewport();
-    emit viewportChanged(m_viewport);
-}
-
+// Magnifies by factor around a position in the widget
 void SlsQtFastImage::zoomAt(const QPointF &widgetPos, double factor) {
-    const QPointF anchor = mapping().toData(widgetPos);
-    const double fx = (anchor.x() - m_viewport.x()) / m_viewport.width();
-    const double fy = (anchor.y() - m_viewport.y()) / m_viewport.height();
-    m_viewport.setSize(m_viewport.size() * factor);
-    clampViewport();
-    // keep the point under the cursor where it is
-    m_viewport.moveTo(anchor.x() - fx * m_viewport.width(),
-                      anchor.y() - fy * m_viewport.height());
-    clampViewport();
-    update();
-    emit viewportChanged(m_viewport);
+    const Mapping m = mapping();
+    const QPointF anchor = m.toData(widgetPos);
+    // between the whole image and kMinimumViewport pixels
+    const double minScale =
+        std::min(m.plot.width() / double(m_nx), m.plot.height() / double(m_ny));
+    const double maxScale = std::max(
+        minScale, std::min(m.plot.width(), m.plot.height()) / kMinimumViewport);
+    const double scale = std::clamp(m.scale * factor, minScale, maxScale);
+    const double w = std::min<double>(m_nx, m.plot.width() / scale);
+    const double h = std::min<double>(m_ny, m.plot.height() / scale);
+    // The anchor stays where it is, except in a direction in which the whole
+    // image is visible and therefore centred.
+    const double left = m.plot.left() + (m.plot.width() - w * scale) / 2;
+    const double top = m.plot.top() + (m.plot.height() - h * scale) / 2;
+    showArea(QRectF(anchor.x() - (widgetPos.x() - left) / scale,
+                    anchor.y() + (widgetPos.y() - top) / scale - h, w, h));
 }
 
 QRect SlsQtFastImage::plotRect() const {
@@ -297,15 +292,16 @@ SlsQtFastImage::Mapping SlsQtFastImage::mapping() const {
     m.plot = plotRect();
     if (!hasImage())
         return m;
-    m.scale = std::min(m.plot.width() / m_viewport.width(),
-                       m.plot.height() / m_viewport.height());
-    // the viewport is centred in the plot area
+    m.area = visibleArea();
+    m.scale = std::min(m.plot.width() / m.area.width(),
+                       m.plot.height() / m.area.height());
+    // centred where the whole image does not fill the plot area
     const double left =
-        m.plot.left() + (m.plot.width() - m_viewport.width() * m.scale) / 2;
+        m.plot.left() + (m.plot.width() - m.area.width() * m.scale) / 2;
     const double top =
-        m.plot.top() + (m.plot.height() - m_viewport.height() * m.scale) / 2;
-    m.origin = QPointF(left - m_viewport.x() * m.scale,
-                       top + (m_viewport.y() + m_viewport.height()) * m.scale);
+        m.plot.top() + (m.plot.height() - m.area.height() * m.scale) / 2;
+    m.origin = QPointF(left - m.area.x() * m.scale,
+                       top + (m.area.y() + m.area.height()) * m.scale);
     return m;
 }
 
@@ -406,7 +402,7 @@ void SlsQtFastImage::paintEvent(QPaintEvent *) {
 
 void SlsQtFastImage::drawImage(QPainter &p, const Mapping &m) const {
     p.save();
-    p.setClipRect(m.plot);
+    p.setClipRect(m.areaRect());
     p.setRenderHint(QPainter::SmoothPixmapTransform,
                     m_interpolate && m.scale < kOutlineMinScale);
     const QRectF target(m.toWidget(0, m_ny),
@@ -419,10 +415,10 @@ void SlsQtFastImage::drawAxes(QPainter &p, const Mapping &m) const {
     if (!m_axesVisible)
         return;
     const QRect plot = m.plot;
-    const double x0 = m_viewport.x();
-    const double x1 = x0 + m_viewport.width();
-    const double y0 = m_viewport.y();
-    const double y1 = y0 + m_viewport.height();
+    const double x0 = m.area.x();
+    const double x1 = x0 + m.area.width();
+    const double y0 = m.area.y();
+    const double y1 = y0 + m.area.height();
     const auto ticksX = plot::computeLinearTicks(x0, x1, kMaxTicks);
     const auto ticksY = plot::computeLinearTicks(y0, y1, kMaxTicks);
     const double stepX = plot::niceStep(x1 - x0, kMaxTicks);
@@ -467,15 +463,15 @@ void SlsQtFastImage::drawPixelDetail(QPainter &p, const Mapping &m) const {
     if (m.scale < kOutlineMinScale)
         return;
     const QRect plot = m.plot;
-    const double right = m_viewport.x() + m_viewport.width();
-    const double top = m_viewport.y() + m_viewport.height();
-    const int ix0 = std::max(0, static_cast<int>(std::floor(m_viewport.x())));
-    const int iy0 = std::max(0, static_cast<int>(std::floor(m_viewport.y())));
+    const double right = m.area.x() + m.area.width();
+    const double top = m.area.y() + m.area.height();
+    const int ix0 = std::max(0, static_cast<int>(std::floor(m.area.x())));
+    const int iy0 = std::max(0, static_cast<int>(std::floor(m.area.y())));
     const int ix1 = std::min(m_nx, static_cast<int>(std::ceil(right)));
     const int iy1 = std::min(m_ny, static_cast<int>(std::ceil(top)));
 
     p.save();
-    p.setClipRect(plot);
+    p.setClipRect(m.areaRect());
     p.setPen(QColor(55, 55, 55));
     for (int ix = ix0; ix <= ix1; ++ix) {
         const double wx = m.toWidget(ix, 0).x();
@@ -510,7 +506,7 @@ void SlsQtFastImage::drawPixelDetail(QPainter &p, const Mapping &m) const {
 
 void SlsQtFastImage::drawOverlays(QPainter &p, const Mapping &m) const {
     p.save();
-    p.setClipRect(m.plot);
+    p.setClipRect(m.areaRect());
     p.setBrush(Qt::NoBrush);
 
     p.setPen(QColor(255, 255, 255, 190));
@@ -559,7 +555,7 @@ void SlsQtFastImage::mousePressEvent(QMouseEvent *e) {
         return;
     m_panning = true;
     m_panStart = e->position();
-    m_panStartViewport = m_viewport.topLeft();
+    m_panStartArea = visibleArea();
     setCursor(Qt::ClosedHandCursor);
 }
 
@@ -569,11 +565,7 @@ void SlsQtFastImage::mouseMoveEvent(QMouseEvent *e) {
     const Mapping m = mapping();
     if (m_panning) {
         const QPointF delta = (e->position() - m_panStart) / m.scale;
-        m_viewport.moveTo(m_panStartViewport.x() - delta.x(),
-                          m_panStartViewport.y() + delta.y());
-        clampViewport();
-        update();
-        emit viewportChanged(m_viewport);
+        showArea(m_panStartArea.translated(-delta.x(), delta.y()));
         return;
     }
 
@@ -603,12 +595,29 @@ void SlsQtFastImage::mouseDoubleClickEvent(QMouseEvent *) {
 }
 
 void SlsQtFastImage::wheelEvent(QWheelEvent *e) {
-    if (!hasImage() || !m_zoomEnabled || e->angleDelta().y() == 0)
+    const int delta = e->angleDelta().y();
+    if (!hasImage() || !m_zoomEnabled || delta == 0)
         return;
-    zoomAt(e->position(),
-           e->angleDelta().y() > 0 ? 1 / kWheelZoomFactor : kWheelZoomFactor);
+    // A mouse wheel sends 120 per notch, a touchpad many small steps
+    zoomAt(e->position(), std::pow(kWheelZoomFactor, delta / 120.0));
 }
 
-void SlsQtFastImage::resizeEvent(QResizeEvent *) { matchViewportToWindow(); }
+// Pinch on a touchpad
+bool SlsQtFastImage::event(QEvent *e) {
+    if (e->type() == QEvent::NativeGesture && hasImage() && m_zoomEnabled) {
+        const auto *gesture = static_cast<QNativeGestureEvent *>(e);
+        if (gesture->gestureType() == Qt::ZoomNativeGesture) {
+            // value() is the change of size since the previous event
+            zoomAt(gesture->position(), std::max(0.1, 1 + gesture->value()));
+            return true;
+        }
+    }
+    return QWidget::event(e);
+}
+
+void SlsQtFastImage::resizeEvent(QResizeEvent *) {
+    if (hasImage())
+        emit visibleAreaChanged(visibleArea());
+}
 
 } // namespace sls

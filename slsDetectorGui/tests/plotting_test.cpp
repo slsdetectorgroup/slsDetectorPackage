@@ -44,6 +44,11 @@ bool near(double a, double b, double eps = 1e-6) {
     return std::abs(a - b) <= eps;
 }
 
+bool nearRect(const QRectF &a, const QRectF &b) {
+    return near(a.x(), b.x()) && near(a.y(), b.y()) &&
+           near(a.width(), b.width()) && near(a.height(), b.height());
+}
+
 // Repaint synchronously (runs renderImage + paintEvent) and grab the result.
 QImage render(QWidget &w) {
     w.repaint();
@@ -209,6 +214,7 @@ class PlottingTest : public QObject {
     void imageHistogram();
     void imageViewport();
     void imageWheelZoom();
+    void imageTouchpadZoom();
     void imagePan();
     void imageIsClippedToPlotArea();
     void imageOverlays();
@@ -491,40 +497,43 @@ void PlottingTest::imageViewport() {
     const int nx = 64, ny = 32;
     const std::vector<double> ramp = xRamp(nx, ny);
     view.setImage(ramp.data(), nx, ny);
-    QSignalSpy spy(&view, &sls::SlsQtFastImage::viewportChanged);
-    double x, y, w, h;
+    QSignalSpy spy(&view, &sls::SlsQtFastImage::visibleAreaChanged);
 
     // the whole image to start with
-    view.viewport(x, y, w, h);
-    QVERIFY(near(x, 0.0) && near(y, 0.0) && near(w, nx) && near(h, ny));
+    QVERIFY(nearRect(view.visibleArea(), QRectF(0, 0, nx, ny)));
 
     // clamped to the image
     view.setViewport(-100.0, -100.0, 5000.0, 5000.0);
-    view.viewport(x, y, w, h);
-    QVERIFY(near(x, 0.0) && near(y, 0.0) && near(w, nx) && near(h, ny));
+    QVERIFY(nearRect(view.visibleArea(), QRectF(0, 0, nx, ny)));
 
     // moved back inside
     view.setViewport(60.0, 28.0, 70.0, 38.0);
-    view.viewport(x, y, w, h);
-    QVERIFY(near(x, 54.0) && near(y, 22.0) && near(w, 10.0) && near(h, 10.0));
+    QVERIFY(nearRect(view.visibleArea(), QRectF(54, 22, 10, 10)));
 
     // too small or not finite: ignored
     view.setViewport(10.0, 10.0, 10.5, 10.5);
     view.setViewport(std::numeric_limits<double>::quiet_NaN(), 0.0, 9.0, 9.0);
-    view.viewport(x, y, w, h);
-    QVERIFY(near(x, 54.0) && near(y, 22.0) && near(w, 10.0) && near(h, 10.0));
+    QVERIFY(nearRect(view.visibleArea(), QRectF(54, 22, 10, 10)));
+
+    // exactly this part is shown, the rest of the plot area stays empty
+    const QImage img = render(view);
+    const QRect plot = plotArea(view);
+    QVERIFY(near(widgetPos(view, 64, 22).x() - widgetPos(view, 54, 22).x(),
+                 plot.height()));
+    QCOMPARE(img.pixel(plot.left() + 5, plot.center().y() + 3), kBackground);
+    QCOMPARE(img.pixel(plot.right() - 5, plot.center().y() + 3), kBackground);
+    QVERIFY(img.pixel(plot.center() + QPoint(3, 3)) != kBackground);
 
     // only the user and resetView() are reported
     QCOMPARE(spy.count(), 0);
     view.resetView();
     QCOMPARE(spy.count(), 1);
-    QCOMPARE(spy.at(0).at(0).toRectF(), QRectF(0, 0, nx, ny));
+    QVERIFY(nearRect(spy.at(0).at(0).toRectF(), QRectF(0, 0, nx, ny)));
 
     // a new image size shows the whole image again
     view.setViewport(10.0, 10.0, 20.0, 20.0);
     view.setImage(ramp.data(), ny, nx);
-    view.viewport(x, y, w, h);
-    QVERIFY(near(x, 0.0) && near(y, 0.0) && near(w, ny) && near(h, nx));
+    QVERIFY(nearRect(view.visibleArea(), QRectF(0, 0, ny, nx)));
 }
 
 void PlottingTest::imageWheelZoom() {
@@ -534,39 +543,82 @@ void PlottingTest::imageWheelZoom() {
     const int n = 64;
     const std::vector<double> ramp = xRamp(n, n);
     view.setImage(ramp.data(), n, n);
-    QSignalSpy spy(&view, &sls::SlsQtFastImage::viewportChanged);
-
-    // zooming in keeps the point under the cursor
+    QSignalSpy spy(&view, &sls::SlsQtFastImage::visibleAreaChanged);
+    const QRect plot = plotArea(view);
+    const double plotShape = double(plot.width()) / plot.height();
     const QPointF cursor(200.0, 150.0);
+
+    // the image grows until it fills the plot area
+    for (int i = 0; i < 3; i++)
+        sendWheel(view, cursor, 120);
+    QCOMPARE(spy.count(), 3);
+    QRectF area = view.visibleArea();
+    QVERIFY(area.width() < n && area.height() < n);
+    QVERIFY(near(area.width() / area.height(), plotShape));
+    QVERIFY(nearRect(spy.at(2).at(0).toRectF(), area));
+
+    // and then keeps the point under the cursor
     for (int i = 0; i < 5; i++) {
         const QPointF before = view.widgetToData(cursor);
         sendWheel(view, cursor, 120);
         const QPointF after = view.widgetToData(cursor);
         QVERIFY(near(before.x(), after.x()) && near(before.y(), after.y()));
     }
-    QCOMPARE(spy.count(), 5);
-    double x, y, w, h;
-    view.viewport(x, y, w, h);
-    QVERIFY(w < n && h < n);
 
-    // down to the minimum viewport
+    // a resize shows more or less of the image, at the same magnification
+    area = view.visibleArea();
+    view.resize(500, 300);
+    QVERIFY(near(view.visibleArea().height(), area.height()));
+    QVERIFY(view.visibleArea().width() > area.width());
+    view.resize(400, 300);
+    QVERIFY(nearRect(view.visibleArea(), area));
+
+    // down to the smallest viewport
     for (int i = 0; i < 40; i++)
         sendWheel(view, cursor, 120);
-    view.viewport(x, y, w, h);
-    QVERIFY(near(w, sls::SlsQtFastImage::kMinimumViewport));
-    QVERIFY(near(h, sls::SlsQtFastImage::kMinimumViewport));
+    area = view.visibleArea();
+    QVERIFY(near(area.height(), sls::SlsQtFastImage::kMinimumViewport));
+    QVERIFY(near(area.width() / area.height(), plotShape));
 
     // and back out to the whole image
     for (int i = 0; i < 60; i++)
         sendWheel(view, cursor, -120);
-    view.viewport(x, y, w, h);
-    QVERIFY(near(x, 0.0) && near(y, 0.0) && near(w, n) && near(h, n));
+    QVERIFY(nearRect(view.visibleArea(), QRectF(0, 0, n, n)));
 
     // not when zooming is disabled
     view.setZoomEnabled(false);
     sendWheel(view, cursor, 120);
-    view.viewport(x, y, w, h);
-    QVERIFY(near(w, n) && near(h, n));
+    QVERIFY(nearRect(view.visibleArea(), QRectF(0, 0, n, n)));
+}
+
+void PlottingTest::imageTouchpadZoom() {
+    sls::SlsQtFastImage view;
+    view.resize(400, 300);
+    view.show();
+    const int n = 64;
+    const std::vector<double> ramp = xRamp(n, n);
+    view.setImage(ramp.data(), n, n);
+    const QPointF cursor(200.0, 150.0);
+    for (int i = 0; i < 4; i++)
+        sendWheel(view, cursor, 120);
+    const QRectF wheel = view.visibleArea();
+
+    // many small steps add up to the same as the notches of a wheel
+    view.resetView();
+    for (int i = 0; i < 4 * 120 / 8; i++)
+        sendWheel(view, cursor, 8);
+    QVERIFY(near(view.visibleArea().width(), wheel.width()));
+    QVERIFY(near(view.visibleArea().height(), wheel.height()));
+
+    // a pinch magnifies by 1 + value
+    view.resetView();
+    for (int i = 0; i < 4; i++) {
+        QNativeGestureEvent pinch(Qt::ZoomNativeGesture,
+                                  QPointingDevice::primaryPointingDevice(), 2,
+                                  cursor, cursor, cursor, 0.18, QPointF());
+        QCoreApplication::sendEvent(&view, &pinch);
+    }
+    QVERIFY(nearRect(view.visibleArea(), wheel));
 }
 
 void PlottingTest::imagePan() {
@@ -576,8 +628,10 @@ void PlottingTest::imagePan() {
     const int n = 64;
     const std::vector<double> ramp = xRamp(n, n);
     view.setImage(ramp.data(), n, n);
-    view.setViewport(20.0, 20.0, 40.0, 40.0);
-    QSignalSpy spy(&view, &sls::SlsQtFastImage::viewportChanged);
+    for (int i = 0; i < 6; i++)
+        sendWheel(view, QPointF(200.0, 150.0), 120);
+    const QRectF before = view.visibleArea();
+    QSignalSpy spy(&view, &sls::SlsQtFastImage::visibleAreaChanged);
 
     // the grabbed point follows the cursor
     const QPointF from(200.0, 150.0), to(230.0, 130.0);
@@ -589,16 +643,26 @@ void PlottingTest::imagePan() {
               Qt::NoButton);
     const QPointF dropped = view.widgetToData(to);
     QVERIFY(near(grabbed.x(), dropped.x()) && near(grabbed.y(), dropped.y()));
-    QVERIFY(spy.count() >= 1);
-    double x, y, w, h;
-    view.viewport(x, y, w, h);
-    QVERIFY(x < 20.0 && y < 20.0 && near(w, 20.0) && near(h, 20.0));
+    QCOMPARE(spy.count(), 1);
+    const QRectF after = view.visibleArea();
+    QVERIFY(after.x() < before.x() && after.y() < before.y());
+    QVERIFY(near(after.width(), before.width()));
+    QVERIFY(near(after.height(), before.height()));
+
+    // not out of the image
+    sendMouse(view, QEvent::MouseButtonPress, from, Qt::LeftButton,
+              Qt::LeftButton);
+    sendMouse(view, QEvent::MouseMove, from + QPointF(5000.0, -5000.0),
+              Qt::NoButton, Qt::LeftButton);
+    sendMouse(view, QEvent::MouseButtonRelease, from, Qt::LeftButton,
+              Qt::NoButton);
+    QVERIFY(near(view.visibleArea().x(), 0.0));
+    QVERIFY(near(view.visibleArea().y(), 0.0));
 
     // a double click shows the whole image
     sendMouse(view, QEvent::MouseButtonDblClick, to, Qt::LeftButton,
               Qt::LeftButton);
-    view.viewport(x, y, w, h);
-    QVERIFY(near(x, 0.0) && near(y, 0.0) && near(w, n) && near(h, n));
+    QVERIFY(nearRect(view.visibleArea(), QRectF(0, 0, n, n)));
 }
 
 // ---------------------------------------------------------------------------
@@ -1360,7 +1424,6 @@ void PlottingTest::plot2dRoiAndZoom() {
     const std::vector<double> d = xRamp(100, 80);
     // the data coordinates are the pixels shifted by 1000 and 2000
     plot.SetData(100, 1000.0, 1100.0, 80, 2000.0, 2080.0, d.data());
-    double x = 0.0, y = 0.0, w = 0.0, h = 0.0;
 
     // pixels 10..29 x 20..39
     plot.EnableRoiBoxes({slsDetectorDefs::ROI(10, 29, 20, 39)});
@@ -1371,28 +1434,25 @@ void PlottingTest::plot2dRoiAndZoom() {
     QVERIFY(view->overlayRects().empty());
 
     plot.SetZoom(QRectF(1020.0, 2020.0, 20.0, 20.0));
-    view->viewport(x, y, w, h);
-    QVERIFY(near(x, 20.0) && near(y, 20.0) && near(w, 20.0) && near(h, 20.0));
+    QVERIFY(nearRect(view->visibleArea(), QRectF(20, 20, 20, 20)));
 
     // the user zooming is reported in data coordinates
     QSignalSpy spy(&plot, &sls::SlsQt2DPlot::PlotZoomedSignal);
     sendWheel(*view, widgetPos(*view, 30.0, 30.0), 120);
     QCOMPARE(spy.count(), 1);
     const QRectF zoomed = spy.at(0).at(0).toRectF();
-    QVERIFY(zoomed.width() < 20.0 && zoomed.height() < 20.0);
-    QVERIFY(QRectF(1020.0, 2020.0, 20.0, 20.0).contains(zoomed));
+    QVERIFY(zoomed.height() < 20.0);
+    QVERIFY(zoomed.contains(QPointF(1030.0, 2030.0)));
+    QVERIFY(QRectF(1000.0, 2000.0, 100.0, 80.0).contains(zoomed));
 
     // axis ranges from the plot tab
     plot.SetXMinMax(1040.0, 1060.0);
-    view->viewport(x, y, w, h);
-    QVERIFY(near(x, 40.0) && near(w, 20.0) && near(y, 0.0) && near(h, 80.0));
+    QVERIFY(nearRect(view->visibleArea(), QRectF(40, 0, 20, 80)));
     plot.SetYMinMax(2030.0, 2010.0);
-    view->viewport(x, y, w, h);
-    QVERIFY(near(x, 40.0) && near(w, 20.0) && near(y, 10.0) && near(h, 20.0));
+    QVERIFY(nearRect(view->visibleArea(), QRectF(40, 10, 20, 20)));
     plot.EnableXAutoScaling();
     plot.EnableYAutoScaling();
-    view->viewport(x, y, w, h);
-    QVERIFY(near(x, 0.0) && near(y, 0.0) && near(w, 100.0) && near(h, 80.0));
+    QVERIFY(nearRect(view->visibleArea(), QRectF(0, 0, 100, 80)));
 
     plot.DisableZoom(true);
     QVERIFY(!view->zoomEnabled());
@@ -1431,9 +1491,7 @@ void PlottingTest::plot2dGain() {
     QVERIFY(near(lo, 0.0) && near(hi, 3.0));
     QVERIFY(!view->logScale());
     gain.SetZoom(QRectF(2.0, 2.0, 4.0, 4.0));
-    double x = 0.0, y = 0.0, w = 0.0, h = 0.0;
-    view->viewport(x, y, w, h);
-    QVERIFY(near(x, 2.0) && near(y, 2.0) && near(w, 4.0) && near(h, 4.0));
+    QVERIFY(nearRect(view->visibleArea(), QRectF(2, 2, 4, 4)));
 }
 
 // ---------------------------------------------------------------------------

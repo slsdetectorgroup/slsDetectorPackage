@@ -26,9 +26,9 @@ namespace sls {
  * [ix, ix+1) x [iy, iy+1), y points up and row 0 is at the bottom. The
  * viewport, the overlays and the signals use these coordinates.
  *
- * The wheel zooms around the cursor, dragging pans and a double click shows
- * the whole image again. Once the pixels are large enough they are outlined
- * and labelled with their value.
+ * The wheel or a pinch zooms around the cursor, dragging pans and a double
+ * click shows the whole image again. Once the pixels are large enough they
+ * are outlined and labelled with their value.
  */
 class SlsQtFastImage : public QWidget {
     Q_OBJECT
@@ -65,9 +65,13 @@ class SlsQtFastImage : public QWidget {
     const std::vector<int> &histogram() const;
     void histogramRange(double &lo, double &hi) const;
 
-    /** Does not emit viewportChanged() */
+    /** Shows this part of the image and nothing else, with empty borders
+     * where it does not have the shape of the widget. Does not emit
+     * visibleAreaChanged(). */
     void setViewport(double x1, double y1, double x2, double y2);
-    void viewport(double &x, double &y, double &w, double &h) const;
+    /** The part of the image that is shown, QRectF(x, y, width, height)
+     * with (x, y) the lower left corner */
+    QRectF visibleArea() const;
     void resetView();
     QPointF widgetToData(const QPointF &widgetPos) const;
     QPointF dataToWidget(const QPointF &dataPos) const;
@@ -96,14 +100,14 @@ class SlsQtFastImage : public QWidget {
     QFont axisTitleFont() const;
 
   signals:
-    /** The user zoomed or panned, or a resize changed the visible area.
-     * QRectF(x, y, width, height) with (x, y) the lower left corner. */
-    void viewportChanged(const QRectF &viewport);
+    /** The user zoomed or panned, or the widget was resized */
+    void visibleAreaChanged(const QRectF &area);
     /** Palette, log scale or colour range changed */
     void colorMapChanged();
     void histogramChanged();
 
   protected:
+    bool event(QEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
@@ -113,9 +117,10 @@ class SlsQtFastImage : public QWidget {
     void resizeEvent(QResizeEvent *event) override;
 
   private:
-    /** Where the viewport ends up in the widget */
+    /** Where the image ends up in the widget */
     struct Mapping {
         QRect plot;         // widget area the image is drawn in
+        QRectF area;        // visibleArea()
         double scale = 1.0; // widget pixels per image pixel
         QPointF origin;     // widget position of image coordinate (0, 0)
 
@@ -125,12 +130,18 @@ class SlsQtFastImage : public QWidget {
         QPointF toData(const QPointF &w) const {
             return {(w.x() - origin.x()) / scale, (origin.y() - w.y()) / scale};
         }
+        /** Widget area covered by the visible part of the image */
+        QRectF areaRect() const {
+            return QRectF(toWidget(area.x(), area.y() + area.height()),
+                          area.size() * scale)
+                .intersected(plot);
+        }
     };
 
     QRect plotRect() const;
     Mapping mapping() const;
     void clampViewport();
-    void matchViewportToWindow();
+    void showArea(const QRectF &area);
     void zoomAt(const QPointF &widgetPos, double factor);
     void renderImage();
     void updateHistogram();
@@ -158,12 +169,13 @@ class SlsQtFastImage : public QWidget {
     double m_histogramHi = 1.0;
     QElapsedTimer m_histogramAge;
 
-    QRectF m_viewport; // (x, y) is the lower left corner
+    QRectF m_viewport;      // (x, y) is the lower left corner
+    bool m_fillPlot = true; // show more than m_viewport to fill the plot area
     bool m_zoomEnabled = true;
     bool m_axesVisible = true;
     bool m_panning = false;
-    QPointF m_panStart;         // widget position of the press
-    QPointF m_panStartViewport; // lower left corner at the press
+    QPointF m_panStart;    // widget position of the press
+    QRectF m_panStartArea; // visibleArea() at the press
 
     std::vector<QRectF> m_overlayRects;
     std::vector<QLineF> m_overlayLines;

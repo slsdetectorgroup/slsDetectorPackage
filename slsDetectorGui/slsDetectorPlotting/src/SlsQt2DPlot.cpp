@@ -32,7 +32,7 @@ SlsQt2DPlot::SlsQt2DPlot(QWidget *parent, bool gain)
 
     m_view = new SlsQtFastImage(this);
     layout->addWidget(m_view, 1);
-    connect(m_view, &SlsQtFastImage::viewportChanged, this,
+    connect(m_view, &SlsQtFastImage::visibleAreaChanged, this,
             [this](const QRectF &v) {
                 emit PlotZoomedSignal(
                     QRectF(m_hist.GetXMin() + v.x() * m_hist.GetXBinWidth(),

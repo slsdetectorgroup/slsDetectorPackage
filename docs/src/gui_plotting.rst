@@ -97,7 +97,13 @@ The Plot settings tab can be detached into a movable/floating dock with
 **View -> Detach Plot Settings**.  The tab contents are reparented between two
 ``QScrollArea`` widgets (the tab and the dock), so the same ``qTabPlot``
 instance keeps working while the rest of the main window is busy starting or
-stopping an acquisition.  Selecting the action again reattaches the tab.
+stopping an acquisition.  Selecting the action again reattaches the tab; the
+shortcut **Ctrl+Shift+D** toggles it without opening the menu.
+
+With **Display Statistics** enabled, the min/max/sum labels are refreshed at
+most four times per second instead of once per frame.  Scanning a large frame
+and updating three labels for every incoming frame otherwise starves the GUI
+thread and blocks the receiver callback.
 
 Demo and tests
 --------------

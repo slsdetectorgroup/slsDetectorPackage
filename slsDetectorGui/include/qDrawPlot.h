@@ -4,6 +4,7 @@
 #include "qDefs.h"
 #include "sls/Detector.h"
 #include "ui_form_plot.h"
+#include <QElapsedTimer>
 #include <mutex>
 
 class QResizeEvent;
@@ -156,6 +157,8 @@ class qDrawPlot : public QWidget, private Ui::PlotObject {
     bool isAccumulate{false};
     bool resetAccumulate{false};
     bool displayStatistics{false};
+    bool statisticsVisible{false};
+    QElapsedTimer statisticsTimer;
     QString fileSavePath{"/tmp"};
     QString fileSaveName{"Image"};
     bool hasGainData{false};

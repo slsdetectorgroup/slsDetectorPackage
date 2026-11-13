@@ -273,6 +273,11 @@ void qDetectorMain::Initialization() {
     QMenu *menuView = menuBar()->addMenu(tr("&View"));
     actionDetachPlotSettings = new QAction(tr("Detach Plot Settings"), this);
     actionDetachPlotSettings->setCheckable(true);
+    actionDetachPlotSettings->setShortcut(
+        QKeySequence(QStringLiteral("Ctrl+Shift+D")));
+    actionDetachPlotSettings->setStatusTip(
+        tr("Move the Plot settings into a movable dock so they stay usable "
+           "while the acquisition is started or stopped"));
     menuView->addAction(actionDetachPlotSettings);
     connect(actionDetachPlotSettings, &QAction::toggled, this,
             &qDetectorMain::SetPlotSettingsDetached);

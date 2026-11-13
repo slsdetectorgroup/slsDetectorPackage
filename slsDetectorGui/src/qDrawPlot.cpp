@@ -453,6 +453,9 @@ void qDrawPlot::DisplayStatistics(bool enable) {
     LOG(logINFO) << (enable ? "Enabling" : "Disabling")
                  << " Statistics Display";
     displayStatistics = enable;
+    if (!enable) {
+        statisticsTimer.invalidate();
+    }
 }
 
 void qDrawPlot::SetNumDiscardBits(int value) {
@@ -583,6 +586,12 @@ void qDrawPlot::GetStatistics(double &min, double &max, double &sum) {
         array = datay1d[0];
         size = nPixelsX;
     }
+    if (size <= 0) {
+        return;
+    }
+    min = array[0];
+    max = array[0];
+    sum = 0.0;
     for (int i = 0; i < size; ++i) {
         if (array[i] < min)
             min = array[i];
@@ -1229,14 +1238,27 @@ void qDrawPlot::UpdatePlot() {
     }
 
     if (displayStatistics) {
-        double min = 0, max = 0, sum = 0;
-        GetStatistics(min, max, sum);
-        lblMinDisp->setText(QString("%1").arg(min));
-        lblMaxDisp->setText(QString("%1").arg(max));
-        lblSumDisp->setText(QString("%1").arg(sum));
-        widgetStatistics->show();
-    } else {
+        // Statistics are a slow readout.  Do not scan the whole frame and
+        // relayout the labels for every incoming frame: that starves the GUI
+        // thread and blocks the receiver callback for large/high-rate frames.
+        constexpr qint64 statsIntervalMs = 250;
+        if (!statisticsTimer.isValid() ||
+            statisticsTimer.elapsed() >= statsIntervalMs) {
+            double min = 0, max = 0, sum = 0;
+            GetStatistics(min, max, sum);
+            lblMinDisp->setText(QString("%1").arg(min));
+            lblMaxDisp->setText(QString("%1").arg(max));
+            lblSumDisp->setText(QString("%1").arg(sum));
+            statisticsTimer.restart();
+        }
+        if (!statisticsVisible) {
+            widgetStatistics->show();
+            statisticsVisible = true;
+        }
+    } else if (statisticsVisible) {
         widgetStatistics->hide();
+        statisticsVisible = false;
+        statisticsTimer.invalidate();
     }
 
     LOG(logDEBUG) << "End of Update Plot";

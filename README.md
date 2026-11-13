@@ -110,8 +110,8 @@ To use the basic building blocks, meaning sls_detector_get/put and the shared li
 The GUI plotting (1D/2D plots, colour maps, scale panel) is implemented with
 plain Qt Widgets painting; Qwt, ROOT and OpenGL are no longer dependencies and
 the bundled Qwt copy has been removed. The Plot settings tab can be detached
-with **View -> Detach Plot Settings**, so the configuration stays reachable
-while an acquisition is started/stopped.
+with **View -> Detach Plot Settings** (or **Ctrl+Shift+D**), so the
+configuration stays reachable while an acquisition is started/stopped.
 
 #### Moench executables
 

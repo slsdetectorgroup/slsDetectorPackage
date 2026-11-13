@@ -2,7 +2,7 @@
 // Copyright (C) 2026 Contributors to the SLS Detector Package
 #pragma once
 
-// Thin histogram strip + scale panel of the Qt5/Qt6 plotting stack: the
+// Thin histogram strip + scale panel of the plotting stack: the
 // strip shows the distribution of the last frame over the window the colour
 // mapping currently shows and carries the two draggable range ends; the panel
 // owns the palette chooser and the image/histogram lin-log switches.  The

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2026 Contributors to the SLS Detector Package
 //
-// QtTest suite for the Qt5/Qt6 plotting stack (verification task).
+// QtTest suite for the plotting stack (verification task).
 //
 // Everything is checked through the public API or through rendered pixels; the
 // widgets are shown on the offscreen QPA platform and rendered synchronously
@@ -91,16 +91,9 @@ void sendMouse(QWidget &w, QEvent::Type type, const QPointF &pos,
 }
 
 void sendWheel(QWidget &w, const QPointF &pos, int deltaY) {
-#if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
     QWheelEvent e(pos, QPointF(w.mapToGlobal(pos.toPoint())), QPoint(),
                   QPoint(0, deltaY), Qt::NoButton, Qt::NoModifier,
                   Qt::NoScrollPhase, false);
-#else
-    // Qt 5.9 (RHEL 7): the scroll-phase constructor does not exist yet.
-    QWheelEvent e(pos, QPointF(w.mapToGlobal(pos.toPoint())), QPoint(),
-                  QPoint(0, deltaY), 0, Qt::Vertical, Qt::NoButton,
-                  Qt::NoModifier);
-#endif
     QCoreApplication::sendEvent(&w, &e);
 }
 

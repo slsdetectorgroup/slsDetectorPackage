@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2026 Contributors to the SLS Detector Package
 //
-// Standalone offscreen demo / benchmark for the Qt5/Qt6 plotting stack.
+// Standalone offscreen demo / benchmark for the plotting stack.
 //
 // It builds a synthetic 1024x512 float frame (sin(x/40)+cos(y/30) plus a moving
 // hotspot) at ~20 Hz, feeds it to SlsQtFastImage, keeps SlsQtScalePanel in sync
@@ -438,7 +438,7 @@ int main(int argc, char **argv) {
 
     QCommandLineParser parser;
     parser.setApplicationDescription(
-        QStringLiteral("Qt5/Qt6 plotting stack demo / offline benchmark"));
+        QStringLiteral("Plotting stack demo / offline benchmark"));
     parser.addHelpOption();
     parser.addVersionOption();
     const QCommandLineOption framesOpt(

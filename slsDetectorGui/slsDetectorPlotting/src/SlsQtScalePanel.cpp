@@ -180,8 +180,8 @@ void SlsQtScaleHisto::paintEvent(QPaintEvent *) {
 
 void SlsQtScaleHisto::mousePressEvent(QMouseEvent *e) {
     const double xa = 0.25 * width(), xb = 0.75 * width();
-    const double d = std::abs(sls::plot::eventPosition(e).x() - xa);
-    const double d2 = std::abs(sls::plot::eventPosition(e).x() - xb);
+    const double d = std::abs(e->position().x() - xa);
+    const double d2 = std::abs(e->position().x() - xb);
     if (std::min(d, d2) > 10) {
         m_dragMin = -1; // too far from either marker: ignore
         return;
@@ -196,7 +196,7 @@ void SlsQtScaleHisto::mousePressEvent(QMouseEvent *e) {
         m_snap = *m_hist; // the bars: frozen as well (the image keeps updating)
     m_preClo = m_clo;     // the axis basis: frozen until the button is released
     m_preChi = m_chi;
-    m_previewX = sls::plot::eventPosition(e).toPoint().x();
+    m_previewX = e->position().toPoint().x();
     mouseMoveEvent(e);
 }
 
@@ -212,14 +212,14 @@ void SlsQtScaleHisto::mouseMoveEvent(QMouseEvent *e) {
     // mapped to a different value, so the marker chased itself.
     double wlo = 0.0, whi = 1.0;
     windowFor(m_preClo, m_preChi, wlo, whi);
-    const double t = std::max(0.0, std::min(1.0, double(sls::plot::eventPosition(e).x()) / W));
+    const double t = std::max(0.0, std::min(1.0, double(e->position().x()) / W));
     const double vBin = wlo + t * (whi - wlo);
     const double v = m_logX ? std::pow(10.0, vBin) : vBin;
     if (m_dragMin == 1)
         m_clo = std::min(v, m_chi - 1e-9);
     else
         m_chi = std::max(v, m_clo + 1e-9);
-    m_previewX = sls::plot::eventPosition(e).toPoint().x();
+    m_previewX = e->position().toPoint().x();
     update(); // only the preview line moves; bars and axis stay frozen
 }
 

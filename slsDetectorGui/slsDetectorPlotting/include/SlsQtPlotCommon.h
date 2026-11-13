@@ -2,7 +2,7 @@
 // Copyright (C) 2026 Contributors to the SLS Detector Package
 #pragma once
 
-// Shared plotting primitives for the Qt5/Qt6 plotting stack used by
+// Shared plotting primitives for the plotting stack used by
 // slsDetectorGui.  Nothing here depends on qwt, ROOT or OpenGL.
 //
 // The palettes and the 1/2/5 tick rules are the ones the previous
@@ -26,39 +26,6 @@
 
 namespace sls {
 namespace plot {
-
-// Qt5/Qt6 compatibility helpers.  The GUI and the plotting stack are built
-// against whichever Qt major version the distribution provides (see the
-// SLS_GUI_QT_MAJOR CMake option); keep the version-specific calls in one place.
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-inline QPointF eventPosition(const QMouseEvent *event) {
-    return event->position();
-}
-inline QPointF eventPosition(const QWheelEvent *event) {
-    return event->position();
-}
-#else
-inline QPointF eventPosition(const QMouseEvent *event) {
-    return event->localPos();
-}
-inline QPointF eventPosition(const QWheelEvent *event) {
-#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
-    return event->position();
-#else
-    return event->posF();
-#endif
-}
-#endif
-
-// QFontMetrics::horizontalAdvance() arrived in Qt 5.11; Qt 5.9 (RHEL 7)
-// still needs width().
-inline int textWidth(const QFontMetrics &metrics, const QString &text) {
-#if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
-    return metrics.horizontalAdvance(text);
-#else
-    return metrics.width(text);
-#endif
-}
 
 // Palettes offered by the image scale panel.  Color / BW1 / BW2 are the
 // original three and stay first (the b / B / c shortcuts use those indices).

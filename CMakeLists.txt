@@ -227,10 +227,6 @@ option(SLS_USE_DETECTOR "Detector libs" ON)
 option(SLS_USE_RECEIVER "Receiver" ON)
 option(SLS_USE_RECEIVER_BINARIES "Receiver binaries" ON)
 option(SLS_USE_GUI "GUI" OFF)
-# Qt major version used by slsDetectorGui when SLS_USE_GUI=ON.  Qt 5 is kept
-# for older distributions (e.g. RHEL 7); Qt 6 is the default.
-set(SLS_GUI_QT_MAJOR "6" CACHE STRING "Qt major version for slsDetectorGui (5 or 6)")
-set_property(CACHE SLS_GUI_QT_MAJOR PROPERTY STRINGS 5 6)
 option(SLS_USE_SIMULATOR "Simulator" OFF)
 option(SLS_USE_TESTS "TESTS" OFF)
 option(SLS_USE_SANITIZER "Sanitizers for debugging" OFF)
@@ -542,15 +538,9 @@ set(CPACK_RPM_PACKAGE_RELEASE_DIST ON)
 set(CPACK_RPM_COMPONENT_INSTALL ON)
 
 
-if(SLS_GUI_QT_MAJOR STREQUAL "5")
-    set(CPACK_RPM_GUI_PACKAGE_REQUIRES
-        "qt5-qtbase, qt5-qtbase-gui"
-    )
-else()
-    set(CPACK_RPM_GUI_PACKAGE_REQUIRES
-        "qt6-qtbase, qt6-qtbase-gui"
-    )
-endif()
+set(CPACK_RPM_GUI_PACKAGE_REQUIRES
+    "qt6-qtbase, qt6-qtbase-gui"
+)
 
 #control which RPMs are generated
 set(CPACK_COMPONENTS_ALL cli receiver zmq gui)

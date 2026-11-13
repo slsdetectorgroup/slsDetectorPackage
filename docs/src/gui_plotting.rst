@@ -1,14 +1,12 @@
-Plotting in slsDetectorGui (Qt 5 / Qt 6)
-=======================================
+Plotting in slsDetectorGui
+==========================
 
 The detector GUI used to draw every plot with the bundled **Qwt 6.1.5**
 library.  That dependency has been removed together with its build rules and
 sources.  All plots in `slsDetectorGui` are now painted by a small,
 self-contained stack that needs only **Qt Widgets / Gui / Core** (plus the
-Qt `Concurrent` module for the acquisition thread).  It builds against **Qt 5
-(>= 5.9) or Qt 6 (>= 6.2)**; Qt 6 is the default, while Qt 5 keeps older
-distributions such as RHEL 7 usable.  There is no ROOT, Qwt, Qt Charts or
-OpenGL dependency.
+Qt `Concurrent` module for the acquisition thread).  It needs **Qt 6
+(>= 6.2)**.  There is no ROOT, Qwt, Qt Charts or OpenGL dependency.
 
 The stack lives in `slsDetectorGui/slsDetectorPlotting` and is compiled once
 into the static library `slsDetectorPlotting`, which is linked by the GUI
@@ -102,19 +100,18 @@ stopping an acquisition.  Selecting the action again reattaches the tab.
 Demo and tests
 --------------
 
-The demo application and the QtTest suite are built automatically by the GUI
-CMake file (they are enabled by the presence of `slsDetectorGui/demo` and
-`slsDetectorGui/tests`)::
+The demo application and the QtTest suite are built together with the GUI
+when the tests are enabled::
 
     cmake -S slsDetectorPackage -B build -DSLS_USE_GUI=ON \
-          -DSLS_GUI_QT_MAJOR=6 -DCMAKE_BUILD_TYPE=Release
+          -DSLS_USE_TESTS=ON -DCMAKE_BUILD_TYPE=Release
     cmake --build build --target plot_demo plotting_test -j
 
     # standalone demo / offline benchmark (1024x512 synthetic frame, 20 Hz)
     QT_QPA_PLATFORM=offscreen ./build/bin/plot_demo --frames 100
     QT_QPA_PLATFORM=offscreen ./build/bin/plot_demo --shot 2d-zoom-roi --png shot.png
 
-    # QtTest suite (also registered with CTest when -DSLS_USE_TESTS=ON)
+    # QtTest suite (also registered with CTest)
     QT_QPA_PLATFORM=offscreen ./build/bin/plotting_test
 
 `plot_demo` prints the unthrottled render throughput and the measured timer
@@ -131,8 +128,5 @@ Removing Qwt
 `libs/qwt` is gone from the source tree and the build; `slsDetectorGui` no
 longer finds or links Qwt, and no source under `slsDetectorPlotting` includes
 a `qwt_*` header.  The package metadata and documentation refer to the Qt
-runtime packages instead (`qt6-qtbase`/`qt5-qtbase` on RPM based systems,
-`qt6-base-dev`/`qtbase5-dev` on Debian/Ubuntu, `qt6-main`/`qt-main` in
-conda), selected by `SLS_GUI_QT_MAJOR` (or `cmk.sh -G` for Qt 6 and `-g` for
-Qt 5).  Switching between the two cmk flags removes the build tree
-automatically, so no extra `-c` is needed.
+runtime packages instead (`qt6-qtbase` on RPM based systems, `qt6-base-dev`
+on Debian/Ubuntu, `qt6-main` in conda).

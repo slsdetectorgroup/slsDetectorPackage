@@ -3,7 +3,7 @@
 #ifndef SLSQT1DPLOT_H
 #define SLSQT1DPLOT_H
 
-// Qt5/Qt6 replacement for the qwt based 1D plotting layer of slsDetectorGui.
+// Replacement for the qwt based 1D plotting layer of slsDetectorGui.
 //
 // SlsQt1DPlot is a plain QWidget that paints its own frame, ticks, grid,
 // clipped curves, legend, ROI boxes and tracker and implements the zoom / pan

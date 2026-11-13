@@ -930,7 +930,7 @@ double SlsQtFastImage::valueAt(const QPoint &pos) const {
 void SlsQtFastImage::mousePressEvent(QMouseEvent *e) {
     if (e->button() != Qt::LeftButton)
         return;
-    const QPoint ip = sls::plot::eventPosition(e).toPoint();
+    const QPoint ip = e->position().toPoint();
     if (m_roiEdit && hasImage()) {
         // which part of the yellow rectangle was grabbed?
         const QPointF d = widgetToData(QPointF(ip));
@@ -996,7 +996,7 @@ void SlsQtFastImage::mousePressEvent(QMouseEvent *e) {
 }
 
 void SlsQtFastImage::mouseMoveEvent(QMouseEvent *e) {
-    const QPointF pos = sls::plot::eventPosition(e);
+    const QPointF pos = e->position();
     if (m_roiEdit && hasImage()) {
         const QPointF d = widgetToData(pos);
         const double x = std::max(0.0, std::min(double(m_nx), d.x()));
@@ -1087,7 +1087,7 @@ void SlsQtFastImage::mouseMoveEvent(QMouseEvent *e) {
         const QRect sr = scaleRect();
         if (sr.height() <= 0)
             return;
-        const double delta = double(sls::plot::eventPosition(e).toPoint().y() - m_dragScaleY) /
+        const double delta = double(e->position().toPoint().y() - m_dragScaleY) /
                              double(sr.height()) * (m_dragChi - m_dragClo);
         if (m_dragMax) {
             m_chi = m_dragChi - delta;
@@ -1165,7 +1165,7 @@ void SlsQtFastImage::mouseReleaseEvent(QMouseEvent *e) {
 void SlsQtFastImage::wheelEvent(QWheelEvent *e) {
     if (!hasImage() || !m_zoomEnabled)
         return;
-    const QPointF imgPt = widgetToData(sls::plot::eventPosition(e));
+    const QPointF imgPt = widgetToData(e->position());
     const double mx = imgPt.x(), my = imgPt.y();
 
     const double factor = (e->angleDelta().y() > 0) ? 1.0 / 1.18 : 1.18;
@@ -1198,7 +1198,7 @@ void SlsQtFastImage::wheelEvent(QWheelEvent *e) {
 
 void SlsQtFastImage::mouseDoubleClickEvent(QMouseEvent *e) {
     const QRect sr = scaleRect();
-    if (sr.height() > 0 && sr.contains(sls::plot::eventPosition(e).toPoint())) {
+    if (sr.height() > 0 && sr.contains(e->position().toPoint())) {
         m_clo = m_defClo;
         m_chi = m_defChi;
         m_histMs = 0;

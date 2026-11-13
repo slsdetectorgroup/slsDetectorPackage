@@ -989,7 +989,7 @@ SlsQt1DPlot::Geometry SlsQt1DPlot::computeGeometry() const {
                 const int w =
                     20 + (h->title().isEmpty()
                               ? 0
-                              : sls::plot::textWidth(fmTick, h->title()) + 4);
+                              : fmTick.horizontalAdvance(h->title()) + 4);
                 if (used > 0 && used + w > avail) {
                     ++rows;
                     used = 0;
@@ -1020,7 +1020,7 @@ SlsQt1DPlot::Geometry SlsQt1DPlot::computeGeometry() const {
     }
     int yLabelW = 0;
     for (const QString &s : g.yLabels)
-        yLabelW = std::max(yLabelW, sls::plot::textWidth(fmTick, s));
+        yLabelW = std::max(yLabelW, fmTick.horizontalAdvance(s));
 
     int left = 3 + yTitleW + yLabelW + kTickLen + 2;
     const int right = 8;
@@ -1035,7 +1035,7 @@ SlsQt1DPlot::Geometry SlsQt1DPlot::computeGeometry() const {
     std::vector<QString> xl = tickLabels(xt, m_xLo, m_xHi, m_logX);
     int maxXLabelW = 12;
     for (const QString &s : xl)
-        maxXLabelW = std::max(maxXLabelW, sls::plot::textWidth(fmTick, s));
+        maxXLabelW = std::max(maxXLabelW, fmTick.horizontalAdvance(s));
     int maxXT = std::max(2, std::min(8, plotW / (maxXLabelW + 12)));
     g.xTicks = tickValues(m_xLo, m_xHi, m_logX, maxXT);
     g.xLabels = tickLabels(g.xTicks, m_xLo, m_xHi, m_logX);
@@ -1246,7 +1246,7 @@ void SlsQt1DPlot::paintFrame(QPainter &p, const Geometry &g) const {
         if (i < static_cast<int>(g.xLabels.size())) {
             const QString &lab = g.xLabels[static_cast<size_t>(i)];
             p.setPen(m_theme.text);
-            int w = sls::plot::textWidth(fmTick, lab) + 8;
+            int w = fmTick.horizontalAdvance(lab) + 8;
             int lx = x - w / 2;
             if (lx < 0)
                 lx = 0;
@@ -1269,7 +1269,7 @@ void SlsQt1DPlot::paintFrame(QPainter &p, const Geometry &g) const {
         if (i < static_cast<int>(g.yLabels.size())) {
             const QString &lab = g.yLabels[static_cast<size_t>(i)];
             p.setPen(m_theme.text);
-            const int w = sls::plot::textWidth(fmTick, lab) + 4;
+            const int w = fmTick.horizontalAdvance(lab) + 4;
             int lx = r.left() - kTickLen - 2 - w;
             if (lx < 0)
                 lx = 0;
@@ -1326,7 +1326,7 @@ void SlsQt1DPlot::paintLegend(QPainter &p, const Geometry &g) const {
         const int w =
             20 + (h->title().isEmpty()
                       ? 0
-                      : sls::plot::textWidth(fm, h->title()) + 4);
+                      : fm.horizontalAdvance(h->title()) + 4);
         if (!current.empty() && curW + w > avail) {
             rows.push_back(current);
             rowW.push_back(curW);
@@ -1362,7 +1362,7 @@ void SlsQt1DPlot::paintLegend(QPainter &p, const Geometry &g) const {
             x += 20;
             if (!h->title().isEmpty()) {
                 p.setPen(m_theme.text);
-                const int tw = sls::plot::textWidth(fm, h->title());
+                const int tw = fm.horizontalAdvance(h->title());
                 p.drawText(QRect(x, y, tw + 2, rowH),
                            Qt::AlignLeft | Qt::AlignVCenter, h->title());
                 x += tw + 4;
@@ -1461,7 +1461,7 @@ void SlsQt1DPlot::paintEvent(QPaintEvent *event) {
 // ---------------------------------------------------------------------------
 
 void SlsQt1DPlot::mousePressEvent(QMouseEvent *event) {
-    const QPointF pos = sls::plot::eventPosition(event);
+    const QPointF pos = event->position();
     const Geometry g = computeGeometry();
     if (zoomAllowed()) {
         if (event->button() == Qt::LeftButton &&
@@ -1498,7 +1498,7 @@ void SlsQt1DPlot::mousePressEvent(QMouseEvent *event) {
 }
 
 void SlsQt1DPlot::mouseMoveEvent(QMouseEvent *event) {
-    const QPointF pos = sls::plot::eventPosition(event);
+    const QPointF pos = event->position();
     const Geometry g = computeGeometry();
     const bool inside = g.plot.contains(pos.toPoint());
     if (inside != m_trackValid || pos != m_trackPos) {
@@ -1578,7 +1578,7 @@ void SlsQt1DPlot::wheelEvent(QWheelEvent *event) {
         event->ignore();
         return;
     }
-    const QPointF pos = sls::plot::eventPosition(event);
+    const QPointF pos = event->position();
     const Geometry g = computeGeometry();
     if (!g.plot.contains(pos.toPoint())) {
         event->ignore();

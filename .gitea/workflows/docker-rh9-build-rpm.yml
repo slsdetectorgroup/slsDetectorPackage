@@ -21,8 +21,9 @@ jobs:
 
       - name: Install build dependencies
         run: |
-          dnf -y install rpm-build qt5-qtbase-devel qt5-qtsvg-devel \
-            libpng-devel zlib-devel expat-devel libtiff-devel
+          # Qt6 comes from EPEL
+          dnf -y install rpm-build qt6-qtbase-devel \
+            libpng-devel zlib-devel libtiff-devel
 
       - name: Build with versioned binaries
         run: |

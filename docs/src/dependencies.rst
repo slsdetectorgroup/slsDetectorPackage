@@ -69,12 +69,8 @@ Dependencies to build GUI
 
 To build the GUI the following dependencies are needed:
 
- * Qt 5.9
- * Qwt 6.1.5 (packaged in libs)
-
-.. note:: 
-
-    Qwt is bundled in libs. One does not need to pre-install it on the system.
+ * Qt 6.2 or newer (Widgets, Gui, Core and Concurrent)
+ * libpng and zlib
 
 -----------------------------------------------------
 Dependencies to build Moench and Jungfrau executables

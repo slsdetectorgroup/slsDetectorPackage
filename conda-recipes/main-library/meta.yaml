@@ -20,7 +20,7 @@ requirements:
     - git
     - cmake
     - ninja
-    - qt 5.*
+    - qt6-main
 
   host:
     - libstdcxx-ng
@@ -28,7 +28,6 @@ requirements:
     - libgl-devel  # [linux]
     - libtiff
     - zlib
-    - expat
     - zeromq
     - fmt
   
@@ -64,7 +63,7 @@ outputs:
 
       run:
         - {{ pin_subpackage('slsdetlib', exact=True) }}
-        - qt 5.*
+        - qt6-main
 
 
   - name: moenchzmq

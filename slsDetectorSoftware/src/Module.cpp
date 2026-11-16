@@ -1059,6 +1059,9 @@ void Module::setNumberofUDPInterfaces(int n) {
     shm()->numUDPInterfaces = n;
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_SET_RECEIVER_NUM_INTERFACES, n, nullptr);
+        // update udp port in receiver as well
+        uint16_t udpPort2 = sendToDetector<uint16_t>(F_GET_DEST_UDP_PORT2);
+        sendToReceiver(F_SET_RECEIVER_UDP_PORT2, udpPort2, nullptr);
     }
 }
 

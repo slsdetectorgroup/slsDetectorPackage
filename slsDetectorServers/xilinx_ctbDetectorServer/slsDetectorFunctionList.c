@@ -1914,7 +1914,6 @@ int updateDatabytesandAllocateRAM() {
 
 void readandSendUDPFrames() {
     LOG(logDEBUG1, ("Reading from 1G UDP\n"));
-    int dataBytes = digitalDataBytes + transceiverDataBytes;
 
     // read every frame
     while (readFrameFromFifo() == OK) {

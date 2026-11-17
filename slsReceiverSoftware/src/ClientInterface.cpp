@@ -402,7 +402,7 @@ int ClientInterface::setup_receiver(Interface &socket) {
         }
         impl()->setTimingMode(arg.timMode);
         if (detType == EIGER || detType == CHIPTESTBOARD ||
-            detType == MYTHEN3) {
+            detType == XILINX_CHIPTESTBOARD || detType == MYTHEN3) {
             impl()->setTenGigaEnable(arg.tenGiga);
         }
         if (detType == CHIPTESTBOARD || detType == XILINX_CHIPTESTBOARD) {
@@ -898,7 +898,8 @@ int ClientInterface::get_overwrite(Interface &socket) {
 
 int ClientInterface::enable_tengiga(Interface &socket) {
     auto val = socket.Receive<int>();
-    if (detType != EIGER && detType != CHIPTESTBOARD && detType != MYTHEN3)
+    if (detType != EIGER && detType != CHIPTESTBOARD &&
+        detType != XILINX_CHIPTESTBOARD && detType != MYTHEN3)
         functionNotImplemented();
 
     if (val >= 0) {

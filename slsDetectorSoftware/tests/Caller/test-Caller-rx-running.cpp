@@ -184,7 +184,8 @@ TEST_CASE("tengiga - cant put if receiver is not idle",
     auto det_type = det.getDetectorType().squash();
 
     if (det_type == defs::EIGER || det_type == defs::MYTHEN3 ||
-        det_type == defs::CHIPTESTBOARD) {
+        det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         auto prev_tengiga = det.getTenGiga();
 
         // start receiver

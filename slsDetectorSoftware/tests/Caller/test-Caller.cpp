@@ -2963,7 +2963,7 @@ TEST_CASE("tengiga", "[.detectorintegration]") {
 
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::EIGER || det_type == defs::CHIPTESTBOARD ||
-        det_type == defs::MYTHEN3) {
+        det_type == defs::XILINX_CHIPTESTBOARD || det_type == defs::MYTHEN3) {
         auto tengiga = det.getTenGiga();
         det.setTenGiga(false);
 

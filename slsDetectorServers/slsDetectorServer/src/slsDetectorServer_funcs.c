@@ -1900,6 +1900,17 @@ int acquire(int blocking, int file_des) {
             LOG(logERROR, (mess));
         } else
 #endif
+#if defined(XILINX_CHIPTESTBOARDD)
+            // adcs do not exist right now
+            if (!enableTenGigabitEthernet(GET_FLAG) &&
+                (getReadoutMode() == ANALOG_ONLY ||
+                 getReadoutMode() == ANALOG_AND_DIGITAL)) {
+            ret = FAIL;
+            strcpy(mess, "Could not start acquisition. Analog readout is not "
+                         "implemented.\n");
+            LOG(logERROR, (mess));
+        } else
+#endif
 #ifdef EIGERD
             // check for hardware mac and hardware ip
             if (udpDetails[0].srcmac != getDetectorMAC()) {
@@ -2022,7 +2033,7 @@ void *start_state_machine(void *arg) {
         ret = startStateMachine();
         LOG(logDEBUG2, ("Starting Acquisition ret: %d\n", ret));
         if (ret == FAIL) {
-#if defined(CHIPTESTBOARDD) || defined(VIRTUAL)
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD) || defined(VIRTUAL)
             sprintf(mess, "Could not start acquisition. Could not create udp "
                           "socket in server. Check udp_dstip & udp_dstport.\n");
 #else
@@ -2036,9 +2047,9 @@ void *start_state_machine(void *arg) {
             }
             break;
         }
-// only 1g real ctb needs to read from fifo
+// only 1g real ctb and xilinx ctb needs to read from fifo
 // to avoid blocking, in another thread
-#if defined(CHIPTESTBOARDD) && !defined(VIRTUAL)
+#if (defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)) && !defined(VIRTUAL)
         if (!enableTenGigabitEthernet(-1)) {
             ret = validateUDPSocket();
             if (ret == FAIL) {
@@ -2094,7 +2105,7 @@ void *start_state_machine(void *arg) {
     return NULL;
 }
 
-#if defined(CHIPTESTBOARDD) && !defined(VIRTUAL)
+#if (defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)) && !defined(VIRTUAL)
 void *start_reading_and_sending_udp_frames(void *arg) {
     readandSendUDPFrames();
     return NULL;
@@ -3077,8 +3088,7 @@ int enable_ten_giga(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG, ("Setting 10GbE: %d\n", arg));
 
-#if defined(JUNGFRAUD) || defined(MOENCHD) || defined(GOTTHARD2D) ||           \
-    defined(XILINX_CHIPTESTBOARDD)
+#if defined(JUNGFRAUD) || defined(MOENCHD) || defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // set & get
@@ -7223,7 +7233,8 @@ int get_receiver_parameters(int file_des) {
         return printSocketReadError();
 
         // 10 gbe
-#if defined(EIGERD) || defined(CHIPTESTBOARDD) || defined(MYTHEN3D)
+#if defined(EIGERD) || defined(CHIPTESTBOARDD) || defined(MYTHEN3D) ||         \
+    defined(XILINX_CHIPTESTBOARDD)
     i32 = enableTenGigabitEthernet(GET_FLAG);
 #else
     i32 = 0;

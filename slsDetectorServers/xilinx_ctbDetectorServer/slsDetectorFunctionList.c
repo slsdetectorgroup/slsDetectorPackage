@@ -9,11 +9,12 @@
 #include "sls/versionAPI.h"
 
 #include "LTC2620_Driver.h"
+#include "UDPPacketHeaderGenerator.h"
 #include "XILINX_FMC.h"
 #include "XILINX_PLL.h"
+#include "communication_funcs_UDP.h"
 #include "loadPattern.h"
 #ifdef VIRTUAL
-#include "communication_funcs_UDP.h"
 #include <math.h> //ceil
 #include <pthread.h>
 #endif
@@ -48,6 +49,23 @@ int dacValues[NDAC_ONLY] = {};
 int powerValues[NPWR - 1] = {}; // powerIndex (A->IO)
 // software limit that depends on the current chip on the ctb
 int vLimit = 0;
+
+// 1g readout (server reads the fifos and sends the udp packets)
+// analog is not read out in 1g, its variables are only required by the udp
+// packet header generator
+int analogDataBytes = 0;
+int digitalDataBytes = 0;
+int transceiverDataBytes = 0;
+char *analogData = NULL;
+char *digitalData = NULL;
+char *transceiverData = NULL;
+char *digitalDataPtr = NULL;
+char *transceiverDataPtr = NULL;
+char udpPacketData[UDP_PACKET_DATA_BYTES + sizeof(sls_detector_header)];
+// configuration of the acquisition being read out (0 samples if not enabled)
+int numDigitalSamples1g = 0;
+int numTransceiverSamples1g = 0;
+uint32_t transceiverMask1g = 0;
 
 #ifdef VIRTUAL
 pthread_t pthread_virtual_tid;
@@ -387,16 +405,31 @@ void setupDetector() {
     for (int i = 0; i != NPWR - 1; ++i)
         powerValues[i] = -1;
     vLimit = DEFAULT_VLIMIT;
+    analogDataBytes = 0;
+    digitalDataBytes = 0;
+    transceiverDataBytes = 0;
+    free(digitalData);
+    digitalData = NULL;
+    free(transceiverData);
+    transceiverData = NULL;
+    digitalDataPtr = NULL;
+    transceiverDataPtr = NULL;
+    numDigitalSamples1g = 0;
+    numTransceiverSamples1g = 0;
+    transceiverMask1g = 0;
 
 #ifdef VIRTUAL
     if (isControlServer) {
         sharedMemory_setStatus(IDLE);
-        setupUDPCommParameters();
         initializePatternWord();
     } else {
         sharedMemory_setStop(0);
     }
 #endif
+    // udp socket in the server (virtual server and 1g readout)
+    if (isControlServer) {
+        setupUDPCommParameters();
+    }
     // initialization only at start up (restart fpga)
     initError = waitTransceiverReset(initErrorMessage);
     if (initError == FAIL) {
@@ -437,6 +470,7 @@ void setupDetector() {
     initializePatternAddresses();
 
     LOG(logINFOBLUE, ("Setting Default readout\n"));
+    enableTenGigabitEthernet(DEFAULT_TEN_GIGA);
     setNumAnalogSamples(DEFAULT_NUM_ASAMPLES);
     setNumDigitalSamples(DEFAULT_NUM_DSAMPLES);
     setADCEnableMask_10G(BIT32_MSK);
@@ -1495,13 +1529,13 @@ int configureMAC() {
                   "\tDest Port   : %hu\n",
                   src_ip, src_mac, srcport, dst_ip, dst_mac, dstport));
 
-#ifdef VIRTUAL
+    // udp socket in the server (virtual server and 1g readout)
     if (setUDPDestinationDetails(0, 0, dst_ip, dstport) == FAIL) {
         LOG(logERROR, ("could not set udp destination IP and port\n"));
         return FAIL;
     }
-#endif
 
+    // udp header in the firmware (10g readout)
     // build udp header
     udp_header header;
     udp_header *udp = &header;
@@ -1545,6 +1579,21 @@ int configureMAC() {
     return OK;
 }
 
+int enableTenGigabitEthernet(int val) {
+    uint32_t addr = ENABLE_1G;
+
+    // set
+    if (val != -1) {
+        LOG(logINFO, ("Setting 10Gbe: %d\n", (val > 0) ? 1 : 0));
+        if (val > 0) {
+            bus_w(addr, bus_r(addr) & ~ENABLE_1G_MSK);
+        } else {
+            bus_w(addr, bus_r(addr) | ENABLE_1G_MSK);
+        }
+    }
+    return ((bus_r(addr) & ENABLE_1G_MSK) ? 0 : 1);
+}
+
 /* aquisition */
 
 int startStateMachine() {
@@ -1569,6 +1618,21 @@ int startStateMachine() {
     LOG(logINFOGREEN, ("Virtual Acquisition started\n"));
     return OK;
 #endif
+
+    // 1 giga udp
+    if (!enableTenGigabitEthernet(-1)) { // read enable status from FW reg, not SW
+        if (updateDatabytesandAllocateRAM() == FAIL) {
+            return FAIL;
+        }
+        // create udp socket
+        if (createUDPSocket(0) != OK) {
+            return FAIL;
+        }
+        // update header with modId, detType and version. Reset offset and fnum
+        createUDPPacketHeader(udpPacketData, 0);
+        // no data from a previous acquisition
+        cleanFifos();
+    }
 
     LOG(logINFOBLUE, ("Starting readout\n"));
     bus_w(FLOW_CONTROL_REG, bus_r(FLOW_CONTROL_REG) | START_F_MSK);
@@ -1597,7 +1661,8 @@ void *start_timer(void *arg) {
 
     int numFrames = (getNumFrames() * getNumTriggers());
     int imageSize = calculateDataBytes();
-    int maxDataSize = MAX_DATA_SIZE_IN_PACKET;
+    int maxDataSize = enableTenGigabitEthernet(-1) ? MAX_DATA_SIZE_IN_PACKET
+                                                   : UDP_PACKET_DATA_BYTES;
     int packetSize = sizeof(sls_detector_header) + maxDataSize;
     int packetsPerFrame = ceil((double)imageSize / (double)maxDataSize);
 
@@ -1748,6 +1813,10 @@ enum runStatus getRunStatus() {
     LOG(logINFO, ("Status Register: %08x\n", retval));
 
     if (retval == 0x0) {
+        // 1g might still be reading from fifo
+        if (!enableTenGigabitEthernet(-1) && checkDataInFifo()) {
+            return TRANSMITTING;
+        }
         return IDLE;
     }
 
@@ -1786,37 +1855,238 @@ void waitForAcquisitionEnd() {
     LOG(logINFOGREEN, ("Blocking Acquisition done\n"));
 }
 
+int validateUDPSocket() {
+    if (getUdPSocketDescriptor(0, 0) <= 0) {
+        return FAIL;
+    }
+    return OK;
+}
+
+int updateDatabytesandAllocateRAM() {
+    // configuration of the acquisition to be read out
+    // (analog is not read out in 1g)
+    numDigitalSamples1g = digitalEnable ? getNumDigitalSamples() : 0;
+    numTransceiverSamples1g =
+        transceiverEnable ? getNumTransceiverSamples() : 0;
+    transceiverMask1g = getTransceiverEnableMask();
+    int ntchans = __builtin_popcount(transceiverMask1g);
+
+    int nDigitalBytes = sizeof(uint64_t) * numDigitalSamples1g;
+    int nTransceiverBytes =
+        ntchans * (NBITS_PER_TRANSCEIVER / 8) * numTransceiverSamples1g;
+    LOG(logINFO, ("\t1G Databytes [Digital:%d, Transceiver:%d (%d channels)]\n",
+                  nDigitalBytes, nTransceiverBytes, ntchans));
+
+    if (nDigitalBytes == 0 && nTransceiverBytes == 0) {
+        LOG(logERROR, ("Can not allocate RAM for 0 bytes.\n"));
+        return FAIL;
+    }
+
+    // update only if change in databytes
+    if (nDigitalBytes != digitalDataBytes) {
+        free(digitalData);
+        digitalData = NULL;
+        digitalDataBytes = 0;
+        if (nDigitalBytes) {
+            digitalData = malloc(nDigitalBytes);
+            if (digitalData == NULL) {
+                LOG(logERROR, ("Can not allocate digital data RAM.\n"));
+                return FAIL;
+            }
+            digitalDataBytes = nDigitalBytes;
+        }
+    }
+    if (nTransceiverBytes != transceiverDataBytes) {
+        free(transceiverData);
+        transceiverData = NULL;
+        transceiverDataBytes = 0;
+        if (nTransceiverBytes) {
+            transceiverData = malloc(nTransceiverBytes);
+            if (transceiverData == NULL) {
+                LOG(logERROR, ("Can not allocate transceiver data RAM.\n"));
+                return FAIL;
+            }
+            transceiverDataBytes = nTransceiverBytes;
+        }
+    }
+    return OK;
+}
+
+void readandSendUDPFrames() {
+    LOG(logDEBUG1, ("Reading from 1G UDP\n"));
+    int dataBytes = digitalDataBytes + transceiverDataBytes;
+
+    // read every frame
+    while (readFrameFromFifo() == OK) {
+        int bytesToSend = 0, n = 0;
+        while ((bytesToSend = fillUDPPacket(udpPacketData))) {
+            n += sendUDPPacket(0, 0, udpPacketData, bytesToSend);
+        }
+    }
+    cleanFifos();
+    closeUDPSocket(0);
+}
+
+uint32_t checkDataInFifo() {
+    uint32_t dataPresent = 0;
+    // from the register, as it is also used by the stop server
+    uint32_t reg = bus_r(FIFO_TO_GB_CONTROL_REG);
+    if (reg & RO_MODE_D_MSK) {
+        uint32_t fifoEmpty =
+            (bus_r(D_FIFO_EMPTY_STATUS_REG) & D_FIFO_EMPTY_STATUS_MSK);
+        LOG(logDEBUG1, ("Digital Fifo Empty: 0x%x\n", fifoEmpty));
+        dataPresent = (fifoEmpty ? 0 : 1);
+    }
+    if (!dataPresent && (reg & RO_MODE_X_MSK)) {
+        uint32_t mask =
+            ((reg & ENABLED_CHANNELS_X_MSK) >> ENABLED_CHANNELS_X_OFST);
+        uint32_t fifoEmpty =
+            ((bus_r(X_FIFO_EMPTY_STATUS_REG) & X_FIFO_EMPTY_STATUS_MSK) >>
+             X_FIFO_EMPTY_STATUS_OFST);
+        LOG(logDEBUG1, ("Transceiver Fifo Empty: 0x%x (enabled: 0x%x)\n",
+                        fifoEmpty, mask));
+        // data in any of the enabled channels
+        dataPresent = (~fifoEmpty & mask);
+    }
+    LOG(logDEBUG1, ("Data in Fifo :0x%x\n", dataPresent));
+    return dataPresent;
+}
+
+// only called for starting of a new frame
+int checkFifoForEndOfAcquisition() {
+    LOG(logDEBUG1, ("Check for end of acq\n"));
+    uint32_t dataPresent = checkDataInFifo();
+
+    while (!dataPresent) {
+        if (!runBusy()) {
+            // wait to be sure there is no data in fifo
+            usleep(WAIT_TIME_US_FR_ACQDONE_REG);
+
+            // still no data
+            if (!checkDataInFifo()) {
+                LOG(logINFO, ("Acquisition Finished (State: 0x%08x), "
+                              "no frame found .\n",
+                              bus_r(STATUS_REG)));
+                return FAIL;
+            }
+            // got data, exit
+            break;
+        }
+        // check if data in fifo again
+        dataPresent = checkDataInFifo();
+    }
+    LOG(logDEBUG1, ("Got data :0x%x\n", dataPresent));
+    return OK;
+}
+
+int waitForDataInFifo(uint32_t addr, uint32_t emptyMask) {
+    // as long as any of the fifos is empty
+    while (bus_r(addr) & emptyMask) {
+        if (!runBusy()) {
+            // wait to be sure there is no data in fifo
+            usleep(WAIT_TIME_US_FR_ACQDONE_REG);
+            if (bus_r(addr) & emptyMask) {
+                return FAIL;
+            }
+        }
+    }
+    return OK;
+}
+
+int readSample(int ns) {
+
+    // digital: 64 bit
+    if (ns < numDigitalSamples1g) {
+        if (waitForDataInFifo(D_FIFO_EMPTY_STATUS_REG,
+                              D_FIFO_EMPTY_STATUS_MSK) == FAIL) {
+            return FAIL;
+        }
+        bus_r_block(D_FIFO_READ, digitalDataPtr, sizeof(uint64_t), true);
+        digitalDataPtr += sizeof(uint64_t);
+    }
+
+    // transceivers: 64 bit for every enabled channel
+    if (ns < numTransceiverSamples1g) {
+        if (waitForDataInFifo(X_FIFO_EMPTY_STATUS_REG,
+                              ((transceiverMask1g << X_FIFO_EMPTY_STATUS_OFST) &
+                               X_FIFO_EMPTY_STATUS_MSK)) == FAIL) {
+            return FAIL;
+        }
+        const uint32_t addr[NCHAN_TRANSCEIVER] = {X0_FIFO_READ, X1_FIFO_READ,
+                                                  X2_FIFO_READ, X3_FIFO_READ};
+        for (int ich = 0; ich != NCHAN_TRANSCEIVER; ++ich) {
+            if ((1 << ich) & transceiverMask1g) {
+                bus_r_block(addr[ich], transceiverDataPtr,
+                            NBITS_PER_TRANSCEIVER / 8, true);
+                transceiverDataPtr += (NBITS_PER_TRANSCEIVER / 8);
+            }
+        }
+    }
+    return OK;
+}
+
+int readFrameFromFifo() {
+    digitalDataPtr = digitalData;
+    if (digitalDataBytes) {
+        memset(digitalData, 0, digitalDataBytes);
+    }
+    transceiverDataPtr = transceiverData;
+    if (transceiverDataBytes) {
+        memset(transceiverData, 0, transceiverDataBytes);
+    }
+
+    // no more frames
+    if (checkFifoForEndOfAcquisition() == FAIL) {
+        return FAIL;
+    }
+
+    // read Sample
+    int maxSamples = numDigitalSamples1g;
+    if (numTransceiverSamples1g > maxSamples)
+        maxSamples = numTransceiverSamples1g;
+    for (int ns = 0; ns != maxSamples; ++ns) {
+        if (readSample(ns) == FAIL) {
+            LOG(logWARNING, ("Acquisition finished with an incomplete frame "
+                             "(%d of %d samples). Discarding it.\n",
+                             ns, maxSamples));
+            return FAIL;
+        }
+    }
+
+    return OK;
+}
+
 int calculateDataBytes() {
-    int analogDataBytes = 0;
-    int digitalDataBytes = 0;
-    int transceiverDataBytes = 0;
+    int nAnalogBytes = 0;
+    int nDigitalBytes = 0;
+    int nTransceiverBytes = 0;
     int nachans = 0, ndchans = 0, ntchans = 0;
 
     if (analogEnable) {
         nachans = __builtin_popcount(getADCEnableMask_10G());
-        analogDataBytes = nachans * (DYNAMIC_RANGE / 8) * getNumAnalogSamples();
+        nAnalogBytes = nachans * (DYNAMIC_RANGE / 8) * getNumAnalogSamples();
         LOG(logINFO, ("\t#Analog Channels:%d, Databytes:%d\n", nachans,
-                      analogDataBytes));
+                      nAnalogBytes));
     }
 
     if (digitalEnable) {
         ndchans = 64;
-        digitalDataBytes = (sizeof(uint64_t) * getNumDigitalSamples());
+        nDigitalBytes = (sizeof(uint64_t) * getNumDigitalSamples());
         LOG(logINFO, ("\t#Digital Channels:%d, Databytes:%d\n", ndchans,
-                      digitalDataBytes));
+                      nDigitalBytes));
     }
 
     if (transceiverEnable) {
         ntchans = __builtin_popcount(getTransceiverEnableMask());
-        transceiverDataBytes =
+        nTransceiverBytes =
             ntchans * (NBITS_PER_TRANSCEIVER / 8) * getNumTransceiverSamples();
         LOG(logINFO, ("\t#Transceiver Channels:%d, Databytes:%d\n", ntchans,
-                      transceiverDataBytes));
+                      nTransceiverBytes));
     }
 
     // total
     int nchans = nachans + ndchans + ntchans;
-    int dataBytes = analogDataBytes + digitalDataBytes + transceiverDataBytes;
+    int dataBytes = nAnalogBytes + nDigitalBytes + nTransceiverBytes;
 
     LOG(logINFO,
         ("\t#Total Channels:%d, Total Databytes:%d\n", nchans, dataBytes));

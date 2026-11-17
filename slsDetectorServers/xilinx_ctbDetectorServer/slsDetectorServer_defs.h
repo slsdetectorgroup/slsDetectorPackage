@@ -51,6 +51,7 @@
 #define DEFAULT_PERIOD                (300 * 1000) // 300us
 #define DEFAULT_READOUT_MODE          (TRANSCEIVER_ONLY)
 #define DEFAULT_READOUT_MODE_STR      "transceiver_only"
+#define DEFAULT_TEN_GIGA              (1)
 #define DEFAULT_TRANSCEIVER_MASK      (0x3) // TODO: check
 #define DEFAULT_NUM_ASAMPLES          (1)
 #define DEFAULT_NUM_DSAMPLES          (1)
@@ -76,6 +77,8 @@
 /* Defines in the Firmware */
 #define WAIT_TIME_PATTERN_READ  (10)
 #define WAIT_TIME_OUT_0US_TIMES (35000) // 2s
+// wait time in us after acquisition done to ensure there is no data in fifo
+#define WAIT_TIME_US_FR_ACQDONE_REG (100)
 
 #define BIT32_MSK  (0xFFFFFFFF)
 #define BIT16_MASK (0xFFFF)

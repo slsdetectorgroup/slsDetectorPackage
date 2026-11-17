@@ -9,6 +9,10 @@ package:
 build:
   number: 0
   script:
+    # gcc_linux-64 16.2.0 build 3 passes bare tool names in CMAKE_ARGS
+    # (-DCMAKE_AR=x86_64-conda-linux-gnu-ar), which CMake resolves relative to
+    # SRC_DIR. Restore the full paths; no-op when they are already absolute.
+    - 'export CMAKE_ARGS="${CMAKE_ARGS//=${HOST}-/=${BUILD_PREFIX}/bin/${HOST}-}"' # [not win]
     - unset CMAKE_GENERATOR && {{ PYTHON }} -m pip install . -vv --config-settings=cmake.define.SLS_USE_SYSTEM_ZMQ=ON # [not win]
 
 requirements:

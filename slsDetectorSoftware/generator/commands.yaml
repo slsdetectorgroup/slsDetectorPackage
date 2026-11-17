@@ -894,7 +894,7 @@ udp_dstmac2:
       cast_input: [ false ]
 
 tengiga:
-  help: "[0, 1]\n\t[Eiger][Ctb][Xilinx Ctb][Mythen3] 10GbE Enable.\n\t[Xilinx Ctb] Default is enabled. If disabled, the detector server reads out only the digital and transceiver data and sends them via the 1GbE interface. Analog readout is not implemented for 1GbE."
+  help: "[0, 1]\n\t[Eiger][Ctb][Xilinx Ctb][Mythen3] 10GbE Enable."
   inherit_actions: INTEGER_COMMAND_VEC_ID
   actions:
     GET:

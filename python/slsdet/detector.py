@@ -2652,12 +2652,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def tengiga(self):
-        """[Eiger][Ctb][Xilinx Ctb][Mythen3] 10GbE Enable.
-
-        Note
-        -----
-        [Xilinx Ctb] Default is enabled. If disabled, the detector server reads out only the digital and transceiver data and sends them via the 1GbE interface. Analog readout is not implemented for 1GbE.
-        """
+        """[Eiger][Ctb][Xilinx Ctb][Mythen3] 10GbE Enable."""
         return self.getTenGiga()
 
     @tengiga.setter

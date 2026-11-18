@@ -715,12 +715,12 @@ class Detector {
 
     /** [Jungfrau][Moench][Gotthard2]  Number of udp interfaces to stream data
      * from detector. Default is 1. \n Also enables second interface in receiver
-     * for listening (Writes a file per interface if writing enabled). \n Also
-     * restarts client and receiver zmq sockets if zmq streaming enabled. \n
-     * [Gotthard2] second interface enabled to send veto information via 10Gbps
-     * for debugging. By default, if veto enabled, it is sent via 2.5 gbps
-     * interface. \nSetting this resets the receiver roi and any udp datastream
-     * disables */
+     * for listening on port udp_dstport + 1 (Writes a file per interface if
+     * writing enabled). \n Also restarts client and receiver zmq sockets if zmq
+     * streaming enabled. \n [Gotthard2] second interface enabled to send veto
+     * information via 10Gbps for debugging. By default, if veto enabled, it is
+     * sent via 2.5 gbps interface. \nSetting this resets the receiver roi and
+     * any udp datastream disables */
     void setNumberofUDPInterfaces(int n);
 
     /** [Jungfrau][Moench] */

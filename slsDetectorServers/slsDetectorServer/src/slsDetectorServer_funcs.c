@@ -5477,20 +5477,6 @@ int set_num_interfaces(int file_des) {
                             udpDetails[iRxEntry].dstport2 =
                                 2 * iRxEntry + 1 + DEFAULT_UDP_DST_PORTNO;
                         }
-                        // if still 0, copy from entry 0
-                        if (iRxEntry != 0) {
-                            udpDetails[iRxEntry].srcip2 = udpDetails[0].srcip2;
-                            udpDetails[iRxEntry].srcmac2 =
-                                udpDetails[0].srcmac2;
-                            if (udpDetails[iRxEntry].dstip2 == 0) {
-                                udpDetails[iRxEntry].dstip2 =
-                                    udpDetails[0].dstip2;
-                            }
-                            if (udpDetails[iRxEntry].dstmac2 == 0) {
-                                udpDetails[iRxEntry].dstmac2 =
-                                    udpDetails[0].dstmac2;
-                            }
-                        }
                     }
                 }
                 calculate_and_set_position(); // aleady configures mac

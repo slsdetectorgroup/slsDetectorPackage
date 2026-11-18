@@ -2585,6 +2585,14 @@ rx_roi:
         PUT:
           argc: -1
 
+fformatoptions:
+    is_description: true
+    actions:
+        GET:
+          argc: 0
+        PUT:
+          argc: -1
+
 ratecorr:
     is_description: true
     actions:

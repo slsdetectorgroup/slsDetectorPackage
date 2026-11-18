@@ -107,6 +107,8 @@ class ClientInterface : private virtual slsDetectorDefs {
     int set_flip_rows(ServerInterface &socket);
     int set_file_format(ServerInterface &socket);
     int get_file_format(ServerInterface &socket);
+    int set_file_format_options(ServerInterface &socket);
+    int get_file_format_options(ServerInterface &socket);
     int set_streaming_port(ServerInterface &socket);
     int get_streaming_port(ServerInterface &socket);
     int set_silent_mode(ServerInterface &socket);

@@ -181,6 +181,33 @@ TEST_CASE("remove duplicates but keep order, pattern ") {
     CHECK(v == std::vector<int>{8, 1, 2, 3});
 }
 
+TEST_CASE("flatten list of lists with size prefix and back") {
+    std::vector<std::vector<uint32_t>> lists{{2}, {1, 6}, {32008, 0, 2}};
+    auto flat = flattenSizePrefixed(lists);
+    CHECK(flat == std::vector<uint32_t>{1, 2, 2, 1, 6, 3, 32008, 0, 2});
+    CHECK(unflattenSizePrefixed(flat) == lists);
+}
+
+TEST_CASE("flatten keeps empty inner lists") {
+    std::vector<std::vector<uint32_t>> lists{{}, {5}, {}};
+    auto flat = flattenSizePrefixed(lists);
+    CHECK(flat == std::vector<uint32_t>{0, 1, 5, 0});
+    CHECK(unflattenSizePrefixed(flat) == lists);
+}
+
+TEST_CASE("flatten empty list of lists") {
+    std::vector<std::vector<uint32_t>> lists;
+    auto flat = flattenSizePrefixed(lists);
+    CHECK(flat.empty());
+    CHECK(unflattenSizePrefixed(flat).empty());
+}
+
+TEST_CASE("unflatten throws if size exceeds remaining elements") {
+    CHECK_THROWS(unflattenSizePrefixed(std::vector<uint32_t>{2, 1}));
+    CHECK_THROWS(unflattenSizePrefixed(std::vector<uint32_t>{1, 5, 3, 1, 2}));
+    CHECK_THROWS(unflattenSizePrefixed(std::vector<uint32_t>{0xFFFFFFFF, 1}));
+}
+
 TEST_CASE("remove duplicated empty vector") {
     std::vector<int> v;
     auto r = removeDuplicates(v);

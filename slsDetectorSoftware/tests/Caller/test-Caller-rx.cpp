@@ -1016,6 +1016,107 @@ TEST_CASE("fformat", "[.detectorintegration]") {
     }
 }
 
+TEST_CASE("fformatoptions", "[.detectorintegration]") {
+    Detector det;
+    Caller caller(&det);
+    auto prev_format = det.getFileFormat();
+    auto prev_val = det.getFileFormatOptions();
+
+    // binary has no options
+    det.setFileFormat(defs::BINARY);
+    {
+        std::ostringstream oss;
+        caller.call("fformatoptions", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "fformatoptions []\n");
+    }
+    {
+        std::ostringstream oss;
+        caller.call("fformatoptions", {"none"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "fformatoptions []\n");
+    }
+    REQUIRE_THROWS(caller.call("fformatoptions", {"1", "6"}, -1, PUT));
+    REQUIRE_THROWS(caller.call("fformatoptions", {}, -1, PUT));
+    REQUIRE_THROWS(caller.call("fformatoptions", {"1"}, -1, GET));
+
+#ifdef HDF5C
+    // hdf5 filters (1: gzip, 2: shuffle, 3: fletcher32 are part of hdf5 lib)
+    det.setFileFormat(defs::HDF5);
+    {
+        std::ostringstream oss;
+        caller.call("fformatoptions", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "fformatoptions []\n");
+    }
+    {
+        std::ostringstream oss;
+        caller.call("fformatoptions", {"1", "6"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "fformatoptions [[1, 6]]\n");
+    }
+    {
+        std::ostringstream oss;
+        caller.call("fformatoptions", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "fformatoptions [[1, 6]]\n");
+    }
+    {
+        std::ostringstream oss;
+        caller.call("fformatoptions", {"[2]", "[1,6]"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "fformatoptions [[2], [1, 6]]\n");
+    }
+    {
+        std::ostringstream oss;
+        caller.call("fformatoptions", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "fformatoptions [[2], [1, 6]]\n");
+    }
+    {
+        std::ostringstream oss;
+        caller.call("fformatoptions", {"[2];[1,6];[3]"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "fformatoptions [[2], [1, 6], [3]]\n");
+    }
+    // format printed by the get
+    {
+        std::ostringstream oss;
+        caller.call("fformatoptions", {"[[2],", "[1,", "6]]"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "fformatoptions [[2], [1, 6]]\n");
+    }
+    // syntax
+    REQUIRE_THROWS(caller.call("fformatoptions", {"[2]", "1", "6"}, -1, PUT));
+    REQUIRE_THROWS(caller.call("fformatoptions", {"[2", "[1,6]"}, -1, PUT));
+    REQUIRE_THROWS(caller.call("fformatoptions", {"[2]", "[]"}, -1, PUT));
+    REQUIRE_THROWS(caller.call("fformatoptions", {"1", "-6"}, -1, PUT));
+    REQUIRE_THROWS(caller.call("fformatoptions", {"1", "6.5"}, -1, PUT));
+    REQUIRE_THROWS(caller.call("fformatoptions", {"gzip"}, -1, PUT));
+    // invalid filter id, repeated filter, filter not available
+    REQUIRE_THROWS(caller.call("fformatoptions", {"0"}, -1, PUT));
+    REQUIRE_THROWS(caller.call("fformatoptions", {"65536"}, -1, PUT));
+    REQUIRE_THROWS(caller.call("fformatoptions", {"[1,6]", "[1,4]"}, -1, PUT));
+    REQUIRE_THROWS(caller.call("fformatoptions", {"65535"}, -1, PUT));
+    // unchanged after failed attempts
+    {
+        std::ostringstream oss;
+        caller.call("fformatoptions", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "fformatoptions [[2], [1, 6]]\n");
+    }
+    // changing file format resets the options
+    det.setFileFormat(defs::BINARY);
+    det.setFileFormat(defs::HDF5);
+    {
+        std::ostringstream oss;
+        caller.call("fformatoptions", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "fformatoptions []\n");
+    }
+    REQUIRE_NOTHROW(caller.call("fformatoptions", {"1", "6"}, -1, PUT));
+    {
+        std::ostringstream oss;
+        caller.call("fformatoptions", {"none"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "fformatoptions []\n");
+    }
+#endif
+
+    for (int i = 0; i != det.size(); ++i) {
+        det.setFileFormat(prev_format[i], {i});
+        det.setFileFormatOptions(prev_val[i], {i});
+    }
+}
+
 TEST_CASE("fpath", "[.detectorintegration]") {
     Detector det;
     Caller caller(&det);

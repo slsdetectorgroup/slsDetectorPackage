@@ -969,6 +969,17 @@ void init_det(py::module &m) {
                        (void(Detector::*)(defs::fileFormat, sls::Positions)) &
                            Detector::setFileFormat,
                        py::arg(), py::arg() = Positions{});
+    CppDetectorApi.def("getFileFormatOptions",
+                       (Result<std::vector<std::vector<uint32_t>>>(Detector::*)(
+                           sls::Positions) const) &
+                           Detector::getFileFormatOptions,
+                       py::arg() = Positions{});
+    CppDetectorApi.def(
+        "setFileFormatOptions",
+        (void(Detector::*)(const std::vector<std::vector<uint32_t>> &,
+                           sls::Positions)) &
+            Detector::setFileFormatOptions,
+        py::arg(), py::arg() = Positions{});
     CppDetectorApi.def(
         "getFilePath",
         (Result<std::string>(Detector::*)(sls::Positions) const) &

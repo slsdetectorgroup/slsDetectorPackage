@@ -325,6 +325,9 @@ class Module : public virtual slsDetectorDefs {
      * ************************************************/
     fileFormat getFileFormat() const;
     void setFileFormat(fileFormat f);
+    std::vector<std::vector<uint32_t>> getFileFormatOptions() const;
+    void
+    setFileFormatOptions(const std::vector<std::vector<uint32_t>> &options);
     std::string getFilePath() const;
     void setFilePath(const std::string &path);
     std::string getFileName() const;

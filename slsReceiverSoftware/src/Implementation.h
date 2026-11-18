@@ -71,6 +71,8 @@ class Implementation : private virtual slsDetectorDefs {
      * ************************************************/
     fileFormat getFileFormat() const;
     void setFileFormat(slsDetectorDefs::fileFormat f);
+    std::vector<std::vector<uint32_t>> getFileFormatOptions() const;
+    void setFileFormatOptions(const std::vector<std::vector<uint32_t>> &options);
     std::string getFilePath() const;
     /* check for existence */
     void setFilePath(const std::string &c);
@@ -318,6 +320,7 @@ class Implementation : private virtual slsDetectorDefs {
 
     // file parameters
     fileFormat fileFormatType{BINARY};
+    std::vector<std::vector<uint32_t>> fileFormatOptions;
     std::filesystem::path filePath{};
     std::string fileName{"run"};
     uint64_t fileIndex{0};

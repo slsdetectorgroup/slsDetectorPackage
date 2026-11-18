@@ -148,12 +148,11 @@ void DataProcessor::SetupFileWriter(const bool filewriteEnable,
     }
 }
 
-void DataProcessor::CreateFirstFiles(const std::filesystem::path &filePath,
-                                     const std::string &fileNamePrefix,
-                                     const uint64_t fileIndex,
-                                     const bool overWriteEnable,
-                                     const bool silentMode,
-                                     const bool udpDataStream) {
+void DataProcessor::CreateFirstFiles(
+    const std::filesystem::path &filePath, const std::string &fileNamePrefix,
+    const uint64_t fileIndex, const bool overWriteEnable, const bool silentMode,
+    const bool udpDataStream,
+    const std::vector<std::vector<uint32_t>> &fileFormatOptions) {
     if (dataFile == nullptr) {
         throw RuntimeError("file object not contstructed");
     }
@@ -181,7 +180,7 @@ void DataProcessor::CreateFirstFiles(const std::filesystem::path &filePath,
         dataFile->CreateFirstHDF5DataFile(
             filePath, fileNamePrefix, fileIndex, overWriteEnable, silentMode,
             udpPortNumber, generalData->framesPerFile, nTotalFrames, nx, ny,
-            generalData->dynamicRange);
+            generalData->dynamicRange, fileFormatOptions);
         break;
 #endif
     case BINARY:

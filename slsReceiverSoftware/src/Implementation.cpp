@@ -5,6 +5,9 @@
 #include "DataStreamer.h"
 #include "Fifo.h"
 #include "GeneralData.h"
+#ifdef HDF5C
+#include "HDF5DataFile.h"
+#endif
 #include "Listener.h"
 #include "MasterAttributes.h"
 #include "sls/ToString.h"
@@ -487,9 +490,39 @@ void Implementation::setFileFormat(const fileFormat f) {
         }
         for (const auto &it : dataProcessor)
             it->SetupFileWriter(fileWriteEnable, fileFormatType, &hdf5LibMutex);
+        // options belong to the previous file format
+        if (!fileFormatOptions.empty()) {
+            fileFormatOptions.clear();
+            LOG(logINFO) << "File Format Options reset";
+        }
     }
 
     LOG(logINFO) << "File Format: " << ToString(fileFormatType);
+}
+
+std::vector<std::vector<uint32_t>>
+Implementation::getFileFormatOptions() const {
+    return fileFormatOptions;
+}
+
+void Implementation::setFileFormatOptions(
+    const std::vector<std::vector<uint32_t>> &options) {
+    switch (fileFormatType) {
+#ifdef HDF5C
+    case HDF5: {
+        std::lock_guard<std::mutex> lock(hdf5LibMutex);
+        HDF5DataFile::ValidateFilters(options);
+    } break;
+#endif
+    default:
+        if (!options.empty()) {
+            throw RuntimeError("No file format options available for " +
+                               ToString(fileFormatType) + " file format");
+        }
+        break;
+    }
+    fileFormatOptions = options;
+    LOG(logINFO) << "File Format Options: " << ToString(fileFormatOptions);
 }
 
 std::string Implementation::getFilePath() const { return filePath.string(); }
@@ -905,7 +938,8 @@ void Implementation::SetupWriter() {
                 std::to_string(modulePos * generalData->numUDPInterfaces + i);
             dataProcessor[i]->CreateFirstFiles(filePath, fileNamePrefix,
                                                fileIndex, overwriteEnable,
-                                               silentMode, udpDataStream[i]);
+                                               silentMode, udpDataStream[i],
+                                               fileFormatOptions);
         }
     } catch (const RuntimeError &e) {
         shutDownUDPSockets();

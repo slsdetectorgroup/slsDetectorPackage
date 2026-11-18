@@ -1082,6 +1082,33 @@ class Detector(CppDetectorApi):
 
     @property
     @element
+    def fformatoptions(self):
+        """
+        Options specific to the file format (fformat) of the data files written by the receiver.
+
+        Note
+        -----
+        Default is no options. They are reset when the file format is changed. \n
+        [HDF5] List of HDF5 filters (eg. compression) applied in the given order to the image dataset. Each filter is a list with the HDF5 filter id followed by its parameters (cd_values). Filters that are not part of the HDF5 library (eg. 32008 for bitshuffle) must be available to the receiver as plugins found in HDF5_PLUGIN_PATH. \n
+        [Binary] No options available.
+
+        Example
+        --------
+        >>> d.fformat = fileFormat.HDF5
+        >>> d.fformatoptions = [[1, 6]]         # gzip with compression level 6
+        >>> d.fformatoptions = [[2], [1, 6]]    # shuffle followed by gzip
+        >>> d.fformatoptions
+        [[2], [1, 6]]
+        >>> d.fformatoptions = []               # no filters
+        """
+        return self.getFileFormatOptions()
+
+    @fformatoptions.setter
+    def fformatoptions(self, value):
+        ut.set_using_dict(self.setFileFormatOptions, value)
+
+    @property
+    @element
     def findex(self):
         """File or Acquisition index in receiver.
         

@@ -10,6 +10,11 @@ This document describes the differences between v{{VERSION}} and v{{PREVIOUS_VER
     3. [Python](#13-python)
     4. [Client](#14-client)
     5. [Detector Server](#15-detector-server)
+        1. [Jungfrau](#151-jungfrau)
+        2. [Eiger](#152-eiger)
+        3. [Moench](#153-moench)
+        4. [Gotthard2](#154-gotthard)
+        5. [Mythen3](#155-mythen)
     6. [Simulator](#16-simulator)
     7. [Receiver](#17-receiver)
     8. [Gui](#18-gui)
@@ -17,8 +22,13 @@ This document describes the differences between v{{VERSION}} and v{{PREVIOUS_VER
     1. [Python](#21-python)
     2. [Client](#22-client)
     3. [Detector Server](#23-detector-server)
-    4. [Simulator](#24-simulator)
-    5. [Receiver](#25-receiver)
+        1. [Jungfrau](#231-jungfrau)
+        2. [Eiger](#232-eiger)
+        3. [Moench](#233-moench)
+        4. [Gotthard2](#234-gotthard)
+        5. [Mythen3](#235-mythen)
+    4. [Simulator](#4-simulator)
+    5. [Receiver](#5-receiver)
     6. [Gui](#26-gui)
 3. [On-board Detector Server Compatibility](#2-on-board-detector-server-compatibility)
 4. [Firmware Requirements](#3-firmware-requirements)
@@ -37,6 +47,20 @@ This document describes the differences between v{{VERSION}} and v{{PREVIOUS_VER
 
 ### 1.5 Detector Server
 
+**General Detector Updates:**
+
+**Detector Specific updates:**
+
+#### 1.5.1 Jungfrau
+
+#### 1.5.2 Eiger
+
+#### 1.5.3 Moench
+
+#### 1.5.4 Gotthard2
+
+#### 1.5.5 Mythen3
+
 ### 1.6 Simulator
 
 ### 1.7 Receiver
@@ -50,6 +74,20 @@ This document describes the differences between v{{VERSION}} and v{{PREVIOUS_VER
 ### 2.2 Client
 
 ### 2.3 Detector Server
+
+**General Detector BugFixes:**
+
+**Detector Specific BugFixes:**
+
+#### 1.5.1 Jungfrau
+
+#### 1.5.2 Eiger
+
+#### 1.5.3 Moench
+
+#### 1.5.4 Gotthard2
+
+#### 1.5.5 Mythen3
 
 ### 2.4 Simulator
 

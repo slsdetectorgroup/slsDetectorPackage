@@ -43,6 +43,10 @@ eiger seting vthreshold dac directly should change settings to undefined. done.
 
 ### 1.1 Compilation
 
+- Unpacking `qwt` using cmake bundled tools removing the dependency on `bzip2`
+
+- `libexpat` is no longer a dependency of slsDetectorPackage
+
 - Building shared libraries is disabled by default. If you need to link against any of the `libSls*.so` libraries, you can enable this by passing `-DSLS_BUILD_SHARED_LIBRARIES=ON` to CMake.
 - Added `SLS_USE_SYSTEM_ZMQ` option (default `OFF`) to use the libzmq of the host instead of the one included in our repo.
 - Experimental support for building the detector client (including python bindings) on macOS
@@ -84,7 +88,6 @@ eiger seting vthreshold dac directly should change settings to undefined. done.
 
 - gui: mouse zooms not reset at start of acquisition
 
-## 2 On-board Detector Server Compatibility
 ## 2 BugFixes
 
 ### 2.1 Python
@@ -96,6 +99,11 @@ eiger seting vthreshold dac directly should change settings to undefined. done.
 ### 2.4 Simulator
 
 ### 2.5 Receiver
+
+- Fixed potential deadlock if HDF5 creation throws 
+
+- Fixed caught frame number in partial readout mode. (Previously caught frames always 0)
+    - In partial readout mode, the listener still expected the full frames and discarded every frame in discard partial frames mode.
 
 ### 2.6 Gui
 

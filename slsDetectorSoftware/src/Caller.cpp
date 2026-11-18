@@ -4063,8 +4063,8 @@ std::string Caller::fformat(int action) {
     std::ostringstream os;
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
-        os << R"V0G0N([binary|hdf5]
-	File format of data file. For HDF5, package must be compiled with HDF5 flags. Default is binary. )V0G0N"
+        os << R"V0G0N([binary|hdf5|root]
+	File format of data file. For HDF5, package must be compiled with HDF5 flags. For ROOT, package must be compiled with ROOT flags. Default is binary. )V0G0N"
            << std::endl;
         return os.str();
     }

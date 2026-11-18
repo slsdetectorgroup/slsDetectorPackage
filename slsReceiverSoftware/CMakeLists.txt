@@ -33,7 +33,8 @@ endif (SLS_USE_HDF5)
 
 # ROOT file writing
 if (SLS_USE_ROOT)
-    find_package(ROOT REQUIRED COMPONENTS RIO Tree Hist)
+    # CONFIG: use ROOT's own ROOTConfig.cmake, not the legacy cmake/FindROOT.cmake
+    find_package(ROOT REQUIRED CONFIG COMPONENTS RIO Tree Hist)
     add_definitions(
         -DROOTC
     )
@@ -80,10 +81,9 @@ endif (SLS_USE_HDF5)
 
 # ROOT
 if (SLS_USE_ROOT)
+    # imported targets carry include dirs and transitive deps (Core, ...)
     target_link_libraries(slsReceiverObject PUBLIC
-        ${ROOT_LIBRARIES})
-    target_include_directories(slsReceiverObject SYSTEM PUBLIC
-        ${ROOT_INCLUDE_DIRS})
+        ROOT::RIO ROOT::Tree ROOT::Hist)
 endif (SLS_USE_ROOT)
 
 set(RECEIVER_LIBRARY_TARGETS slsReceiverObject)

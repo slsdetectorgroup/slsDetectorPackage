@@ -322,22 +322,14 @@ using this compiler
         conda activate myenv
 
 
-2. Using system installation on RHEL7
+2. Using system installation on RHEL7/RHEL8
 
     .. code-block:: bash
 
         yum install qt5-qtbase-devel.x86_64
-        yum install qt5-qtsvg-devel.x86_64 
+        yum install qt5-qtsvg-devel.x86_64
 
-3. Using system installation on RHEL8
-
-    .. code-block:: bash
-
-        yum install qt5-qtbase-devel.x86_64
-        yum install qt5-qtsvg-devel.x86_64 
-        yum install expat-devel.x86_64
-
-4. Using conda
+3. Using conda
 
     .. code-block:: bash
 

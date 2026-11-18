@@ -102,7 +102,6 @@ target_link_libraries(slsDetectorGui PUBLIC
     Qt5::Widgets
     Qt5::Gui
     Qt5::Core
-    expat
     
     PRIVATE
     slsProjectWarnings

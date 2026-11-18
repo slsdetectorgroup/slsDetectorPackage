@@ -14,10 +14,17 @@ This document describes the differences between v10.1.0 and v10.0.1
     6. [Simulator](#16-simulator)
     7. [Receiver](#17-receiver)
     8. [Gui](#18-gui)
-2. [On-board Detector Server Compatibility](#2-on-board-detector-server-compatibility)
-3. [Firmware Requirements](#3-firmware-requirements)
-4. [Kernel Requirements](#4-kernel-requirements)
-5. [Download, Documentation & Support](#5-download-documentation--support)
+2. [BugFixes](#2-bugfixes)
+    1. [Python](#21-python)
+    2. [Client](#22-client)
+    3. [Detector Server](#23-detector-server)
+    4. [Simulator](#24-simulator)
+    5. [Receiver](#25-receiver)
+    6. [Gui](#26-gui)
+3. [On-board Detector Server Compatibility](#2-on-board-detector-server-compatibility)
+4. [Firmware Requirements](#3-firmware-requirements)
+5. [Kernel Requirements](#4-kernel-requirements)
+6. [Download, Documentation & Support](#5-download-documentation--support)
 
 ## 1 New, Changed or Resolved Features
 
@@ -78,6 +85,21 @@ eiger seting vthreshold dac directly should change settings to undefined. done.
 - gui: mouse zooms not reset at start of acquisition
 
 ## 2 On-board Detector Server Compatibility
+## 2 BugFixes
+
+### 2.1 Python
+
+### 2.2 Client
+
+### 2.3 Detector Server
+
+### 2.4 Simulator
+
+### 2.5 Receiver
+
+### 2.6 Gui
+
+## 3 On-board Detector Server Compatibility
 
 | Detector  | Version |
 |-----------|---------|
@@ -99,7 +121,7 @@ From v6.1.0 (without tftp):
 Instructions available at
 - https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/serverupgrade.html
 
-## 3 Firmware Requirements
+## 4 Firmware Requirements
 
 | Detector  | Firmware Date | Version          | Updated in |
 |-----------|---------------|------------------|------------|
@@ -132,7 +154,7 @@ Except Eiger,
 Instructions available at
 - https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/firmware.html
 
-## 4 Kernel Requirements
+## 5 Kernel Requirements
 
 ### Blackfin
 
@@ -158,7 +180,7 @@ Instructions available at
 - https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/detector.html
 - https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/pydetector.html
 
-## 5 Download, Documentation & Support
+## 6 Download, Documentation & Support
 
 ### Download
 

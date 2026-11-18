@@ -22,46 +22,19 @@ This document describes the differences between v{{VERSION}} and v{{PREVIOUS_VER
 
 ### 1.1 Compilation
 
-- Building shared libraries is disabled by default. If you need to link against any of the `libSls*.so` libraries, you can enable this by passing `-DSLS_BUILD_SHARED_LIBRARIES=ON` to CMake.
-- Added `SLS_USE_SYSTEM_ZMQ` option (default `OFF`) to use the libzmq of the host instead of the one included in our repo.
-- Experimental support for building the detector client (including python bindings) on macOS
-- libfmt added to dependency
-- support for building rpms
-- documentation for all branches and developer now online and build and pushed automatically
-
 ### 1.2 Callback
 
 ### 1.3 Python
 
-- `Detector.pattern` (python) accepts also a pattern object, not only a pattern file
-- added `patternstart` to python (ctb, xilinx_ctb, mythen3), only the detector class api was exposed (`startPattern()`)
-- python dacs => using deprecated `np.int`. dacs return float (default dtype of numpy) => changed to `np.int32` (meant for v10.0.1)
-
 ### 1.4 Client
-
-- m3: `getPatternFileName` typo fixed
-- removed unused function `readDataFile`/`writeDataFile` from `file_utils.h`
-- changed api: `datastream` => `udp_datastream`, `set/getDatastream` => `set/getUDPDatastream`; also implemetned for jungfrau, moench at receiver side (top/bottom)
-- setting number of UDP interfaces can only be set at detector level and not at module level. (individual modules)
 
 ### 1.5 Detector Server
 
-- m3: fixed `patwaittime` in intervals, which is hardly used. `patwaittime` in clocks stays the same and working.
-
 ### 1.6 Simulator
-
-- can build virtual servers on mac OS
 
 ### 1.7 Receiver
 
-- `rx_dbitlist` keeps the order of the passed bit list
-- added `rx_streamdummyheader` to send the zmq dummy header any time. Allows pre-configuring zmq processing before acq begins.
-- allow disabling one UDP interface in the receiver.
-- zmqsocket - allowing hwm to be set already at the constructor level. As before, can still be set after construction with socket reconnection.
-
 ### 1.8 Gui
-
-- gui: mouse zooms not reset at start of acquisition
 
 ## 2 On-board Detector Server Compatibility
 

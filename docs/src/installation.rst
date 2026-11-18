@@ -182,6 +182,7 @@ Example cmake options               Comment
 -DPython_FIND_VIRTUALENV=ONLY       Python from the conda env 
 -DSLS_USE_GUI=ON                    GUI
 -DSLS_USE_HDF5=ON                   HDF5
+-DSLS_USE_ROOT=ON                   ROOT
 -DSLS_USE_SIMULATOR=ON              Simulator
 ===============================     ===============================
 

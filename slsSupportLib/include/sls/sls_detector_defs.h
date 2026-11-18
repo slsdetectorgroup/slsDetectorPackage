@@ -235,7 +235,12 @@ class slsDetectorDefs {
         NUM_DISCARD_POLICIES
     };
 
-    enum fileFormat { BINARY, HDF5, NUM_FILE_FORMATS };
+    enum fileFormat { BINARY, HDF5, ROOT, NUM_FILE_FORMATS };
+
+    /** file format option for root files: how the images are saved.
+     * ROOT_TTREE: one entry per image in a tree, ROOT_TH2I: one histogram
+     * per image */
+    enum rootImageType { ROOT_TTREE, ROOT_TH2I, NUM_ROOT_IMAGE_TYPES };
 
     /**
         @short structure for a region of interest

@@ -3538,8 +3538,9 @@ fformat:
         store_result_in_t: false
   command_name: fformat
   function_alias: fformat
-  help: "[binary|hdf5]\n\tFile format of data file. For HDF5, package must be compiled\
-    \ with HDF5 flags. Default is binary."
+  help: "[binary|hdf5|root]\n\tFile format of data file. For HDF5, package must be\
+    \ compiled with HDF5 flags. For ROOT, package must be compiled with ROOT flags.\
+    \ Default is binary."
   infer_action: true
   template: true
 fformatoptions:

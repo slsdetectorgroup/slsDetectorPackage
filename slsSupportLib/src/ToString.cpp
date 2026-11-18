@@ -350,6 +350,19 @@ std::string ToString(const defs::fileFormat s) {
         return std::string("hdf5");
     case defs::BINARY:
         return std::string("binary");
+    case defs::ROOT:
+        return std::string("root");
+    default:
+        return std::string("Unknown");
+    }
+}
+
+std::string ToString(const defs::rootImageType s) {
+    switch (s) {
+    case defs::ROOT_TTREE:
+        return std::string("TTree");
+    case defs::ROOT_TH2I:
+        return std::string("TH2I");
     default:
         return std::string("Unknown");
     }
@@ -915,7 +928,21 @@ template <> defs::fileFormat StringTo(const std::string &s) {
         return defs::HDF5;
     if (s == "binary")
         return defs::BINARY;
+    if (s == "root")
+        return defs::ROOT;
     throw RuntimeError("Unknown file format " + s);
+}
+
+template <> defs::rootImageType StringTo(const std::string &s) {
+    if (s == "TTree")
+        return defs::ROOT_TTREE;
+    if (s == "ttree")
+        return defs::ROOT_TTREE;
+    if (s == "TH2I")
+        return defs::ROOT_TH2I;
+    if (s == "th2i")
+        return defs::ROOT_TH2I;
+    throw RuntimeError("Unknown root image type " + s);
 }
 
 template <> defs::externalSignalFlag StringTo(const std::string &s) {

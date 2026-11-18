@@ -1035,8 +1035,65 @@ TEST_CASE("fformatoptions", "[.detectorintegration]") {
         REQUIRE(oss.str() == "fformatoptions []\n");
     }
     REQUIRE_THROWS(caller.call("fformatoptions", {"1", "6"}, -1, PUT));
+    REQUIRE_THROWS(caller.call("fformatoptions", {"TTree"}, -1, PUT));
     REQUIRE_THROWS(caller.call("fformatoptions", {}, -1, PUT));
     REQUIRE_THROWS(caller.call("fformatoptions", {"1"}, -1, GET));
+
+#ifdef ROOTC
+    // root: how the images are saved (default is TTree)
+    {
+        std::ostringstream oss;
+        caller.call("fformat", {"root"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "fformat root\n");
+    }
+    {
+        std::ostringstream oss;
+        caller.call("fformatoptions", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "fformatoptions TTree\n");
+    }
+    {
+        std::ostringstream oss;
+        caller.call("fformatoptions", {"TH2I"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "fformatoptions TH2I\n");
+    }
+    {
+        std::ostringstream oss;
+        caller.call("fformatoptions", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "fformatoptions TH2I\n");
+    }
+    {
+        std::ostringstream oss;
+        caller.call("fformatoptions", {"ttree"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "fformatoptions TTree\n");
+    }
+    REQUIRE_NOTHROW(caller.call("fformatoptions", {"TH2I"}, -1, PUT));
+    // none sets the default
+    {
+        std::ostringstream oss;
+        caller.call("fformatoptions", {"none"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "fformatoptions TTree\n");
+    }
+    // only the names of the image types
+    REQUIRE_THROWS(caller.call("fformatoptions", {"TH2F"}, -1, PUT));
+    REQUIRE_THROWS(caller.call("fformatoptions", {"1"}, -1, PUT));
+    REQUIRE_THROWS(caller.call("fformatoptions", {"1", "6"}, -1, PUT));
+    REQUIRE_THROWS(caller.call("fformatoptions", {"TTree", "TH2I"}, -1, PUT));
+    // only image types as options
+    REQUIRE_THROWS(det.setFileFormatOptions({{defs::NUM_ROOT_IMAGE_TYPES}}));
+    REQUIRE_THROWS(det.setFileFormatOptions({{defs::ROOT_TTREE, 1}}));
+    REQUIRE_THROWS(
+        det.setFileFormatOptions({{defs::ROOT_TTREE}, {defs::ROOT_TH2I}}));
+    // changing file format resets the options to the default
+    REQUIRE_NOTHROW(caller.call("fformatoptions", {"TH2I"}, -1, PUT));
+    det.setFileFormat(defs::BINARY);
+    det.setFileFormat(defs::ROOT);
+    {
+        std::ostringstream oss;
+        caller.call("fformatoptions", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "fformatoptions TTree\n");
+    }
+    det.setFileFormat(defs::BINARY);
+#endif
 
 #ifdef HDF5C
     // hdf5 filters (1: gzip, 2: shuffle, 3: fletcher32 are part of hdf5 lib)
@@ -1084,6 +1141,7 @@ TEST_CASE("fformatoptions", "[.detectorintegration]") {
     REQUIRE_THROWS(caller.call("fformatoptions", {"1", "-6"}, -1, PUT));
     REQUIRE_THROWS(caller.call("fformatoptions", {"1", "6.5"}, -1, PUT));
     REQUIRE_THROWS(caller.call("fformatoptions", {"gzip"}, -1, PUT));
+    REQUIRE_THROWS(caller.call("fformatoptions", {"TH2I"}, -1, PUT));
     // invalid filter id, repeated filter, filter not available
     REQUIRE_THROWS(caller.call("fformatoptions", {"0"}, -1, PUT));
     REQUIRE_THROWS(caller.call("fformatoptions", {"65536"}, -1, PUT));

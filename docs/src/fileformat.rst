@@ -55,12 +55,13 @@ Some file name examples:
 Formats
 --------
 
-There are 2 file formats supported by the receiver:
+There are 3 file formats supported by the receiver:
 
     * Binary - extension .json (master file) or .raw (data files)
     * HDF5 - extension .h5
+    * ROOT - extension .json (master file) or .root (data files)
 
-The default is binary. HDF5 can be enabled by compiling the package with HDF5 option enabled. The file format is set using the command `fformat <commandline.html#term-fformat-binary-hdf5>`_.
+The default is binary. HDF5 can be enabled by compiling the package with HDF5 option enabled and ROOT by compiling the package with ROOT option enabled. The file format is set using the command `fformat <commandline.html#term-fformat-binary-hdf5-root>`_.
 
 
 Content
@@ -72,4 +73,4 @@ Content
 | `Data File`: Contains the metadata for each image (:ref:`slsReceiverHeader<sls receiver header format>`) and the `data of the image` transmitted over that port. The image data is described in :ref:`Detector Image Size and Format <data format>` section.
 
 
-| More content and examples are found in the :ref:`HDF5 file format <hdf5 file format>` and :ref:`Binary file format <binary file format>` sections.
+| More content and examples are found in the :ref:`HDF5 file format <hdf5 file format>`, :ref:`Binary file format <binary file format>` and :ref:`ROOT file format <root file format>` sections.

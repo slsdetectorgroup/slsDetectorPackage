@@ -1065,9 +1065,9 @@ class Detector(CppDetectorApi):
     
         Note
         -----
-        Options: BINARY, HDF5
+        Options: BINARY, HDF5, ROOT
         Default: BINARY
-        For HDF5, package must be compiled with HDF5 flags. Default is binary. 
+        For HDF5, package must be compiled with HDF5 flags. For ROOT, package must be compiled with ROOT flags. Default is binary.
 
         Example
         --------
@@ -1088,8 +1088,9 @@ class Detector(CppDetectorApi):
 
         Note
         -----
-        Default is no options. They are reset when the file format is changed. \n
-        [HDF5] List of HDF5 filters (eg. compression) applied in the given order to the image dataset. Each filter is a list with the HDF5 filter id followed by its parameters (cd_values). Filters that are not part of the HDF5 library (eg. 32008 for bitshuffle) must be available to the receiver as plugins found in HDF5_PLUGIN_PATH. \n
+        No options ([]) sets the default of the file format. They are reset to the default when the file format is changed. \n
+        [HDF5] List of HDF5 filters (eg. compression) applied in the given order to the image dataset. Each filter is a list with the HDF5 filter id followed by its parameters (cd_values). Filters that are not part of the HDF5 library (eg. 32008 for bitshuffle) must be available to the receiver as plugins found in HDF5_PLUGIN_PATH. Default is no filters. \n
+        [ROOT] How the images are saved. Enum: rootImageType. ROOT_TTREE (default): every image is an entry in the tree 'frames'. ROOT_TH2I: every image is a histogram called 'frame_[frame number]'. \n
         [Binary] No options available.
 
         Example
@@ -1100,11 +1101,31 @@ class Detector(CppDetectorApi):
         >>> d.fformatoptions
         [[2], [1, 6]]
         >>> d.fformatoptions = []               # no filters
+        >>> d.fformat = fileFormat.ROOT
+        >>> d.fformatoptions
+        rootImageType.ROOT_TTREE
+        >>> d.fformatoptions = rootImageType.ROOT_TH2I
         """
-        return self.getFileFormatOptions()
+        options = self.getFileFormatOptions()
+        # [ROOT] the option of a module is a single value of rootImageType
+        for i, file_format in enumerate(self.getFileFormat()):
+            if (file_format == defs.fileFormat.ROOT and len(options[i]) == 1
+                    and len(options[i][0]) == 1):
+                options[i] = defs.rootImageType(options[i][0][0])
+        return options
 
     @fformatoptions.setter
     def fformatoptions(self, value):
+        # [ROOT] rootImageType is a single option with a single value
+        def to_options(v):
+            if isinstance(v, defs.rootImageType):
+                return [[int(v)]]
+            return v
+
+        if isinstance(value, dict):
+            value = {k: to_options(v) for k, v in value.items()}
+        else:
+            value = to_options(value)
         ut.set_using_dict(self.setFileFormatOptions, value)
 
     @property

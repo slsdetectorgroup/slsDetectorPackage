@@ -75,8 +75,16 @@ void init_enums(py::module &m) {
     py::enum_<slsDetectorDefs::fileFormat>(Defs, "fileFormat")
         .value("BINARY", slsDetectorDefs::fileFormat::BINARY)
         .value("HDF5", slsDetectorDefs::fileFormat::HDF5)
+        .value("ROOT", slsDetectorDefs::fileFormat::ROOT)
         .value("NUM_FILE_FORMATS",
                slsDetectorDefs::fileFormat::NUM_FILE_FORMATS)
+        .export_values();
+
+    py::enum_<slsDetectorDefs::rootImageType>(Defs, "rootImageType")
+        .value("ROOT_TTREE", slsDetectorDefs::rootImageType::ROOT_TTREE)
+        .value("ROOT_TH2I", slsDetectorDefs::rootImageType::ROOT_TH2I)
+        .value("NUM_ROOT_IMAGE_TYPES",
+               slsDetectorDefs::rootImageType::NUM_ROOT_IMAGE_TYPES)
         .export_values();
 
     py::enum_<slsDetectorDefs::externalSignalFlag>(Defs, "externalSignalFlag")

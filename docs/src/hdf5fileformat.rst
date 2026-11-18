@@ -20,7 +20,7 @@ Setup
 
 #. Load config file
 
-#. Set file format using command `fformat <commandline.html#term-fformat-binary-hdf5>`_.
+#. Set file format using command `fformat <commandline.html#term-fformat-binary-hdf5-root>`_.
 
     .. code-block:: bash
 
@@ -30,7 +30,7 @@ Setup
 Filters (Compression)
 ----------------------
 
-HDF5 filters (eg. compression) for the image dataset in the data files are set using command `fformatoptions <commandline.html#term-fformatoptions-filter-id-param-1-param-2-...-or-none>`_ after setting the file format to hdf5. The default is no filters.
+HDF5 filters (eg. compression) for the image dataset in the data files are set using command `fformatoptions <commandline.html#term-fformatoptions-filter-id-param-1-param-2-...-or-TTree-TH2I-or-none>`_ after setting the file format to hdf5. The default is no filters.
 
 * Each filter is the HDF5 filter id followed by its parameters (cd_values), all unsigned integers.
 

@@ -2374,6 +2374,7 @@ int powerChip(bool on, char *mess) {
     if (on) {
         LOG(logINFO, ("Powering chip: on\n"));
         bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_PWR_CHIP_MSK);
+        usleep(50 * 1000); // wait for chip to be ready
         if (configureChip(mess) == FAIL)
             return FAIL;
     } else {

@@ -265,20 +265,13 @@ conda create -n myenv slsdetgui=7.0.0
 conda activate myenv
 ```
 
-2. Using system installation on RHEL7
+2. Using system installation on RHEL7/RHEL8
 ```
 yum install qt5-qtbase-devel.x86_64
-yum install qt5-qtsvg-devel.x86_64 
+yum install qt5-qtsvg-devel.x86_64
 ```
 
-3. Using system installation on RHEL8
-```
-yum install qt5-qtbase-devel.x86_64
-yum install qt5-qtsvg-devel.x86_64 
-yum install expat-devel.x86_64
-```
-
-4. Using conda
+3. Using conda
 ```
 #Add channels for dependencies and our library
 conda config --add channels conda-forge

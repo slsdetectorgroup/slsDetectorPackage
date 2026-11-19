@@ -28,18 +28,7 @@ This document describes the differences between v10.1.0 and v10.0.1
 
 ## 1 New, Changed or Resolved Features
 
-support for building rpms
-
-removed unused function readDataFile/writeDataFile from file_utils.h
-
-added rx_streamdummyheader to send the zmq dummy header any time. Allows pre-configuring zmq processing before acq begins.
-
-
-zmqsocket - allowing hwm to be set already at the constructor level. As before, can still be set after construction with socket reconnection.
-
-M3: threshold energy updated to -1 in receiver master file whenever it is set in the detector server (setting dacs directly, custom trimbit file, set all trimbits etc.)
-
-eiger seting vthreshold dac directly should change settings to undefined. done.
+- zmqsocket - allowing hwm to be set already at the constructor level. As before, can still be set after construction with socket reconnection.
 
 ### 1.1 Compilation
 
@@ -47,54 +36,110 @@ eiger seting vthreshold dac directly should change settings to undefined. done.
 
 - `libexpat` is no longer a dependency of slsDetectorPackage
 
-- Building shared libraries is disabled by default. If you need to link against any of the `libSls*.so` libraries, you can enable this by passing `-DSLS_BUILD_SHARED_LIBRARIES=ON` to CMake.
-- Added `SLS_USE_SYSTEM_ZMQ` option (default `OFF`) to use the libzmq of the host instead of the one included in our repo.
-- Experimental support for building the detector client (including python bindings) on macOS
-- libfmt added to dependency
-- support for building rpms
-- documentation for all branches and developer now online and build and pushed automatically
+- All servers are compiled with `-02` optimization level
 
-### 1.2 Callback
+- Fixed path to updateAPIVersion.py in server MakeFiles (only relevant if manually compiling servers)
+
+- Building shared libraries is disabled by default. If you need to link against any of the `libSls*.so` libraries, you can enable this by passing `-DSLS_BUILD_SHARED_LIBRARIES=ON` to CMake.
+
+- Added `SLS_USE_SYSTEM_ZMQ` option (default `OFF`) to use the libzmq of the host instead of the one included in the repo.
 
 ### 1.3 Python
 
-- `Detector.pattern` (python) accepts also a pattern object, not only a pattern file
-- added `patternstart` to python (ctb, xilinx_ctb, mythen3), only the detector class api was exposed (`startPattern()`)
-- python dacs => using deprecated `np.int`. dacs return float (default dtype of numpy) => changed to `np.int32` (meant for v10.0.1)
+- `Detector().pattern` (python) accepts also a `Pattern` object, not only a pattern file
+
+- Added member function `patternstart` to python, only the detector class api was exposed (`startPattern()`)
 
 ### 1.4 Client
 
-- m3: `getPatternFileName` typo fixed
 - removed unused function `readDataFile`/`writeDataFile` from `file_utils.h`
-- changed api: `datastream` => `udp_datastream`, `set/getDatastream` => `set/getUDPDatastream`; also implemetned for jungfrau, moench at receiver side (top/bottom)
-- setting number of UDP interfaces can only be set at detector level and not at module level. (individual modules)
+
+- Added command ``rx_streamdummyheader`` to send the zmq dummy header any time. Allows pre-configuring zmq processing before acq begins.
 
 ### 1.5 Detector Server
 
-- m3: fixed `patwaittime` in intervals, which is hardly used. `patwaittime` in clocks stays the same and working.
+**Detector specific updates:**
 
-### 1.6 Simulator
+#### 1.5.1 Jungfrau
 
-- can build virtual servers on mac OS
+New features are supported by the new Jungfrau Chip v1.2
+
+- support for enabling High Dynamic Range (HDR) for Synchotron or FEL
+- Enable reset step reduction
+- default special dac values for G0 and G1 are pointing to different values
+- Electron collection mode => reset and bypass cds
+- filter resistor: default value is the lower resistor
+- auto comp disable: disabled by default (as before but now explicitly set)
+- compdisabletime defaults to 2 us
+
+> **Note:** The Chip version1.2 does not allow setting extrastoragecells.
+
+
+New features supported by the new Jungfrau Chip v1.1
+
+- Electron collection mode => reset and bypass cds
+- filter resistor: default value is the lower resistor
+- 1.1+: changing filter resistor updates asic ds timer (0x1f for lower, 0x5f for higher)
+- auto comp disable: disabled by default (as before but now explicitly set)
+- compdisabletime defaults (?)
+
+New features supported by Jungfrau Chip v1.0
+
+- compdisabletime defaults 5us
+
+New features for all chips: 
+
+- The maximum allowed value for loops in pedestal mode has been increased from 8 bit to 16 bit (compatible with firmware >v9.1.0)
+
+
+#### 1.5.2 Mythen3
+
+- updating threshold energy can be done during an acquisition (only affects slsReceiver)
+
+- updating threshold energy `ALL` can be done during an acquisition (only affects slsReceiver)
+
+#### 1.5.3 Eiger
+
+- updating threshold energy can be done during an acquisition (only affects slsReceiver)
+
+- Setting ``vthreshold`` dac directly sets settings to undefind
 
 ### 1.7 Receiver
 
-- `rx_dbitlist` keeps the order of the passed bit list
 - added `rx_streamdummyheader` to send the zmq dummy header any time. Allows pre-configuring zmq processing before acq begins.
 - allow disabling one UDP interface in the receiver.
-- zmqsocket - allowing hwm to be set already at the constructor level. As before, can still be set after construction with socket reconnection.
+- zmqsocket - allowing hwm to be set already at the constructor level. As before, can still be set after construction with socket reconnection. 
+
+- Automatically resolve trailing ``/`` in user given filepaths 
 
 ### 1.8 Gui
-
-- gui: mouse zooms not reset at start of acquisition
 
 ## 2 BugFixes
 
 ### 2.1 Python
 
+- Receiver ROI can be set from Python using command ``Detector().rx_roi``(it supports any sequence of four or two (for mythen3 and gotthard) ints e.g. a tuple (xmin, xmax, ymin, ymax) or a sequence of such for multiple ROIS)
+- one can clear all ROI's from Python using command ``Detector().rx_clearroi()``
+
 ### 2.2 Client
 
+- Fixed version comparison - previously lexicographic comparison on semantic version string was used (e.g. 9.0.0 > 10.0.0)
+
+- Throws if user sets an roi to a disabled port or disable a port that has a restrictive roi (not complete detector).
+
+- m3: `getPatternFileName` typo fixed
+
 ### 2.3 Detector Server
+
+#### 2.3.1 Mythen3
+
+- Downgrading required minimum kernel version for Nios to (Mon Jan 18 14:24:30 CET 2021) - as latest Nios kernel not required
+
+- Remove excessive debug printing (only log in debug mode) speeding up setting trimval
+
+- Fixed log info about bad channel when setting trimbits
+
+- Fixed `patwaittime` in intervals, which is hardly used. `patwaittime` in clocks stays the same and working.
 
 ### 2.4 Simulator
 
@@ -103,9 +148,17 @@ eiger seting vthreshold dac directly should change settings to undefined. done.
 - Fixed potential deadlock if HDF5 creation throws 
 
 - Fixed caught frame number in partial readout mode. (Previously caught frames always 0)
-    - In partial readout mode, the listener still expected the full frames and discarded every frame in discard partial frames mode.
+
+- Fixed proper enabling of filewrite after changing number of Interfaces (previously no proper file writing setup after changing number of Interfaces)
+
+- Setting ``rx_roi`` only writes/streams data to file/over ``zmq`` within the ROI (previously Ports or modules not overlapping with a user defined ROI was also written/streamed)
+
+- Field "Threshold Energies" in master file always updated to ``[-1, -1, -1]`` whenever it is set in the detector server (setting dacs directly, custom trimbit file, set all trimbits etc.)
+
 
 ### 2.6 Gui
+
+- mouse zooms are not reset at start of acquisition
 
 ## 3 On-board Detector Server Compatibility
 
@@ -172,7 +225,7 @@ Older ones will work, but might have issues with programming firmware via the pa
 
 ### Nios
 
-Compatible version: Mon May 10 18:00:21 CEST 2021
+Compatible version: Mon Jan 18 14:24:30 CEST 2021
 
 ### Kernel Upgrade
 

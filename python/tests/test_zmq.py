@@ -19,7 +19,9 @@ detectorType = slsDetectorDefs.detectorType
 @pytest.mark.parametrize(
     "session_simulator",
     [
-        ("eiger", 1, 20)
+        # each eiger receiver allocates ~470 MB of fifo (2 ports x 1000 frames),
+        # keep the module count low enough to fit on GitHub runners (16 GB)
+        ("eiger", 1, 8)
     ],
     indirect=True,
 )

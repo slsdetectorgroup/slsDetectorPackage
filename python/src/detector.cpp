@@ -960,6 +960,8 @@ void init_det(py::module &m) {
                        py::arg());
     CppDetectorApi.def("clearRxROI",
                        (void(Detector::*)()) & Detector::clearRxROI);
+    CppDetectorApi.def("isCompleteRxRoi", (bool (Detector::*)() const) &
+                                              Detector::isCompleteRxRoi);
     CppDetectorApi.def(
         "getFileFormat",
         (Result<defs::fileFormat>(Detector::*)(sls::Positions) const) &

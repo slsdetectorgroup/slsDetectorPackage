@@ -167,6 +167,20 @@ else()
     add_subdirectory(${libzmq_SOURCE_DIR} ${libzmq_BINARY_DIR} EXCLUDE_FROM_ALL)
     endif()
 
+    # libzmq's cmake build (4.3.4) never defines HAVE_POSIX_MEMALIGN (only autotools does),
+    # so its queues are malloc'd (16 byte aligned) although command_t is aligned(64).
+    # Compilers targeting x86-64-v3 (eg. ubuntu 26.04) then emit aligned AVX moves -> segfault.
+    include(CheckSymbolExists)
+    check_symbol_exists(posix_memalign "stdlib.h" SLS_HAVE_POSIX_MEMALIGN)
+    # libzmq compiles its sources in the 'objects' target (libzmq-static reuses them)
+    if(SLS_HAVE_POSIX_MEMALIGN)
+        foreach(zmq_target objects libzmq-static)
+            if(TARGET ${zmq_target})
+                target_compile_definitions(${zmq_target} PRIVATE HAVE_POSIX_MEMALIGN=1)
+            endif()
+        endforeach()
+    endif()
+
 endif()
 
 include(GNUInstallDirs)

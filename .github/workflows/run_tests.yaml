@@ -44,7 +44,8 @@ jobs:
         if: always()
         working-directory: ${{github.workspace}}/build
         run: |
-          sudo apt-get install -y gdb > /dev/null
+          sudo apt-get update -q
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -q --no-install-recommends gdb
           lsb_release -a; uname -r; c++ --version | head -1; ldd --version | head -1
           grep -iE "sodium|curve|poller|ZMQ_HAVE|IPV6" _deps/libzmq-build/platform.hpp || true
           gdb -batch -ex run -ex "thread apply all bt" --args bin/tests "Get port number for sub"

@@ -38,6 +38,17 @@ jobs:
       - name: Build
           # Build your program with the given configuration
         run: cmake --build ${{github.workspace}}/build -j4 --config ${{env.BUILD_TYPE}}
+
+      # TODO: temporary, remove once the zmq segfault on ubuntu-latest is understood
+      - name: Debug zmq segfault (temporary)
+        if: always()
+        working-directory: ${{github.workspace}}/build
+        run: |
+          sudo apt-get install -y gdb > /dev/null
+          lsb_release -a; uname -r; c++ --version | head -1; ldd --version | head -1
+          grep -iE "sodium|curve|poller|ZMQ_HAVE|IPV6" _deps/libzmq-build/platform.hpp || true
+          gdb -batch -ex run -ex "thread apply all bt" --args bin/tests "Get port number for sub"
+          gdb -batch -ex run -ex "thread apply all bt" --args bin/tests "Get port number for pub"
         
       - name: Python unit tests
         working-directory: ${{github.workspace}}/build/bin

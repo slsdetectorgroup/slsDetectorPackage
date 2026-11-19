@@ -29,7 +29,6 @@ def pytest_addoption(parser):
 
 def pytest_configure(config):
     config.addinivalue_line("markers", "detectorintegration: mark test as needing detectors to run")
-    config.addinivalue_line("markers", "high_memory: mark test as needing a lot of memory (excluded on GitHub hosted runners with -m 'not high_memory')")
 
 def pytest_collection_modifyitems(config, items):
     if config.getoption("--detector-integration"):

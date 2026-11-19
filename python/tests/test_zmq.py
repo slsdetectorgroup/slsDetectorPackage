@@ -16,9 +16,6 @@ from utils_for_test import (
 detectorType = slsDetectorDefs.detectorType
 
 @pytest.mark.detectorintegration
-# 20 eiger receivers allocate ~9.4 GB of fifo (~470 MB each), too much for
-# GitHub hosted runners. Excluded there, runs on the self hosted runners.
-@pytest.mark.high_memory
 @pytest.mark.parametrize(
     "session_simulator",
     [

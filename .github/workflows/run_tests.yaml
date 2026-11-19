@@ -43,7 +43,8 @@ jobs:
         working-directory: ${{github.workspace}}/build/bin
         run: |
           python -m pytest ${{github.workspace}}/python/tests
-          python -m pytest -m detectorintegration ${{github.workspace}}/python/tests --detector-integration 
+          # high_memory tests only run on the self hosted runners (rh8/rh9-local-tests.yaml)
+          python -m pytest -m "detectorintegration and not high_memory" ${{github.workspace}}/python/tests --detector-integration
 
       - name: C++ unit tests
         working-directory: ${{github.workspace}}/build

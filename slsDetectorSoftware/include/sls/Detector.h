@@ -839,10 +839,13 @@ class Detector {
 
     Result<std::string> printRxConfiguration(Positions pos = {}) const;
 
-    /** [Eiger][CTB][Mythen3] */
+    /** [Eiger][CTB][Xilinx CTB][Mythen3] */
     Result<bool> getTenGiga(Positions pos = {}) const;
 
-    /** [Eiger][CTB][Mythen3] */
+    /** [Eiger][CTB][Xilinx CTB][Mythen3] \n[Xilinx CTB] Default is enabled. If
+     * disabled, the detector server reads out only the digital and transceiver
+     * data and sends them via the 1GbE interface. Analog readout is not
+     * implemented for 1GbE. */
     void setTenGiga(bool value, Positions pos = {});
 
     /** [Eiger][Jungfrau][Moench] */

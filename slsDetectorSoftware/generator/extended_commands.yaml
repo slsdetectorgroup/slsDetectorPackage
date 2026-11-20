@@ -11201,7 +11201,7 @@ tengiga:
         store_result_in_t: false
   command_name: tengiga
   function_alias: tengiga
-  help: "[0, 1]\n\t[Eiger][Ctb][Mythen3] 10GbE Enable."
+  help: "[0, 1]\n\t[Eiger][Ctb][Xilinx Ctb][Mythen3] 10GbE Enable."
   infer_action: true
   template: true
 threshold:

@@ -49,8 +49,7 @@ inline CTBState get_ctb_state(const Detector &det) {
             "Inconsistent number of digital samples"),
         det.getNumberOfTransceiverSamples().tsquash(
             "Inconsistent number of transceiver samples"),
-        isAltera ? det.getTenGiga().tsquash("Inconsisten ten giga enable")
-                 : true,
+        det.getTenGiga().tsquash("Inconsisten ten giga enable"),
         isAltera
             ? det.getADCEnableMask().tsquash("Inconsistent adc enable mask")
             : 0,
@@ -67,8 +66,8 @@ inline void set_ctb_state(Detector &det, const CTBState &s) {
     auto isAltera =
         (det.getDetectorType().squash(defs::GENERIC) == defs::CHIPTESTBOARD);
     det.setReadoutMode(s.readout_mode);
+    det.setTenGiga(s.ten_giga);
     if (isAltera) {
-        det.setTenGiga(s.ten_giga);
         det.setADCEnableMask(s.adc_enable_1g);
     }
     det.setNumberOfAnalogSamples(s.num_adc_samples);

@@ -155,6 +155,8 @@ int configureMAC();
 int setDetectorPosition(int pos[]);
 int *getDetectorPosition();
 
+int enableTenGigabitEthernet(int val);
+
 // very detector specific
 
 // chip test board specific - configure frequency, phase, pll,
@@ -172,6 +174,19 @@ int softwareTrigger();
 enum runStatus getRunStatus();
 void waitForAcquisitionEnd();
 u_int32_t runBusy();
+
+// 1g readout (digital and transceiver only)
+int validateUDPSocket();
+/** for the acquisition about to start */
+int updateDatabytesandAllocateRAM();
+void readandSendUDPFrames();
+uint32_t checkDataInFifo();
+int checkFifoForEndOfAcquisition();
+/** waits until none of the fifos in emptyMask are empty
+ * @returns FAIL if the acquisition is done and they are still empty */
+int waitForDataInFifo(uint32_t addr, uint32_t emptyMask);
+int readSample(int ns);
+int readFrameFromFifo();
 
 // common
 int calculateDataBytes();

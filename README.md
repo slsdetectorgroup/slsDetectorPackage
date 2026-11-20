@@ -87,7 +87,7 @@ To use the basic building blocks, meaning sls_detector_get/put and the shared li
 Additionally the core requires the following dependencies: 
 
  * fmt 12.1.0 (packaged in libs) (since version 11.0.0)
- * ZeroMQ 4.3.4 (packaged in libs)
+ * ZeroMQ 4.3.5 (packaged in libs)
  * rapidjson (packaged in libs)
 
 > **Note:** Both fmt, ZeroMQ and rapidjson are bundled in libs. One does not need to pre-install them on the system. Alternatively, one can fetch fmt and ZeroMQ from GitHub by passing the cmake options ``-DSLS_FETCH_FMT_FROM_GITHUB=ON`` and ``-DSLS_FETCH_ZEROMQ_FROM_GITHUB=ON`` respectively.
@@ -351,8 +351,8 @@ git submodule update --init
 
 ### Zeromq
 **v8.0.0+**:
-zeromq (v4.3.4) is built
-* by default from tar file in repo (libs/libzmq/libzmq-4.3.4.tar.gz)
+zeromq (v4.3.5) is built
+* by default from tar file in repo (libs/libzmq/libzmq-4.3.5.tar.gz)
 * or use advanced option SLS_FETCH_ZMQ_FROM_GITHUB [link].
 
 **v7.x.x and older**:

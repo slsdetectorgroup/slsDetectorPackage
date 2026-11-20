@@ -425,8 +425,8 @@ is to use conda
 
 | **Zeromq**
 | v8.0.0+:
-|   zeromq (v4.3.4) is built 
-|   * by default from tar file in repo (libs/libzmq/libzmq-4.3.4.tar.gz) 
+|   zeromq (v4.3.5) is built 
+|   * by default from tar file in repo (libs/libzmq/libzmq-4.3.5.tar.gz) 
 |   * or use advanced option SLS_FETCH_ZMQ_FROM_GITHUB [`link <https://github.com/zeromq/libzmq.git>`__].
 |
 | v7.x.x and older:

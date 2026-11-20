@@ -7,28 +7,26 @@ This document describes the differences between v10.1.0 and v10.0.1
 
 1. [New, Changed or Resolved Features](#1-new-changed-or-resolved-features)
     1. [Compilation](#11-compilation)
-    2. [Callback](#12-callback)
-    3. [Python](#13-python)
-    4. [Client](#14-client)
-    5. [Detector Server](#15-detector-server)
-    6. [Simulator](#16-simulator)
-    7. [Receiver](#17-receiver)
-    8. [Gui](#18-gui)
+    2. [Python](#12-python)
+    3. [Client](#13-client)
+    4. [Detector Server](#14-detector-server)
+        1. [Jungfrau](#141-jungfrau)
+        2. [Mythen3](#142-mythen3)
+        3. [Eiger](#143-eiger)
+    5. [Receiver](#15-receiver)
 2. [BugFixes](#2-bugfixes)
     1. [Python](#21-python)
     2. [Client](#22-client)
     3. [Detector Server](#23-detector-server)
-    4. [Simulator](#24-simulator)
-    5. [Receiver](#25-receiver)
-    6. [Gui](#26-gui)
+        1. [Mythen3](#231-mythen3)
+    4. [Receiver](#25-receiver)
+    5. [Gui](#26-gui)
 3. [On-board Detector Server Compatibility](#2-on-board-detector-server-compatibility)
 4. [Firmware Requirements](#3-firmware-requirements)
 5. [Kernel Requirements](#4-kernel-requirements)
 6. [Download, Documentation & Support](#5-download-documentation--support)
 
 ## 1 New, Changed or Resolved Features
-
-- zmqsocket - allowing hwm to be set already at the constructor level. As before, can still be set after construction with socket reconnection.
 
 ### 1.1 Compilation
 
@@ -44,23 +42,33 @@ This document describes the differences between v10.1.0 and v10.0.1
 
 - Added `SLS_USE_SYSTEM_ZMQ` option (default `OFF`) to use the libzmq of the host instead of the one included in the repo.
 
-### 1.3 Python
+- Using `find_package(Threads)`instead of directly linking to `pthread` to be more portable.
+(Still check that the found library is pthread compatible since we use direct calls to pthread internally.)
+
+- Added `Threads::Threads` as a public dependency on `slsDetectorSupport` which means it will propagate to the other libraries and executables
+
+- Removed redundant linking to Posix `librt` library
+
+### 1.2 Python
 
 - `Detector().pattern` (python) accepts also a `Pattern` object, not only a pattern file
 
 - Added member function `patternstart` to python, only the detector class api was exposed (`startPattern()`)
 
-### 1.4 Client
+### 1.3 Client
 
 - removed unused function `readDataFile`/`writeDataFile` from `file_utils.h`
 
 - Added command ``rx_streamdummyheader`` to send the zmq dummy header any time. Allows pre-configuring zmq processing before acq begins.
 
-### 1.5 Detector Server
+- Error messages on TCP sockets explicitly state that its a socket errno, returns the error number and duration of how long the faulty call took.
+
+
+### 1.4 Detector Server
 
 **Detector specific updates:**
 
-#### 1.5.1 Jungfrau
+#### 1.4.1 Jungfrau
 
 New features are supported by the new Jungfrau Chip v1.2
 
@@ -92,27 +100,25 @@ New features for all chips:
 - The maximum allowed value for loops in pedestal mode has been increased from 8 bit to 16 bit (compatible with firmware >v9.1.0)
 
 
-#### 1.5.2 Mythen3
+#### 1.4.2 Mythen3
 
 - updating threshold energy can be done during an acquisition (only affects slsReceiver)
 
 - updating threshold energy `ALL` can be done during an acquisition (only affects slsReceiver)
 
-#### 1.5.3 Eiger
+#### 1.4.3 Eiger
 
 - updating threshold energy can be done during an acquisition (only affects slsReceiver)
 
 - Setting ``vthreshold`` dac directly sets settings to undefind
 
-### 1.7 Receiver
+### 1.5 Receiver
 
 - added `rx_streamdummyheader` to send the zmq dummy header any time. Allows pre-configuring zmq processing before acq begins.
 - allow disabling one UDP interface in the receiver.
 - zmqsocket - allowing hwm to be set already at the constructor level. As before, can still be set after construction with socket reconnection. 
 
 - Automatically resolve trailing ``/`` in user given filepaths 
-
-### 1.8 Gui
 
 ## 2 BugFixes
 
@@ -126,6 +132,8 @@ New features for all chips:
 - Fixed version comparison - previously lexicographic comparison on semantic version string was used (e.g. 9.0.0 > 10.0.0)
 
 - Throws if user sets an roi to a disabled port or disable a port that has a restrictive roi (not complete detector).
+
+- Setting `zmqhwm` while client streaming is enabled now recreates/rebinds the zmq sockets so that the new high water mark takes effect.
 
 - m3: `getPatternFileName` typo fixed
 
@@ -141,9 +149,7 @@ New features for all chips:
 
 - Fixed `patwaittime` in intervals, which is hardly used. `patwaittime` in clocks stays the same and working.
 
-### 2.4 Simulator
-
-### 2.5 Receiver
+### 2.4 Receiver
 
 - Fixed potential deadlock if HDF5 creation throws 
 
@@ -155,8 +161,9 @@ New features for all chips:
 
 - Field "Threshold Energies" in master file always updated to ``[-1, -1, -1]`` whenever it is set in the detector server (setting dacs directly, custom trimbit file, set all trimbits etc.)
 
+- The high water mark `rx_zmqhwm` is now set when the zmq socket is created (before bind) instead of setting it afterwards and rebinding, which was unreliable. If streaming is enabled, setting `rx_zmqhwm` recreates the streaming sockets, so connected zmq clients are briefly disconnected and have to reconnect. Getting `rx_zmqhwm` returns the value actually used by the socket.
 
-### 2.6 Gui
+### 2.5 Gui
 
 - mouse zooms are not reset at start of acquisition
 
@@ -165,7 +172,7 @@ New features for all chips:
 | Detector  | Version |
 |-----------|---------|
 | Eiger     | 10.0.0  |
-| Jungfrau  | 10.0.0  |
+| Jungfrau  | 10.1.0  |
 | Mythen3   | 10.0.0  |
 | Gotthard2 | 10.0.0  |
 | Moench    | 10.0.0  |
@@ -180,7 +187,7 @@ From v6.1.0 (without tftp):
     - Using command `update`
 
 Instructions available at
-- https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/serverupgrade.html
+- https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSIO}}/serverupgrade.html
 
 ## 4 Firmware Requirements
 
@@ -213,7 +220,7 @@ Except Eiger,
     - Using command `update`
 
 Instructions available at
-- https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/firmware.html
+- https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/firmware.html
 
 ## 5 Kernel Requirements
 
@@ -237,9 +244,9 @@ Compatible version: Mon Jan 18 14:24:30 CEST 2021
 Commands: `udpatekernel`, `kernelversion`
 
 Instructions available at
-- https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/commandline.html
-- https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/detector.html
-- https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/pydetector.html
+- https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/commandline.html
+- https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/detector.html
+- https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/pydetector.html
 
 ## 6 Download, Documentation & Support
 
@@ -253,53 +260,53 @@ Instructions available at
 ### Documentation
 
 - **Installation:**
-    - https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/installation.html
+    - https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/installation.html
 - **Quick Start Guide:**
-    - https://slsdetectorgroup.github.io//{{VERSION}}/quick_start_guide.html
+    - https://slsdetectorgroup.github.io//10.1.0/quick_start_guide.html
 - **Firmware Upgrade:**
-    - https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/firmware.html
+    - https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/firmware.html
 - **Detector Server upgrade:**
-    - https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/serverupgrade.html
+    - https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/serverupgrade.html
 - **Detector Simulators:**
-    - https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/virtualserver.html
+    - https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/virtualserver.html
 - **Consuming slsDetectorPackage:**
-    - https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/consuming.html
+    - https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/consuming.html
 - **Software Architecture:**
-    - https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/softwarearchitecture.html
+    - https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/softwarearchitecture.html
 - **Set up commands in config file:**
-    - https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/configcommands.html
+    - https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/configcommands.html
 - **Image Size and Output Characteristics:**
-    - https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/dataformat.html
+    - https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/dataformat.html
 - **API Examples:**
     - https://github.com/slsdetectorgroup/api-examples
 - **Command Line Documentation:**
-    - https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/commandline.html
+    - https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/commandline.html
 - **C++ API Documentation:**
-    - https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/detector.html
+    - https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/detector.html
 - **C++ API Example:**
-    - https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/examples.html#
+    - https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/examples.html#
 - **Python API Documentation:**
-    - https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/pygettingstarted.html
+    - https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/pygettingstarted.html
 - **Python API Example:**
-    - https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/pyexamples.html
+    - https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/pyexamples.html
 - **Receivers (including custom receiver):**
-    - https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/receivers.html
-    - https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/slsreceiver.html
+    - https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/receivers.html
+    - https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/slsreceiver.html
 - **Detector UDP Header:**
-    - https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/udpheader.html
-    - https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/udpdetspec.html
+    - https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/udpheader.html
+    - https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/udpdetspec.html
 - **Output Data:**
-    - https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/dataformat.html
-    - https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/fileformat.html
-    - https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/slsreceiverheaderformat.html
-    - https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/masterfileattributes.html
-    - https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/binaryfileformat.html
-    - https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/hdf5fileformat.html
+    - https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/dataformat.html
+    - https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/fileformat.html
+    - https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/slsreceiverheaderformat.html
+    - https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/masterfileattributes.html
+    - https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/binaryfileformat.html
+    - https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/hdf5fileformat.html
 - **slsReceiver Zmq Format:**
-    - https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/slsreceiver.html#zmq-json-header-format
+    - https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/slsreceiver.html#zmq-json-header-format
 - **TroubleShooting:**
-    - https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/troubleshooting.html
-    - https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSION}}/troubleshooting.html#receiver-pc-tuning-options
+    - https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/troubleshooting.html
+    - https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/troubleshooting.html#receiver-pc-tuning-options
 - **Further Documentation:**
     - https://www.psi.ch/en/detectors/documentation
 - **Info on Releases:**

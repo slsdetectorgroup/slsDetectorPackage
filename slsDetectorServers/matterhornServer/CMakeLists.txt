@@ -2,8 +2,14 @@
 
 set(MATTERHORN_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/MatterhornApp.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/communication/SPICommunication.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/HelperFunctions.cpp
+)
+
+# Hardware SPI communication (linux/spi/spidev.h) is Linux only and is
+# only needed by the real server. The virtual server uses
+# VirtualSPICommunication, which is header only.
+set(MATTERHORN_HARDWARE_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/communication/SPICommunication.cpp
 )
 
 set(MATTERHORN_INCLUDE_DIRS
@@ -56,7 +62,7 @@ if(SLS_USE_MATTERHORN)
             VERBATIM)
     endif() 
 
-    add_executable(matterhornDetectorServer ${MATTERHORN_SOURCES})
+    add_executable(matterhornDetectorServer ${MATTERHORN_SOURCES} ${MATTERHORN_HARDWARE_SOURCES})
 
     if(CMAKE_CROSSCOMPILING) # only update version if cross compiling binaries 
         add_dependencies(matterhornDetectorServer update_server_version)

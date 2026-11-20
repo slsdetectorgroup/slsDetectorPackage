@@ -18,6 +18,7 @@
 #include <QFileDialog>
 #include <QResizeEvent>
 #include <QSizePolicy>
+#include <QStyleFactory>
 
 #include "sls/Version.h"
 #include <getopt.h>
@@ -100,6 +101,12 @@ int main(int argc, char **argv) {
     }
 
     QApplication app(argc, argv);
+    // Use the same (platform independent) widget style everywhere so that the
+    // gui looks the same on linux and macOS. Fusion is built into Qt.
+    // Can still be overridden with -style <name> or QT_STYLE_OVERRIDE.
+    if (QStyleFactory::keys().contains("Fusion", Qt::CaseInsensitive)) {
+        app.setStyle(QStyleFactory::create("Fusion"));
+    }
     try {
         sls::qDetectorMain det(multiId, fname, isDeveloper);
         det.show();

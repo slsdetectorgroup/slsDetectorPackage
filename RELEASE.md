@@ -165,7 +165,9 @@ New features for all chips:
 
 - Fixed potential deadlock if HDF5 creation throws 
 
-- Fixed caught frame number in partial readout mode. (Previously caught frames always 0)
+- Partial Readout Mode (`readnrows`):
+  - Fixed `rx_framescaught`, which was reporting 0.
+  - Fixed frame capturing with `rx_discardpolicy` set to discard partial frames, which previously caused all frames to be discarded.
 
 - Fixed proper enabling of filewrite after changing number of Interfaces (previously no proper file writing setup after changing number of Interfaces)
 

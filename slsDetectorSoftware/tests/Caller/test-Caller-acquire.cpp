@@ -8,11 +8,14 @@
 #include "acquire/ExpectedState.h"
 #include "acquire/FileState.h"
 #include "checks/MasterFileChecks.h"
+#include "tests/globals.h"
 
 namespace sls {
 
 namespace acq = sls::test::acquire;
 namespace checks = sls::test::checks;
+using test::GET;
+using test::PUT;
 
 void acquire_and_check_file_size(
     Detector &det, std::optional<acq::CTBState> ctb_state = std::nullopt) {
@@ -268,6 +271,31 @@ TEST_CASE("acquire_check_binary_file_size",
         test_ctb_binary_file_size(det);
     else
         REQUIRE_NOTHROW(acquire_and_check_file_size(det));
+}
+
+TEST_CASE("rx_start_fails_fpath_permissions", "[.detectorintegration]") {
+    Detector det;
+    Caller caller(&det);
+    auto det_type =
+        det.getDetectorType().tsquash("Inconsistent detector types to test");
+
+    // not needed to test for every detector type, just one is enough
+    if (det_type == defs::JUNGFRAU) {
+        std::vector<defs::fileFormat> formats{defs::BINARY};
+#ifdef HDF5C
+        formats.push_back(defs::HDF5);
+#endif
+        for (auto format : formats) {
+            INFO("File format: " << ToString(format));
+            auto file_state = acq::default_file_state();
+            file_state.file_format = format;
+            file_state.file_write = true;
+            // no write permission, rx_start fails later
+            file_state.file_path = "/";
+            acq::FileStateGuard file_guard(det, file_state);
+            REQUIRE_THROWS(caller.call("rx_start", {}, -1, PUT));
+        }
+    }
 }
 
 } // namespace sls

@@ -23,7 +23,7 @@ the shared libraries these are needed:
 
 Additionally the core requires the following dependencies: 
 
- * ZeroMQ 4.3.4 (packaged in libs)
+ * ZeroMQ 4.3.5 (packaged in libs)
  * rapidjson 1.1.0 (packaged in libs)
 
 .. note:: 

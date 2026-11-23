@@ -57,7 +57,7 @@ endif()
 # Patch libzmq to set minimum cmake version to 3.15 to avoid warnings
 # with newer cmake versions
 # Patch is applied in the FetchContent_Declare
-set(SLS_LIBZMQ_VERSION "4.3.4")
+set(SLS_LIBZMQ_VERSION "4.3.5")
 
 find_program(PATCH_EXECUTABLE patch)
 if(NOT PATCH_EXECUTABLE)
@@ -139,7 +139,7 @@ else()
         FetchContent_Declare(
             libzmq
             URL ${CMAKE_CURRENT_SOURCE_DIR}/libs/libzmq/libzmq-${SLS_LIBZMQ_VERSION}.tar.gz
-            URL_HASH MD5=cc20b769ac10afa352e5ed2769bb23b3
+            URL_HASH MD5=cfb80c6ad694cacc2f7c99bf44e8b686
             PATCH_COMMAND ${CMAKE_COMMAND} -E chdir <SOURCE_DIR> patch -p1 < ${CMAKE_CURRENT_SOURCE_DIR}/libs/libzmq/libzmq_cmake_version.patch
             UPDATE_DISCONNECTED 1
         )

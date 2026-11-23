@@ -1,5 +1,5 @@
-SLS Detector Package Minor Release 10.1.0 released on 2026-08-06
-===============================================================
+SLS Detector Package Minor Release 10.1.0 released on 2026-11-30
+================================================================
 
 This document describes the differences between v10.1.0 and v10.0.1
 
@@ -21,18 +21,19 @@ This document describes the differences between v10.1.0 and v10.0.1
     - [2.3.1 Mythen3](#231-mythen3)
   - [2.4 Receiver](#24-receiver)
   - [2.5 Gui](#25-gui)
-- [3 On-board Detector Server Compatibility](#3-on-board-detector-server-compatibility)
-  - [On-board Detector Server Upgrade](#on-board-detector-server-upgrade)
-- [4 Firmware Requirements](#4-firmware-requirements)
-  - [Detector Upgrade](#detector-upgrade)
-- [5 Kernel Requirements](#5-kernel-requirements)
-  - [Blackfin](#blackfin)
-  - [Nios](#nios)
-  - [Kernel Upgrade](#kernel-upgrade)
-- [6 Download, Documentation \& Support](#6-download-documentation--support)
-  - [Download](#download)
-  - [Documentation](#documentation)
-  - [Support](#support)
+- [3 On-board Detector Server](#3-on-board-detector-server)
+  - [3.1 Version Compatibility](#31-version-compatibility)
+  - [3.2 Upgrade](#32-upgrade)
+- [4 Firmware](#4-firmware)
+  - [4.1 Version Compatibility](#41-version-compatibility)
+  - [4.2 Upgrade](#42-upgrade)
+- [5 Kernel](#5-kernel)
+  - [5.1 Build Compatibility](#51-build-compatibility)
+  - [5.2 Upgrade](#52-upgrade)
+- [6 Help](#6-help)
+  - [6.1 Download](#61-download)
+  - [6.2 Documentation](#62-documentation)
+  - [6.3 Support](#63-support)
 
 
 ## 1 New, Changed or Resolved Features
@@ -178,7 +179,9 @@ New features for all chips:
 
 - mouse zooms are not reset at start of acquisition
 
-## 3 On-board Detector Server Compatibility
+## 3 On-board Detector Server
+
+### 3.1 Version Compatibility
 
 | Detector  | Version |
 |-----------|---------|
@@ -188,7 +191,7 @@ New features for all chips:
 | Gotthard2 | 10.0.0  |
 | Moench    | 10.0.0  |
 
-### On-board Detector Server Upgrade
+### 3.2 Upgrade
 
 From v6.1.0 (without tftp):
 
@@ -200,7 +203,9 @@ From v6.1.0 (without tftp):
 Instructions available at
 - https://slsdetectorgroup.github.io/slsDetectorPackage/{{VERSIO}}/serverupgrade.html
 
-## 4 Firmware Requirements
+## 4 Firmware 
+
+### 4.1 Version Compatibility
 
 | Detector  | Firmware Date | Version          | Updated in |
 |-----------|---------------|------------------|------------|
@@ -211,7 +216,7 @@ Instructions available at
 | Gotthard2 | 03.10.2024    | v1.0             | 9.0.0      |
 | Moench    | 26.10.2023    | v2.0             | 8.0.2      |
 
-### Detector Upgrade
+### 4.2 Upgrade
 
 The following can be upgraded remotely:
 
@@ -233,19 +238,21 @@ Except Eiger,
 Instructions available at
 - https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/firmware.html
 
-## 5 Kernel Requirements
+## 5 Kernel
 
-### Blackfin
+### 5.1 Build Compatibility
 
-Latest version: Fri Oct 29 00:00:00 2021
+| Detector  | Kernel                        |
+| --------- | ----------------------------- |
+| Jungfrau  | Fri Oct 29 00:00:00 2021 *    |
+| Moench    | Fri Oct 29 00:00:00 2021 *    |
+| Mythen3   | Mon Jan 18 14:24:30 CET 2021  |
+| Gotthard2 | Mon May 10 18:00:21 CEST 2021 |
+| Eiger     | Thu Oct 13 14:51:04 CEST 2016 |
 
-Older ones will work, but might have issues with programming firmware via the package.
+\* Older ones will work, but might have issues with programming firmware via the package.
 
-### Nios
-
-Compatible version: Mon Jan 18 14:24:30 CEST 2021
-
-### Kernel Upgrade
+### 5.2 Upgrade
 
 | Detector | Upgrade via |
 |----------|-------------|
@@ -259,16 +266,16 @@ Instructions available at
 - https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/detector.html
 - https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/pydetector.html
 
-## 6 Download, Documentation & Support
+## 6 Help
 
-### Download
+### 6.1 Download
 
 - **The Source Code:**
     - https://github.com/slsdetectorgroup/slsDetectorPackage
 - **RPM Packages:**
     - https://gitea.psi.ch/detectors/-/packages
 
-### Documentation
+### 6.2 Documentation
 
 - **Installation:**
     - https://slsdetectorgroup.github.io/slsDetectorPackage/10.1.0/installation.html
@@ -323,8 +330,8 @@ Instructions available at
 - **Info on Releases:**
     - https://slsdetectorgroup.github.io/slsDetectorPackage/index.html
 
-### Support
+### 6.3 Support
 
-- dhanya.thattil@psi.ch
 - erik.frojdh@psi.ch
+- dhanya.thattil@psi.ch
 - alice.mazzoleni@psi.ch

@@ -49,6 +49,8 @@ This document describes the differences between v10.1.0 and v10.0.1
 
 - Removed redundant linking to Posix `librt` library
 
+- Upgraded the bundled libzmq from version 4.3.4 to 4.3.5 (Version 4.3.4 has a bug that cause segfaults on platforms that use x86-64-v3)
+
 ### 1.2 Python
 
 - `Detector().pattern` (python) accepts also a `Pattern` object, not only a pattern file

@@ -3,28 +3,37 @@ SLS Detector Package Minor Release 10.1.0 released on 2026-08-06
 
 This document describes the differences between v10.1.0 and v10.0.1
 
-## Contents
+**Table of Contents**
 
-1. [New, Changed or Resolved Features](#1-new-changed-or-resolved-features)
-    1. [Compilation](#11-compilation)
-    2. [Python](#12-python)
-    3. [Client](#13-client)
-    4. [Detector Server](#14-detector-server)
-        1. [Jungfrau](#141-jungfrau)
-        2. [Mythen3](#142-mythen3)
-        3. [Eiger](#143-eiger)
-    5. [Receiver](#15-receiver)
-2. [BugFixes](#2-bugfixes)
-    1. [Python](#21-python)
-    2. [Client](#22-client)
-    3. [Detector Server](#23-detector-server)
-        1. [Mythen3](#231-mythen3)
-    4. [Receiver](#25-receiver)
-    5. [Gui](#26-gui)
-3. [On-board Detector Server Compatibility](#2-on-board-detector-server-compatibility)
-4. [Firmware Requirements](#3-firmware-requirements)
-5. [Kernel Requirements](#4-kernel-requirements)
-6. [Download, Documentation & Support](#5-download-documentation--support)
+- [1 New, Changed or Resolved Features](#1-new-changed-or-resolved-features)
+  - [1.1 Compilation](#11-compilation)
+  - [1.2 Python](#12-python)
+  - [1.3 Client](#13-client)
+  - [1.4 Detector Server](#14-detector-server)
+    - [1.4.1 Jungfrau](#141-jungfrau)
+    - [1.4.2 Mythen3](#142-mythen3)
+    - [1.4.3 Eiger](#143-eiger)
+  - [1.5 Receiver](#15-receiver)
+- [2 BugFixes](#2-bugfixes)
+  - [2.1 Python](#21-python)
+  - [2.2 Client](#22-client)
+  - [2.3 Detector Server](#23-detector-server)
+    - [2.3.1 Mythen3](#231-mythen3)
+  - [2.4 Receiver](#24-receiver)
+  - [2.5 Gui](#25-gui)
+- [3 On-board Detector Server Compatibility](#3-on-board-detector-server-compatibility)
+  - [On-board Detector Server Upgrade](#on-board-detector-server-upgrade)
+- [4 Firmware Requirements](#4-firmware-requirements)
+  - [Detector Upgrade](#detector-upgrade)
+- [5 Kernel Requirements](#5-kernel-requirements)
+  - [Blackfin](#blackfin)
+  - [Nios](#nios)
+  - [Kernel Upgrade](#kernel-upgrade)
+- [6 Download, Documentation \& Support](#6-download-documentation--support)
+  - [Download](#download)
+  - [Documentation](#documentation)
+  - [Support](#support)
+
 
 ## 1 New, Changed or Resolved Features
 

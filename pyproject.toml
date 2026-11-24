@@ -1,11 +1,12 @@
-[tool.scikit-build.metadata.version]
+[[tool.dynamic-metadata]]
 provider = "scikit_build_core.metadata.regex"
+field = "version"
 input = "VERSION"
 regex = '^(?P<version>\d+(?:\.\d+)*(?:[\.\+\w]+)?)$'
 result = "{version}" 
 
 [build-system]
-requires = [ "scikit-build-core>=0.10", "pybind11", "numpy",]
+requires = [ "scikit-build-core>=1.1", "pybind11", "numpy",]
 build-backend = "scikit_build_core.build"
 
 [project]

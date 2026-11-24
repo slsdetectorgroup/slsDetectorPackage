@@ -91,4 +91,13 @@ IpAddr InterfaceNameToIp(const std::string &ifn);
 void validatePortNumber(uint16_t port);
 void validatePortRange(uint16_t startPort, int numPorts);
 void setupSignalHandler(int signal, void (*handler)(int));
+
+/** Block a signal in the calling thread. Threads created afterwards (and
+ * child processes) inherit the mask, so call this before spawning them. */
+void blockSignal(int signal);
+
+/** Wait synchronously until the (previously blocked) signal is delivered to
+ * the process. Replaces the signal handler + unnamed POSIX semaphore
+ * (sem_init) pattern, which is not implemented on macOS. */
+void waitForSignal(int signal);
 } // namespace sls

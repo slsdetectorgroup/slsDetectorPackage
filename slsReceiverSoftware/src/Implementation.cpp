@@ -961,9 +961,11 @@ void Implementation::StartMasterWriter() {
             masterAttributes.quad = quadEnable;
             masterAttributes.readNRows = readNRows;
             masterAttributes.ratecorr = rateCorrections;
-            masterAttributes.adcMask = generalData->tengigaEnable
-                                           ? generalData->adcEnableMaskTenGiga
-                                           : generalData->adcEnableMaskOneGiga;
+            masterAttributes.adcMask =
+                (generalData->tengigaEnable ||
+                 generalData->detType == XILINX_CHIPTESTBOARD)
+                    ? generalData->adcEnableMaskTenGiga
+                    : generalData->adcEnableMaskOneGiga;
             masterAttributes.analog =
                 (generalData->readoutType == ANALOG_ONLY ||
                  generalData->readoutType == ANALOG_AND_DIGITAL)

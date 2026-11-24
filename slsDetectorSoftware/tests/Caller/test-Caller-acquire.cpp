@@ -251,6 +251,42 @@ void test_ctb_binary_file_size(Detector &det) {
         REQUIRE_NOTHROW(
             acquire_and_check_file_size(det, std::make_optional(ctb_state)));
     }
+
+    // xilinx ctb 1g readout (altera ctb is in 1g by default)
+    if (detType == defs::XILINX_CHIPTESTBOARD) {
+        {
+            ctb_state = acq::default_ctb_state(detType);
+            ctb_state.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
+            ctb_state.ten_giga = false;
+            acq::set_ctb_state(det, ctb_state);
+            REQUIRE_NOTHROW(acquire_and_check_file_size(
+                det, std::make_optional(ctb_state)));
+        }
+        {
+            ctb_state = acq::default_ctb_state(detType);
+            ctb_state.readout_mode = defs::DIGITAL_ONLY;
+            ctb_state.ten_giga = false;
+            acq::set_ctb_state(det, ctb_state);
+            REQUIRE_NOTHROW(acquire_and_check_file_size(
+                det, std::make_optional(ctb_state)));
+        }
+        {
+            ctb_state = acq::default_ctb_state(detType);
+            ctb_state.readout_mode = defs::TRANSCEIVER_ONLY;
+            ctb_state.ten_giga = false;
+            acq::set_ctb_state(det, ctb_state);
+            REQUIRE_NOTHROW(acquire_and_check_file_size(
+                det, std::make_optional(ctb_state)));
+        }
+        // analog readout is not implemented for 1g
+        {
+            ctb_state = acq::default_ctb_state(detType);
+            ctb_state.readout_mode = defs::ANALOG_AND_DIGITAL;
+            ctb_state.ten_giga = false;
+            acq::set_ctb_state(det, ctb_state);
+            REQUIRE_THROWS(det.startDetector());
+        }
+    }
 }
 
 // disable for jungfrau as it requires higher maximum receive buffer size

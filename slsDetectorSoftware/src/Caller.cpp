@@ -13834,7 +13834,7 @@ std::string Caller::tengiga(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << R"V0G0N([0, 1]
-	[Eiger][Ctb][Mythen3] 10GbE Enable. )V0G0N"
+	[Eiger][Ctb][Xilinx Ctb][Mythen3] 10GbE Enable. )V0G0N"
            << std::endl;
         return os.str();
     }

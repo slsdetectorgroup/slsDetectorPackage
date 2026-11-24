@@ -2652,7 +2652,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def tengiga(self):
-        """[Eiger][Ctb][Mythen3] 10GbE Enable."""
+        """[Eiger][Ctb][Xilinx Ctb][Mythen3] 10GbE Enable."""
         return self.getTenGiga()
 
     @tengiga.setter

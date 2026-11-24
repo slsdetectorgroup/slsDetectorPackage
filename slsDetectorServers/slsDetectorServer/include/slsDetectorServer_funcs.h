@@ -52,7 +52,8 @@ int set_settings(int);
 int get_threshold_energy(int);
 int acquire(int blocking, int file_des);
 void *start_state_machine(void *arg);
-#if defined(CHIPTESTBOARDD) && !defined(VIRTUAL)
+#if (defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)) &&             \
+    !defined(VIRTUAL)
 void *start_reading_and_sending_udp_frames(void *arg);
 #endif
 int start_acquisition(int);

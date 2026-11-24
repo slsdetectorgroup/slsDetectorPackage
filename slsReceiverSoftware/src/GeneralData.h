@@ -726,8 +726,6 @@ class XilinxChipTestBoardData : public GeneralData {
         framesPerFile = XILINX_CTB_MAX_FRAMES_PER_FILE;
         fifoDepth = 2500;
         standardheader = true;
-        dataSize = 8144;
-        packetSize = headerSizeinPacket + dataSize;
         tengigaEnable = true;
         ctbDbitReorder = true;
         UpdateImageSize();
@@ -785,6 +783,11 @@ class XilinxChipTestBoardData : public GeneralData {
         UpdateImageSize();
     };
 
+    void SetTenGigaEnable(bool tg) {
+        tengigaEnable = tg;
+        UpdateImageSize();
+    };
+
   private:
     void UpdateImageSize() {
         // used in calculations so cant remove now - TODO: remove later
@@ -794,6 +797,7 @@ class XilinxChipTestBoardData : public GeneralData {
         CtbImageInputs inputs{};
         inputs.mode = readoutType;
         inputs.nAnalogSamples = nAnalogSamples;
+        // only one adc mask (no analog readout in 1g)
         inputs.adcMask = adcEnableMaskTenGiga;
         inputs.nTransceiverSamples = nTransceiverSamples;
         inputs.transceiverMask = transceiverMask;
@@ -816,6 +820,8 @@ class XilinxChipTestBoardData : public GeneralData {
         LOG(logDEBUG1) << "Actual image size: " << actualImageSize;
 
         // calculate network parameters
+        dataSize = tengigaEnable ? 8144 : UDP_PACKET_DATA_BYTES;
+        packetSize = headerSizeinPacket + dataSize;
         packetsPerFrame = ceil((double)imageSize / (double)dataSize);
         LOG(logDEBUG1) << "Total Number of Channels:" << nPixelsX
                        << " Databytes: " << imageSize;

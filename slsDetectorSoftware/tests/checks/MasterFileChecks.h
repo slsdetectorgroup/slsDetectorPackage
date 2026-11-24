@@ -416,18 +416,14 @@ void check_ctb_metadata(CheckerT &checker, const acq::ExpectedState &expected) {
     check_exptime(checker, st.exptime);
     check_period(checker, st.period);
 
-    // 10g for xilinx, 1g/10g for altera ctb
-    bool ten_giga = true;
-    if (expected.common_state.det_type == defs::CHIPTESTBOARD) {
-        check_ten_giga(checker, st.ctb_acq_state.ten_giga);
-        if (!st.ctb_acq_state.ten_giga) {
-            ten_giga = false;
-        }
-    }
-    if (ten_giga)
-        check_adc_mask(checker, st.ctb_acq_state.adc_enable_10g);
-    else
+    check_ten_giga(checker, st.ctb_acq_state.ten_giga);
+
+    // separate 1g adc mask only for altera ctb
+    if (expected.common_state.det_type == defs::CHIPTESTBOARD &&
+        !st.ctb_acq_state.ten_giga)
         check_adc_mask(checker, st.ctb_acq_state.adc_enable_1g);
+    else
+        check_adc_mask(checker, st.ctb_acq_state.adc_enable_10g);
 
     check_readout_mode(checker, st.ctb_acq_state.readout_mode);
     check_analog_samples(checker, st.ctb_acq_state.num_adc_samples);

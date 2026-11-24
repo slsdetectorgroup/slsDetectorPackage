@@ -225,6 +225,7 @@ void MasterAttributes::WriteCtbHDF5Attributes(H5::Group *group) {
 void MasterAttributes::GetXilinxCtbBinaryAttributes(writer *w) {
     WriteBinaryExposureTme(w);
     WriteBinaryAcquisitionPeriod(w);
+    WriteBinaryTenGiga(w);
     WriteBinaryAdcMask(w);
     WriteBinaryAnalogFlag(w);
     WriteBinaryAnalogSamples(w);
@@ -242,6 +243,7 @@ void MasterAttributes::GetXilinxCtbBinaryAttributes(writer *w) {
 void MasterAttributes::WriteXilinxCtbHDF5Attributes(H5::Group *group) {
     WriteHDF5ExposureTime(group);
     WriteHDF5AcquisitionPeriod(group);
+    WriteHDF5TenGiga(group);
     WriteHDF5AdcMask(group);
     WriteHDF5AnalogFlag(group);
     WriteHDF5AnalogSamples(group);

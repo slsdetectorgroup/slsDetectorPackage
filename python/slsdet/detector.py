@@ -834,13 +834,13 @@ class Detector(CppDetectorApi):
         ----
         Sets up the following for every module:
 
-        [Eiger] txdelay_left to (2 \* mod_index \* n_delay), 
+        [Eiger] txdelay_left to (2 * mod_index * n_delay), 
 
-        [Eiger] txdelay_right to ((2 \* mod_index + 1) \* n_delay) and 
+        [Eiger] txdelay_right to ((2 * mod_index + 1) * n_delay) and 
 
-        [Eiger] txdelay_frame to (2 \* num_modules \* n_delay)  
+        [Eiger] txdelay_frame to (2 * num_modules * n_delay)  
 
-        [Jungfrau][Moench][Mythen3] txdelay_frame to (num_modules \* n_delay)
+        [Jungfrau][Moench][Mythen3] txdelay_frame to (num_modules * n_delay)
         
         Please refer txdelay_left, txdelay_right and txdelay_frame for details.
         """

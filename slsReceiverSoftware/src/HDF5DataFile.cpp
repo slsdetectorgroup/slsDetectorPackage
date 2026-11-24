@@ -136,7 +136,7 @@ void HDF5DataFile::CreateFile() {
                       '_' + std::to_string(fileIndex) + ".h5");
     fileName = p.string();
 
-    std::lock_guard<std::mutex> lock(*hdf5Lib);
+    std::unique_lock<std::mutex> lock(*hdf5Lib);
 
     uint64_t framestosave =
         ((maxFramesPerFile == 0) ? numImages : // infinite images
@@ -207,8 +207,11 @@ void HDF5DataFile::CreateFile() {
         }
     } catch (const H5::Exception &error) {
         error.printErrorStack();
+        lock.unlock(); // CloseFile() also wants the mutex --> need to unlock
+                       // here
         CloseFile();
-        throw RuntimeError("Could not create HDF5 handles in object " + index);
+        throw RuntimeError("Could not create HDF5 handles in object " +
+                           std::to_string(index));
     }
     if (!silentMode) {
         LOG(logINFO) << "[" << udpPortNumber

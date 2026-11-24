@@ -5,22 +5,23 @@ This document describes the differences between v10.1.0 and v10.0.1
 
 **Table of Contents**
 
-- [1 New, Changed or Resolved Features](#1-new-changed-or-resolved-features)
-  - [1.1 Compilation](#11-compilation)
-  - [1.2 Python](#12-python)
-  - [1.3 Client](#13-client)
-  - [1.4 Detector Server](#14-detector-server)
-    - [1.4.1 Jungfrau](#141-jungfrau)
-    - [1.4.2 Mythen3](#142-mythen3)
-    - [1.4.3 Eiger](#143-eiger)
-  - [1.5 Receiver](#15-receiver)
-- [2 BugFixes](#2-bugfixes)
-  - [2.1 Python](#21-python)
+- [1 Build and Dependencies](#1-build-and-dependencies)
+  - [1.1 General](#11-general)
+  - [1.2 Detector Server](#12-detector-server)
+  - [1.3 Gui](#13-gui)
+- [2 Bug Fixes](#2-bug-fixes)
+  - [2.1 Detector Server](#21-detector-server)
   - [2.2 Client](#22-client)
-  - [2.3 Detector Server](#23-detector-server)
-    - [2.3.1 Mythen3](#231-mythen3)
-  - [2.4 Receiver](#24-receiver)
-  - [2.5 Gui](#25-gui)
+  - [2.3 Receiver](#23-receiver)
+  - [2.4 Gui](#24-gui)
+- [3 Changed Features](#3-changed-features)
+    - [3.1 Detector Server](#31-detector-server)
+    - [3.2 Client](#32-client)
+    - [3.3 Receiver](#33-receiver)
+- [4 New Features](#4-new-features)
+    - [4.1 Detector Server](#41-detector-server)
+    - [4.2 Client](#42-client)
+    - [4.3 Receiver](#43-receiver)
 - [3 On-board Detector Server](#3-on-board-detector-server)
   - [3.1 Version Compatibility](#31-version-compatibility)
   - [3.2 Upgrade](#32-upgrade)
@@ -36,150 +37,179 @@ This document describes the differences between v10.1.0 and v10.0.1
   - [6.3 Support](#63-support)
 
 
-## 1 New, Changed or Resolved Features
 
-### 1.1 Compilation
+## 1 Build and Dependencies
 
-- Unpacking `qwt` using cmake bundled tools removing the dependency on `bzip2`
+### 1.1 General
 
-- `libexpat` is no longer a dependency of slsDetectorPackage
+- Removed dependency on `libexpat`
+- Removed redundant linking to Posix `librt` library
+- Added `Threads::Threads` as a public dependency on `slsDetectorSupport` which means it will propagate to the other libraries and executables
+- Shared Lib<br>
+  Building shared libraries is disabled by default. If you need to link against any of the `libSls*.so` libraries, you can enable this by passing `-DSLS_BUILD_SHARED_LIBRARIES=ON` to CMake.
+- Using `find_package(Threads)`instead of directly linking to `pthread` to be more portable.
+(Still check that the found library is pthread compatible since we use direct calls to pthread internally.)
+- ZMQ:
+  - Upgraded the bundled libzmq from version 4.3.4 to 4.3.5 (Version 4.3.4 has a bug that cause segfaults on platforms that use x86-64-v3)
+  - Added `SLS_USE_SYSTEM_ZMQ` option (default `OFF`) to use the libzmq of the host instead of the one included in the repo.
+
+
+### 1.2 Detector Server
 
 - All servers are compiled with `-02` optimization level
 
-- Fixed path to updateAPIVersion.py in server MakeFiles (only relevant if manually compiling servers)
 
-- Building shared libraries is disabled by default. If you need to link against any of the `libSls*.so` libraries, you can enable this by passing `-DSLS_BUILD_SHARED_LIBRARIES=ON` to CMake.
+### 1.3 Gui
 
-- Added `SLS_USE_SYSTEM_ZMQ` option (default `OFF`) to use the libzmq of the host instead of the one included in the repo.
-
-- Using `find_package(Threads)`instead of directly linking to `pthread` to be more portable.
-(Still check that the found library is pthread compatible since we use direct calls to pthread internally.)
-
-- Added `Threads::Threads` as a public dependency on `slsDetectorSupport` which means it will propagate to the other libraries and executables
-
-- Removed redundant linking to Posix `librt` library
-
-- Upgraded the bundled libzmq from version 4.3.4 to 4.3.5 (Version 4.3.4 has a bug that cause segfaults on platforms that use x86-64-v3)
-
-### 1.2 Python
-
-- `Detector().pattern` (python) accepts also a `Pattern` object, not only a pattern file
-
-- Added member function `patternstart` to python, only the detector class api was exposed (`startPattern()`)
-
-### 1.3 Client
-
-- removed unused function `readDataFile`/`writeDataFile` from `file_utils.h`
-
-- Added command ``rx_streamdummyheader`` to send the zmq dummy header any time. Allows pre-configuring zmq processing before acq begins.
-
-- Error messages on TCP sockets explicitly state that its a socket errno, returns the error number and duration of how long the faulty call took.
+- Removed dependency on `bzip2` by unpacking `qwt` using cmake bundled tools
 
 
-### 1.4 Detector Server
-
-**Detector specific updates:**
-
-#### 1.4.1 Jungfrau
-
-New features are supported by the new Jungfrau Chip v1.2
-
-- support for enabling High Dynamic Range (HDR) for Synchotron or FEL
-- Enable reset step reduction
-- default special dac values for G0 and G1 are pointing to different values
-- Electron collection mode => reset and bypass cds
-- filter resistor: default value is the lower resistor
-- auto comp disable: disabled by default (as before but now explicitly set)
-- compdisabletime defaults to 2 us
-
-> **Note:** The Chip version1.2 does not allow setting extrastoragecells.
 
 
-New features supported by the new Jungfrau Chip v1.1
-
-- Electron collection mode => reset and bypass cds
-- filter resistor: default value is the lower resistor
-- 1.1+: changing filter resistor updates asic ds timer (0x1f for lower, 0x5f for higher)
-- auto comp disable: disabled by default (as before but now explicitly set)
-- compdisabletime defaults (?)
-
-New features supported by Jungfrau Chip v1.0
-
-- compdisabletime defaults 5us
-
-New features for all chips: 
-
-- The maximum allowed value for loops in pedestal mode has been increased from 8 bit to 16 bit (compatible with firmware >v9.1.0)
 
 
-#### 1.4.2 Mythen3
 
-- updating threshold energy can be done during an acquisition (only affects slsReceiver)
 
-- updating threshold energy `ALL` can be done during an acquisition (only affects slsReceiver)
+****
+## 2 Bug Fixes
 
-#### 1.4.3 Eiger
+### 2.1 Detector Server
 
-- updating threshold energy can be done during an acquisition (only affects slsReceiver)
+- Mythen3
+  - Kernel Version<br> 
+    Downgrading required minimum kernel version for Nios to (Mon Jan 18 14:24:30 CET 2021) - as latest Nios kernel not required
 
-- Setting ``vthreshold`` dac directly sets settings to undefind
+  - Remove excessive debug printing (only log in debug mode) speeding up setting trimval
 
-### 1.5 Receiver
+  - Fixed log info about bad channel when setting trimbits
 
-- added `rx_streamdummyheader` to send the zmq dummy header any time. Allows pre-configuring zmq processing before acq begins.
-- allow disabling one UDP interface in the receiver.
-- zmqsocket - allowing hwm to be set already at the constructor level. As before, can still be set after construction with socket reconnection. 
+  - Fixed `patwaittime` in intervals, which is hardly used. `patwaittime` in clocks stays the same and working.
 
-- Automatically resolve trailing ``/`` in user given filepaths 
 
-## 2 BugFixes
 
-### 2.1 Python
-
-- Receiver ROI can be set from Python using command ``Detector().rx_roi``(it supports any sequence of four or two (for mythen3 and gotthard) ints e.g. a tuple (xmin, xmax, ymin, ymax) or a sequence of such for multiple ROIS)
-- one can clear all ROI's from Python using command ``Detector().rx_clearroi()``
 
 ### 2.2 Client
 
-- Fixed version comparison - previously lexicographic comparison on semantic version string was used (e.g. 9.0.0 > 10.0.0)
+- Version comparison from v10.0.0<br>
+  Fixed. Previously lexicographic comparison on semantic version string was used (e.g. 9.0.0 > 10.0.0)
 
-- Throws if user sets an roi to a disabled port or disable a port that has a restrictive roi (not complete detector).
-
-- Setting `zmqhwm` while client streaming is enabled now recreates/rebinds the zmq sockets so that the new high water mark takes effect.
+- ZMQ<br>
+  Setting `zmqhwm` while client streaming is enabled now recreates/rebinds the zmq sockets so that the new high water mark takes effect.
 
 - m3: `getPatternFileName` typo fixed
 
-### 2.3 Detector Server
+- [Eiger] ROI and Disabled Port<br>
+  Throws if user sets an ROI to a disabled port or disable a port that has a restrictive ROI (not complete detector).
 
-#### 2.3.1 Mythen3
 
-- Downgrading required minimum kernel version for Nios to (Mon Jan 18 14:24:30 CET 2021) - as latest Nios kernel not required
+### 2.3 Receiver
 
-- Remove excessive debug printing (only log in debug mode) speeding up setting trimval
-
-- Fixed log info about bad channel when setting trimbits
-
-- Fixed `patwaittime` in intervals, which is hardly used. `patwaittime` in clocks stays the same and working.
-
-### 2.4 Receiver
-
-- Fixed potential deadlock if HDF5 creation throws 
 
 - Partial Readout Mode (`readnrows`):
   - Fixed `rx_framescaught`, which was reporting 0.
   - Fixed frame capturing with `rx_discardpolicy` set to discard partial frames, which previously caused all frames to be discarded.
 
-- Fixed proper enabling of filewrite after changing number of Interfaces (previously no proper file writing setup after changing number of Interfaces)
+- File write and `numinterfaces`<br>
+  Previously, setting `numinterfaces` after enabling file write didnt enable file writing. Fixed.
 
-- Setting ``rx_roi`` only writes/streams data to file/over ``zmq`` within the ROI (previously Ports or modules not overlapping with a user defined ROI was also written/streamed)
+- ROI<br>:
+  Previously, ports not overlapping within the ROI was also written. Fixed now.
 
 - Field "Threshold Energies" in master file always updated to ``[-1, -1, -1]`` whenever it is set in the detector server (setting dacs directly, custom trimbit file, set all trimbits etc.)
 
 - The high water mark `rx_zmqhwm` is now set when the zmq socket is created (before bind) instead of setting it afterwards and rebinding, which was unreliable. If streaming is enabled, setting `rx_zmqhwm` recreates the streaming sockets, so connected zmq clients are briefly disconnected and have to reconnect. Getting `rx_zmqhwm` returns the value actually used by the socket.
 
-### 2.5 Gui
+- HDF5<br>
+  Fixed potential deadlock if HDF5 creation throws 
+
+
+### 2.4 Gui
 
 - mouse zooms are not reset at start of acquisition
+
+
+
+****
+## 3 Changed Features
+
+#### 3.1 Detector Server
+  
+- [Mythen3] [Eiger] updating threshold energy can be done during an acquisition (only affects slsReceiver)
+
+- [Mythen3] updating threshold energy `ALL` can be done during an acquisition (only affects slsReceiver)
+
+- [Eiger] Setting ``vthreshold`` dac directly sets settings to undefind
+
+
+#### 3.2 Client
+
+- removed unused function `readDataFile`/`writeDataFile` from `file_utils.h`
+- Error messages on TCP sockets explicitly state that its a socket errno, returns the error number and duration of how long the faulty call took.
+
+
+#### 3.3 Receiver
+
+- zmqsocket - allowing hwm to be set already at the constructor level. As before, can still be set after construction with socket reconnection. 
+- Automatically resolve trailing ``/`` in user given filepaths 
+
+
+
+
+
+
+
+
+****
+## 4 New Features
+
+#### 4.1 Detector Server
+
+- [Jungfrau] New features are supported by the new Jungfrau Chip v1.2
+  - support for enabling High Dynamic Range (HDR) for Synchotron or FEL
+  - Enable reset step reduction
+  - default special dac values for G0 and G1 are pointing to different values
+  - Electron collection mode => reset and bypass cds
+  - filter resistor: default value is the lower resistor
+  - auto comp disable: disabled by default (as before but now explicitly set)
+  - compdisabletime defaults to 2 us
+> **Note:** The Chip version1.2 does not allow setting extrastoragecells.
+
+- [Jungfrau] New features supported by the new Jungfrau Chip v1.1
+  - Electron collection mode => reset and bypass cds
+  - filter resistor: default value is the lower resistor
+  - 1.1+: changing filter resistor updates asic ds timer (0x1f for lower, 0x5f for higher)
+  - auto comp disable: disabled by default (as before but now explicitly set)
+  - compdisabletime defaults (?)
+
+- [Jungfrau] New features supported by Jungfrau Chip v1.0
+  - compdisabletime defaults 5us
+
+- [Jungfrau] all chips: The maximum allowed value for loops in pedestal mode has been increased from 8 bit to 16 bit (compatible with firmware >v9.1.0)
+
+
+ 
+#### 4.2 Client
+
+- Added command ``rx_streamdummyheader`` to send the zmq dummy header any time. Allows pre-configuring zmq processing before acq begins.
+
+- Python: 
+- Added member function `patternstart` to python, only the detector class api was exposed (`startPattern()`)
+- `Detector().pattern` (python) accepts also a `Pattern` object, not only a pattern file
+
+
+- [Eiger] ROI
+  Added python command ``Detector().rx_roi`` and ``Detector().rx_clearroi()`` to set and clear ROI
+
+#### 4.3 Receiver
+
+- added `rx_streamdummyheader` to send the zmq dummy header any time. Allows pre-configuring zmq processing before acq begins.
+
+- allow disabling one UDP interface in the r[Mythen3] eceiver.??? In v11.0.0 i believe
+
+
+
+
+
 
 ## 3 On-board Detector Server
 

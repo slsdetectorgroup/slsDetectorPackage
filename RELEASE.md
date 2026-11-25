@@ -22,6 +22,7 @@ This document describes the differences between v10.1.0 and v10.0.1
     - [4.1 Detector Server](#41-detector-server)
     - [4.2 Client](#42-client)
     - [4.3 Receiver](#43-receiver)
+    - [4.4 Calibration](#44-calibration)
 - [3 On-board Detector Server](#3-on-board-detector-server)
   - [3.1 Version Compatibility](#31-version-compatibility)
   - [3.2 Upgrade](#32-upgrade)
@@ -49,9 +50,11 @@ This document describes the differences between v10.1.0 and v10.0.1
   Building shared libraries is disabled by default. If you need to link against any of the `libSls*.so` libraries, you can enable this by passing `-DSLS_BUILD_SHARED_LIBRARIES=ON` to CMake.
 - Using `find_package(Threads)`instead of directly linking to `pthread` to be more portable.
 (Still check that the found library is pthread compatible since we use direct calls to pthread internally.)
-- ZMQ:
-  - Upgraded the bundled libzmq from version 4.3.4 to 4.3.5 (Version 4.3.4 has a bug that cause segfaults on platforms that use x86-64-v3)
-  - Added `SLS_USE_SYSTEM_ZMQ` option (default `OFF`) to use the libzmq of the host instead of the one included in the repo.
+
+- Upgraded the bundled libzmq from version 4.3.4 to 4.3.5 (Version 4.3.4 has a bug that cause segfaults on platforms that use x86-64-v3)
+  
+- Option to use sytem libzmq:<br>
+  Added `SLS_USE_SYSTEM_ZMQ` option (default `OFF`) to use the libzmq of the host instead of the one included in the repo.
 
 
 ### 1.2 Detector Server
@@ -96,10 +99,19 @@ This document describes the differences between v10.1.0 and v10.0.1
 - ZMQ<br>
   Setting `zmqhwm` while client streaming is enabled now recreates/rebinds the zmq sockets so that the new high water mark takes effect.
 
+- `dacs` in `python`:<br>
+  <mark>TODO: issue #1441 and PR #1446 into 10.1.0.rc!!!!!!!!!!!</mark><br>
+  Fixed python error in setting dacs due to deprecated np.int.<br>
+  dacs now return an int numpy array instead of a float array.
+
 - m3: `getPatternFileName` typo fixed
 
 - [Eiger] ROI and Disabled Port<br>
   Throws if user sets an ROI to a disabled port or disable a port that has a restrictive ROI (not complete detector).
+
+- [Mythen3] Python `pattern` command:<br>
+  Now accepts `Pattern` objects directly, rather than being restricted to pattern files.
+
 
 
 ### 2.3 Receiver
@@ -112,10 +124,12 @@ This document describes the differences between v10.1.0 and v10.0.1
 - File write and `numinterfaces`<br>
   Previously, setting `numinterfaces` after enabling file write didnt enable file writing. Fixed.
 
-- ROI<br>:
-  Previously, ports not overlapping within the ROI was also written. Fixed now.
+- `rx_roi`: Fixed an issue where entire ports outside the ROI were also being written.
 
-- Field "Threshold Energies" in master file always updated to ``[-1, -1, -1]`` whenever it is set in the detector server (setting dacs directly, custom trimbit file, set all trimbits etc.)
+- Automatically resolve trailing ``/`` in user given filepaths `fpath`.
+
+- [Mythen3] [Eiger] `threshold` metadata:<br>
+  Field "Threshold Energies" in master file is also now updated to ``[-1, -1, -1]`` when settings dacs directly, load custom trimbits or set trimbits etc. 
 
 - The high water mark `rx_zmqhwm` is now set when the zmq socket is created (before bind) instead of setting it afterwards and rebinding, which was unreliable. If streaming is enabled, setting `rx_zmqhwm` recreates the streaming sockets, so connected zmq clients are briefly disconnected and have to reconnect. Getting `rx_zmqhwm` returns the value actually used by the socket.
 
@@ -150,7 +164,7 @@ This document describes the differences between v10.1.0 and v10.0.1
 #### 3.3 Receiver
 
 - zmqsocket - allowing hwm to be set already at the constructor level. As before, can still be set after construction with socket reconnection. 
-- Automatically resolve trailing ``/`` in user given filepaths 
+
 
 
 
@@ -190,23 +204,26 @@ This document describes the differences between v10.1.0 and v10.0.1
  
 #### 4.2 Client
 
-- Added command ``rx_streamdummyheader`` to send the zmq dummy header any time. Allows pre-configuring zmq processing before acq begins.
-
 - Python: 
 - Added member function `patternstart` to python, only the detector class api was exposed (`startPattern()`)
-- `Detector().pattern` (python) accepts also a `Pattern` object, not only a pattern file
 
 
-- [Eiger] ROI
-  Added python command ``Detector().rx_roi`` and ``Detector().rx_clearroi()`` to set and clear ROI
+- `rx_roi` and `rx_clearroi` `python` commands added to set and clear ROI in receiver.
 
 #### 4.3 Receiver
 
-- added `rx_streamdummyheader` to send the zmq dummy header any time. Allows pre-configuring zmq processing before acq begins.
+- Stream Dummy Header:<br>
+  One can stream out the dummy header from the receiver at any time. This allows pre-configuring zmq processing before acquisition begins.The dummy header does not include the detector header at this point.  
+
+  - Command: `rx_streamdummyheader`
+  - C++/python API: `streamRxDummyHeader`  
 
 - allow disabling one UDP interface in the r[Mythen3] eceiver.??? In v11.0.0 i believe
 
 
+#### 4.4 Calibration
+
+-<mark> #1363 Added support for Jungfrau 2 modules in 1M configuration  for root display=> Needed??</mark>
 
 
 

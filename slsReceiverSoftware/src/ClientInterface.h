@@ -137,7 +137,6 @@ class ClientInterface : private virtual slsDetectorDefs {
     int set_udp_port(ServerInterface &socket);
     int set_udp_port2(ServerInterface &socket);
     int set_num_interfaces(ServerInterface &socket);
-    int set_adc_mask_10g(ServerInterface &socket);
     int set_counter_mask(ServerInterface &socket);
     int increment_file_index(ServerInterface &socket);
     int set_additional_json_parameter(ServerInterface &socket);

@@ -2405,19 +2405,6 @@ void Module::setADCEnableMask(uint32_t mask) {
     }
 }
 
-uint32_t Module::getTenGigaADCEnableMask() const {
-    return sendToDetector<uint32_t>(F_GET_ADC_ENABLE_MASK_10G);
-}
-
-void Module::setTenGigaADCEnableMask(uint32_t mask) {
-    sendToDetector(F_SET_ADC_ENABLE_MASK_10G, mask, nullptr);
-    updateNumberOfChannels(); // depends on samples and adcmask
-
-    if (shm()->useReceiverFlag) {
-        sendToReceiver<int>(F_RECEIVER_SET_ADC_MASK_10G, mask);
-    }
-}
-
 uint32_t Module::getTransceiverEnableMask() const {
     return sendToDetector<uint32_t>(F_GET_TRANSCEIVER_ENABLE_MASK);
 }

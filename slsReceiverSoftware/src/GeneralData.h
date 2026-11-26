@@ -185,8 +185,7 @@ class GeneralData {
     int ctbDbitOffset{0};
     bool ctbDbitReorder{false};
     slsDetectorDefs::readoutMode readoutType{slsDetectorDefs::ANALOG_ONLY};
-    uint32_t adcEnableMaskOneGiga{BIT32_MASK};
-    uint32_t adcEnableMaskTenGiga{BIT32_MASK};
+    uint32_t adcEnableMask{BIT32_MASK};
     uint32_t counterMask{0};
     uint32_t transceiverMask{0};
     slsDetectorDefs::frameDiscardPolicy frameDiscardMode{
@@ -268,12 +267,8 @@ class GeneralData {
         ThrowGenericError("SetNumberOfTransceiverSamples");
     };
 
-    virtual void SetOneGigaAdcEnableMask(int n) {
-        ThrowGenericError("SetOneGigaAdcEnableMask");
-    };
-
-    virtual void SetTenGigaAdcEnableMask(int n) {
-        ThrowGenericError("SetTenGigaAdcEnableMask");
+    virtual void SetAdcEnableMask(int n) {
+        ThrowGenericError("SetAdcEnableMask");
     };
 
     virtual void SetReadoutMode(slsDetectorDefs::readoutMode r) {
@@ -640,13 +635,8 @@ class ChipTestBoardData : public GeneralData {
         UpdateImageSize();
     }
 
-    void SetOneGigaAdcEnableMask(int n) {
-        adcEnableMaskOneGiga = n;
-        UpdateImageSize();
-    }
-
-    void SetTenGigaAdcEnableMask(int n) {
-        adcEnableMaskTenGiga = n;
+    void SetAdcEnableMask(int n) {
+        adcEnableMask = n;
         UpdateImageSize();
     }
 
@@ -674,8 +664,7 @@ class ChipTestBoardData : public GeneralData {
         CtbImageInputs inputs{};
         inputs.mode = readoutType;
         inputs.nAnalogSamples = nAnalogSamples;
-        inputs.adcMask =
-            tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga;
+        inputs.adcMask = adcEnableMask;
         inputs.nTransceiverSamples = nTransceiverSamples;
         inputs.transceiverMask = transceiverMask;
         inputs.nDigitalSamples = nDigitalSamples;
@@ -770,8 +759,8 @@ class XilinxChipTestBoardData : public GeneralData {
         UpdateImageSize();
     }
 
-    void SetTenGigaAdcEnableMask(int n) {
-        adcEnableMaskTenGiga = n;
+    void SetAdcEnableMask(int n) {
+        adcEnableMask = n;
         UpdateImageSize();
     };
 
@@ -794,7 +783,7 @@ class XilinxChipTestBoardData : public GeneralData {
         CtbImageInputs inputs{};
         inputs.mode = readoutType;
         inputs.nAnalogSamples = nAnalogSamples;
-        inputs.adcMask = adcEnableMaskTenGiga;
+        inputs.adcMask = adcEnableMask;
         inputs.nTransceiverSamples = nTransceiverSamples;
         inputs.transceiverMask = transceiverMask;
         inputs.nDigitalSamples = nDigitalSamples;

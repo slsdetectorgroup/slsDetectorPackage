@@ -161,7 +161,7 @@ std::string Caller::adcenable(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << R"V0G0N([bitmask]
-	[Ctb] ADC Enable Mask for 1Gb Enable for each 32 ADC channel. )V0G0N"
+	[Ctb][Xilinx Ctb] ADC Enable Mask for each of the 32 ADC channels. Used for both 1Gb and 10Gb readout. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -210,68 +210,6 @@ std::string Caller::adcenable(int action) {
         if (args.size() == 1) {
             auto arg0 = StringTo<uint32_t>(args[0]);
             det->setADCEnableMask(arg0, std::vector<int>{det_id});
-            os << args.front() << '\n';
-        }
-    }
-
-    return os.str();
-}
-
-std::string Caller::adcenable10g(int action) {
-
-    std::ostringstream os;
-    // print help
-    if (action == slsDetectorDefs::HELP_ACTION) {
-        os << R"V0G0N([bitmask]
-	[Ctb] ADC Enable Mask for 10Gb mode for each 32 ADC channel. However, if any of a consecutive 4 bits are enabled, the complete 4 bits are enabled. )V0G0N"
-           << std::endl;
-        return os.str();
-    }
-
-    // check if action and arguments are valid
-    if (action == slsDetectorDefs::GET_ACTION) {
-        if (1 && args.size() != 0) {
-            throw RuntimeError("Wrong number of arguments for action GET");
-        }
-
-        if (args.size() == 0) {
-        }
-
-    }
-
-    else if (action == slsDetectorDefs::PUT_ACTION) {
-        if (1 && args.size() != 1) {
-            throw RuntimeError("Wrong number of arguments for action PUT");
-        }
-
-        if (args.size() == 1) {
-            try {
-                StringTo<uint32_t>(args[0]);
-            } catch (...) {
-                throw RuntimeError("Could not convert argument 0 to uint32_t");
-            }
-        }
-
-    }
-
-    else {
-
-        throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
-                           "are ['GET', 'PUT']");
-    }
-
-    // generate code for each action
-    if (action == slsDetectorDefs::GET_ACTION) {
-        if (args.size() == 0) {
-            auto t = det->getTenGigaADCEnableMask(std::vector<int>{det_id});
-            os << OutStringHex(t) << '\n';
-        }
-    }
-
-    if (action == slsDetectorDefs::PUT_ACTION) {
-        if (args.size() == 1) {
-            auto arg0 = StringTo<uint32_t>(args[0]);
-            det->setTenGigaADCEnableMask(arg0, std::vector<int>{det_id});
             os << args.front() << '\n';
         }
     }

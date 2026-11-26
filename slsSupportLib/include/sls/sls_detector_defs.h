@@ -691,7 +691,6 @@ enum streamingInterface {
         int tenGiga{0};
         readoutMode roMode{ANALOG_ONLY};
         uint32_t adcMask{0};
-        uint32_t adc10gMask{0};
         uint32_t countermask{0};
         burstMode burstType{BURST_INTERNAL};
         int64_t expTime1Ns{0};

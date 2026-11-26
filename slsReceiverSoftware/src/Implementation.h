@@ -244,11 +244,8 @@ class Implementation : private virtual slsDetectorDefs {
     /* [Ctb] */
     void setReadoutMode(const readoutMode f);
     uint32_t getADCEnableMask() const;
-    /* [Ctb] */
+    /* [Ctb][Xilinx Ctb] */
     void setADCEnableMask(const uint32_t mask);
-    uint32_t getTenGigaADCEnableMask() const;
-    /* [Ctb] */
-    void setTenGigaADCEnableMask(const uint32_t mask);
     std::vector<int> getDbitList() const;
     /* [Ctb] */
     void setDbitList(const std::vector<int> &v);

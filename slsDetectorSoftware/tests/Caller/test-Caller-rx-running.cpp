@@ -24,7 +24,7 @@ TEST_CASE("Ctb and xilinx - cant put if receiver is not idle",
         auto prev_asamples = det.getNumberOfAnalogSamples();
         auto prev_dsamples = det.getNumberOfDigitalSamples();
         auto prev_tsamples = det.getNumberOfTransceiverSamples();
-        auto prev_adcenable10g = det.getTenGigaADCEnableMask();
+        auto prev_adcenable = det.getADCEnableMask();
         auto prev_trasnsceiverenable = det.getTransceiverEnableMask();
         auto prev_rxdbitlist = det.getRxDbitList();
         auto prev_rxdbitoffset = det.getRxDbitOffset();
@@ -37,7 +37,7 @@ TEST_CASE("Ctb and xilinx - cant put if receiver is not idle",
         REQUIRE_THROWS(caller.call("asamples", {"5"}, -1, PUT));
         REQUIRE_THROWS(caller.call("dsamples", {"100"}, -1, PUT));
         REQUIRE_THROWS(caller.call("tsamples", {"2"}, -1, PUT));
-        REQUIRE_THROWS(caller.call("adcenable10g", {"0xFF00FFFF"}, -1, PUT));
+        REQUIRE_THROWS(caller.call("adcenable", {"0xFF00FFFF"}, -1, PUT));
         REQUIRE_THROWS(caller.call("transceiverenable", {"0x3"}, -1, PUT));
         REQUIRE_THROWS(caller.call("rx_dbitlist", {"{1,2,10}"}, -1, PUT));
         REQUIRE_THROWS(caller.call("rx_dbitoffset", {"5"}, -1, PUT));
@@ -51,35 +51,11 @@ TEST_CASE("Ctb and xilinx - cant put if receiver is not idle",
             det.setNumberOfAnalogSamples(prev_asamples[i], {i});
             det.setNumberOfDigitalSamples(prev_dsamples[i], {i});
             det.setNumberOfTransceiverSamples(prev_tsamples[i], {i});
-            det.setTenGigaADCEnableMask(prev_adcenable10g[i], {i});
+            det.setADCEnableMask(prev_adcenable[i], {i});
             det.setTransceiverEnableMask(prev_trasnsceiverenable[i], {i});
             det.setRxDbitList(prev_rxdbitlist[i], {i});
             det.setRxDbitOffset(prev_rxdbitoffset[i], {i});
             det.setRxDbitReorder(prev_rxdbitreorder[i], {i});
-        }
-    }
-}
-
-TEST_CASE("adcenable - cant put if receiver is not idle",
-          "[.detectorintegration]") {
-
-    Detector det;
-    Caller caller(&det);
-    auto det_type = det.getDetectorType().squash();
-
-    if (det_type == defs::CHIPTESTBOARD) {
-        auto prev_adcenable = det.getADCEnableMask();
-
-        // start receiver
-        REQUIRE_NOTHROW(caller.call("rx_start", {}, -1, PUT));
-
-        REQUIRE_THROWS(caller.call("adcenable", {"0xFFFFFF00"}, -1, PUT));
-
-        // stop receiver
-        REQUIRE_NOTHROW(caller.call("rx_stop", {}, -1, PUT));
-
-        for (int i = 0; i != det.size(); ++i) {
-            det.setADCEnableMask(prev_adcenable[i], {i});
         }
     }
 }

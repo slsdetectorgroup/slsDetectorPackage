@@ -185,7 +185,6 @@ int ClientInterface::functionTable(){
 	flist[F_SET_RECEIVER_UDP_PORT]          =   &ClientInterface::set_udp_port;
 	flist[F_SET_RECEIVER_UDP_PORT2]         =   &ClientInterface::set_udp_port2;
 	flist[F_SET_RECEIVER_NUM_INTERFACES]    =   &ClientInterface::set_num_interfaces;
-	flist[F_RECEIVER_SET_ADC_MASK_10G]		=	&ClientInterface::set_adc_mask_10g;
     flist[F_RECEIVER_SET_COUNTER_MASK]      =   &ClientInterface::set_counter_mask;
     flist[F_INCREMENT_FILE_INDEX]           =   &ClientInterface::increment_file_index;
     flist[F_SET_ADDITIONAL_JSON_PARAMETER]  =   &ClientInterface::set_additional_json_parameter;
@@ -407,13 +406,10 @@ int ClientInterface::setup_receiver(Interface &socket) {
         }
         if (detType == CHIPTESTBOARD || detType == XILINX_CHIPTESTBOARD) {
             impl()->setReadoutMode(arg.roMode);
-            impl()->setTenGigaADCEnableMask(arg.adc10gMask);
+            impl()->setADCEnableMask(arg.adcMask);
             impl()->setTransceiverEnableMask(arg.transceiverMask);
         } else {
             impl()->setReadoutSpeed(arg.readoutSpeed);
-        }
-        if (detType == CHIPTESTBOARD) {
-            impl()->setADCEnableMask(arg.adcMask);
         }
         if (detType == MYTHEN3) {
             impl()->setCounterMask(arg.countermask);
@@ -1241,7 +1237,7 @@ int ClientInterface::set_readout_mode(Interface &socket) {
 int ClientInterface::set_adc_mask(Interface &socket) {
     auto arg = socket.Receive<uint32_t>();
     verifyIdle(socket);
-    LOG(logDEBUG1) << "Setting 1Gb ADC enable mask: " << arg;
+    LOG(logDEBUG1) << "Setting ADC enable mask: " << arg;
     try {
         impl()->setADCEnableMask(arg);
     } catch (const std::exception &e) {
@@ -1252,11 +1248,11 @@ int ClientInterface::set_adc_mask(Interface &socket) {
     auto retval = impl()->getADCEnableMask();
     if (retval != arg) {
         std::ostringstream os;
-        os << "Could not set 1Gb ADC enable mask. Set 0x" << std::hex << arg
+        os << "Could not set ADC enable mask. Set 0x" << std::hex << arg
            << " but read 0x" << std::hex << retval;
         throw RuntimeError(os.str());
     }
-    LOG(logDEBUG1) << "1Gb ADC enable mask retval: " << retval;
+    LOG(logDEBUG1) << "ADC enable mask retval: " << retval;
     return socket.sendResult(retval);
 }
 
@@ -1458,28 +1454,6 @@ int ClientInterface::set_num_interfaces(Interface &socket) {
     }
 
     return socket.Send(OK);
-}
-
-int ClientInterface::set_adc_mask_10g(Interface &socket) {
-    auto arg = socket.Receive<uint32_t>();
-    verifyIdle(socket);
-    LOG(logDEBUG1) << "Setting 10Gb ADC enable mask: " << arg;
-    try {
-        impl()->setTenGigaADCEnableMask(arg);
-    } catch (const std::exception &e) {
-        throw RuntimeError("Could not set 10Gb adc enable mask [" +
-                           std::string(e.what()) + ']');
-    }
-
-    auto retval = impl()->getTenGigaADCEnableMask();
-    if (retval != arg) {
-        std::ostringstream os;
-        os << "Could not 10gb ADC enable mask. Set 0x" << std::hex << arg
-           << " but read 0x" << std::hex << retval;
-        throw RuntimeError(os.str());
-    }
-    LOG(logDEBUG1) << "10Gb ADC enable mask retval: " << retval;
-    return socket.sendResult(retval);
 }
 
 int ClientInterface::set_counter_mask(Interface &socket) {

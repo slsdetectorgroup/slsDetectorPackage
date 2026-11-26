@@ -417,8 +417,6 @@ void function_table() {
     flist[F_SET_VETO_REFERENCE] = &set_veto_reference;
     flist[F_GET_BURST_MODE] = &get_burst_mode;
     flist[F_SET_BURST_MODE] = &set_burst_mode;
-    flist[F_SET_ADC_ENABLE_MASK_10G] = &set_adc_enable_mask_10g;
-    flist[F_GET_ADC_ENABLE_MASK_10G] = &get_adc_enable_mask_10g;
     flist[F_SET_COUNTER_MASK] = &set_counter_mask;
     flist[F_GET_COUNTER_MASK] = &get_counter_mask;
     flist[F_GET_NUM_BURSTS] = &get_num_bursts;
@@ -4306,23 +4304,23 @@ int set_adc_enable_mask(int file_des) {
 
     if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
         return printSocketReadError();
-    LOG(logDEBUG1, ("Seting 1Gb ADC Enable Mask to %u\n", arg));
+    LOG(logDEBUG1, ("Seting ADC Enable Mask to %u\n", arg));
 
-#if (!defined(CHIPTESTBOARDD))
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // only set
     if (Server_VerifyLock() == OK) {
         ret = setADCEnableMask(arg);
         if (ret == FAIL) {
-            sprintf(mess, "Could not set 1Gb ADC Enable mask to 0x%x.\n", arg);
+            sprintf(mess, "Could not set ADC Enable mask to 0x%x.\n", arg);
             LOG(logERROR, (mess));
         } else {
             uint32_t retval = getADCEnableMask();
             if (arg != retval) {
                 ret = FAIL;
                 sprintf(mess,
-                        "Could not set 1Gb ADC Enable mask. Set 0x%x, but read "
+                        "Could not set ADC Enable mask. Set 0x%x, but read "
                         "0x%x\n",
                         arg, retval);
                 LOG(logERROR, (mess));
@@ -4338,60 +4336,14 @@ int get_adc_enable_mask(int file_des) {
     memset(mess, 0, sizeof(mess));
     uint32_t retval = -1;
 
-    LOG(logDEBUG1, ("Getting 1Gb ADC Enable Mask \n"));
+    LOG(logDEBUG1, ("Getting ADC Enable Mask \n"));
 
-#if (!defined(CHIPTESTBOARDD))
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // get
     retval = getADCEnableMask();
-    LOG(logDEBUG1, ("1Gb ADC Enable Mask retval: %u\n", retval));
-#endif
-    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
-}
-
-int set_adc_enable_mask_10g(int file_des) {
-    ret = OK;
-    memset(mess, 0, sizeof(mess));
-    uint32_t arg = 0;
-
-    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
-        return printSocketReadError();
-    LOG(logDEBUG1, ("Seting 10Gb ADC Enable Mask to %u\n", arg));
-
-#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
-    functionNotImplemented();
-#else
-    // only set
-    if (Server_VerifyLock() == OK) {
-        setADCEnableMask_10G(arg);
-        uint32_t retval = getADCEnableMask_10G();
-        if (arg != retval) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Could not set 10Gb ADC Enable mask. Set 0x%x, but "
-                    "read 0x%x\n",
-                    arg, retval);
-            LOG(logERROR, (mess));
-        }
-    }
-#endif
-    return Server_SendResult(file_des, INT32, NULL, 0);
-}
-
-int get_adc_enable_mask_10g(int file_des) {
-    ret = OK;
-    memset(mess, 0, sizeof(mess));
-    uint32_t retval = -1;
-
-    LOG(logDEBUG1, ("Getting 10Gb ADC Enable Mask\n"));
-
-#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
-    functionNotImplemented();
-#else
-    // get
-    retval = getADCEnableMask_10G();
-    LOG(logDEBUG1, ("10Gb ADC Enable Mask retval: %u\n", retval));
+    LOG(logDEBUG1, ("ADC Enable Mask retval: %u\n", retval));
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
@@ -7243,18 +7195,8 @@ int get_receiver_parameters(int file_des) {
         return printSocketReadError();
 
         // adc mask
-#if defined(CHIPTESTBOARDD)
-    u32 = getADCEnableMask();
-#else
-    u32 = 0;
-#endif
-    n += sendData(file_des, &u32, sizeof(u32), INT32);
-    if (n < 0)
-        return printSocketReadError();
-
-        // 10g adc mask
 #if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
-    u32 = getADCEnableMask_10G();
+    u32 = getADCEnableMask();
 #else
     u32 = 0;
 #endif

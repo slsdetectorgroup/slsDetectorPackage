@@ -68,8 +68,8 @@ int isTransceiverAligned();
 // parameters - dr, roi
 int setDynamicRange(int dr);
 int getDynamicRange(int *retval);
-void setADCEnableMask_10G(uint32_t mask);
-uint32_t getADCEnableMask_10G();
+int setADCEnableMask(uint32_t mask);
+uint32_t getADCEnableMask();
 int setTransceiverEnableMask(uint32_t mask);
 uint32_t getTransceiverEnableMask();
 

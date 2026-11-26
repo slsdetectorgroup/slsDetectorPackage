@@ -77,8 +77,6 @@ int getDynamicRange(int *retval);
 
 int setADCEnableMask(uint32_t mask);
 uint32_t getADCEnableMask();
-void setADCEnableMask_10G(uint32_t mask);
-uint32_t getADCEnableMask_10G();
 int setTransceiverEnableMask(uint32_t mask);
 uint32_t getTransceiverEnableMask();
 void setADCInvertRegister(uint32_t val);

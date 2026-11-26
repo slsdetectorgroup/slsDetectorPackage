@@ -960,8 +960,8 @@ void init_det(py::module &m) {
                        py::arg());
     CppDetectorApi.def("clearRxROI",
                        (void(Detector::*)()) & Detector::clearRxROI);
-    CppDetectorApi.def("isCompleteRxRoi", (bool (Detector::*)() const) &
-                                              Detector::isCompleteRxRoi);
+    CppDetectorApi.def("isCompleteRxRoi",
+                       (bool(Detector::*)() const) & Detector::isCompleteRxRoi);
     CppDetectorApi.def(
         "getFileFormat",
         (Result<defs::fileFormat>(Detector::*)(sls::Positions) const) &
@@ -1322,7 +1322,7 @@ void init_det(py::module &m) {
         py::arg() = Positions{});
     CppDetectorApi.def(
         "setHDR",
-        (void (Detector::*)(const defs::hdrParameters, sls::Positions)) &
+        (void(Detector::*)(const defs::hdrParameters, sls::Positions)) &
             Detector::setHDR,
         py::arg(), py::arg() = Positions{});
     CppDetectorApi.def("getNumberOfBursts",
@@ -1631,14 +1631,6 @@ void init_det(py::module &m) {
     CppDetectorApi.def("setADCEnableMask",
                        (void(Detector::*)(uint32_t, sls::Positions)) &
                            Detector::setADCEnableMask,
-                       py::arg(), py::arg() = Positions{});
-    CppDetectorApi.def("getTenGigaADCEnableMask",
-                       (Result<uint32_t>(Detector::*)(sls::Positions) const) &
-                           Detector::getTenGigaADCEnableMask,
-                       py::arg() = Positions{});
-    CppDetectorApi.def("setTenGigaADCEnableMask",
-                       (void(Detector::*)(uint32_t, sls::Positions)) &
-                           Detector::setTenGigaADCEnableMask,
                        py::arg(), py::arg() = Positions{});
     CppDetectorApi.def("getTransceiverEnableMask",
                        (Result<uint32_t>(Detector::*)(sls::Positions) const) &

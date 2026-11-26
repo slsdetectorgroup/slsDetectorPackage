@@ -1720,18 +1720,11 @@ class Detector {
     /** [CTB] */
     void setADCVpp(int value, bool mV = false, Positions pos = {});
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     Result<uint32_t> getADCEnableMask(Positions pos = {}) const;
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] Used for both 1Gb and 10Gb readout */
     void setADCEnableMask(uint32_t mask, Positions pos = {});
-
-    /** [CTB] */
-    Result<uint32_t> getTenGigaADCEnableMask(Positions pos = {}) const;
-
-    /** [CTB] If any of a consecutive 4 bits are enabled, the "
-        "complete 4 bits are enabled */
-    void setTenGigaADCEnableMask(uint32_t mask, Positions pos = {});
 
     /** [CTB][Xilinx CTB] */
     Result<uint32_t> getTransceiverEnableMask(Positions pos = {}) const;

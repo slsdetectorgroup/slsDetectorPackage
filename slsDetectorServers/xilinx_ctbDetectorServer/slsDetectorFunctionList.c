@@ -439,7 +439,7 @@ void setupDetector() {
     LOG(logINFOBLUE, ("Setting Default readout\n"));
     setNumAnalogSamples(DEFAULT_NUM_ASAMPLES);
     setNumDigitalSamples(DEFAULT_NUM_DSAMPLES);
-    setADCEnableMask_10G(BIT32_MSK);
+    setADCEnableMask(BIT32_MSK);
     setTransceiverEnableMask(DEFAULT_TRANSCEIVER_MASK);
     setNumTransceiverSamples(DEFAULT_NUM_TSAMPLES);
     setReadoutMode(DEFAULT_READOUT_MODE);
@@ -545,7 +545,8 @@ int getDynamicRange(int *retval) {
     return OK;
 }
 
-void setADCEnableMask_10G(uint32_t mask) {
+// TODO: placeholder, adc readout not yet implemented in firmware
+int setADCEnableMask(uint32_t mask) {
     // convert 32 bit mask to 8 bit mask
     uint8_t actualMask = 0;
     int ival = 0;
@@ -556,15 +557,16 @@ void setADCEnableMask_10G(uint32_t mask) {
         ++ival;
     }
 
-    LOG(logINFO, ("Setting adcEnableMask 10G to 0x%x (from 0x%08x)\n",
-                  actualMask, mask));
+    LOG(logINFO, ("Setting adcEnableMask to 0x%x (from 0x%08x)\n", actualMask,
+                  mask));
     uint32_t addr = FIFO_TO_GB_CONTROL_REG;
     bus_w(addr, bus_r(addr) & (~ENABLED_CHANNELS_ADC_MSK));
     bus_w(addr, bus_r(addr) | ((actualMask << ENABLED_CHANNELS_ADC_OFST) &
                                ENABLED_CHANNELS_ADC_MSK));
+    return OK;
 }
 
-uint32_t getADCEnableMask_10G() {
+uint32_t getADCEnableMask() {
     uint32_t mask =
         ((bus_r(FIFO_TO_GB_CONTROL_REG) & ENABLED_CHANNELS_ADC_MSK) >>
          ENABLED_CHANNELS_ADC_OFST);
@@ -1793,7 +1795,7 @@ int calculateDataBytes() {
     int nachans = 0, ndchans = 0, ntchans = 0;
 
     if (analogEnable) {
-        nachans = __builtin_popcount(getADCEnableMask_10G());
+        nachans = __builtin_popcount(getADCEnableMask());
         analogDataBytes = nachans * (DYNAMIC_RANGE / 8) * getNumAnalogSamples();
         LOG(logINFO, ("\t#Analog Channels:%d, Databytes:%d\n", nachans,
                       analogDataBytes));
@@ -1833,7 +1835,7 @@ void getNumberOfChannels(int *nchanx, int *nchany) {
     int nachans = 0, ndchans = 0, ntchans = 0;
 
     if (analogEnable) {
-        nachans = __builtin_popcount(getADCEnableMask_10G());
+        nachans = __builtin_popcount(getADCEnableMask());
         LOG(logDEBUG1, ("Analog Channels: %d\n", nachans));
     }
 

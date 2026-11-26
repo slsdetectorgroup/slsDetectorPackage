@@ -17,8 +17,7 @@ struct CTBState {
     int num_dbit_samples;
     int num_trans_samples;
     bool ten_giga;
-    uint32_t adc_enable_1g;
-    uint32_t adc_enable_10g;
+    uint32_t adc_enable;
     int dbit_offset;
     std::vector<int> dbit_list;
     bool dbit_reorder;
@@ -33,9 +32,16 @@ default_ctb_state(const defs::detectorType &detType = defs::GENERIC) {
             "Cannot determine default CTB state for generic detector type.");
     }
     auto isAltera = (detType == defs::CHIPTESTBOARD);
-    return {defs::ANALOG_AND_DIGITAL, 5000,       6000,       288,
-            isAltera ? false : true,  0xFFFFFF00, 0xFF00FFFF, 0,
-            {0, 12, 2, 43},           false,      0x3};
+    return {defs::ANALOG_AND_DIGITAL,
+            5000,
+            6000,
+            288,
+            isAltera ? false : true,
+            0xFF00FFFF,
+            0,
+            {0, 12, 2, 43},
+            false,
+            0x3};
 }
 
 inline CTBState get_ctb_state(const Detector &det) {
@@ -51,11 +57,7 @@ inline CTBState get_ctb_state(const Detector &det) {
             "Inconsistent number of transceiver samples"),
         isAltera ? det.getTenGiga().tsquash("Inconsisten ten giga enable")
                  : true,
-        isAltera
-            ? det.getADCEnableMask().tsquash("Inconsistent adc enable mask")
-            : 0,
-        det.getTenGigaADCEnableMask().tsquash(
-            "Inconsistent ten giga adc enable mask"),
+        det.getADCEnableMask().tsquash("Inconsistent adc enable mask"),
         det.getRxDbitOffset().tsquash("Inconsistent rx dbit offset"),
         det.getRxDbitList().tsquash("Inconsistent rx dbit list"),
         det.getRxDbitReorder().tsquash("Inconsistent rx dbit reorder"),
@@ -69,12 +71,11 @@ inline void set_ctb_state(Detector &det, const CTBState &s) {
     det.setReadoutMode(s.readout_mode);
     if (isAltera) {
         det.setTenGiga(s.ten_giga);
-        det.setADCEnableMask(s.adc_enable_1g);
     }
     det.setNumberOfAnalogSamples(s.num_adc_samples);
     det.setNumberOfDigitalSamples(s.num_dbit_samples);
     det.setNumberOfTransceiverSamples(s.num_trans_samples);
-    det.setTenGigaADCEnableMask(s.adc_enable_10g);
+    det.setADCEnableMask(s.adc_enable);
     det.setRxDbitOffset(s.dbit_offset);
     det.setRxDbitList(s.dbit_list);
     det.setRxDbitReorder(s.dbit_reorder);
@@ -88,8 +89,7 @@ inline std::ostream &operator<<(std::ostream &os, const CTBState &s) {
        << "\n  Num DBIT Samples: " << s.num_dbit_samples
        << "\n  Num Trans Samples: " << s.num_trans_samples
        << "\n  Ten Giga: " << s.ten_giga
-       << "\n  ADC Enable 1G: " << ToStringHex(s.adc_enable_1g)
-       << "\n  ADC Enable 10G: " << ToStringHex(s.adc_enable_10g)
+       << "\n  ADC Enable: " << ToStringHex(s.adc_enable)
        << "\n  DBIT Offset: " << s.dbit_offset
        << "\n  DBIT List: " << ToString(s.dbit_list)
        << "\n  DBIT Reorder: " << s.dbit_reorder

@@ -94,22 +94,6 @@ int InferAction::adcenable() {
     }
 }
 
-int InferAction::adcenable10g() {
-
-    if (args.size() == 0) {
-        return slsDetectorDefs::GET_ACTION;
-    }
-
-    if (args.size() == 1) {
-        return slsDetectorDefs::PUT_ACTION;
-    }
-
-    else {
-
-        throw RuntimeError("Could not infer action: Wrong number of arguments");
-    }
-}
-
 int InferAction::adcindex() {
 
     if (args.size() == 1) {

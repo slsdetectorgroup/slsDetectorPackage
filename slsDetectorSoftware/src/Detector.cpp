@@ -2317,14 +2317,6 @@ void Detector::setADCEnableMask(uint32_t mask, Positions pos) {
     pimpl->Parallel(&Module::setADCEnableMask, pos, mask);
 }
 
-Result<uint32_t> Detector::getTenGigaADCEnableMask(Positions pos) const {
-    return pimpl->Parallel(&Module::getTenGigaADCEnableMask, pos);
-}
-
-void Detector::setTenGigaADCEnableMask(uint32_t mask, Positions pos) {
-    pimpl->Parallel(&Module::setTenGigaADCEnableMask, pos, mask);
-}
-
 Result<uint32_t> Detector::getTransceiverEnableMask(Positions pos) const {
     return pimpl->Parallel(&Module::getTransceiverEnableMask, pos);
 }

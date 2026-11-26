@@ -3477,26 +3477,12 @@ class Detector(CppDetectorApi):
     @property
     @element
     def adcenable(self):
-        """[Ctb] ADC Enable Mask for 1Gb. Enable for each 32 ADC channel."""
+        """[Ctb][Xilinx Ctb] ADC Enable Mask for each of the 32 ADC channels. Used for both 1Gb and 10Gb readout."""
         return self.getADCEnableMask()
 
     @adcenable.setter
     def adcenable(self, value):
         ut.set_using_dict(self.setADCEnableMask, value)
-
-    @property
-    @element
-    def adcenable10g(self):
-        """[Ctb] ADC Enable Mask for 10Gb mode for each 32 ADC channel. 
-
-        Note
-        -----
-        If any of a consecutive 4 bits are enabled, the complete 4 bits are enabled."""
-        return self.getTenGigaADCEnableMask()
-
-    @adcenable10g.setter
-    def adcenable10g(self, value):
-        ut.set_using_dict(self.setTenGigaADCEnableMask, value)
 
     @property
     @element

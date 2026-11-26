@@ -81,7 +81,6 @@ std::string ToString(const slsDetectorDefs::rxParameters &r) {
         << "tenGiga:" << r.tenGiga << std::endl
         << "roMode:" << r.roMode << std::endl
         << "adcMask:" << r.adcMask << std::endl
-        << "adc10gMask:" << r.adc10gMask << std::endl
         << "countermask:" << r.countermask << std::endl
         << "burstType:" << r.burstType << std::endl
         << "exptime1:" << ToString(std::chrono::nanoseconds(r.expTime1Ns))

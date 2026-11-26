@@ -1173,12 +1173,16 @@ TEST_CASE("adcenable", "[.detectorintegration]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         auto prev_val = det.getADCEnableMask();
+        // TODO: xilinx ctb adc mask is a placeholder (groups of 4 channels)
+        std::string mask =
+            (det_type == defs::CHIPTESTBOARD) ? "0x8d0aa0d8" : "0xff0000ff";
         {
             std::ostringstream oss;
-            caller.call("adcenable", {"0x8d0aa0d8"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "adcenable 0x8d0aa0d8\n");
+            caller.call("adcenable", {mask}, -1, PUT, oss);
+            REQUIRE(oss.str() == "adcenable " + mask + "\n");
         }
         {
             std::ostringstream oss;
@@ -1195,37 +1199,6 @@ TEST_CASE("adcenable", "[.detectorintegration]") {
         }
     } else {
         REQUIRE_THROWS(caller.call("adcenable", {}, -1, GET));
-    }
-}
-
-TEST_CASE("adcenable10g", "[.detectorintegration]") {
-    Detector det;
-    Caller caller(&det);
-    auto det_type = det.getDetectorType().squash();
-
-    if (det_type == defs::CHIPTESTBOARD ||
-        det_type == defs::XILINX_CHIPTESTBOARD) {
-        auto prev_val = det.getTenGigaADCEnableMask();
-        {
-            std::ostringstream oss;
-            caller.call("adcenable10g", {"0xff0000ff"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "adcenable10g 0xff0000ff\n");
-        }
-        {
-            std::ostringstream oss;
-            caller.call("adcenable10g", {"0xffffffff"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "adcenable10g 0xffffffff\n");
-        }
-        {
-            std::ostringstream oss;
-            caller.call("adcenable10g", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "adcenable10g 0xffffffff\n");
-        }
-        for (int i = 0; i != det.size(); ++i) {
-            det.setTenGigaADCEnableMask(prev_val[i], {i});
-        }
-    } else {
-        REQUIRE_THROWS(caller.call("adcenable10g", {}, -1, GET));
     }
 }
 

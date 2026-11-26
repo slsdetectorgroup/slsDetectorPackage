@@ -961,9 +961,7 @@ void Implementation::StartMasterWriter() {
             masterAttributes.quad = quadEnable;
             masterAttributes.readNRows = readNRows;
             masterAttributes.ratecorr = rateCorrections;
-            masterAttributes.adcMask = generalData->tengigaEnable
-                                           ? generalData->adcEnableMaskTenGiga
-                                           : generalData->adcEnableMaskOneGiga;
+            masterAttributes.adcMask = generalData->adcEnableMask;
             masterAttributes.analog =
                 (generalData->readoutType == ANALOG_ONLY ||
                  generalData->readoutType == ANALOG_AND_DIGITAL)
@@ -1797,30 +1795,16 @@ void Implementation::setReadoutMode(const readoutMode f) {
 }
 
 uint32_t Implementation::getADCEnableMask() const {
-    return generalData->adcEnableMaskOneGiga;
+    return generalData->adcEnableMask;
 }
 
 void Implementation::setADCEnableMask(uint32_t mask) {
-    if (generalData->adcEnableMaskOneGiga != mask) {
-        generalData->SetOneGigaAdcEnableMask(mask);
+    if (generalData->adcEnableMask != mask) {
+        generalData->SetAdcEnableMask(mask);
         SetupFifoStructure();
     }
-    LOG(logINFO) << "ADC Enable Mask for 1Gb mode: 0x" << std::hex
-                 << generalData->adcEnableMaskOneGiga << std::dec;
-    LOG(logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
-}
-
-uint32_t Implementation::getTenGigaADCEnableMask() const {
-    return generalData->adcEnableMaskTenGiga;
-}
-
-void Implementation::setTenGigaADCEnableMask(uint32_t mask) {
-    if (generalData->adcEnableMaskTenGiga != mask) {
-        generalData->SetTenGigaAdcEnableMask(mask);
-        SetupFifoStructure();
-    }
-    LOG(logINFO) << "ADC Enable Mask for 10Gb mode: 0x" << std::hex
-                 << generalData->adcEnableMaskTenGiga << std::dec;
+    LOG(logINFO) << "ADC Enable Mask: 0x" << std::hex
+                 << generalData->adcEnableMask << std::dec;
     LOG(logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
 }
 

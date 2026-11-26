@@ -12,10 +12,7 @@ std::pair<uint64_t, int> calculate_ctb_image_size(const CTBState &test_info,
     CtbImageInputs inputs{};
     inputs.mode = test_info.readout_mode;
     inputs.nAnalogSamples = test_info.num_adc_samples;
-    inputs.adcMask = test_info.adc_enable_10g;
-    if (!isXilinxCtb && !test_info.ten_giga) {
-        inputs.adcMask = test_info.adc_enable_1g;
-    }
+    inputs.adcMask = test_info.adc_enable;
     inputs.nTransceiverSamples = test_info.num_trans_samples;
     inputs.transceiverMask = test_info.transceiver_mask;
     inputs.nDigitalSamples = test_info.num_dbit_samples;

@@ -31,7 +31,6 @@ class AdcTab(QtWidgets.QWidget):
         self.acquisitionTab: AcquisitionTab | None = None
         self.legend: LegendItem | None = None
         self.logger = logging.getLogger('AdcTab')
-        self.tengiga = True
 
     def setup_ui(self):
         self.plotTab = self.mainWindow.plotTab
@@ -205,11 +204,7 @@ class AdcTab(QtWidgets.QWidget):
         return self.mainWindow.decoder(analog_array)
 
     def getADCEnableReg(self):
-        if self.det.type == detectorType.CHIPTESTBOARD:
-            self.tengiga = self.det.tengiga
-        retval = self.det.adcenable10g
-        if not self.tengiga:
-            retval = self.det.adcenable
+        retval = self.det.adcenable
         self.view.lineEditADCEnable.editingFinished.disconnect()
         self.view.lineEditADCEnable.setText("0x{:08x}".format(retval))
         self.view.lineEditADCEnable.editingFinished.connect(self.setADCEnableReg)
@@ -219,10 +214,7 @@ class AdcTab(QtWidgets.QWidget):
         self.view.lineEditADCEnable.editingFinished.disconnect()
         try:
             mask = int(self.view.lineEditADCEnable.text(), 16)
-            if self.tengiga:
-                self.det.adcenable10g = mask
-            else:
-                self.det.adcenable = mask
+            self.det.adcenable = mask
         except Exception as e:
             QtWidgets.QMessageBox.warning(self.mainWindow, "ADC Enable Fail", str(e), QtWidgets.QMessageBox.Ok)
             pass
@@ -250,12 +242,8 @@ class AdcTab(QtWidgets.QWidget):
     def setADCEnable(self, i):
         checkBox = getattr(self.view, f"checkBoxADC{i}En")
         try:
-            if self.tengiga:
-                enableMask = manipulate_bit(checkBox.isChecked(), self.det.adcenable10g, i)
-                self.det.adcenable10g = enableMask
-            else:
-                enableMask = manipulate_bit(checkBox.isChecked(), self.det.adcenable, i)
-                self.det.adcenable = enableMask
+            enableMask = manipulate_bit(checkBox.isChecked(), self.det.adcenable, i)
+            self.det.adcenable = enableMask
         except Exception as e:
             QtWidgets.QMessageBox.warning(self.mainWindow, "ADC Enable Fail", str(e), QtWidgets.QMessageBox.Ok)
 
@@ -276,10 +264,7 @@ class AdcTab(QtWidgets.QWidget):
         for i in range(start_nr, end_nr):
             mask = manipulate_bit(checkBox.isChecked(), mask, i)
         try:
-            if self.tengiga:
-                self.det.adcenable10g = mask
-            else:
-                self.det.adcenable = mask
+            self.det.adcenable = mask
         except Exception as e:
             QtWidgets.QMessageBox.warning(self.mainWindow, "ADC Enable Fail", str(e), QtWidgets.QMessageBox.Ok)
             pass

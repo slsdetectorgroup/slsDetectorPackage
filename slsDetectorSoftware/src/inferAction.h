@@ -16,7 +16,6 @@ class InferAction {
     int activate();
     int adcclk();
     int adcenable();
-    int adcenable10g();
     int adcindex();
     int adcinvert();
     int adclist();
@@ -351,7 +350,6 @@ class InferAction {
         {"activate", &InferAction::activate},
         {"adcclk", &InferAction::adcclk},
         {"adcenable", &InferAction::adcenable},
-        {"adcenable10g", &InferAction::adcenable10g},
         {"adcindex", &InferAction::adcindex},
         {"adcinvert", &InferAction::adcinvert},
         {"adclist", &InferAction::adclist},

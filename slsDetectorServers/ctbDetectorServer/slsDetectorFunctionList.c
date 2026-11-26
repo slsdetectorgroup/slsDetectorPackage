@@ -60,9 +60,7 @@ char volatile *analogDataPtr = NULL;
 char volatile *digitalDataPtr = NULL;
 char volatile *transceiverDataPtr = NULL;
 char udpPacketData[UDP_PACKET_DATA_BYTES + sizeof(sls_detector_header)];
-uint32_t adcEnableMask_1g = BIT32_MSK;
-// 10g readout
-uint8_t adcEnableMask_10g = 0xFF;
+uint32_t adcEnableMask = BIT32_MSK;
 uint32_t transceiverMask = DEFAULT_TRANSCEIVER_MASK;
 
 int32_t clkPhase[NUM_CLOCKS] = {};
@@ -533,8 +531,7 @@ void setupDetector() {
     }
     vLimit = DEFAULT_VLIMIT;
     highvoltage = 0;
-    adcEnableMask_1g = BIT32_MSK;
-    adcEnableMask_10g = 0xFF;
+    adcEnableMask = BIT32_MSK;
     transceiverMask = DEFAULT_TRANSCEIVER_MASK;
     analogEnable = 1;
     digitalEnable = 0;
@@ -645,7 +642,6 @@ void setupDetector() {
         return;
     setTiming(DEFAULT_TIMING_MODE);
     setADCEnableMask(BIT32_MSK);
-    setADCEnableMask_10G(BIT32_MSK);
     setTransceiverEnableMask(DEFAULT_TRANSCEIVER_MASK);
 
     if (setReadoutMode(ANALOG_ONLY) == FAIL) {
@@ -730,11 +726,11 @@ void updateDataBytes() {
 
     // analog
     if (analogEnable) {
-        if (adcEnableMask_1g == BIT32_MSK)
+        if (adcEnableMask == BIT32_MSK)
             nachans = 32;
         else {
             for (int ichan = 0; ichan < NCHAN_ANALOG; ++ichan) {
-                if (adcEnableMask_1g & (1 << ichan))
+                if (adcEnableMask & (1 << ichan))
                     ++nachans;
             }
         }
@@ -810,8 +806,10 @@ int getDynamicRange(int *retval) {
 }
 
 int setADCEnableMask(uint32_t mask) {
-    LOG(logINFO, ("Setting adcEnableMask 1G to 0x%08x\n", mask));
-    adcEnableMask_1g = mask;
+    LOG(logINFO, ("Setting adcEnableMask to 0x%08x\n", mask));
+    adcEnableMask = mask;
+    // register only holds the mask when analog readout is enabled
+    bus_w(ADC_CH_ENABLE_REG, analogEnable ? adcEnableMask : 0);
     // 1Gb enabled
     if (!enableTenGigabitEthernet(-1)) {
         if (updateDatabytesandAllocateRAM() == FAIL) {
@@ -821,53 +819,7 @@ int setADCEnableMask(uint32_t mask) {
     return OK;
 }
 
-uint32_t getADCEnableMask() { return adcEnableMask_1g; }
-
-void setADCEnableMask_10G(uint32_t mask) {
-    // convert 32 bit mask to 8 bit mask
-    uint8_t actualMask = 0;
-    int ival = 0;
-    for (int ich = 0; ich < NCHAN_ANALOG; ich = ich + 4) {
-        if ((1 << ich) & mask) {
-            actualMask |= (1 << ival);
-        }
-        ++ival;
-    }
-
-    LOG(logINFO, ("Setting adcEnableMask 10G to 0x%x (from 0x%08x)\n",
-                  actualMask, mask));
-    adcEnableMask_10g = actualMask;
-    if (analogEnable) {
-        uint32_t addr = READOUT_10G_ENABLE_REG;
-        bus_w(addr, bus_r(addr) & (~READOUT_10G_ENABLE_ANLG_MSK));
-        bus_w(addr, bus_r(addr) |
-                        ((adcEnableMask_10g << READOUT_10G_ENABLE_ANLG_OFST) &
-                         READOUT_10G_ENABLE_ANLG_MSK));
-    }
-}
-
-uint32_t getADCEnableMask_10G() {
-    if (analogEnable) {
-        adcEnableMask_10g =
-            ((bus_r(READOUT_10G_ENABLE_REG) & READOUT_10G_ENABLE_ANLG_MSK) >>
-             READOUT_10G_ENABLE_ANLG_OFST);
-    }
-
-    // convert 8 bit mask to 32 bit mask
-    uint32_t retval = 0;
-    if (adcEnableMask_10g) {
-        for (int ival = 0; ival < 8; ++ival) {
-            // if bit in 8 bit mask set
-            if ((1 << ival) & adcEnableMask_10g) {
-                // set it for 4 bits in 32 bit mask
-                for (int iloop = 0; iloop < 4; ++iloop) {
-                    retval |= (1 << (ival * 4 + iloop));
-                }
-            }
-        }
-    }
-    return retval;
-}
+uint32_t getADCEnableMask() { return adcEnableMask; }
 
 int setTransceiverEnableMask(uint32_t mask) {
     LOG(logINFO, ("Setting transceivermask to 0x%08x\n", mask));
@@ -956,15 +908,12 @@ int setReadoutMode(enum readoutMode mode) {
           (bus_r(addr) & (~CONFIG_ENBLE_ANLG_OTPT_MSK) &
            (~CONFIG_ENBLE_DGTL_OTPT_MSK) & (~CONFIG_ENBLE_TRNSCVR_OTPT_MSK)));
     bus_w(addr_readout_10g, bus_r(addr_readout_10g) &
-                                (~READOUT_10G_ENABLE_ANLG_MSK) &
                                 ~(READOUT_10G_ENABLE_DGTL_MSK) &
                                 ~(READOUT_10G_ENABLE_TRNSCVR_MSK));
+    bus_w(ADC_CH_ENABLE_REG, 0);
     if (analogEnable) {
         bus_w(addr, bus_r(addr) | (CONFIG_ENBLE_ANLG_OTPT_MSK));
-        bus_w(addr_readout_10g,
-              bus_r(addr_readout_10g) |
-                  ((adcEnableMask_10g << READOUT_10G_ENABLE_ANLG_OFST) &
-                   READOUT_10G_ENABLE_ANLG_MSK));
+        bus_w(ADC_CH_ENABLE_REG, adcEnableMask);
     }
     if (digitalEnable) {
         bus_w(addr, bus_r(addr) | CONFIG_ENBLE_DGTL_OTPT_MSK);
@@ -980,6 +929,14 @@ int setReadoutMode(enum readoutMode mode) {
     }
 
     if (isControlServer) {
+        // validate adcenablemask (used for 1g and 10g)
+        if (analogEnable && adcEnableMask != bus_r(ADC_CH_ENABLE_REG)) {
+            LOG(logERROR, ("Setting readout mode failed. Could not set adc "
+                           "enable mask to 0x%08x\n.",
+                           adcEnableMask));
+            return FAIL;
+        }
+
         // 1Gb
         if (!enableTenGigabitEthernet(-1)) {
             if (updateDatabytesandAllocateRAM() == FAIL) {
@@ -989,17 +946,6 @@ int setReadoutMode(enum readoutMode mode) {
 
         // 10Gb
         else {
-            // validate adcenablemask for 10g
-            if (analogEnable &&
-                adcEnableMask_10g != ((bus_r(READOUT_10G_ENABLE_REG) &
-                                       READOUT_10G_ENABLE_ANLG_MSK) >>
-                                      READOUT_10G_ENABLE_ANLG_OFST)) {
-                LOG(logERROR,
-                    ("Setting readout mode failed. Could not set 10g adc "
-                     "enable mask to 0x%x\n.",
-                     adcEnableMask_10g));
-                return FAIL;
-            }
             // validate transceivermask for 10g
             if (transceiverEnable &&
                 transceiverMask != ((bus_r(READOUT_10G_ENABLE_REG) &
@@ -2867,56 +2813,23 @@ int readSample(int ns) {
 
     // read adcs
     if (analogEnable && ns < naSamples) {
-
-        uint32_t fifoAddr = FIFO_DATA_REG;
-
         if (!(ns % 1000)) {
             LOG(logDEBUG1, ("Reading sample ns:%d of %d AEmtpy:0x%x AFull:0x%x "
                             "Status:0x%x\n",
                             ns, naSamples, bus_r(FIFO_EMPTY_REG),
                             bus_r(FIFO_FULL_REG), bus_r(STATUS_REG)));
         }
-
         // loop through all channels
         for (int ich = 0; ich < NCHAN_ANALOG; ++ich) {
-
             // if channel is in enable mask
-            if ((1 << ich) & (adcEnableMask_1g)) {
-
-                // unselect channel
-                bus_w(addr, bus_r(addr) & ~(DUMMY_FIFO_CHNNL_SLCT_MSK));
-
-                // select channel
-                bus_w(addr, bus_r(addr) | ((ich << DUMMY_FIFO_CHNNL_SLCT_OFST) &
-                                           DUMMY_FIFO_CHNNL_SLCT_MSK));
-
-                // wait for 1 us to latch different clocks of read and read
-                // strobe
-                for (int i = 0; i < WAIT_TIME_1US_FOR_LOOP_CNT; ++i)
-                    ;
-
+            if ((1 << ich) & (adcEnableMask)) {
                 // read fifo and write it to current position of data pointer
-                *((uint16_t *)analogDataPtr) = bus_r16(fifoAddr);
-
-                // keep reading till the value is the same
-                /* while (*((uint16_t*)analogDataPtr) != bus_r16(fifoAddr)) {
-                     LOG(logDEBUG1, ("%d ", ich));
-                     *((uint16_t*)analogDataPtr) = bus_r16(fifoAddr);
-                 }*/
-
+                *((uint16_t *)analogDataPtr) = bus_r16(FIFO_DATA_REG);
                 // increment pointer to data out destination
                 analogDataPtr += 2;
                 sampleRead = 1;
             }
         }
-
-        // read strobe to all analog fifos
-        bus_w(addr, bus_r(addr) | DUMMY_ANLG_FIFO_RD_STRBE_MSK);
-        bus_w(addr, bus_r(addr) & (~DUMMY_ANLG_FIFO_RD_STRBE_MSK));
-
-        // wait for 1 us to latch different clocks of read and read strobe
-        for (int i = 0; i < WAIT_TIME_1US_FOR_LOOP_CNT; ++i)
-            ;
     }
 
     // read digital output
@@ -3144,13 +3057,11 @@ int getTotalNumberOfChannels() {
 void getNumberOfChannels(int *nchanx, int *nchany) {
     int nachans = 0, ndchans = 0, ntchans = 0;
     if (analogEnable) {
-        uint32_t mask =
-            enableTenGigabitEthernet(-1) ? adcEnableMask_10g : adcEnableMask_1g;
-        if (mask == BIT32_MASK) {
+        if (adcEnableMask == BIT32_MASK) {
             nachans = NCHAN_ANALOG;
         } else {
             for (int ich = 0; ich < NCHAN_ANALOG; ++ich) {
-                if ((mask & (1 << ich)) != 0U)
+                if ((adcEnableMask & (1 << ich)) != 0U)
                     ++nachans;
             }
         }

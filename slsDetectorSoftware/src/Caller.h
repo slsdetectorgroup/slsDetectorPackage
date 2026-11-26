@@ -65,7 +65,6 @@ class Caller {
     std::string activate(int action);
     std::string adcclk(int action);
     std::string adcenable(int action);
-    std::string adcenable10g(int action);
     std::string adcindex(int action);
     std::string adcinvert(int action);
     std::string adclist(int action);
@@ -435,7 +434,6 @@ class Caller {
         {"activate", &Caller::activate},
         {"adcclk", &Caller::adcclk},
         {"adcenable", &Caller::adcenable},
-        {"adcenable10g", &Caller::adcenable10g},
         {"adcindex", &Caller::adcindex},
         {"adcinvert", &Caller::adcinvert},
         {"adclist", &Caller::adclist},
@@ -917,6 +915,7 @@ class Caller {
         {"v_d", "'dac v_d' and 'power v_d'"},
         {"v_io", "'dac v_io' and 'power v_io'"},
         {"v_chip", "'dac v_chip'"},
+        {"adcenable10g", "'adcenable'"},
 
     };
 };

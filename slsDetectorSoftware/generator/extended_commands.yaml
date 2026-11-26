@@ -187,48 +187,8 @@ adcenable:
         store_result_in_t: false
   command_name: adcenable
   function_alias: adcenable
-  help: "[bitmask]\n\t[Ctb] ADC Enable Mask for 1Gb Enable for each 32 ADC channel."
-  infer_action: true
-  template: true
-adcenable10g:
-  actions:
-    GET:
-      args:
-      - arg_types: []
-        argc: 0
-        cast_input: []
-        check_det_id: false
-        convert_det_id: true
-        function: getTenGigaADCEnableMask
-        input: []
-        input_types: []
-        output:
-        - OutStringHex(t)
-        require_det_id: true
-        store_result_in_t: true
-    PUT:
-      args:
-      - arg_types:
-        - uint32_t
-        argc: 1
-        cast_input:
-        - true
-        check_det_id: false
-        convert_det_id: true
-        function: setTenGigaADCEnableMask
-        input:
-        - args[0]
-        input_types:
-        - uint32_t
-        output:
-        - args.front()
-        require_det_id: true
-        store_result_in_t: false
-  command_name: adcenable10g
-  function_alias: adcenable10g
-  help: "[bitmask]\n\t[Ctb] ADC Enable Mask for 10Gb mode for each 32 ADC channel.\
-    \ However, if any of a consecutive 4 bits are enabled, the complete 4 bits are\
-    \ enabled."
+  help: "[bitmask]\n\t[Ctb][Xilinx Ctb] ADC Enable Mask for each of the 32 ADC channels.\
+    \ Used for both 1Gb and 10Gb readout."
   infer_action: true
   template: true
 adcindex:

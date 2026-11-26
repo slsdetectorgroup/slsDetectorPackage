@@ -657,22 +657,13 @@ patsetbit:
 
 ################# INTEGER_COMMAND_HEX #################
 adcenable:
-  help: "[bitmask]\n\t[Ctb] ADC Enable Mask for 1Gb Enable for each 32 ADC channel."
+  help: "[bitmask]\n\t[Ctb][Xilinx Ctb] ADC Enable Mask for each of the 32 ADC channels. Used for both 1Gb and 10Gb readout."
   inherit_actions: INTEGER_COMMAND_HEX
   actions:
     GET:
       function: getADCEnableMask
     PUT:
       function: setADCEnableMask
-
-adcenable10g:
-  help: "[bitmask]\n\t[Ctb] ADC Enable Mask for 10Gb mode for each 32 ADC channel. However, if any of a consecutive 4 bits are enabled, the complete 4 bits are enabled."
-  inherit_actions: INTEGER_COMMAND_HEX
-  actions:
-    GET:
-      function: getTenGigaADCEnableMask
-    PUT:
-      function: setTenGigaADCEnableMask
 
 transceiverenable:
   help: "[bitmask]\n\t[Ctb][Xilinx Ctb] Transceiver Enable Mask. Enable for each 4 Transceiver channel."

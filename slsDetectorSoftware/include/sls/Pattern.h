@@ -4,6 +4,7 @@
 #include "sls/sls_detector_defs.h"
 
 #ifdef __cplusplus
+#include <filesystem>
 #include <memory>
 namespace sls {
 #endif
@@ -35,8 +36,8 @@ class Pattern {
     patternParameters *data() const;
     size_t size() const noexcept { return sizeof(patternParameters); }
     void validate() const;
-    size_t load(const std::string &fname);
-    void save(const std::string &fname);
+    size_t load(const std::filesystem::path &fname);
+    void save(const std::filesystem::path &fname);
     std::string str() const;
 };
 

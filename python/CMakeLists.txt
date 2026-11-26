@@ -26,8 +26,8 @@ set_target_properties(_slsdet PROPERTIES
                         LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/slsdet
                     )
 
-#Copy Python code 
-set( PYTHON_FILES
+# Copy Python code 
+set(PYTHON_FILES
     slsdet/__init__.py
     slsdet/adcs.py
     slsdet/bits.py
@@ -42,7 +42,7 @@ set( PYTHON_FILES
     slsdet/errors.py
     slsdet/gaincaps.py
     slsdet/pattern.py
-    slsdet/PatternGenerator.py
+    slsdet/pattern_generator.py
     slsdet/gotthard2.py
     slsdet/moench.py
     slsdet/proxy.py

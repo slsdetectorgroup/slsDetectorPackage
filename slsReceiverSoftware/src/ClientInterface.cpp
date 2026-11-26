@@ -219,6 +219,8 @@ int ClientInterface::functionTable(){
     flist[F_RECEIVER_GET_UDP_DATASTREAM]    =   &ClientInterface::get_port_udp_datastream;
     flist[F_RECEIVER_SET_UDP_PORT_DISABLE_META] =   &ClientInterface::set_udp_port_disable_meta;
     flist[F_RECEIVER_GET_UDP_PORT_DISABLE_META] =   &ClientInterface::get_udp_port_disable_meta;
+    flist[F_GET_RECEIVER_FILE_FORMAT_OPTIONS]   =   &ClientInterface::get_file_format_options;
+    flist[F_SET_RECEIVER_FILE_FORMAT_OPTIONS]   =   &ClientInterface::set_file_format_options;
 
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
@@ -1042,6 +1044,29 @@ int ClientInterface::get_file_format(Interface &socket) {
     auto retval = impl()->getFileFormat();
     LOG(logDEBUG1) << "File Format: " << retval;
     return socket.sendResult(retval);
+}
+
+int ClientInterface::set_file_format_options(Interface &socket) {
+    // received as a single list with every option preceded by its size
+    auto args = socket.receiveVariableArgs<std::vector<uint32_t>>();
+    auto options = unflattenSizePrefixed(args);
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting file format options:" << ToString(options);
+    try {
+        impl()->setFileFormatOptions(options);
+    } catch (const std::exception &e) {
+        throw RuntimeError("Could not set file format options to " +
+                           ToString(options) + " [" + std::string(e.what()) +
+                           ']');
+    }
+    return socket.Send(OK);
+}
+
+int ClientInterface::get_file_format_options(Interface &socket) {
+    auto options = impl()->getFileFormatOptions();
+    LOG(logDEBUG1) << "File Format Options: " << ToString(options);
+    // sent as a single list with every option preceded by its size
+    return socket.sendVariableResult(flattenSizePrefixed(options));
 }
 
 int ClientInterface::set_streaming_port(Interface &socket) {

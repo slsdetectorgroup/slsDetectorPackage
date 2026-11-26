@@ -62,7 +62,8 @@ class File : private virtual slsDetectorDefs {
         const bool overWriteEnable, const bool silentMode,
         const uint16_t udpPortNumber, const uint32_t maxFramesPerFile,
         const uint64_t numImages, const uint32_t nPixelsX,
-        const uint32_t nPixelsY, const uint32_t dynamicRange) {
+        const uint32_t nPixelsY, const uint32_t dynamicRange,
+        const std::vector<std::vector<uint32_t>> &filters) {
         LOG(logERROR)
             << "This is a generic function CreateFirstHDF5DataFile that "
                "should be overloaded by a derived class";

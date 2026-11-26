@@ -3542,6 +3542,39 @@ fformat:
     \ with HDF5 flags. Default is binary."
   infer_action: true
   template: true
+fformatoptions:
+  actions:
+    GET:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: true
+    PUT:
+      args:
+      - arg_types: []
+        argc: -1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+  command_name: fformatoptions
+  function_alias: fformatoptions
+  help: ''
+  infer_action: true
+  is_description: true
 filtercells:
   actions:
     GET:

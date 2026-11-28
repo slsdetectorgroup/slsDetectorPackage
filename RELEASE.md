@@ -14,6 +14,7 @@ This document describes the differences between v10.1.0 and v10.0.1
   - [2.2 Client](#22-client)
   - [2.3 Receiver](#23-receiver)
   - [2.4 Gui](#24-gui)
+  - [2.5 Documentaion](#25-documentaion)
 - [3 Changed Features](#3-changed-features)
     - [3.1 Detector Server](#31-detector-server)
     - [3.2 Client](#32-client)
@@ -43,11 +44,15 @@ This document describes the differences between v10.1.0 and v10.0.1
 
 ### 1.1 General
 
-- Removed dependency on `libexpat`
-- Removed redundant linking to Posix `librt` library
+- Removed dependency on `libexpat` and redundant linking to Posix `librt` library
+  
 - Added `Threads::Threads` as a public dependency on `slsDetectorSupport` which means it will propagate to the other libraries and executables
-- Shared Lib<br>
-  Building shared libraries is disabled by default. If you need to link against any of the `libSls*.so` libraries, you can enable this by passing `-DSLS_BUILD_SHARED_LIBRARIES=ON` to CMake.
+  
+- Shared Lib:<br>
+  Building shared libraries is disabled by default and libraries are **compiled statically**. To build the `libSls*.so` libraries for dynamic linking, enable them by passing `-DSLS_BUILD_SHARED_LIBRARIES=ON` to CMake.
+
+
+
 - Using `find_package(Threads)`instead of directly linking to `pthread` to be more portable.
 (Still check that the found library is pthread compatible since we use direct calls to pthread internally.)
 
@@ -88,7 +93,8 @@ This document describes the differences between v10.1.0 and v10.0.1
 
   - Fixed `patwaittime` in intervals, which is hardly used. `patwaittime` in clocks stays the same and working.
 
-
+- [Jungfrau] Maximum loops in `pedestalmode`:<br>
+  Fixed a software limitation that restricted the maximum number of loops in pedestal mode to 8 bits, despite firmware v9.1.0 supporting 16-bit values.
 
 
 ### 2.2 Client
@@ -121,15 +127,15 @@ This document describes the differences between v10.1.0 and v10.0.1
   - Fixed `rx_framescaught`, which was reporting 0.
   - Fixed frame capturing with `rx_discardpolicy` set to discard partial frames, which previously caused all frames to be discarded.
 
-- File write and `numinterfaces`<br>
-  Previously, setting `numinterfaces` after enabling file write didnt enable file writing. Fixed.
+- `fwrite` and `numinterfaces`<br>
+  Fixed an issue where changing the number of UDP interfaces caused the file write setting to be lost.
 
 - `rx_roi`: Fixed an issue where entire ports outside the ROI were also being written.
 
 - Automatically resolve trailing ``/`` in user given filepaths `fpath`.
 
 - [Mythen3] [Eiger] `threshold` metadata:<br>
-  Field "Threshold Energies" in master file is also now updated to ``[-1, -1, -1]`` when settings dacs directly, load custom trimbits or set trimbits etc. 
+  Field "Threshold Energies" in master file is also now updated to unknown (`-1`) when settings dacs directly including `vthreshold`, load custom trimbits or set trimbits etc. 
 
 - The high water mark `rx_zmqhwm` is now set when the zmq socket is created (before bind) instead of setting it afterwards and rebinding, which was unreliable. If streaming is enabled, setting `rx_zmqhwm` recreates the streaming sockets, so connected zmq clients are briefly disconnected and have to reconnect. Getting `rx_zmqhwm` returns the value actually used by the socket.
 
@@ -141,6 +147,12 @@ This document describes the differences between v10.1.0 and v10.0.1
 
 - mouse zooms are not reset at start of acquisition
 
+### 2.5 Documentaion
+
+- Fixed docs. 
+  - Fixed typos, mistakes in figures. Thanks to @lrlunin!
+  - using svg instead of png images. Thanks to @lrlunin!
+  - updated installation docs to be more readable. Suggestions are welcome.
 
 
 ****
@@ -154,6 +166,13 @@ This document describes the differences between v10.1.0 and v10.0.1
 
 - [Eiger] Setting ``vthreshold`` dac directly sets settings to undefind
 
+- [Jungfrau] Chip v1.0 and v1.1:<br>
+  - `collectionmode`: Electron collection mode also resets and bypass cds.
+  - `filterresistor`: Default changed to the lower one.
+  - `autocompdisable`: Previously, disabled upon detector power-on. Now, disabled already at every detector server start-up.
+  - `compdisabletime`: Default changed [Chip v1.0: 5us, Chip v1.1: 2 us].
+  - ASIC DS timer (Chip v1.1):<br>
+    Previously, this was fixed to 0x7f. Changing filter resistor now updates the ASIC DS timer [low res: 0x1f, high res:0x5f].
 
 #### 3.2 Client
 
@@ -178,27 +197,24 @@ This document describes the differences between v10.1.0 and v10.0.1
 
 #### 4.1 Detector Server
 
-- [Jungfrau] New features are supported by the new Jungfrau Chip v1.2
-  - support for enabling High Dynamic Range (HDR) for Synchotron or FEL
+- [Jungfrau] Added Chip v1.2 Features:
   - Enable reset step reduction
-  - default special dac values for G0 and G1 are pointing to different values
-  - Electron collection mode => reset and bypass cds
-  - filter resistor: default value is the lower resistor
-  - auto comp disable: disabled by default (as before but now explicitly set)
-  - compdisabletime defaults to 2 us
-> **Note:** The Chip version1.2 does not allow setting extrastoragecells.
+  - Same features as Chip v1.1, but does not have `filtercells`.
+  - Cannot set extra storage cells at the moment.
+  - Different default dac values for G0 and G1.
+  - `extrastoragecells` disabled temporarily.
 
-- [Jungfrau] New features supported by the new Jungfrau Chip v1.1
-  - Electron collection mode => reset and bypass cds
-  - filter resistor: default value is the lower resistor
-  - 1.1+: changing filter resistor updates asic ds timer (0x1f for lower, 0x5f for higher)
-  - auto comp disable: disabled by default (as before but now explicitly set)
-  - compdisabletime defaults (?)
 
-- [Jungfrau] New features supported by Jungfrau Chip v1.0
-  - compdisabletime defaults 5us
 
-- [Jungfrau] all chips: The maximum allowed value for loops in pedestal mode has been increased from 8 bit to 16 bit (compatible with firmware >v9.1.0)
+
+  - support for enabling High Dynamic Range (HDR) for Synchotron or FEL
+
+
+
+
+
+
+
 
 
  
@@ -208,11 +224,12 @@ This document describes the differences between v10.1.0 and v10.0.1
 - Added member function `patternstart` to python, only the detector class api was exposed (`startPattern()`)
 
 
-- `rx_roi` and `rx_clearroi` `python` commands added to set and clear ROI in receiver.
+- `python`: `rx_roi` and `rx_clearroi` commands added to set and clear ROI in receiver.
 
 #### 4.3 Receiver
 
 - Stream Dummy Header:<br>
+  Thanks to @lrlunin!<br>
   One can stream out the dummy header from the receiver at any time. This allows pre-configuring zmq processing before acquisition begins.The dummy header does not include the detector header at this point.  
 
   - Command: `rx_streamdummyheader`
